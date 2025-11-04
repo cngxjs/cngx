@@ -58,5 +58,18 @@
     "@angular/router": "~20.3.0",
     "rxjs": "~7.8.0",
     "zone.js": "~0.15.0"
+  },
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "local-registry": {
+        "executor": "@nx/js:verdaccio",
+        "options": {
+          "port": 4873,
+          "config": ".verdaccio/config.yml",
+          "storage": "tmp/local-registry/storage"
+        }
+      }
+    }
   }
 }

@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./dev-app-e2e"
+    },
+    {
+      "path": "./packages/core"
     }
   ]
 }
