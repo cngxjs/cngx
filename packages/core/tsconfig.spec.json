@@ -9,7 +9,8 @@
       "node",
       "vitest"
     ],
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
   },
   "include": [
     "vite.config.ts",

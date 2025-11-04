@@ -10,6 +10,9 @@ export default defineConfig(() => ({
   // worker: {
   //  plugins: [],
   // },
+  optimizeDeps: {
+    include: ['@angular/compiler'],
+  },
   test: {
     name: 'dev-app',
     watch: false,
@@ -21,6 +24,11 @@ export default defineConfig(() => ({
     coverage: {
       reportsDirectory: './test-output/vitest/coverage',
       provider: 'v8' as const,
+    },
+    server: {
+      deps: {
+        inline: ['@angular/*'],
+      },
     },
   },
 }));
