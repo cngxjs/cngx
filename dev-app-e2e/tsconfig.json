@@ -1,0 +1,29 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "out-tsc/cypress",
+    "allowJs": true,
+    "types": ["cypress", "node"],
+    "sourceMap": false,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "cypress.config.ts",
+    "**/*.cy.ts",
+    "**/*.cy.js",
+    "**/*.d.ts"
+  ],
+  "exclude": [
+    "out-tsc",
+    "test-output",
+    "eslint.config.js",
+    "eslint.config.cjs",
+    "eslint.config.mjs"
+  ]
+}

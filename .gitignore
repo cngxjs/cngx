@@ -45,3 +45,9 @@ Thumbs.db
 .github/instructions/nx.instructions.md
 /.gemini/*.json
 /.vscode
+
+.angular
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+test-output

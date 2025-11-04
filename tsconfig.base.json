@@ -1,11 +1,7 @@
+// tsconfig.base.json
 {
   "compilerOptions": {
-    "composite": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
     "importHelpers": true,
-    "isolatedModules": true,
-    "lib": ["es2022"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "noEmitOnError": true,
@@ -16,6 +12,25 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@cngx-temp/source"]
-  }
+
+    // ---- Changed/Removed Options (the Fixes) ----
+    // The "composite" and "declaration" options are managed by the individual
+    // projects themselves, not globally.
+    // "composite": true,               // Removed
+    // "declarationMap": true,          // Removed
+    // "emitDeclarationOnly": true,     // Removed
+
+    // "isolatedModules" is often problematic for applications (with bundlers like Vite)
+    // and is best configured at the project level.
+    // "isolatedModules": true,         // Removed
+
+     "lib": ["es2022", "dom"],
+
+    // These options are required for Angular applications and good practice in a monorepo.
+    "declaration": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
+  },
+  "exclude": ["node_modules", "tmp"]
 }
