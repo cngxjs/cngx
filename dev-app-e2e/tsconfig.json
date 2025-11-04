@@ -1,6 +1,8 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
     "outDir": "out-tsc/cypress",
     "allowJs": true,
     "types": ["cypress", "node"],
