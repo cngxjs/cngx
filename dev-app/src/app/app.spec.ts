@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { RouterTestingModule } from '@angular/router/testing';
+import { App } from './app.js';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, RouterTestingModule],
     }).compileComponents();
   });
 
@@ -13,7 +14,7 @@ describe('App', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain(
-      'Welcome dev-app'
+      'Welcome to dev-app'
     );
   });
 });

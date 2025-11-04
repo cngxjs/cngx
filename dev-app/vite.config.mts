@@ -25,10 +25,22 @@ export default defineConfig(() => ({
       reportsDirectory: './test-output/vitest/coverage',
       provider: 'v8' as const,
     },
-    server: {
-      deps: {
-        inline: ['@angular/*'],
+    deps: {
+      optimizer: {
+        web: {
+          include: [
+            '@angular/common',
+            '@angular/compiler',
+            '@angular/core',
+            '@angular/forms',
+            '@angular/platform-browser',
+            '@angular/router',
+          ],
+        },
       },
+    },
+    transformMode: {
+      ssr: [/node_modules\/@angular\/.*/],
     },
   },
 }));

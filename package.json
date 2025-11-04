@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
+  "type": "module",
   "devDependencies": {
     "@analogjs/vite-plugin-angular": "~1.19.1",
     "@analogjs/vitest-angular": "~1.19.1",
