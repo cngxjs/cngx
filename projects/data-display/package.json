@@ -1,0 +1,10 @@
+{
+  "name": "@cngx/data-display",
+  "version": "0.0.1",
+  "description": "Data display components (tables, lists, etc.)",
+  "peerDependencies": {
+    "@angular/common": "^20.3.0",
+    "@angular/core": "^20.3.0"
+  },
+  "sideEffects": false
+}

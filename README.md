@@ -1,90 +1,176 @@
-# CngxTemp
+# CNGX UI Component Libraries
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A collection of Angular component libraries built with Angular CLI and ng-packagr.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+## Project Structure
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+This workspace contains multiple independent Angular libraries:
 
-## Finish your CI setup
+- **@cngx/ui** - Core UI components
+- **@cngx/data-display** - Data display components (tables, lists, etc.)
+- **@cngx/forms** - Form components and utilities
+- **@cngx/grid** - Grid and data grid components
+- **@cngx/layout** - Layout components and utilities
+- **demo** - Demo application showcasing all libraries
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/k80Zt7WEbH)
+## Getting Started
 
+### Prerequisites
 
-## Generate a library
+- Node.js 20 or higher
+- npm
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+### Installation
+
+```bash
+npm install
 ```
 
-## Run tasks
+## Development
 
-To build the library use:
+### Building Libraries
 
-```sh
-npx nx build pkg1
+Build all libraries:
+```bash
+npm run build
 ```
 
-To run any task with Nx use:
-
-```sh
-npx nx <target> <project-name>
+Build individual libraries:
+```bash
+npm run build:ui
+npm run build:data-display
+npm run build:forms
+npm run build:grid
+npm run build:layout
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Running the Demo App
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
+Start the development server:
+```bash
+npm start
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+The demo app will be available at `http://localhost:4200`
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Testing
 
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
+Run tests with Vitest:
+```bash
+npm test
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
-
-```sh
-npx nx sync:check
+Run tests in watch mode:
+```bash
+npm run test:watch
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+### Linting
 
+Lint all projects:
+```bash
+npm run lint
+```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Lint specific project:
+```bash
+ng lint ui
+ng lint demo
+```
 
-## Install Nx Console
+## Library Structure
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+Each library follows the standard Angular library structure:
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```
+projects/<library-name>/
+├── src/
+│   ├── index.ts          # Public API
+│   └── lib/              # Library code
+├── ng-package.json       # ng-packagr configuration
+├── package.json          # Package metadata
+└── tsconfig.lib.json     # TypeScript configuration
+```
 
-## Useful links
+## Adding Secondary Entry Points
 
-Learn more:
+Each library can have its own secondary entry points. To add one:
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. Create a new directory in the library folder
+2. Add `ng-package.json`, `package.json`, and `src/index.ts`
+3. Update the main library's build configuration
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## CI/CD
+
+The project uses GitHub Actions for continuous integration. On each push or pull request, the workflow:
+
+1. Installs dependencies
+2. Runs linting
+3. Builds all libraries
+4. Builds the demo app
+5. Runs tests
+
+## Local Package Registry
+
+For local testing, you can use Verdaccio:
+
+```bash
+npx verdaccio --config .verdaccio/config.yml
+```
+
+## Tech Stack
+
+- **Angular** 20.3.0
+- **TypeScript** 5.9.2
+- **Testing**: Vitest with @analogjs/vitest-angular
+- **Build**: ng-packagr
+- **Linting**: ESLint with typescript-eslint and angular-eslint
+
+## GitHub Labels
+
+This project uses a structured labeling system for issues and pull requests. To set up the recommended labels:
+
+### Category: Type of Change
+
+| Label Name | Color | Description |
+| :--- | :--- | :--- |
+| `type: feature` | `#007bff` | A new feature or a user-facing enhancement. |
+| `type: bug` | `#d73a4a` | A bug fix that corrects incorrect behavior. |
+| `type: chore` | `#cfd3d7` | Changes to the build process, tooling, or repository administration. |
+| `type: docs` | `#6f42c1` | Changes to the documentation (website, READMEs, comments). |
+| `type: refactor` | `#28a745` | A code change that neither fixes a bug nor adds a feature (e.g., code cleanup). |
+| `type: revert` | `#fbca04` | Reverts a previous change. |
+
+### Category: Scope
+
+| Label Name | Color | Description |
+| :--- | :--- | :--- |
+| `scope: build` | `#ffc107` | Affects the build system, CI/CD, or dependency management. |
+| `scope: ui` | `#1d76db` | Changes affecting the `@cngx/ui` package. |
+| `scope: data-display` | `#0e8a16` | Changes affecting the `@cngx/data-display` package. |
+| `scope: forms` | `#d93f0b` | Changes affecting the `@cngx/forms` package. |
+| `scope: grid` | `#9c27b0` | Changes affecting the `@cngx/grid` package. |
+| `scope: layout` | `#ff9800` | Changes affecting the `@cngx/layout` package. |
+| `scope: docs` | `#5319e7` | Affects the documentation website or cross-cutting documents. |
+
+### Category: Status
+
+| Label Name | Color | Description |
+| :--- | :--- | :--- |
+| `status: in progress` | `#f9d0c4` | Work is actively being done on this topic. |
+| `status: needs review` | `#00e5ff` | Ready for review by the maintainers. |
+| `status: blocked` | `#000000` | Blocked by another issue, a question, or an external dependency. |
+
+### Category: Miscellaneous
+
+| Label Name | Color | Description |
+| :--- | :--- | :--- |
+| `good first issue` | `#7057ff` | A good issue for new contributors to get started with the project. |
+| `help wanted` | `#33aa3f` | The maintainers are asking the community for help with this topic. |
+| `breaking change` | `#b60205` | The change introduces a breaking change to the API and will require a new major version. |
+
+To create these labels, go to your repository's **Issues → Labels** tab and add them manually.
+
+## License
+
+MIT
