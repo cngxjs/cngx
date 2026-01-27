@@ -19,7 +19,8 @@
     "test:grid": "vitest run --project grid",
     "test:layout": "vitest run --project layout",
     "test:watch": "vitest",
-    "lint": "ng lint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "private": true,
   "devDependencies": {
