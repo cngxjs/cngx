@@ -3,7 +3,7 @@
     "importHelpers": true,
     "baseUrl": "./",
     "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
@@ -18,11 +18,7 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "paths": {
-      "@cngx/ui": ["projects/ui/src/index.ts"],
-      "@cngx/data-display": ["projects/ui/data-display/src/index.ts"],
-      "@cngx/layout": ["projects/ui/layout/src/index.ts"],
-      "@cngx/grid": ["projects/ui/grid/src/index.ts"],
-      "@cngx/forms": ["projects/ui/forms/src/index.ts"]
+      "@cngx/common": ["projects/common/src/index.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]

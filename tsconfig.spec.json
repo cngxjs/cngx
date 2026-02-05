@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": ["vitest/globals", "node"],
+    "module": "ES2022",
+    "target": "ES2022"
+  },
+  "files": ["vitest.setup.mts"],
+  "include": ["projects/**/*.spec.ts", "projects/**/*.ts"]
+}

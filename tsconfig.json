@@ -1,5 +1,26 @@
 {
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
-  "files": []
+  "files": [],
+  "compilerOptions": {
+    "paths": {
+      "common": [
+        "./dist/common"
+      ]
+    }
+  },
+  "references": [
+    {
+      "path": "./projects/common/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/common/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/dev-app/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/dev-app/tsconfig.spec.json"
+    }
+  ]
 }

@@ -3,197 +3,75 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ui": {
+    "common": {
       "projectType": "library",
-      "root": "projects/ui",
-      "sourceRoot": "projects/ui/src",
+      "root": "projects/common",
+      "sourceRoot": "projects/common/src",
       "prefix": "cx",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/ui/ng-package.json"
-          },
+          "builder": "@angular/build:ng-packagr",
           "configurations": {
             "production": {
-              "tsConfig": "projects/ui/tsconfig.lib.prod.json"
+              "tsConfig": "projects/common/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ui/tsconfig.lib.json"
+              "tsConfig": "projects/common/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/common/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/ui/**/*.ts",
-              "projects/ui/**/*.html"
-            ]
+              "projects/common/**/*.ts",
+              "projects/common/**/*.html"
+            ],
+            "eslintConfig": "projects/common/eslint.config.mjs"
           }
         }
       }
     },
-    "data-display": {
-      "projectType": "library",
-      "root": "projects/data-display",
-      "sourceRoot": "projects/data-display/src",
-      "prefix": "cx",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/data-display/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/data-display/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/data-display/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/data-display/**/*.ts",
-              "projects/data-display/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "forms": {
-      "projectType": "library",
-      "root": "projects/forms",
-      "sourceRoot": "projects/forms/src",
-      "prefix": "cx",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/forms/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/forms/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/forms/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/forms/**/*.ts",
-              "projects/forms/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "grid": {
-      "projectType": "library",
-      "root": "projects/grid",
-      "sourceRoot": "projects/grid/src",
-      "prefix": "cx",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/grid/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/grid/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/grid/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/grid/**/*.ts",
-              "projects/grid/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "layout": {
-      "projectType": "library",
-      "root": "projects/layout",
-      "sourceRoot": "projects/layout/src",
-      "prefix": "cx",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/layout/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/layout/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/layout/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/layout/**/*.ts",
-              "projects/layout/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "demo": {
+    "dev-app": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "projects/demo",
-      "sourceRoot": "projects/demo/src",
+      "root": "projects/dev-app",
+      "sourceRoot": "projects/dev-app/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/demo",
-            "index": "projects/demo/src/index.html",
-            "browser": "projects/demo/src/main.ts",
+            "browser": "projects/dev-app/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
-            "tsConfig": "projects/demo/tsconfig.app.json",
+            "tsConfig": "projects/dev-app/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/demo/public"
+                "input": "projects/dev-app/public"
               }
             ],
             "styles": [
-              "projects/demo/src/styles.scss"
-            ],
-            "scripts": []
+              "projects/dev-app/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -205,8 +83,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kB",
-                  "maximumError": "4kB"
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
                 }
               ],
               "outputHashing": "all"
@@ -221,12 +99,15 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "hmr": false
+          },
           "configurations": {
             "production": {
-              "buildTarget": "demo:build:production"
+              "buildTarget": "dev-app:build:production"
             },
             "development": {
-              "buildTarget": "demo:build:development"
+              "buildTarget": "dev-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -234,13 +115,34 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
         },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "projects/dev-app/tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/dev-app/public"
+              }
+            ],
+            "styles": [
+              "projects/dev-app/src/styles.scss"
+            ]
+          }
+        },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/demo/**/*.ts",
-              "projects/demo/**/*.html"
-            ]
+              "projects/dev-app/**/*.ts",
+              "projects/dev-app/**/*.html"
+            ],
+            "eslintConfig": "projects/dev-app/eslint.config.js"
           }
         }
       }

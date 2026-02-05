@@ -36,7 +36,7 @@ export default [
   },
   {
     files: ['**/*.html'],
-      ...angular.configs.templateRecommended[0],
+    ...angular.configs.templateRecommended,
   },
   {
     files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
