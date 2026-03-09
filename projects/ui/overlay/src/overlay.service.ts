@@ -1,14 +1,13 @@
 import {
-  ComponentRef,
   Injectable,
   Injector,
-  Type,
   inject,
 } from '@angular/core';
+import { type ComponentRef, type Type } from '@angular/core';
 import {
   Overlay,
   OverlayConfig,
-  OverlayRef as CdkOverlayRef,
+  type OverlayRef as CdkOverlayRef,
 } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { CngxOverlayRef } from './overlay-ref';
