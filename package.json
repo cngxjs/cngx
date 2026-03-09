@@ -19,7 +19,11 @@
     "test:forms": "ng test forms",
     "test:ui": "ng test ui",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "publish:patch": "node scripts/publish.mjs --bump patch",
+    "publish:minor": "node scripts/publish.mjs --bump minor",
+    "publish:major": "node scripts/publish.mjs --bump major",
+    "publish:dry": "node scripts/publish.mjs --dry-run --bump patch"
   },
   "private": true,
   "packageManager": "npm@10.9.0",
