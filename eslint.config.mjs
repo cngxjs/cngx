@@ -1,17 +1,9 @@
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import angular from 'angular-eslint';
 
-export default [
+export default tseslint.config(
   {
-    ignores: [
-      '**/dist',
-      '**/node_modules',
-      '**/coverage',
-      '**/.angular',
-      '**/vite.config.*.timestamp*',
-      '**/vitest.config.*.timestamp*',
-    ],
+    ignores: ['**/dist', '**/node_modules'],
   },
   {
     files: ['**/*.ts'],
@@ -21,10 +13,6 @@ export default [
         ...globals.node,
       },
       parser: tseslint.parser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
     },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
@@ -35,15 +23,11 @@ export default [
     },
   },
   {
-    files: ['**/*.html'],
-    ...angular.configs.templateRecommended,
-  },
-  {
     files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
       globals: {
         ...globals.node,
       },
     },
-  },
-];
+  }
+);
