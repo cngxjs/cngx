@@ -2,7 +2,7 @@
   "compilerOptions": {
     "importHelpers": true,
     "baseUrl": "./",
-    "module": "nodenext",
+    "module": "es2022",
     "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
@@ -19,6 +19,9 @@
     "esModuleInterop": true,
     "paths": {
       "@cngx/common": ["projects/common/src/index.ts"],
+      "@cngx/core": ["projects/core/src/public-api.ts"],
+      "@cngx/forms": ["projects/forms/src/public-api.ts"],
+      "@cngx/ui": ["projects/ui/src/public-api.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
