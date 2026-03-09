@@ -1,0 +1,125 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+cdk-table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+cdk-header-row {
+  display: table-row;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+cdk-header-cell {
+  display: table-cell;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+  white-space: nowrap;
+
+  &:first-child {
+    width: 1px; /* shrink column to button width */
+    padding-inline: 0.25rem;
+  }
+}
+
+cdk-row {
+  display: table-row;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.cngx-treetable__row--highlighted {
+    background: #f0f4ff;
+  }
+
+  &.cngx-treetable__row--selected {
+    background: #e8f0fe;
+  }
+
+  &.cngx-treetable__row--focused {
+    outline: 2px solid #4f46e5;
+    outline-offset: -2px;
+  }
+}
+
+.cngx-treetable__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+cdk-cell {
+  display: table-cell;
+  padding: 0.6rem 1rem;
+  color: #374151;
+  vertical-align: middle;
+
+  &:first-child {
+    white-space: nowrap;
+    width: 1px; /* shrink to content; depth padding drives actual width */
+    padding-inline-end: 0.25rem;
+    padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.5rem + 0.25rem);
+  }
+}
+
+.cngx-treetable__toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: background 120ms, color 120ms;
+
+  &:hover {
+    background: #e5e7eb;
+    color: #111;
+  }
+}
+
+/* ─── Mobile / Tablet (≤ 960 px) ───────────────────────────────── */
+// Reduced horizontal padding → more compact width
+// Increased vertical padding → larger touch targets
+
+@media (max-width: 960px) {
+  cdk-table {
+    font-size: 0.8125rem;
+  }
+
+  cdk-header-cell {
+    padding: 0.5rem 0.625rem;
+
+    &:first-child {
+      padding-inline: 0.125rem;
+    }
+  }
+
+  cdk-cell {
+    padding: 0.875rem 0.625rem; // taller row = bigger tap area
+
+    &:first-child {
+      padding-inline-end: 0.125rem;
+      padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.25rem + 0.125rem);
+    }
+  }
+
+  .cngx-treetable__toggle {
+    padding: 0.5rem; // ~44 px min touch target with the button's own size
+    font-size: 1rem;
+  }
+}

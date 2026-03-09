@@ -1,0 +1,103 @@
+// Tokens with fallbacks so the component is usable even without the theme mixin.
+// Apply @include treetable.theme($theme) in your global styles to set real values.
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+table.mat-mdc-table {
+  width: 100%;
+}
+
+tr.mat-mdc-header-row {
+  height: var(--cngx-mat-treetable-header-container-height, 56px);
+}
+
+tr.mat-mdc-row {
+  height: var(--cngx-mat-treetable-row-item-container-height, 52px);
+  cursor: pointer;
+  transition: background 120ms ease;
+
+  &:hover,
+  &.cngx-treetable__row--highlighted {
+    background: var(--cngx-mat-treetable-row-hover-color, rgba(0, 0, 0, 0.04));
+  }
+
+  &.cngx-treetable__row--selected {
+    background: var(--cngx-mat-treetable-row-selected-color, rgba(99, 102, 241, 0.12));
+  }
+
+  &.cngx-treetable__row--focused {
+    outline: var(--cngx-mat-treetable-row-focus-ring, 2px solid currentColor);
+    outline-offset: -2px;
+  }
+}
+
+.cngx-treetable__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--cngx-mat-treetable-empty-text-color, rgba(0, 0, 0, 0.54));
+  font-size: 0.875rem;
+}
+
+/* expand / collapse column — grows with depth to push data columns right */
+th.mat-mdc-header-cell:first-child,
+td.mat-mdc-cell:first-child {
+  min-width: var(--cngx-mat-treetable-expand-column-width, 40px);
+  padding-inline-end: 4px;
+  padding-inline-start: 4px;
+  white-space: nowrap;
+}
+
+td.mat-mdc-cell:first-child {
+  padding-inline-start: calc(
+    var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem) + 4px
+  );
+}
+
+/* size the icon-button toggle to match the expand column */
+.mat-mdc-icon-button.cngx-treetable__toggle {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+}
+
+/* ─── Mobile / Tablet (≤ 960 px) ───────────────────────────────── */
+// Token overrides drive row/header height changes automatically.
+// Horizontal padding is reduced for a more compact layout.
+
+@media (max-width: 960px) {
+  :host {
+    // Taller rows = larger touch targets (Material recommends 48 px minimum)
+    --cngx-mat-treetable-row-item-container-height: 56px;
+    --cngx-mat-treetable-header-container-height: 48px;
+    // Reduced indent step so deep trees still fit on narrow screens
+    --cngx-mat-treetable-depth-indent: 1.25rem;
+  }
+
+  th.mat-mdc-header-cell,
+  td.mat-mdc-cell {
+    padding-inline: 8px;
+    font-size: 0.8125rem;
+  }
+
+  th.mat-mdc-header-cell:first-child,
+  td.mat-mdc-cell:first-child {
+    padding-inline-end: 2px;
+    padding-inline-start: 2px;
+  }
+
+  td.mat-mdc-cell:first-child {
+    padding-inline-start: calc(
+      var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem) + 2px
+    );
+  }
+
+  // Larger icon button → meets 44 px minimum touch target
+  .mat-mdc-icon-button.cngx-treetable__toggle {
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+  }
+}

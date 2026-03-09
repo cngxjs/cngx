@@ -1,0 +1,66 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// ─── cngx-mat-treetable theming ──────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/data-display/treetable/mat-treetable-theme' as treetable;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include treetable.theme($theme);
+//   }
+
+// ─── Token definitions ───────────────────────────────────────────
+
+@mixin base() {
+  // Structural / non-color tokens
+  --cngx-mat-treetable-row-item-outline-width: 1px;
+  --cngx-mat-treetable-depth-indent: 1.5rem;
+  --cngx-mat-treetable-expand-column-width: 40px;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — reference Material's sys tokens so we stay in sync with theme changes
+    --cngx-mat-treetable-row-hover-color: color-mix(
+      in srgb, var(--mat-sys-primary) 8%, transparent
+    );
+    --cngx-mat-treetable-row-item-outline-color: var(--mat-sys-outline-variant);
+    --cngx-mat-treetable-header-headline-color: var(--mat-sys-on-surface);
+    --cngx-mat-treetable-row-item-label-text-color: var(--mat-sys-on-surface);
+  } @else {
+    // M2 — derive from palette
+    --cngx-mat-treetable-row-hover-color: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
+    --cngx-mat-treetable-row-item-outline-color: rgba(0, 0, 0, 0.12);
+    --cngx-mat-treetable-header-headline-color: rgba(0, 0, 0, 0.87);
+    --cngx-mat-treetable-row-item-label-text-color: rgba(0, 0, 0, 0.87);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  // Clamp to supported range [-4, 0]
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $header-heights: (0: 56px, -1: 52px, -2: 48px, -3: 44px, -4: 40px);
+  $row-heights:    (0: 52px, -1: 48px, -2: 44px, -3: 40px, -4: 36px);
+
+  --cngx-mat-treetable-header-container-height: #{map.get($header-heights, $scale)};
+  --cngx-mat-treetable-row-item-container-height: #{map.get($row-heights, $scale)};
+}
+
+// ─── Public entrypoint ───────────────────────────────────────────
+
+@mixin theme($theme) {
+  cngx-mat-treetable {
+    @include base();
+    @include color($theme);
+    @include density($theme);
+  }
+}
