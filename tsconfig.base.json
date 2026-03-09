@@ -1,36 +1,35 @@
-// tsconfig.base.json
 {
   "compilerOptions": {
     "importHelpers": true,
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "baseUrl": "./",
+    "module": "es2022",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-
-    // ---- Changed/Removed Options (the Fixes) ----
-    // The "composite" and "declaration" options are managed by the individual
-    // projects themselves, not globally.
-    // "composite": true,               // Removed
-    // "declarationMap": true,          // Removed
-    // "emitDeclarationOnly": true,     // Removed
-
-    // "isolatedModules" is often problematic for applications (with bundlers like Vite)
-    // and is best configured at the project level.
-    // "isolatedModules": true,         // Removed
-
-     "lib": ["es2022", "dom"],
-
-    // These options are required for Angular applications and good practice in a monorepo.
+    "lib": ["es2022", "dom"],
     "declaration": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "paths": {
+      "@cngx/common": ["projects/common/src/index.ts"],
+      "@cngx/core": ["projects/core/src/public-api.ts"],
+      "@cngx/forms": ["projects/forms/src/public-api.ts"],
+      "@cngx/ui": ["projects/ui/src/public-api.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   },
   "exclude": ["node_modules", "tmp"]
 }
