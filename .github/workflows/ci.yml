@@ -29,12 +29,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Run tests
+        run: npm test
+
       - name: Build all libraries
         run: npm run build:libs
 
       - name: Build dev app
         run: npm run build:dev-app
-
-      - name: Run tests
-        run: npm test
-        continue-on-error: true

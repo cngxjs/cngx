@@ -16,7 +16,6 @@
     "lib": ["es2022", "dom"],
     "declaration": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "isolatedModules": true,
     "paths": {
