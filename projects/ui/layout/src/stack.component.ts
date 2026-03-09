@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 export type StackDirection = 'row' | 'column';
 export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
@@ -24,21 +24,23 @@ export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
       }
     `,
   ],
+  host: {
+    '[style.flex-direction]': 'direction()',
+    '[style.align-items]': 'alignItems()',
+    '[style.gap]': 'gapValue()',
+  },
 })
-export class StackComponent {
-  @Input() direction: StackDirection = 'column';
-  @Input() gap: StackGap = 'md';
-  @Input() align: StackAlign = 'stretch';
+export class CngxStack {
+  readonly direction = input<StackDirection>('column');
+  readonly gap = input<StackGap>('md');
+  readonly align = input<StackAlign>('stretch');
 
-  @HostBinding('style.flex-direction') get flexDirection() {
-    return this.direction;
-  }
+  protected readonly alignItems = computed(() => {
+    const alignValue = this.align();
+    return alignValue === 'stretch' ? 'stretch' : `flex-${alignValue}`;
+  });
 
-  @HostBinding('style.align-items') get alignItems() {
-    return this.align === 'stretch' ? 'stretch' : `flex-${this.align}`;
-  }
-
-  @HostBinding('style.gap') get gapValue() {
+  protected readonly gapValue = computed(() => {
     const map: Record<StackGap, string> = {
       none: '0',
       xs: '4px',
@@ -47,6 +49,6 @@ export class StackComponent {
       lg: '24px',
       xl: '32px',
     };
-    return map[this.gap];
-  }
+    return map[this.gap()];
+  });
 }

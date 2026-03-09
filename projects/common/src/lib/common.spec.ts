@@ -1,18 +1,19 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Common } from './common';
+import { CngxCommon } from './common';
 
-describe('Common', () => {
-  let component: Common;
-  let fixture: ComponentFixture<Common>;
+describe('CngxCommon', () => {
+  let component: CngxCommon;
+  let fixture: ComponentFixture<CngxCommon>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Common]
+      imports: [CngxCommon]
     })
-    .compileComponents();
+      .compileComponents();
 
-    fixture = TestBed.createComponent(Common);
+    fixture = TestBed.createComponent(CngxCommon);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

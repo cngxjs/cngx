@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 /**
  * Composable CSS grid layout component.
@@ -20,18 +20,17 @@ import { Component, HostBinding, Input } from '@angular/core';
       }
     `,
   ],
+  host: {
+    '[style.grid-template-columns]': 'gridTemplateColumns()',
+    '[style.gap]': 'gap()',
+  },
 })
-export class GridComponent {
-  @Input() columns: number | string = 1;
-  @Input() gap = '16px';
+export class CngxGrid {
+  readonly columns = input<number | string>(1);
+  readonly gap = input('16px');
 
-  @HostBinding('style.grid-template-columns') get gridTemplateColumns() {
-    return typeof this.columns === 'number'
-      ? `repeat(${this.columns}, 1fr)`
-      : this.columns;
-  }
-
-  @HostBinding('style.gap') get gapValue() {
-    return this.gap;
-  }
+  protected readonly gridTemplateColumns = computed(() => {
+    const cols = this.columns();
+    return typeof cols === 'number' ? `repeat(${cols}, 1fr)` : cols;
+  });
 }

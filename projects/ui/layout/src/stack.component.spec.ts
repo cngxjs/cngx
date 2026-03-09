@@ -1,17 +1,18 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StackComponent } from './stack.component';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
+import { CngxStack } from './stack.component';
 
-describe('StackComponent', () => {
-  let fixture: ComponentFixture<StackComponent>;
-  let component: StackComponent;
+describe('CngxStack', () => {
+  let fixture: ComponentFixture<CngxStack>;
+  let component: CngxStack;
   let host: HTMLElement;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [StackComponent],
+      imports: [CngxStack],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(StackComponent);
+    fixture = TestBed.createComponent(CngxStack);
     component = fixture.componentInstance;
     host = fixture.nativeElement as HTMLElement;
   });
@@ -27,13 +28,13 @@ describe('StackComponent', () => {
   });
 
   it('applies row direction when set', () => {
-    component.direction = 'row';
+    fixture.componentRef.setInput('direction', 'row');
     fixture.detectChanges();
     expect(host.style.flexDirection).toBe('row');
   });
 
   it('maps gap "sm" to 8px', () => {
-    component.gap = 'sm';
+    fixture.componentRef.setInput('gap', 'sm');
     fixture.detectChanges();
     expect(host.style.gap).toBe('8px');
   });

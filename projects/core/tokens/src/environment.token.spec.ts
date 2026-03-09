@@ -1,5 +1,6 @@
+import { describe, it, expect } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT, Environment } from './environment.token';
+import { ENVIRONMENT, type Environment } from './environment.token';
 
 describe('ENVIRONMENT token', () => {
   it('can be provided and injected', () => {

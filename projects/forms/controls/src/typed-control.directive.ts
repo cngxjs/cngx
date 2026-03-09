@@ -1,5 +1,5 @@
-import { Directive, Input, OnInit, inject } from '@angular/core';
-import { FormGroupDirective } from '@angular/forms';
+import { Directive, Input, type OnInit, inject } from '@angular/core';
+import { type AbstractControl, FormGroupDirective } from '@angular/forms';
 
 /**
  * Structural helper directive that exposes a typed FormControl from the
@@ -8,23 +8,23 @@ import { FormGroupDirective } from '@angular/forms';
  * Usage: `<input [formControlName]="'email'" ngxTypedControl="email" />`
  */
 @Directive({
-  selector: '[ngxTypedControl]',
+  selector: '[cngxTypedControl]',
   standalone: true,
-  exportAs: 'ngxTypedControl',
+  exportAs: 'cngxTypedControl',
 })
-export class TypedControlDirective<T = unknown> implements OnInit {
-  @Input({ required: true }) ngxTypedControl!: string;
+export class CngxTypedControl<T = unknown> implements OnInit {
+  @Input({ required: true }) cngxTypedControl!: string;
 
   private readonly formGroupDir = inject(FormGroupDirective);
 
-  get control() {
-    return this.formGroupDir.form.get(this.ngxTypedControl);
+  get control(): AbstractControl<T> | null {
+    return this.formGroupDir.form.get(this.cngxTypedControl) as AbstractControl<T> | null;
   }
 
   ngOnInit(): void {
     if (!this.control) {
       throw new Error(
-        `[ngxTypedControl] No control found with name "${this.ngxTypedControl}" in the parent FormGroup.`,
+        `[cngxTypedControl] No control found with name "${this.cngxTypedControl}" in the parent FormGroup.`,
       );
     }
   }

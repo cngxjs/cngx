@@ -8,6 +8,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
@@ -17,12 +18,19 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
+    "isolatedModules": true,
     "paths": {
       "@cngx/common": ["projects/common/src/index.ts"],
       "@cngx/core": ["projects/core/src/public-api.ts"],
       "@cngx/forms": ["projects/forms/src/public-api.ts"],
       "@cngx/ui": ["projects/ui/src/public-api.ts"]
     }
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -1,4 +1,4 @@
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@angular/forms';
 
 /** Validates that the control value is strictly `true`. */
 export function requiredTrue(): ValidatorFn {

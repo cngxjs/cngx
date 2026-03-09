@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+import '@angular/compiler';
 import { FormControl } from '@angular/forms';
 import { requiredTrue } from './required-true.validator';
 

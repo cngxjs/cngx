@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'cx-common',
+  selector: 'cngx-common',
   imports: [],
   template: `
     <p>
@@ -10,6 +10,6 @@ import { Component } from '@angular/core';
   `,
   styles: ``,
 })
-export class Common {
+export class CngxCommon {
 
 }

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+import '@angular/compiler';
 import { coerceArray, coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
 
 describe('coerceBooleanProperty', () => {

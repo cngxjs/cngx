@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+import '@angular/compiler';
 import { FormControl } from '@angular/forms';
 import { patternMatch } from './pattern-match.validator';
 

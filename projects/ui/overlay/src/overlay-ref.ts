@@ -1,8 +1,8 @@
-import { OverlayRef as CdkOverlayRef } from '@angular/cdk/overlay';
+import { type OverlayRef as CdkOverlayRef } from '@angular/cdk/overlay';
 import { Subject } from 'rxjs';
 
 /** Typed wrapper around a CDK OverlayRef that exposes a close result stream. */
-export class NgxOverlayRef<R = unknown> {
+export class CngxOverlayRef<R = unknown> {
   private readonly _afterClosed = new Subject<R | undefined>();
 
   readonly afterClosed$ = this._afterClosed.asObservable();

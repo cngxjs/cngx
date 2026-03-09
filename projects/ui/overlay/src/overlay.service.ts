@@ -11,28 +11,28 @@ import {
   OverlayRef as CdkOverlayRef,
 } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { NgxOverlayRef } from './overlay-ref';
+import { CngxOverlayRef } from './overlay-ref';
 
-export interface NgxOverlayConfig extends Partial<OverlayConfig> {
+export interface CngxOverlayConfig extends Partial<OverlayConfig> {
   hasBackdrop?: boolean;
 }
 
 /**
- * Thin service over CDK Overlay that returns a typed NgxOverlayRef.
+ * Thin service over CDK Overlay that returns a typed CngxOverlayRef.
  *
  * @example
  * const ref = overlayService.open(MyComponent, { hasBackdrop: true });
  * ref.afterClosed$.subscribe(result => console.log(result));
  */
 @Injectable({ providedIn: 'root' })
-export class NgxOverlayService {
+export class CngxOverlay {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);
 
   open<C, R = unknown>(
     component: Type<C>,
-    config: NgxOverlayConfig = {},
-  ): NgxOverlayRef<R> {
+    config: CngxOverlayConfig = {},
+  ): CngxOverlayRef<R> {
     const overlayConfig = new OverlayConfig({
       hasBackdrop: true,
       positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
@@ -40,11 +40,11 @@ export class NgxOverlayService {
     });
 
     const cdkRef: CdkOverlayRef = this.overlay.create(overlayConfig);
-    const ngxRef = new NgxOverlayRef<R>(cdkRef);
+    const ngxRef = new CngxOverlayRef<R>(cdkRef);
 
     const injector = Injector.create({
       parent: this.injector,
-      providers: [{ provide: NgxOverlayRef, useValue: ngxRef }],
+      providers: [{ provide: CngxOverlayRef, useValue: ngxRef }],
     });
 
     const portal = new ComponentPortal(component, null, injector);
