@@ -57,8 +57,8 @@ import type { CngxCellTplContext } from './models';
   hostDirectives: [
     {
       directive: CngxTreetablePresenter,
-      inputs: ['tree', 'options', 'nodeId', 'expandedIds', 'selectionMode', 'trackBy'],
-      outputs: ['nodeClicked', 'nodeExpanded', 'nodeCollapsed', 'expandedIdsChange', 'selectionChanged'],
+      inputs: ['tree', 'options', 'nodeId', 'expandedIds', 'selectionMode', 'showCheckboxes', 'selectedIds', 'trackBy'],
+      outputs: ['nodeClicked', 'nodeExpanded', 'nodeCollapsed', 'expandedIdsChange', 'selectionChanged', 'selectedIdsChange'],
     },
   ],
   imports: [

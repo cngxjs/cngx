@@ -24,8 +24,9 @@ cdk-header-cell {
   text-align: left;
   white-space: nowrap;
 
-  &:first-child {
-    width: 1px; /* shrink column to button width */
+  &.cngx-treetable__expand-cell,
+  &.cngx-treetable__select-cell {
+    width: 1px;
     padding-inline: 0.25rem;
   }
 }
@@ -61,17 +62,27 @@ cdk-row {
   font-size: 0.875rem;
 }
 
+.cngx-treetable__first-data-cell {
+  padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.5rem + 1rem);
+}
+
 cdk-cell {
   display: table-cell;
   padding: 0.6rem 1rem;
   color: #374151;
   vertical-align: middle;
 
-  &:first-child {
+  &.cngx-treetable__expand-cell {
     white-space: nowrap;
-    width: 1px; /* shrink to content; depth padding drives actual width */
+    width: 1px;
     padding-inline-end: 0.25rem;
     padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.5rem + 0.25rem);
+  }
+
+  &.cngx-treetable__select-cell {
+    width: 1px;
+    padding-inline: 0.25rem;
+    white-space: nowrap;
   }
 }
 
@@ -104,7 +115,8 @@ cdk-cell {
   cdk-header-cell {
     padding: 0.5rem 0.625rem;
 
-    &:first-child {
+    &.cngx-treetable__expand-cell,
+    &.cngx-treetable__select-cell {
       padding-inline: 0.125rem;
     }
   }
@@ -112,10 +124,18 @@ cdk-cell {
   cdk-cell {
     padding: 0.875rem 0.625rem; // taller row = bigger tap area
 
-    &:first-child {
+    &.cngx-treetable__expand-cell {
       padding-inline-end: 0.125rem;
       padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.25rem + 0.125rem);
     }
+
+    &.cngx-treetable__select-cell {
+      padding-inline: 0.125rem;
+    }
+  }
+
+  .cngx-treetable__first-data-cell {
+    padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.25rem + 0.875rem);
   }
 
   .cngx-treetable__toggle {

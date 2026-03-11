@@ -19,6 +19,7 @@ import {
   MatTable,
 } from '@angular/material/table';
 import { MatIconButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
 import { NgTemplateOutlet } from '@angular/common';
 import { CngxTreetablePresenter } from './treetable-presenter';
@@ -59,8 +60,8 @@ import type { CngxCellTplContext } from './models';
   hostDirectives: [
     {
       directive: CngxTreetablePresenter,
-      inputs: ['tree', 'options', 'nodeId', 'expandedIds', 'selectionMode', 'trackBy'],
-      outputs: ['nodeClicked', 'nodeExpanded', 'nodeCollapsed', 'expandedIdsChange', 'selectionChanged'],
+      inputs: ['tree', 'options', 'nodeId', 'expandedIds', 'selectionMode', 'showCheckboxes', 'selectedIds', 'trackBy'],
+      outputs: ['nodeClicked', 'nodeExpanded', 'nodeCollapsed', 'expandedIdsChange', 'selectionChanged', 'selectedIdsChange'],
     },
   ],
   imports: [
@@ -75,6 +76,7 @@ import type { CngxCellTplContext } from './models';
     MatRow,
     MatRowDef,
     MatIconButton,
+    MatCheckbox,
     MatIcon,
     CngxTreetableRow,
     NgTemplateOutlet,

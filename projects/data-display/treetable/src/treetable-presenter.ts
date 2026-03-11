@@ -9,6 +9,7 @@ import {
   Signal,
   signal,
   TrackByFunction,
+  untracked,
 } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import type { FlatNode, Node, TreetableOptions } from './models';
@@ -93,6 +94,29 @@ export class CngxTreetablePresenter<T = unknown> {
   selectionMode = input<'none' | 'single' | 'multi'>('none');
 
   /**
+   * When `true`, renders a checkbox column (`_select`) to the left of the data
+   * columns. Only meaningful when `selectionMode` is `'single'` or `'multi'`.
+   * In `'multi'` mode a "select all" checkbox is shown in the column header.
+   * @defaultValue `false`
+   */
+  showCheckboxes = input<boolean>(false);
+
+  /**
+   * Controlled selection state. When bound, the component operates in
+   * **controlled mode** and the external value takes precedence.
+   * Pair with `selectedIdsChange` for full two-way binding:
+   *
+   * ```html
+   * <cngx-treetable
+   *   [selectedIds]="myIds"
+   *   (selectedIdsChange)="myIds = $event" />
+   * ```
+   *
+   * When not bound, the component manages its own selection state internally.
+   */
+  readonly selectedIdsInput = input<ReadonlySet<string> | undefined>(undefined, { alias: 'selectedIds' });
+
+  /**
    * Custom identity function for CDK / Material table's `trackBy`.
    * Return any value that uniquely identifies a row across change-detection
    * cycles to avoid full row re-creation on data changes.
@@ -122,6 +146,18 @@ export class CngxTreetablePresenter<T = unknown> {
    */
   selectionChanged = output<readonly string[]>();
 
+  /**
+   * Emitted after every selection change with the new full set of selected IDs.
+   * Use this to synchronise an external `selectedIds` binding:
+   *
+   * ```html
+   * <cngx-treetable
+   *   [selectedIds]="myIds"
+   *   (selectedIdsChange)="myIds = $event" />
+   * ```
+   */
+  selectedIdsChange = output<ReadonlySet<string>>();
+
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
   /** All nodes in the tree flattened to a single array, depth-first. */
@@ -149,8 +185,15 @@ export class CngxTreetablePresenter<T = unknown> {
   /** Column keys derived from the first node's primitive-valued properties, or from `options.customColumnOrder`. */
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));
 
-  /** All column keys including the leading `_expand` column. */
-  readonly allColumns = computed(() => ['_expand', ...this.columns()]);
+  /** All column keys including the leading `_expand` column and optional `_select` column. */
+  readonly allColumns = computed(() => {
+    const cols: string[] = [];
+    if (this.showCheckboxes() && this.selectionMode() !== 'none') {
+      cols.push('_select');
+    }
+    cols.push('_expand');
+    return [...cols, ...this.columns()];
+  });
 
   /** Merged options: application-wide config overridden by instance `options`. */
   readonly resolvedOptions = computed<TreetableOptions<T>>(() => ({
@@ -167,10 +210,36 @@ export class CngxTreetablePresenter<T = unknown> {
   private readonly _selectedIds = signal<ReadonlySet<string>>(new Set());
 
   /**
-   * Readonly signal containing the set of currently selected node IDs.
-   * Updates synchronously after each selection change.
+   * The current set of selected node IDs.
+   * In uncontrolled mode this reflects internal state; in controlled mode
+   * it mirrors the `selectedIds` input.
    */
-  readonly selectedIds: Signal<ReadonlySet<string>> = this._selectedIds.asReadonly();
+  readonly selectedIds: Signal<ReadonlySet<string>> = computed(
+    () => this.selectedIdsInput() ?? this._selectedIds(),
+  );
+
+  /**
+   * `true` when every visible node is selected.
+   * Used to drive the "select all" header checkbox in `multi` mode.
+   */
+  readonly isAllSelected = computed(() => {
+    const nodes = this.visibleNodes();
+    if (nodes.length === 0) return false;
+    const selected = this.selectedIds();
+    return nodes.every(n => selected.has(n.id));
+  });
+
+  /**
+   * `true` when some — but not all — visible nodes are selected.
+   * Used to put the "select all" header checkbox into indeterminate state.
+   */
+  readonly isIndeterminate = computed(() => {
+    const nodes = this.visibleNodes();
+    if (nodes.length === 0) return false;
+    const selected = this.selectedIds();
+    const count = nodes.filter(n => selected.has(n.id)).length;
+    return count > 0 && count < nodes.length;
+  });
 
   // ── Track-by ───────────────────────────────────────────────────────────────
 
@@ -196,11 +265,28 @@ export class CngxTreetablePresenter<T = unknown> {
       this._selectedIds.set(new Set());
 
       const sub = this._selectionModel.changed.subscribe(() => {
-        this._selectedIds.set(new Set(this._selectionModel.selected));
-        this.selectionChanged.emit([...this._selectionModel.selected]);
+        const next = new Set(this._selectionModel.selected);
+        this._selectedIds.set(next);
+        this.selectionChanged.emit([...next]);
+        this.selectedIdsChange.emit(next);
       });
 
       onCleanup(() => sub.unsubscribe());
+    });
+
+    // Sync SelectionModel when selectedIds input changes (controlled mode).
+    effect(() => {
+      const input = this.selectedIdsInput();
+      if (input === undefined) return;
+      const inputSet = new Set(input);
+      const current = new Set(this._selectionModel.selected);
+      const toDeselect = [...current].filter(id => !inputSet.has(id));
+      const toSelect = [...inputSet].filter(id => !current.has(id));
+      if (toDeselect.length === 0 && toSelect.length === 0) return;
+      untracked(() => {
+        if (toDeselect.length) this._selectionModel.deselect(...toDeselect);
+        if (toSelect.length) this._selectionModel.select(...toSelect);
+      });
     });
   }
 
@@ -219,7 +305,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * Reactive: reads from the `selectedIds` signal so templates update automatically.
    */
   isSelected(id: string): boolean {
-    return this._selectedIds().has(id);
+    return this.selectedIds().has(id);
   }
 
   /**
@@ -248,6 +334,19 @@ export class CngxTreetablePresenter<T = unknown> {
   toggleSelection(node: FlatNode<T>): void {
     if (this.selectionMode() === 'none') return;
     this._selectionModel.toggle(node.id);
+  }
+
+  /**
+   * Selects all visible nodes when not all are selected; deselects all otherwise.
+   * Only meaningful in `'multi'` mode.
+   */
+  toggleAll(): void {
+    if (this.selectionMode() !== 'multi') return;
+    if (this.isAllSelected()) {
+      this._selectionModel.clear();
+    } else {
+      this._selectionModel.select(...this.visibleNodes().map(n => n.id));
+    }
   }
 
   /**

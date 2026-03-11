@@ -6,8 +6,8 @@
 
   <!-- expand/collapse toggle column -->
   <ng-container cdkColumnDef="_expand">
-    <cdk-header-cell *cdkHeaderCellDef></cdk-header-cell>
-    <cdk-cell *cdkCellDef="let node">
+    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__expand-cell"></cdk-header-cell>
+    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__expand-cell">
       @if (node.hasChildren) {
         <button
           type="button"
@@ -21,6 +21,30 @@
     </cdk-cell>
   </ng-container>
 
+  <!-- checkbox selection column -->
+  <ng-container cdkColumnDef="_select">
+    <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__select-cell">
+      @if (state.selectionMode() === 'multi') {
+        <input
+          type="checkbox"
+          class="cngx-treetable__checkbox"
+          [checked]="state.isAllSelected()"
+          [indeterminate]="state.isIndeterminate()"
+          [attr.aria-label]="'Select all rows'"
+          (change)="state.toggleAll()" />
+      }
+    </cdk-header-cell>
+    <cdk-cell *cdkCellDef="let node" class="cngx-treetable__select-cell">
+      <input
+        type="checkbox"
+        class="cngx-treetable__checkbox"
+        [checked]="state.isSelected(node.id)"
+        [attr.aria-label]="'Select row'"
+        (click)="$event.stopPropagation()"
+        (change)="state.toggleSelection(node)" />
+    </cdk-cell>
+  </ng-container>
+
   <!-- dynamic data columns -->
   @for (col of state.columns(); track col) {
     <ng-container [cdkColumnDef]="col">
@@ -31,7 +55,7 @@
           {{ state.resolvedOptions().capitaliseHeader !== false ? state.capitalise(col) : col }}
         }
       </cdk-header-cell>
-      <cdk-cell *cdkCellDef="let node">
+      <cdk-cell *cdkCellDef="let node" [class.cngx-treetable__first-data-cell]="col === state.columns()[0]">
         @if (cellTplFor(col); as tpl) {
           <ng-container *ngTemplateOutlet="tpl; context: { $implicit: node, value: state.asRecord(node.value)[col] }"></ng-container>
         } @else {

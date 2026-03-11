@@ -42,17 +42,30 @@ tr.mat-mdc-row {
 }
 
 /* expand / collapse column — grows with depth to push data columns right */
-th.mat-mdc-header-cell:first-child,
-td.mat-mdc-cell:first-child {
+th.mat-mdc-header-cell.cngx-treetable__expand-cell,
+td.mat-mdc-cell.cngx-treetable__expand-cell {
   min-width: var(--cngx-mat-treetable-expand-column-width, 40px);
   padding-inline-end: 4px;
   padding-inline-start: 4px;
   white-space: nowrap;
 }
 
-td.mat-mdc-cell:first-child {
+td.mat-mdc-cell.cngx-treetable__expand-cell {
   padding-inline-start: calc(
     var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem) + 4px
+  );
+}
+
+th.mat-mdc-header-cell.cngx-treetable__select-cell,
+td.mat-mdc-cell.cngx-treetable__select-cell {
+  width: 1px;
+  padding-inline: 4px;
+  white-space: nowrap;
+}
+
+.cngx-treetable__first-data-cell {
+  padding-inline-start: calc(
+    var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.5rem) + 1rem
   );
 }
 
@@ -82,15 +95,23 @@ td.mat-mdc-cell:first-child {
     font-size: 0.8125rem;
   }
 
-  th.mat-mdc-header-cell:first-child,
-  td.mat-mdc-cell:first-child {
+  th.mat-mdc-header-cell.cngx-treetable__expand-cell,
+  th.mat-mdc-header-cell.cngx-treetable__select-cell,
+  td.mat-mdc-cell.cngx-treetable__expand-cell,
+  td.mat-mdc-cell.cngx-treetable__select-cell {
     padding-inline-end: 2px;
     padding-inline-start: 2px;
   }
 
-  td.mat-mdc-cell:first-child {
+  td.mat-mdc-cell.cngx-treetable__expand-cell {
     padding-inline-start: calc(
       var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem) + 2px
+    );
+  }
+
+  .cngx-treetable__first-data-cell {
+    padding-inline-start: calc(
+      var(--cngx-row-depth, 0) * var(--cngx-mat-treetable-depth-indent, 1.25rem) + 0.875rem
     );
   }
 
