@@ -1,203 +1,81 @@
-/* ─── Page layout ──────────────────────────────────────────────── */
-
-.page {
+.layout {
+  display: flex;
   min-height: 100vh;
-  background: #f5f5f5;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.page-header {
-  background: #1a1a2e;
-  color: #fff;
-  padding: 1.25rem 2rem;
+.sidebar {
+  width: 260px;
+  background: #fafafa; /* Lighter background */
+  border-right: 1px solid #eee;
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+.branding {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
 
   h1 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
-    letter-spacing: -0.02em;
+    color: #333;
   }
 }
 
-.badge {
-  background: #e040fb22;
-  color: #e040fb;
-  border: 1px solid #e040fb44;
-  border-radius: 999px;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.75rem;
-  font-family: monospace;
-}
-
-.page-main {
-  padding: 2rem;
+.nav {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-}
+  padding: 1rem 0;
 
-/* ─── Example card ─────────────────────────────────────────────── */
-
-.example-card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px #0001, 0 4px 16px #0000000a;
-  padding: 1.5rem 2rem 2rem;
-  max-width: 800px;
-}
-
-.example-title {
-  margin: 0 0 0.25rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111;
-}
-
-.example-subtitle {
-  margin: 0 0 1.5rem;
-  color: #666;
-  font-size: 0.875rem;
-
-  code {
-    background: #f0f0f0;
-    padding: 0.1em 0.35em;
-    border-radius: 4px;
-    font-size: 0.8rem;
-  }
-}
-
-.table-wrap {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* ─── Last-clicked info ─────────────────────────────────────────── */
-
-.last-clicked {
-  margin-top: 1rem;
-  padding: 0.625rem 1rem;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: #166534;
-}
-
-/* ─── API Reference ─────────────────────────────────────────────── */
-
-.api-ref {
-  max-width: 1100px;
-
-  details {
-    margin-top: -0.25rem;
-  }
-}
-
-.api-summary {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111;
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
-
-  &::before {
-    content: '▸';
-    font-size: 0.75rem;
-    color: #6b7280;
-    transition: transform 120ms;
-  }
-
-  details[open] > & {
-    margin-bottom: 0.75rem;
-
-    &::before {
-      transform: rotate(90deg);
-    }
-  }
-
-  &::-webkit-details-marker {
-    display: none;
-  }
-}
-
-.api-section-title {
-  margin: 1.75rem 0 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #6b7280;
-
-  &:first-of-type {
-    margin-top: 0.5rem;
-  }
-}
-
-.api-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8rem;
-
-  th {
-    background: #f9fafb;
-    padding: 0.45rem 0.75rem;
-    text-align: left;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 2px solid #e5e7eb;
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 0.45rem 0.75rem;
-    border-bottom: 1px solid #f3f4f6;
-    color: #374151;
-    vertical-align: top;
-
-    code {
-      background: #f0f0f0;
-      padding: 0.1em 0.3em;
-      border-radius: 3px;
-      font-size: 0.775rem;
-    }
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  tr:hover td {
-    background: #fafafa;
-  }
-}
-
-/* ─── Button row ────────────────────────────────────────────────── */
-
-.button-row {
-  margin-top: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-
-  button {
-    padding: 0.4rem 0.875rem;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: background 120ms;
+  a {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: #555;
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
 
     &:hover {
-      background: #f3f4f6;
+      background: #f0f0f0;
+      color: #111;
+    }
+
+    &.active {
+      background: #e6f7ff;
+      color: #007bc0;
+      border-left-color: #007bc0;
+      font-weight: 500;
     }
   }
+}
+
+.nav-group {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+
+  .nav-header {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+}
+
+.content {
+  flex: 1;
+  background: #fff;
+  overflow-x: hidden; /* Prevent overflow if table gets too wide */
+}
+
+/* Override previous page styles to fit router outlet */
+:host {
+  display: block;
 }

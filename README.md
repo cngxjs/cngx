@@ -1,5 +1,8 @@
 # CNGX UI Component Libraries
 
+[![Docs](https://img.shields.io/badge/docs-reference-blue)](https://cngxjs.github.io/cngx/)
+[![Demo](https://img.shields.io/badge/demo-showcase-orange)](https://cngxjs.github.io/cngx/demo/)
+
 A collection of Angular component libraries built with Angular CLI and ng-packagr.
 
 ## Project Structure
@@ -31,11 +34,13 @@ npm install
 ### Building Libraries
 
 Build all libraries:
+
 ```bash
 npm run build
 ```
 
 Build individual libraries:
+
 ```bash
 npm run build:ui
 npm run build:data-display
@@ -47,6 +52,7 @@ npm run build:layout
 ### Running the Demo App
 
 Start the development server:
+
 ```bash
 npm start
 ```
@@ -56,11 +62,13 @@ The demo app will be available at `http://localhost:4200`
 ### Testing
 
 Run tests with Vitest:
+
 ```bash
 npm test
 ```
 
 Run tests in watch mode:
+
 ```bash
 npm run test:watch
 ```
@@ -68,11 +76,13 @@ npm run test:watch
 ### Linting
 
 Lint all projects:
+
 ```bash
 npm run lint
 ```
 
 Lint specific project:
+
 ```bash
 ng lint ui
 ng lint demo
@@ -132,42 +142,42 @@ This project uses a structured labeling system for issues and pull requests. To 
 
 ### Category: Type of Change
 
-| Label Name | Color | Description |
-| :--- | :--- | :--- |
-| `type: feature` | `#007bff` | A new feature or a user-facing enhancement. |
-| `type: bug` | `#d73a4a` | A bug fix that corrects incorrect behavior. |
-| `type: chore` | `#cfd3d7` | Changes to the build process, tooling, or repository administration. |
-| `type: docs` | `#6f42c1` | Changes to the documentation (website, READMEs, comments). |
+| Label Name       | Color     | Description                                                                     |
+| :--------------- | :-------- | :------------------------------------------------------------------------------ |
+| `type: feature`  | `#007bff` | A new feature or a user-facing enhancement.                                     |
+| `type: bug`      | `#d73a4a` | A bug fix that corrects incorrect behavior.                                     |
+| `type: chore`    | `#cfd3d7` | Changes to the build process, tooling, or repository administration.            |
+| `type: docs`     | `#6f42c1` | Changes to the documentation (website, READMEs, comments).                      |
 | `type: refactor` | `#28a745` | A code change that neither fixes a bug nor adds a feature (e.g., code cleanup). |
-| `type: revert` | `#fbca04` | Reverts a previous change. |
+| `type: revert`   | `#fbca04` | Reverts a previous change.                                                      |
 
 ### Category: Scope
 
-| Label Name | Color | Description |
-| :--- | :--- | :--- |
-| `scope: build` | `#ffc107` | Affects the build system, CI/CD, or dependency management. |
-| `scope: ui` | `#1d76db` | Changes affecting the `@cngx/ui` package. |
-| `scope: data-display` | `#0e8a16` | Changes affecting the `@cngx/data-display` package. |
-| `scope: forms` | `#d93f0b` | Changes affecting the `@cngx/forms` package. |
-| `scope: grid` | `#9c27b0` | Changes affecting the `@cngx/grid` package. |
-| `scope: layout` | `#ff9800` | Changes affecting the `@cngx/layout` package. |
-| `scope: docs` | `#5319e7` | Affects the documentation website or cross-cutting documents. |
+| Label Name            | Color     | Description                                                   |
+| :-------------------- | :-------- | :------------------------------------------------------------ |
+| `scope: build`        | `#ffc107` | Affects the build system, CI/CD, or dependency management.    |
+| `scope: ui`           | `#1d76db` | Changes affecting the `@cngx/ui` package.                     |
+| `scope: data-display` | `#0e8a16` | Changes affecting the `@cngx/data-display` package.           |
+| `scope: forms`        | `#d93f0b` | Changes affecting the `@cngx/forms` package.                  |
+| `scope: grid`         | `#9c27b0` | Changes affecting the `@cngx/grid` package.                   |
+| `scope: layout`       | `#ff9800` | Changes affecting the `@cngx/layout` package.                 |
+| `scope: docs`         | `#5319e7` | Affects the documentation website or cross-cutting documents. |
 
 ### Category: Status
 
-| Label Name | Color | Description |
-| :--- | :--- | :--- |
-| `status: in progress` | `#f9d0c4` | Work is actively being done on this topic. |
-| `status: needs review` | `#00e5ff` | Ready for review by the maintainers. |
-| `status: blocked` | `#000000` | Blocked by another issue, a question, or an external dependency. |
+| Label Name             | Color     | Description                                                      |
+| :--------------------- | :-------- | :--------------------------------------------------------------- |
+| `status: in progress`  | `#f9d0c4` | Work is actively being done on this topic.                       |
+| `status: needs review` | `#00e5ff` | Ready for review by the maintainers.                             |
+| `status: blocked`      | `#000000` | Blocked by another issue, a question, or an external dependency. |
 
 ### Category: Miscellaneous
 
-| Label Name | Color | Description |
-| :--- | :--- | :--- |
-| `good first issue` | `#7057ff` | A good issue for new contributors to get started with the project. |
-| `help wanted` | `#33aa3f` | The maintainers are asking the community for help with this topic. |
-| `breaking change` | `#b60205` | The change introduces a breaking change to the API and will require a new major version. |
+| Label Name         | Color     | Description                                                                              |
+| :----------------- | :-------- | :--------------------------------------------------------------------------------------- |
+| `good first issue` | `#7057ff` | A good issue for new contributors to get started with the project.                       |
+| `help wanted`      | `#33aa3f` | The maintainers are asking the community for help with this topic.                       |
+| `breaking change`  | `#b60205` | The change introduces a breaking change to the API and will require a new major version. |
 
 To create these labels, go to your repository's **Issues → Labels** tab and add them manually.
 

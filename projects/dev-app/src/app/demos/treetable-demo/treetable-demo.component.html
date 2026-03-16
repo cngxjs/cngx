@@ -1,0 +1,447 @@
+<!-- ── API Reference ────────────────────────────────────────────── -->
+
+<section class="example-card api-ref">
+  <details>
+    <summary class="api-summary">API Reference — CngxTreetablePresenter</summary>
+    <p class="example-subtitle">
+      All inputs and outputs are forwarded via <code>hostDirectives</code> onto
+      <code>cngx-treetable</code> and <code>cngx-mat-treetable</code>.
+    </p>
+
+    <h3 class="api-section-title">Inputs</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>tree</code> *</td>
+          <td><code>Node&lt;T&gt; | Node&lt;T&gt;[]</code></td>
+          <td>—</td>
+          <td>Tree data. A single root node or a forest.</td>
+        </tr>
+        <tr>
+          <td><code>options</code></td>
+          <td><code>TreetableOptions&lt;T&gt;</code></td>
+          <td><code>undefined</code></td>
+          <td>Per-instance options that override the global config.</td>
+        </tr>
+        <tr>
+          <td><code>nodeId</code></td>
+          <td><code>(node: T, path: readonly number[]) =&gt; string</code></td>
+          <td>path join</td>
+          <td>Stable ID function. Default: path indices joined by <code>-</code>.</td>
+        </tr>
+        <tr>
+          <td><code>expandedIds</code></td>
+          <td><code>ReadonlySet&lt;string&gt;</code></td>
+          <td><code>undefined</code></td>
+          <td>Controlled expand state. When set, overrides internal state.</td>
+        </tr>
+        <tr>
+          <td><code>selectionMode</code></td>
+          <td><code>'none' | 'single' | 'multi'</code></td>
+          <td><code>'none'</code></td>
+          <td>Selection behaviour. Uses CDK <code>SelectionModel</code> internally.</td>
+        </tr>
+        <tr>
+          <td><code>showCheckboxes</code></td>
+          <td><code>boolean</code></td>
+          <td><code>false</code></td>
+          <td>
+            Renders a <code>_select</code> column. In <code>multi</code> mode: header checkbox for
+            select-all.
+          </td>
+        </tr>
+        <tr>
+          <td><code>selectedIds</code></td>
+          <td><code>ReadonlySet&lt;string&gt;</code></td>
+          <td><code>undefined</code></td>
+          <td>
+            Controlled selection state. Pair with <code>(selectedIdsChange)</code> for two-way
+            binding.
+          </td>
+        </tr>
+        <tr>
+          <td><code>trackBy</code></td>
+          <td><code>(node: FlatNode&lt;T&gt;) =&gt; unknown</code></td>
+          <td><code>node =&gt; node.id</code></td>
+          <td>Identity function for CDK/Material <code>trackBy</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="api-section-title">Outputs</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>(nodeClicked)</code></td>
+          <td><code>FlatNode&lt;T&gt;</code></td>
+          <td>Row clicked or activated via keyboard.</td>
+        </tr>
+        <tr>
+          <td><code>(nodeExpanded)</code></td>
+          <td><code>FlatNode&lt;T&gt;</code></td>
+          <td>Node transitioned from collapsed to expanded.</td>
+        </tr>
+        <tr>
+          <td><code>(nodeCollapsed)</code></td>
+          <td><code>FlatNode&lt;T&gt;</code></td>
+          <td>Node transitioned from expanded to collapsed.</td>
+        </tr>
+        <tr>
+          <td><code>(expandedIdsChange)</code></td>
+          <td><code>ReadonlySet&lt;string&gt;</code></td>
+          <td>Full set of currently expanded IDs after every toggle.</td>
+        </tr>
+        <tr>
+          <td><code>(selectionChanged)</code></td>
+          <td><code>readonly string[]</code></td>
+          <td>Selected IDs as an array after every change.</td>
+        </tr>
+        <tr>
+          <td><code>(selectedIdsChange)</code></td>
+          <td><code>ReadonlySet&lt;string&gt;</code></td>
+          <td>Selected IDs as a set — for two-way binding with <code>[selectedIds]</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="api-section-title">Readonly Signals (on presenter instance)</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>flatNodes</code></td>
+          <td><code>Signal&lt;FlatNode&lt;T&gt;[]&gt;</code></td>
+          <td>All nodes flattened depth-first.</td>
+        </tr>
+        <tr>
+          <td><code>visibleNodes</code></td>
+          <td><code>Signal&lt;FlatNode&lt;T&gt;[]&gt;</code></td>
+          <td>Nodes currently rendered (all ancestors expanded).</td>
+        </tr>
+        <tr>
+          <td><code>expandedIds</code></td>
+          <td><code>Signal&lt;ReadonlySet&lt;string&gt;&gt;</code></td>
+          <td>Currently expanded IDs (internal or from input).</td>
+        </tr>
+        <tr>
+          <td><code>selectedIds</code></td>
+          <td><code>Signal&lt;ReadonlySet&lt;string&gt;&gt;</code></td>
+          <td>Currently selected IDs (internal or from input).</td>
+        </tr>
+        <tr>
+          <td><code>isAllSelected</code></td>
+          <td><code>Signal&lt;boolean&gt;</code></td>
+          <td><code>true</code> when all visible nodes are selected.</td>
+        </tr>
+        <tr>
+          <td><code>isIndeterminate</code></td>
+          <td><code>Signal&lt;boolean&gt;</code></td>
+          <td>
+            <code>true</code> when only some visible nodes are selected (drives checkbox
+            indeterminate state).
+          </td>
+        </tr>
+        <tr>
+          <td><code>columns</code></td>
+          <td><code>Signal&lt;string[]&gt;</code></td>
+          <td>Data column keys (from node value or <code>customColumnOrder</code>).</td>
+        </tr>
+        <tr>
+          <td><code>allColumns</code></td>
+          <td><code>Signal&lt;string[]&gt;</code></td>
+          <td>All columns including <code>_select</code> and <code>_expand</code>.</td>
+        </tr>
+        <tr>
+          <td><code>resolvedOptions</code></td>
+          <td><code>Signal&lt;TreetableOptions&lt;T&gt;&gt;</code></td>
+          <td>Global config merged with per-instance options.</td>
+        </tr>
+        <tr>
+          <td><code>focusedNodeId</code></td>
+          <td><code>Signal&lt;string | null&gt;</code></td>
+          <td>ID of the currently keyboard-focused row.</td>
+        </tr>
+        <tr>
+          <td><code>trackByFn</code></td>
+          <td><code>TrackByFunction&lt;FlatNode&lt;T&gt;&gt;</code></td>
+          <td>Ready-to-use <code>trackBy</code> function for CDK/Material table.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="api-section-title">Methods (on presenter instance)</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Signature</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>toggle(node)</code></td>
+          <td>
+            Expand or collapse a node. Emits <code>nodeExpanded</code>/<code>nodeCollapsed</code>
+            and <code>expandedIdsChange</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>toggleSelection(node)</code></td>
+          <td>
+            Toggle selection of a node. No-op when <code>selectionMode</code> is
+            <code>'none'</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>toggleAll()</code></td>
+          <td>Select or deselect all visible nodes. Only effective in <code>multi</code> mode.</td>
+        </tr>
+        <tr>
+          <td><code>handleRowClick(node)</code></td>
+          <td>Set focus, emit <code>nodeClicked</code>, and call <code>toggleSelection</code>.</td>
+        </tr>
+        <tr>
+          <td><code>handleKeyDown(event)</code></td>
+          <td>
+            Keyboard navigation: ↑↓ focus, ←→ expand/collapse, Enter/Space activate, Home/End.
+          </td>
+        </tr>
+        <tr>
+          <td><code>isSelected(id)</code></td>
+          <td>Returns <code>true</code> if the node is selected. Reactive.</td>
+        </tr>
+        <tr>
+          <td><code>asRecord(value)</code></td>
+          <td>Casts to <code>Record&lt;string, unknown&gt;</code> for template property access.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="api-section-title">Content Projection Directives</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Directive</th>
+          <th>Usage</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>CngxCellTpl</code></td>
+          <td><code>[cngxCell]="'columnName'"</code></td>
+          <td>
+            Custom cell template. Context: <code>let-node</code> (<code>FlatNode</code>),
+            <code>let-value="value"</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>CngxHeaderTpl</code></td>
+          <td><code>[cngxHeader]="'columnName'"</code></td>
+          <td>Custom header template.</td>
+        </tr>
+        <tr>
+          <td><code>CngxEmptyTpl</code></td>
+          <td><code>cngxEmpty</code></td>
+          <td>Template rendered when there are no rows.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="api-section-title">TreetableOptions</h3>
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>highlightRowOnHover</code></td>
+          <td><code>boolean</code></td>
+          <td><code>false</code></td>
+          <td>Visually highlight rows on mouse hover.</td>
+        </tr>
+        <tr>
+          <td><code>customColumnOrder</code></td>
+          <td><code>ReadonlyArray&lt;keyof T &amp; string&gt;</code></td>
+          <td><code>undefined</code></td>
+          <td>Explicit column selection and order.</td>
+        </tr>
+        <tr>
+          <td><code>capitaliseHeader</code></td>
+          <td><code>boolean</code></td>
+          <td><code>true</code></td>
+          <td>Uppercase the first letter of header labels.</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<!-- ── Basic (no selection) ─────────────────────────────────────── -->
+
+<section class="example-card">
+  <h2 class="example-title">CDK Treetable</h2>
+  <p class="example-subtitle">
+    Headless — uses <code>CdkTable</code>, no Material dependency. Config via
+    <code>provideTreetable(&#123; highlightRowOnHover: true &#125;)</code>
+  </p>
+  <div class="table-wrap">
+    <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="last-clicked">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }} (depth
+      {{ node.depth }})
+    </div>
+  }
+</section>
+
+<section class="example-card">
+  <h2 class="example-title">Material Treetable</h2>
+  <p class="example-subtitle">
+    Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant.
+  </p>
+  <div class="table-wrap">
+    <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
+  </div>
+  @if (lastClickedMat(); as node) {
+    <div class="last-clicked">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }} (depth
+      {{ node.depth }})
+    </div>
+  }
+</section>
+
+<!-- ── Selection without checkboxes ────────────────────────────── -->
+
+<section class="example-card">
+  <h2 class="example-title">CDK — Single Selection (click-to-select)</h2>
+  <p class="example-subtitle">
+    <code>selectionMode="single"</code> — clicking a row selects it. Output via
+    <code>(selectionChanged)</code>.
+  </p>
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      (selectionChanged)="singleSelected.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
+  </div>
+</section>
+
+<section class="example-card">
+  <h2 class="example-title">CDK — Multi Selection (click-to-select)</h2>
+  <p class="example-subtitle">
+    <code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via
+    <code>(selectionChanged)</code>.
+  </p>
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      (selectionChanged)="multiSelected.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    selectionChanged ({{ multiSelected().length }}):
+    <strong>{{ multiSelected().join(', ') || '—' }}</strong>
+  </div>
+</section>
+
+<!-- ── Selection with checkboxes ───────────────────────────────── -->
+
+<section class="example-card">
+  <h2 class="example-title">Material — Single Selection + Checkbox</h2>
+  <p class="example-subtitle">
+    <code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code>
+    — no header checkbox in single mode.
+  </p>
+  <div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      [showCheckboxes]="true"
+      (selectionChanged)="singleCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
+  </div>
+</section>
+
+<section class="example-card">
+  <h2 class="example-title">Material — Multi Selection + Checkboxes</h2>
+  <p class="example-subtitle">
+    <code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code>
+    — header checkbox selects / deselects all visible rows, including indeterminate state.
+  </p>
+  <div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      (selectionChanged)="multiCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    selectionChanged ({{ multiCheckboxSelected().length }}):
+    <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
+  </div>
+</section>
+
+<!-- ── Controlled selection ─────────────────────────────────────── -->
+
+<section class="example-card">
+  <h2 class="example-title">CDK — Controlled Selection (Two-Way Binding)</h2>
+  <p class="example-subtitle">
+    <code>[selectedIds]="controlledIds()"</code> +
+    <code>(selectedIdsChange)="controlledIds.set($event)"</code>
+    — external state drives selection. Pre-seeded with two IDs.
+  </p>
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      [selectedIds]="controlledIds()"
+      (selectedIdsChange)="controlledIds.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    selectedIdsChange ({{ controlledIds().size }}):
+    <strong>{{ controlledIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="selectLevel1()">Select all L1</button>
+    <button type="button" (click)="clearSelection()">Clear selection</button>
+  </div>
+</section>
