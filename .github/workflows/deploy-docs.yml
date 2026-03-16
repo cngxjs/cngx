@@ -39,6 +39,9 @@ jobs:
       - name: Build Dev App
         run: npx ng build dev-app --configuration production --base-href /cngx/demo/ --deploy-url /cngx/demo/ --output-path docs/demo
 
+      - name: Disable Jekyll
+        run: touch docs/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
