@@ -25,6 +25,7 @@
     "test:ui": "ng test ui",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "docs": "typedoc",
     "publish:patch": "node scripts/publish.mjs --bump patch",
     "publish:minor": "node scripts/publish.mjs --bump minor",
     "publish:major": "node scripts/publish.mjs --bump major",
@@ -62,6 +63,8 @@
     "jsdom": "^28.0.0",
     "ng-packagr": "^21.2.0",
     "prettier": "^3.8.1",
+    "typedoc": "^0.28.17",
+    "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.8"
