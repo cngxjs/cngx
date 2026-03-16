@@ -6,6 +6,8 @@
     "outDir": "../../out-tsc/lib",
     "declaration": true,
     "declarationMap": true,
+    "inlineSources": true,
+    "sourceMap": true,
     "types": []
   },
   "include": ["src/**/*.ts", "rxjs-interop/src/**/*.ts"],
