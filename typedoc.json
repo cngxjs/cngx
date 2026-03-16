@@ -25,6 +25,7 @@
   "excludePrivate": true,
   "excludeProtected": true,
   "theme": "default",
+  "plugin": [],
   "validation": {
     "notExported": true,
     "invalidLink": true
