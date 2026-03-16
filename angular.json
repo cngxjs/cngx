@@ -54,6 +54,9 @@
             ],
             "styles": [
               "projects/dev-app/src/styles.scss"
+            ],
+            "polyfills": [
+              "zone.js"
             ]
           },
           "configurations": {
@@ -61,8 +64,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "750kB",
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -132,6 +135,40 @@
           "options": {
             "lintFilePatterns": [
               "projects/common/**/*.ts"
+            ]
+          }
+        }
+      }
+    },
+    "utils": {
+      "projectType": "library",
+      "root": "projects/utils",
+      "sourceRoot": "projects/utils",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/utils/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/utils/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/utils/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/utils/**/*.ts"
             ]
           }
         }
@@ -235,6 +272,41 @@
             "lintFilePatterns": [
               "projects/ui/**/*.ts",
               "projects/ui/**/*.html"
+            ]
+          }
+        }
+      }
+    },
+    "data-display": {
+      "projectType": "library",
+      "root": "projects/data-display",
+      "sourceRoot": "projects/data-display",
+      "prefix": "cngx",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/data-display/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/data-display/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/data-display/tsconfig.spec.json"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/data-display/**/*.ts",
+              "projects/data-display/**/*.html"
             ]
           }
         }

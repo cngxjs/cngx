@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const LIBS = ['core', 'forms', 'ui', 'common'];
+const LIBS = ['utils', 'core', 'forms', 'ui', 'common', 'data-display'];
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 
 function readRootPkg() {

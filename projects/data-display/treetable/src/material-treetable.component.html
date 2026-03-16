@@ -1,0 +1,90 @@
+<table
+  mat-table
+  [dataSource]="state.visibleNodes()"
+  [trackBy]="state.trackByFn"
+  role="treegrid"
+  (keydown)="state.handleKeyDown($event)">
+
+  <!-- expand/collapse toggle column -->
+  <ng-container matColumnDef="_expand">
+    <th mat-header-cell *matHeaderCellDef class="cngx-treetable__expand-cell"></th>
+    <td mat-cell *matCellDef="let node" class="cngx-treetable__expand-cell">
+      @if (node.hasChildren) {
+        <button
+          mat-icon-button
+          type="button"
+          class="cngx-treetable__toggle"
+          (click)="state.toggle(node); $event.stopPropagation()"
+          [attr.aria-expanded]="state.expandedIds().has(node.id)"
+          [attr.aria-label]="state.expandedIds().has(node.id) ? 'Collapse' : 'Expand'">
+          <mat-icon>{{ state.expandedIds().has(node.id) ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        </button>
+      }
+    </td>
+  </ng-container>
+
+  <!-- checkbox selection column -->
+  <ng-container matColumnDef="_select">
+    <th mat-header-cell *matHeaderCellDef class="cngx-treetable__select-cell">
+      @if (state.selectionMode() === 'multi') {
+        <mat-checkbox
+          [checked]="state.isAllSelected()"
+          [indeterminate]="state.isIndeterminate()"
+          [attr.aria-label]="'Select all rows'"
+          (change)="state.toggleAll()">
+        </mat-checkbox>
+      }
+    </th>
+    <td mat-cell *matCellDef="let node" class="cngx-treetable__select-cell">
+      <mat-checkbox
+        [checked]="state.isSelected(node.id)"
+        [attr.aria-label]="'Select row'"
+        (click)="$event.stopPropagation()"
+        (change)="state.toggleSelection(node)">
+      </mat-checkbox>
+    </td>
+  </ng-container>
+
+  <!-- dynamic data columns -->
+  @for (col of state.columns(); track col) {
+    <ng-container [matColumnDef]="col">
+      <th mat-header-cell *matHeaderCellDef>
+        @if (headerTplFor(col); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl"></ng-container>
+        } @else {
+          {{ state.resolvedOptions().capitaliseHeader !== false ? state.capitalise(col) : col }}
+        }
+      </th>
+      <td mat-cell *matCellDef="let node" [class.cngx-treetable__first-data-cell]="col === state.columns()[0]">
+        @if (cellTplFor(col); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: node, value: state.asRecord(node.value)[col] }"></ng-container>
+        } @else {
+          {{ state.asRecord(node.value)[col] }}
+        }
+      </td>
+    </ng-container>
+  }
+
+  <tr mat-header-row *matHeaderRowDef="state.allColumns()"></tr>
+  <tr
+    mat-row
+    *matRowDef="let node; columns: state.allColumns()"
+    cngxTreetableRow
+    [node]="node"
+    [highlight]="state.resolvedOptions().highlightRowOnHover ?? false"
+    [selected]="state.isSelected(node.id)"
+    [tabindex]="state.focusedNodeId() === node.id ? 0 : -1"
+    [class.cngx-treetable__row--focused]="state.focusedNodeId() === node.id"
+    role="row"
+    (click)="state.handleRowClick(node)">
+  </tr>
+
+</table>
+
+@if (state.visibleNodes().length === 0) {
+  @if (emptyTpl(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
+  } @else {
+    <div class="cngx-treetable__empty">No data</div>
+  }
+}
