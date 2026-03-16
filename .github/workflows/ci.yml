@@ -30,7 +30,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm test
+        run: npm run test
 
       - name: Build all libraries
         run: npm run build:libs
