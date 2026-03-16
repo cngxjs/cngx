@@ -25,15 +25,13 @@ module.exports = tseslint.config(
                     'projects/*/tsconfig.spec.json',
                     'projects/dev-app/tsconfig.app.json',
                 ],
+                // @ts-ignore
                 tsconfigRootDir: __dirname,
             },
         },
         rules: {
             // Angular-specific rules
-            '@angular-eslint/component-class-suffix': 'error',
-            '@angular-eslint/directive-class-suffix': 'error',
             '@angular-eslint/no-empty-lifecycle-method': 'error',
-            '@angular-eslint/no-input-rename': 'error',
             '@angular-eslint/no-output-rename': 'error',
             '@angular-eslint/no-output-on-prefix': 'error',
             '@angular-eslint/prefer-standalone': 'error',

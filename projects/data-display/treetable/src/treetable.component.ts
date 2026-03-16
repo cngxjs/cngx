@@ -4,7 +4,7 @@ import {
   contentChild,
   contentChildren,
   inject,
-  TemplateRef,
+  type TemplateRef,
 } from '@angular/core';
 import {
   CdkCell,

@@ -6,9 +6,9 @@ import {
   input,
   linkedSignal,
   output,
-  Signal,
+  type Signal,
   signal,
-  TrackByFunction,
+  type TrackByFunction,
   untracked,
 } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
