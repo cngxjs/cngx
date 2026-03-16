@@ -2,9 +2,7 @@ name: Deploy TypeDoc
 
 on:
   push:
-    branches:
-      - main
-      - feat/dev-app-routing-docs
+    branches: ['main']
   workflow_dispatch:
 
 permissions:
