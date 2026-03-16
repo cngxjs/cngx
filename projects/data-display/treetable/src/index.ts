@@ -7,3 +7,4 @@ export { provideTreetable, CNGX_TREETABLE_CONFIG } from './treetable.token';
 export { CngxCellTpl, CngxHeaderTpl, CngxEmptyTpl } from './column-template.directive';
 export type { TreetableConfig } from './treetable.token';
 export type { FlatNode, Node, TreetableOptions, CngxCellTplContext } from './models';
+export { flattenTree } from './tree.utils';

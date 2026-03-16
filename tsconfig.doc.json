@@ -1,6 +1,6 @@
 {
-  "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": [
+  "extends": "./tsconfig.json",
+  "files": [
     "projects/utils/src/public-api.ts",
     "projects/utils/rxjs-interop/public-api.ts",
     "projects/core/src/public-api.ts",
@@ -15,19 +15,5 @@
     "projects/common/src/public-api.ts",
     "projects/data-display/src/public-api.ts",
     "projects/data-display/treetable/public-api.ts"
-  ],
-  "out": "docs",
-  "name": "cngx Documentation",
-  "readme": "README.md",
-  "lang": "en",
-  "disableSources": false,
-  "tsconfig": "tsconfig.doc.json",
-  "excludePrivate": true,
-  "excludeProtected": true,
-  "theme": "default",
-  "plugin": [],
-  "validation": {
-    "notExported": true,
-    "invalidLink": true
-  }
+  ]
 }

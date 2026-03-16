@@ -1,5 +1,6 @@
-/*
+/**
  * Public API Surface of @cngx/ui/layout
+ * @module @cngx/ui/layout
  */
 
 export * from './src/stack.component';
