@@ -113,6 +113,6 @@ module.exports = tseslint.config(
 
     // ── Ignored paths ─────────────────────────────────────────────────────────
     {
-        ignores: ['dist/', 'node_modules/', '.angular/', 'out-tsc/'],
+        ignores: ['dist/', 'node_modules/', '.angular/', 'out-tsc/', 'docs/'],
     },
 );

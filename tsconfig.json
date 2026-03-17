@@ -2,25 +2,21 @@
   "extends": "./tsconfig.base.json",
   "compileOnSave": false,
   "files": [],
-  "compilerOptions": {
-    "paths": {
-      "@cngx/common": ["projects/common/src/public-api.ts"],
-      "@cngx/data-display": ["projects/data-display/src/public-api.ts"],
-      "@cngx/data-display/treetable": ["projects/data-display/treetable/src/index.ts"]
-    }
-  },
+  "compilerOptions": {},
   "references": [
-    {
-      "path": "./projects/common/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/common/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/dev-app/tsconfig.app.json"
-    },
-    {
-      "path": "./projects/dev-app/tsconfig.spec.json"
-    }
+    { "path": "./projects/utils/tsconfig.lib.json" },
+    { "path": "./projects/utils/tsconfig.spec.json" },
+    { "path": "./projects/core/tsconfig.lib.json" },
+    { "path": "./projects/core/tsconfig.spec.json" },
+    { "path": "./projects/forms/tsconfig.lib.json" },
+    { "path": "./projects/forms/tsconfig.spec.json" },
+    { "path": "./projects/ui/tsconfig.lib.json" },
+    { "path": "./projects/ui/tsconfig.spec.json" },
+    { "path": "./projects/common/tsconfig.lib.json" },
+    { "path": "./projects/common/tsconfig.spec.json" },
+    { "path": "./projects/data-display/tsconfig.lib.json" },
+    { "path": "./projects/data-display/tsconfig.spec.json" },
+    { "path": "./projects/dev-app/tsconfig.app.json" },
+    { "path": "./projects/dev-app/tsconfig.spec.json" }
   ]
 }
