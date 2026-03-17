@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxSearch } from './search.directive';
 
 @Component({
@@ -14,6 +14,7 @@ class TestHost {
 
 describe('CngxSearch', () => {
   beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
+  afterEach(() => vi.useRealTimers());
 
   function setup() {
     const fixture = TestBed.createComponent(TestHost);
@@ -29,24 +30,26 @@ describe('CngxSearch', () => {
     expect(dir.hasValue()).toBe(false);
   });
 
-  it('updates term after input event (debounce=0)', fakeAsync(() => {
+  it('updates term after input event (debounce=0)', () => {
+    vi.useFakeTimers();
     const { el, dir } = setup();
     el.nativeElement.value = 'hello';
-    el.triggerEventHandler('input', { target: el.nativeElement });
-    tick(0);
+    el.nativeElement.dispatchEvent(new Event('input'));
+    vi.runAllTimers();
     expect(dir.term()).toBe('hello');
     expect(dir.hasValue()).toBe(true);
-  }));
+  });
 
-  it('emits searchChange after input event', fakeAsync(() => {
+  it('emits searchChange after input event', () => {
+    vi.useFakeTimers();
     const { el, dir } = setup();
     const spy = vi.fn();
     dir.searchChange.subscribe(spy);
     el.nativeElement.value = 'test';
-    el.triggerEventHandler('input', { target: el.nativeElement });
-    tick(0);
+    el.nativeElement.dispatchEvent(new Event('input'));
+    vi.runAllTimers();
     expect(spy).toHaveBeenCalledWith('test');
-  }));
+  });
 
   it('clear() resets term to empty and emits', () => {
     const { dir } = setup();

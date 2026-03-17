@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent, map, debounceTime } from 'rxjs';
+import { fromEvent, map, switchMap, timer } from 'rxjs';
 
 /**
  * Directive for `<input>` elements that tracks a debounced search term.
@@ -50,7 +50,7 @@ export class CngxSearch {
     fromEvent<InputEvent>(this.el.nativeElement, 'input')
       .pipe(
         map((e) => (e.target as HTMLInputElement).value),
-        debounceTime(this.debounceMs()),
+        switchMap((value) => timer(this.debounceMs()).pipe(map(() => value))),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((term) => {
