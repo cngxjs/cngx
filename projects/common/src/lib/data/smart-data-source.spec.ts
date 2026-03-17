@@ -1,10 +1,10 @@
-import { Component, type Injector, signal } from '@angular/core';
+import { Component, type Injector, runInInjectionContext, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxFilter } from '../behaviors/data/filter.directive';
 import { CngxSort } from '../behaviors/data/sort.directive';
-import { CngxSmartDataSource, cngxSmartDataSource } from './smart-data-source';
+import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
 type Item = { name: string; age: number };
 
@@ -18,9 +18,10 @@ describe('CngxSmartDataSource — no directives', () => {
   it('passes data through unchanged', () => {
     TestBed.runInInjectionContext(() => {
       const data = signal(ITEMS);
-      const ds = cngxSmartDataSource(data);
+      const ds = injectSmartDataSource(data);
       const values: Item[][] = [];
-      const sub = ds.connect().subscribe((v) => values.push(v));
+      const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+      TestBed.flushEffects();
       expect(values[0]).toEqual(ITEMS);
       sub.unsubscribe();
     });
@@ -28,20 +29,20 @@ describe('CngxSmartDataSource — no directives', () => {
 
   it('disconnect() does not throw', () => {
     TestBed.runInInjectionContext(() => {
-      const ds = cngxSmartDataSource(signal([]));
+      const ds = injectSmartDataSource(signal([]));
       expect(() => ds.disconnect()).not.toThrow();
     });
   });
 
   it('returns CngxSmartDataSource instance', () => {
     TestBed.runInInjectionContext(() => {
-      expect(cngxSmartDataSource(signal([]))).toBeInstanceOf(CngxSmartDataSource);
+      expect(injectSmartDataSource(signal([]))).toBeInstanceOf(CngxSmartDataSource);
     });
   });
 });
 
 @Component({
-  template: `<div cngxSort cngxFilter></div>`,
+  template: `<div cngxSort [cngxFilter]="null"></div>`,
   imports: [CngxSort, CngxFilter],
 })
 class WithDirectivesHost {}
@@ -53,16 +54,17 @@ describe('CngxSmartDataSource — with directives', () => {
     const fixture = TestBed.createComponent(WithDirectivesHost);
     fixture.detectChanges();
 
-    const hostInjector: Injector = fixture.debugElement.injector;
-    const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
+    const divDebug = fixture.debugElement.query(By.directive(CngxSort));
+    const elemInjector: Injector = divDebug.injector;
+    const sortDir = elemInjector.get(CngxSort);
 
     const data = signal(ITEMS);
-    const ds = hostInjector.runInContext(() => cngxSmartDataSource(data));
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data));
 
     sortDir.setSort('name');
 
     const values: Item[][] = [];
-    const sub = ds.connect().subscribe((v) => values.push(v));
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
     TestBed.flushEffects();
 
     const sorted = values.at(-1)!;
@@ -74,17 +76,18 @@ describe('CngxSmartDataSource — with directives', () => {
     const fixture = TestBed.createComponent(WithDirectivesHost);
     fixture.detectChanges();
 
-    const hostInjector: Injector = fixture.debugElement.injector;
-    const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
+    const divDebug = fixture.debugElement.query(By.directive(CngxSort));
+    const elemInjector: Injector = divDebug.injector;
+    const sortDir = elemInjector.get(CngxSort);
 
     const data = signal(ITEMS);
-    const ds = hostInjector.runInContext(() => cngxSmartDataSource(data));
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data));
 
     sortDir.setSort('name');
     sortDir.setSort('name'); // toggle to desc
 
     const values: Item[][] = [];
-    const sub = ds.connect().subscribe((v) => values.push(v));
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
     TestBed.flushEffects();
 
     const sorted = values.at(-1)!;
@@ -96,18 +99,17 @@ describe('CngxSmartDataSource — with directives', () => {
     const fixture = TestBed.createComponent(WithDirectivesHost);
     fixture.detectChanges();
 
-    const hostInjector: Injector = fixture.debugElement.injector;
-    const filterDir = fixture.debugElement
-      .query(By.directive(CngxFilter))
-      .injector.get(CngxFilter<Item>);
+    const divDebug = fixture.debugElement.query(By.directive(CngxFilter));
+    const elemInjector: Injector = divDebug.injector;
+    const filterDir = elemInjector.get(CngxFilter<Item>);
 
     const data = signal(ITEMS);
-    const ds = hostInjector.runInContext(() => cngxSmartDataSource(data));
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(data));
 
     filterDir.setPredicate((v) => v.name === 'Alice');
 
     const values: Item[][] = [];
-    const sub = ds.connect().subscribe((v) => values.push(v));
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
     TestBed.flushEffects();
 
     expect(values.at(-1)).toEqual([{ name: 'Alice', age: 25 }]);

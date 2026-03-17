@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFilter } from './filter.directive';
 
 @Component({
-  template: '<div cngxFilter></div>',
+  template: '<div [cngxFilter]="null"></div>',
   imports: [CngxFilter],
 })
 class TestHost {}
