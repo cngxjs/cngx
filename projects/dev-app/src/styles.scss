@@ -1,18 +1,106 @@
 @use '@angular/material' as mat;
 @use '../../data-display/treetable/mat-treetable-theme' as treetable;
 
+// Material theme — light, untouched (demo components rely on this)
+@include mat.core();
+
+$theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+    ),
+  )
+);
+
 html {
-  box-sizing: border-box;
   font-size: 16px;
+  @include mat.all-component-themes($theme);
+  @include treetable.theme($theme);
 }
+
+// ── Design tokens ─────────────────────────────────────────────────────────────
+
+:root {
+  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Fira Code', 'SF Mono', monospace;
+
+  // Sidebar — always dark, unaffected by theme toggle
+  --sidebar-bg: #0b0c12;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #636478;
+  --sidebar-text-hover: #c4c5d6;
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(245, 166, 35, 0.1);
+  --sidebar-active-border: #f5a623;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-label-color: rgba(255, 255, 255, 0.22);
+
+  // Content area — light default
+  --bg: #f3f2ee;
+  --text-primary: #0e0d0c;
+  --text-muted: #6b6860;
+  --border-color: #e5e2d9;
+
+  // Cards
+  --card-bg: #ffffff;
+  --card-border: #e8e5dc;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.06);
+  --card-title: #0e0d0c;
+
+  // Inline code chips
+  --code-bg: #eeeae0;
+  --code-text: #b45309;
+  --code-border: #e0dbd0;
+
+  // Accent
+  --accent: #f5a623;
+
+  // Content grid
+  --content-grid:
+    linear-gradient(rgba(0, 0, 0, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.032) 1px, transparent 1px);
+}
+
+// Dark theme — applies to content area only (sidebar stays dark)
+[data-theme='dark'] {
+  --bg: #10111a;
+  --text-primary: #eae9ee;
+  --text-muted: #7a7888;
+  --border-color: #232430;
+
+  --card-bg: #161720;
+  --card-border: #252630;
+  --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), 0 8px 28px rgba(0, 0, 0, 0.25);
+  --card-title: #eae9ee;
+
+  --code-bg: #1c1e2a;
+  --code-text: #f5a623;
+  --code-border: #282a38;
+
+  // Content grid
+  --content-grid:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+// ── Global resets ─────────────────────────────────────────────────────────────
 
 *,
-*:before,
-*:after {
-  box-sizing: inherit;
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-body,
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
 h1,
 h2,
 h3,
@@ -35,19 +123,4 @@ ul {
 img {
   max-width: 100%;
   height: auto;
-}
-@include mat.core();
-
-$theme: mat.define-theme(
-  (
-    color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-    ),
-  )
-);
-
-html {
-  @include mat.all-component-themes($theme);
-  @include treetable.theme($theme);
 }

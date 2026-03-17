@@ -6,7 +6,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="example-card">
-      <header>
+      <header class="example-header">
         <h2 class="example-title">{{ title() }}</h2>
         @if (subtitle()) {
           <p class="example-subtitle" [innerHTML]="subtitle()"></p>
@@ -20,55 +20,51 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styles: [
     `
       .example-card {
-        background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-top: 2px solid var(--accent);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        overflow: hidden;
       }
 
-      header {
-        border-bottom: 1px solid #f0f0f0;
-        padding-bottom: 1rem;
-        margin-bottom: 0.5rem;
+      .example-header {
+        padding: 1.25rem 1.5rem 1.125rem;
+        border-bottom: 1px solid var(--card-border);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       .example-title {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #333;
+        font-size: 1.0625rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        color: var(--card-title);
+        line-height: 1.25;
       }
 
       .example-subtitle {
-        margin: 0.5rem 0 0;
-        color: #666;
-        font-size: 0.95rem;
-        line-height: 1.5;
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        line-height: 1.55;
 
-        // Apply styles to <code> within the innerHTML
         ::ng-deep code {
-          background: #f5f5f5;
-          padding: 0.2rem 0.4rem;
+          background: var(--code-bg);
+          color: var(--code-text);
+          border: 1px solid var(--code-border);
+          padding: 0.125rem 0.375rem;
           border-radius: 4px;
-          font-family:
-            'SF Mono',
-            Monaco,
-            Inconsolata,
-            'Fira Mono',
-            'Droid Sans Mono',
-            'Source Code Pro',
-            monospace;
-          font-size: 0.85em;
-          color: #d63384;
-          border: 1px solid #e0e0e0;
+          font-family: var(--font-mono);
+          font-size: 0.8125em;
+          font-style: normal;
         }
       }
 
       .example-content {
+        padding: 1.5rem;
         overflow-x: auto;
       }
     `,
