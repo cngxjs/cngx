@@ -48,6 +48,7 @@ export function extractColumns<T>(
 ): ReadonlyArray<string> {
   if (options?.customColumnOrder) return [...options.customColumnOrder] as string[];
   const firstNode = Array.isArray(input) ? input[0] : input;
+  if (!firstNode) return [];
   return Object.entries(firstNode.value as Record<string, unknown>)
     .filter(([, v]) => typeof v !== 'object' || v === null)
     .map(([k]) => k);

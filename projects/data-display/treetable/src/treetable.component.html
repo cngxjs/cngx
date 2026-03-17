@@ -2,8 +2,8 @@
   [dataSource]="state.visibleNodes()"
   [trackBy]="state.trackByFn"
   role="treegrid"
-  (keydown)="state.handleKeyDown($event)">
-
+  (keydown)="state.handleKeyDown($event)"
+>
   <!-- expand/collapse toggle column -->
   <ng-container cdkColumnDef="_expand">
     <cdk-header-cell *cdkHeaderCellDef class="cngx-treetable__expand-cell"></cdk-header-cell>
@@ -14,7 +14,8 @@
           class="cngx-treetable__toggle"
           (click)="state.toggle(node); $event.stopPropagation()"
           [attr.aria-expanded]="state.expandedIds().has(node.id)"
-          [attr.aria-label]="state.expandedIds().has(node.id) ? 'Collapse' : 'Expand'">
+          [attr.aria-label]="state.expandedIds().has(node.id) ? 'Collapse' : 'Expand'"
+        >
           {{ state.expandedIds().has(node.id) ? '▾' : '▸' }}
         </button>
       }
@@ -31,7 +32,8 @@
           [checked]="state.isAllSelected()"
           [indeterminate]="state.isIndeterminate()"
           [attr.aria-label]="'Select all rows'"
-          (change)="state.toggleAll()" />
+          (change)="state.toggleAll()"
+        />
       }
     </cdk-header-cell>
     <cdk-cell *cdkCellDef="let node" class="cngx-treetable__select-cell">
@@ -41,7 +43,8 @@
         [checked]="state.isSelected(node.id)"
         [attr.aria-label]="'Select row'"
         (click)="$event.stopPropagation()"
-        (change)="state.toggleSelection(node)" />
+        (change)="state.toggleSelection(node)"
+      />
     </cdk-cell>
   </ng-container>
 
@@ -55,9 +58,17 @@
           {{ state.resolvedOptions().capitaliseHeader !== false ? state.capitalise(col) : col }}
         }
       </cdk-header-cell>
-      <cdk-cell *cdkCellDef="let node" [class.cngx-treetable__first-data-cell]="col === state.columns()[0]">
+      <cdk-cell
+        *cdkCellDef="let node"
+        [class.cngx-treetable__first-data-cell]="col === state.columns()[0]"
+      >
         @if (cellTplFor(col); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: node, value: state.asRecord(node.value)[col] }"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="
+              tpl;
+              context: { $implicit: node, value: state.asRecord(node.value)[col] }
+            "
+          ></ng-container>
         } @else {
           {{ state.asRecord(node.value)[col] }}
         }
@@ -75,9 +86,9 @@
     [tabindex]="state.focusedNodeId() === node.id ? 0 : -1"
     [class.cngx-treetable__row--focused]="state.focusedNodeId() === node.id"
     role="row"
-    (click)="state.handleRowClick(node)">
+    (click)="state.handleRowClick(node)"
+  >
   </cdk-row>
-
 </cdk-table>
 
 @if (state.visibleNodes().length === 0) {
