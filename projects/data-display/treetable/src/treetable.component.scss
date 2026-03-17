@@ -1,6 +1,18 @@
 :host {
   display: block;
   width: 100%;
+
+  // Theming tokens — consumers override via :host { --cngx-table-*: ... }
+  --cngx-table-header-bg: #f9fafb;
+  --cngx-table-header-border: #e5e7eb;
+  --cngx-table-header-color: #374151;
+  --cngx-table-row-border: #f3f4f6;
+  --cngx-table-row-hover-bg: #f0f4ff;
+  --cngx-table-row-selected-bg: #e8f0fe;
+  --cngx-table-focus-ring: #4f46e5;
+  --cngx-table-muted-color: #6b7280;
+  --cngx-table-cell-color: #374151;
+  --cngx-table-indent-size: 1.5rem;
 }
 
 cdk-table {
@@ -12,15 +24,15 @@ cdk-table {
 
 cdk-header-row {
   display: table-row;
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+  background: var(--cngx-table-header-bg);
+  border-bottom: 2px solid var(--cngx-table-header-border);
 }
 
 cdk-header-cell {
   display: table-cell;
   padding: 0.6rem 1rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--cngx-table-header-color);
   text-align: left;
   white-space: nowrap;
 
@@ -33,7 +45,7 @@ cdk-header-cell {
 
 cdk-row {
   display: table-row;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--cngx-table-row-border);
   cursor: pointer;
   transition: background 120ms ease;
 
@@ -42,15 +54,15 @@ cdk-row {
   }
 
   &.cngx-treetable__row--highlighted {
-    background: #f0f4ff;
+    background: var(--cngx-table-row-hover-bg);
   }
 
   &.cngx-treetable__row--selected {
-    background: #e8f0fe;
+    background: var(--cngx-table-row-selected-bg);
   }
 
   &.cngx-treetable__row--focused {
-    outline: 2px solid #4f46e5;
+    outline: 2px solid var(--cngx-table-focus-ring);
     outline-offset: -2px;
   }
 }
@@ -58,25 +70,25 @@ cdk-row {
 .cngx-treetable__empty {
   padding: 2rem 1rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--cngx-table-muted-color);
   font-size: 0.875rem;
 }
 
 .cngx-treetable__first-data-cell {
-  padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.5rem + 1rem);
+  padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 1rem);
 }
 
 cdk-cell {
   display: table-cell;
   padding: 0.6rem 1rem;
-  color: #374151;
+  color: var(--cngx-table-cell-color);
   vertical-align: middle;
 
   &.cngx-treetable__expand-cell {
     white-space: nowrap;
     width: 1px;
     padding-inline-end: 0.25rem;
-    padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.5rem + 0.25rem);
+    padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 0.25rem);
   }
 
   &.cngx-treetable__select-cell {
@@ -91,15 +103,15 @@ cdk-cell {
   border: none;
   cursor: pointer;
   padding: 0.25rem;
-  color: #6b7280;
+  color: var(--cngx-table-muted-color);
   font-size: 0.875rem;
   line-height: 1;
   border-radius: 4px;
   transition: background 120ms, color 120ms;
 
   &:hover {
-    background: #e5e7eb;
-    color: #111;
+    background: var(--cngx-table-header-border);
+    color: var(--cngx-table-header-color);
   }
 }
 
@@ -108,6 +120,10 @@ cdk-cell {
 // Increased vertical padding → larger touch targets
 
 @media (max-width: 960px) {
+  :host {
+    --cngx-table-indent-size: 1.25rem;
+  }
+
   cdk-table {
     font-size: 0.8125rem;
   }
@@ -126,7 +142,7 @@ cdk-cell {
 
     &.cngx-treetable__expand-cell {
       padding-inline-end: 0.125rem;
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.25rem + 0.125rem);
+      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 0.125rem);
     }
 
     &.cngx-treetable__select-cell {
@@ -135,7 +151,7 @@ cdk-cell {
   }
 
   .cngx-treetable__first-data-cell {
-    padding-inline-start: calc(var(--cngx-row-depth, 0) * 1.25rem + 0.875rem);
+    padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 0.875rem);
   }
 
   .cngx-treetable__toggle {

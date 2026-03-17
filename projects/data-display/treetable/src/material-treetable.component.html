@@ -81,7 +81,7 @@
 
 </table>
 
-@if (state.visibleNodes().length === 0) {
+@if (state.isEmpty()) {
   @if (emptyTpl(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl.template"></ng-container>
   } @else {

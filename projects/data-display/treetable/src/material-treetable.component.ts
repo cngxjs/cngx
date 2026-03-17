@@ -4,7 +4,6 @@ import {
   contentChild,
   contentChildren,
   inject,
-  type TemplateRef,
 } from '@angular/core';
 import {
   MatCell,
@@ -25,7 +24,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { CngxTreetablePresenter } from './treetable-presenter';
 import { CngxTreetableRow } from './treetable-row.directive';
 import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
-import type { CngxCellTplContext } from './models';
+import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 
 /**
  * Angular Material tree table.
@@ -95,12 +94,8 @@ export class CngxMaterialTreetable<T> {
   protected readonly emptyTpl = contentChild(CngxEmptyTpl);
 
   /** @internal */
-  protected cellTplFor(col: string): TemplateRef<CngxCellTplContext<T>> | null {
-    return (this.cellTpls().find(t => t.column() === col)?.template ?? null) as TemplateRef<CngxCellTplContext<T>> | null;
-  }
+  protected cellTplFor(col: string) { return resolveCellTpl<T>(col, this.cellTpls); }
 
   /** @internal */
-  protected headerTplFor(col: string): TemplateRef<void> | null {
-    return this.headerTpls().find(t => t.column() === col)?.template ?? null;
-  }
+  protected headerTplFor(col: string) { return resolveHeaderTpl(col, this.headerTpls); }
 }

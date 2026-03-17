@@ -182,6 +182,9 @@ export class CngxTreetablePresenter<T = unknown> {
     this.flatNodes().filter(n => isNodeVisible(n, this.expandedIds())),
   );
 
+  /** `true` when there are no visible nodes to render. */
+  readonly isEmpty = computed(() => this.visibleNodes().length === 0);
+
   /** Column keys derived from the first node's primitive-valued properties, or from `options.customColumnOrder`. */
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));
 

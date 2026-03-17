@@ -77,3 +77,53 @@ export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<stri
 export function capitalise(str: string): string {
   return str.length === 0 ? '' : str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+/**
+ * Filters a tree recursively. A parent node is kept if it matches the predicate
+ * OR if at least one of its descendants matches.
+ */
+export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean): Node<T>[] {
+  return nodes.reduce<Node<T>[]>((acc, node) => {
+    const filteredChildren = node.children ? filterTree(node.children, predicate) : undefined;
+    const selfMatches = predicate(node.value);
+    if (selfMatches || (filteredChildren?.length ?? 0) > 0) {
+      acc.push({ ...node, children: filteredChildren });
+    }
+    return acc;
+  }, []);
+}
+
+/**
+ * Sorts each level of the tree independently by a field key.
+ * Children remain grouped under their parent; only sibling order changes.
+ */
+export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 'desc'): Node<T>[] {
+  const toPrimitive = (v: unknown): string => {
+    if (v === null || v === undefined || typeof v === 'object') return '';
+    return String(v as string | number | boolean | bigint);
+  };
+  const sorted = [...nodes].sort((a, b) => {
+    const av = toPrimitive((a.value as Record<string, unknown>)[field]);
+    const bv = toPrimitive((b.value as Record<string, unknown>)[field]);
+    const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+    return direction === 'asc' ? cmp : -cmp;
+  });
+  return sorted.map((node) => ({
+    ...node,
+    children: node.children ? sortTree(node.children, field, direction) : undefined,
+  }));
+}
+
+/**
+ * Simple full-text search across all primitive fields of a node value.
+ * Used as the default search implementation in CngxSmartDataSource.
+ */
+export function nodeMatchesSearch<T>(value: T, term: string): boolean {
+  const lower = term.toLowerCase();
+  return Object.values(value as Record<string, unknown>).some((v) => {
+    if (v === null || v === undefined || typeof v === 'object') return false;
+    return String(v as string | number | boolean | bigint)
+      .toLowerCase()
+      .includes(lower);
+  });
+}
