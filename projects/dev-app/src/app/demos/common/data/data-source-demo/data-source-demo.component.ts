@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { cngxDataSource } from '@cngx/common';
+import { injectDataSource } from '@cngx/common';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 
 interface Person {
@@ -30,7 +30,7 @@ const PEOPLE: Person[] = [
 })
 export class DataSourceDemoComponent {
   private readonly items = signal(PEOPLE);
-  private readonly ds = cngxDataSource(this.items);
+  private readonly ds = injectDataSource(this.items);
 
   protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
 

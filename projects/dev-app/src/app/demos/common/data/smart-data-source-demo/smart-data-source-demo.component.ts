@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFilter, CngxSort, CngxSortHeader, cngxSmartDataSource } from '@cngx/common';
+import { CngxFilter, CngxSort, CngxSortHeader, injectSmartDataSource } from '@cngx/common';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 
 interface Person {
@@ -23,7 +23,7 @@ const PEOPLE: Person[] = [
 const LOCATIONS = [...new Set(PEOPLE.map((p) => p.location))].sort((a, b) => a.localeCompare(b));
 
 // ── SmartDataSource sub-component ──────────────────────────────────────────
-// Carries CngxSort + CngxFilter as hostDirectives so cngxSmartDataSource()
+// Carries CngxSort + CngxFilter as hostDirectives so injectSmartDataSource()
 // discovers them via DI when called in this component's injection context.
 
 @Component({
@@ -35,7 +35,7 @@ const LOCATIONS = [...new Set(PEOPLE.map((p) => p.location))].sort((a, b) => a.l
   template: `
     <app-example-card
       title="CngxSmartDataSource — Auto-Wired"
-      subtitle="<code>cngxSmartDataSource()</code> is constructed inside this sub-component whose host element carries <code>[cngxSort]</code> and <code>[cngxFilter]</code> as <code>hostDirectives</code>. The DataSource auto-discovers them via <code>inject()</code> — no explicit wiring."
+      subtitle="<code>injectSmartDataSource()</code> is constructed inside this sub-component whose host element carries <code>[cngxSort]</code> and <code>[cngxFilter]</code> as <code>hostDirectives</code>. The DataSource auto-discovers them via <code>inject()</code> — no explicit wiring."
     >
       <div class="filter-row">
         <span class="filter-label">Filter location:</span>
@@ -230,7 +230,7 @@ class SmartDsExampleComponent {
   protected readonly total = PEOPLE.length;
 
   private readonly items = signal(PEOPLE);
-  private readonly ds = cngxSmartDataSource(this.items);
+  private readonly ds = injectSmartDataSource(this.items);
   protected readonly rows = toSignal(this.ds.connect(), { initialValue: [] as Person[] });
 
   protected filterBy(location: string | null): void {

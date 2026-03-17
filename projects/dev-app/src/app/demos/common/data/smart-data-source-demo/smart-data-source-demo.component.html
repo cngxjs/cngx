@@ -1,12 +1,12 @@
 <!-- ── CngxSmartDataSource ────────────────────────────────────── -->
 
-<cngx-smart-ds-example />
+<app-smart-ds-example />
 
 <!-- ── How it works ──────────────────────────────────────────── -->
 
 <app-example-card
   title="How It Works — hostDirectives + inject()"
-  subtitle="The key is calling <code>cngxSmartDataSource()</code> inside a component whose host element has <code>[cngxSort]</code> / <code>[cngxFilter]</code> / <code>[cngxSearch]</code> as <code>hostDirectives</code>. The factory uses optional <code>inject()</code> to auto-discover them."
+  subtitle="The key is calling <code>injectSmartDataSource()</code> inside a component whose host element has <code>[cngxSort]</code> / <code>[cngxFilter]</code> / <code>[cngxSearch]</code> as <code>hostDirectives</code>. The factory uses optional <code>inject()</code> to auto-discover them."
 >
   <pre class="code-block"><code>@Component(&#123;
   selector: 'my-table',
@@ -24,7 +24,7 @@ class MyTableComponent &#123;
 
   // SmartDataSource discovers CngxSort + CngxFilter via inject()
   // because we're inside the component's injection context
-  private readonly ds = cngxSmartDataSource(this.items);
+  private readonly ds = injectSmartDataSource(this.items);
 
   protected readonly rows = toSignal(this.ds.connect(), &#123; initialValue: [] &#125;);
 &#125;</code></pre>

@@ -2,7 +2,7 @@
 
 <app-example-card
   title="CngxDataSource — Signal → Observable Bridge"
-  subtitle="<code>cngxDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic — consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal."
+  subtitle="<code>injectDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic — consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal."
 >
   <div class="table-wrap">
     <table class="demo-table">
@@ -42,6 +42,6 @@ private readonly processed = computed(() => &#123;
   return list;
 &#125;);
 
-private readonly ds   = cngxDataSource(this.processed);
+private readonly ds   = injectDataSource(this.processed);
 protected readonly rows = toSignal(this.ds.connect(), &#123; initialValue: [] &#125;);</code></pre>
 </app-example-card>
