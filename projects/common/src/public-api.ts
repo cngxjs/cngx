@@ -13,9 +13,9 @@ export { CngxSortHeader } from './lib/behaviors/data/sort-header.directive';
 export { CngxFilter } from './lib/behaviors/data/filter.directive';
 
 // Data sources
-export { CngxDataSource, cngxDataSource } from './lib/data/data-source';
+export { CngxDataSource, injectDataSource } from './lib/data/data-source';
 export {
   CngxSmartDataSource,
-  cngxSmartDataSource,
+  injectSmartDataSource,
   type CngxSmartDataSourceOptions,
 } from './lib/data/smart-data-source';

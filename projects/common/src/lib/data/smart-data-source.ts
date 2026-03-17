@@ -32,7 +32,7 @@ export interface CngxSmartDataSourceOptions<T> {
  * `computed()`.
  *
  * ```typescript
- * readonly dataSource = cngxSmartDataSource(this.items);
+ * readonly dataSource = injectSmartDataSource(this.items);
  * ```
  *
  * @typeParam T - The row item type.
@@ -112,9 +112,13 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
 /**
  * Factory function for {@link CngxSmartDataSource}.
- * Must be called within an injection context.
+ * Must be called within an injection context (constructor or field initializer).
+ *
+ * @example
+ * // Field initializer — injection context
+ * readonly dataSource = injectSmartDataSource(this.items);
  */
-export function cngxSmartDataSource<T>(
+export function injectSmartDataSource<T>(
   data: Signal<T[]>,
   options?: CngxSmartDataSourceOptions<T>,
 ): CngxSmartDataSource<T> {

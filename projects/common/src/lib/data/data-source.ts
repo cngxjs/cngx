@@ -16,7 +16,7 @@ import type { Observable } from 'rxjs';
  *   if (this.sort().sort()) items = sortTree(items, ...);
  *   return items;
  * });
- * readonly dataSource = cngxDataSource(this.processed);
+ * readonly dataSource = injectDataSource(this.processed);
  * ```
  *
  * @typeParam T - The row item type.
@@ -39,8 +39,12 @@ export class CngxDataSource<T> extends DataSource<T> {
 
 /**
  * Factory function for {@link CngxDataSource}.
- * Must be called within an injection context.
+ * Must be called within an injection context (constructor or field initializer).
+ *
+ * @example
+ * // Field initializer — injection context
+ * readonly dataSource = injectDataSource(this.items);
  */
-export function cngxDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
+export function injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
   return new CngxDataSource(data);
 }
