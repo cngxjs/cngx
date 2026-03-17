@@ -4,7 +4,7 @@
   "files": [],
   "compilerOptions": {
     "paths": {
-      "common": ["./dist/common"],
+      "@cngx/common": ["projects/common/src/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/src/public-api.ts"],
       "@cngx/data-display/treetable": ["projects/data-display/treetable/src/index.ts"]
     }
