@@ -1,5 +1,5 @@
 import { computed, Directive, inject, input } from '@angular/core';
-import { CngxHoverable } from './hoverable.directive';
+import { CngxHoverable } from '@cngx/common';
 import type { FlatNode } from './models';
 
 /**

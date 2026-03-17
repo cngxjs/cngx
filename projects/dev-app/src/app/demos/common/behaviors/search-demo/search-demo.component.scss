@@ -1,0 +1,89 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  outline: none;
+
+  &:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgb(79 70 229 / 15%);
+  }
+}
+
+.term-badge {
+  background: #ede9fe;
+  color: #4f46e5;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-wrap {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  thead tr {
+    background: #f9fafb;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.6rem 0.875rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  th {
+    font-weight: 600;
+    color: #555;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: #f5f5f5;
+  }
+}
+
+.empty-cell {
+  text-align: center;
+  color: #999;
+  padding: 1.5rem !important;
+}
+
+.output-badge {
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: #3730a3;
+}

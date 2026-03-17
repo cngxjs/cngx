@@ -16,8 +16,16 @@
     <nav class="nav">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <div class="nav-group">
+        <span class="nav-label">@cngx/common</span>
+        <a routerLink="/common/behaviors/sort" routerLinkActive="active">Sort</a>
+        <a routerLink="/common/behaviors/filter" routerLinkActive="active">Filter</a>
+        <a routerLink="/common/behaviors/search" routerLinkActive="active">Search</a>
+        <a routerLink="/common/data/data-source" routerLinkActive="active">DataSource</a>
+        <a routerLink="/common/data/smart-data-source" routerLinkActive="active">SmartDataSource</a>
+      </div>
+      <div class="nav-group">
         <span class="nav-label">@cngx/data-display</span>
-        <a routerLink="/treetable" routerLinkActive="active">Treetable</a>
+        <a routerLink="/data-display/treetable" routerLinkActive="active">Treetable</a>
       </div>
       <!-- nav groups added here as library grows -->
     </nav>

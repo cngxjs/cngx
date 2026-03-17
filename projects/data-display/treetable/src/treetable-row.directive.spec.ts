@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxHoverable } from './hoverable.directive';
+import { CngxHoverable } from '@cngx/common';
 import type { FlatNode } from './models';
 import { CngxTreetableRow } from './treetable-row.directive';
 

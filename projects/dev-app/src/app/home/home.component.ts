@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+
+interface Package {
+  name: string;
+  description: string;
+  tags: string[];
+  link?: string;
+  soon?: boolean;
+}
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -19,13 +27,22 @@ import { RouterLink } from '@angular/router';
       <section class="packages">
         <h2 class="section-label"><span class="label-dot"></span>Packages</h2>
         <div class="pkg-grid">
-          <a class="pkg-card pkg-card--active" routerLink="/treetable">
+          <a class="pkg-card pkg-card--active" routerLink="/data-display/treetable">
             <span class="pkg-name">&#64;cngx/data&#8209;display</span>
             <p class="pkg-desc">
               Hierarchical data tables, tree views, and list components with full CDK and Material support.
             </p>
             <div class="pkg-footer">
               <span class="pkg-tag">Treetable</span>
+              <span class="pkg-arrow">&#x2192;</span>
+            </div>
+          </a>
+
+          <a class="pkg-card pkg-card--active" routerLink="/common/behaviors/sort">
+            <span class="pkg-name">&#64;cngx/common</span>
+            <p class="pkg-desc">Sort, filter, search behaviors and DataSource utilities — headless, Signal-first.</p>
+            <div class="pkg-footer">
+              <span class="pkg-tag">Sort · Filter · Search · DataSource</span>
               <span class="pkg-arrow">&#x2192;</span>
             </div>
           </a>
@@ -51,12 +68,6 @@ import { RouterLink } from '@angular/router';
           <div class="pkg-card pkg-card--soon">
             <span class="pkg-name">&#64;cngx/core</span>
             <p class="pkg-desc">Tokens, abstract base classes, and core dependency injection patterns.</p>
-            <div class="pkg-footer"><span class="pkg-badge">Soon</span></div>
-          </div>
-
-          <div class="pkg-card pkg-card--soon">
-            <span class="pkg-name">&#64;cngx/common</span>
-            <p class="pkg-desc">Shared directives, pipes, and common Angular utilities.</p>
             <div class="pkg-footer"><span class="pkg-badge">Soon</span></div>
           </div>
         </div>
@@ -220,4 +231,64 @@ import { RouterLink } from '@angular/router';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {}
+export class HomeComponent {
+     readonly version = '0.1.0';
+  readonly githubUrl = 'https://github.com/cweiss/cngx';
+  readonly npmUrl = 'https://www.npmjs.com/org/cngx';
+ 
+  readonly copied = signal(false);
+ 
+  readonly installCommand = 'npm install @cngx/common @cngx/data-display';
+ 
+  readonly packages: Package[] = [
+    {
+      name: '@cngx/data-display',
+      description: 'Hierarchical data tables, tree views, and list components with full CDK and Material support.',
+      tags: ['Treetable'],
+      link: '/demos/treetable',
+    },
+    {
+      name: '@cngx/common',
+      description: 'Sort, filter, search behaviors and DataSource utilities — headless, Signal-first.',
+      tags: ['Sort', 'Filter', 'Search', 'DataSource'],
+      link: '/demos/common',
+    },
+    {
+      name: '@cngx/ui',
+      description: 'Core UI components — layout primitives, overlays, and interaction patterns.',
+      tags: [],
+      soon: true,
+    },
+    {
+      name: '@cngx/forms',
+      description: 'Typed reactive form controls, validators, and form utilities.',
+      tags: [],
+      soon: true,
+    },
+    {
+      name: '@cngx/utils',
+      description: 'Array helpers, RxJS interop, and shared TypeScript utilities.',
+      tags: [],
+      soon: true,
+    },
+    {
+      name: '@cngx/core',
+      description: 'Tokens, abstract base classes, and core dependency injection patterns.',
+      tags: [],
+      soon: true,
+    },
+  ];
+ 
+  readonly principles = [
+    { icon: '⬡', title: 'Headless', body: 'Behavior without opinion. Drop in your own styles — or use Angular Material.' },
+    { icon: '⚡', title: 'Signal-first', body: 'Built on Angular Signals throughout. No Zone.js required.' },
+    { icon: '⌨', title: 'Declarative', body: 'Compose behaviors in templates — no imperative wiring in class code.' },
+    { icon: '⬙', title: 'Composable', body: 'Atomic directives assembled via hostDirectives. Mix exactly what you need.' },
+  ];
+ 
+  async copyInstall(): Promise<void> {
+    await navigator.clipboard.writeText(this.installCommand);
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 2000);
+  }
+}

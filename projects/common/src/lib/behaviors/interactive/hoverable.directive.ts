@@ -10,6 +10,7 @@ import { Directive, signal } from '@angular/core';
 @Directive({
   selector: '[cngxHoverable]',
   standalone: true,
+  exportAs: 'cngxHoverable',
   host: {
     '(mouseenter)': 'hovered.set(true)',
     '(mouseleave)': 'hovered.set(false)',

@@ -3,9 +3,12 @@ import type { Node } from './models';
 import {
   capitalise,
   extractColumns,
+  filterTree,
   flattenTree,
   getInitialExpandedIds,
   isNodeVisible,
+  nodeMatchesSearch,
+  sortTree,
 } from './tree.utils';
 
 describe('flattenTree', () => {
@@ -185,5 +188,98 @@ describe('capitalise', () => {
 
   it('handles empty string', () => {
     expect(capitalise('')).toBe('');
+  });
+});
+
+describe('filterTree', () => {
+  const tree: Node<{ name: string; active: boolean }>[] = [
+    {
+      value: { name: 'parent', active: true },
+      children: [
+        { value: { name: 'match', active: false } },
+        { value: { name: 'other', active: false } },
+      ],
+    },
+    { value: { name: 'unrelated', active: false } },
+  ];
+
+  it('keeps nodes that match the predicate', () => {
+    const result = filterTree(tree, (v) => v.name === 'match');
+    expect(result).toHaveLength(1);
+    expect(result[0].value.name).toBe('parent');
+    expect(result[0].children).toHaveLength(1);
+    expect(result[0].children![0].value.name).toBe('match');
+  });
+
+  it('removes parent when no descendants match', () => {
+    const result = filterTree(tree, (v) => v.name === 'nonexistent');
+    expect(result).toHaveLength(0);
+  });
+
+  it('keeps parent when it directly matches even if children do not', () => {
+    const result = filterTree(tree, (v) => v.name === 'parent');
+    expect(result).toHaveLength(1);
+    expect(result[0].children).toHaveLength(0);
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(filterTree([], () => true)).toEqual([]);
+  });
+});
+
+describe('sortTree', () => {
+  const tree: Node<{ name: string }>[] = [
+    {
+      value: { name: 'banana' },
+      children: [{ value: { name: 'cherry' } }, { value: { name: 'apple' } }],
+    },
+    { value: { name: 'avocado' } },
+  ];
+
+  it('sorts root nodes ascending', () => {
+    const result = sortTree(tree, 'name', 'asc');
+    expect(result[0].value.name).toBe('avocado');
+    expect(result[1].value.name).toBe('banana');
+  });
+
+  it('sorts root nodes descending', () => {
+    const result = sortTree(tree, 'name', 'desc');
+    expect(result[0].value.name).toBe('banana');
+    expect(result[1].value.name).toBe('avocado');
+  });
+
+  it('sorts children independently of parents', () => {
+    const result = sortTree(tree, 'name', 'asc');
+    const children = result.find((n) => n.value.name === 'banana')?.children ?? [];
+    expect(children[0].value.name).toBe('apple');
+    expect(children[1].value.name).toBe('cherry');
+  });
+
+  it('does not mutate the original array', () => {
+    const original = tree.map((n) => n.value.name);
+    sortTree(tree, 'name', 'asc');
+    expect(tree.map((n) => n.value.name)).toEqual(original);
+  });
+});
+
+describe('nodeMatchesSearch', () => {
+  it('matches when a primitive field contains the term', () => {
+    expect(nodeMatchesSearch({ name: 'Alice', age: 30 }, 'alice')).toBe(true);
+  });
+
+  it('is case-insensitive', () => {
+    expect(nodeMatchesSearch({ name: 'ALICE' }, 'alice')).toBe(true);
+  });
+
+  it('returns false when no field matches', () => {
+    expect(nodeMatchesSearch({ name: 'Bob', age: 25 }, 'alice')).toBe(false);
+  });
+
+  it('ignores object-valued fields', () => {
+    expect(nodeMatchesSearch({ meta: { hidden: 'alice' } }, 'alice')).toBe(false);
+  });
+
+  it('matches numeric fields as strings', () => {
+    expect(nodeMatchesSearch({ count: 42 }, '42')).toBe(true);
   });
 });

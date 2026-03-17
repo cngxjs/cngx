@@ -6,8 +6,11 @@
     "declarationMap": true,
     "inlineSources": true,
     "sourceMap": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "@cngx/common": ["dist/common/types/cngx-common.d.ts"]
+    }
   },
-  "include": ["src/**/*.ts", "treetable/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }
