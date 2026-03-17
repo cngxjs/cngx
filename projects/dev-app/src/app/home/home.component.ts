@@ -19,13 +19,22 @@ import { RouterLink } from '@angular/router';
       <section class="packages">
         <h2 class="section-label"><span class="label-dot"></span>Packages</h2>
         <div class="pkg-grid">
-          <a class="pkg-card pkg-card--active" routerLink="/treetable">
+          <a class="pkg-card pkg-card--active" routerLink="/data-display/treetable">
             <span class="pkg-name">&#64;cngx/data&#8209;display</span>
             <p class="pkg-desc">
               Hierarchical data tables, tree views, and list components with full CDK and Material support.
             </p>
             <div class="pkg-footer">
               <span class="pkg-tag">Treetable</span>
+              <span class="pkg-arrow">&#x2192;</span>
+            </div>
+          </a>
+
+          <a class="pkg-card pkg-card--active" routerLink="/common/behaviors/sort">
+            <span class="pkg-name">&#64;cngx/common</span>
+            <p class="pkg-desc">Sort, filter, search behaviors and DataSource utilities — headless, Signal-first.</p>
+            <div class="pkg-footer">
+              <span class="pkg-tag">Sort · Filter · Search · DataSource</span>
               <span class="pkg-arrow">&#x2192;</span>
             </div>
           </a>
@@ -51,12 +60,6 @@ import { RouterLink } from '@angular/router';
           <div class="pkg-card pkg-card--soon">
             <span class="pkg-name">&#64;cngx/core</span>
             <p class="pkg-desc">Tokens, abstract base classes, and core dependency injection patterns.</p>
-            <div class="pkg-footer"><span class="pkg-badge">Soon</span></div>
-          </div>
-
-          <div class="pkg-card pkg-card--soon">
-            <span class="pkg-name">&#64;cngx/common</span>
-            <p class="pkg-desc">Shared directives, pipes, and common Angular utilities.</p>
             <div class="pkg-footer"><span class="pkg-badge">Soon</span></div>
           </div>
         </div>

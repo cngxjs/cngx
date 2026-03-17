@@ -1,15 +1,19 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import {
   CngxTreetable,
   CngxMaterialTreetable,
   CngxCellTpl,
   CngxHeaderTpl,
   CngxEmptyTpl,
+  filterTree,
+  sortTree,
+  nodeMatchesSearch,
 } from '@cngx/data-display/treetable';
 import type { FlatNode, Node } from '@cngx/data-display/treetable';
-import { ExampleCardComponent } from '../../shared/example-card.component';
-import { PlaygroundComponent } from '../../shared/playground.component';
-import { Playground } from '../../shared/playground';
+import { CngxSort, CngxSortHeader, CngxSearch } from '@cngx/common';
+import { ExampleCardComponent } from '../../../shared/example-card.component';
+import { PlaygroundComponent } from '../../../shared/playground.component';
+import { Playground } from '../../../shared/playground';
 
 interface Employee {
   name: string;
@@ -42,9 +46,7 @@ const ORG_TREE: Node<Employee> = {
     },
     {
       value: { name: 'Rafael Costa', role: 'CMO', location: 'São Paulo' },
-      children: [
-        { value: { name: 'Yuki Tanaka', role: 'Brand Lead', location: 'Tokyo' } },
-      ],
+      children: [{ value: { name: 'Yuki Tanaka', role: 'Brand Lead', location: 'Tokyo' } }],
     },
   ],
 };
@@ -58,6 +60,9 @@ const ORG_TREE: Node<Employee> = {
     CngxCellTpl,
     CngxHeaderTpl,
     CngxEmptyTpl,
+    CngxSort,
+    CngxSortHeader,
+    CngxSearch,
     ExampleCardComponent,
     PlaygroundComponent,
   ],
@@ -145,4 +150,40 @@ export class TreetableDemoComponent {
   // ── Expand / collapse outputs ─────────────────────────────────────────────
   protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
   protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search / filterTree + nodeMatchesSearch ──────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort / sortTree + CngxSort + CngxSortHeader ──────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(
+    null,
+  );
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined: sort + search ───────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{
+    active: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });
 }

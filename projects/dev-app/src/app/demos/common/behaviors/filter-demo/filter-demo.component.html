@@ -1,0 +1,102 @@
+<!-- ── CngxFilter — Controlled mode ──────────────────────────── -->
+
+<app-example-card
+  title="CngxFilter — Controlled"
+  subtitle="<code>[cngxFilter]=&quot;pred()&quot;</code> drives the directive from a <code>computed()</code>. When the signal changes, the directive updates automatically. <code>isActive()</code> reflects whether a predicate is set."
+>
+  <div
+    [cngxFilter]="filterPredicate()"
+    #filterRef="cngxFilter"
+    class="filter-container"
+  >
+    <div class="filter-row">
+      <span class="filter-label">Filter by location:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="activeLocation() === null"
+        (click)="activeLocation.set(null)"
+      >All</button>
+      @for (loc of locations; track loc) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="activeLocation() === loc"
+          (click)="activeLocation.set(loc)"
+        >{{ loc }}</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef.isActive()">
+      isActive: {{ filterRef.isActive() }}
+    </span>
+    <span class="status-badge">{{ filteredRows().length }} / {{ totalPeople }} rows</span>
+  </div>
+</app-example-card>
+
+<!-- ── CngxFilter — Uncontrolled mode ────────────────────────── -->
+
+<app-example-card
+  title="CngxFilter — Uncontrolled"
+  subtitle="<code>filterRef.setPredicate(fn)</code> mutates the directive's internal state imperatively — no bound input needed. <code>(filterChange)</code> emits the new predicate so the consumer can sync local derived state."
+>
+  <div
+    [cngxFilter]="null"
+    #filterRef2="cngxFilter"
+    (filterChange)="onFilterChange($event)"
+    class="filter-container"
+  >
+    <div class="filter-row">
+      <span class="filter-label">Filter by role:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="activeRole() === null"
+        (click)="filterRef2.clear(); activeRole.set(null)"
+      >All</button>
+      @for (role of roles; track role) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="activeRole() === role"
+          (click)="filterRef2.setPredicate(rolePred(role)); activeRole.set(role)"
+        >{{ role }}</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of uncontrolledRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef2.isActive()">
+      isActive: {{ filterRef2.isActive() }}
+    </span>
+    <span class="status-badge">{{ uncontrolledRows().length }} / {{ totalPeople }} rows</span>
+  </div>
+</app-example-card>
