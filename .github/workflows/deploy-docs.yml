@@ -37,7 +37,10 @@ jobs:
         run: npm run docs
 
       - name: Build Dev App
-        run: npx ng build dev-app --configuration production --base-href /cngx/demo/ --deploy-url /cngx/demo/ --output-path docs/demo
+        run: |
+          npx ng build dev-app --configuration production --base-href /cngx/demo/ --deploy-url /cngx/demo/ --output-path docs/demo
+          mv docs/demo/browser/* docs/demo/
+          rm -rf docs/demo/browser
 
       - name: Disable Jekyll
         run: touch docs/.nojekyll
