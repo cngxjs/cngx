@@ -8,7 +8,10 @@
     "declarationMap": true,
     "inlineSources": true,
     "sourceMap": true,
-    "types": []
+    "types": [],
+    "paths": {
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.spec.ts"]

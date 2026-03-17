@@ -1,10 +1,12 @@
 /**
  * @cngx/ui
  *
- * UI Components for cngx composable Angular extensions.
+ * UI components for cngx composable Angular extensions.
  * Secondary entry points:
  *   @cngx/ui/layout   – CngxStack, CngxGrid
- *   @cngx/ui/overlay  – CngxOverlay, NgxOverlayRef
+ *   @cngx/ui/overlay  – CngxOverlay, CngxOverlayRef
  */
 
-export const CNGX_UI_VERSION = '0.0.1';
+import { Version } from '@cngx/utils';
+
+export const VERSION = new Version('0.0.0-PLACEHOLDER');

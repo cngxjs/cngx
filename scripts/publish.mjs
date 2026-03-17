@@ -8,7 +8,7 @@
 //   node scripts/publish.mjs --tag next --bump major   # publish with dist-tag
 
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -32,6 +32,26 @@ function bumpVersion(version, type) {
     case 'minor': return `${major}.${minor + 1}.0`;
     case 'patch': return `${major}.${minor}.${patch + 1}`;
     default: throw new Error(`Unknown bump type: ${type}. Use patch, minor, or major.`);
+  }
+}
+
+function walkJs(dir) {
+  const entries = readdirSync(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...walkJs(full));
+    else if (entry.name.endsWith('.js') || entry.name.endsWith('.mjs')) files.push(full);
+  }
+  return files;
+}
+
+function replaceVersionInDist(distDir, nextVersion) {
+  for (const file of walkJs(distDir)) {
+    const content = readFileSync(file, 'utf8');
+    if (content.includes(PLACEHOLDER)) {
+      writeFileSync(file, content.replaceAll(PLACEHOLDER, nextVersion));
+    }
   }
 }
 
@@ -103,6 +123,7 @@ function main() {
 
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
+      replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
       run(`npm publish --access public --tag ${tag}`, join(ROOT, 'dist', lib));
       console.log(`  Published @cngx/${lib}@${nextVersion}`);
     } else {

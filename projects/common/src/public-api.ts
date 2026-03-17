@@ -19,3 +19,5 @@ export {
   injectSmartDataSource,
   type CngxSmartDataSourceOptions,
 } from './lib/data/smart-data-source';
+
+export { VERSION } from './lib/version';

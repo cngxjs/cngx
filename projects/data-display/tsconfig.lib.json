@@ -8,7 +8,8 @@
     "sourceMap": true,
     "types": [],
     "paths": {
-      "@cngx/common": ["dist/common/types/cngx-common.d.ts"]
+      "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
     }
   },
   "include": ["src/**/*.ts"],

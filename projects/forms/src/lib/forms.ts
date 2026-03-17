@@ -1,10 +1,12 @@
 /**
  * @cngx/forms
  *
- * Reactive-forms utilities for ngx-composable-angular-extensions.
+ * Reactive-forms utilities for cngx composable Angular extensions.
  * Secondary entry points:
  *   @cngx/forms/validators  – custom ValidatorFns
  *   @cngx/forms/controls    – typed control directives
  */
 
-export const CNGX_FORMS_VERSION = '0.0.1';
+import { Version } from '@cngx/utils';
+
+export const VERSION = new Version('0.0.0-PLACEHOLDER');

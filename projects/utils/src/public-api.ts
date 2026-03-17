@@ -4,3 +4,4 @@
  */
 
 export * from './array';
+export * from './version';
