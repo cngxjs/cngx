@@ -1,4 +1,4 @@
-import { signal, WritableSignal } from '@angular/core';
+import { signal, type WritableSignal } from '@angular/core';
 
 // ── Control types ─────────────────────────────────────────────────────────────
 
