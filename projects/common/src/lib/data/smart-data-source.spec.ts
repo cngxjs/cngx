@@ -1,4 +1,4 @@
-import { Component, Injector, signal } from '@angular/core';
+import { Component, type Injector, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -54,9 +54,7 @@ describe('CngxSmartDataSource — with directives', () => {
     fixture.detectChanges();
 
     const hostInjector: Injector = fixture.debugElement.injector;
-    const sortDir = fixture.debugElement
-      .query(By.directive(CngxSort))
-      .injector.get(CngxSort);
+    const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
 
     const data = signal(ITEMS);
     const ds = hostInjector.runInContext(() => cngxSmartDataSource(data));
@@ -77,9 +75,7 @@ describe('CngxSmartDataSource — with directives', () => {
     fixture.detectChanges();
 
     const hostInjector: Injector = fixture.debugElement.injector;
-    const sortDir = fixture.debugElement
-      .query(By.directive(CngxSort))
-      .injector.get(CngxSort);
+    const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
 
     const data = signal(ITEMS);
     const ds = hostInjector.runInContext(() => cngxSmartDataSource(data));

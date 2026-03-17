@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { CngxDataSource, cngxDataSource } from './data-source';

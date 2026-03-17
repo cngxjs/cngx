@@ -16,9 +16,7 @@ describe('CngxFilter', () => {
   function getDir(): CngxFilter {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    return fixture.debugElement
-      .query(By.directive(CngxFilter))
-      .injector.get(CngxFilter);
+    return fixture.debugElement.query(By.directive(CngxFilter)).injector.get(CngxFilter);
   }
 
   it('starts with no predicate', () => {

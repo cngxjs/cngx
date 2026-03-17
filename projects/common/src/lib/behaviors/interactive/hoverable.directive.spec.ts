@@ -16,9 +16,7 @@ describe('CngxHoverable', () => {
   it('starts with hovered=false', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
-    const dir = fixture.debugElement
-      .query(By.directive(CngxHoverable))
-      .injector.get(CngxHoverable);
+    const dir = fixture.debugElement.query(By.directive(CngxHoverable)).injector.get(CngxHoverable);
     expect(dir.hovered()).toBe(false);
   });
 

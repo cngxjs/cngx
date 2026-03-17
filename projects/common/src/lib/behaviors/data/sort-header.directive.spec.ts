@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -23,9 +23,7 @@ describe('CngxSortHeader', () => {
     fixture.detectChanges();
     const btn = fixture.debugElement.query(By.css('button'));
     const header = btn.injector.get(CngxSortHeader);
-    const sortDir = fixture.debugElement
-      .query(By.directive(CngxSort))
-      .injector.get(CngxSort);
+    const sortDir = fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
     return { fixture, btn, header, sortDir };
   }
 
