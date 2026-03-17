@@ -1,6 +1,25 @@
+<!-- ── Playground ──────────────────────────────────────────────── -->
+
+<app-playground [playground]="playground">
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [selectionMode]="pgSelectionMode.value()"
+      [showCheckboxes]="pgShowCheckboxes.value()"
+      [options]="{ highlightRowOnHover: pgHighlightOnHover.value(), capitaliseHeader: pgCapitaliseHeader.value() }"
+      (nodeClicked)="lastClickedCdk.set($event)"
+    />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="last-clicked">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+    </div>
+  }
+</app-playground>
+
 <!-- ── API Reference ────────────────────────────────────────────── -->
 
-<section class="example-card api-ref">
+<!-- <section class="example-card api-ref">
   <details>
     <summary class="api-summary">API Reference — CngxTreetablePresenter</summary>
     <p class="example-subtitle">
@@ -301,16 +320,14 @@
       </tbody>
     </table>
   </details>
-</section>
+</section> -->
 
 <!-- ── Basic (no selection) ─────────────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK Treetable</h2>
-  <p class="example-subtitle">
-    Headless — uses <code>CdkTable</code>, no Material dependency. Config via
-    <code>provideTreetable(&#123; highlightRowOnHover: true &#125;)</code>
-  </p>
+<app-example-card
+  title="CDK Treetable"
+  subtitle="Headless — uses <code>CdkTable</code>, no Material dependency. Config via <code>provideTreetable(&#123; highlightRowOnHover: true &#125;)</code>"
+>
   <div class="table-wrap">
     <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
   </div>
@@ -320,13 +337,12 @@
       {{ node.depth }})
     </div>
   }
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">Material Treetable</h2>
-  <p class="example-subtitle">
-    Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant.
-  </p>
+<app-example-card
+  title="Material Treetable"
+  subtitle="Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant."
+>
   <div class="table-wrap">
     <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
   </div>
@@ -336,16 +352,14 @@
       {{ node.depth }})
     </div>
   }
-</section>
+</app-example-card>
 
 <!-- ── Selection without checkboxes ────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Single Selection (click-to-select)</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="single"</code> — clicking a row selects it. Output via
-    <code>(selectionChanged)</code>.
-  </p>
+<app-example-card
+  title="CDK — Single Selection (click-to-select)"
+  subtitle='<code>selectionMode="single"</code> — clicking a row selects it. Output via <code>(selectionChanged)</code>.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -356,14 +370,12 @@
   <div class="last-clicked">
     selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Multi Selection (click-to-select)</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via
-    <code>(selectionChanged)</code>.
-  </p>
+<app-example-card
+  title="CDK — Multi Selection (click-to-select)"
+  subtitle='<code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via <code>(selectionChanged)</code>.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -375,16 +387,14 @@
     selectionChanged ({{ multiSelected().length }}):
     <strong>{{ multiSelected().join(', ') || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
 <!-- ── Selection with checkboxes ───────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">Material — Single Selection + Checkbox</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code>
-    — no header checkbox in single mode.
-  </p>
+<app-example-card
+  title="Material — Single Selection + Checkbox"
+  subtitle='<code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code> — no header checkbox in single mode.'
+>
   <div class="table-wrap">
     <cngx-mat-treetable
       [tree]="tree()"
@@ -396,14 +406,12 @@
   <div class="last-clicked">
     selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">Material — Multi Selection + Checkboxes</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code>
-    — header checkbox selects / deselects all visible rows, including indeterminate state.
-  </p>
+<app-example-card
+  title="Material — Multi Selection + Checkboxes"
+  subtitle='<code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code> — header checkbox selects / deselects all visible rows, including indeterminate state.'
+>
   <div class="table-wrap">
     <cngx-mat-treetable
       [tree]="tree()"
@@ -416,17 +424,14 @@
     selectionChanged ({{ multiCheckboxSelected().length }}):
     <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
 <!-- ── Controlled selection ─────────────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Controlled Selection (Two-Way Binding)</h2>
-  <p class="example-subtitle">
-    <code>[selectedIds]="controlledIds()"</code> +
-    <code>(selectedIdsChange)="controlledIds.set($event)"</code>
-    — external state drives selection. Pre-seeded with two IDs.
-  </p>
+<app-example-card
+  title="CDK — Controlled Selection (Two-Way Binding)"
+  subtitle='<code>[selectedIds]="controlledIds()"</code> + <code>(selectedIdsChange)="controlledIds.set($event)"</code> — external state drives selection. Pre-seeded with two IDs.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -444,4 +449,99 @@
     <button type="button" (click)="selectLevel1()">Select all L1</button>
     <button type="button" (click)="clearSelection()">Clear selection</button>
   </div>
-</section>
+</app-example-card>
+
+<!-- ── Controlled expand ─────────────────────────────────────── -->
+
+<app-example-card
+  title="CDK — Controlled Expand (Two-Way Binding)"
+  subtitle='<code>[expandedIds]="controlledExpandedIds()"</code> + <code>(expandedIdsChange)="controlledExpandedIds.set($event)"</code> — external state drives expand/collapse. Pre-seeded with root only.'
+>
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [expandedIds]="controlledExpandedIds()"
+      (expandedIdsChange)="controlledExpandedIds.set($event)"
+    />
+  </div>
+  <div class="last-clicked">
+    expandedIdsChange ({{ controlledExpandedIds().size }}):
+    <strong>{{ expandedIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="expandAll()">Expand all L1</button>
+    <button type="button" (click)="collapseAll()">Collapse all</button>
+  </div>
+</app-example-card>
+
+<!-- ── Expand / collapse outputs ────────────────────────────── -->
+
+<app-example-card
+  title="CDK — Expand &amp; Collapse Outputs"
+  subtitle='<code>(nodeExpanded)</code> and <code>(nodeCollapsed)</code> fire on each toggle — useful for lazy-loading children or analytics.'
+>
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      (nodeExpanded)="lastExpanded.set($event)"
+      (nodeCollapsed)="lastCollapsed.set($event)"
+    />
+  </div>
+  <div class="event-grid">
+    <div class="event-row">
+      <span class="event-label">nodeExpanded</span>
+      @if (lastExpanded(); as node) {
+        <span class="event-value event-value--expand">{{ node.value.name }} ({{ node.id }})</span>
+      } @else {
+        <span class="event-value event-value--empty">—</span>
+      }
+    </div>
+    <div class="event-row">
+      <span class="event-label">nodeCollapsed</span>
+      @if (lastCollapsed(); as node) {
+        <span class="event-value event-value--collapse">{{ node.value.name }} ({{ node.id }})</span>
+      } @else {
+        <span class="event-value event-value--empty">—</span>
+      }
+    </div>
+  </div>
+</app-example-card>
+
+<!-- ── Custom cell & header templates ───────────────────────── -->
+
+<app-example-card
+  title="CDK — Custom Cell &amp; Header Templates"
+  subtitle='<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (FlatNode), <code>let-value="value"</code>.'
+>
+  <div class="table-wrap">
+    <cngx-treetable [tree]="tree()">
+      <ng-template [cngxHeader]="'name'">
+        <span class="custom-header">&#9733; Employee</span>
+      </ng-template>
+      <ng-template [cngxCell]="'name'" let-node let-value="value">
+        <span [style.font-weight]="node.depth === 0 ? '700' : '400'">{{ value }}</span>
+      </ng-template>
+      <ng-template [cngxCell]="'location'" let-value="value">
+        <span class="location-chip">{{ value }}</span>
+      </ng-template>
+    </cngx-treetable>
+  </div>
+</app-example-card>
+
+<!-- ── Empty state template ─────────────────────────────────── -->
+
+<app-example-card
+  title="CDK — Custom Empty State"
+  subtitle='<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.'
+>
+  <div class="table-wrap">
+    <cngx-treetable [tree]="[]">
+      <ng-template cngxEmpty>
+        <div class="empty-state">
+          <span class="empty-icon">&#128196;</span>
+          <p>No employees found.</p>
+        </div>
+      </ng-template>
+    </cngx-treetable>
+  </div>
+</app-example-card>

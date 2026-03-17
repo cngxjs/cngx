@@ -1,18 +1,50 @@
 <div class="layout">
   <aside class="sidebar">
     <header class="branding">
-      <h1>cngx dev-app</h1>
+      <a routerLink="/" class="logo-link">
+        <svg class="logo-mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polygon points="12,1 23,12 12,23 1,12" stroke="currentColor" stroke-width="1.5"/>
+          <polygon points="12,7 17,12 12,17 7,12" fill="currentColor"/>
+        </svg>
+        <div class="logo-info">
+          <span class="logo-name">cngx</span>
+          <span class="logo-sub">dev-app</span>
+        </div>
+      </a>
     </header>
+
     <nav class="nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
-        >Home</a
-      >
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
       <div class="nav-group">
-        <span class="nav-header">@cngx/data-display</span>
+        <span class="nav-label">@cngx/data-display</span>
         <a routerLink="/treetable" routerLinkActive="active">Treetable</a>
       </div>
-      <!-- Add more links here as demos grow -->
+      <!-- nav groups added here as library grows -->
     </nav>
+
+    <footer class="sidebar-footer">
+      <button
+        class="theme-toggle"
+        (click)="toggleTheme()"
+        [title]="'Switch to ' + (theme() === 'light' ? 'dark' : 'light') + ' theme'"
+      >
+        @if (theme() === 'light') {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <span>Dark</span>
+        } @else {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <span>Light</span>
+        }
+      </button>
+    </footer>
   </aside>
 
   <main class="content">
