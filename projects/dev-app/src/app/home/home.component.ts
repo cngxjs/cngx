@@ -1,14 +1,17 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ExampleCardComponent } from '../shared/example-card.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
+  imports: [ExampleCardComponent, RouterLink],
   template: `
     <div class="page-main">
-      <section class="example-card">
-        <h1>Welcome to cngx dev-app</h1>
+      <app-example-card title="Welcome to cngx dev-app">
         <p>
-          This application showcases the components and utilities provided by the <strong>@cngx/*</strong> libraries.
+          This application showcases the components and utilities provided by the
+          <strong>@cngx/*</strong> libraries.
         </p>
         <p>Use the navigation to explore individual packages.</p>
 
@@ -21,23 +24,26 @@ import { Component } from '@angular/core';
             <li><strong>@cngx/utils</strong> — Shared utilities</li>
           </ul>
         </div>
-      </section>
+      </app-example-card>
     </div>
   `,
-  styles: [`
-    .package-list {
-      margin-top: 2rem;
-      background: #f9f9f9;
-      padding: 1.5rem;
-      border-radius: 8px;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-  `]
+  styles: [
+    `
+      .package-list {
+        margin-top: 2rem;
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 8px;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent {}

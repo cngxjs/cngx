@@ -1,6 +1,6 @@
 <!-- ── API Reference ────────────────────────────────────────────── -->
 
-<section class="example-card api-ref">
+<!-- <section class="example-card api-ref">
   <details>
     <summary class="api-summary">API Reference — CngxTreetablePresenter</summary>
     <p class="example-subtitle">
@@ -301,16 +301,14 @@
       </tbody>
     </table>
   </details>
-</section>
+</section> -->
 
 <!-- ── Basic (no selection) ─────────────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK Treetable</h2>
-  <p class="example-subtitle">
-    Headless — uses <code>CdkTable</code>, no Material dependency. Config via
-    <code>provideTreetable(&#123; highlightRowOnHover: true &#125;)</code>
-  </p>
+<app-example-card
+  title="CDK Treetable"
+  subtitle="Headless — uses <code>CdkTable</code>, no Material dependency. Config via <code>provideTreetable(&#123; highlightRowOnHover: true &#125;)</code>"
+>
   <div class="table-wrap">
     <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
   </div>
@@ -320,13 +318,12 @@
       {{ node.depth }})
     </div>
   }
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">Material Treetable</h2>
-  <p class="example-subtitle">
-    Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant.
-  </p>
+<app-example-card
+  title="Material Treetable"
+  subtitle="Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant."
+>
   <div class="table-wrap">
     <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
   </div>
@@ -336,16 +333,14 @@
       {{ node.depth }})
     </div>
   }
-</section>
+</app-example-card>
 
 <!-- ── Selection without checkboxes ────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Single Selection (click-to-select)</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="single"</code> — clicking a row selects it. Output via
-    <code>(selectionChanged)</code>.
-  </p>
+<app-example-card
+  title="CDK — Single Selection (click-to-select)"
+  subtitle='<code>selectionMode="single"</code> — clicking a row selects it. Output via <code>(selectionChanged)</code>.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -356,14 +351,12 @@
   <div class="last-clicked">
     selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Multi Selection (click-to-select)</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via
-    <code>(selectionChanged)</code>.
-  </p>
+<app-example-card
+  title="CDK — Multi Selection (click-to-select)"
+  subtitle='<code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via <code>(selectionChanged)</code>.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -375,16 +368,14 @@
     selectionChanged ({{ multiSelected().length }}):
     <strong>{{ multiSelected().join(', ') || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
 <!-- ── Selection with checkboxes ───────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">Material — Single Selection + Checkbox</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code>
-    — no header checkbox in single mode.
-  </p>
+<app-example-card
+  title="Material — Single Selection + Checkbox"
+  subtitle='<code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code> — no header checkbox in single mode.'
+>
   <div class="table-wrap">
     <cngx-mat-treetable
       [tree]="tree()"
@@ -396,14 +387,12 @@
   <div class="last-clicked">
     selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
-<section class="example-card">
-  <h2 class="example-title">Material — Multi Selection + Checkboxes</h2>
-  <p class="example-subtitle">
-    <code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code>
-    — header checkbox selects / deselects all visible rows, including indeterminate state.
-  </p>
+<app-example-card
+  title="Material — Multi Selection + Checkboxes"
+  subtitle='<code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code> — header checkbox selects / deselects all visible rows, including indeterminate state.'
+>
   <div class="table-wrap">
     <cngx-mat-treetable
       [tree]="tree()"
@@ -416,17 +405,14 @@
     selectionChanged ({{ multiCheckboxSelected().length }}):
     <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
   </div>
-</section>
+</app-example-card>
 
 <!-- ── Controlled selection ─────────────────────────────────────── -->
 
-<section class="example-card">
-  <h2 class="example-title">CDK — Controlled Selection (Two-Way Binding)</h2>
-  <p class="example-subtitle">
-    <code>[selectedIds]="controlledIds()"</code> +
-    <code>(selectedIdsChange)="controlledIds.set($event)"</code>
-    — external state drives selection. Pre-seeded with two IDs.
-  </p>
+<app-example-card
+  title="CDK — Controlled Selection (Two-Way Binding)"
+  subtitle='<code>[selectedIds]="controlledIds()"</code> + <code>(selectedIdsChange)="controlledIds.set($event)"</code> — external state drives selection. Pre-seeded with two IDs.'
+>
   <div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -444,4 +430,4 @@
     <button type="button" (click)="selectLevel1()">Select all L1</button>
     <button type="button" (click)="clearSelection()">Clear selection</button>
   </div>
-</section>
+</app-example-card>

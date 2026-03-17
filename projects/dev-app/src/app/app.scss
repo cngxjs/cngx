@@ -73,6 +73,7 @@
   flex: 1;
   background: #fff;
   overflow-x: hidden; /* Prevent overflow if table gets too wide */
+  padding: 1rem;
 }
 
 /* Override previous page styles to fit router outlet */

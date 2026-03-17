@@ -1,9 +1,16 @@
 import { type Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { TreetableDemoComponent } from './demos/treetable-demo/treetable-demo.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'treetable', component: TreetableDemoComponent },
-  { path: '**', redirectTo: '' }
+  {
+    path: '',
+    loadComponent: () => import('./home/home.component').then((m) => m.HomeComponent),
+  },
+  {
+    path: 'treetable',
+    loadComponent: () =>
+      import('./demos/treetable-demo/treetable-demo.component').then(
+        (m) => m.TreetableDemoComponent
+      ),
+  },
+  { path: '**', redirectTo: '' },
 ];
