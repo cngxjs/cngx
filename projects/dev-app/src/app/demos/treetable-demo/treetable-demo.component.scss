@@ -62,6 +62,26 @@
 
 /* ─── Example card ─────────────────────────────────────────────── */
 
+.example-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.example-subtitle {
+  margin: 0 0 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+
+  code {
+    background: #eee;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+}
+
 .table-wrap {
   border: 1px solid #e0e0e0;
   border-radius: 4px;
