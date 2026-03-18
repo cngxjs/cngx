@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@use '../../data-display/treetable/mat-treetable-theme' as treetable;
+@use '../../projects/data-display/treetable/mat-treetable-theme' as treetable;
 
 // Material theme — light, untouched (demo components rely on this)
 @include mat.core();
