@@ -36,8 +36,8 @@
           "skipTests": true
         }
       },
-      "root": "projects/dev-app",
-      "sourceRoot": "projects/dev-app/src",
+      "root": "dev-app",
+      "sourceRoot": "dev-app/src",
       "prefix": "app",
       "architect": {
         "build": {
@@ -99,8 +99,8 @@
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/dev-app/**/*.ts",
-              "projects/dev-app/**/*.html"
+              "dev-app/**/*.ts",
+              "dev-app/**/*.html"
             ]
           }
         }

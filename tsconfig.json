@@ -16,7 +16,7 @@
     { "path": "./projects/common/tsconfig.spec.json" },
     { "path": "./projects/data-display/tsconfig.lib.json" },
     { "path": "./projects/data-display/tsconfig.spec.json" },
-    { "path": "./projects/dev-app/tsconfig.app.json" },
-    { "path": "./projects/dev-app/tsconfig.spec.json" }
+    { "path": "./dev-app/tsconfig.app.json" },
+    { "path": "./dev-app/tsconfig.spec.json" }
   ]
 }
