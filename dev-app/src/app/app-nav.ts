@@ -15,6 +15,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Filter — Backend', path: 'common/behaviors/filter-backend' },
       { label: 'Filter', path: 'common/behaviors/filter' },
+      { label: 'Filter — Multi', path: 'common/behaviors/filter-multi' },
       { label: 'Search — Backend', path: 'common/behaviors/search-backend' },
       { label: 'Search', path: 'common/behaviors/search' },
       { label: 'Search — mat-form-field', path: 'common/behaviors/search-mat' },

@@ -131,9 +131,9 @@ describe('CngxSortHeader', () => {
 
     it('plain click replaces the full stack (and toggles direction of primary)', () => {
       const { nameBtn, ageBtn, sortDir } = setupMulti();
-      nameBtn.triggerEventHandler('click', click);       // name asc (primary)
-      ageBtn.triggerEventHandler('click', shiftClick);   // age asc appended
-      nameBtn.triggerEventHandler('click', click);       // plain → replace, name was asc → now desc
+      nameBtn.triggerEventHandler('click', click); // name asc (primary)
+      ageBtn.triggerEventHandler('click', shiftClick); // age asc appended
+      nameBtn.triggerEventHandler('click', click); // plain → replace, name was asc → now desc
       expect(sortDir.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
     });
   });
