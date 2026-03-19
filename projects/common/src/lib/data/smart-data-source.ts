@@ -79,10 +79,9 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
         items = items.filter((item) => searchFn(item, term));
       }
 
-      // Sort via CngxSort
-      const sortState = this.sort?.sort();
-      if (sortState) {
-        const { active, direction } = sortState;
+      // Sort via CngxSort — respects the full multi-sort stack in priority order
+      const sorts = this.sort?.sorts() ?? [];
+      if (sorts.length > 0) {
         const sortFn =
           this.options?.sortFn ??
           ((a: T, b: T, field: string, dir: 'asc' | 'desc') => {
@@ -98,7 +97,15 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
             });
             return dir === 'asc' ? cmp : -cmp;
           });
-        items = [...items].sort((a, b) => sortFn(a, b, active, direction));
+        items = [...items].sort((a, b) => {
+          for (const { active, direction } of sorts) {
+            const cmp = sortFn(a, b, active, direction);
+            if (cmp !== 0) {
+              return cmp;
+            }
+          }
+          return 0;
+        });
       }
 
       return items;

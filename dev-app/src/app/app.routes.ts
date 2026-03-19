@@ -61,6 +61,16 @@ export const routes: Routes = [
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
       },
       {
+        path: 'data/mat-table-manual',
+        loadComponent: () =>
+          import('./demos/common/data/mat-table-demo/mat-table-manual.component').then((m) => m.MatTableManualDemoComponent),
+      },
+      {
+        path: 'data/mat-table-smart',
+        loadComponent: () =>
+          import('./demos/common/data/mat-table-demo/mat-table-smart.component').then((m) => m.MatTableSmartDemoComponent),
+      },
+      {
         path: 'data/smart-data-source',
         loadComponent: () =>
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
