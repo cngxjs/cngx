@@ -20,6 +20,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Search — mat-form-field', path: 'common/behaviors/search-mat' },
       { label: 'Sort — Backend', path: 'common/behaviors/sort-backend' },
       { label: 'Sort', path: 'common/behaviors/sort' },
+      { label: 'Sort — Multi-Key', path: 'common/behaviors/sort-multi' },
       { label: 'DataSource', path: 'common/data/data-source' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
     ],

@@ -96,6 +96,22 @@
   opacity: 0.8;
 }
 
+.sort-priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: var(--accent, #f5a623);
+  color: #000;
+  margin-left: 0.125rem;
+  vertical-align: middle;
+}
+
 // ── Filter ───────────────────────────────────────────────────────────────────
 
 .filter-row {

@@ -46,6 +46,11 @@ export const routes: Routes = [
           import('./demos/common/behaviors/sort-demo/sort-backend.component').then((m) => m.SortBackendDemoComponent),
       },
       {
+        path: 'behaviors/sort-multi',
+        loadComponent: () =>
+          import('./demos/common/behaviors/sort-demo/sort-multi.component').then((m) => m.SortMultiDemoComponent),
+      },
+      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
