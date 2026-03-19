@@ -1,5 +1,11 @@
 import { computed, Directive, input, output, signal } from '@angular/core';
 
+/** A single sort entry: the field key and its direction. */
+export interface SortEntry {
+  active: string;
+  direction: 'asc' | 'desc';
+}
+
 /**
  * Atom directive that tracks sort state (active field + direction).
  *
@@ -8,8 +14,13 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * precedence over the internal state — pair with `sortChange` to keep them
  * in sync.
  *
- * Consumer connects this to a table or list via a `computed()` that calls
- * `sortTree()` or similar — nothing is injected automatically.
+ * When `multiSort` is `true`, holding **Shift** while clicking a sort header
+ * adds it as a secondary (tertiary, …) sort key instead of replacing the
+ * primary one. Shift-clicking an active column cycles it asc → desc → removed.
+ * Multi-sort state is always uncontrolled; use `sortsChange` to read it.
+ *
+ * Consumer connects this to a table or list via a `computed()` — nothing is
+ * injected automatically.
  */
 @Directive({
   selector: '[cngxSort]',
@@ -17,47 +28,93 @@ import { computed, Directive, input, output, signal } from '@angular/core';
   standalone: true,
 })
 export class CngxSort {
-  /** Controlled active column. When bound, takes precedence over internal state. */
+  /** Controlled active column. When bound, takes precedence over internal state (single-sort only). */
   readonly activeInput = input<string | undefined>(undefined, { alias: 'cngxSortActive' });
-  /** Controlled direction. When bound, takes precedence over internal state. */
+  /** Controlled direction. When bound, takes precedence over internal state (single-sort only). */
   readonly directionInput = input<'asc' | 'desc' | undefined>(undefined, {
     alias: 'cngxSortDirection',
   });
+  /**
+   * When `true`, Shift+click on a sort header adds it to the sort stack instead of
+   * replacing the current sort.
+   */
+  readonly multiSort = input<boolean>(false);
 
-  private readonly _active = signal<string | undefined>(undefined);
-  private readonly _direction = signal<'asc' | 'desc' | undefined>(undefined);
+  private readonly _sorts = signal<SortEntry[]>([]);
 
-  /** The active sort column (controlled takes precedence). */
-  readonly active = computed(() => this.activeInput() ?? this._active());
-  /** The active sort direction (controlled takes precedence). */
-  readonly direction = computed(() => this.directionInput() ?? this._direction());
-  /** The current sort state, or `null` when no sort is active. */
-  readonly sort = computed(() =>
-    this.active() ? { active: this.active()!, direction: this.direction() ?? 'asc' } : null,
-  );
-  /** `true` when a sort is active. */
-  readonly isActive = computed(() => this.sort() !== null);
-
-  /** Emitted when the sort state changes. */
-  readonly sortChange = output<{ active: string; direction: 'asc' | 'desc' }>();
+  /** The active sort column of the primary entry (controlled takes precedence in single-sort mode). */
+  readonly active = computed(() => this.activeInput() ?? this._sorts()[0]?.active);
+  /** The active sort direction of the primary entry (controlled takes precedence in single-sort mode). */
+  readonly direction = computed(() => this.directionInput() ?? this._sorts()[0]?.direction);
 
   /**
-   * Toggles or sets the sort for `field`.
-   * - First click on a field → `asc`
-   * - Second click on the same field → `desc`
-   * - Clicking a different field → `asc`
+   * The primary sort state, or `null` when no sort is active.
+   * In multi-sort mode this is the first entry in `sorts`.
    */
-  setSort(field: string): void {
-    const next: 'asc' | 'desc' =
-      field === this._active() ? (this._direction() === 'asc' ? 'desc' : 'asc') : 'asc';
-    this._active.set(field);
-    this._direction.set(next);
-    this.sortChange.emit({ active: field, direction: next });
+  readonly sort = computed(() =>
+    this.active() ? { active: this.active(), direction: this.direction() ?? 'asc' } : null,
+  );
+
+  /**
+   * All active sort entries in priority order.
+   * Contains at most one entry when additive mode has not been used.
+   */
+  readonly sorts = this._sorts.asReadonly();
+
+  /** `true` when at least one sort is active. */
+  readonly isActive = computed(() => this.sorts().length > 0);
+
+  /** Emitted when the primary sort state changes. */
+  readonly sortChange = output<SortEntry>();
+  /**
+   * Emitted whenever the sort stack changes (including removals and full clears).
+   * Always reflects the full `sorts` array at the time of emission.
+   */
+  readonly sortsChange = output<SortEntry[]>();
+
+  /**
+   * Sets or toggles the sort for `field`.
+   *
+   * **`additive = false`** (default, plain click):
+   * - Same field → toggle direction (asc → desc → asc)
+   * - Different field → replace stack with `{ field, asc }`
+   *
+   * **`additive = true`** (Shift+click when `multiSort` is enabled on the header):
+   * - Field not in stack → append as asc
+   * - Field in stack as asc → change to desc
+   * - Field in stack as desc → remove from stack
+   */
+  setSort(field: string, additive = false): void {
+    if (additive) {
+      const current = this._sorts();
+      const idx = current.findIndex((s) => s.active === field);
+      let next: SortEntry[];
+      if (idx === -1) {
+        next = [...current, { active: field, direction: 'asc' }];
+      } else if (current[idx].direction === 'asc') {
+        next = current.map((s, i) => (i === idx ? { ...s, direction: 'desc' as const } : s));
+      } else {
+        next = current.filter((_, i) => i !== idx);
+      }
+      this._sorts.set(next);
+      this.sortsChange.emit(next);
+      if (next[0]) {
+        this.sortChange.emit(next[0]);
+      }
+    } else {
+      const current = this._sorts();
+      const dir: 'asc' | 'desc' =
+        field === current[0]?.active ? (current[0].direction === 'asc' ? 'desc' : 'asc') : 'asc';
+      const entry: SortEntry = { active: field, direction: dir };
+      this._sorts.set([entry]);
+      this.sortChange.emit(entry);
+      this.sortsChange.emit([entry]);
+    }
   }
 
-  /** Clears the active sort state. */
+  /** Clears all active sorts. */
   clear(): void {
-    this._active.set(undefined);
-    this._direction.set(undefined);
+    this._sorts.set([]);
+    this.sortsChange.emit([]);
   }
 }
