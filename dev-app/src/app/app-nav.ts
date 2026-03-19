@@ -13,8 +13,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/common',
     items: [
+      { label: 'Filter — Backend', path: 'common/behaviors/filter-backend' },
       { label: 'Filter', path: 'common/behaviors/filter' },
+      { label: 'Search — Backend', path: 'common/behaviors/search-backend' },
       { label: 'Search', path: 'common/behaviors/search' },
+      { label: 'Search — mat-form-field', path: 'common/behaviors/search-mat' },
+      { label: 'Sort — Backend', path: 'common/behaviors/sort-backend' },
       { label: 'Sort', path: 'common/behaviors/sort' },
       { label: 'DataSource', path: 'common/data/data-source' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },

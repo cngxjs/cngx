@@ -13,27 +13,47 @@ export const routes: Routes = [
       {
         path: 'behaviors/filter',
         loadComponent: () =>
-          import('./demos/common/behaviors/filter-demo/index').then((m) => m.FilterDemoComponent),
+          import('./demos/common/behaviors/filter-demo/filter-demo.component').then((m) => m.FilterDemoComponent),
+      },
+      {
+        path: 'behaviors/filter-backend',
+        loadComponent: () =>
+          import('./demos/common/behaviors/filter-demo/filter-backend.component').then((m) => m.FilterBackendDemoComponent),
       },
       {
         path: 'behaviors/search',
         loadComponent: () =>
-          import('./demos/common/behaviors/search-demo/index').then((m) => m.SearchDemoComponent),
+          import('./demos/common/behaviors/search-demo/search-demo.component').then((m) => m.SearchDemoComponent),
+      },
+      {
+        path: 'behaviors/search-backend',
+        loadComponent: () =>
+          import('./demos/common/behaviors/search-demo/search-backend.component').then((m) => m.SearchBackendDemoComponent),
+      },
+      {
+        path: 'behaviors/search-mat',
+        loadComponent: () =>
+          import('./demos/common/behaviors/search-demo/search-mat.component').then((m) => m.SearchMatDemoComponent),
       },
       {
         path: 'behaviors/sort',
         loadComponent: () =>
-          import('./demos/common/behaviors/sort-demo/index').then((m) => m.SortDemoComponent),
+          import('./demos/common/behaviors/sort-demo/sort-demo.component').then((m) => m.SortDemoComponent),
+      },
+      {
+        path: 'behaviors/sort-backend',
+        loadComponent: () =>
+          import('./demos/common/behaviors/sort-demo/sort-backend.component').then((m) => m.SortBackendDemoComponent),
       },
       {
         path: 'data/data-source',
         loadComponent: () =>
-          import('./demos/common/data/data-source-demo/index').then((m) => m.DataSourceDemoComponent),
+          import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
       },
       {
         path: 'data/smart-data-source',
         loadComponent: () =>
-          import('./demos/common/data/smart-data-source-demo/index').then((m) => m.SmartDataSourceDemoComponent),
+          import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
       },
       { path: '', redirectTo: 'behaviors/filter', pathMatch: 'full' },
     ],
@@ -44,7 +64,7 @@ export const routes: Routes = [
       {
         path: 'treetable',
         loadComponent: () =>
-          import('./demos/data-display/treetable-demo/index').then((m) => m.TreetableDemoComponent),
+          import('./demos/data-display/treetable-demo/treetable-demo.component').then((m) => m.TreetableDemoComponent),
       },
       { path: '', redirectTo: 'treetable', pathMatch: 'full' },
     ],

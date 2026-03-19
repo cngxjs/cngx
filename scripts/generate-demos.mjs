@@ -37,6 +37,67 @@ function capitalise(str) {
 }
 
 // ---------------------------------------------------------------------------
+// Known Angular / Material import map
+// ---------------------------------------------------------------------------
+
+/** Well-known Angular and Material class → module path mappings. */
+const KNOWN_ANGULAR_IMPORTS = new Map([
+  // @angular/common
+  ['AsyncPipe', '@angular/common'],
+  ['CurrencyPipe', '@angular/common'],
+  ['DatePipe', '@angular/common'],
+  ['DecimalPipe', '@angular/common'],
+  ['JsonPipe', '@angular/common'],
+  ['LowerCasePipe', '@angular/common'],
+  ['NgClass', '@angular/common'],
+  ['NgFor', '@angular/common'],
+  ['NgIf', '@angular/common'],
+  ['NgStyle', '@angular/common'],
+  ['PercentPipe', '@angular/common'],
+  ['SlicePipe', '@angular/common'],
+  ['TitleCasePipe', '@angular/common'],
+  ['UpperCasePipe', '@angular/common'],
+  // @angular/router
+  ['RouterLink', '@angular/router'],
+  ['RouterLinkActive', '@angular/router'],
+  ['RouterModule', '@angular/router'],
+  // @angular/forms
+  ['FormsModule', '@angular/forms'],
+  ['ReactiveFormsModule', '@angular/forms'],
+  // @angular/material/*
+  ['MatAutocompleteModule', '@angular/material/autocomplete'],
+  ['MatBadgeModule', '@angular/material/badge'],
+  ['MatButtonModule', '@angular/material/button'],
+  ['MatCardModule', '@angular/material/card'],
+  ['MatCheckboxModule', '@angular/material/checkbox'],
+  ['MatChipsModule', '@angular/material/chips'],
+  ['MatDatepickerModule', '@angular/material/datepicker'],
+  ['MatDialogModule', '@angular/material/dialog'],
+  ['MatDividerModule', '@angular/material/divider'],
+  ['MatExpansionModule', '@angular/material/expansion'],
+  ['MatFormFieldModule', '@angular/material/form-field'],
+  ['MatIconModule', '@angular/material/icon'],
+  ['MatInputModule', '@angular/material/input'],
+  ['MatListModule', '@angular/material/list'],
+  ['MatMenuModule', '@angular/material/menu'],
+  ['MatPaginatorModule', '@angular/material/paginator'],
+  ['MatProgressBarModule', '@angular/material/progress-bar'],
+  ['MatProgressSpinnerModule', '@angular/material/progress-spinner'],
+  ['MatRadioModule', '@angular/material/radio'],
+  ['MatRippleModule', '@angular/material/core'],
+  ['MatSelectModule', '@angular/material/select'],
+  ['MatSidenavModule', '@angular/material/sidenav'],
+  ['MatSlideToggleModule', '@angular/material/slide-toggle'],
+  ['MatSnackBarModule', '@angular/material/snack-bar'],
+  ['MatSortModule', '@angular/material/sort'],
+  ['MatStepperModule', '@angular/material/stepper'],
+  ['MatTableModule', '@angular/material/table'],
+  ['MatTabsModule', '@angular/material/tabs'],
+  ['MatToolbarModule', '@angular/material/toolbar'],
+  ['MatTooltipModule', '@angular/material/tooltip'],
+]);
+
+// ---------------------------------------------------------------------------
 // parseDemoPath
 // ---------------------------------------------------------------------------
 
@@ -59,6 +120,37 @@ export function parseDemoPath(absoluteDemoPath, demoRoot) {
   const componentFileName = `${name}-demo.component.ts`;
 
   return { lib, segments, name, routePath, componentClassName, componentFileName };
+}
+
+// ---------------------------------------------------------------------------
+// parseStoryMeta
+// ---------------------------------------------------------------------------
+
+/**
+ * Derives demo meta from a single story file inside a *-demo/ directory.
+ * The primary story (`{name}-demo.story.ts`) reuses the dir-level meta.
+ * Additional stories get their own route derived from the file stem.
+ *
+ * @param {string} storyFile  filename only, e.g. 'sort-backend.story.ts'
+ * @param {{ lib, segments, name, routePath, componentClassName, componentFileName }} dirMeta
+ */
+export function parseStoryMeta(storyFile, dirMeta) {
+  const fileStem = storyFile.replace(/\.story\.ts$/, ''); // e.g. 'sort-backend'
+  const isPrimary = fileStem === `${dirMeta.name}-demo`;
+
+  if (isPrimary) {
+    return dirMeta;
+  }
+
+  // Secondary story: replace last segment with fileStem
+  const parentSegments = dirMeta.segments.slice(0, -1);
+  const segments = [...parentSegments, fileStem];
+  const lib = segments[0];
+  const routePath = segments.join('/');
+  const componentClassName = `${kebabToPascal(fileStem)}DemoComponent`;
+  const componentFileName = `${fileStem}.component.ts`;
+
+  return { lib, segments, name: fileStem, routePath, componentClassName, componentFileName };
 }
 
 // ---------------------------------------------------------------------------
@@ -406,10 +498,10 @@ export function generateComponentFile(story, meta) {
   }
 
   // Build import lines — only include what is actually referenced in TS class body
-  const needsInject = !!(story.hostDirectives?.length);
   const allSetupCode = [story.setup, ...story.sections.map((s) => s.setup)]
     .filter(Boolean)
     .join('\n');
+  const needsInject = !!(story.hostDirectives?.length) || allSetupCode.includes('inject(');
   const usesComputed = allSetupCode.includes('computed(');
   const coreImports = `import { ChangeDetectionStrategy, Component, ${usesComputed ? 'computed, ' : ''}${needsInject ? 'inject, ' : ''}signal } from '@angular/core';`;
 
@@ -462,16 +554,18 @@ export function generateComponentFile(story, meta) {
   const templateParts = story.sections.map((section, i) => {
     const isPlayground = hasControls && i === 0;
     const subtitleAttr = section.subtitle ? `\n      [subtitle]="_s${i}"` : '';
+    // Escape backticks and ${} interpolations so they survive being embedded in a TS template literal.
+    const tpl = section.template.replaceAll('`', '\\`').replaceAll('${', '\\${');
     if (isPlayground) {
       return [
         `    <app-playground [playground]="pg">`,
-        `      ${section.template}`,
+        `      ${tpl}`,
         `    </app-playground>`,
       ].join('\n');
     }
     return [
       `    <app-example-card title="${section.title}"${subtitleAttr}>`,
-      `      ${section.template}`,
+      `      ${tpl}`,
       `    </app-example-card>`,
     ].join('\n');
   });
@@ -570,7 +664,7 @@ async function loadCompodocJson() {
 
 /** Build a Map<className, modulePath> from compodoc JSON for import resolution. */
 function buildImportMap(compodocData) {
-  const map = new Map();
+  const map = new Map(KNOWN_ANGULAR_IMPORTS);
   for (const section of ['directives', 'components', 'pipes', 'classes', 'injectables']) {
     for (const item of compodocData[section] ?? []) {
       if (item.name && item.file) {
@@ -658,29 +752,48 @@ async function main() {
   const demos = [];
 
   for (const demoDir of demoDirs) {
-    const meta = parseDemoPath(demoDir, DEMOS_ROOT);
-    const storyPath = join(demoDir, `${meta.name}-demo.story.ts`);
+    const dirMeta = parseDemoPath(demoDir, DEMOS_ROOT);
+    const files = await readdir(demoDir);
+    const storyFiles = files.filter((f) => f.endsWith('.story.ts')).sort();
 
-    let story = null;
-    try {
-      await access(storyPath);
-      story = await loadStoryFile(storyPath);
-    } catch {
-      // no story file
+    // If no story files, add a placeholder entry so the route/nav slot is preserved
+    if (storyFiles.length === 0) {
+      const relativeImportPath =
+        './demos/' + relative(DEMOS_ROOT, demoDir).replaceAll('\\', '/') + '/index';
+      demos.push({
+        ...dirMeta,
+        title: undefined,
+        importPath: relativeImportPath,
+        story: null,
+        storyPath: relative(APP_DIR, join(demoDir, `${dirMeta.name}-demo.story.ts`)),
+        sharedRelativePath: computeSharedRelativePath(demoDir, APP_DIR),
+        importMap,
+        demoDir,
+      });
+      continue;
     }
 
-    const relativeImportPath =
-      './demos/' + relative(DEMOS_ROOT, demoDir).replaceAll('\\', '/') + '/index';
+    for (const storyFile of storyFiles) {
+      const meta = parseStoryMeta(storyFile, dirMeta);
+      const storyPath = join(demoDir, storyFile);
+      const story = await loadStoryFile(storyPath);
+      const importPath =
+        './demos/' +
+        relative(DEMOS_ROOT, demoDir).replaceAll('\\', '/') +
+        '/' +
+        meta.componentFileName.replace(/\.ts$/, '');
 
-    demos.push({
-      ...meta,
-      title: story?.title,
-      importPath: relativeImportPath,
-      story,
-      storyPath: relative(APP_DIR, storyPath),
-      sharedRelativePath: computeSharedRelativePath(demoDir, APP_DIR),
-      importMap,
-    });
+      demos.push({
+        ...meta,
+        title: story?.title,
+        importPath,
+        story,
+        storyPath: relative(APP_DIR, storyPath),
+        sharedRelativePath: computeSharedRelativePath(demoDir, APP_DIR),
+        importMap,
+        demoDir,
+      });
+    }
   }
 
   // Generate routes
@@ -703,45 +816,33 @@ async function main() {
     console.log('Updated: app.html nav block');
   }
 
-  // Generate index.ts and (if story exists) component files for every demo
+  // Generate component files for every demo that has a story
   for (const demo of demos) {
-    const actualDemoDir = demoDirs.find((d) => {
-      const m = parseDemoPath(d, DEMOS_ROOT);
-      return m.lib === demo.lib && m.name === demo.name;
-    });
-    if (!actualDemoDir) {
-      continue;
+    if (!demo.story || !demo.demoDir) continue;
+
+    const componentPath = join(demo.demoDir, demo.componentFileName);
+
+    // Only write component if it doesn't exist or already has @generated marker
+    let shouldWrite = true;
+    try {
+      const existing = await readFile(componentPath, 'utf8');
+      shouldWrite = existing.startsWith('// @generated by scripts/generate-demos.mjs');
+    } catch {
+      // file doesn't exist → write it
     }
 
-    const componentPath = join(actualDemoDir, demo.componentFileName);
-
-    if (demo.story) {
-      // Only write component if it doesn't exist or already has @generated marker
-      let shouldWrite = true;
-      try {
-        const existing = await readFile(componentPath, 'utf8');
-        shouldWrite = existing.startsWith('// @generated by scripts/generate-demos.mjs');
-      } catch {
-        // file doesn't exist → write it
-      }
-
-      if (shouldWrite) {
-        const componentContent = generateComponentFile(demo.story, {
-          name: demo.name,
-          storyPath: demo.storyPath,
-          sharedRelativePath: demo.sharedRelativePath,
-          importMap: demo.importMap,
-        });
-        await writeFile(componentPath, componentContent);
-        console.log(`Generated component: ${demo.name}-demo`);
-      } else {
-        console.log(`Skipped (not @generated): ${demo.name}-demo component`);
-      }
+    if (shouldWrite) {
+      const componentContent = generateComponentFile(demo.story, {
+        name: demo.name,
+        storyPath: demo.storyPath,
+        sharedRelativePath: demo.sharedRelativePath,
+        importMap: demo.importMap,
+      });
+      await writeFile(componentPath, componentContent);
+      console.log(`Generated component: ${demo.componentFileName.replace('.component.ts', '')}`);
+    } else {
+      console.log(`Skipped (not @generated): ${demo.componentFileName}`);
     }
-
-    // Always write index.ts (re-exports the component regardless of origin)
-    const indexContent = generateIndexFile(demo.componentClassName, demo.componentFileName);
-    await writeFile(join(actualDemoDir, 'index.ts'), indexContent);
   }
 }
 
