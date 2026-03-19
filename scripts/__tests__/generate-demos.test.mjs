@@ -453,6 +453,41 @@ describe('generateComponentFile', () => {
     const output = generateComponentFile(storyNoControls, meta);
     expect(output).toContain('export class SortDemoComponent');
   });
+
+  it('emits subtitle as class property and [subtitle] property binding', () => {
+    const story = {
+      title: 'Test',
+      sections: [{ title: 'Basic', subtitle: 'A <code>subtitle</code> here.', template: '<div/>' }],
+    };
+    const output = generateComponentFile(story, meta);
+    // Subtitle is emitted as a class property to avoid Angular template parser issues with HTML tags
+    expect(output).toContain("protected readonly _s0 = 'A <code>subtitle</code> here.';");
+    expect(output).toContain('[subtitle]="_s0"');
+  });
+
+  it('skips subtitle attribute when section has none', () => {
+    const output = generateComponentFile(storyNoControls, meta);
+    const lines = output.split('\n').filter((l) => l.includes('app-example-card'));
+    expect(lines.every((l) => !l.includes('[subtitle]'))).toBe(true);
+  });
+
+  it('emits hostDirectives block and inject in core imports', () => {
+    const story = {
+      title: 'Smart',
+      hostDirectives: ['CngxSort', 'CngxFilter'],
+      sections: [{ title: 'Basic', template: '<div/>' }],
+    };
+    const output = generateComponentFile(story, meta);
+    expect(output).toContain('hostDirectives: [');
+    expect(output).toContain('{ directive: CngxSort },');
+    expect(output).toContain('{ directive: CngxFilter },');
+    expect(output).toContain('inject,');
+  });
+
+  it('does not emit inject when no hostDirectives', () => {
+    const output = generateComponentFile(storyNoControls, meta);
+    expect(output).not.toContain('inject,');
+  });
 });
 
 // ---------------------------------------------------------------------------

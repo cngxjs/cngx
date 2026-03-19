@@ -3,7 +3,6 @@ import { readFile, writeFile, readdir, access, stat } from 'node:fs/promises';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
-import { createRequire } from 'node:module';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WORKSPACE_ROOT = join(__dirname, '..');
@@ -344,16 +343,24 @@ function renderControlCode(ctrl) {
       return `  readonly ${ctrl.key} = Playground.text('${ctrl.label}', '${ctrl.default ?? ''}');`;
     case 'number': {
       const opts = [];
-      if (ctrl.min !== undefined) opts.push(`min: ${ctrl.min}`);
-      if (ctrl.max !== undefined) opts.push(`max: ${ctrl.max}`);
-      if (ctrl.step !== undefined) opts.push(`step: ${ctrl.step}`);
+      if (ctrl.min !== undefined) {
+        opts.push(`min: ${ctrl.min}`);
+      }
+      if (ctrl.max !== undefined) {
+        opts.push(`max: ${ctrl.max}`);
+      }
+      if (ctrl.step !== undefined) {
+        opts.push(`step: ${ctrl.step}`);
+      }
       const optsStr = opts.length ? `, { ${opts.join(', ')} }` : '';
       return `  readonly ${ctrl.key} = Playground.number('${ctrl.label}', ${ctrl.default ?? 0}${optsStr});`;
     }
     case 'range':
       return `  readonly ${ctrl.key} = Playground.range('${ctrl.label}', ${ctrl.min}, ${ctrl.max}, ${ctrl.default}, ${ctrl.step ?? 1});`;
     case 'select': {
-      const opts = ctrl.options.map((o) => `{ label: '${o.label}', value: '${o.value}' }`).join(', ');
+      const opts = ctrl.options
+        .map((o) => `{ label: '${o.label}', value: '${o.value}' }`)
+        .join(', ');
       const defStr = typeof ctrl.default === 'string' ? `'${ctrl.default}'` : String(ctrl.default);
       return [
         `  readonly ${ctrl.key} = Playground.select(`,
@@ -381,9 +388,7 @@ export function generateComponentFile(story, meta) {
   const selector = `app-${name}-demo`;
 
   // Collect all story imports (deduplicated)
-  const allStoryImports = [
-    ...new Set(story.sections.flatMap((s) => s.imports ?? [])),
-  ];
+  const allStoryImports = [...new Set(story.sections.flatMap((s) => s.imports ?? []))];
 
   // Resolve story imports via importMap; group unresolved together
   const resolvedImports = new Map(); // modulePath → Set<className>
@@ -391,15 +396,22 @@ export function generateComponentFile(story, meta) {
   for (const cls of allStoryImports) {
     const src = importMap.get(cls);
     if (src) {
-      if (!resolvedImports.has(src)) resolvedImports.set(src, new Set());
+      if (!resolvedImports.has(src)) {
+        resolvedImports.set(src, new Set());
+      }
       resolvedImports.get(src).add(cls);
     } else {
       unresolved.push(cls);
     }
   }
 
-  // Build import lines
-  const coreImports = `import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';`;
+  // Build import lines — only include what is actually referenced in TS class body
+  const needsInject = !!(story.hostDirectives?.length);
+  const allSetupCode = [story.setup, ...story.sections.map((s) => s.setup)]
+    .filter(Boolean)
+    .join('\n');
+  const usesComputed = allSetupCode.includes('computed(');
+  const coreImports = `import { ChangeDetectionStrategy, Component, ${usesComputed ? 'computed, ' : ''}${needsInject ? 'inject, ' : ''}signal } from '@angular/core';`;
 
   const sharedImportLines = [
     `import { ExampleCardComponent } from '${sharedRelativePath}/example-card.component';`,
@@ -435,9 +447,21 @@ export function generateComponentFile(story, meta) {
     ...allStoryImports,
   ];
 
+  // Subtitle class fields — subtitles are HTML strings passed to [innerHTML].
+  // We emit them as protected class properties to avoid Angular's template parser
+  // treating <code> etc. inside attribute values as HTML elements.
+  const subtitleFields = story.sections
+    .map((s, i) =>
+      s.subtitle
+        ? `  protected readonly _s${i} = '${s.subtitle.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';`
+        : null,
+    )
+    .filter(Boolean);
+
   // Template sections
   const templateParts = story.sections.map((section, i) => {
     const isPlayground = hasControls && i === 0;
+    const subtitleAttr = section.subtitle ? `\n      [subtitle]="_s${i}"` : '';
     if (isPlayground) {
       return [
         `    <app-playground [playground]="pg">`,
@@ -446,7 +470,7 @@ export function generateComponentFile(story, meta) {
       ].join('\n');
     }
     return [
-      `    <app-example-card title="${section.title}">`,
+      `    <app-example-card title="${section.title}"${subtitleAttr}>`,
       `      ${section.template}`,
       `    </app-example-card>`,
     ].join('\n');
@@ -454,10 +478,9 @@ export function generateComponentFile(story, meta) {
 
   // Class body
   const controlFields = controls.map(renderControlCode);
-  const pgLine =
-    hasControls
-      ? `  readonly pg = new Playground([${controls.map((c) => `this.${c.key}`).join(', ')}]);`
-      : null;
+  const pgLine = hasControls
+    ? `  readonly pg = new Playground([${controls.map((c) => `this.${c.key}`).join(', ')}]);`
+    : null;
 
   // story.setup: shared class-level code (DemoSpec top-level)
   const sharedSetup = story.setup ? [story.setup] : [];
@@ -466,11 +489,20 @@ export function generateComponentFile(story, meta) {
   const sectionSetups = story.sections.flatMap((s) => (s.setup ? [s.setup] : []));
 
   const classBodyParts = [
+    ...subtitleFields,
     ...controlFields,
     ...(pgLine ? [pgLine] : []),
     ...sharedSetup,
     ...sectionSetups,
   ].filter(Boolean);
+
+  const hostDirectivesLines = story.hostDirectives?.length
+    ? [
+        `  hostDirectives: [`,
+        ...story.hostDirectives.map((d) => `    { directive: ${d} },`),
+        `  ],`,
+      ]
+    : [];
 
   return [
     `// @generated by scripts/generate-demos.mjs — do not edit manually`,
@@ -482,6 +514,7 @@ export function generateComponentFile(story, meta) {
     `  selector: '${selector}',`,
     `  standalone: true,`,
     `  changeDetection: ChangeDetectionStrategy.OnPush,`,
+    ...hostDirectivesLines,
     `  imports: [`,
     ...decoratorImports.map((n) => `    ${n},`),
     `  ],`,
@@ -541,11 +574,18 @@ function buildImportMap(compodocData) {
   for (const section of ['directives', 'components', 'pipes', 'classes', 'injectables']) {
     for (const item of compodocData[section] ?? []) {
       if (item.name && item.file) {
-        // Convert absolute file path to @cngx import if possible
+        // Convert file path to @cngx import — handles primary and secondary entry points.
+        // Primary:   projects/<lib>/src/...         → @cngx/<lib>
+        // Secondary: projects/<lib>/<entry>/src/... → @cngx/<lib>/<entry>
         const file = item.file;
-        const match = file.match(/projects\/([^/]+)\/src\/(?:public-api\.ts|.*)/);
-        if (match) {
-          map.set(item.name, `@cngx/${match[1]}`);
+        const primary = file.match(/projects\/([^/]+)\/src\//);
+        if (primary) {
+          map.set(item.name, `@cngx/${primary[1]}`);
+          continue;
+        }
+        const secondary = file.match(/projects\/([^/]+)\/([^/]+)\/src\//);
+        if (secondary) {
+          map.set(item.name, `@cngx/${secondary[1]}/${secondary[2]}`);
         }
       }
     }
@@ -669,7 +709,9 @@ async function main() {
       const m = parseDemoPath(d, DEMOS_ROOT);
       return m.lib === demo.lib && m.name === demo.name;
     });
-    if (!actualDemoDir) continue;
+    if (!actualDemoDir) {
+      continue;
+    }
 
     const componentPath = join(actualDemoDir, demo.componentFileName);
 
@@ -704,7 +746,7 @@ async function main() {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  main().catch((err) => {
+  await main().catch((err) => {
     console.error(err);
     process.exit(1);
   });

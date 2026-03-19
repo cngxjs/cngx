@@ -115,7 +115,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error('Usage: node scripts/new-demo.mjs --lib <lib> --name <name> [--category <cat>]');
     process.exit(1);
   }
-  createDemoStub({ lib: args.lib, name: args.name, category: args.category }).catch((err) => {
+  await createDemoStub({ lib: args.lib, name: args.name, category: args.category })
+  .catch((err) => {
     console.error(err.message);
     process.exit(1);
   });

@@ -1,0 +1,338 @@
+// Shared utility styles for @generated demo components.
+// Imported globally in styles.scss — do not scope to a component.
+
+// ── Layout ──────────────────────────────────────────────────────────────────
+
+.table-wrap {
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: var(--card-bg, #fff);
+}
+
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  thead tr {
+    background: var(--pg-bar-bg, #f9fafb);
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.6rem 0.875rem;
+    border-bottom: 1px solid var(--border-color, #eee);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--text-muted, #555);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: var(--pg-bar-bg, #f5f5f5);
+  }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color, #ccc);
+    background: var(--card-bg, #fff);
+    color: var(--text-primary, inherit);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+
+    &:hover {
+      background: var(--pg-bar-bg, #f5f5f5);
+    }
+
+    &:active {
+      background: var(--pg-seg-bg, #eee);
+    }
+  }
+}
+
+// ── Sort ─────────────────────────────────────────────────────────────────────
+
+.sort-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &.cngx-sort-header--active {
+    font-weight: 700;
+    color: #4f46e5;
+  }
+}
+
+.sort-arrow {
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+// ── Filter ───────────────────────────────────────────────────────────────────
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  color: var(--text-muted, #666);
+}
+
+.chip {
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 999px;
+  background: var(--card-bg, #fff);
+  color: var(--text-primary, inherit);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--pg-bar-bg, #f0f0f0);
+  }
+
+  &--active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+  }
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: var(--card-bg, #fff);
+  color: var(--text-primary, inherit);
+  outline: none;
+
+  &:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 2px rgb(79 70 229 / 15%);
+  }
+}
+
+.term-badge,
+.search-term-badge {
+  background: #ede9fe;
+  color: #4f46e5;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// ── Status ───────────────────────────────────────────────────────────────────
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-badge {
+  background: var(--pg-bar-bg, #f3f4f6);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted, #6b7280);
+
+  &.active {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+  }
+}
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+
+.output-badge {
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 4px;
+  padding: 0.6rem 0.875rem;
+  font-size: 0.875rem;
+  color: #3730a3;
+}
+
+.last-clicked {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+// ── Code block ───────────────────────────────────────────────────────────────
+
+.code-block {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono, 'DM Mono', monospace);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 0;
+
+  code {
+    font-family: inherit;
+  }
+}
+
+// ── Empty states ─────────────────────────────────────────────────────────────
+
+.empty-cell {
+  text-align: center;
+  color: var(--text-muted, #999);
+  padding: 1.5rem !important;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted, #888);
+  font-size: 0.95rem;
+}
+
+// ── Events ───────────────────────────────────────────────────────────────────
+
+.event-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.event-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  color: var(--text-muted, #666);
+  min-width: 12rem;
+}
+
+.event-value {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+
+  &--expand {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  &--collapse {
+    background: #fff3e0;
+    color: #b84300;
+  }
+
+  &--empty {
+    color: var(--text-muted, #aaa);
+  }
+}
+
+// ── API reference table ───────────────────────────────────────────────────────
+
+.api-summary {
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.api-section-title {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  color: var(--text-muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color, #eee);
+  padding-bottom: 0.25rem;
+}
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border-color, #eee);
+  }
+
+  th {
+    font-weight: 600;
+    color: var(--text-muted, #444);
+    background: var(--pg-bar-bg, #fafafa);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  code {
+    background: var(--code-bg, #f0f0f0);
+    color: var(--code-text, #d63384);
+    border: 1px solid var(--code-border, transparent);
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+    font-family: var(--font-mono, monospace);
+    font-size: 0.85em;
+  }
+}

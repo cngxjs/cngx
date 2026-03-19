@@ -1,11 +1,11 @@
-import type { DemoSpec } from '../../../../../dev-tools/demo-spec';
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'DataSource',
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { injectDataSource } from '@cngx/common';",
-    "import { PEOPLE, type Person } from '../../../../../fixtures';",
+    "import { PEOPLE, type Person } from '../../../../fixtures';",
   ],
   setup: `
   private readonly items = signal(PEOPLE);

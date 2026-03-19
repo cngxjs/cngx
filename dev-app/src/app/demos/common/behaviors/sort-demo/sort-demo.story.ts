@@ -6,10 +6,10 @@ export const STORY: DemoSpec = {
     "import { PEOPLE, type Person } from '../../../../fixtures';",
   ],
   setup: `
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
-
-  protected readonly sortedRows = computed((): Person[] => {
-    const s = this.sortState();
+  // Table 1 — uncontrolled
+  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1Rows = computed((): Person[] => {
+    const s = this.sort1State();
     if (!s) return PEOPLE;
     return [...PEOPLE].sort((a, b) => {
       const av = (a as unknown as Record<string, string>)[s.active] ?? '';
@@ -18,6 +18,24 @@ export const STORY: DemoSpec = {
       return s.direction === 'asc' ? cmp : -cmp;
     });
   });
+
+  // Table 2 — controlled (pre-seeded, writes back on interaction)
+  protected readonly ctrl2Active = signal<string>('role');
+  protected readonly ctrl2Dir = signal<'asc' | 'desc'>('asc');
+  protected readonly sort2Rows = computed((): Person[] => {
+    const active = this.ctrl2Active();
+    const dir = this.ctrl2Dir();
+    return [...PEOPLE].sort((a, b) => {
+      const av = (a as unknown as Record<string, string>)[active] ?? '';
+      const bv = (b as unknown as Record<string, string>)[active] ?? '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+    if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
+  }
   `,
   sections: [
     {
@@ -25,7 +43,7 @@ export const STORY: DemoSpec = {
       subtitle: '<code>[cngxSort]</code> is a stateful atom holding the active column and direction. <code>[cngxSortHeader]</code> binds to it via the explicit <code>[cngxSortRef]</code> input — no ancestor injection. Clicking toggles asc → desc → off.',
       imports: ['CngxSort', 'CngxSortHeader'],
       template: `
-  <div cngxSort #sort="cngxSort" (sortChange)="sortState.set($event)">
+  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -48,7 +66,7 @@ export const STORY: DemoSpec = {
           </tr>
         </thead>
         <tbody>
-          @for (row of sortedRows(); track row.name) {
+          @for (row of sort1Rows(); track row.name) {
             <tr>
               <td>{{ row.name }}</td>
               <td>{{ row.role }}</td>
@@ -59,7 +77,7 @@ export const STORY: DemoSpec = {
       </table>
     </div>
   </div>
-  @if (sortState(); as s) {
+  @if (sort1State(); as s) {
     <div class="output-badge">
       sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
     </div>
@@ -70,9 +88,9 @@ export const STORY: DemoSpec = {
       subtitle: '<code>[cngxSortActive]</code> + <code>[cngxSortDirection]</code> seed the sort externally. The atom still emits <code>(sortChange)</code> on interaction; consumer writes back to keep state in sync.',
       template: `
   <div cngxSort #sort2="cngxSort"
-    [cngxSortActive]="'role'"
-    [cngxSortDirection]="'asc'"
-    (sortChange)="sortState.set($event)"
+    [cngxSortActive]="ctrl2Active()"
+    [cngxSortDirection]="ctrl2Dir()"
+    (sortChange)="onSort2Change($event)"
   >
     <div class="table-wrap">
       <table class="demo-table">
@@ -96,7 +114,7 @@ export const STORY: DemoSpec = {
           </tr>
         </thead>
         <tbody>
-          @for (row of sortedRows(); track row.name) {
+          @for (row of sort2Rows(); track row.name) {
             <tr>
               <td>{{ row.name }}</td>
               <td>{{ row.role }}</td>
@@ -108,7 +126,7 @@ export const STORY: DemoSpec = {
     </div>
   </div>
   <div class="output-badge">
-    Pre-seeded: <strong>role asc</strong>. Interact to change.
+    Active: <strong>{{ ctrl2Active() }}</strong> &mdash; {{ ctrl2Dir() }}
   </div>`,
     },
   ],

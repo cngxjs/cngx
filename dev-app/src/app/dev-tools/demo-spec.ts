@@ -32,6 +32,14 @@ export interface DemoSpec {
    * Example: `["import { PEOPLE, type Person } from '../../../fixtures';"]`
    */
   moduleImports?: string[];
+  /**
+   * Angular directive/component class names to add as `hostDirectives` on the
+   * generated component. Classes must be imported via `moduleImports`.
+   * Also adds `inject` to the Angular core imports automatically.
+   *
+   * Example: `['CngxSort', 'CngxFilter']`
+   */
+  hostDirectives?: string[];
   /** At least one section (= one ExampleCard). */
   sections: [SectionSpec, ...SectionSpec[]];
 }

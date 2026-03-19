@@ -179,7 +179,9 @@ async function loadCompodocJson() {
 function findComponentMeta(compodocData, componentName) {
   for (const section of ['directives', 'components', 'classes', 'injectables']) {
     const found = (compodocData[section] ?? []).find((c) => c.name === componentName);
-    if (found) return found;
+    if (found) {
+      return found;
+    }
   }
   return null;
 }
@@ -190,7 +192,9 @@ async function loadReferenceStories(demosRoot, count = 2) {
   async function walk(dir) {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
-      if (stories.length >= count) return;
+      if (stories.length >= count) {
+        return;
+      }
       if (entry.isDirectory()) {
         await walk(join(dir, entry.name));
       } else if (entry.name.endsWith('.story.ts')) {
