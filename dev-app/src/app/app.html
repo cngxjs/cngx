@@ -18,13 +18,22 @@
       <!-- @generated:nav:start -->
     <div class="nav-group">
       <span class="nav-label">@cngx/common</span>
-      <a routerLink="/common/behaviors/filter-backend" routerLinkActive="active">Filter — Backend</a>
-      <a routerLink="/common/behaviors/filter" routerLinkActive="active">Filter</a>
-      <a routerLink="/common/behaviors/search-backend" routerLinkActive="active">Search — Backend</a>
-      <a routerLink="/common/behaviors/search" routerLinkActive="active">Search</a>
-      <a routerLink="/common/behaviors/search-mat" routerLinkActive="active">Search — mat-form-field</a>
-      <a routerLink="/common/behaviors/sort-backend" routerLinkActive="active">Sort — Backend</a>
-      <a routerLink="/common/behaviors/sort" routerLinkActive="active">Sort</a>
+      <details class="nav-sub-group" open>
+        <summary class="nav-sub-label">Filter</summary>
+        <a routerLink="/common/behaviors/filter-backend" routerLinkActive="active">Filter — Backend</a>
+        <a routerLink="/common/behaviors/filter" routerLinkActive="active">Filter</a>
+      </details>
+      <details class="nav-sub-group" open>
+        <summary class="nav-sub-label">Search</summary>
+        <a routerLink="/common/behaviors/search-backend" routerLinkActive="active">Search — Backend</a>
+        <a routerLink="/common/behaviors/search" routerLinkActive="active">Search</a>
+        <a routerLink="/common/behaviors/search-mat" routerLinkActive="active">Search — mat-form-field</a>
+      </details>
+      <details class="nav-sub-group" open>
+        <summary class="nav-sub-label">Sort</summary>
+        <a routerLink="/common/behaviors/sort-backend" routerLinkActive="active">Sort — Backend</a>
+        <a routerLink="/common/behaviors/sort" routerLinkActive="active">Sort</a>
+      </details>
       <a routerLink="/common/data/data-source" routerLinkActive="active">DataSource</a>
       <a routerLink="/common/data/smart-data-source" routerLinkActive="active">SmartDataSource</a>
     </div>

@@ -1,6 +1,6 @@
 // @generated usage: node scripts/generate-demos.mjs
 import { readFile, writeFile, readdir, access, stat } from 'node:fs/promises';
-import { join, relative, dirname } from 'node:path';
+import { join, relative, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
@@ -369,29 +369,56 @@ export function generateNavFile(demos) {
 // ---------------------------------------------------------------------------
 
 /**
- * @param {Array<{lib, routePath, title?, name}>} demos
+ * @param {Array<{lib, routePath, title?, name, demoDir}>} demos
  * @returns {string}
  */
 export function generateNavHtmlBlock(demos) {
-  const groups = new Map();
+  // Group by lib
+  const libGroups = new Map();
   for (const demo of demos) {
-    if (!groups.has(demo.lib)) groups.set(demo.lib, []);
-    groups.get(demo.lib).push(demo);
+    if (!libGroups.has(demo.lib)) libGroups.set(demo.lib, []);
+    libGroups.get(demo.lib).push(demo);
   }
 
-  return [...groups.entries()]
+  return [...libGroups.entries()]
     .map(([lib, items]) => {
-      const links = items
-        .map((d) => {
-          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
-          return `      <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+      // Sub-group by demoDir within each lib
+      const dirGroups = new Map();
+      for (const demo of items) {
+        const key = demo.demoDir;
+        if (!dirGroups.has(key)) dirGroups.set(key, []);
+        dirGroups.get(key).push(demo);
+      }
+
+      const inner = [...dirGroups.values()]
+        .map((dirItems) => {
+          if (dirItems.length === 1) {
+            const d = dirItems[0];
+            const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+            return `      <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+          }
+          // Multiple stories in same dir → collapsible group
+          const dirBase = basename(dirItems[0].demoDir).replace(/-demo$/, '');
+          const groupLabel = capitalise(dirBase);
+          const links = dirItems
+            .map((d) => {
+              const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+              return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+            })
+            .join('\n');
+          return [
+            `      <details class="nav-sub-group" open>`,
+            `        <summary class="nav-sub-label">${groupLabel}</summary>`,
+            links,
+            `      </details>`,
+          ].join('\n');
         })
         .join('\n');
 
       return [
         `    <div class="nav-group">`,
         `      <span class="nav-label">@cngx/${lib}</span>`,
-        links,
+        inner,
         `    </div>`,
       ].join('\n');
     })
