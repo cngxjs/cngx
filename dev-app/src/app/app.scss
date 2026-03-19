@@ -79,11 +79,8 @@
 
 .nav {
   flex: 1;
-  // No padding-top here — Chrome omits padding-top from overflow scroll area.
-  // Instead, give the first direct <a> (Home) a margin-top.
+  padding-top: 0.875rem;
   padding-bottom: 0.875rem;
-  display: flex;
-  flex-direction: column;
   overflow-y: auto;
 
   // Custom scrollbar — thin, themed to dark sidebar
@@ -105,11 +102,6 @@
     &:hover {
       background: rgba(255, 255, 255, 0.3);
     }
-  }
-
-  // Home link (first direct <a>) gets the top margin that padding-top can't provide
-  > a:first-child {
-    margin-top: 0.875rem;
   }
 
   a {
