@@ -72,4 +72,81 @@ describe('CngxSort', () => {
     dir.setSort('name');
     expect(spy).toHaveBeenCalledWith({ active: 'name', direction: 'asc' });
   });
+
+  it('emits sortsChange on setSort', () => {
+    const dir = getDir();
+    const spy = vi.fn();
+    dir.sortsChange.subscribe(spy);
+    dir.setSort('name');
+    expect(spy).toHaveBeenCalledWith([{ active: 'name', direction: 'asc' }]);
+  });
+
+  it('emits sortsChange with empty array on clear()', () => {
+    const dir = getDir();
+    const spy = vi.fn();
+    dir.sortsChange.subscribe(spy);
+    dir.setSort('name');
+    dir.clear();
+    expect(spy).toHaveBeenLastCalledWith([]);
+  });
+
+  describe('multi-sort (additive = true)', () => {
+    it('appends a new field as asc', () => {
+      const dir = getDir();
+      dir.setSort('name');
+      dir.setSort('age', true);
+      expect(dir.sorts()).toEqual([
+        { active: 'name', direction: 'asc' },
+        { active: 'age', direction: 'asc' },
+      ]);
+    });
+
+    it('cycles an existing field asc → desc', () => {
+      const dir = getDir();
+      dir.setSort('name');
+      dir.setSort('name', true);
+      expect(dir.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
+    });
+
+    it('removes a field when it is already desc', () => {
+      const dir = getDir();
+      dir.setSort('name');
+      dir.setSort('name', true); // → desc
+      dir.setSort('name', true); // → removed
+      expect(dir.sorts()).toEqual([]);
+      expect(dir.isActive()).toBe(false);
+    });
+
+    it('non-additive click replaces the full stack', () => {
+      const dir = getDir();
+      dir.setSort('name');
+      dir.setSort('age', true);
+      dir.setSort('role'); // plain click — replaces
+      expect(dir.sorts()).toEqual([{ active: 'role', direction: 'asc' }]);
+    });
+
+    it('emits sortsChange with the full stack on additive setSort', () => {
+      const dir = getDir();
+      const spy = vi.fn();
+      dir.sortsChange.subscribe(spy);
+      dir.setSort('name');
+      dir.setSort('age', true);
+      expect(spy).toHaveBeenLastCalledWith([
+        { active: 'name', direction: 'asc' },
+        { active: 'age', direction: 'asc' },
+      ]);
+    });
+
+    it('does not emit sortChange when the last field is removed', () => {
+      const dir = getDir();
+      const spy = vi.fn();
+      dir.setSort('name');
+      dir.sortChange.subscribe(spy);
+      dir.setSort('name', true); // desc
+      dir.setSort('name', true); // removed
+      // sortChange only fires when there is still a primary sort
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ active: 'name', direction: 'desc' });
+    });
+  });
 });

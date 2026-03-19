@@ -7,10 +7,18 @@ import { type CngxSort } from './sort.directive';
  * Apply to any clickable header element. Consumer provides an explicit
  * `[cngxSortRef]` binding — no ancestor injection, no hidden wiring.
  *
+ * In multi-sort mode, Shift+click adds this column to the sort stack.
+ * The `priority()` signal returns the 1-based position in the stack
+ * (0 when not active), useful for showing sort-order badges.
+ *
  * ```html
- * <div cngxSort #sort="cngxSort">
- *   <button cngxSortHeader="name" [cngxSortRef]="sort" #nameHeader="cngxSortHeader">
- *     Name @if (nameHeader.isActive()) { <span>{{ nameHeader.isAsc() ? '↑' : '↓' }}</span> }
+ * <div cngxSort [multiSort]="true" #sort="cngxSort">
+ *   <button cngxSortHeader="name" [cngxSortRef]="sort" #h="cngxSortHeader">
+ *     Name
+ *     @if (h.isActive()) {
+ *       {{ h.isAsc() ? '↑' : '↓' }}
+ *       @if (sort.multiSort()) { <span>{{ h.priority() }}</span> }
+ *     }
  *   </button>
  * </div>
  * ```
@@ -20,7 +28,7 @@ import { type CngxSort } from './sort.directive';
   exportAs: 'cngxSortHeader',
   standalone: true,
   host: {
-    '(click)': 'onSort()',
+    '(click)': 'onSort($event)',
     '[attr.aria-sort]': 'ariaSort()',
     '[class.cngx-sort-header--active]': 'isActive()',
     '[class.cngx-sort-header--asc]': 'isAsc()',
@@ -33,12 +41,30 @@ export class CngxSortHeader {
   /** Explicit reference to the owning `CngxSort`. */
   readonly cngxSortRef = input.required<CngxSort>();
 
-  /** `true` when this column is the active sort column. */
-  readonly isActive = computed(() => this.cngxSortRef().active() === this.field());
+  private readonly _entry = computed(() =>
+    this.cngxSortRef()
+      .sorts()
+      .find((s) => s.active === this.field()),
+  );
+
+  /** `true` when this column is part of the active sort (primary or secondary). */
+  readonly isActive = computed(() => this._entry() !== undefined);
   /** `true` when this column is active and sorted ascending. */
-  readonly isAsc = computed(() => this.isActive() && this.cngxSortRef().direction() === 'asc');
+  readonly isAsc = computed(() => this._entry()?.direction === 'asc');
   /** `true` when this column is active and sorted descending. */
-  readonly isDesc = computed(() => this.isActive() && this.cngxSortRef().direction() === 'desc');
+  readonly isDesc = computed(() => this._entry()?.direction === 'desc');
+
+  /**
+   * 1-based position of this column in the sort stack.
+   * Returns `0` when the column is not part of the active sort.
+   * Only meaningful when `multiSort` is enabled on the owning `CngxSort`.
+   */
+  readonly priority = computed(() => {
+    const idx = this.cngxSortRef()
+      .sorts()
+      .findIndex((s) => s.active === this.field());
+    return idx === -1 ? 0 : idx + 1;
+  });
 
   /** The `aria-sort` attribute value for the host element. */
   readonly ariaSort = computed((): 'ascending' | 'descending' | null => {
@@ -48,7 +74,8 @@ export class CngxSortHeader {
     return this.isAsc() ? 'ascending' : 'descending';
   });
 
-  protected onSort(): void {
-    this.cngxSortRef().setSort(this.field());
+  protected onSort(event?: MouseEvent): void {
+    const additive = this.cngxSortRef().multiSort() && (event?.shiftKey ?? false);
+    this.cngxSortRef().setSort(this.field(), additive);
   }
 }

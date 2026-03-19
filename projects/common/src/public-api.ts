@@ -8,7 +8,7 @@ export { CngxHoverable } from './lib/behaviors/interactive/hoverable.directive';
 export { CngxSearch } from './lib/behaviors/interactive/search.directive';
 
 // Behaviors — data
-export { CngxSort } from './lib/behaviors/data/sort.directive';
+export { CngxSort, type SortEntry } from './lib/behaviors/data/sort.directive';
 export { CngxSortHeader } from './lib/behaviors/data/sort-header.directive';
 export { CngxFilter } from './lib/behaviors/data/filter.directive';
 
