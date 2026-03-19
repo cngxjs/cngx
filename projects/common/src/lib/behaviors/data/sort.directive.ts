@@ -33,9 +33,7 @@ export class CngxSort {
   readonly direction = computed(() => this.directionInput() ?? this._direction());
   /** The current sort state, or `null` when no sort is active. */
   readonly sort = computed(() =>
-    this.active()
-      ? { active: this.active()!, direction: this.direction() ?? 'asc' }
-      : null,
+    this.active() ? { active: this.active()!, direction: this.direction() ?? 'asc' } : null,
   );
   /** `true` when a sort is active. */
   readonly isActive = computed(() => this.sort() !== null);

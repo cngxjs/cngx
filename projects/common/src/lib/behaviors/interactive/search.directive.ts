@@ -47,7 +47,7 @@ export class CngxSearch {
 
   constructor() {
     // fromEvent is the correct RxJS usage here: external DOM event stream.
-    fromEvent<InputEvent>(this.el.nativeElement, 'input')
+    fromEvent<InputEvent>(this.el.nativeElement as HTMLInputElement, 'input')
       .pipe(
         map((e) => (e.target as HTMLInputElement).value),
         switchMap((value) => timer(this.debounceMs()).pipe(map(() => value))),

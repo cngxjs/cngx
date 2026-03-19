@@ -42,7 +42,9 @@ export class CngxSortHeader {
 
   /** The `aria-sort` attribute value for the host element. */
   readonly ariaSort = computed((): 'ascending' | 'descending' | null => {
-    if (!this.isActive()) return null;
+    if (!this.isActive()) {
+      return null;
+    }
     return this.isAsc() ? 'ascending' : 'descending';
   });
 
