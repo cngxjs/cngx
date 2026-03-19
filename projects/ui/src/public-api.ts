@@ -4,3 +4,4 @@
  */
 
 export * from './lib/ui';
+export { CngxMatPaginator } from './lib/paginator/mat-paginator';

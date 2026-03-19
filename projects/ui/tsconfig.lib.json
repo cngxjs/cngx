@@ -10,7 +10,8 @@
     "sourceMap": true,
     "types": [],
     "paths": {
-      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/common": ["dist/common/types/cngx-common.d.ts"]
     }
   },
   "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts"],
