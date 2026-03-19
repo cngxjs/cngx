@@ -66,9 +66,24 @@ export const routes: Routes = [
           import('./demos/common/data/mat-table-demo/mat-table-manual.component').then((m) => m.MatTableManualDemoComponent),
       },
       {
+        path: 'data/mat-table-paginate',
+        loadComponent: () =>
+          import('./demos/common/data/mat-table-demo/mat-table-paginate.component').then((m) => m.MatTablePaginateDemoComponent),
+      },
+      {
+        path: 'data/mat-table-paginate-custom',
+        loadComponent: () =>
+          import('./demos/common/data/mat-table-demo/mat-table-paginate-custom.component').then((m) => m.MatTablePaginateCustomDemoComponent),
+      },
+      {
         path: 'data/mat-table-smart',
         loadComponent: () =>
           import('./demos/common/data/mat-table-demo/mat-table-smart.component').then((m) => m.MatTableSmartDemoComponent),
+      },
+      {
+        path: 'data/paginate-list',
+        loadComponent: () =>
+          import('./demos/common/data/paginate-list-demo/paginate-list.component').then((m) => m.PaginateListDemoComponent),
       },
       {
         path: 'data/smart-data-source',

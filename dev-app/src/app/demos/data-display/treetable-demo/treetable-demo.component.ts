@@ -6,7 +6,8 @@ import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { PlaygroundComponent } from '../../../shared/playground.component';
 import { Playground } from '../../../shared/playground';
 import { CngxTreetable, CngxMaterialTreetable, CngxEmptyTpl, CngxHeaderTpl, CngxCellTpl } from '@cngx/data-display/treetable';
-import { CngxSearch, CngxSort, CngxSortHeader } from '@cngx/common';
+import { CngxSearch, CngxSort, CngxSortHeader, CngxPaginate } from '@cngx/common';
+import { CngxMatPaginator } from '@cngx/ui';
 import { ORG_TREE, type Employee } from '../../../fixtures';
 import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
 import type { FlatNode, Node } from '@cngx/data-display/treetable';
@@ -26,6 +27,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     CngxSort,
     CngxSortHeader,
     CngxCellTpl,
+    CngxPaginate,
+    CngxMatPaginator,
   ],
   template: `
     <app-playground [playground]="pg">
@@ -308,6 +311,29 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     </cngx-treetable>
   </div>
     </app-example-card>
+    <app-example-card title="Pagination — Paginated Root Nodes"
+      [subtitle]="_s15">
+      
+  <div cngxPaginate #pager="cngxPaginate"
+       [total]="deptTotal"
+       [cngxPageIndex]="deptPageIndex()"
+       [cngxPageSize]="deptPageSize()"
+       (pageChange)="deptPageIndex.set($event)"
+       (pageSizeChange)="deptPageSize.set($event)"
+       style="display:contents">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="deptPage()">
+        <ng-template cngxEmpty>
+          <div class="empty-state">No departments on this page.</div>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+    <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />
+    <div class="status-row">
+      <span class="status-badge">department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span>
+    </div>
+  </div>
+    </app-example-card>
   `,
 })
 export class TreetableDemoComponent {
@@ -326,6 +352,7 @@ export class TreetableDemoComponent {
   protected readonly _s12 = 'Search and sort compose via a single <code>computed()</code>: filter first, then sort. No coordination between the two directives — just signal reads.';
   protected readonly _s13 = '<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (<code>FlatNode</code>), <code>let-value="value"</code> (raw primitive).';
   protected readonly _s14 = '<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.';
+  protected readonly _s15 = '<code>CngxPaginate</code> works with treetables by paginating at the root-node level. Slice <code>ORG_TREE.children</code> with <code>pager.range()</code> and pass the result as <code>[tree]</code>. Each "page" shows one department subtree with its full branch intact. This pattern works regardless of Material — swap <code>&lt;cngx-mat-paginator&gt;</code> for any custom nav.';
   readonly selectionMode = Playground.select(
     'Selection Mode',
     [{ label: 'none', value: 'none' }, { label: 'single', value: 'single' }, { label: 'multi', value: 'multi' }],
@@ -411,4 +438,16 @@ export class TreetableDemoComponent {
     return nodes;
   });
   
+
+  private readonly _deptRoots: Node<Employee>[] = ORG_TREE.children ?? [];
+  protected readonly deptPageIndex = signal(0);
+  protected readonly deptPageSize  = signal(1);
+  protected readonly deptTotal     = this._deptRoots.length;
+  protected readonly deptPage      = computed(() =>
+    this._deptRoots.slice(
+      this.deptPageIndex() * this.deptPageSize(),
+      (this.deptPageIndex() + 1) * this.deptPageSize(),
+    ),
+  );
+      
 }

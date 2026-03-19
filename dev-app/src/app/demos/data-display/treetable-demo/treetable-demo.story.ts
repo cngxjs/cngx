@@ -426,5 +426,46 @@ export const STORY: DemoSpec = {
     </cngx-treetable>
   </div>`,
     },
+    {
+      title: 'Pagination — Paginated Root Nodes',
+      subtitle:
+        '<code>CngxPaginate</code> works with treetables by paginating at the root-node level. ' +
+        'Slice <code>ORG_TREE.children</code> with <code>pager.range()</code> and pass the result as <code>[tree]</code>. ' +
+        'Each "page" shows one department subtree with its full branch intact. ' +
+        'This pattern works regardless of Material — swap <code>&lt;cngx-mat-paginator&gt;</code> for any custom nav.',
+      imports: ['CngxTreetable', 'CngxPaginate', 'CngxMatPaginator'],
+      setup: `
+  private readonly _deptRoots: Node<Employee>[] = ORG_TREE.children ?? [];
+  protected readonly deptPageIndex = signal(0);
+  protected readonly deptPageSize  = signal(1);
+  protected readonly deptTotal     = this._deptRoots.length;
+  protected readonly deptPage      = computed(() =>
+    this._deptRoots.slice(
+      this.deptPageIndex() * this.deptPageSize(),
+      (this.deptPageIndex() + 1) * this.deptPageSize(),
+    ),
+  );
+      `,
+      template: `
+  <div cngxPaginate #pager="cngxPaginate"
+       [total]="deptTotal"
+       [cngxPageIndex]="deptPageIndex()"
+       [cngxPageSize]="deptPageSize()"
+       (pageChange)="deptPageIndex.set($event)"
+       (pageSizeChange)="deptPageSize.set($event)"
+       style="display:contents">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="deptPage()">
+        <ng-template cngxEmpty>
+          <div class="empty-state">No departments on this page.</div>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+    <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />
+    <div class="status-row">
+      <span class="status-badge">department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span>
+    </div>
+  </div>`,
+    },
   ],
 };
