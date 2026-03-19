@@ -80,7 +80,9 @@ export class CngxTreetablePresenter<T = unknown> {
    * When not bound (the default), the component manages its own expand state
    * and starts fully expanded.
    */
-  readonly expandedIdsInput = input<ReadonlySet<string> | undefined>(undefined, { alias: 'expandedIds' });
+  readonly expandedIdsInput = input<ReadonlySet<string> | undefined>(undefined, {
+    alias: 'expandedIds',
+  });
 
   /**
    * Row selection behaviour.
@@ -114,7 +116,9 @@ export class CngxTreetablePresenter<T = unknown> {
    *
    * When not bound, the component manages its own selection state internally.
    */
-  readonly selectedIdsInput = input<ReadonlySet<string> | undefined>(undefined, { alias: 'selectedIds' });
+  readonly selectedIdsInput = input<ReadonlySet<string> | undefined>(undefined, {
+    alias: 'selectedIds',
+  });
 
   /**
    * Custom identity function for CDK / Material table's `trackBy`.
@@ -123,7 +127,7 @@ export class CngxTreetablePresenter<T = unknown> {
    *
    * @defaultValue `node => node.id`
    */
-  trackBy = input<(node: FlatNode<T>) => unknown>(node => node.id);
+  trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
 
   /** Emitted when the user clicks a row or activates it via keyboard. */
   nodeClicked = output<FlatNode<T>>();
@@ -165,7 +169,7 @@ export class CngxTreetablePresenter<T = unknown> {
 
   private readonly _expandedIds = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
     source: this.flatNodes,
-    computation: nodes => getInitialExpandedIds(nodes),
+    computation: (nodes) => getInitialExpandedIds(nodes),
   });
 
   /**
@@ -179,7 +183,7 @@ export class CngxTreetablePresenter<T = unknown> {
 
   /** The subset of `flatNodes` that should be rendered (all ancestors expanded). */
   readonly visibleNodes = computed(() =>
-    this.flatNodes().filter(n => isNodeVisible(n, this.expandedIds())),
+    this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
   );
 
   /** `true` when there are no visible nodes to render. */
@@ -227,9 +231,11 @@ export class CngxTreetablePresenter<T = unknown> {
    */
   readonly isAllSelected = computed(() => {
     const nodes = this.visibleNodes();
-    if (nodes.length === 0) return false;
+    if (nodes.length === 0) {
+      return false;
+    }
     const selected = this.selectedIds();
-    return nodes.every(n => selected.has(n.id));
+    return nodes.every((n) => selected.has(n.id));
   });
 
   /**
@@ -238,9 +244,11 @@ export class CngxTreetablePresenter<T = unknown> {
    */
   readonly isIndeterminate = computed(() => {
     const nodes = this.visibleNodes();
-    if (nodes.length === 0) return false;
+    if (nodes.length === 0) {
+      return false;
+    }
     const selected = this.selectedIds();
-    const count = nodes.filter(n => selected.has(n.id)).length;
+    const count = nodes.filter((n) => selected.has(n.id)).length;
     return count > 0 && count < nodes.length;
   });
 
@@ -280,15 +288,23 @@ export class CngxTreetablePresenter<T = unknown> {
     // Sync SelectionModel when selectedIds input changes (controlled mode).
     effect(() => {
       const input = this.selectedIdsInput();
-      if (input === undefined) return;
+      if (input === undefined) {
+        return;
+      }
       const inputSet = new Set(input);
       const current = new Set(this._selectionModel.selected);
-      const toDeselect = [...current].filter(id => !inputSet.has(id));
-      const toSelect = [...inputSet].filter(id => !current.has(id));
-      if (toDeselect.length === 0 && toSelect.length === 0) return;
+      const toDeselect = [...current].filter((id) => !inputSet.has(id));
+      const toSelect = [...inputSet].filter((id) => !current.has(id));
+      if (toDeselect.length === 0 && toSelect.length === 0) {
+        return;
+      }
       untracked(() => {
-        if (toDeselect.length) this._selectionModel.deselect(...toDeselect);
-        if (toSelect.length) this._selectionModel.select(...toSelect);
+        if (toDeselect.length) {
+          this._selectionModel.deselect(...toDeselect);
+        }
+        if (toSelect.length) {
+          this._selectionModel.select(...toSelect);
+        }
       });
     });
   }
@@ -335,7 +351,9 @@ export class CngxTreetablePresenter<T = unknown> {
    * No-op when `selectionMode` is `'none'`.
    */
   toggleSelection(node: FlatNode<T>): void {
-    if (this.selectionMode() === 'none') return;
+    if (this.selectionMode() === 'none') {
+      return;
+    }
     this._selectionModel.toggle(node.id);
   }
 
@@ -344,11 +362,13 @@ export class CngxTreetablePresenter<T = unknown> {
    * Only meaningful in `'multi'` mode.
    */
   toggleAll(): void {
-    if (this.selectionMode() !== 'multi') return;
+    if (this.selectionMode() !== 'multi') {
+      return;
+    }
     if (this.isAllSelected()) {
       this._selectionModel.clear();
     } else {
-      this._selectionModel.select(...this.visibleNodes().map(n => n.id));
+      this._selectionModel.select(...this.visibleNodes().map((n) => n.id));
     }
   }
 
@@ -378,19 +398,23 @@ export class CngxTreetablePresenter<T = unknown> {
   handleKeyDown(event: KeyboardEvent): void {
     const nodes = this.visibleNodes();
     const currentId = this.focusedNodeId();
-    const currentIndex = currentId ? nodes.findIndex(n => n.id === currentId) : -1;
+    const currentIndex = currentId ? nodes.findIndex((n) => n.id === currentId) : -1;
 
     switch (event.key) {
       case 'ArrowDown': {
         event.preventDefault();
         const next = nodes[currentIndex + 1];
-        if (next) this.focusedNodeId.set(next.id);
+        if (next) {
+          this.focusedNodeId.set(next.id);
+        }
         break;
       }
       case 'ArrowUp': {
         event.preventDefault();
         const prev = nodes[currentIndex - 1];
-        if (prev) this.focusedNodeId.set(prev.id);
+        if (prev) {
+          this.focusedNodeId.set(prev.id);
+        }
         break;
       }
       case 'ArrowRight': {
@@ -404,12 +428,16 @@ export class CngxTreetablePresenter<T = unknown> {
       case 'ArrowLeft': {
         event.preventDefault();
         const node = nodes[currentIndex];
-        if (!node) break;
+        if (!node) {
+          break;
+        }
         if (node.hasChildren && this.expandedIds().has(node.id)) {
           this.toggle(node);
         } else {
           const parentId = node.parentIds.at(-1);
-          if (parentId) this.focusedNodeId.set(parentId);
+          if (parentId) {
+            this.focusedNodeId.set(parentId);
+          }
         }
         break;
       }
@@ -417,18 +445,24 @@ export class CngxTreetablePresenter<T = unknown> {
       case ' ': {
         event.preventDefault();
         const node = nodes[currentIndex];
-        if (node) this.handleRowClick(node);
+        if (node) {
+          this.handleRowClick(node);
+        }
         break;
       }
       case 'Home': {
         event.preventDefault();
-        if (nodes[0]) this.focusedNodeId.set(nodes[0].id);
+        if (nodes[0]) {
+          this.focusedNodeId.set(nodes[0].id);
+        }
         break;
       }
       case 'End': {
         event.preventDefault();
         const last = nodes.at(-1);
-        if (last) this.focusedNodeId.set(last.id);
+        if (last) {
+          this.focusedNodeId.set(last.id);
+        }
         break;
       }
     }

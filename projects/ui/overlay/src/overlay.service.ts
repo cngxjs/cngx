@@ -1,14 +1,6 @@
-import {
-  Injectable,
-  Injector,
-  inject,
-} from '@angular/core';
+import { Injectable, Injector, inject } from '@angular/core';
 import { type ComponentRef, type Type } from '@angular/core';
-import {
-  Overlay,
-  OverlayConfig,
-  type OverlayRef as CdkOverlayRef,
-} from '@angular/cdk/overlay';
+import { Overlay, OverlayConfig, type OverlayRef as CdkOverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { CngxOverlayRef } from './overlay-ref';
 
@@ -28,10 +20,7 @@ export class CngxOverlay {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);
 
-  open<C, R = unknown>(
-    component: Type<C>,
-    config: CngxOverlayConfig = {},
-  ): CngxOverlayRef<R> {
+  open<C, R = unknown>(component: Type<C>, config: CngxOverlayConfig = {}): CngxOverlayRef<R> {
     const overlayConfig = new OverlayConfig({
       hasBackdrop: true,
       positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),

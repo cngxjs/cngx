@@ -18,7 +18,12 @@ export function flattenTree<T>(
   const result: FlatNode<T>[] = [];
   const resolveId = nodeId ?? ((_node: T, path: readonly number[]) => path.join('-'));
 
-  function process(node: Node<T>, depth: number, parentIds: readonly string[], path: readonly number[]): void {
+  function process(
+    node: Node<T>,
+    depth: number,
+    parentIds: readonly string[],
+    path: readonly number[],
+  ): void {
     const id = resolveId(node.value, path);
     result.push({
       id,
@@ -27,7 +32,9 @@ export function flattenTree<T>(
       hasChildren: (node.children?.length ?? 0) > 0,
       parentIds,
     });
-    node.children?.forEach((child, i) => process(child, depth + 1, [...parentIds, id], [...path, i]));
+    node.children?.forEach((child, i) =>
+      process(child, depth + 1, [...parentIds, id], [...path, i]),
+    );
   }
 
   roots.forEach((root, i) => process(root, 0, [], [i]));
@@ -45,10 +52,14 @@ export function flattenTree<T>(
 export function extractColumns<T>(
   input: Node<T> | Node<T>[],
   options?: Pick<TreetableOptions<T>, 'customColumnOrder'>,
-): ReadonlyArray<string> {
-  if (options?.customColumnOrder) return [...options.customColumnOrder] as string[];
+): readonly string[] {
+  if (options?.customColumnOrder) {
+    return [...options.customColumnOrder] as string[];
+  }
   const firstNode = Array.isArray(input) ? input[0] : input;
-  if (!firstNode) return [];
+  if (!firstNode) {
+    return [];
+  }
   return Object.entries(firstNode.value as Record<string, unknown>)
     .filter(([, v]) => typeof v !== 'object' || v === null)
     .map(([k]) => k);
@@ -59,7 +70,7 @@ export function extractColumns<T>(
  * meaning the node should currently be visible in the table.
  */
 export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<string>): boolean {
-  return node.parentIds.every(id => expandedIds.has(id));
+  return node.parentIds.every((id) => expandedIds.has(id));
 }
 
 /**
@@ -67,7 +78,7 @@ export function isNodeVisible(node: FlatNode<unknown>, expandedIds: ReadonlySet<
  * children — i.e. the tree starts fully expanded.
  */
 export function getInitialExpandedIds<T>(nodes: FlatNode<T>[]): ReadonlySet<string> {
-  return new Set(nodes.filter(n => n.hasChildren).map(n => n.id));
+  return new Set(nodes.filter((n) => n.hasChildren).map((n) => n.id));
 }
 
 /**
@@ -99,7 +110,9 @@ export function filterTree<T>(nodes: Node<T>[], predicate: (value: T) => boolean
  */
 export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 'desc'): Node<T>[] {
   const toPrimitive = (v: unknown): string => {
-    if (v === null || v === undefined || typeof v === 'object') return '';
+    if (v === null || v === undefined || typeof v === 'object') {
+      return '';
+    }
     return String(v as string | number | boolean | bigint);
   };
   const sorted = [...nodes].sort((a, b) => {
@@ -121,7 +134,9 @@ export function sortTree<T>(nodes: Node<T>[], field: string, direction: 'asc' | 
 export function nodeMatchesSearch<T>(value: T, term: string): boolean {
   const lower = term.toLowerCase();
   return Object.values(value as Record<string, unknown>).some((v) => {
-    if (v === null || v === undefined || typeof v === 'object') return false;
+    if (v === null || v === undefined || typeof v === 'object') {
+      return false;
+    }
     return String(v as string | number | boolean | bigint)
       .toLowerCase()
       .includes(lower);

@@ -23,7 +23,6 @@ import { CngxTreetableRow } from './treetable-row.directive';
 import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
 import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
 
-
 /**
  * Headless tree table built on Angular CDK Table.
  *
@@ -57,8 +56,24 @@ import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
   hostDirectives: [
     {
       directive: CngxTreetablePresenter,
-      inputs: ['tree', 'options', 'nodeId', 'expandedIds', 'selectionMode', 'showCheckboxes', 'selectedIds', 'trackBy'],
-      outputs: ['nodeClicked', 'nodeExpanded', 'nodeCollapsed', 'expandedIdsChange', 'selectionChanged', 'selectedIdsChange'],
+      inputs: [
+        'tree',
+        'options',
+        'nodeId',
+        'expandedIds',
+        'selectionMode',
+        'showCheckboxes',
+        'selectedIds',
+        'trackBy',
+      ],
+      outputs: [
+        'nodeClicked',
+        'nodeExpanded',
+        'nodeCollapsed',
+        'expandedIdsChange',
+        'selectionChanged',
+        'selectedIdsChange',
+      ],
     },
   ],
   imports: [
@@ -89,8 +104,12 @@ export class CngxTreetable<T> {
   protected readonly emptyTpl = contentChild(CngxEmptyTpl);
 
   /** @internal */
-  protected cellTplFor(col: string) { return resolveCellTpl<T>(col, this.cellTpls); }
+  protected cellTplFor(col: string) {
+    return resolveCellTpl<T>(col, this.cellTpls);
+  }
 
   /** @internal */
-  protected headerTplFor(col: string) { return resolveHeaderTpl(col, this.headerTpls); }
+  protected headerTplFor(col: string) {
+    return resolveHeaderTpl(col, this.headerTpls);
+  }
 }

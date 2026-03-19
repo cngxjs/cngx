@@ -6,14 +6,14 @@ import type { FlatNode, Node } from './models';
 import { CngxTreetable } from './treetable.component';
 import { CngxTreetablePresenter } from './treetable-presenter';
 
-type Item = { name: string; age: number };
+interface Item {
+  name: string;
+  age: number;
+}
 
 const tree: Node<Item> = {
   value: { name: 'Alice', age: 30 },
-  children: [
-    { value: { name: 'Bob', age: 10 } },
-    { value: { name: 'Carol', age: 12 } },
-  ],
+  children: [{ value: { name: 'Bob', age: 10 } }, { value: { name: 'Carol', age: 12 } }],
 };
 
 @Component({
@@ -25,7 +25,9 @@ class TestHost {
   clicked: FlatNode<Item> | null = null;
 }
 
-function getPresenter<T>(fixture: ReturnType<typeof TestBed.createComponent<TestHost>>): CngxTreetablePresenter<T> {
+function getPresenter<T>(
+  fixture: ReturnType<typeof TestBed.createComponent<TestHost>>,
+): CngxTreetablePresenter<T> {
   return fixture.debugElement
     .query(By.directive(CngxTreetable))
     .injector.get(CngxTreetablePresenter) as CngxTreetablePresenter<T>;
