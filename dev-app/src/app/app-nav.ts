@@ -23,6 +23,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Sort', path: 'common/behaviors/sort' },
       { label: 'Sort — Multi-Key', path: 'common/behaviors/sort-multi' },
       { label: 'DataSource', path: 'common/data/data-source' },
+      { label: 'mat-table — DataSource (Manual Pipeline)', path: 'common/data/mat-table-manual' },
+      { label: 'mat-table — SmartDataSource', path: 'common/data/mat-table-smart' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
     ],
   },

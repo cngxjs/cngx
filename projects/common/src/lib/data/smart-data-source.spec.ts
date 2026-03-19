@@ -98,6 +98,35 @@ describe('CngxSmartDataSource — with directives', () => {
     sub.unsubscribe();
   });
 
+  it('sorts by multiple columns via CngxSort multi-sort', () => {
+    const fixture = TestBed.createComponent(WithDirectivesHost);
+    fixture.detectChanges();
+
+    const divDebug = fixture.debugElement.query(By.directive(CngxSort));
+    const elemInjector: Injector = divDebug.injector;
+    const sortDir = elemInjector.get(CngxSort);
+
+    // Tie-breaking data: two items share the same age
+    const items = signal([
+      { name: 'Charlie', age: 30 },
+      { name: 'Alice', age: 25 },
+      { name: 'Bob', age: 30 },
+    ]);
+    const ds = runInInjectionContext(elemInjector, () => injectSmartDataSource(items));
+
+    // Primary sort: age asc; secondary (additive): name asc
+    sortDir.setSort('age');
+    sortDir.setSort('name', true);
+
+    const values: Item[][] = [];
+    const sub = ds.connect().subscribe((v: Item[]) => values.push(v));
+    TestBed.flushEffects();
+
+    const sorted = values.at(-1)!;
+    expect(sorted.map((i) => i.name)).toEqual(['Alice', 'Bob', 'Charlie']);
+    sub.unsubscribe();
+  });
+
   it('filters via CngxFilter', () => {
     const fixture = TestBed.createComponent(WithDirectivesHost);
     fixture.detectChanges();

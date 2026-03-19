@@ -509,6 +509,16 @@ export function generateComponentFile(story, meta) {
   // Collect all story imports (deduplicated)
   const allStoryImports = [...new Set(story.sections.flatMap((s) => s.imports ?? []))];
 
+  // Build a set of identifiers already covered by moduleImports so we can skip
+  // the duplicate TS import line while still adding them to @Component.imports.
+  const moduleImportIdentifiers = new Set(
+    (story.moduleImports ?? []).flatMap((line) => {
+      const match = line.match(/import\s*\{([^}]+)\}/);
+      if (!match) return [];
+      return match[1].split(',').map((id) => id.trim().replace(/^type\s+/, ''));
+    }),
+  );
+
   // Resolve story imports via importMap; group unresolved together
   const resolvedImports = new Map(); // modulePath → Set<className>
   const unresolved = [];
@@ -519,9 +529,12 @@ export function generateComponentFile(story, meta) {
         resolvedImports.set(src, new Set());
       }
       resolvedImports.get(src).add(cls);
-    } else {
+    } else if (!moduleImportIdentifiers.has(cls)) {
+      // Not in compodoc and not already imported via moduleImports → mark as unresolved
       unresolved.push(cls);
     }
+    // else: already covered by moduleImports — will appear in @Component.imports but
+    // no duplicate TS import line is emitted
   }
 
   // Build import lines — only include what is actually referenced in TS class body
