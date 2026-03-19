@@ -12,6 +12,6 @@
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "treetable/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

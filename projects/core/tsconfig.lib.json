@@ -13,6 +13,6 @@
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "tokens/**/*.ts", "utils/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }
