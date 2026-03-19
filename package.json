@@ -24,7 +24,7 @@
     "test:forms": "ng test forms",
     "test:ui": "ng test ui",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint:fix": "eslint . --fix && prettier --write \"projects/**/src/**/*.{ts,html,scss}\" --ignore-pattern \"**/*.spec.ts\"",
     "docs": "rm -rf docs && compodoc -p tsconfig.doc.json -d docs --theme material",
     "docs:serve": "compodoc -p tsconfig.doc.json -d docs -s --theme material",
     "docs:json": "compodoc -p tsconfig.doc.json -e json -d .compodoc",
