@@ -2,6 +2,7 @@ import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import type { Observable } from 'rxjs';
+import { CngxPaginate } from '../behaviors/data/paginate.directive';
 import { CngxFilter } from '../behaviors/data/filter.directive';
 import { CngxSort } from '../behaviors/data/sort.directive';
 import { CngxSearch } from '../behaviors/interactive/search.directive';
@@ -23,7 +24,7 @@ export interface CngxSmartDataSourceOptions<T> {
 
 /**
  * A CDK `DataSource` that optionally integrates with `CngxSort`,
- * `CngxFilter`, and `CngxSearch` present in the injection
+ * `CngxFilter`, `CngxSearch`, and `CngxPaginate` present in the injection
  * tree. Each directive is injected optionally — if absent, that processing
  * step is skipped.
  *
@@ -42,6 +43,16 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly sort = inject(CngxSort, { optional: true });
   private readonly filter = inject(CngxFilter, { optional: true });
   private readonly search = inject(CngxSearch, { optional: true });
+  private readonly paginate = inject(CngxPaginate, { optional: true });
+
+  /**
+   * Items after filter and search are applied, before sort and pagination.
+   * Use `filteredCount()` to get the pre-pagination count for paginator `total`.
+   */
+  private readonly _filtered: Signal<T[]>;
+
+  /** Number of items after filtering/searching, before pagination. */
+  readonly filteredCount: Signal<number>;
 
   private readonly _processed: Signal<T[]>;
 
@@ -51,7 +62,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   ) {
     super();
 
-    this._processed = computed(() => {
+    this._filtered = computed(() => {
       let items = this._data();
 
       // Filter via CngxFilter (predicate function)
@@ -78,6 +89,14 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
           });
         items = items.filter((item) => searchFn(item, term));
       }
+
+      return items;
+    });
+
+    this.filteredCount = computed(() => this._filtered().length);
+
+    this._processed = computed(() => {
+      let items = this._filtered();
 
       // Sort via CngxSort — respects the full multi-sort stack in priority order
       const sorts = this.sort?.sorts() ?? [];
@@ -106,6 +125,12 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
           }
           return 0;
         });
+      }
+
+      // Paginate via CngxPaginate — slice after sort
+      if (this.paginate) {
+        const [start, end] = this.paginate.range();
+        items = items.slice(start, end);
       }
 
       return items;

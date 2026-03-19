@@ -11,6 +11,7 @@ export { CngxSearch } from './lib/behaviors/interactive/search.directive';
 export { CngxSort, type SortEntry } from './lib/behaviors/data/sort.directive';
 export { CngxSortHeader } from './lib/behaviors/data/sort-header.directive';
 export { CngxFilter } from './lib/behaviors/data/filter.directive';
+export { CngxPaginate } from './lib/behaviors/data/paginate.directive';
 
 // Data sources
 export { CngxDataSource, injectDataSource } from './lib/data/data-source';
