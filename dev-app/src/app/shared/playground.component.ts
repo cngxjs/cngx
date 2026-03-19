@@ -109,6 +109,7 @@ import {
         border-radius: 12px;
         box-shadow: var(--card-shadow);
         overflow: hidden;
+        margin-bottom: 2rem;
       }
 
       .playground-preview {

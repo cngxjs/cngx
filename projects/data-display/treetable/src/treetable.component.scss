@@ -107,7 +107,9 @@ cdk-cell {
   font-size: 0.875rem;
   line-height: 1;
   border-radius: 4px;
-  transition: background 120ms, color 120ms;
+  transition:
+    background 120ms,
+    color 120ms;
 
   &:hover {
     background: var(--cngx-table-header-border);
@@ -142,7 +144,9 @@ cdk-cell {
 
     &.cngx-treetable__expand-cell {
       padding-inline-end: 0.125rem;
-      padding-inline-start: calc(var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 0.125rem);
+      padding-inline-start: calc(
+        var(--cngx-row-depth, 0) * var(--cngx-table-indent-size) + 0.125rem
+      );
     }
 
     &.cngx-treetable__select-cell {

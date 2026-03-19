@@ -48,7 +48,7 @@ export interface TreetableOptions<T> {
    * Explicit column order. Only keys whose values are primitive (non-object) are
    * rendered by default; use this to override that set or reorder columns.
    */
-  customColumnOrder?: ReadonlyArray<keyof T & string>;
+  customColumnOrder?: readonly (keyof T & string)[];
   /**
    * When `true` (the default), column header labels have their first letter
    * uppercased. Set to `false` to display raw key names.

@@ -28,6 +28,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        margin-bottom: 2rem;
       }
 
       .example-header {

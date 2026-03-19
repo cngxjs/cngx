@@ -31,7 +31,7 @@ export interface SelectControl<T = unknown> {
   readonly type: 'select';
   readonly label: string;
   readonly description?: string;
-  readonly options: ReadonlyArray<{ readonly label: string; readonly value: T }>;
+  readonly options: readonly { readonly label: string; readonly value: T }[];
   readonly value: WritableSignal<T>;
 }
 
@@ -95,7 +95,7 @@ export class Playground {
 
   static select<T>(
     label: string,
-    options: ReadonlyArray<{ readonly label: string; readonly value: T }>,
+    options: readonly { readonly label: string; readonly value: T }[],
     def: T,
     opts?: Pick<SelectControl, 'description'>,
   ): SelectControl<T> {

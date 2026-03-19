@@ -6,7 +6,10 @@ import { CngxFilter } from '../behaviors/data/filter.directive';
 import { CngxSort } from '../behaviors/data/sort.directive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
-type Item = { name: string; age: number };
+interface Item {
+  name: string;
+  age: number;
+}
 
 const ITEMS: Item[] = [
   { name: 'Charlie', age: 30 },

@@ -1,0 +1,430 @@
+import type { DemoSpec } from '../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'Treetable',
+  moduleImports: [
+    "import { ORG_TREE, type Employee } from '../../../fixtures';",
+    "import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';",
+    "import type { FlatNode, Node } from '@cngx/data-display/treetable';",
+  ],
+  controls: [
+    {
+      key: 'selectionMode',
+      type: 'select',
+      label: 'Selection Mode',
+      options: [
+        { label: 'none', value: 'none' },
+        { label: 'single', value: 'single' },
+        { label: 'multi', value: 'multi' },
+      ],
+      default: 'none',
+    },
+    { key: 'showCheckboxes', type: 'bool', label: 'Show Checkboxes', default: false },
+    { key: 'highlightRowOnHover', type: 'bool', label: 'Highlight Row On Hover', default: true },
+    { key: 'capitaliseHeader', type: 'bool', label: 'Capitalise Header', default: true },
+  ],
+  setup: `
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });
+  `,
+  sections: [
+    {
+      title: 'Playground — CDK Variant',
+      subtitle:
+        'CDK <code>&lt;cngx-treetable&gt;</code> with all presenter inputs wired. Toggle controls to explore selection modes, checkboxes, hover highlight.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [selectionMode]="$any(selectionMode.value())"
+      [showCheckboxes]="showCheckboxes.value()"
+      [options]="{ highlightRowOnHover: highlightRowOnHover.value(), capitaliseHeader: capitaliseHeader.value() }"
+      (nodeClicked)="lastClickedCdk.set($event)"
+    />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+    </div>
+  }`,
+    },
+    {
+      title: 'CDK Treetable',
+      subtitle:
+        'Headless — uses <code>CdkTable</code>, no Material dependency. Columns auto-detected from first node. Pass <code>[tree]</code> as a single root node or an array of roots.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+      (depth {{ node.depth }})
+    </div>
+  }`,
+    },
+    {
+      title: 'Material Treetable',
+      subtitle:
+        'Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant. Theme via <code>mat-treetable-theme.scss</code>.',
+      imports: ['CngxMaterialTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
+  </div>
+  @if (lastClickedMat(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+    </div>
+  }`,
+    },
+    {
+      title: 'CDK — Single Selection (click-to-select)',
+      subtitle:
+        '<code>selectionMode="single"</code> — clicking a row selects it. Emit via <code>(selectionChanged)</code>.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      (selectionChanged)="singleSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
+  </div>`,
+    },
+    {
+      title: 'CDK — Multi Selection (click-to-select)',
+      subtitle:
+        '<code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via <code>(selectionChanged)</code>.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      (selectionChanged)="multiSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged ({{ multiSelected().length }}):
+    <strong>{{ multiSelected().join(', ') || '—' }}</strong>
+  </div>`,
+    },
+    {
+      title: 'Material — Single Selection + Checkbox',
+      subtitle:
+        '<code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code> — no header checkbox in single mode.',
+      imports: ['CngxMaterialTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      [showCheckboxes]="true"
+      (selectionChanged)="singleCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
+  </div>`,
+    },
+    {
+      title: 'Material — Multi Selection + Checkboxes',
+      subtitle:
+        '<code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code> — header checkbox selects / deselects all visible rows, including indeterminate state.',
+      imports: ['CngxMaterialTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      (selectionChanged)="multiCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged ({{ multiCheckboxSelected().length }}):
+    <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
+  </div>`,
+    },
+    {
+      title: 'CDK — Controlled Selection (Two-Way Binding)',
+      subtitle:
+        '<code>[selectedIds]="controlledIds()"</code> + <code>(selectedIdsChange)="controlledIds.set($event)"</code> — external state drives selection. Pre-seeded with two IDs.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      [selectedIds]="controlledIds()"
+      (selectedIdsChange)="controlledIds.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectedIds ({{ controlledIds().size }}): <strong>{{ controlledIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="selectLevel1()">Select all L1</button>
+    <button type="button" (click)="clearSelection()">Clear</button>
+  </div>`,
+    },
+    {
+      title: 'CDK — Controlled Expand (Two-Way Binding)',
+      subtitle:
+        '<code>[expandedIds]="controlledExpandedIds()"</code> + <code>(expandedIdsChange)="controlledExpandedIds.set($event)"</code> — external state drives expand/collapse. Pre-seeded with root only.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [expandedIds]="controlledExpandedIds()"
+      (expandedIdsChange)="controlledExpandedIds.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    expandedIds ({{ controlledExpandedIds().size }}): <strong>{{ expandedIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="expandAll()">Expand all</button>
+    <button type="button" (click)="collapseAll()">Collapse all</button>
+  </div>`,
+    },
+    {
+      title: 'CDK — Expand &amp; Collapse Outputs',
+      subtitle:
+        '<code>(nodeExpanded)</code> and <code>(nodeCollapsed)</code> fire on each toggle — useful for lazy-loading children or analytics.',
+      imports: ['CngxTreetable'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      (nodeExpanded)="lastExpanded.set($event)"
+      (nodeCollapsed)="lastCollapsed.set($event)"
+    />
+  </div>
+  <div class="status-row">
+    <span class="status-badge">
+      nodeExpanded: <strong>{{ lastExpanded()?.value?.name ?? '—' }}</strong>
+    </span>
+    <span class="status-badge">
+      nodeCollapsed: <strong>{{ lastCollapsed()?.value?.name ?? '—' }}</strong>
+    </span>
+  </div>`,
+    },
+    {
+      title: 'Search — filterTree + nodeMatchesSearch',
+      subtitle:
+        '<code>filterTree</code> prunes whole branches; <code>nodeMatchesSearch</code> does case-insensitive full-text matching across all primitive fields. Consumer feeds the result into <code>[tree]</code>.',
+      imports: ['CngxTreetable', 'CngxEmptyTpl', 'CngxSearch'],
+      template: `
+  <div class="search-row">
+    <input
+      cngxSearch
+      [debounceMs]="200"
+      (searchChange)="searchTerm.set($event)"
+      placeholder="Search employees…"
+      class="search-input"
+    />
+    @if (searchTerm()) {
+      <span class="term-badge">{{ searchTerm() }}</span>
+    }
+  </div>
+  <div class="table-wrap">
+    <cngx-treetable [tree]="searchFilteredTree()">
+      <ng-template cngxEmpty>
+        <div class="empty-state">No results for &quot;{{ searchTerm() }}&quot;.</div>
+      </ng-template>
+    </cngx-treetable>
+  </div>`,
+    },
+    {
+      title: 'Sort — sortTree + CngxSort + CngxSortHeader',
+      subtitle:
+        '<code>[cngxSort]</code> holds sort state. <code>[cngxSortHeader]</code> wires a click target to it via the explicit <code>[cngxSortRef]</code> binding — no ancestor injection. <code>sortTree</code> reorders each tree level independently.',
+      imports: ['CngxTreetable', 'CngxHeaderTpl', 'CngxSort', 'CngxSortHeader'],
+      template: `
+  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="sortedTree()">
+        <ng-template [cngxHeader]="'name'">
+          <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+            Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'role'">
+          <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+            Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'location'">
+          <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+            Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+  </div>
+  @if (activeSortState(); as s) {
+    <div class="output-badge">
+      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
+    </div>
+  }`,
+    },
+    {
+      title: 'Combined — Sort + Search',
+      subtitle:
+        'Search and sort compose via a single <code>computed()</code>: filter first, then sort. No coordination between the two directives — just signal reads.',
+      imports: ['CngxTreetable', 'CngxHeaderTpl', 'CngxEmptyTpl', 'CngxSort', 'CngxSortHeader', 'CngxSearch'],
+      template: `
+  <div class="search-row">
+    <input
+      cngxSearch
+      [debounceMs]="200"
+      (searchChange)="combinedSearchTerm.set($event)"
+      placeholder="Search…"
+      class="search-input"
+    />
+  </div>
+  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="combinedTree()">
+        <ng-template [cngxHeader]="'name'">
+          <button cngxSortHeader="name" [cngxSortRef]="combinedSort" #cn="cngxSortHeader" class="sort-btn">
+            Name @if (cn.isActive()) {<span class="sort-arrow">{{ cn.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'role'">
+          <button cngxSortHeader="role" [cngxSortRef]="combinedSort" #cr="cngxSortHeader" class="sort-btn">
+            Role @if (cr.isActive()) {<span class="sort-arrow">{{ cr.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'location'">
+          <button cngxSortHeader="location" [cngxSortRef]="combinedSort" #cl="cngxSortHeader" class="sort-btn">
+            Location @if (cl.isActive()) {<span class="sort-arrow">{{ cl.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template cngxEmpty>
+          <div class="empty-state">No results for &quot;{{ combinedSearchTerm() }}&quot;.</div>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'CDK — Custom Cell &amp; Header Templates',
+      subtitle:
+        '<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (<code>FlatNode</code>), <code>let-value="value"</code> (raw primitive).',
+      imports: ['CngxTreetable', 'CngxCellTpl', 'CngxHeaderTpl'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable [tree]="tree()">
+      <ng-template [cngxHeader]="'name'">
+        <span class="custom-header">&#9733; Employee</span>
+      </ng-template>
+      <ng-template [cngxCell]="'name'" let-node let-value="value">
+        <span [style.font-weight]="node.depth === 0 ? '700' : '400'">{{ value }}</span>
+      </ng-template>
+      <ng-template [cngxCell]="'location'" let-value="value">
+        <span class="location-chip">{{ value }}</span>
+      </ng-template>
+    </cngx-treetable>
+  </div>`,
+    },
+    {
+      title: 'CDK — Custom Empty State',
+      subtitle:
+        '<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.',
+      imports: ['CngxTreetable', 'CngxEmptyTpl'],
+      template: `
+  <div class="table-wrap">
+    <cngx-treetable [tree]="[]">
+      <ng-template cngxEmpty>
+        <div class="empty-state">
+          <span class="empty-icon">&#128196;</span>
+          <p>No employees found.</p>
+        </div>
+      </ng-template>
+    </cngx-treetable>
+  </div>`,
+    },
+  ],
+};

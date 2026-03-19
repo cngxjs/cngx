@@ -1,9 +1,55 @@
-<!-- ── CngxFilter — Controlled mode ──────────────────────────── -->
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
-<app-example-card
-  title="CngxFilter — Controlled"
-  subtitle="<code>[cngxFilter]=&quot;pred()&quot;</code> drives the directive from a <code>computed()</code>. When the signal changes, the directive updates automatically. <code>isActive()</code> reflects whether a predicate is set."
->
+export const STORY: DemoSpec = {
+  title: 'Filter',
+  moduleImports: [
+    "import { PEOPLE, type Person } from '../../../../fixtures';",
+  ],
+  setup: `
+  protected readonly totalPeople = PEOPLE.length;
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort((a, b) => a.localeCompare(b));
+  protected readonly roles = [...new Set(PEOPLE.map((p: Person) => p.role))].sort((a, b) => a.localeCompare(b));
+
+  // ── Controlled mode ──────────────────────────────────────────────────────
+  protected readonly activeLocation = signal<string | null>(null);
+
+  protected readonly filterPredicate = computed(
+    (): ((p: Person) => boolean) | null => {
+      const loc = this.activeLocation();
+      return loc ? (p) => p.location === loc : null;
+    },
+  );
+
+  protected readonly filteredRows = computed((): Person[] => {
+    const pred = this.filterPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  // ── Uncontrolled mode ────────────────────────────────────────────────────
+  protected readonly activeRole = signal<string | null>(null);
+  private readonly uncontrolledPredicate = signal<((p: unknown) => boolean) | null>(null);
+
+  protected readonly uncontrolledRows = computed((): Person[] => {
+    const pred = this.uncontrolledPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  protected rolePred(role: string): (p: unknown) => boolean {
+    return (p) => (p as Person).role === role;
+  }
+
+  protected onFilterChange(pred: ((p: unknown) => boolean) | null): void {
+    this.uncontrolledPredicate.set(pred);
+  }
+  `,
+  sections: [
+    {
+      title: 'CngxFilter — Controlled',
+      subtitle: '<code>[cngxFilter]="pred()"</code> drives the directive from a <code>computed()</code>. When the signal changes, the directive updates automatically. <code>isActive()</code> reflects whether a predicate is set.',
+      imports: ['CngxFilter'],
+      template: `
   <div
     [cngxFilter]="filterPredicate()"
     #filterRef="cngxFilter"
@@ -46,15 +92,12 @@
       isActive: {{ filterRef.isActive() }}
     </span>
     <span class="status-badge">{{ filteredRows().length }} / {{ totalPeople }} rows</span>
-  </div>
-</app-example-card>
-
-<!-- ── CngxFilter — Uncontrolled mode ────────────────────────── -->
-
-<app-example-card
-  title="CngxFilter — Uncontrolled"
-  subtitle="<code>filterRef.setPredicate(fn)</code> mutates the directive's internal state imperatively — no bound input needed. <code>(filterChange)</code> emits the new predicate so the consumer can sync local derived state."
->
+  </div>`,
+    },
+    {
+      title: 'CngxFilter — Uncontrolled',
+      subtitle: '<code>filterRef.setPredicate(fn)</code> mutates the directive\'s internal state imperatively — no bound input needed. <code>(filterChange)</code> emits the new predicate so the consumer can sync local derived state.',
+      template: `
   <div
     [cngxFilter]="null"
     #filterRef2="cngxFilter"
@@ -98,5 +141,7 @@
       isActive: {{ filterRef2.isActive() }}
     </span>
     <span class="status-badge">{{ uncontrolledRows().length }} / {{ totalPeople }} rows</span>
-  </div>
-</app-example-card>
+  </div>`,
+    },
+  ],
+};

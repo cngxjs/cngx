@@ -6,9 +6,12 @@ import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@
  */
 export function patternMatch(pattern: RegExp): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    if (!control.value) return null;
-    return pattern.test(String(control.value))
+    if (!control.value) {
+      return null;
+    }
+    const value = String(control.value);
+    return pattern.test(value)
       ? null
-      : { patternMatch: { pattern: pattern.source, actual: control.value } };
+      : { patternMatch: { pattern: pattern.source, actual: value } };
   };
 }

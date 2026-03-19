@@ -2,6 +2,8 @@ import { type AbstractControl, type ValidationErrors, type ValidatorFn } from '@
 
 /** Validates that the control value is strictly `true`. */
 export function requiredTrue(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null =>
-    control.value === true ? null : { requiredTrue: { actual: control.value } };
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value as unknown;
+    return value === true ? null : { requiredTrue: { actual: value } };
+  };
 }

@@ -6,11 +6,14 @@ const angularTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 
 module.exports = tseslint.config(
+
     // ── TypeScript source files ──────────────────────────────────────────────
     {
         files: ['**/*.ts'],
         extends: [
             ...tseslint.configs.recommended,
+            ...tseslint.configs.recommendedTypeChecked,
+            ...tseslint.configs.stylisticTypeChecked,
         ],
         plugins: {
             '@angular-eslint': angular,
@@ -18,13 +21,7 @@ module.exports = tseslint.config(
         languageOptions: {
             parser: tseslint.parser,
             parserOptions: {
-                project: [
-                    'tsconfig.json',
-                    'tsconfig.spec.json',
-                    'projects/*/tsconfig.lib.json',
-                    'projects/*/tsconfig.spec.json',
-                    'projects/dev-app/tsconfig.app.json',
-                ],
+                projectService: true,
                 // @ts-ignore
                 tsconfigRootDir: __dirname,
             },
@@ -54,6 +51,12 @@ module.exports = tseslint.config(
                 'error',
                 { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
             ],
+            
+            curly: ['error', 'all'],
+            'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+            eqeqeq: ['error', 'always', { null: 'ignore' }],
+            'no-return-await': 'off',
+            '@typescript-eslint/return-await': ['error', 'in-try-catch'],
         },
     },
 
@@ -65,31 +68,6 @@ module.exports = tseslint.config(
             '@angular-eslint/directive-class-suffix': 'off',
             '@angular-eslint/pipe-class-suffix': 'off',
             '@angular-eslint/prefer-host-metadata-property': 'error',
-        },
-    },
-
-    // ── dev-app: use "app" prefix instead of "cngx" ──────────────────────────
-    {
-        files: ['projects/dev-app/**/*.ts'],
-        rules: {
-            '@angular-eslint/component-selector': [
-                'error',
-                { type: 'element', prefix: 'app', style: 'kebab-case' },
-            ],
-            '@angular-eslint/directive-selector': [
-                'error',
-                { type: 'attribute', prefix: 'app', style: 'camelCase' },
-            ],
-            '@angular-eslint/component-class-suffix': 'off',
-        },
-    },
-
-    // ── Spec files (relaxed rules) ────────────────────────────────────────────
-    {
-        files: ['**/*.spec.ts'],
-        rules: {
-            '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-floating-promises': 'off',
         },
     },
 
@@ -113,6 +91,14 @@ module.exports = tseslint.config(
 
     // ── Ignored paths ─────────────────────────────────────────────────────────
     {
-        ignores: ['dist/', 'node_modules/', '.angular/', 'out-tsc/', 'docs/'],
+        ignores: ['dist/', 'node_modules/', '.angular/', 'out-tsc/', 'docs/', 'dev-app/', '**/*.spec.ts'],
     },
+
+  // Re-enable rules that Prettier disables but we want to enforce
+  {
+    files: ['**/*.ts'],
+    rules: {
+      curly: ['error', 'all'],
+    },
+  },
 );

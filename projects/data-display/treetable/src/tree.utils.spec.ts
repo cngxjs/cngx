@@ -62,14 +62,11 @@ describe('flattenTree', () => {
   });
 
   it('handles an array of root nodes', () => {
-    const trees: Node<{ name: string }>[] = [
-      { value: { name: 'a' } },
-      { value: { name: 'b' } },
-    ];
+    const trees: Node<{ name: string }>[] = [{ value: { name: 'a' } }, { value: { name: 'b' } }];
     const result = flattenTree(trees);
     expect(result).toHaveLength(2);
-    expect(result.every(n => n.depth === 0)).toBe(true);
-    expect(result.every(n => n.parentIds.length === 0)).toBe(true);
+    expect(result.every((n) => n.depth === 0)).toBe(true);
+    expect(result.every((n) => n.parentIds.length === 0)).toBe(true);
   });
 
   it('marks nodes with children correctly', () => {
@@ -85,22 +82,16 @@ describe('flattenTree', () => {
   it('assigns unique ids to all nodes', () => {
     const tree: Node<{ name: string }> = {
       value: { name: 'root' },
-      children: [
-        { value: { name: 'a' } },
-        { value: { name: 'b' } },
-      ],
+      children: [{ value: { name: 'a' } }, { value: { name: 'b' } }],
     };
-    const ids = flattenTree(tree).map(n => n.id);
+    const ids = flattenTree(tree).map((n) => n.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('flattens siblings in order', () => {
     const tree: Node<{ name: string }> = {
       value: { name: 'root' },
-      children: [
-        { value: { name: 'first' } },
-        { value: { name: 'second' } },
-      ],
+      children: [{ value: { name: 'first' } }, { value: { name: 'second' } }],
     };
     const result = flattenTree(tree);
     expect(result[1].value.name).toBe('first');
@@ -129,10 +120,7 @@ describe('extractColumns', () => {
   });
 
   it('works with array input using first node', () => {
-    const trees: Node<{ name: string }>[] = [
-      { value: { name: 'a' } },
-      { value: { name: 'b' } },
-    ];
+    const trees: Node<{ name: string }>[] = [{ value: { name: 'a' } }, { value: { name: 'b' } }];
     expect(extractColumns(trees)).toEqual(['name']);
   });
 });

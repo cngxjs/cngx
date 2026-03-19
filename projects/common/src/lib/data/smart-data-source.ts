@@ -56,7 +56,9 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
       // Filter via CngxFilter (predicate function)
       const predicate = this.filter?.predicate();
-      if (predicate) items = items.filter((v) => (predicate as (v: T) => boolean)(v));
+      if (predicate) {
+        items = items.filter((v) => (predicate as (v: T) => boolean)(v));
+      }
 
       // Search via CngxSearch (full-text, default or custom)
       const term = this.search?.term();
@@ -66,7 +68,9 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
           ((item: T, t: string) => {
             const lower = t.toLowerCase();
             return Object.values(item as Record<string, unknown>).some((v) => {
-              if (v === null || v === undefined || typeof v === 'object') return false;
+              if (v === null || v === undefined || typeof v === 'object') {
+                return false;
+              }
               return String(v as string | number | boolean | bigint)
                 .toLowerCase()
                 .includes(lower);

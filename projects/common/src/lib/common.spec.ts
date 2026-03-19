@@ -9,9 +9,8 @@ describe('CngxCommon', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CngxCommon]
-    })
-      .compileComponents();
+      imports: [CngxCommon],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CngxCommon);
     component = fixture.componentInstance;
