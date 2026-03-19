@@ -21,6 +21,11 @@ export const routes: Routes = [
           import('./demos/common/behaviors/filter-demo/filter-backend.component').then((m) => m.FilterBackendDemoComponent),
       },
       {
+        path: 'behaviors/filter-multi',
+        loadComponent: () =>
+          import('./demos/common/behaviors/filter-demo/filter-multi.component').then((m) => m.FilterMultiDemoComponent),
+      },
+      {
         path: 'behaviors/search',
         loadComponent: () =>
           import('./demos/common/behaviors/search-demo/search-demo.component').then((m) => m.SearchDemoComponent),
