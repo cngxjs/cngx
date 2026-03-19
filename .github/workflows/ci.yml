@@ -34,14 +34,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build all libraries
+        run: npm run build:libs
+
       - name: Lint
         run: npm run lint
 
       - name: Run tests
         run: npm run test
-
-      - name: Build all libraries
-        run: npm run build:libs
 
       - name: Build dev app
         run: npm run build:dev-app
