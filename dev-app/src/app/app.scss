@@ -93,26 +93,41 @@
 // ── Sidebar Nav Panel ────────────────────────────────────────────────────────
 
 .sidebar {
-  width: 220px;
+  width: 0;
   flex-shrink: 0;
   background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
+  border-right: 1px solid transparent;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
   overflow: hidden;
+  clip-path: inset(0 100% 0 0 round 0 24px 24px 0);
+  opacity: 0;
+  filter: blur(4px);
   transition:
-    background 0.15s,
-    border-color 0.15s;
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    filter 0.3s ease,
+    border-color 0.35s,
+    background 0.15s;
+
+  &--visible {
+    width: 220px;
+    clip-path: inset(0 0 0 0 round 0);
+    opacity: 1;
+    filter: blur(0);
+    border-right-color: var(--sidebar-border);
+  }
 }
 
 // Navigation
 
 .nav {
   flex: 1;
-  padding: 0.5rem;
+  padding: 2rem 0.5rem;
   overflow-y: auto;
 
   a {

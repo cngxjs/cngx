@@ -8,7 +8,7 @@
       <span class="rail-version">v0.1</span>
     </a>
 
-    <a class="rail-item active" routerLink="/common/behaviors/sort">
+    <a class="rail-item" [class.active]="showNav()" routerLink="/demos">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
       </svg>
@@ -52,7 +52,7 @@
     </button>
   </div>
 
-  <aside class="sidebar">
+  <aside class="sidebar" [class.sidebar--visible]="showNav()">
     <nav class="nav">
       <!-- @generated:nav:start -->
     <div class="nav-group">

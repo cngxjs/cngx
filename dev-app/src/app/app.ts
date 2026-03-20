@@ -1,13 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   PLATFORM_ID,
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -19,9 +22,36 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 })
 export class App {
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   readonly theme = signal<'light' | 'dark'>('light');
 
+  private readonly url = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
+
+  readonly showNav = computed(() => {
+    const url = this.url();
+    return url !== '/' && url !== '/#/' && url !== '';
+  });
+
   constructor() {
+    // Scroll to top + scroll sidebar to active item on route change
+    effect(() => {
+      this.url(); // track
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo({ top: 0 });
+        // Delay slightly so Angular updates the active class first
+        setTimeout(() => {
+          const active = document.querySelector('.nav a.active') as HTMLElement | null;
+          active?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }, 50);
+      }
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       const stored = localStorage.getItem('cngx-theme') as 'light' | 'dark' | null;
       const initial =
