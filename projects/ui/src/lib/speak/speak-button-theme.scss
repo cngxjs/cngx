@@ -1,0 +1,82 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// ─── cngx-speak-button theming ─────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/speak/speak-button-theme' as speak;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include speak.theme($theme);
+//   }
+
+// ─── Token definitions ───────────────────────────────────────────
+
+@mixin base() {
+  --cngx-speak-btn-size: 36px;
+  --cngx-speak-btn-icon-size: 18px;
+  --cngx-speak-btn-radius: 8px;
+  --cngx-speak-btn-border-width: 1px;
+  --cngx-speak-btn-transition: 0.15s;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — use Material sys tokens
+    --cngx-speak-btn-bg: var(--mat-sys-surface-container-low);
+    --cngx-speak-btn-hover-bg: var(--mat-sys-surface-container);
+    --cngx-speak-btn-color: var(--mat-sys-on-surface-variant);
+    --cngx-speak-btn-active-color: var(--mat-sys-primary);
+    --cngx-speak-btn-speaking-bg: var(--mat-sys-primary);
+    --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary);
+    --cngx-border: var(--mat-sys-outline-variant);
+  } @else {
+    // M2 — derive from palette
+    --cngx-speak-btn-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-speak-btn-hover-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-speak-btn-color: rgba(0, 0, 0, 0.54);
+    --cngx-speak-btn-active-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-speak-btn-speaking-bg: #{mat.get-theme-color($theme, primary)};
+    --cngx-speak-btn-speaking-color: #fff;
+    --cngx-border: rgba(0, 0, 0, 0.12);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $sizes: (
+    0: 36px,
+    -1: 32px,
+    -2: 28px,
+    -3: 24px,
+    -4: 20px,
+  );
+  $icon-sizes: (
+    0: 18px,
+    -1: 16px,
+    -2: 14px,
+    -3: 12px,
+    -4: 10px,
+  );
+
+  --cngx-speak-btn-size: #{map.get($sizes, $scale)};
+  --cngx-speak-btn-icon-size: #{map.get($icon-sizes, $scale)};
+}
+
+// ─── Public entrypoint ───────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(cngx-speak-button) {
+    @include base();
+    @include color($theme);
+    @include density($theme);
+  }
+}

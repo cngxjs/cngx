@@ -1,64 +1,74 @@
-# Ui
+# @cngx/ui
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Finished, styled Angular components that compose headless directives from
+`@cngx/common` with opinionated rendering. These are the "organism" layer —
+ready to drop into an application without additional template work.
 
-## Code scaffolding
+## Theming
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Every component supports two theming paths:
 
-```bash
-ng generate component component-name
+1. **CSS Custom Properties** — override `--cngx-*` variables on any parent
+   element. Works without Angular Material.
+
+2. **Material Theme SCSS** — each component ships a `*-theme.scss` file with
+   `base()`, `color($theme)`, `density($theme)`, and `theme($theme)` mixins
+   that map Material design tokens to the CSS custom properties.
+
+```scss
+@use '@angular/material' as mat;
+@use '@cngx/ui/src/lib/speak/speak-button-theme' as speak;
+
+$theme: mat.define-theme((...));
+
+html {
+  @include mat.all-component-themes($theme);
+  @include speak.theme($theme);
+}
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+M3 themes use `var(--mat-sys-*)` tokens. M2 themes derive from the palette.
+Density scales sizes from default (0) to compact (-4).
 
-```bash
-ng generate --help
+## Components
+
+### CngxMatPaginator
+
+Material paginator wrapper that connects to `CngxPaginate` (headless,
+`@cngx/common`) via `[cngxPaginateRef]`.
+
+```html
+<div cngxPaginate #pg="cngxPaginate" [total]="items().length">
+  <!-- table / list -->
+</div>
+<cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[5, 10, 25]" />
 ```
 
-## Building
+**Inputs:** `cngxPaginateRef` (required, CngxPaginate instance), `pageSizeOptions` (number[])
 
-To build the library, run:
+### CngxSpeakButton
 
-```bash
-ng build ui
+Ready-made speaker button that connects to `CngxSpeak` (headless,
+`@cngx/common`) via `[speakRef]`.
+
+```html
+<span [cngxSpeak]="text" #tts="cngxSpeak">{{ text }}</span>
+<cngx-speak-button [speakRef]="tts" />
 ```
 
-This command will compile your project, and the build artifacts will be placed in the `dist/` directory.
+**Inputs:** `speakRef` (required, CngxSpeak instance)
 
-### Publishing the Library
+**CSS Custom Properties:**
 
-Once the project is built, you can publish your library by following these steps:
+| Variable | Default | Description |
+|-|-|-|
+| `--cngx-speak-btn-size` | `28px` | Button width and height |
+| `--cngx-speak-btn-icon-size` | `14px` | SVG icon size |
+| `--cngx-speak-btn-radius` | `4px` | Border radius |
+| `--cngx-speak-btn-border-width` | `1px` | Border width |
+| `--cngx-speak-btn-bg` | `--cngx-surface` / `#fff` | Background color |
+| `--cngx-speak-btn-color` | `--cngx-text-secondary` / `#666` | Icon color |
+| `--cngx-speak-btn-active-color` | `--cngx-accent` / `#f5a623` | Icon color while speaking or on hover |
+| `--cngx-speak-btn-transition` | `0.15s` | Color transition duration |
 
-1. Navigate to the `dist` directory:
-
-   ```bash
-   cd dist/ui
-   ```
-
-2. Run the `npm publish` command to publish your library to the npm registry:
-   ```bash
-   npm publish
-   ```
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+**Material theme:** `@use '@cngx/ui/src/lib/speak/speak-button-theme'`
