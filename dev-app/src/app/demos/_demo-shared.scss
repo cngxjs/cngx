@@ -260,6 +260,45 @@
   font-size: 0.95rem;
 }
 
+// ── Speak button theming demos ───────────────────────────────────────────────
+
+cngx-speak-button.speak-btn-primary {
+  --cngx-speak-btn-bg: var(--mat-sys-primary, #1976d2);
+  --cngx-speak-btn-color: var(--mat-sys-on-primary, #fff);
+  --cngx-speak-btn-active-color: var(--mat-sys-on-primary, #fff);
+  --cngx-speak-btn-hover-bg: var(--mat-sys-primary, #1976d2);
+  --cngx-speak-btn-speaking-bg: var(--mat-sys-primary-container, #bbdefb);
+  --cngx-speak-btn-speaking-color: var(--mat-sys-on-primary-container, #1565c0);
+  --cngx-border: transparent;
+}
+
+cngx-speak-button.speak-btn-round {
+  --cngx-speak-btn-size: 40px;
+  --cngx-speak-btn-radius: 50%;
+  --cngx-speak-btn-icon-size: 20px;
+}
+
+cngx-speak-button.speak-btn-ghost {
+  --cngx-speak-btn-size: 24px;
+  --cngx-speak-btn-icon-size: 12px;
+  --cngx-speak-btn-border-width: 0;
+  --cngx-speak-btn-bg: transparent;
+  --cngx-speak-btn-hover-bg: transparent;
+  --cngx-speak-btn-speaking-bg: transparent;
+  --cngx-speak-btn-speaking-color: var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623));
+}
+
+cngx-speak-button.speak-btn-dark {
+  --cngx-speak-btn-color: #fff;
+  --cngx-speak-btn-active-color: #fff;
+  --cngx-speak-btn-bg: #333;
+  --cngx-speak-btn-hover-bg: #444;
+  --cngx-speak-btn-speaking-bg: #555;
+  --cngx-speak-btn-speaking-color: #fff;
+  --cngx-speak-btn-radius: 6px;
+  --cngx-border: #555;
+}
+
 // ── Events ───────────────────────────────────────────────────────────────────
 
 .event-grid {

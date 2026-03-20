@@ -13,6 +13,11 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/common',
     items: [
+      { label: 'AriaExpanded', path: 'common/a11y/aria-expanded' },
+      { label: 'FocusTrap', path: 'common/a11y/focus-trap' },
+      { label: 'FocusVisible', path: 'common/a11y/focus-visible' },
+      { label: 'LiveRegion', path: 'common/a11y/live-region' },
+      { label: 'ReducedMotion', path: 'common/a11y/reduced-motion' },
       { label: 'Filter — Backend', path: 'common/behaviors/filter-backend' },
       { label: 'Filter', path: 'common/behaviors/filter' },
       { label: 'Filter — Multi', path: 'common/behaviors/filter-multi' },
@@ -29,12 +34,23 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'mat-table — SmartDataSource', path: 'common/data/mat-table-smart' },
       { label: 'Paginate — List', path: 'common/data/paginate-list' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
+      { label: 'ClickOutside', path: 'common/interactive/click-outside' },
+      { label: 'Speak', path: 'common/interactive/speak' },
+      { label: 'IntersectionObserver', path: 'common/layout/intersection-observer' },
+      { label: 'ResizeObserver', path: 'common/layout/resize-observer' },
     ],
   },
   {
     label: '@cngx/data-display',
     items: [
       { label: 'Treetable', path: 'data-display/treetable' },
+    ],
+  },
+  {
+    label: '@cngx/ui',
+    items: [
+      { label: 'MatPaginator', path: 'ui/mat-paginator' },
+      { label: 'SpeakButton', path: 'ui/speak-button' },
     ],
   },
 ];
