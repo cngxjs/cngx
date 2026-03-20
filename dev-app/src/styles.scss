@@ -40,8 +40,9 @@ html {
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
 :root {
-  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-mono: 'DM Mono', 'Fira Code', 'SF Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
 
   // Sidebar — always dark, unaffected by theme toggle
   --sidebar-bg: #101118;

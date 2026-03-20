@@ -109,6 +109,7 @@ import { RouterLink } from '@angular/router';
       }
 
       .hero-title {
+        font-family: var(--font-display);
         font-size: clamp(3.5rem, 10vw, 6rem);
         font-weight: 800;
         letter-spacing: -0.04em;
@@ -185,7 +186,7 @@ import { RouterLink } from '@angular/router';
         font-weight: 600;
         color: var(--text-primary);
         letter-spacing: -0.01em;
-        font-family: var(--font-mono);
+        font-family: var(--font-display);
       }
 
       .pkg-desc {
