@@ -267,8 +267,8 @@ describe('generateNavFile', () => {
 
 describe('generateNavHtmlBlock', () => {
   const demos = [
-    { lib: 'common', routePath: 'common/behaviors/sort', title: 'Sort' },
-    { lib: 'common', routePath: 'common/behaviors/filter', title: 'Filter' },
+    { lib: 'common', routePath: 'common/behaviors/sort', title: 'Sort', demoDir: 'common/behaviors/sort-demo', segments: ['common', 'behaviors', 'sort'] },
+    { lib: 'common', routePath: 'common/behaviors/filter', title: 'Filter', demoDir: 'common/behaviors/filter-demo', segments: ['common', 'behaviors', 'filter'] },
   ];
 
   it('generates nav-group divs', () => {
@@ -286,6 +286,22 @@ describe('generateNavHtmlBlock', () => {
     const output = generateNavHtmlBlock(demos);
     expect(output).toContain('routerLink="/common/behaviors/sort"');
     expect(output).toContain('routerLinkActive="active"');
+  });
+
+  it('groups demos by category when segments.length >= 3', () => {
+    const output = generateNavHtmlBlock(demos);
+    expect(output).toContain('class="nav-category"');
+    expect(output).toContain('class="nav-category-label"');
+    expect(output).toContain('Behaviors');
+  });
+
+  it('skips category grouping for flat demos', () => {
+    const flat = [
+      { lib: 'data-display', routePath: 'data-display/treetable', title: 'Treetable', demoDir: 'data-display/treetable-demo', segments: ['data-display', 'treetable'] },
+    ];
+    const output = generateNavHtmlBlock(flat);
+    expect(output).not.toContain('nav-category');
+    expect(output).toContain('routerLink="/data-display/treetable"');
   });
 });
 
@@ -481,12 +497,31 @@ describe('generateComponentFile', () => {
     expect(output).toContain('hostDirectives: [');
     expect(output).toContain('{ directive: CngxSort },');
     expect(output).toContain('{ directive: CngxFilter },');
-    expect(output).toContain('inject,');
+    expect(output).toMatch(/\binject\b/);
   });
 
   it('does not emit inject when no hostDirectives', () => {
     const output = generateComponentFile(storyNoControls, meta);
-    expect(output).not.toContain('inject,');
+    expect(output).not.toMatch(/\binject\b/);
+  });
+
+  it('does not emit signal when setup has no signal()', () => {
+    const story = {
+      title: 'NoSignal',
+      sections: [{ title: 'Basic', template: '<div/>' }],
+    };
+    const output = generateComponentFile(story, meta);
+    expect(output).not.toMatch(/\bsignal\b/);
+  });
+
+  it('emits signal when setup uses signal()', () => {
+    const story = {
+      title: 'WithSignal',
+      setup: 'protected open = signal(false);',
+      sections: [{ title: 'Basic', template: '<div/>' }],
+    };
+    const output = generateComponentFile(story, meta);
+    expect(output).toMatch(/\bsignal\b/);
   });
 });
 
