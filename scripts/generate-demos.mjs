@@ -369,7 +369,7 @@ export function generateNavFile(demos) {
 // ---------------------------------------------------------------------------
 
 /**
- * @param {Array<{lib, routePath, title?, name, demoDir}>} demos
+ * @param {Array<{lib, routePath, title?, name, demoDir, segments}>} demos
  * @returns {string}
  */
 export function generateNavHtmlBlock(demos) {
@@ -382,33 +382,21 @@ export function generateNavHtmlBlock(demos) {
 
   return [...libGroups.entries()]
     .map(([lib, items]) => {
-      // Sub-group by demoDir within each lib
-      const dirGroups = new Map();
+      // Sub-group by category (segments[1] when segments.length >= 3)
+      const catGroups = new Map();
       for (const demo of items) {
-        const key = demo.demoDir;
-        if (!dirGroups.has(key)) dirGroups.set(key, []);
-        dirGroups.get(key).push(demo);
+        const cat = demo.segments?.length >= 3 ? demo.segments[1] : null;
+        if (!catGroups.has(cat)) catGroups.set(cat, []);
+        catGroups.get(cat).push(demo);
       }
 
-      const inner = [...dirGroups.values()]
-        .map((dirItems) => {
-          if (dirItems.length === 1) {
-            const d = dirItems[0];
-            const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
-            return `      <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-          }
-          // Multiple stories in same dir → collapsible group
-          const dirBase = basename(dirItems[0].demoDir).replace(/-demo$/, '');
-          const groupLabel = capitalise(dirBase);
-          const links = dirItems
-            .map((d) => {
-              const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
-              return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-            })
-            .join('\n');
+      const inner = [...catGroups.entries()]
+        .map(([cat, catItems]) => {
+          const links = renderDirGroups(catItems);
+          if (cat === null) return links;
           return [
-            `      <details class="nav-sub-group" open>`,
-            `        <summary class="nav-sub-label">${groupLabel}</summary>`,
+            `      <details class="nav-category" open>`,
+            `        <summary class="nav-category-label">${capitalise(cat)}</summary>`,
             links,
             `      </details>`,
           ].join('\n');
@@ -420,6 +408,45 @@ export function generateNavHtmlBlock(demos) {
         `      <span class="nav-label">@cngx/${lib}</span>`,
         inner,
         `    </div>`,
+      ].join('\n');
+    })
+    .join('\n');
+}
+
+/**
+ * Renders nav links for demos, grouping multi-story dirs into collapsible sub-groups.
+ * @param {Array<{routePath, title?, name, demoDir}>} items
+ * @returns {string}
+ */
+function renderDirGroups(items) {
+  const dirGroups = new Map();
+  for (const demo of items) {
+    const key = demo.demoDir;
+    if (!dirGroups.has(key)) dirGroups.set(key, []);
+    dirGroups.get(key).push(demo);
+  }
+
+  return [...dirGroups.values()]
+    .map((dirItems) => {
+      if (dirItems.length === 1) {
+        const d = dirItems[0];
+        const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+        return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+      }
+      // Multiple stories in same dir → collapsible group
+      const dirBase = basename(dirItems[0].demoDir).replace(/-demo$/, '');
+      const groupLabel = capitalise(dirBase);
+      const links = dirItems
+        .map((d) => {
+          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+          return `          <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+        })
+        .join('\n');
+      return [
+        `        <details class="nav-sub-group" open>`,
+        `          <summary class="nav-sub-label">${groupLabel}</summary>`,
+        links,
+        `        </details>`,
       ].join('\n');
     })
     .join('\n');
@@ -506,7 +533,7 @@ export function generateComponentFile(story, meta) {
   const className = `${kebabToPascal(name)}DemoComponent`;
   const selector = `app-${name}-demo`;
 
-  // Collect all story imports (deduplicated)
+  // Collect all story imports (deduplicated) — these go into @Component.imports
   const allStoryImports = [...new Set(story.sections.flatMap((s) => s.imports ?? []))];
 
   // Build a set of identifiers already covered by moduleImports so we can skip
@@ -519,22 +546,26 @@ export function generateComponentFile(story, meta) {
     }),
   );
 
-  // Resolve story imports via importMap; group unresolved together
+  // Resolve story imports + hostDirectives via importMap; group unresolved together
   const resolvedImports = new Map(); // modulePath → Set<className>
   const unresolved = [];
-  for (const cls of allStoryImports) {
+  const allClassesNeedingTsImport = [
+    ...new Set([...allStoryImports, ...(story.hostDirectives ?? [])]),
+  ];
+  for (const cls of allClassesNeedingTsImport) {
+    if (moduleImportIdentifiers.has(cls)) {
+      // Already covered by moduleImports — no duplicate TS import line is emitted
+      continue;
+    }
     const src = importMap.get(cls);
     if (src) {
       if (!resolvedImports.has(src)) {
         resolvedImports.set(src, new Set());
       }
       resolvedImports.get(src).add(cls);
-    } else if (!moduleImportIdentifiers.has(cls)) {
-      // Not in compodoc and not already imported via moduleImports → mark as unresolved
+    } else {
       unresolved.push(cls);
     }
-    // else: already covered by moduleImports — will appear in @Component.imports but
-    // no duplicate TS import line is emitted
   }
 
   // Build import lines — only include what is actually referenced in TS class body
@@ -543,7 +574,15 @@ export function generateComponentFile(story, meta) {
     .join('\n');
   const needsInject = !!(story.hostDirectives?.length) || allSetupCode.includes('inject(');
   const usesComputed = allSetupCode.includes('computed(');
-  const coreImports = `import { ChangeDetectionStrategy, Component, ${usesComputed ? 'computed, ' : ''}${needsInject ? 'inject, ' : ''}signal } from '@angular/core';`;
+  const usesSignal = allSetupCode.includes('signal(') || allSetupCode.includes('signal<');
+  const coreSymbols = [
+    'ChangeDetectionStrategy',
+    'Component',
+    ...(usesComputed ? ['computed'] : []),
+    ...(needsInject ? ['inject'] : []),
+    ...(usesSignal ? ['signal'] : []),
+  ];
+  const coreImports = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
   const sharedImportLines = [
     `import { ExampleCardComponent } from '${sharedRelativePath}/example-card.component';`,

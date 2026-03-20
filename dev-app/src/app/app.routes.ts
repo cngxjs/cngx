@@ -11,6 +11,31 @@ export const routes: Routes = [
     path: 'common',
     children: [
       {
+        path: 'a11y/aria-expanded',
+        loadComponent: () =>
+          import('./demos/common/a11y/aria-expanded-demo/aria-expanded-demo.component').then((m) => m.AriaExpandedDemoComponent),
+      },
+      {
+        path: 'a11y/focus-trap',
+        loadComponent: () =>
+          import('./demos/common/a11y/focus-trap-demo/focus-trap-demo.component').then((m) => m.FocusTrapDemoComponent),
+      },
+      {
+        path: 'a11y/focus-visible',
+        loadComponent: () =>
+          import('./demos/common/a11y/focus-visible-demo/focus-visible-demo.component').then((m) => m.FocusVisibleDemoComponent),
+      },
+      {
+        path: 'a11y/live-region',
+        loadComponent: () =>
+          import('./demos/common/a11y/live-region-demo/live-region-demo.component').then((m) => m.LiveRegionDemoComponent),
+      },
+      {
+        path: 'a11y/reduced-motion',
+        loadComponent: () =>
+          import('./demos/common/a11y/reduced-motion-demo/reduced-motion-demo.component').then((m) => m.ReducedMotionDemoComponent),
+      },
+      {
         path: 'behaviors/filter',
         loadComponent: () =>
           import('./demos/common/behaviors/filter-demo/filter-demo.component').then((m) => m.FilterDemoComponent),
@@ -90,7 +115,27 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
       },
-      { path: '', redirectTo: 'behaviors/filter', pathMatch: 'full' },
+      {
+        path: 'interactive/click-outside',
+        loadComponent: () =>
+          import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
+      },
+      {
+        path: 'interactive/speak',
+        loadComponent: () =>
+          import('./demos/common/interactive/speak-demo/speak-demo.component').then((m) => m.SpeakDemoComponent),
+      },
+      {
+        path: 'layout/intersection-observer',
+        loadComponent: () =>
+          import('./demos/common/layout/intersection-observer-demo/intersection-observer-demo.component').then((m) => m.IntersectionObserverDemoComponent),
+      },
+      {
+        path: 'layout/resize-observer',
+        loadComponent: () =>
+          import('./demos/common/layout/resize-observer-demo/resize-observer-demo.component').then((m) => m.ResizeObserverDemoComponent),
+      },
+      { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
     ],
   },
   {
@@ -102,6 +147,22 @@ export const routes: Routes = [
           import('./demos/data-display/treetable-demo/treetable-demo.component').then((m) => m.TreetableDemoComponent),
       },
       { path: '', redirectTo: 'treetable', pathMatch: 'full' },
+    ],
+  },
+  {
+    path: 'ui',
+    children: [
+      {
+        path: 'mat-paginator',
+        loadComponent: () =>
+          import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
+      },
+      {
+        path: 'speak-button',
+        loadComponent: () =>
+          import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
+      },
+      { path: '', redirectTo: 'mat-paginator', pathMatch: 'full' },
     ],
   },
   { path: '**', redirectTo: '' },
