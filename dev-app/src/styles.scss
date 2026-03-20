@@ -44,15 +44,24 @@ html {
   --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
 
-  // Sidebar — always dark, unaffected by theme toggle
-  --sidebar-bg: #101118;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-text: #6b6d82;
-  --sidebar-text-hover: #b8bace;
-  --sidebar-text-active: #ffffff;
-  --sidebar-active-bg: rgba(255, 255, 255, 0.08);
+  // Icon rail — light
+  --rail-bg: #f8f7f4;
+  --rail-border: #e8e5dc;
+  --rail-text: #8a877e;
+  --rail-text-hover: #3a3935;
+  --rail-muted: #b0ada6;
+
+  // Sidebar — light default
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e8e5dc;
+  --sidebar-text: #5f6368;
+  --sidebar-text-hover: #1a1a1a;
+  --sidebar-text-active: #0e0d0c;
+  --sidebar-active-bg: rgba(245, 166, 35, 0.08);
   --sidebar-active-border: #f5a623;
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-hover-bg: rgba(0, 0, 0, 0.03);
+  --sidebar-label-color: #9a9590;
+  --sidebar-chevron: #b0ada6;
 
   // Content area — light default
   --bg: #f3f2ee;
@@ -68,8 +77,8 @@ html {
 
   // Cards
   --card-bg: #ffffff;
-  --card-border: #e8e5dc;
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.06);
+  --card-border: #e0ddd4;
+  --card-shadow: none;
   --card-title: #0e0d0c;
 
   // Inline code chips
@@ -121,14 +130,31 @@ html {
   // Focus ring
   --focus-ring: rgb(79 70 229 / 20%);
 
-  // Content grid
-  --content-grid:
-    linear-gradient(rgba(0, 0, 0, 0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.032) 1px, transparent 1px);
+  // Content grid (disabled for clean look)
+  --content-grid: none;
 }
 
-// Dark theme — applies to content area only (sidebar stays dark)
+// Dark theme
 [data-theme='dark'] {
+  // Icon rail — dark
+  --rail-bg: #0c0d14;
+  --rail-border: rgba(255, 255, 255, 0.06);
+  --rail-text: rgba(255, 255, 255, 0.35);
+  --rail-text-hover: rgba(255, 255, 255, 0.8);
+  --rail-muted: rgba(255, 255, 255, 0.2);
+
+  // Sidebar — dark
+  --sidebar-bg: #101118;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #6b6d82;
+  --sidebar-text-hover: #b8bace;
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(245, 166, 35, 0.1);
+  --sidebar-active-border: #f5a623;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-label-color: rgba(255, 255, 255, 0.25);
+  --sidebar-chevron: rgba(255, 255, 255, 0.2);
+
   --bg: #1e1f2e;
   --text-primary: #e8e9f3;
   --text-muted: #9a9bb5;
@@ -203,10 +229,7 @@ html {
     --cngx-table-cell-color: #e8e9f3;
   }
 
-  // Content grid
-  --content-grid:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  --content-grid: none;
 }
 
 // ── Global resets ─────────────────────────────────────────────────────────────

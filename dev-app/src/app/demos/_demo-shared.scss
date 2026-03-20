@@ -5,7 +5,7 @@
 
 .table-wrap {
   border: 1px solid var(--border-color, #e0e0e0);
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
   margin-bottom: 1rem;
   background: var(--card-bg, #fff);
@@ -59,7 +59,7 @@
     border: 1px solid var(--border-color, #ccc);
     background: var(--card-bg, #fff);
     color: var(--text-primary, inherit);
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 0.8125rem;
     font-family: var(--font-sans, inherit);
@@ -191,7 +191,7 @@
   flex: 1;
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border-color, #ccc);
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 0.875rem;
   font-family: var(--font-sans, inherit);
   background: var(--card-bg, #fff);
@@ -252,7 +252,7 @@
 .output-badge {
   background: var(--info-bg, #f0f4ff);
   border: 1px solid var(--info-border, #c7d2fe);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 0.5rem 0.875rem;
   font-size: 0.8125rem;
   font-family: var(--font-mono, monospace);
@@ -263,7 +263,7 @@
   background: var(--success-bg, #e8f5e9);
   color: var(--success-text, #2e7d32);
   border: 1px solid var(--success-border, #c8e6c9);
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 0.625rem 0.875rem;
   font-size: 0.875rem;
 }
@@ -273,7 +273,7 @@
 .code-block {
   background: #1a1b2e;
   color: #cdd6f4;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 1rem 1.25rem;
   font-family: var(--font-mono, 'DM Mono', monospace);
   font-size: 0.8rem;

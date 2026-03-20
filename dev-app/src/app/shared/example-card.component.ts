@@ -22,9 +22,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       .example-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
-        border-left: 2px solid var(--accent);
-        border-radius: 10px;
-        box-shadow: var(--card-shadow);
+        border-radius: 4px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
