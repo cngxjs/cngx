@@ -23,7 +23,9 @@
   top: 0;
   height: 100vh;
   z-index: 1;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .rail-logo {
@@ -101,7 +103,9 @@
   top: 0;
   height: 100vh;
   overflow: hidden;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 // Navigation
@@ -111,46 +115,52 @@
   padding: 0.5rem;
   overflow-y: auto;
 
-  scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-chevron) transparent;
-
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--sidebar-chevron);
-    border-radius: 2px;
-  }
-
   a {
     display: block;
-    padding: 0.4375rem 0.625rem;
+    padding: 0.6rem 0.625rem;
+    padding-left: calc(0.625rem + 3px);
     text-decoration: none;
     color: var(--sidebar-text);
     font-size: 0.8125rem;
     font-weight: 400;
-    border-left: 3px solid transparent;
-    transition:
-      color 0.1s,
-      background 0.1s,
-      border-color 0.1s;
+    position: relative;
+    transition: color 0.15s;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 5%;
+      bottom: 5%;
+      width: 2px;
+      border-radius: 0;
+      background: linear-gradient(to top, #e85b04, #ef7b1a 25%, #f5a623 50%, #fad240 75%, #ffc857);
+      opacity: 0;
+      transform: scaleY(0);
+      transition:
+        opacity 0.25s,
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
     &:hover {
       color: var(--sidebar-text-hover);
     }
 
     &.active {
-      color: var(--sidebar-active-border);
-      border-left-color: var(--sidebar-active-border);
+      color: color-mix(in srgb, var(--sidebar-active-border), black 30%);
       font-weight: 500;
+      background: linear-gradient(to right, #e85d04, #f5a623, #ffc857);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+
+      &::before {
+        opacity: 1;
+        transform: scaleY(1);
+      }
     }
   }
 }

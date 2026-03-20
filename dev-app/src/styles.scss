@@ -130,6 +130,11 @@ html {
   // Focus ring
   --focus-ring: rgb(79 70 229 / 20%);
 
+  // Scrollbar
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+  --scrollbar-track: transparent;
+
   // Content grid (disabled for clean look)
   --content-grid: none;
 }
@@ -216,6 +221,11 @@ html {
   // Focus ring
   --focus-ring: rgb(129 140 248 / 25%);
 
+  // Scrollbar
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
+  --scrollbar-track: transparent;
+
   // CDK treetable — dark overrides (consumer responsibility)
   cngx-treetable {
     --cngx-table-header-bg: #2a2b3d;
@@ -271,4 +281,29 @@ ul {
 img {
   max-width: 100%;
   height: auto;
+}
+
+// ── Global scrollbar ─────────────────────────────────────────────────────────
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
 }
