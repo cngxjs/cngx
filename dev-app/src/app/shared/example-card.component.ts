@@ -22,21 +22,21 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       .example-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
-        border-top: 2px solid var(--accent);
-        border-radius: 12px;
+        border-left: 2px solid var(--accent);
+        border-radius: 10px;
         box-shadow: var(--card-shadow);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
       }
 
       .example-header {
-        padding: 1.25rem 1.5rem 1.125rem;
+        padding: 1.125rem 1.5rem 1rem;
         border-bottom: 1px solid var(--card-border);
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.375rem;
       }
 
       .example-title {
@@ -48,9 +48,9 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       }
 
       .example-subtitle {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--text-muted);
-        line-height: 1.55;
+        line-height: 1.6;
 
         ::ng-deep code {
           background: var(--code-bg);
@@ -65,7 +65,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       }
 
       .example-content {
-        padding: 1.5rem;
+        padding: 1.25rem 1.5rem;
         overflow-x: auto;
       }
     `,
