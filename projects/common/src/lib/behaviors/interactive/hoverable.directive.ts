@@ -1,11 +1,34 @@
 import { Directive, signal } from '@angular/core';
 
 /**
- * Tracks whether the host element is currently hovered.
- * Intended for use as a `hostDirective` composition primitive.
+ * Tracks whether the host element is currently hovered via mouse pointer.
  *
- * Exposes a single readonly signal {@link hovered} that becomes `true` on
- * `mouseenter` and `false` on `mouseleave`.
+ * Designed as a `hostDirective` composition primitive — attach it to
+ * components that need hover state without implementing their own
+ * mouseenter/mouseleave logic. The `hovered` signal is writable so
+ * host components can read it via `inject(CngxHoverable, { host: true })`.
+ *
+ * Used internally by `CngxTreetableRow` for row highlight-on-hover.
+ *
+ * @usageNotes
+ *
+ * ### As hostDirective
+ * ```typescript
+ * @Component({
+ *   hostDirectives: [{ directive: CngxHoverable }],
+ * })
+ * export class MyCard {
+ *   private readonly hover = inject(CngxHoverable, { host: true });
+ *   readonly isHovered = this.hover.hovered; // Signal<boolean>
+ * }
+ * ```
+ *
+ * ### Standalone
+ * ```html
+ * <div cngxHoverable #h="cngxHoverable" [class.highlight]="h.hovered()">
+ *   Hover me
+ * </div>
+ * ```
  */
 @Directive({
   selector: '[cngxHoverable]',
