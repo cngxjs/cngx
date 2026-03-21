@@ -35,6 +35,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Paginate — List', path: 'common/data/paginate-list' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
+      { label: 'Disclosure', path: 'common/interactive/disclosure' },
+      { label: 'Nav', path: 'common/interactive/nav' },
       { label: 'Speak', path: 'common/interactive/speak' },
       { label: 'SwipeDismiss', path: 'common/interactive/swipe-dismiss' },
       { label: 'Backdrop', path: 'common/layout/backdrop' },

@@ -121,6 +121,16 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/disclosure',
+        loadComponent: () =>
+          import('./demos/common/interactive/disclosure-demo/disclosure-demo.component').then((m) => m.DisclosureDemoComponent),
+      },
+      {
+        path: 'interactive/nav',
+        loadComponent: () =>
+          import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
+      },
+      {
         path: 'interactive/speak',
         loadComponent: () =>
           import('./demos/common/interactive/speak-demo/speak-demo.component').then((m) => m.SpeakDemoComponent),

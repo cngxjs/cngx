@@ -1,7 +1,7 @@
 # @cngx/common — Interactive Behaviors
 
 Directives for user interaction patterns — click detection, hover tracking,
-search input, and text-to-speech.
+search input, text-to-speech, swipe gestures, disclosure, and navigation atoms.
 
 ## Directives
 
@@ -104,3 +104,132 @@ Use cases:
 - Bottom sheet drag-to-dismiss
 - Dismissible notification cards
 - Carousel slide gestures
+
+### CngxDisclosure
+
+Generic expand/collapse (disclosure) behavior. Applied to the **trigger**
+element. Manages `aria-expanded` and `aria-controls` directly — no need
+to compose `CngxAriaExpanded` separately.
+
+Supports controlled (`[cngxDisclosureOpened]`) and uncontrolled modes.
+Keyboard: Enter, Space, and click toggle the state.
+
+```html
+<button cngxDisclosure #faq="cngxDisclosure" [controls]="'answer-1'">
+  Question 1
+</button>
+@if (faq.opened()) {
+  <div id="answer-1">Answer to question 1.</div>
+}
+```
+
+For CSS transitions, use `[hidden]` instead of `@if` so the DOM is preserved:
+```html
+<div id="answer-1" [hidden]="!faq.opened()" class="collapsible">…</div>
+```
+
+**Inputs:** `cngxDisclosureOpened` (boolean | undefined — controlled), `controls` (string — sets `aria-controls`)
+**Signals:** `opened` (boolean)
+**Outputs:** `openedChange` (boolean)
+**Methods:** `open()`, `close()`, `toggle()`
+**Host attrs:** `aria-expanded`, `aria-controls`
+**Host events:** click, keydown.enter, keydown.space
+
+Use cases:
+- Sidebar nav accordion groups
+- FAQ sections
+- Collapsible panels
+- Settings sections
+
+### CngxNavLink
+
+Navigation link atom. Sets `aria-current="page"` when active (announced
+by screen readers), depth-based CSS var for indentation, and ensures
+keyboard focusability for `<a>` elements without `href`.
+
+```html
+<!-- With Angular Router -->
+<a cngxNavLink routerLink="/dashboard" routerLinkActive
+   #rla="routerLinkActive" [active]="rla.isActive">
+  Dashboard
+</a>
+
+<!-- Nested with depth -->
+<a cngxNavLink [depth]="1" [active]="false">Nested item</a>
+```
+
+**Inputs:** `active` (boolean), `ariaCurrent` (string, default `'page'`), `depth` (number)
+**Host classes:** `cngx-nav-link`, `cngx-nav-link--active`
+**Host attrs:** `aria-current` (when active), `tabindex="0"` + `role="link"` (on `<a>` without `href`)
+**CSS var:** `--cngx-nav-depth`
+
+### CngxNavLabel
+
+Non-interactive section header. No `role="heading"` by default to avoid
+inflating the document heading outline. Opt in with `[heading]="true"`.
+
+```html
+<span cngxNavLabel>@cngx/common</span>
+<span cngxNavLabel [heading]="true" [level]="3">Settings</span>
+```
+
+**Inputs:** `heading` (boolean, default `false`), `level` (number, default 3)
+**Host class:** `cngx-nav-label`
+**Host attrs:** `role="heading"` + `aria-level` (only when `heading` is true)
+
+### CngxNavBadge
+
+Inline badge for nav items. `aria-hidden="true"` by default because badges
+typically duplicate info in the link text. Provide `[ariaLabel]` for unique
+information (e.g., unread count).
+
+```html
+<a cngxNavLink>
+  Inbox
+  <span cngxNavBadge [value]="3" ariaLabel="3 unread">3</span>
+</a>
+```
+
+**Inputs:** `value` (string | number | null), `variant` (`'count'` | `'dot'` | `'status'`), `ariaLabel` (string)
+**Host classes:** `cngx-nav-badge`, `cngx-nav-badge--{variant}`, `cngx-nav-badge--hidden` (when empty/zero)
+**Host attrs:** `aria-hidden="true"` (default), `aria-label` (when `ariaLabel` provided)
+
+### CngxNavGroup
+
+Navigation accordion group composing `CngxDisclosure` as a hostDirective.
+Adds depth tracking and CSS classes. When `CNGX_NAV_CONFIG` has
+`singleAccordion: true` and `CngxNavGroupRegistry` is provided,
+opening one group closes the others in the same scope.
+
+```html
+<button cngxNavGroup #group="cngxNavGroup" [controls]="'settings-nav'"
+        id="settings-label">
+  Settings
+</button>
+@if (group.disclosure.opened()) {
+  <div id="settings-nav" role="group" [attr.aria-labelledby]="'settings-label'">
+    <a cngxNavLink [depth]="1">General</a>
+    <a cngxNavLink [depth]="1">Security</a>
+  </div>
+}
+```
+
+**Inputs:** `cngxDisclosureOpened` (via hostDirective), `controls` (via hostDirective), `depth` (number)
+**Exposed:** `disclosure` (CngxDisclosure instance — use `disclosure.opened()`)
+**Host classes:** `cngx-nav-group`, `cngx-nav-group--open`
+**CSS var:** `--cngx-nav-depth`
+
+### CNGX_NAV_CONFIG + provideNavConfig
+
+InjectionToken for nav system defaults. Provide at any level.
+
+```typescript
+@Component({
+  providers: [
+    provideNavConfig({ singleAccordion: true, indent: 16 }),
+    CngxNavGroupRegistry, // required for singleAccordion
+  ],
+})
+```
+
+**Options:** `indent` (px, default 12), `singleAccordion` (boolean, default false), `animationDuration` (ms, default 150)
