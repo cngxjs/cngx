@@ -42,6 +42,7 @@ import { CngxSidenav } from './sidenav';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
+  styleUrl: './sidenav-layout.scss',
   host: {
     '[class.cngx-sidenav-layout]': 'true',
     '[class.cngx-sidenav-layout--has-overlay]': 'hasOverlay()',

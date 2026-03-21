@@ -1,0 +1,124 @@
+// Structural styles for CngxSidenavLayout — no colors, no theming.
+// Colors come from sidenav-theme.scss via the theme() mixin.
+
+cngx-sidenav-layout {
+  display: flex;
+  position: relative;
+  width: 100%;
+  min-height: inherit;
+  overflow: hidden;
+}
+
+// ── Sidenav panel ──────────────────────────────────────────────────
+
+cngx-sidenav {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  z-index: 2;
+  width: var(--cngx-sidenav-width, 280px);
+  background: var(--cngx-sidenav-bg, #f5f6f7);
+  color: var(--cngx-sidenav-color, inherit);
+  transition:
+    width var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
+    visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
+
+  // Closed state: collapse to 0 width
+  &:not(.cngx-sidenav--open):not(.cngx-sidenav--side) {
+    width: 0;
+    visibility: hidden;
+  }
+
+  // Open state: show
+  &.cngx-sidenav--open {
+    visibility: visible;
+    transition:
+      width var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
+      visibility 0s 0s;
+  }
+
+  // Side mode: always visible, no transition needed
+  &.cngx-sidenav--side {
+    visibility: visible;
+  }
+
+  // Over mode: absolute positioning, don't push content
+  &.cngx-sidenav--over {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    &.cngx-sidenav--start { left: 0; }
+    &.cngx-sidenav--end { right: 0; }
+  }
+
+  // Push/side mode: in flex flow, push content naturally
+  &.cngx-sidenav--push,
+  &.cngx-sidenav--side {
+    position: relative;
+  }
+
+  // Borders
+  &.cngx-sidenav--start {
+    border-right: var(--cngx-sidenav-border-width, 1px) solid var(--cngx-sidenav-border-color, #e0e0e0);
+  }
+  &.cngx-sidenav--end {
+    border-left: var(--cngx-sidenav-border-width, 1px) solid var(--cngx-sidenav-border-color, #e0e0e0);
+    order: 2; // flex order: content first, end sidenav last
+  }
+}
+
+// ── Sidenav internal structure ─────────────────────────────────────
+
+.cngx-sidenav__body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: var(--cngx-sidenav-width, 280px); // prevent content collapse during width animation
+}
+
+.cngx-sidenav-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--cngx-sidenav-border-color, #e0e0e0);
+}
+
+.cngx-sidenav-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  border-top: 1px solid var(--cngx-sidenav-footer-border-color, var(--cngx-sidenav-border-color, #e0e0e0));
+}
+
+// ── Content area ───────────────────────────────────────────────────
+
+cngx-sidenav-content {
+  display: block;
+  flex: 1;
+  min-width: 0; // prevent flex overflow
+  overflow: auto;
+  order: 1; // between start and end sidenavs
+  transition:
+    margin-inline-start var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
+    margin-inline-end var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease);
+}
+
+// ── Backdrop ───────────────────────────────────────────────────────
+
+.cngx-sidenav-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--cngx-sidenav-backdrop-bg, rgba(0, 0, 0, 1));
+  opacity: var(--cngx-sidenav-backdrop-opacity, 0.5);
+  cursor: pointer;
+}
+
+// ── Reduced motion ─────────────────────────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+  cngx-sidenav,
+  cngx-sidenav-content,
+  .cngx-sidenav-backdrop {
+    transition: none !important;
+  }
+}
