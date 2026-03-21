@@ -8,10 +8,6 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.component').then((m) => m.HomeComponent),
   },
   {
-    path: 'demos',
-    loadComponent: () => import('./demos/demos-overview.component').then((m) => m.DemosOverviewComponent),
-  },
-  {
     path: 'common',
     children: [
       {
@@ -130,14 +126,39 @@ export const routes: Routes = [
           import('./demos/common/interactive/speak-demo/speak-demo.component').then((m) => m.SpeakDemoComponent),
       },
       {
+        path: 'interactive/swipe-dismiss',
+        loadComponent: () =>
+          import('./demos/common/interactive/swipe-dismiss-demo/swipe-dismiss-demo.component').then((m) => m.SwipeDismissDemoComponent),
+      },
+      {
+        path: 'layout/backdrop',
+        loadComponent: () =>
+          import('./demos/common/layout/backdrop-demo/backdrop-demo.component').then((m) => m.BackdropDemoComponent),
+      },
+      {
+        path: 'layout/drawer',
+        loadComponent: () =>
+          import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
+      },
+      {
         path: 'layout/intersection-observer',
         loadComponent: () =>
           import('./demos/common/layout/intersection-observer-demo/intersection-observer-demo.component').then((m) => m.IntersectionObserverDemoComponent),
       },
       {
+        path: 'layout/media-query',
+        loadComponent: () =>
+          import('./demos/common/layout/media-query-demo/media-query-demo.component').then((m) => m.MediaQueryDemoComponent),
+      },
+      {
         path: 'layout/resize-observer',
         loadComponent: () =>
           import('./demos/common/layout/resize-observer-demo/resize-observer-demo.component').then((m) => m.ResizeObserverDemoComponent),
+      },
+      {
+        path: 'layout/scroll-lock',
+        loadComponent: () =>
+          import('./demos/common/layout/scroll-lock-demo/scroll-lock-demo.component').then((m) => m.ScrollLockDemoComponent),
       },
       { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
     ],

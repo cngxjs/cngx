@@ -36,8 +36,13 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
       { label: 'Speak', path: 'common/interactive/speak' },
+      { label: 'SwipeDismiss', path: 'common/interactive/swipe-dismiss' },
+      { label: 'Backdrop', path: 'common/layout/backdrop' },
+      { label: 'Drawer', path: 'common/layout/drawer' },
       { label: 'IntersectionObserver', path: 'common/layout/intersection-observer' },
+      { label: 'MediaQuery', path: 'common/layout/media-query' },
       { label: 'ResizeObserver', path: 'common/layout/resize-observer' },
+      { label: 'ScrollLock', path: 'common/layout/scroll-lock' },
     ],
   },
   {
