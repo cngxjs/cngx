@@ -79,11 +79,13 @@ export class CngxBackdrop {
   }
 
   private _getSiblings(): HTMLElement[] {
-    const parent = this._el.nativeElement.parentElement;
-    if (!parent) return [];
+    const el = this._el.nativeElement as HTMLElement;
+    const parent = el.parentElement;
+    if (!parent) {
+      return [];
+    }
     return Array.from(parent.children).filter(
-      (child): child is HTMLElement =>
-        child !== this._el.nativeElement && child instanceof HTMLElement,
+      (child): child is HTMLElement => child !== el && child instanceof HTMLElement,
     );
   }
 }

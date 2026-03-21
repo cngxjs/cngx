@@ -80,7 +80,7 @@ export class CngxDrawerPanel {
         if (
           this.isOpen() &&
           this.closeOnClickOutside() &&
-          !this.drawerRef().elementRef.nativeElement.contains(e.target as Node)
+          !(this.drawerRef().elementRef.nativeElement as HTMLElement).contains(e.target as Node)
         ) {
           this.drawerRef().close();
         }

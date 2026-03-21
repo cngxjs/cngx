@@ -76,6 +76,10 @@ export class CngxDrawer {
 
   /** Toggles the drawer between open and closed. */
   toggle(): void {
-    this.opened() ? this.close() : this.open();
+    if (this.opened()) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 }

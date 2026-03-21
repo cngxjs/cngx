@@ -55,8 +55,7 @@ export class CngxSwipeDismiss {
   readonly swipeProgress = this._swipeProgress.asReadonly();
 
   constructor() {
-    const el = inject(ElementRef<HTMLElement>);
-    const nativeEl = el.nativeElement;
+    const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
 
     const pointerDown$ = fromEvent<PointerEvent>(nativeEl, 'pointerdown');
     const pointerMove$ = fromEvent<PointerEvent>(document, 'pointermove');
