@@ -1,10 +1,12 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
   effect,
+  ElementRef,
   inject,
   ViewEncapsulation,
 } from '@angular/core';
@@ -77,6 +79,14 @@ export class CngxSidenavLayout {
 
   constructor() {
     const doc = inject(DOCUMENT);
+    const el = inject(ElementRef<HTMLElement>);
+
+    // Enable transitions only after first render to prevent jank on load
+    afterNextRender(() => {
+      requestAnimationFrame(() => {
+        (el.nativeElement as HTMLElement).classList.add('cngx-sidenav-layout--ready');
+      });
+    });
 
     // Scroll lock when overlay is active
     effect(() => {

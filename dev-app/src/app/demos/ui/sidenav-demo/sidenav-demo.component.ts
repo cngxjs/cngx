@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';
-import { CngxNavLink, CngxNavLabel } from '@cngx/common';
+import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/common';
 
 @Component({
   selector: 'app-sidenav-demo',
@@ -19,63 +19,125 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
     CngxSidenavFooter,
     CngxNavLink,
     CngxNavLabel,
+    CngxNavGroup,
+    CngxNavBadge,
   ],
   template: `
-    <app-example-card title="Single Sidebar -- Mode Switching"
+    <app-example-card title="Full Navigation Sidebar"
       [subtitle]="_s0">
       
   <div class="filter-row">
     <span class="filter-label">Mode:</span>
     @for (m of modes; track m) {
-      <button class="chip" [class.chip--active]="singleMode() === m"
-              (click)="singleMode.set(m)">{{ m }}</button>
+      <button class="chip" [class.chip--active]="navMode() === m"
+              (click)="navMode.set(m)">{{ m }}</button>
     }
-    <button class="sort-btn" (click)="singleOpen.set(!singleOpen())">
-      {{ singleOpen() ? 'Close' : 'Open' }}
+    <button class="sort-btn" (click)="navOpen.set(!navOpen())">
+      {{ navOpen() ? 'Close' : 'Open' }}
     </button>
   </div>
 
-  <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
-    <cngx-sidenav position="start" [(opened)]="singleOpen" [mode]="singleMode()" width="220px">
-      <cngx-sidenav-header style="padding: 1rem; font-weight: 700;">
-        My App
+  <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+    <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px">
+      <cngx-sidenav-header style="padding: 1rem; font-weight: 700; font-size: 1rem;">
+        Workspace
       </cngx-sidenav-header>
 
-      <span cngxNavLabel style="display: block; padding: 0.5rem 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888);">
-        Navigation
+      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
+        Main
       </span>
-      @for (link of navLinks; track link.path) {
-        <a cngxNavLink [active]="activeLink() === link.path"
-           (click)="activeLink.set(link.path); $event.preventDefault()"
-           style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-           [style.border-left-color]="activeLink() === link.path ? 'var(--interactive, #f5a623)' : 'transparent'"
-           [style.background]="activeLink() === link.path ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
-           [style.font-weight]="activeLink() === link.path ? '600' : '400'">
-          {{ link.label }}
-        </a>
+
+      <a cngxNavLink [active]="activeLink() === '/dashboard'"
+         (click)="activeLink.set('/dashboard'); $event.preventDefault()"
+         style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
+         [style.border-left-color]="activeLink() === '/dashboard' ? 'var(--interactive, #f5a623)' : 'transparent'"
+         [style.background]="activeLink() === '/dashboard' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.font-weight]="activeLink() === '/dashboard' ? '600' : '400'">
+        Dashboard
+      </a>
+
+      <a cngxNavLink [active]="activeLink() === '/inbox'"
+         (click)="activeLink.set('/inbox'); $event.preventDefault()"
+         style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
+         [style.border-left-color]="activeLink() === '/inbox' ? 'var(--interactive, #f5a623)' : 'transparent'"
+         [style.background]="activeLink() === '/inbox' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.font-weight]="activeLink() === '/inbox' ? '600' : '400'">
+        Inbox
+        <span cngxNavBadge [value]="7" ariaLabel="7 unread"
+              style="background: var(--interactive, #f5a623); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 0.1em 0.45em; border-radius: 10px; min-width: 1.1em; text-align: center;">
+          7
+        </span>
+      </a>
+
+      <a cngxNavLink [active]="activeLink() === '/calendar'"
+         (click)="activeLink.set('/calendar'); $event.preventDefault()"
+         style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
+         [style.border-left-color]="activeLink() === '/calendar' ? 'var(--interactive, #f5a623)' : 'transparent'"
+         [style.background]="activeLink() === '/calendar' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.font-weight]="activeLink() === '/calendar' ? '600' : '400'">
+        Calendar
+        <span cngxNavBadge variant="dot" [value]="1"
+              style="width: 7px; height: 7px; border-radius: 50%; background: var(--success-bg, #22c55e); flex-shrink: 0;">
+        </span>
+      </a>
+
+      <span cngxNavLabel style="display: block; padding: 0.75rem 1rem 0.25rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
+        Manage
+      </span>
+
+      <button cngxNavGroup #settingsGroup="cngxNavGroup" [controls]="'settings-items'" id="settings-lbl"
+              style="width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: inherit; display: flex; align-items: center; justify-content: space-between;">
+        Settings
+        <span style="font-size: 0.6rem; transition: transform 0.15s;"
+              [style.transform]="settingsGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
+      </button>
+      @if (settingsGroup.disclosure.opened()) {
+        <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
+          @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
+            <a cngxNavLink [depth]="1" [active]="activeLink() === '/settings/' + sub.toLowerCase()"
+               (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()"
+               style="display: block; padding: 0.4rem 1rem 0.4rem calc(1rem + 14px); text-decoration: none; font-size: 0.8rem; color: inherit;"
+               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? 'var(--interactive, #f5a623)' : ''"
+               [style.font-weight]="activeLink() === '/settings/' + sub.toLowerCase() ? '600' : '400'">
+              {{ sub }}
+            </a>
+          }
+        </div>
       }
 
-      <cngx-sidenav-footer style="padding: 0.75rem 1rem; font-size: 0.75rem; color: var(--text-muted, #888);">
-        v1.0.0
+      <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl"
+              style="width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: inherit; display: flex; align-items: center; justify-content: space-between;">
+        Team
+        <span style="font-size: 0.6rem; transition: transform 0.15s;"
+              [style.transform]="teamGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
+      </button>
+      @if (teamGroup.disclosure.opened()) {
+        <div id="team-items" role="group" [attr.aria-labelledby]="'team-lbl'">
+          @for (sub of ['Members', 'Roles', 'Invites']; track sub) {
+            <a cngxNavLink [depth]="1"
+               style="display: block; padding: 0.4rem 1rem 0.4rem calc(1rem + 14px); text-decoration: none; font-size: 0.8rem; color: inherit;">
+              {{ sub }}
+            </a>
+          }
+        </div>
+      }
+
+      <cngx-sidenav-footer style="padding: 0.75rem 1rem; font-size: 0.7rem; color: var(--text-muted, #888);">
+        Workspace v2.1
       </cngx-sidenav-footer>
     </cngx-sidenav>
 
-    <cngx-sidenav-content style="padding: 1rem;">
-      <p><strong>Mode:</strong> {{ singleMode() }}</p>
-      <p><strong>Active:</strong> {{ activeLink() }}</p>
-      <p style="color: var(--text-muted, #888); font-size: 0.85rem;">
-        @if (singleMode() === 'side') {
-          Sidebar is always visible. No toggle needed.
-        } @else if (singleMode() === 'push') {
-          Content shifts when the sidebar opens.
-        } @else {
-          Sidebar overlays content. Click backdrop or press Escape to close.
-        }
+    <cngx-sidenav-content style="padding: 1.25rem;">
+      <h3 style="margin: 0 0 0.5rem; font-size: 1.1rem;">{{ activeLink().substring(1) || 'Dashboard' }}</h3>
+      <p style="color: var(--text-muted, #888); font-size: 0.85rem; margin: 0;">
+        Mode: <strong>{{ navMode() }}</strong> &mdash;
+        Click nav items to change the active state.
+        Groups expand with <code>CngxNavGroup</code> + <code>CngxDisclosure</code>.
       </p>
     </cngx-sidenav-content>
   </cngx-sidenav-layout>
     </app-example-card>
-    <app-example-card title="Dual Sidebar -- Start + End"
+    <app-example-card title="Dual Sidebar -- Master/Detail"
       [subtitle]="_s1">
       
   <div class="button-row">
@@ -87,9 +149,9 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
     </button>
   </div>
 
-  <cngx-sidenav-layout style="height: 300px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
-    <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="180px">
-      @for (item of ['Home', 'Tasks', 'Messages', 'Calendar']; track item) {
+  <cngx-sidenav-layout style="height: 320px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+    <cngx-sidenav position="start" [(opened)]="leftOpen" mode="push" width="160px">
+      @for (item of ['Orders', 'Products', 'Customers', 'Reports']; track item) {
         <a cngxNavLink style="display: block; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit;">
           {{ item }}
         </a>
@@ -97,19 +159,29 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
     </cngx-sidenav>
 
     <cngx-sidenav-content style="padding: 1rem;">
-      <p><strong>Main content</strong> with dual sidebars.</p>
-      <p style="font-size: 0.85rem; color: var(--text-muted, #888);">
-        Left is push mode, right is overlay. Open the right panel to see the shared backdrop.
-      </p>
+      <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
+      @for (item of items; track item) {
+        <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color, #e0e0e0); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
+             [style.background]="selectedItem() === item ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+             [style.border-color]="selectedItem() === item ? 'var(--interactive, #f5a623)' : ''">
+          {{ item }}
+        </div>
+      }
     </cngx-sidenav-content>
 
-    <cngx-sidenav position="end" [(opened)]="rightOpen" mode="over" width="260px">
-      <div style="padding: 1rem;">
-        <strong>Detail Panel</strong>
-        <p style="font-size: 0.85rem; color: var(--text-muted, #888); margin-top: 0.5rem;">
-          Right-side overlay for item details, settings, or contextual info.
-        </p>
-        <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
+    <cngx-sidenav position="end" [(opened)]="rightOpen" mode="over" width="280px">
+      <div style="padding: 1.25rem;">
+        @if (selectedItem()) {
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">{{ selectedItem() }}</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted, #888); margin: 0 0 0.75rem;">
+            Detail view for the selected order. Status, items, shipping info would go here.
+          </p>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="sort-btn" (click)="rightOpen.set(false)">Close</button>
+          </div>
+        } @else {
+          <p style="color: var(--text-muted, #888); font-size: 0.85rem;">Select an order to view details.</p>
+        }
       </div>
     </cngx-sidenav>
   </cngx-sidenav-layout>
@@ -117,64 +189,74 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
   <div class="status-row" style="margin-top: 0.5rem;">
     <span class="status-badge" [class.active]="leftOpen()">left: {{ leftOpen() ? 'open' : 'closed' }}</span>
     <span class="status-badge" [class.active]="rightOpen()">right: {{ rightOpen() ? 'open' : 'closed' }}</span>
+    @if (selectedItem()) {
+      <span class="status-badge active">selected: {{ selectedItem() }}</span>
+    }
   </div>
     </app-example-card>
-    <app-example-card title="API -- Component Structure"
+    <app-example-card title="Material Theming"
       [subtitle]="_s2">
       
-  <pre class="code-block"><code>// styles.scss
+  <pre class="code-block"><code>// 1. Import the theme mixin
+@use '@angular/material' as mat;
 @use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
 
+$theme: mat.define-theme((color: (primary: mat.$azure-palette)));
+
+// 2. Include alongside Material themes
 html &#123;
+  @include mat.all-component-themes($theme);
   @include sidenav.theme($theme);
 &#125;
 
-// template
-&lt;cngx-sidenav-layout&gt;
-  &lt;cngx-sidenav position="start"
-                [(opened)]="navOpen"
-                [responsive]="'(min-width: 1024px)'"
-                width="280px"&gt;
-    &lt;cngx-sidenav-header&gt;Logo&lt;/cngx-sidenav-header&gt;
+[data-theme='dark'] &#123;
+  @include mat.all-component-colors($dark-theme);
+  @include sidenav.theme($dark-theme);
+&#125;
 
-    &lt;span cngxNavLabel&gt;Section&lt;/span&gt;
-    &lt;a cngxNavLink [active]="true"&gt;Dashboard&lt;/a&gt;
-    &lt;a cngxNavLink&gt;Settings&lt;/a&gt;
+// 3. Available CSS custom properties:
+// --cngx-sidenav-width           (280px)
+// --cngx-sidenav-bg              (M3: surface-container)
+// --cngx-sidenav-color           (M3: on-surface)
+// --cngx-sidenav-border-color    (M3: outline-variant)
+// --cngx-sidenav-backdrop-bg     (M3: scrim)
+// --cngx-sidenav-backdrop-opacity (0.5)
+// --cngx-sidenav-transition-duration (0.25s)
+// --cngx-sidenav-transition-easing  (cubic-bezier)
+// --cngx-sidenav-padding         (density-dependent)
+// --cngx-sidenav-header-bg       (M3: surface-container-low)
+// --cngx-sidenav-footer-bg       (M3: surface-container-low)
+// --cngx-sidenav-footer-border-color (M3: outline-variant)
 
-    &lt;cngx-sidenav-footer&gt;v1.0&lt;/cngx-sidenav-footer&gt;
-  &lt;/cngx-sidenav&gt;
-
-  &lt;cngx-sidenav-content&gt;
-    &lt;router-outlet /&gt;
-  &lt;/cngx-sidenav-content&gt;
-
-  &lt;cngx-sidenav position="end" [(opened)]="detailOpen"&gt;
-    Right detail panel
-  &lt;/cngx-sidenav&gt;
-&lt;/cngx-sidenav-layout&gt;</code></pre>
+// 4. Override per-instance:
+cngx-sidenav.my-dark-sidebar &#123;
+  --cngx-sidenav-bg: #1a1a2e;
+  --cngx-sidenav-color: #e0e0e0;
+  --cngx-sidenav-border-color: #333;
+&#125;</code></pre>
     </app-example-card>
   `,
 })
 export class SidenavDemoComponent {
-  protected readonly _s0 = 'A single <code>cngx-sidenav</code> with mode control. <strong>side</strong> = permanent, <strong>push</strong> = pushes content, <strong>over</strong> = overlays. The component handles all CSS transitions, positioning, and backdrop internally.';
-  protected readonly _s1 = 'Two sidenavs in the same layout. The left sidebar uses <code>push</code> mode, the right is an <code>over</code> overlay panel. The layout manages a shared backdrop.';
-  protected readonly _s2 = 'The organism composes drawer, backdrop, scroll lock, and media query atoms. The consumer only needs the declarative template. Material theming via <code>sidenav-theme.scss</code> provides colors, borders, and density tokens.';
+  protected readonly _s0 = 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.';
+  protected readonly _s1 = 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.';
+  protected readonly _s2 = '<code>sidenav-theme.scss</code> follows the same structure as Angular Material: <code>base()</code> for structural tokens, <code>color()</code> for M3/M2 palette colors, <code>density()</code> for spacing. All values are CSS custom properties that consumers can override.';
 
-  // Single sidebar
-  protected readonly singleOpen = signal(true);
-  protected readonly singleMode = signal<'over' | 'push' | 'side'>('side');
+  // Demo 1: Full nav
+  protected readonly navOpen = signal(true);
+  protected readonly navMode = signal<'over' | 'push' | 'side'>('side');
   protected readonly modes: ('over' | 'push' | 'side')[] = ['over', 'push', 'side'];
+  protected readonly activeLink = signal('/dashboard');
 
-  // Dual sidebar
+  // Demo 2: Dual sidebar
   protected readonly leftOpen = signal(true);
   protected readonly rightOpen = signal(false);
+  protected readonly selectedItem = signal<string | null>(null);
+  protected readonly items = ['Order #1042', 'Order #1043', 'Order #1044', 'Order #1045'];
 
-  // Active link
-  protected readonly activeLink = signal('/dashboard');
-  protected readonly navLinks = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/analytics', label: 'Analytics' },
-    { path: '/reports', label: 'Reports' },
-  ];
+  protected selectItem(item: string): void {
+    this.selectedItem.set(item);
+    this.rightOpen.set(true);
+  }
   
 }

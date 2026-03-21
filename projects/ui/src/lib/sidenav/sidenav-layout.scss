@@ -7,6 +7,13 @@ cngx-sidenav-layout {
   width: 100%;
   min-height: inherit;
   overflow: hidden;
+
+  // Suppress transitions on initial render to prevent flash/jank.
+  // The layout adds .cngx-sidenav-layout--ready after first render.
+  &:not(.cngx-sidenav-layout--ready) cngx-sidenav,
+  &:not(.cngx-sidenav-layout--ready) cngx-sidenav-content {
+    transition: none !important;
+  }
 }
 
 // ── Sidenav panel ──────────────────────────────────────────────────
