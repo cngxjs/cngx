@@ -375,8 +375,16 @@ cngx-speak-button.speak-btn-dark {
   z-index: 10;
   background: var(--cngx-surface-alt, #f5f6f7);
   border-right: 1px solid var(--border-color, #e0e0e0);
-  transition: transform var(--cngx-drawer-duration) var(--cngx-drawer-easing);
+  transition: transform var(--cngx-drawer-duration) var(--cngx-drawer-easing),
+              visibility 0s var(--cngx-drawer-duration);
   overflow: hidden;
+  visibility: hidden;
+
+  &.cngx-drawer-panel--open {
+    visibility: visible;
+    transition: transform var(--cngx-drawer-duration) var(--cngx-drawer-easing),
+                visibility 0s 0s;
+  }
 
   // left (default)
   &.cngx-drawer-panel--left,
