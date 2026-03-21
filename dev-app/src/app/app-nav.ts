@@ -57,6 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: '@cngx/ui',
     items: [
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
+      { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'SpeakButton', path: 'ui/speak-button' },
     ],
   },

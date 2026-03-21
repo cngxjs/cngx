@@ -193,6 +193,11 @@ export const routes: Routes = [
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
       },
       {
+        path: 'sidenav',
+        loadComponent: () =>
+          import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
+      },
+      {
         path: 'speak-button',
         loadComponent: () =>
           import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
