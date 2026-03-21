@@ -15,6 +15,15 @@ $theme: mat.define-theme(
   )
 );
 
+$dark-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$azure-palette,
+    ),
+  )
+);
+
 html {
   font-size: 16px;
   @include mat.all-component-themes($theme);
@@ -22,22 +31,37 @@ html {
   @include speak.theme($theme);
 }
 
+[data-theme='dark'] {
+  @include mat.all-component-colors($dark-theme);
+  @include treetable.theme($dark-theme);
+  @include speak.theme($dark-theme);
+}
+
 // ── Design tokens ─────────────────────────────────────────────────────────────
 
 :root {
-  --font-sans: 'Bricolage Grotesque', system-ui, sans-serif;
-  --font-mono: 'DM Mono', 'Fira Code', 'SF Mono', monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
 
-  // Sidebar — always dark, unaffected by theme toggle
-  --sidebar-bg: #0b0c12;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-text: #636478;
-  --sidebar-text-hover: #c4c5d6;
-  --sidebar-text-active: #ffffff;
-  --sidebar-active-bg: rgba(245, 166, 35, 0.1);
+  // Icon rail — light
+  --rail-bg: #f8f7f4;
+  --rail-border: #e8e5dc;
+  --rail-text: #8a877e;
+  --rail-text-hover: #3a3935;
+  --rail-muted: #b0ada6;
+
+  // Sidebar — light default
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e8e5dc;
+  --sidebar-text: #5f6368;
+  --sidebar-text-hover: #1a1a1a;
+  --sidebar-text-active: #0e0d0c;
+  --sidebar-active-bg: rgba(245, 166, 35, 0.08);
   --sidebar-active-border: #f5a623;
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
-  --sidebar-label-color: rgba(255, 255, 255, 0.22);
+  --sidebar-hover-bg: rgba(0, 0, 0, 0.03);
+  --sidebar-label-color: #9a9590;
+  --sidebar-chevron: #b0ada6;
 
   // Content area — light default
   --bg: #f3f2ee;
@@ -45,10 +69,16 @@ html {
   --text-muted: #6b6860;
   --border-color: #e5e2d9;
 
+  // Generic surface tokens (used by cngx library components)
+  --cngx-surface: #ffffff;
+  --cngx-surface-alt: #f8f9fa;
+  --cngx-border: #e0e0e0;
+  --cngx-text-secondary: #666666;
+
   // Cards
   --card-bg: #ffffff;
-  --card-border: #e8e5dc;
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.06);
+  --card-border: #e0ddd4;
+  --card-shadow: none;
   --card-title: #0e0d0c;
 
   // Inline code chips
@@ -77,14 +107,59 @@ html {
   --pg-input-border: rgba(0, 0, 0, 0.12);
   --pg-input-color: rgba(0, 0, 0, 0.75);
 
-  // Content grid
-  --content-grid:
-    linear-gradient(rgba(0, 0, 0, 0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.032) 1px, transparent 1px);
+  // Interactive accent (chips, active sort, focus rings)
+  --interactive: #4f46e5;
+  --interactive-text: #ffffff;
+  --interactive-subtle-bg: #ede9fe;
+  --interactive-subtle-text: #4f46e5;
+
+  // Status — success
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-text: #065f46;
+
+  // Status — info / output
+  --info-bg: #f0f4ff;
+  --info-border: #c7d2fe;
+  --info-text: #3730a3;
+
+  // Status — warning
+  --warning-bg: #fff3e0;
+  --warning-text: #b84300;
+
+  // Focus ring
+  --focus-ring: rgb(79 70 229 / 20%);
+
+  // Scrollbar
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.2);
+  --scrollbar-track: transparent;
+
+  // Content grid (disabled for clean look)
+  --content-grid: none;
 }
 
-// Dark theme — applies to content area only (sidebar stays dark)
+// Dark theme
 [data-theme='dark'] {
+  // Icon rail — dark
+  --rail-bg: #0c0d14;
+  --rail-border: rgba(255, 255, 255, 0.06);
+  --rail-text: rgba(255, 255, 255, 0.35);
+  --rail-text-hover: rgba(255, 255, 255, 0.8);
+  --rail-muted: rgba(255, 255, 255, 0.2);
+
+  // Sidebar — dark
+  --sidebar-bg: #101118;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-text: #6b6d82;
+  --sidebar-text-hover: #b8bace;
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(245, 166, 35, 0.1);
+  --sidebar-active-border: #f5a623;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-label-color: rgba(255, 255, 255, 0.25);
+  --sidebar-chevron: rgba(255, 255, 255, 0.2);
+
   --bg: #1e1f2e;
   --text-primary: #e8e9f3;
   --text-muted: #9a9bb5;
@@ -92,6 +167,12 @@ html {
 
   --card-bg: #252638;
   --card-border: #303248;
+
+  // Generic surface tokens — dark
+  --cngx-surface: #252638;
+  --cngx-surface-alt: #2a2b3d;
+  --cngx-border: #3a3c56;
+  --cngx-text-secondary: #9a9bb5;
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2);
   --card-title: #e8e9f3;
 
@@ -117,10 +198,48 @@ html {
   --pg-input-border: rgba(255, 255, 255, 0.1);
   --pg-input-color: rgba(255, 255, 255, 0.8);
 
-  // Content grid
-  --content-grid:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  // Interactive accent
+  --interactive: #818cf8;
+  --interactive-text: #ffffff;
+  --interactive-subtle-bg: #312e81;
+  --interactive-subtle-text: #a5b4fc;
+
+  // Status — success
+  --success-bg: #0d3326;
+  --success-border: #166534;
+  --success-text: #6ee7b7;
+
+  // Status — info / output
+  --info-bg: #1e1b4b;
+  --info-border: #3730a3;
+  --info-text: #a5b4fc;
+
+  // Status — warning
+  --warning-bg: #3b2008;
+  --warning-text: #fdba74;
+
+  // Focus ring
+  --focus-ring: rgb(129 140 248 / 25%);
+
+  // Scrollbar
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
+  --scrollbar-track: transparent;
+
+  // CDK treetable — dark overrides (consumer responsibility)
+  cngx-treetable {
+    --cngx-table-header-bg: #2a2b3d;
+    --cngx-table-header-border: #3a3c56;
+    --cngx-table-header-color: #c4c5d6;
+    --cngx-table-row-border: #303248;
+    --cngx-table-row-hover-bg: rgba(129, 140, 248, 0.08);
+    --cngx-table-row-selected-bg: rgba(129, 140, 248, 0.12);
+    --cngx-table-focus-ring: #818cf8;
+    --cngx-table-muted-color: #9a9bb5;
+    --cngx-table-cell-color: #e8e9f3;
+  }
+
+  --content-grid: none;
 }
 
 // ── Global resets ─────────────────────────────────────────────────────────────
@@ -162,4 +281,29 @@ ul {
 img {
   max-width: 100%;
   height: auto;
+}
+
+// ── Global scrollbar ─────────────────────────────────────────────────────────
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+
+  &:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
 }

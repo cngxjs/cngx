@@ -22,50 +22,90 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       .example-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
-        border-top: 2px solid var(--accent);
-        border-radius: 12px;
-        box-shadow: var(--card-shadow);
+        border-radius: 6px;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
+        transition:
+          border-color 0.25s,
+          box-shadow 0.25s,
+          transform 0.25s;
+
+        &:hover {
+          border-color: var(--accent);
+          box-shadow:
+            0 0 0 1px var(--accent),
+            0 8px 32px -8px rgba(245, 166, 35, 0.12);
+          transform: translateY(-2px);
+
+          .example-title::before {
+            height: 100%;
+          }
+        }
       }
 
       .example-header {
-        padding: 1.25rem 1.5rem 1.125rem;
+        padding: 1.25rem 1.5rem 1rem;
         border-bottom: 1px solid var(--card-border);
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.375rem;
+        position: relative;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 166, 35, 0.04) 0%,
+          transparent 50%
+        );
       }
 
       .example-title {
-        font-size: 1.0625rem;
-        font-weight: 650;
-        letter-spacing: -0.02em;
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
         color: var(--card-title);
-        line-height: 1.25;
+        line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &::before {
+          content: '';
+          width: 3px;
+          height: 0.75em;
+          background: var(--accent);
+          border-radius: 2px;
+          flex-shrink: 0;
+          transition: height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
       }
 
       .example-subtitle {
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: var(--text-muted);
-        line-height: 1.55;
+        line-height: 1.6;
+        padding-left: calc(3px + 0.5rem);
 
         ::ng-deep code {
           background: var(--code-bg);
           color: var(--code-text);
           border: 1px solid var(--code-border);
           padding: 0.125rem 0.375rem;
-          border-radius: 4px;
+          border-radius: 3px;
           font-family: var(--font-mono);
           font-size: 0.8125em;
           font-style: normal;
+          transition: background 0.15s;
+        }
+
+        &:hover ::ng-deep code {
+          background: color-mix(in srgb, var(--code-bg) 80%, var(--accent) 20%);
         }
       }
 
       .example-content {
-        padding: 1.5rem;
+        padding: 1.25rem 1.5rem;
         overflow-x: auto;
       }
     `,

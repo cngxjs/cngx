@@ -54,3 +54,4 @@ vitest.config.*.timestamp*
 /.claude/auto-memory
 .internal/
 .compodoc/
+/screenshots
