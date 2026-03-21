@@ -9,6 +9,11 @@ export { CngxSearch } from './lib/behaviors/interactive/search.directive';
 export { CngxClickOutside } from './lib/behaviors/interactive/click-outside.directive';
 export { CngxSpeak } from './lib/behaviors/interactive/speak.directive';
 export { CngxSwipeDismiss, type SwipeDirection } from './lib/behaviors/interactive/swipe-dismiss.directive';
+export { CngxDisclosure } from './lib/behaviors/interactive/disclosure.directive';
+export { CngxNavLink } from './lib/behaviors/interactive/nav-link.directive';
+export { CngxNavLabel } from './lib/behaviors/interactive/nav-label.directive';
+export { CngxNavBadge, type NavBadgeVariant } from './lib/behaviors/interactive/nav-badge.directive';
+export { CngxNavGroup } from './lib/behaviors/interactive/nav-group.directive';
 
 // Behaviors — layout
 export { CngxResizeObserver } from './lib/behaviors/layout/resize-observer.directive';
