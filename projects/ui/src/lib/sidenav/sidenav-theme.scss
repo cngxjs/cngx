@@ -1,0 +1,70 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '@angular/material' as mat;
+
+// ─── cngx-sidenav theming ──────────────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include sidenav.theme($theme);
+//   }
+
+// ─── Token definitions ───────────────────────────────────────────
+
+@mixin base() {
+  --cngx-sidenav-width: 280px;
+  --cngx-sidenav-transition-duration: 0.25s;
+  --cngx-sidenav-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --cngx-sidenav-backdrop-opacity: 0.5;
+  --cngx-sidenav-border-width: 1px;
+  --cngx-sidenav-header-height: auto;
+  --cngx-sidenav-footer-height: auto;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — reference Material sys tokens
+    --cngx-sidenav-bg: var(--mat-sys-surface-container);
+    --cngx-sidenav-color: var(--mat-sys-on-surface);
+    --cngx-sidenav-border-color: var(--mat-sys-outline-variant);
+    --cngx-sidenav-backdrop-bg: var(--mat-sys-scrim);
+    --cngx-sidenav-header-bg: var(--mat-sys-surface-container-low);
+    --cngx-sidenav-footer-bg: var(--mat-sys-surface-container-low);
+    --cngx-sidenav-footer-border-color: var(--mat-sys-outline-variant);
+  } @else {
+    // M2 — derive from palette
+    --cngx-sidenav-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-sidenav-color: rgba(0, 0, 0, 0.87);
+    --cngx-sidenav-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-sidenav-backdrop-bg: rgba(0, 0, 0, 1);
+    --cngx-sidenav-header-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-sidenav-footer-bg: #{rgba(mat.get-theme-color($theme, primary), 0.04)};
+    --cngx-sidenav-footer-border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: math.max(-4, math.min(0, $scale));
+
+  $paddings: (0: 16px, -1: 12px, -2: 8px, -3: 6px, -4: 4px);
+
+  --cngx-sidenav-padding: #{map.get($paddings, $scale)};
+}
+
+// ─── Public entrypoint ───────────────────────────────────────────
+
+@mixin theme($theme) {
+  cngx-sidenav-layout {
+    @include base();
+    @include color($theme);
+    @include density($theme);
+  }
+}
