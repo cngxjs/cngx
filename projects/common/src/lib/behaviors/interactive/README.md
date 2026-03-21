@@ -74,3 +74,33 @@ renders their own UI or uses `CngxSpeakButton` from `@cngx/ui`.
 **Inputs:** `cngxSpeak` (text), `rate`, `pitch`, `volume`, `lang`, `enabled` (controls auto-speak only)
 **Signals:** `speaking` (boolean), `supported` (boolean)
 **Methods:** `speak(text)` (ignores `enabled`), `cancel()`, `toggle()`
+
+### CngxSwipeDismiss
+
+Detects directional swipe gestures via Pointer Events. Emits when the gesture
+exceeds a configurable threshold. Exposes real-time `swiping` and
+`swipeProgress` signals for visual feedback during the gesture.
+
+```html
+<!-- Close drawer on swipe-left -->
+<nav [cngxDrawerPanel]="drawer"
+     cngxSwipeDismiss="left" (swiped)="drawer.close()">
+  ...
+</nav>
+
+<!-- Bottom sheet with drag progress -->
+<div cngxSwipeDismiss="down" #swipe="cngxSwipeDismiss"
+     [style.transform]="'translateY(' + (swipe.swipeProgress() * 100) + '%)'">
+  ...
+</div>
+```
+
+**Inputs:** `cngxSwipeDismiss` (SwipeDirection: `'left'` | `'right'` | `'up'` | `'down'`, required), `threshold` (number in px, default 50), `enabled` (boolean)
+**Signals:** `swiping` (boolean), `swipeProgress` (number 0–1)
+**Outputs:** `swiped` (void)
+
+Use cases:
+- Drawer swipe-to-close (swipe left to close a left drawer)
+- Bottom sheet drag-to-dismiss
+- Dismissible notification cards
+- Carousel slide gestures
