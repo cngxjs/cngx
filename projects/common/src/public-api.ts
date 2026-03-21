@@ -14,6 +14,12 @@ export { CngxNavLink } from './lib/behaviors/interactive/nav-link.directive';
 export { CngxNavLabel } from './lib/behaviors/interactive/nav-label.directive';
 export { CngxNavBadge, type NavBadgeVariant } from './lib/behaviors/interactive/nav-badge.directive';
 export { CngxNavGroup } from './lib/behaviors/interactive/nav-group.directive';
+export { CngxNavGroupRegistry } from './lib/behaviors/interactive/nav-group-registry';
+export {
+  CNGX_NAV_CONFIG,
+  provideNavConfig,
+  type CngxNavConfig,
+} from './lib/behaviors/interactive/nav-config';
 
 // Behaviors — layout
 export { CngxResizeObserver } from './lib/behaviors/layout/resize-observer.directive';
