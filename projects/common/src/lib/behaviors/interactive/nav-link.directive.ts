@@ -1,4 +1,4 @@
-import { Directive, input } from '@angular/core';
+import { afterNextRender, Directive, ElementRef, inject, input, signal } from '@angular/core';
 
 /**
  * Navigation link atom. Applied to `<a>` or `<button>` elements in a
@@ -39,12 +39,40 @@ import { Directive, input } from '@angular/core';
   host: {
     '[class.cngx-nav-link]': 'true',
     '[class.cngx-nav-link--active]': 'active()',
+    '[attr.aria-current]': "active() ? ariaCurrent() : null",
+    '[attr.tabindex]': '_needsFocusFix() ? 0 : null',
+    '[attr.role]': "_needsFocusFix() ? 'link' : null",
     '[style.--cngx-nav-depth]': 'depth()',
   },
 })
 export class CngxNavLink {
+  /**
+   * Whether the host `<a>` lacks an `href` and needs `tabindex="0"` + `role="link"`
+   * for focusability. Checked after render so Angular bindings like `[href]` are applied.
+   * @internal
+   */
+  readonly _needsFocusFix = signal(false);
+
+  constructor() {
+    const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+    if (el.tagName === 'A') {
+      // Check after Angular has applied attribute bindings
+      afterNextRender(() => {
+        this._needsFocusFix.set(!el.hasAttribute('href'));
+      });
+    }
+  }
+
   /** Whether this link is the currently active route/item. */
   readonly active = input<boolean>(false);
+
+  /**
+   * The `aria-current` value when active. Screen readers announce this
+   * to indicate the current page/step/location.
+   *
+   * Common values: `'page'` (default), `'step'`, `'location'`, `'true'`.
+   */
+  readonly ariaCurrent = input<string>('page');
 
   /** Nesting depth for indentation. Consumer sets manually — no ancestor injection. */
   readonly depth = input<number>(0);
