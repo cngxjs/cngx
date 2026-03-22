@@ -194,45 +194,88 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
     }
   </div>
     </app-example-card>
-    <app-example-card title="Material Theming"
+    <app-example-card title="Material Theming -- Light vs Dark"
       [subtitle]="_s2">
       
-  <pre class="code-block"><code>// 1. Import the theme mixin
-@use '@angular/material' as mat;
-@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <!-- Light theme (default M3 tokens) -->
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light</div>
+      <cngx-sidenav-layout style="height: 300px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
+        <cngx-sidenav position="start" [opened]="true" mode="side" width="160px">
+          <cngx-sidenav-header style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.85rem;">
+            Workspace
+          </cngx-sidenav-header>
+          <span cngxNavLabel style="display: block; padding: 0.5rem 1rem 0.15rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
+            Navigation
+          </span>
+          @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
+            <a cngxNavLink [active]="item === 'Dashboard'"
+               style="display: block; padding: 0.4rem 1rem; text-decoration: none; font-size: 0.8rem; color: inherit; border-left: 3px solid transparent;"
+               [style.border-left-color]="item === 'Dashboard' ? 'var(--interactive, #f5a623)' : 'transparent'"
+               [style.background]="item === 'Dashboard' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+               [style.font-weight]="item === 'Dashboard' ? '600' : '400'">
+              {{ item }}
+            </a>
+          }
+          <cngx-sidenav-footer style="padding: 0.5rem 1rem; font-size: 0.65rem; color: var(--text-muted, #888);">
+            v2.1
+          </cngx-sidenav-footer>
+        </cngx-sidenav>
+        <cngx-sidenav-content style="padding: 1rem;">
+          <p style="color: var(--text-muted, #888); font-size: 0.8rem; margin: 0;">Default M3 surface tokens.</p>
+        </cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
 
-$theme: mat.define-theme((color: (primary: mat.$azure-palette)));
+    <!-- Dark theme (CSS custom property overrides) -->
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Dark (CSS overrides)</div>
+      <cngx-sidenav-layout
+        style="height: 300px; border: 1px solid #333; border-radius: 6px; background: #1c1c1e; color: #e0e0e0;
+               --cngx-sidenav-bg: #2c2c2e; --cngx-sidenav-color: #e0e0e0;
+               --cngx-sidenav-border-color: #444; --cngx-sidenav-header-bg: #232325;
+               --cngx-sidenav-footer-bg: #232325; --cngx-sidenav-footer-border-color: #444;">
+        <cngx-sidenav position="start" [opened]="true" mode="side" width="160px">
+          <cngx-sidenav-header style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.85rem;">
+            Workspace
+          </cngx-sidenav-header>
+          <span cngxNavLabel style="display: block; padding: 0.5rem 1rem 0.15rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888;">
+            Navigation
+          </span>
+          @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
+            <a cngxNavLink [active]="item === 'Dashboard'"
+               style="display: block; padding: 0.4rem 1rem; text-decoration: none; font-size: 0.8rem; color: inherit; border-left: 3px solid transparent;"
+               [style.border-left-color]="item === 'Dashboard' ? '#f5a623' : 'transparent'"
+               [style.background]="item === 'Dashboard' ? 'rgba(245, 166, 35, 0.12)' : ''"
+               [style.font-weight]="item === 'Dashboard' ? '600' : '400'">
+              {{ item }}
+            </a>
+          }
+          <cngx-sidenav-footer style="padding: 0.5rem 1rem; font-size: 0.65rem; color: #888;">
+            v2.1
+          </cngx-sidenav-footer>
+        </cngx-sidenav>
+        <cngx-sidenav-content style="padding: 1rem;">
+          <p style="color: #999; font-size: 0.8rem; margin: 0;">Override <code style="background: rgba(255,255,255,0.08); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.75rem; color: #ccc;">--cngx-sidenav-*</code> vars inline.</p>
+        </cngx-sidenav-content>
+      </cngx-sidenav-layout>
+    </div>
+  </div>
 
-// 2. Include alongside Material themes
-html &#123;
-  @include mat.all-component-themes($theme);
-  @include sidenav.theme($theme);
-&#125;
-
-[data-theme='dark'] &#123;
-  @include mat.all-component-colors($dark-theme);
-  @include sidenav.theme($dark-theme);
-&#125;
-
-// 3. Available CSS custom properties:
-// --cngx-sidenav-width           (280px)
-// --cngx-sidenav-bg              (M3: surface-container)
-// --cngx-sidenav-color           (M3: on-surface)
-// --cngx-sidenav-border-color    (M3: outline-variant)
-// --cngx-sidenav-backdrop-bg     (M3: scrim)
-// --cngx-sidenav-backdrop-opacity (0.5)
-// --cngx-sidenav-transition-duration (0.25s)
-// --cngx-sidenav-transition-easing  (cubic-bezier)
-// --cngx-sidenav-padding         (density-dependent)
-// --cngx-sidenav-header-bg       (M3: surface-container-low)
-// --cngx-sidenav-footer-bg       (M3: surface-container-low)
-// --cngx-sidenav-footer-border-color (M3: outline-variant)
-
-// 4. Override per-instance:
-cngx-sidenav.my-dark-sidebar &#123;
-  --cngx-sidenav-bg: #1a1a2e;
+  <pre class="code-block" style="margin-top: 1rem;"><code>// Override per-instance via CSS custom properties:
+cngx-sidenav-layout.dark-sidebar &#123;
+  --cngx-sidenav-bg: #2c2c2e;
   --cngx-sidenav-color: #e0e0e0;
-  --cngx-sidenav-border-color: #333;
+  --cngx-sidenav-border-color: #444;
+  --cngx-sidenav-header-bg: #232325;
+  --cngx-sidenav-footer-bg: #232325;
+&#125;
+
+// Or use the theme() mixin with a dark M3 theme:
+@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+[data-theme='dark'] &#123;
+  @include sidenav.theme($dark-theme);
 &#125;</code></pre>
     </app-example-card>
   `,
@@ -240,7 +283,7 @@ cngx-sidenav.my-dark-sidebar &#123;
 export class SidenavDemoComponent {
   protected readonly _s0 = 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.';
   protected readonly _s1 = 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.';
-  protected readonly _s2 = '<code>sidenav-theme.scss</code> follows the same structure as Angular Material: <code>base()</code> for structural tokens, <code>color()</code> for M3/M2 palette colors, <code>density()</code> for spacing. All values are CSS custom properties that consumers can override.';
+  protected readonly _s2 = 'Side-by-side comparison using only CSS custom property overrides. The left panel uses default M3 light tokens from <code>sidenav-theme.scss</code>. The right panel overrides <code>--cngx-sidenav-*</code> variables inline for a dark appearance. No class changes, no separate theme file -- just CSS custom properties.';
 
   // Demo 1: Full nav
   protected readonly navOpen = signal(true);

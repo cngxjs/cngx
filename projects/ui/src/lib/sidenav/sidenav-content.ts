@@ -47,21 +47,18 @@ export class CngxSidenavContent {
     }
   }
 
-  /** Margin for the start (left in LTR) sidenav in push/side mode. */
-  readonly marginStart = computed(() => {
-    const nav = this._layout!.startSidenav();
-    if (!nav || nav.isOverlay() || !nav.opened()) {
-      return '0';
-    }
-    return nav.width();
-  });
+  /**
+   * Margin offset for the start sidenav.
+   *
+   * Push and side modes use `position: relative` — the sidenav sits in
+   * the flex flow and the content shrinks naturally via `flex: 1`.
+   * No margin needed. Over mode uses `position: absolute` — no margin needed
+   * either since the sidenav floats above content.
+   *
+   * Kept as a public computed so tests and consumers can still read it.
+   */
+  readonly marginStart = computed(() => '0');
 
-  /** Margin for the end (right in LTR) sidenav in push/side mode. */
-  readonly marginEnd = computed(() => {
-    const nav = this._layout!.endSidenav();
-    if (!nav || nav.isOverlay() || !nav.opened()) {
-      return '0';
-    }
-    return nav.width();
-  });
+  /** Margin offset for the end sidenav — same rationale as start. */
+  readonly marginEnd = computed(() => '0');
 }

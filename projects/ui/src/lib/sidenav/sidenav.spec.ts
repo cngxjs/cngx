@@ -31,7 +31,7 @@ class DualHost {
 @Component({
   template: `
     <cngx-sidenav-layout>
-      <cngx-sidenav position="start" [(opened)]="open" [responsive]="responsive()">
+      <cngx-sidenav position="start" [(opened)]="open" [mode]="mode()" [responsive]="responsive()">
         Nav
       </cngx-sidenav>
       <cngx-sidenav-content>Content</cngx-sidenav-content>
@@ -41,6 +41,7 @@ class DualHost {
 })
 class ResponsiveHost {
   open = signal(false);
+  mode = signal<'over' | 'push' | 'side'>('over');
   responsive = signal<string | undefined>(undefined);
 }
 
@@ -104,20 +105,21 @@ describe('CngxSidenav', () => {
     expect(left.opened()).toBe(true); // side mode doesn't close
   });
 
-  it('content adjusts margins for side mode', () => {
+  it('content never applies margins (flex handles layout)', () => {
     const { fixture, content, host } = setupDual();
     host.mode.set('side');
     host.leftOpen.set(true);
     fixture.detectChanges();
-    expect(content.marginStart()).toBe('240px');
+    expect(content.marginStart()).toBe('0');
     expect(content.marginEnd()).toBe('0');
-  });
 
-  it('content does not adjust margins for over mode', () => {
-    const { fixture, content, host } = setupDual();
-    host.leftOpen.set(true);
+    host.mode.set('push');
     fixture.detectChanges();
-    expect(content.marginStart()).toBe('0'); // over mode = no margin
+    expect(content.marginStart()).toBe('0');
+
+    host.mode.set('over');
+    fixture.detectChanges();
+    expect(content.marginStart()).toBe('0');
   });
 
   it('adds position classes', () => {
@@ -176,6 +178,37 @@ describe('CngxSidenav', () => {
     const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement;
     expect(leftEl.getAttribute('aria-hidden')).toBeNull();
   });
+
+  it('preserves opened state when switching from side to push', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('side');
+    host.leftOpen.set(true);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('side');
+    expect(left.opened()).toBe(true);
+
+    host.mode.set('push');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('push');
+    expect(left.opened()).toBe(true);
+  });
+
+  it('auto-opens when leaving side mode with opened=false', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('side');
+    host.leftOpen.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('side');
+
+    host.mode.set('push');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(left.effectiveMode()).toBe('push');
+    expect(host.leftOpen()).toBe(true);
+  });
 });
 
 describe('CngxSidenav responsive', () => {
@@ -209,13 +242,24 @@ describe('CngxSidenav responsive', () => {
     expect(nav.effectiveMode()).toBe('side');
   });
 
-  it('switches to over mode when media query does not match', () => {
+  it('falls back to mode() input when media query does not match', () => {
     const fixture = TestBed.createComponent(ResponsiveHost);
     fixture.componentInstance.responsive.set('(min-width: 1024px)');
     fixture.detectChanges();
     TestBed.flushEffects();
     const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
     changeHandler!({ matches: false });
-    expect(nav.effectiveMode()).toBe('over');
+    expect(nav.effectiveMode()).toBe('over'); // default mode is 'over'
+  });
+
+  it('falls back to push mode when responsive does not match and mode is push', () => {
+    const fixture = TestBed.createComponent(ResponsiveHost);
+    fixture.componentInstance.mode.set('push');
+    fixture.componentInstance.responsive.set('(min-width: 1024px)');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const nav = fixture.debugElement.query(By.directive(CngxSidenav)).injector.get(CngxSidenav);
+    changeHandler!({ matches: false });
+    expect(nav.effectiveMode()).toBe('push');
   });
 });

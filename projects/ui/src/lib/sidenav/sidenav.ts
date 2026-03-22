@@ -96,12 +96,12 @@ export class CngxSidenav {
   // ── Responsive media query (inlined, not CngxMediaQuery directive) ──
   private readonly _mediaMatches = signal(false);
 
-  /** Resolved mode — responsive overrides manual mode. */
+  /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
   readonly effectiveMode = computed<SidenavMode>(() => {
     if (!this.responsive()) {
       return this.mode();
     }
-    return this._mediaMatches() ? 'side' : 'over';
+    return this._mediaMatches() ? 'side' : this.mode();
   });
 
   /** Whether this sidenav is in overlay mode (over). */
@@ -124,12 +124,16 @@ export class CngxSidenav {
     });
     inject(DestroyRef).onDestroy(() => cleanupMedia?.());
 
-    // Auto-close when switching from side to over (responsive shrink)
+    // Sync opened state on mode transitions:
+    // When leaving 'side' mode the sidenav was visible regardless of `opened`.
+    // Ensure `opened` is true so it stays visible in the new mode.
+    let prevMode: SidenavMode | undefined;
     effect(() => {
-      if (this.effectiveMode() === 'over' && this._mediaMatches() === false && this.responsive()) {
-        // Viewport shrank below breakpoint — close the sidebar
-        // (don't close on initial load, only on change)
+      const mode = this.effectiveMode();
+      if (prevMode === 'side' && mode !== 'side') {
+        this.opened.set(true);
       }
+      prevMode = mode;
     });
   }
 
