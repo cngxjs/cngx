@@ -158,9 +158,9 @@ keyboard focusability for `<a>` elements without `href`.
 <a cngxNavLink [depth]="1" [active]="false">Nested item</a>
 ```
 
-**Inputs:** `active` (boolean), `ariaCurrent` (string, default `'page'`), `depth` (number)
+**Inputs:** `active` (boolean), `ariaCurrent` (string, default `'page'`), `depth` (number), `scrollOnActive` (boolean, default `true` — scrolls into view when becoming active)
 **Host classes:** `cngx-nav-link`, `cngx-nav-link--active`
-**Host attrs:** `aria-current` (when active), `tabindex="0"` + `role="link"` (on `<a>` without `href`)
+**Host attrs:** `aria-current` (when active), `tabindex="0"` + `role="link"` (on `<a>` without `href`), `data-initial` (auto-set first letter of text content — used by sidenav mini mode)
 **CSS var:** `--cngx-nav-depth`
 
 ### CngxNavLabel
