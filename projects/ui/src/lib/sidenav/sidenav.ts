@@ -66,6 +66,8 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
     '[class.cngx-sidenav--mini]': "effectiveMode() === 'mini'",
     '[class.cngx-sidenav--expanded]': 'expanded()',
+    '[class.cngx-sidenav--resizable]': 'resizable()',
+    '[class.cngx-sidenav--resizing]': 'resizing()',
     '[attr.aria-hidden]': "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
@@ -80,6 +82,15 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
       <ng-content />
     </div>
     <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
+    @if (resizable()) {
+      <div class="cngx-sidenav__resize-handle"
+           (pointerdown)="_onResizeStart($event)"
+           role="separator"
+           [attr.aria-orientation]="'vertical'"
+           [attr.aria-valuenow]="_widthPx()"
+           [attr.aria-valuemin]="_minWidthPx()"
+           [attr.aria-valuemax]="_maxWidthPx()"></div>
+    }
   `,
 })
 export class CngxSidenav {
@@ -96,14 +107,27 @@ export class CngxSidenav {
    */
   readonly responsive = input<string | undefined>(undefined);
 
-  /** Width of the sidenav panel. Any CSS value. */
-  readonly width = input<string>('280px');
+  /** Width of the sidenav panel. Supports two-way `[(width)]` for resize. */
+  readonly width = model<string>('280px');
 
   /** Width of the collapsed rail in `mini` mode. Any CSS value. */
   readonly miniWidth = input<string>('56px');
 
   /** Whether hovering the mini rail expands the sidenav to full width. */
   readonly expandOnHover = input<boolean>(true);
+
+  /** Whether the sidebar is user-resizable via a drag handle. */
+  readonly resizable = input<boolean>(false);
+
+  /** Minimum width constraint during resize. */
+  readonly minWidth = input<string>('120px');
+
+  /** Maximum width constraint during resize. */
+  readonly maxWidth = input<string>('600px');
+
+  /** Whether a resize drag is in progress. */
+  private readonly _resizing = signal(false);
+  readonly resizing = this._resizing.asReadonly();
 
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
@@ -223,5 +247,53 @@ export class CngxSidenav {
     if (this.effectiveMode() === 'mini') {
       this._expanded.set(false);
     }
+  }
+
+  // ── Resize ──────────────────────────────────────────────────────
+
+  /** @internal Parse a CSS px value to a number. */
+  _widthPx = computed(() => parseInt(this.width(), 10) || 280);
+  _minWidthPx = computed(() => parseInt(this.minWidth(), 10) || 120);
+  _maxWidthPx = computed(() => parseInt(this.maxWidth(), 10) || 600);
+
+  /** @internal */
+  _onResizeStart(e: PointerEvent): void {
+    if (!this.resizable()) return;
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+    this._resizing.set(true);
+    const startX = e.clientX;
+    const startWidth = this.elementRef.nativeElement.getBoundingClientRect().width;
+    const isEnd = this.position() === 'end';
+    const min = this._minWidthPx();
+    const max = this._maxWidthPx();
+    const el = this.elementRef.nativeElement as HTMLElement;
+    let currentWidth = startWidth;
+    let rafId = 0;
+
+    const onMove = (ev: PointerEvent): void => {
+      const delta = isEnd ? startX - ev.clientX : ev.clientX - startX;
+      currentWidth = Math.round(Math.max(min, Math.min(max, startWidth + delta)));
+      // Set CSS var directly on DOM — no Angular change detection per frame
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          el.style.setProperty('--cngx-sidenav-width', `${currentWidth}px`);
+          rafId = 0;
+        });
+      }
+    };
+
+    const onUp = (): void => {
+      cancelAnimationFrame(rafId);
+      this._resizing.set(false);
+      // Sync final width back to the model (single CD cycle)
+      this.width.set(`${currentWidth}px`);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   }
 }
