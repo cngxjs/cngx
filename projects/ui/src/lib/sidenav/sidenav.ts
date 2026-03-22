@@ -14,8 +14,15 @@ import {
 
 /** Logical position — flips in RTL. */
 export type SidenavPosition = 'start' | 'end';
-/** How the sidenav interacts with the content area. */
-export type SidenavMode = 'over' | 'push' | 'side';
+/**
+ * How the sidenav interacts with the content area.
+ *
+ * - `'over'` — floats above content (overlay + backdrop)
+ * - `'push'` — pushes content aside when open
+ * - `'side'` — always visible, content permanently offset
+ * - `'mini'` — collapsed icon rail (miniWidth), expands to full width on hover
+ */
+export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 
 /**
  * Declarative sidebar component that composes drawer, focus trap,
@@ -57,10 +64,15 @@ export type SidenavMode = 'over' | 'push' | 'side';
     '[class.cngx-sidenav--over]': "effectiveMode() === 'over'",
     '[class.cngx-sidenav--push]': "effectiveMode() === 'push'",
     '[class.cngx-sidenav--side]': "effectiveMode() === 'side'",
-    '[attr.aria-hidden]': "effectiveMode() === 'side' ? null : !opened()",
-    '[style.--cngx-sidenav-width]': 'width()',
+    '[class.cngx-sidenav--mini]': "effectiveMode() === 'mini'",
+    '[class.cngx-sidenav--expanded]': 'expanded()',
+    '[attr.aria-hidden]': "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[style.--cngx-sidenav-width]': 'effectiveWidth()',
+    '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
     'role': 'complementary',
     '(keydown.escape)': 'closeIfOverlay()',
+    '(mouseenter)': '_onMouseEnter()',
+    '(mouseleave)': '_onMouseLeave()',
   },
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
@@ -87,8 +99,18 @@ export class CngxSidenav {
   /** Width of the sidenav panel. Any CSS value. */
   readonly width = input<string>('280px');
 
+  /** Width of the collapsed rail in `mini` mode. Any CSS value. */
+  readonly miniWidth = input<string>('56px');
+
+  /** Whether hovering the mini rail expands the sidenav to full width. */
+  readonly expandOnHover = input<boolean>(true);
+
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
+
+  /** Whether the mini-mode rail is currently expanded (hover or programmatic). */
+  private readonly _expanded = signal(false);
+  readonly expanded = this._expanded.asReadonly();
 
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
@@ -106,6 +128,14 @@ export class CngxSidenav {
 
   /** Whether this sidenav is in overlay mode (over). */
   readonly isOverlay = computed(() => this.effectiveMode() === 'over');
+
+  /** Resolved width — mini mode uses miniWidth unless expanded. */
+  readonly effectiveWidth = computed(() => {
+    if (this.effectiveMode() === 'mini' && !this._expanded()) {
+      return this.miniWidth();
+    }
+    return this.width();
+  });
 
   constructor() {
     // Wire responsive matchMedia
@@ -125,13 +155,18 @@ export class CngxSidenav {
     inject(DestroyRef).onDestroy(() => cleanupMedia?.());
 
     // Sync opened state on mode transitions:
-    // When leaving 'side' mode the sidenav was visible regardless of `opened`.
+    // When leaving side/mini mode the sidenav was visible regardless of `opened`.
     // Ensure `opened` is true so it stays visible in the new mode.
     let prevMode: SidenavMode | undefined;
     effect(() => {
       const mode = this.effectiveMode();
-      if (prevMode === 'side' && mode !== 'side') {
+      const alwaysVisible = (m: SidenavMode | undefined) => m === 'side' || m === 'mini';
+      if (alwaysVisible(prevMode) && !alwaysVisible(mode)) {
         this.opened.set(true);
+      }
+      // Reset expanded state when leaving mini mode
+      if (prevMode === 'mini' && mode !== 'mini') {
+        this._expanded.set(false);
       }
       prevMode = mode;
     });
@@ -142,9 +177,10 @@ export class CngxSidenav {
     this.opened.set(true);
   }
 
-  /** Closes the sidenav (only in over/push mode). */
+  /** Closes the sidenav (only in over/push mode). No-op in side/mini mode. */
   close(): void {
-    if (this.effectiveMode() !== 'side') {
+    const mode = this.effectiveMode();
+    if (mode !== 'side' && mode !== 'mini') {
       this.opened.set(false);
     }
   }
@@ -162,6 +198,30 @@ export class CngxSidenav {
   closeIfOverlay(): void {
     if (this.isOverlay()) {
       this.close();
+    }
+  }
+
+  /** Expand the mini rail to full width. */
+  expand(): void {
+    this._expanded.set(true);
+  }
+
+  /** Collapse the expanded mini rail back to miniWidth. */
+  collapse(): void {
+    this._expanded.set(false);
+  }
+
+  /** @internal */
+  _onMouseEnter(): void {
+    if (this.effectiveMode() === 'mini' && this.expandOnHover()) {
+      this._expanded.set(true);
+    }
+  }
+
+  /** @internal */
+  _onMouseLeave(): void {
+    if (this.effectiveMode() === 'mini') {
+      this._expanded.set(false);
     }
   }
 }

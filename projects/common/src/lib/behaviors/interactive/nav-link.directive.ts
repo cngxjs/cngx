@@ -61,6 +61,15 @@ export class CngxNavLink {
         this._needsFocusFix.set(!el.hasAttribute('href'));
       });
     }
+
+    // Set data-initial from text content for mini-mode first-letter display.
+    // Runs after render so projected content is available.
+    afterNextRender(() => {
+      const text = el.textContent?.trim();
+      if (text && !el.hasAttribute('data-initial')) {
+        el.setAttribute('data-initial', text.charAt(0).toUpperCase());
+      }
+    });
   }
 
   /** Whether this link is the currently active route/item. */

@@ -31,8 +31,8 @@ cngx-sidenav {
     width var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
     visibility 0s var(--cngx-sidenav-transition-duration, 0.25s);
 
-  // Closed state: collapse to 0 width
-  &:not(.cngx-sidenav--open):not(.cngx-sidenav--side) {
+  // Closed state: collapse to 0 width (not in side/mini — those are always visible)
+  &:not(.cngx-sidenav--open):not(.cngx-sidenav--side):not(.cngx-sidenav--mini) {
     width: 0;
     visibility: hidden;
   }
@@ -60,10 +60,35 @@ cngx-sidenav {
     &.cngx-sidenav--end { right: 0; }
   }
 
-  // Push/side mode: in flex flow, push content naturally
+  // Push/side/mini mode: in flex flow, push content naturally
   &.cngx-sidenav--push,
-  &.cngx-sidenav--side {
+  &.cngx-sidenav--side,
+  &.cngx-sidenav--mini {
     position: relative;
+  }
+
+  // Mini mode: collapsed icon rail, stays in flex flow.
+  // No width transition — expand/collapse is instant to prevent
+  // content shift (negative margin + animating width = layout jank).
+  &.cngx-sidenav--mini {
+    width: var(--cngx-sidenav-mini-width, 56px);
+    visibility: visible;
+    transition: none;
+
+    // Expanded: grow to full width but compensate with negative margin
+    // so it overlays content without shifting the flex layout.
+    &.cngx-sidenav--expanded {
+      width: var(--cngx-sidenav-width, 280px);
+      z-index: 3;
+      box-shadow: var(--cngx-sidenav-expanded-shadow, 4px 0 12px rgba(0, 0, 0, 0.1));
+
+      &.cngx-sidenav--start {
+        margin-right: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
+      }
+      &.cngx-sidenav--end {
+        margin-left: calc(var(--cngx-sidenav-mini-width, 56px) - var(--cngx-sidenav-width, 280px));
+      }
+    }
   }
 
   // Borders
@@ -82,7 +107,30 @@ cngx-sidenav {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  min-width: var(--cngx-sidenav-width, 280px); // prevent content collapse during width animation
+  min-width: var(--cngx-sidenav-width, 280px);
+
+  // In mini mode (collapsed), constrain to mini width
+  .cngx-sidenav--mini:not(.cngx-sidenav--expanded) & {
+    min-width: var(--cngx-sidenav-mini-width, 56px);
+  }
+}
+
+// Mini mode: truncate header/footer, hide labels
+cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) {
+  .cngx-sidenav-header,
+  .cngx-sidenav-footer {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    text-align: center;
+    padding: 8px 4px;
+  }
+
+  // Hide section labels and nav group buttons in mini mode
+  [cngxNavLabel],
+  [cngxNavGroup] {
+    display: none !important;
+  }
 }
 
 .cngx-sidenav-header {
@@ -128,6 +176,30 @@ cngx-sidenav .cngx-nav-link {
     background: var(--cngx-nav-link-active-bg);
     font-weight: var(--cngx-nav-link-active-font-weight);
   }
+}
+
+// Mini mode nav links: show first-letter initial, hide full text.
+// Separate rule because .cngx-sidenav--mini is on cngx-sidenav itself.
+cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-nav-link {
+  overflow: hidden;
+  text-align: center;
+  font-size: 0 !important; // must beat inline styles
+  line-height: 1;
+  padding: var(--cngx-nav-link-padding, 10px 8px);
+
+  // Show initial from data-initial attribute
+  &[data-initial]::before {
+    content: attr(data-initial);
+    font-size: var(--cngx-nav-link-initial-size, 0.875rem);
+    font-weight: 600;
+    display: inline-block;
+    width: var(--cngx-nav-link-initial-size, 0.875rem);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  // Hide badges in mini mode
+  [cngxNavBadge] { display: none; }
 }
 
 // ── Content area ───────────────────────────────────────────────────

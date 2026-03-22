@@ -262,8 +262,8 @@ export class SidenavDemoComponent {
 
   // Demo 1: Full nav
   protected readonly navOpen = signal(true);
-  protected readonly navMode = signal<'over' | 'push' | 'side'>('side');
-  protected readonly modes: ('over' | 'push' | 'side')[] = ['over', 'push', 'side'];
+  protected readonly navMode = signal<'over' | 'push' | 'side' | 'mini'>('side');
+  protected readonly modes: ('over' | 'push' | 'side' | 'mini')[] = ['over', 'push', 'side', 'mini'];
   protected readonly activeLink = signal('/dashboard');
 
   // Demo 2: Dual sidebar
