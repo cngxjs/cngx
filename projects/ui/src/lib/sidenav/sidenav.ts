@@ -72,6 +72,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
     'role': 'complementary',
+    '[attr.aria-label]': 'ariaLabel() || null',
     '(keydown.escape)': 'closeIfOverlay()',
     '(mouseenter)': '_onMouseEnter()',
     '(mouseleave)': '_onMouseLeave()',
@@ -96,6 +97,9 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
 export class CngxSidenav {
   /** Logical position: `'start'` (default left in LTR) or `'end'` (right in LTR). */
   readonly position = input<SidenavPosition>('start');
+
+  /** Accessible label for the complementary landmark. */
+  readonly ariaLabel = input<string | undefined>(undefined);
 
   /** Drawer mode. Overridden by `responsive` when set. */
   readonly mode = input<SidenavMode>('over');

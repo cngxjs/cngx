@@ -109,6 +109,7 @@ cngx-sidenav {
   overflow-y: auto;
   overflow-x: hidden;
   min-width: var(--cngx-sidenav-width, 280px);
+  scrollbar-gutter: stable; // reserve scrollbar space to prevent width jitter
 
   // In mini mode (collapsed), constrain to mini width
   .cngx-sidenav--mini:not(.cngx-sidenav--expanded) & {
@@ -201,6 +202,30 @@ cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-nav-link {
 
   // Hide badges in mini mode
   [cngxNavBadge] { display: none; }
+}
+
+// ── Nav group collapsible content ──────────────────────────────────
+// Use instead of @if for animated expand/collapse:
+//   <div class="cngx-nav-group-content"
+//        [class.cngx-nav-group-content--open]="group.disclosure.opened()">
+//     <div> <!-- single wrapper child required for grid trick -->
+//       ...nav links...
+//     </div>
+//   </div>
+
+.cngx-nav-group-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--cngx-sidenav-transition-duration, 0.2s) ease;
+
+  > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  &--open {
+    grid-template-rows: 1fr;
+  }
 }
 
 // ── Resize handle ─────────────────────────────────────────────────

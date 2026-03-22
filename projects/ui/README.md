@@ -99,6 +99,7 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 
 | Input | Type | Default | Description |
 |-|-|-|-|
+| `ariaLabel` | `string` | — | Accessible label for the complementary landmark |
 | `position` | `'start' \| 'end'` | `'start'` | Logical position (flips in RTL) |
 | `mode` | `SidenavMode` | `'over'` | Interaction mode |
 | `responsive` | `string` | — | CSS media query; matches = `'side'`, else falls back to `mode` |
@@ -145,5 +146,21 @@ switching, mini/rail mode, resize handle, and keyboard shortcut toggle.
 | `--cngx-nav-link-active-bg` | Active background (M3 secondary-container) |
 | `--cngx-nav-link-radius` | Border radius (default 8px) |
 | `--cngx-nav-link-padding` | Padding (density-dependent) |
+
+**Animated nav group expand/collapse:**
+
+Replace `@if` with the `.cngx-nav-group-content` wrapper for smooth height animation
+via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed):
+
+```html
+<button cngxNavGroup #group="cngxNavGroup" [controls]="'items'">Settings</button>
+<div class="cngx-nav-group-content"
+     [class.cngx-nav-group-content--open]="group.disclosure.opened()">
+  <div id="items" role="group">
+    <a cngxNavLink [depth]="1">General</a>
+    <a cngxNavLink [depth]="1">Security</a>
+  </div>
+</div>
+```
 
 **Material theme:** `@use '@cngx/ui/sidenav/sidenav-theme'` — includes nav-link theme automatically

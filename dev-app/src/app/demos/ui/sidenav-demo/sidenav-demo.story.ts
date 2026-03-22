@@ -102,7 +102,7 @@ export const STORY: DemoSpec = {
         <span style="font-size: 0.6rem; transition: transform 0.15s;"
               [style.transform]="settingsGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
-      @if (settingsGroup.disclosure.opened()) {
+      <div class="cngx-nav-group-content" [class.cngx-nav-group-content--open]="settingsGroup.disclosure.opened()">
         <div id="settings-items" role="group" [attr.aria-labelledby]="'settings-lbl'">
           @for (sub of ['General', 'Security', 'Notifications', 'Billing']; track sub) {
             <a cngxNavLink [depth]="1" [active]="activeLink() === '/settings/' + sub.toLowerCase()"
@@ -114,7 +114,7 @@ export const STORY: DemoSpec = {
             </a>
           }
         </div>
-      }
+      </div>
 
       <button cngxNavGroup #teamGroup="cngxNavGroup" [controls]="'team-items'" id="team-lbl"
               style="width: 100%; text-align: left; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-size: 0.85rem; color: inherit; display: flex; align-items: center; justify-content: space-between;">
@@ -122,7 +122,7 @@ export const STORY: DemoSpec = {
         <span style="font-size: 0.6rem; transition: transform 0.15s;"
               [style.transform]="teamGroup.disclosure.opened() ? 'rotate(90deg)' : ''">&#9654;</span>
       </button>
-      @if (teamGroup.disclosure.opened()) {
+      <div class="cngx-nav-group-content" [class.cngx-nav-group-content--open]="teamGroup.disclosure.opened()">
         <div id="team-items" role="group" [attr.aria-labelledby]="'team-lbl'">
           @for (sub of ['Members', 'Roles', 'Invites']; track sub) {
             <a cngxNavLink [depth]="1"
@@ -131,7 +131,7 @@ export const STORY: DemoSpec = {
             </a>
           }
         </div>
-      }
+      </div>
 
       <cngx-sidenav-footer style="padding: 0.75rem 1rem; font-size: 0.7rem; color: var(--text-muted, #888);">
         Workspace v2.1
