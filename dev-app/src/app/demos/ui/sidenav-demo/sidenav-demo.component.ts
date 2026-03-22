@@ -37,7 +37,7 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
     </button>
   </div>
 
-  <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem;">
+  <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem; --cngx-nav-link-radius: 0; --cngx-nav-link-active-bg: transparent; --cngx-nav-link-active-color: inherit; --cngx-nav-link-active-font-weight: inherit;">
     <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px">
       <cngx-sidenav-header style="padding: 1rem; font-weight: 700; font-size: 1rem;">
         Workspace
@@ -50,8 +50,8 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
       <a cngxNavLink [active]="activeLink() === '/dashboard'"
          (click)="activeLink.set('/dashboard'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/dashboard' ? 'var(--interactive, #f5a623)' : 'transparent'"
-         [style.background]="activeLink() === '/dashboard' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.border-left-color]="activeLink() === '/dashboard' ? '#f5a623' : 'transparent'"
+         [style.background]="activeLink() === '/dashboard' ? 'rgba(245, 166, 35, 0.08)' : ''"
          [style.font-weight]="activeLink() === '/dashboard' ? '600' : '400'">
         Dashboard
       </a>
@@ -59,12 +59,12 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
       <a cngxNavLink [active]="activeLink() === '/inbox'"
          (click)="activeLink.set('/inbox'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/inbox' ? 'var(--interactive, #f5a623)' : 'transparent'"
-         [style.background]="activeLink() === '/inbox' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.border-left-color]="activeLink() === '/inbox' ? '#f5a623' : 'transparent'"
+         [style.background]="activeLink() === '/inbox' ? 'rgba(245, 166, 35, 0.08)' : ''"
          [style.font-weight]="activeLink() === '/inbox' ? '600' : '400'">
         Inbox
         <span cngxNavBadge [value]="7" ariaLabel="7 unread"
-              style="background: var(--interactive, #f5a623); color: #fff; font-size: 0.65rem; font-weight: 700; padding: 0.1em 0.45em; border-radius: 10px; min-width: 1.1em; text-align: center;">
+              style="background: #f5a623; color: #fff; font-size: 0.65rem; font-weight: 700; padding: 0.1em 0.45em; border-radius: 10px; min-width: 1.1em; text-align: center;">
           7
         </span>
       </a>
@@ -72,8 +72,8 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
       <a cngxNavLink [active]="activeLink() === '/calendar'"
          (click)="activeLink.set('/calendar'); $event.preventDefault()"
          style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; text-decoration: none; font-size: 0.85rem; color: inherit; border-left: 3px solid transparent;"
-         [style.border-left-color]="activeLink() === '/calendar' ? 'var(--interactive, #f5a623)' : 'transparent'"
-         [style.background]="activeLink() === '/calendar' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
+         [style.border-left-color]="activeLink() === '/calendar' ? '#f5a623' : 'transparent'"
+         [style.background]="activeLink() === '/calendar' ? 'rgba(245, 166, 35, 0.08)' : ''"
          [style.font-weight]="activeLink() === '/calendar' ? '600' : '400'">
         Calendar
         <span cngxNavBadge variant="dot" [value]="1"
@@ -97,7 +97,7 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
             <a cngxNavLink [depth]="1" [active]="activeLink() === '/settings/' + sub.toLowerCase()"
                (click)="activeLink.set('/settings/' + sub.toLowerCase()); $event.preventDefault()"
                style="display: block; padding: 0.4rem 1rem 0.4rem calc(1rem + 14px); text-decoration: none; font-size: 0.8rem; color: inherit;"
-               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? 'var(--interactive, #f5a623)' : ''"
+               [style.color]="activeLink() === '/settings/' + sub.toLowerCase() ? '#f5a623' : ''"
                [style.font-weight]="activeLink() === '/settings/' + sub.toLowerCase() ? '600' : '400'">
               {{ sub }}
             </a>
@@ -162,8 +162,8 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
       <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Orders</h3>
       @for (item of items; track item) {
         <div (click)="selectItem(item)" style="padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color, #e0e0e0); border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.15s;"
-             [style.background]="selectedItem() === item ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
-             [style.border-color]="selectedItem() === item ? 'var(--interactive, #f5a623)' : ''">
+             [style.background]="selectedItem() === item ? 'rgba(245, 166, 35, 0.08)' : ''"
+             [style.border-color]="selectedItem() === item ? '#f5a623' : ''">
           {{ item }}
         </div>
       }
@@ -198,84 +198,59 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
       [subtitle]="_s2">
       
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-    <!-- Light theme (default M3 tokens) -->
+    <!-- Light theme (M3 light via sidenav-theme.scss) -->
     <div>
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light</div>
-      <cngx-sidenav-layout style="height: 300px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px;">
-        <cngx-sidenav position="start" [opened]="true" mode="side" width="160px">
-          <cngx-sidenav-header style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.85rem;">
-            Workspace
-          </cngx-sidenav-header>
-          <span cngxNavLabel style="display: block; padding: 0.5rem 1rem 0.15rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #888);">
-            Navigation
-          </span>
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Light (M3)</div>
+      <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+        <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
+          <cngx-sidenav-header>Workspace</cngx-sidenav-header>
           @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
-            <a cngxNavLink [active]="item === 'Dashboard'"
-               style="display: block; padding: 0.4rem 1rem; text-decoration: none; font-size: 0.8rem; color: inherit; border-left: 3px solid transparent;"
-               [style.border-left-color]="item === 'Dashboard' ? 'var(--interactive, #f5a623)' : 'transparent'"
-               [style.background]="item === 'Dashboard' ? 'var(--interactive-subtle-bg, rgba(245, 166, 35, 0.08))' : ''"
-               [style.font-weight]="item === 'Dashboard' ? '600' : '400'">
+            <a cngxNavLink [active]="item === 'Dashboard'">
               {{ item }}
             </a>
           }
-          <cngx-sidenav-footer style="padding: 0.5rem 1rem; font-size: 0.65rem; color: var(--text-muted, #888);">
-            v2.1
-          </cngx-sidenav-footer>
+          <cngx-sidenav-footer>v2.1</cngx-sidenav-footer>
         </cngx-sidenav>
-        <cngx-sidenav-content style="padding: 1rem;">
-          <p style="color: var(--text-muted, #888); font-size: 0.8rem; margin: 0;">Default M3 surface tokens.</p>
+        <cngx-sidenav-content style="padding: var(--cngx-sidenav-padding, 16px);">
+          <p style="font-size: 0.8rem; margin: 0; opacity: 0.6;">M3 light surface tokens via <code>sidenav.theme($theme)</code>.</p>
         </cngx-sidenav-content>
       </cngx-sidenav-layout>
     </div>
 
-    <!-- Dark theme (CSS custom property overrides) -->
-    <div>
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem;">Dark (CSS overrides)</div>
-      <cngx-sidenav-layout
-        style="height: 300px; border: 1px solid #333; border-radius: 6px; background: #1c1c1e; color: #e0e0e0;
-               --cngx-sidenav-bg: #2c2c2e; --cngx-sidenav-color: #e0e0e0;
-               --cngx-sidenav-border-color: #444; --cngx-sidenav-header-bg: #232325;
-               --cngx-sidenav-footer-bg: #232325; --cngx-sidenav-footer-border-color: #444;">
-        <cngx-sidenav position="start" [opened]="true" mode="side" width="160px">
-          <cngx-sidenav-header style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.85rem;">
-            Workspace
-          </cngx-sidenav-header>
-          <span cngxNavLabel style="display: block; padding: 0.5rem 1rem 0.15rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #888;">
-            Navigation
-          </span>
+    <!-- Dark theme (M3 dark via data-theme="dark") -->
+    <div data-theme="dark" style="background: var(--bg, #121212); color: var(--text-primary, #e0e0e0); border-radius: 6px;">
+      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted, #888); margin-bottom: 0.5rem; padding: 0.5rem 0.5rem 0;">Dark (M3)</div>
+      <cngx-sidenav-layout style="height: 300px; border-radius: 6px; overflow: hidden;">
+        <cngx-sidenav position="start" [opened]="true" mode="side" width="170px">
+          <cngx-sidenav-header>Workspace</cngx-sidenav-header>
           @for (item of ['Dashboard', 'Inbox', 'Calendar', 'Settings']; track item) {
-            <a cngxNavLink [active]="item === 'Dashboard'"
-               style="display: block; padding: 0.4rem 1rem; text-decoration: none; font-size: 0.8rem; color: inherit; border-left: 3px solid transparent;"
-               [style.border-left-color]="item === 'Dashboard' ? '#f5a623' : 'transparent'"
-               [style.background]="item === 'Dashboard' ? 'rgba(245, 166, 35, 0.12)' : ''"
-               [style.font-weight]="item === 'Dashboard' ? '600' : '400'">
+            <a cngxNavLink [active]="item === 'Dashboard'">
               {{ item }}
             </a>
           }
-          <cngx-sidenav-footer style="padding: 0.5rem 1rem; font-size: 0.65rem; color: #888;">
-            v2.1
-          </cngx-sidenav-footer>
+          <cngx-sidenav-footer>v2.1</cngx-sidenav-footer>
         </cngx-sidenav>
-        <cngx-sidenav-content style="padding: 1rem;">
-          <p style="color: #999; font-size: 0.8rem; margin: 0;">Override <code style="background: rgba(255,255,255,0.08); padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.75rem; color: #ccc;">--cngx-sidenav-*</code> vars inline.</p>
+        <cngx-sidenav-content style="padding: var(--cngx-sidenav-padding, 16px);">
+          <p style="font-size: 0.8rem; margin: 0; opacity: 0.6;">M3 dark surface tokens via <code>sidenav.theme($dark-theme)</code>.</p>
         </cngx-sidenav-content>
       </cngx-sidenav-layout>
     </div>
   </div>
 
-  <pre class="code-block" style="margin-top: 1rem;"><code>// Override per-instance via CSS custom properties:
-cngx-sidenav-layout.dark-sidebar &#123;
-  --cngx-sidenav-bg: #2c2c2e;
-  --cngx-sidenav-color: #e0e0e0;
-  --cngx-sidenav-border-color: #444;
-  --cngx-sidenav-header-bg: #232325;
-  --cngx-sidenav-footer-bg: #232325;
+  <pre class="code-block" style="margin-top: 1rem;"><code>@use '@angular/material' as mat;
+@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
+
+$theme: mat.define-theme((color: (primary: mat.$azure-palette)));
+$dark:  mat.define-theme((color: (primary: mat.$azure-palette, theme-type: dark)));
+
+html &#123;
+  @include mat.all-component-themes($theme);
+  @include sidenav.theme($theme);
 &#125;
 
-// Or use the theme() mixin with a dark M3 theme:
-@use '@cngx/ui/sidenav/sidenav-theme' as sidenav;
 [data-theme='dark'] &#123;
-  @include sidenav.theme($dark-theme);
+  @include mat.all-component-colors($dark);
+  @include sidenav.theme($dark);
 &#125;</code></pre>
     </app-example-card>
   `,
@@ -283,7 +258,7 @@ cngx-sidenav-layout.dark-sidebar &#123;
 export class SidenavDemoComponent {
   protected readonly _s0 = 'Composing all nav atoms inside <code>cngx-sidenav</code>: <code>CngxNavLabel</code> for section headers, <code>CngxNavLink</code> with active state and badges, <code>CngxNavGroup</code> for collapsible accordion sections. Material theming via <code>sidenav-theme.scss</code> provides surface colors, borders, and density.';
   protected readonly _s1 = 'Left sidebar with permanent navigation (<code>push</code> mode). Right sidebar as an overlay detail panel that opens when clicking an item in the content area. Shared backdrop managed by <code>CngxSidenavLayout</code>.';
-  protected readonly _s2 = 'Side-by-side comparison using only CSS custom property overrides. The left panel uses default M3 light tokens from <code>sidenav-theme.scss</code>. The right panel overrides <code>--cngx-sidenav-*</code> variables inline for a dark appearance. No class changes, no separate theme file -- just CSS custom properties.';
+  protected readonly _s2 = 'Both panels use the real <code>sidenav-theme.scss</code> mixin applied via <code>styles.scss</code>. The right panel sets <code>data-theme="dark"</code> which activates the dark M3 color tokens. No inline overrides -- purely Material Design 3 system colors.';
 
   // Demo 1: Full nav
   protected readonly navOpen = signal(true);

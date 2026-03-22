@@ -1,6 +1,7 @@
 @use 'sass:map';
 @use 'sass:math';
 @use '@angular/material' as mat;
+@use './nav-link-theme' as nav-link;
 
 // ─── cngx-sidenav theming ──────────────────────────────────────────
 //
@@ -30,14 +31,22 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // M3 — reference Material sys tokens
-    --cngx-sidenav-bg: var(--mat-sys-surface-container);
-    --cngx-sidenav-color: var(--mat-sys-on-surface);
-    --cngx-sidenav-border-color: var(--mat-sys-outline-variant);
-    --cngx-sidenav-backdrop-bg: var(--mat-sys-scrim);
-    --cngx-sidenav-header-bg: var(--mat-sys-surface-container-low);
-    --cngx-sidenav-footer-bg: var(--mat-sys-surface-container-low);
-    --cngx-sidenav-footer-border-color: var(--mat-sys-outline-variant);
+    // M3 — reference Material sys tokens with compiled fallbacks.
+    // Fallbacks ensure colors work even when mat.all-component-colors()
+    // is used instead of mat.all-component-themes() (no sys tokens emitted).
+    $_surface: mat.get-theme-color($theme, surface-container);
+    $_on-surface: mat.get-theme-color($theme, on-surface);
+    $_outline: mat.get-theme-color($theme, outline-variant);
+    $_scrim: mat.get-theme-color($theme, scrim);
+    $_surface-low: mat.get-theme-color($theme, surface-container-low);
+
+    --cngx-sidenav-bg: var(--mat-sys-surface-container, #{$_surface});
+    --cngx-sidenav-color: var(--mat-sys-on-surface, #{$_on-surface});
+    --cngx-sidenav-border-color: var(--mat-sys-outline-variant, #{$_outline});
+    --cngx-sidenav-backdrop-bg: var(--mat-sys-scrim, #{$_scrim});
+    --cngx-sidenav-header-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-sidenav-footer-bg: var(--mat-sys-surface-container-low, #{$_surface-low});
+    --cngx-sidenav-footer-border-color: var(--mat-sys-outline-variant, #{$_outline});
   } @else {
     // M2 — derive from palette
     --cngx-sidenav-bg: #{mat.get-theme-color($theme, background, card)};
@@ -66,5 +75,6 @@
     @include base();
     @include color($theme);
     @include density($theme);
+    @include nav-link.theme($theme);
   }
 }

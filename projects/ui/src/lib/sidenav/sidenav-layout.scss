@@ -87,13 +87,47 @@ cngx-sidenav {
 
 .cngx-sidenav-header {
   flex-shrink: 0;
+  padding: var(--cngx-sidenav-padding, 16px);
+  background: var(--cngx-sidenav-header-bg, transparent);
   border-bottom: 1px solid var(--cngx-sidenav-border-color, #e0e0e0);
+  font-weight: 600;
+  font-size: var(--cngx-sidenav-header-font-size, 0.875rem);
 }
 
 .cngx-sidenav-footer {
   flex-shrink: 0;
   margin-top: auto;
+  padding: var(--cngx-sidenav-padding, 16px);
+  background: var(--cngx-sidenav-footer-bg, transparent);
   border-top: 1px solid var(--cngx-sidenav-footer-border-color, var(--cngx-sidenav-border-color, #e0e0e0));
+  font-size: var(--cngx-sidenav-footer-font-size, 0.75rem);
+  opacity: 0.7;
+}
+
+// ── Nav link (inside sidenav) ──────────────────────────────────────
+// Structural styles are intentionally minimal — no visual defaults.
+// Colors, radius, and backgrounds come from nav-link-theme.scss
+// via CSS custom properties. Consumers using inline styles are not affected.
+
+cngx-sidenav .cngx-nav-link {
+  display: block;
+  padding: var(--cngx-nav-link-padding);
+  text-decoration: none;
+  font-size: var(--cngx-nav-link-font-size);
+  color: var(--cngx-nav-link-color);
+  border-radius: var(--cngx-nav-link-radius);
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    color: var(--cngx-nav-link-hover-color);
+    background: var(--cngx-nav-link-hover-bg);
+  }
+
+  &--active {
+    color: var(--cngx-nav-link-active-color);
+    background: var(--cngx-nav-link-active-bg);
+    font-weight: var(--cngx-nav-link-active-font-weight);
+  }
 }
 
 // ── Content area ───────────────────────────────────────────────────
