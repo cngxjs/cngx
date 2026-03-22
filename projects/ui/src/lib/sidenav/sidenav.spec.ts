@@ -1,7 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { SidenavMode } from './sidenav';
 import { CngxSidenav } from './sidenav';
 import { CngxSidenavLayout } from './sidenav-layout';
 import { CngxSidenavContent } from './sidenav-content';
@@ -10,7 +11,10 @@ import { CngxSidenavContent } from './sidenav-content';
   template: `
     <cngx-sidenav-layout>
       <cngx-sidenav position="start" [(opened)]="leftOpen"
-                    [mode]="mode()" [width]="width()">
+                    [mode]="mode()" [width]="width()"
+                    [resizable]="resizable()"
+                    [ariaLabel]="ariaLabel()"
+                    [miniWidth]="miniWidth()">
         Left content
       </cngx-sidenav>
       <cngx-sidenav-content>Main</cngx-sidenav-content>
@@ -24,8 +28,11 @@ import { CngxSidenavContent } from './sidenav-content';
 class DualHost {
   leftOpen = signal(false);
   rightOpen = signal(false);
-  mode = signal<'over' | 'push' | 'side'>('over');
+  mode = signal<SidenavMode>('over');
   width = signal('240px');
+  resizable = signal(false);
+  ariaLabel = signal<string | undefined>(undefined);
+  miniWidth = signal('56px');
 }
 
 @Component({
@@ -208,6 +215,159 @@ describe('CngxSidenav', () => {
     TestBed.flushEffects();
     expect(left.effectiveMode()).toBe('push');
     expect(host.leftOpen()).toBe(true);
+  });
+});
+
+describe('CngxSidenav mini mode', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setupDual() {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.detectChanges();
+    const layout = fixture.debugElement.query(By.directive(CngxSidenavLayout)).injector.get(CngxSidenavLayout);
+    const sidenavs = fixture.debugElement.queryAll(By.directive(CngxSidenav));
+    const left = sidenavs.find(d => d.injector.get(CngxSidenav).position() === 'start')!.injector.get(CngxSidenav);
+    const right = sidenavs.find(d => d.injector.get(CngxSidenav).position() === 'end')!.injector.get(CngxSidenav);
+    const content = fixture.debugElement.query(By.directive(CngxSidenavContent)).injector.get(CngxSidenavContent);
+    return { fixture, layout, left, right, content, host: fixture.componentInstance };
+  }
+
+  it('effectiveMode() returns mini when mode is mini', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    expect(left.effectiveMode()).toBe('mini');
+  });
+
+  it('close() is a no-op in mini mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    left.open();
+    left.close();
+    expect(left.opened()).toBe(true);
+  });
+
+  it('expanded signal starts false', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('_onMouseEnter sets expanded to true in mini mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    left._onMouseEnter();
+    expect(left.expanded()).toBe(true);
+  });
+
+  it('_onMouseLeave sets expanded to false in mini mode', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    left._onMouseEnter();
+    expect(left.expanded()).toBe(true);
+    left._onMouseLeave();
+    expect(left.expanded()).toBe(false);
+  });
+
+  it('effectiveWidth returns miniWidth when collapsed', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    host.miniWidth.set('64px');
+    fixture.detectChanges();
+    expect(left.effectiveWidth()).toBe('64px');
+  });
+
+  it('effectiveWidth returns width when expanded', () => {
+    const { fixture, left, host } = setupDual();
+    host.mode.set('mini');
+    host.width.set('300px');
+    fixture.detectChanges();
+    left._onMouseEnter();
+    expect(left.effectiveWidth()).toBe('300px');
+  });
+
+  it('adds cngx-sidenav--mini class', () => {
+    const { fixture, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement;
+    expect(leftEl.classList.contains('cngx-sidenav--mini')).toBe(true);
+  });
+
+  it('adds cngx-sidenav--expanded class when expanded', () => {
+    const { fixture, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement;
+    expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(false);
+    const left = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].injector.get(CngxSidenav);
+    left._onMouseEnter();
+    fixture.detectChanges();
+    expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(true);
+  });
+
+  it('does not set aria-hidden in mini mode', () => {
+    const { fixture, host } = setupDual();
+    host.mode.set('mini');
+    fixture.detectChanges();
+    const leftEl = fixture.debugElement.queryAll(By.directive(CngxSidenav))[0].nativeElement as HTMLElement;
+    expect(leftEl.getAttribute('aria-hidden')).toBeNull();
+  });
+});
+
+describe('CngxSidenav ariaLabel', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setupDual() {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.detectChanges();
+    const sidenavs = fixture.debugElement.queryAll(By.directive(CngxSidenav));
+    const left = sidenavs.find(d => d.injector.get(CngxSidenav).position() === 'start')!;
+    return { fixture, leftEl: left.nativeElement as HTMLElement, host: fixture.componentInstance };
+  }
+
+  it('sets aria-label attribute when ariaLabel input is set', () => {
+    const { fixture, leftEl, host } = setupDual();
+    host.ariaLabel.set('Main navigation');
+    fixture.detectChanges();
+    expect(leftEl.getAttribute('aria-label')).toBe('Main navigation');
+  });
+
+  it('does not set aria-label when undefined', () => {
+    const { leftEl } = setupDual();
+    expect(leftEl.getAttribute('aria-label')).toBeNull();
+  });
+});
+
+describe('CngxSidenav resizable', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function setupDual() {
+    const fixture = TestBed.createComponent(DualHost);
+    fixture.detectChanges();
+    const sidenavs = fixture.debugElement.queryAll(By.directive(CngxSidenav));
+    const left = sidenavs.find(d => d.injector.get(CngxSidenav).position() === 'start')!;
+    return { fixture, leftEl: left.nativeElement as HTMLElement, left: left.injector.get(CngxSidenav), host: fixture.componentInstance };
+  }
+
+  it('adds cngx-sidenav--resizable class when resizable is true', () => {
+    const { fixture, leftEl, host } = setupDual();
+    expect(leftEl.classList.contains('cngx-sidenav--resizable')).toBe(false);
+    host.resizable.set(true);
+    fixture.detectChanges();
+    expect(leftEl.classList.contains('cngx-sidenav--resizable')).toBe(true);
+  });
+
+  it('width model can be set programmatically', () => {
+    const { fixture, left, host } = setupDual();
+    expect(left.width()).toBe('240px');
+    host.width.set('320px');
+    fixture.detectChanges();
+    expect(left.width()).toBe('320px');
   });
 });
 
