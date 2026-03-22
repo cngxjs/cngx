@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @use '../../projects/data-display/treetable/mat-treetable-theme' as treetable;
 @use '../../projects/ui/src/lib/speak/speak-button-theme' as speak;
+@use '../../projects/ui/src/lib/sidenav/sidenav-theme' as sidenav;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -29,12 +30,14 @@ html {
   @include mat.all-component-themes($theme);
   @include treetable.theme($theme);
   @include speak.theme($theme);
+  @include sidenav.theme($theme);
 }
 
 [data-theme='dark'] {
   @include mat.all-component-colors($dark-theme);
   @include treetable.theme($dark-theme);
   @include speak.theme($dark-theme);
+  @include sidenav.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

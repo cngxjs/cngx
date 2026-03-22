@@ -125,9 +125,34 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/disclosure',
+        loadComponent: () =>
+          import('./demos/common/interactive/disclosure-demo/disclosure-demo.component').then((m) => m.DisclosureDemoComponent),
+      },
+      {
+        path: 'interactive/nav',
+        loadComponent: () =>
+          import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
+      },
+      {
         path: 'interactive/speak',
         loadComponent: () =>
           import('./demos/common/interactive/speak-demo/speak-demo.component').then((m) => m.SpeakDemoComponent),
+      },
+      {
+        path: 'interactive/swipe-dismiss',
+        loadComponent: () =>
+          import('./demos/common/interactive/swipe-dismiss-demo/swipe-dismiss-demo.component').then((m) => m.SwipeDismissDemoComponent),
+      },
+      {
+        path: 'layout/backdrop',
+        loadComponent: () =>
+          import('./demos/common/layout/backdrop-demo/backdrop-demo.component').then((m) => m.BackdropDemoComponent),
+      },
+      {
+        path: 'layout/drawer',
+        loadComponent: () =>
+          import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
       },
       {
         path: 'layout/intersection-observer',
@@ -135,9 +160,19 @@ export const routes: Routes = [
           import('./demos/common/layout/intersection-observer-demo/intersection-observer-demo.component').then((m) => m.IntersectionObserverDemoComponent),
       },
       {
+        path: 'layout/media-query',
+        loadComponent: () =>
+          import('./demos/common/layout/media-query-demo/media-query-demo.component').then((m) => m.MediaQueryDemoComponent),
+      },
+      {
         path: 'layout/resize-observer',
         loadComponent: () =>
           import('./demos/common/layout/resize-observer-demo/resize-observer-demo.component').then((m) => m.ResizeObserverDemoComponent),
+      },
+      {
+        path: 'layout/scroll-lock',
+        loadComponent: () =>
+          import('./demos/common/layout/scroll-lock-demo/scroll-lock-demo.component').then((m) => m.ScrollLockDemoComponent),
       },
       { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
     ],
@@ -160,6 +195,11 @@ export const routes: Routes = [
         path: 'mat-paginator',
         loadComponent: () =>
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
+      },
+      {
+        path: 'sidenav',
+        loadComponent: () =>
+          import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
       },
       {
         path: 'speak-button',

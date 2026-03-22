@@ -341,6 +341,166 @@ cngx-speak-button.speak-btn-dark {
   --cngx-border: #555;
 }
 
+// ── Drawer demos ────────────────────────────────────────────────────────────
+
+.drawer-container {
+  --cngx-drawer-width: 220px;
+  --cngx-drawer-height: 140px;
+  --cngx-drawer-duration: 0.25s;
+  --cngx-drawer-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+}
+
+.drawer-container--bordered {
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.drawer-layout {
+  display: flex;
+  position: relative;
+  min-height: 180px;
+  overflow: hidden;
+}
+
+.drawer-layout--relative {
+  min-height: 200px;
+}
+
+.drawer-panel {
+  position: absolute;
+  z-index: 10;
+  background: var(--cngx-surface-alt, #f5f6f7);
+  border-right: 1px solid var(--border-color, #e0e0e0);
+  transition: transform var(--cngx-drawer-duration) var(--cngx-drawer-easing),
+              visibility 0s var(--cngx-drawer-duration);
+  overflow: hidden;
+  visibility: hidden;
+
+  &.cngx-drawer-panel--open {
+    visibility: visible;
+    transition: transform var(--cngx-drawer-duration) var(--cngx-drawer-easing),
+                visibility 0s 0s;
+  }
+
+  // left (default)
+  &.cngx-drawer-panel--left,
+  &.cngx-drawer-panel--right {
+    top: 0;
+    bottom: 0;
+    width: var(--cngx-drawer-width);
+  }
+
+  &.cngx-drawer-panel--top,
+  &.cngx-drawer-panel--bottom {
+    left: 0;
+    right: 0;
+    height: var(--cngx-drawer-height);
+    border-right: none;
+  }
+
+  &.cngx-drawer-panel--left {
+    left: 0;
+    transform: translateX(-100%);
+    &.cngx-drawer-panel--open { transform: translateX(0); }
+  }
+
+  &.cngx-drawer-panel--right {
+    right: 0;
+    left: auto;
+    border-right: none;
+    border-left: 1px solid var(--border-color, #e0e0e0);
+    transform: translateX(100%);
+    &.cngx-drawer-panel--open { transform: translateX(0); }
+  }
+
+  &.cngx-drawer-panel--top {
+    top: 0;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+    transform: translateY(-100%);
+    &.cngx-drawer-panel--open { transform: translateY(0); }
+  }
+
+  &.cngx-drawer-panel--bottom {
+    bottom: 0;
+    top: auto;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+    transform: translateY(100%);
+    &.cngx-drawer-panel--open { transform: translateY(0); }
+  }
+}
+
+.drawer-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+
+  a {
+    color: var(--text-primary, #333);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--border-color, #eee);
+
+    &:hover {
+      color: var(--interactive, #f5a623);
+    }
+  }
+}
+
+.drawer-main {
+  flex: 1;
+  padding: 1rem;
+  font-size: 0.875rem;
+  transition: margin var(--cngx-drawer-duration) var(--cngx-drawer-easing);
+}
+
+.drawer-main--tall {
+  min-height: 200px;
+}
+
+// Push/side: panel is in flow, not absolute — no margin needed on content
+// because the panel's own width pushes it naturally.
+.drawer-layout--push {
+  .drawer-panel--static {
+    position: relative;
+    transform: none !important;
+    flex-shrink: 0;
+    align-self: stretch;
+    transition: width var(--cngx-drawer-duration) var(--cngx-drawer-easing);
+
+    &:not(.cngx-drawer-panel--open) {
+      width: 0;
+      overflow: hidden;
+      border: none;
+    }
+
+    &.cngx-drawer-panel--open {
+      width: var(--cngx-drawer-width);
+    }
+  }
+}
+
+// Backdrop
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--cngx-backdrop-color, rgba(0, 0, 0, 0.3));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--cngx-drawer-duration) var(--cngx-drawer-easing);
+
+  &.cngx-backdrop--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 // ── Events ───────────────────────────────────────────────────────────────────
 
 .event-grid {

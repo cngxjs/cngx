@@ -1,0 +1,53 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+// ─── cngx-nav-link theming ──────────────────────────────────────────
+//
+// Provides M3/M2 colors for `[cngxNavLink]` when used inside a sidenav.
+// Included automatically by `sidenav.theme()` — no separate import needed.
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    $_on-surface: mat.get-theme-color($theme, on-surface);
+    $_on-surface-variant: mat.get-theme-color($theme, on-surface-variant);
+    $_primary: mat.get-theme-color($theme, primary);
+    $_secondary-container: mat.get-theme-color($theme, secondary-container);
+    $_on-secondary-container: mat.get-theme-color($theme, on-secondary-container);
+
+    --cngx-nav-link-color: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
+    --cngx-nav-link-hover-color: var(--mat-sys-on-surface, #{$_on-surface});
+    --cngx-nav-link-active-color: var(--mat-sys-on-secondary-container, #{$_on-secondary-container});
+    --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
+    --cngx-nav-link-active-indicator: var(--mat-sys-primary, #{$_primary});
+  } @else {
+    $_primary: mat.get-theme-color($theme, primary);
+
+    --cngx-nav-link-color: rgba(0, 0, 0, 0.65);
+    --cngx-nav-link-hover-color: rgba(0, 0, 0, 0.87);
+    --cngx-nav-link-active-color: #{$_primary};
+    --cngx-nav-link-active-bg: #{rgba($_primary, 0.08)};
+    --cngx-nav-link-active-indicator: #{$_primary};
+  }
+}
+
+@mixin base() {
+  --cngx-nav-link-radius: 8px;
+  --cngx-nav-link-font-size: 0.875rem;
+  --cngx-nav-link-active-font-weight: 500;
+  --cngx-nav-link-hover-bg: rgba(0, 0, 0, 0.04);
+}
+
+@mixin density($theme) {
+  $scale: mat.get-theme-density($theme);
+  $scale: if($scale < -4, -4, if($scale > 0, 0, $scale));
+
+  $paddings: (0: 10px 16px, -1: 8px 12px, -2: 6px 8px, -3: 4px 6px, -4: 2px 4px);
+
+  --cngx-nav-link-padding: #{map.get($paddings, $scale)};
+}
+
+@mixin theme($theme) {
+  @include base();
+  @include color($theme);
+  @include density($theme);
+}

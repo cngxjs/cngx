@@ -103,20 +103,18 @@
   top: 0;
   height: 100vh;
   overflow: hidden;
-  clip-path: inset(0 100% 0 0 round 0 24px 24px 0);
   opacity: 0;
   filter: blur(4px);
+  // Only animate text visibility (opacity/filter), not dimensions.
+  // Width snaps instantly — no jank on page load.
   transition:
-    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    clip-path 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease,
-    filter 0.3s ease,
-    border-color 0.35s,
+    opacity 0.25s ease,
+    filter 0.25s ease,
+    border-color 0.15s,
     background 0.15s;
 
   &--visible {
     width: 220px;
-    clip-path: inset(0 0 0 0 round 0);
     opacity: 1;
     filter: blur(0);
     border-right-color: var(--sidebar-border);
