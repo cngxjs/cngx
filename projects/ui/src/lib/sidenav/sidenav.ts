@@ -191,7 +191,7 @@ export class CngxSidenav {
     effect(() => {
       cleanupShortcut?.();
       const combo = this.shortcut();
-      if (!combo) return;
+      if (!combo) {return;}
       const parts = combo.toLowerCase().split('+').map((s) => s.trim());
       const key = parts.pop()!;
       const needsCtrl = parts.includes('ctrl');
@@ -201,16 +201,16 @@ export class CngxSidenav {
       const needsAlt = parts.includes('alt');
 
       const handler = (e: KeyboardEvent): void => {
-        if (e.key.toLowerCase() !== key) return;
-        if (needsShift && !e.shiftKey) return;
-        if (needsAlt && !e.altKey) return;
+        if (e.key.toLowerCase() !== key) {return;}
+        if (needsShift && !e.shiftKey) {return;}
+        if (needsAlt && !e.altKey) {return;}
         if (needsMod) {
           // mod = meta on Mac, ctrl elsewhere
           const isMac = navigator.platform?.startsWith('Mac') ?? navigator.userAgent.includes('Mac');
-          if (isMac ? !e.metaKey : !e.ctrlKey) return;
+          if (isMac ? !e.metaKey : !e.ctrlKey) {return;}
         } else {
-          if (needsCtrl && !e.ctrlKey) return;
-          if (needsMeta && !e.metaKey) return;
+          if (needsCtrl && !e.ctrlKey) {return;}
+          if (needsMeta && !e.metaKey) {return;}
         }
         e.preventDefault();
         // Bypass mode guards — shortcut is always intentional
@@ -301,17 +301,17 @@ export class CngxSidenav {
 
   /** @internal */
   _onResizeStart(e: PointerEvent): void {
-    if (!this.resizable()) return;
+    if (!this.resizable()) {return;}
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
     this._resizing.set(true);
     const startX = e.clientX;
-    const startWidth = this.elementRef.nativeElement.getBoundingClientRect().width;
+    const el = this.elementRef.nativeElement as HTMLElement;
+    const startWidth = el.getBoundingClientRect().width;
     const isEnd = this.position() === 'end';
     const min = this._minWidthPx();
     const max = this._maxWidthPx();
-    const el = this.elementRef.nativeElement as HTMLElement;
     let currentWidth = startWidth;
     let rafId = 0;
 
