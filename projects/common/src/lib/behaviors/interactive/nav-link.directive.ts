@@ -83,7 +83,7 @@ export class CngxNavLink {
       if (isActive && this.scrollOnActive()) {
         // Delay to let Angular finish rendering siblings
         requestAnimationFrame(() => {
-          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          el.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
         });
       }
     });
