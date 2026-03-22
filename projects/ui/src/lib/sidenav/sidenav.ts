@@ -125,6 +125,13 @@ export class CngxSidenav {
   /** Maximum width constraint during resize. */
   readonly maxWidth = input<string>('600px');
 
+  /**
+   * Keyboard shortcut to toggle the sidenav, e.g. `'ctrl+b'` or `'meta+b'`.
+   * Uses `ctrl` on Windows/Linux and `meta` (Cmd) on macOS automatically
+   * when `'mod+<key>'` syntax is used.
+   */
+  readonly shortcut = input<string | undefined>(undefined);
+
   /** Whether a resize drag is in progress. */
   private readonly _resizing = signal(false);
   readonly resizing = this._resizing.asReadonly();
@@ -176,7 +183,43 @@ export class CngxSidenav {
       mql.addEventListener('change', handler);
       cleanupMedia = () => mql.removeEventListener('change', handler);
     });
-    inject(DestroyRef).onDestroy(() => cleanupMedia?.());
+    const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => cleanupMedia?.());
+
+    // Keyboard shortcut toggle
+    let cleanupShortcut: (() => void) | undefined;
+    effect(() => {
+      cleanupShortcut?.();
+      const combo = this.shortcut();
+      if (!combo) return;
+      const parts = combo.toLowerCase().split('+').map((s) => s.trim());
+      const key = parts.pop()!;
+      const needsCtrl = parts.includes('ctrl');
+      const needsMeta = parts.includes('meta');
+      const needsMod = parts.includes('mod');
+      const needsShift = parts.includes('shift');
+      const needsAlt = parts.includes('alt');
+
+      const handler = (e: KeyboardEvent): void => {
+        if (e.key.toLowerCase() !== key) return;
+        if (needsShift && !e.shiftKey) return;
+        if (needsAlt && !e.altKey) return;
+        if (needsMod) {
+          // mod = meta on Mac, ctrl elsewhere
+          const isMac = navigator.platform?.startsWith('Mac') ?? navigator.userAgent.includes('Mac');
+          if (isMac ? !e.metaKey : !e.ctrlKey) return;
+        } else {
+          if (needsCtrl && !e.ctrlKey) return;
+          if (needsMeta && !e.metaKey) return;
+        }
+        e.preventDefault();
+        // Bypass mode guards — shortcut is always intentional
+        this.opened.set(!this.opened());
+      };
+      document.addEventListener('keydown', handler);
+      cleanupShortcut = () => document.removeEventListener('keydown', handler);
+    });
+    destroyRef.onDestroy(() => cleanupShortcut?.());
 
     // Sync opened state on mode transitions:
     // When leaving side/mini mode the sidenav was visible regardless of `opened`.

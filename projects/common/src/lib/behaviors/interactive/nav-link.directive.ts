@@ -1,4 +1,4 @@
-import { afterNextRender, Directive, ElementRef, inject, input, signal } from '@angular/core';
+import { afterNextRender, Directive, effect, ElementRef, inject, input, signal } from '@angular/core';
 
 /**
  * Navigation link atom. Applied to `<a>` or `<button>` elements in a
@@ -70,10 +70,30 @@ export class CngxNavLink {
         el.setAttribute('data-initial', text.charAt(0).toUpperCase());
       }
     });
+
+    // Scroll into view when becoming active (e.g., after route change).
+    // Skips the initial render to avoid scroll jank on page load.
+    let initialized = false;
+    effect(() => {
+      const isActive = this.active();
+      if (!initialized) {
+        initialized = true;
+        return;
+      }
+      if (isActive && this.scrollOnActive()) {
+        // Delay to let Angular finish rendering siblings
+        requestAnimationFrame(() => {
+          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        });
+      }
+    });
   }
 
   /** Whether this link is the currently active route/item. */
   readonly active = input<boolean>(false);
+
+  /** Whether to scroll this link into view when it becomes active. */
+  readonly scrollOnActive = input<boolean>(true);
 
   /**
    * The `aria-current` value when active. Screen readers announce this

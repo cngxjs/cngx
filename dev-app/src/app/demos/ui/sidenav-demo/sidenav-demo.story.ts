@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
   </div>
 
   <cngx-sidenav-layout style="height: 420px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; margin-top: 0.75rem; --cngx-nav-link-radius: 0; --cngx-nav-link-active-bg: transparent; --cngx-nav-link-active-color: inherit; --cngx-nav-link-active-font-weight: inherit;">
-    <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px" [resizable]="true">
+    <cngx-sidenav position="start" [(opened)]="navOpen" [mode]="navMode()" width="240px" [resizable]="true" shortcut="mod+b">
       <cngx-sidenav-header style="padding: 1rem; font-weight: 700; font-size: 1rem;">
         Workspace
       </cngx-sidenav-header>

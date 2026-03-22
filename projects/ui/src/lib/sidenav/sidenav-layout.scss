@@ -45,8 +45,9 @@ cngx-sidenav {
       visibility 0s 0s;
   }
 
-  // Side mode: always visible, no transition needed
-  &.cngx-sidenav--side {
+  // Side mode: visible when open (close() is a no-op, so it stays open
+  // unless explicitly toggled via shortcut or model binding)
+  &.cngx-sidenav--side.cngx-sidenav--open {
     visibility: visible;
   }
 
@@ -70,7 +71,7 @@ cngx-sidenav {
   // Mini mode: collapsed icon rail, stays in flex flow.
   // No width transition — expand/collapse is instant to prevent
   // content shift (negative margin + animating width = layout jank).
-  &.cngx-sidenav--mini {
+  &.cngx-sidenav--mini.cngx-sidenav--open {
     width: var(--cngx-sidenav-mini-width, 56px);
     visibility: visible;
     transition: none;
