@@ -25,7 +25,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxPaginate', 'CngxMatPaginator']">
       <app-example-card title="CngxDataSource — Signal → Observable Bridge"
         [subtitle]="_s0"
-        [source]="_src0">
+        [sourceHtml]="_srcHtml0">
         
   <div class="table-wrap">
     <table class="demo-table">
@@ -46,7 +46,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Usage Pattern — Consumer Wires It Up"
         [subtitle]="_s1"
-        [source]="_src1">
+        [sourceHtml]="_srcHtml1">
         
   <pre class="code-block"><code>// In your component:
 private readonly raw   = signal(data);
@@ -67,7 +67,7 @@ protected readonly rows = toSignal(this.ds.connect(), &#123; initialValue: [] &#
       </app-example-card>
       <app-example-card title="DataSource + CngxPaginate — Manual Pipeline"
         [subtitle]="_s2"
-        [source]="_src2">
+        [sourceHtml]="_srcHtml2">
         
   <div class="table-wrap">
     <table class="demo-table">
@@ -106,9 +106,9 @@ export class DataSourceDemoComponent {
   protected readonly _s0 = '<code>injectDataSource(signal)</code> is a thin CDK <code>DataSource</code> wrapper. Every time the signal changes, <code>connect()</code> emits a new value. Use <code>toSignal(ds.connect())</code> to drive a template directly. Zero logic — consumer wires up sort/filter/search via a <code>computed()</code> passed as the signal.';
   protected readonly _s1 = 'Pass a <code>computed()</code> as the signal to get sort + filter + search for free. The DataSource itself has zero logic — it just bridges whatever the signal emits.';
   protected readonly _s2 = 'Pagination slots naturally into the manual pipeline. Pass a <code>computed()</code> that includes the slice to <code>injectDataSource()</code>. <code>CngxPaginate</code> is placed in the template via a template ref (<code>#pg</code>). Controlled mode wires the component\'s <code>pageIndex</code> / <code>pageSize</code> signals to the directive — <code>(pageChange)</code> / <code>(pageSizeChange)</code> keep them in sync.';
-  protected readonly _src0 = '\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of rows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="button-row">\n    <button type="button" (click)="shuffle()">Shuffle</button>\n    <button type="button" (click)="reset()">Reset</button>\n  </div>';
-  protected readonly _src1 = '\n  <pre class="code-block"><code>// In your component:\nprivate readonly raw   = signal(data);\nprivate readonly term  = signal(\'\');\nprivate readonly sort  = signal&lt;SortState | null&gt;(null);\n\nprivate readonly processed = computed(() => &#123;\n  let list = this.raw();\n  const t = this.term();\n  const s = this.sort();\n  if (t) list = list.filter(p => p.name.includes(t));\n  if (s) list = [...list].sort(/* ... */);\n  return list;\n&#125;);\n\nprivate readonly ds   = injectDataSource(this.processed);\nprotected readonly rows = toSignal(this.ds.connect(), &#123; initialValue: [] &#125;);</code></pre>';
-  protected readonly _src2 = '\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of paginated(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n\n  <!-- CngxPaginate in controlled mode -->\n  <div cngxPaginate #pg="cngxPaginate"\n    [cngxPageIndex]="pageIndex()"\n    [cngxPageSize]="pageSize()"\n    [total]="totalPeople"\n    (pageChange)="setPage($event)"\n    (pageSizeChange)="setPageSize($event)"\n    style="display:contents">\n  </div>\n  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 8]" />\n\n  <div class="status-row">\n    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.totalPages() }}</span>\n  </div>';
+  protected readonly _srcHtml0 = '\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of rows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="button-row">\n    <button type="button" (click)="shuffle()">Shuffle</button>\n    <button type="button" (click)="reset()">Reset</button>\n  </div>';
+  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>// In your component:\nprivate readonly raw   = signal(data);\nprivate readonly term  = signal(\'\');\nprivate readonly sort  = signal&lt;SortState | null&gt;(null);\n\nprivate readonly processed = computed(() => &#123;\n  let list = this.raw();\n  const t = this.term();\n  const s = this.sort();\n  if (t) list = list.filter(p => p.name.includes(t));\n  if (s) list = [...list].sort(/* ... */);\n  return list;\n&#125;);\n\nprivate readonly ds   = injectDataSource(this.processed);\nprotected readonly rows = toSignal(this.ds.connect(), &#123; initialValue: [] &#125;);</code></pre>';
+  protected readonly _srcHtml2 = '\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of paginated(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n\n  <!-- CngxPaginate in controlled mode -->\n  <div cngxPaginate #pg="cngxPaginate"\n    [cngxPageIndex]="pageIndex()"\n    [cngxPageSize]="pageSize()"\n    [total]="totalPeople"\n    (pageChange)="setPage($event)"\n    (pageSizeChange)="setPageSize($event)"\n    style="display:contents">\n  </div>\n  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 8]" />\n\n  <div class="status-row">\n    <span class="status-badge">page {{ pageIndex() + 1 }} of {{ pg.totalPages() }}</span>\n  </div>';
 
   private readonly items = signal(PEOPLE);
   private readonly ds = injectDataSource(this.items);

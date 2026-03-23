@@ -26,7 +26,7 @@ import { type DJProduct } from '../../../../fixtures';
       [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch + HttpClient (DummyJSON)"
         [subtitle]="_s0"
-        [source]="_src0">
+        [sourceHtml]="_srcHtml0">
         
   <div class="search-row">
     <input
@@ -70,7 +70,7 @@ import { type DJProduct } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Pattern: Signal → Observable → API"
         [subtitle]="_s1"
-        [source]="_src1">
+        [sourceHtml]="_srcHtml1">
         
   <pre class="code-block"><code>private readonly http = inject(HttpClient);
 protected readonly term  = signal('');
@@ -97,8 +97,8 @@ protected readonly results = toSignal(
 export class SearchBackendDemoComponent {
   protected readonly _s0 = '<code>CngxSearch</code> already debounces, so there\'s no need for an extra <code>debounceTime()</code> in the pipe. <code>(searchChange)</code> updates a signal → <code>toObservable()</code> → <code>switchMap</code> cancels in-flight requests automatically.';
   protected readonly _s1 = 'The key wiring: <code>toObservable(signal)</code> emits on every signal change, <code>switchMap</code> cancels the previous request before issuing a new one. <code>CngxSearch</code> provides the debounce so the observable only fires after the user stops typing.';
-  protected readonly _src0 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="400"\n      (searchChange)="apiTerm.set($event)"\n      placeholder="Search products… (min 2 chars)"\n      class="search-input"\n    />\n    @if (apiLoading()) {\n      <span class="term-badge">loading…</span>\n    } @else if (apiTerm()) {\n      <span class="term-badge">{{ apiTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Title</th><th>Brand</th><th>Category</th><th>Price</th><th>Rating</th></tr>\n      </thead>\n      <tbody>\n        @for (p of apiProducts(); track p.id) {\n          <tr>\n            <td>{{ p.title }}</td>\n            <td>{{ p.brand }}</td>\n            <td>{{ p.category }}</td>\n            <td>{{ p.price | currency }}</td>\n            <td>{{ p.rating }}</td>\n          </tr>\n        } @empty {\n          <tr><td colspan="5" class="empty-cell">\n            {{ apiTerm().length >= 2 ? \'No results.\' : \'Type at least 2 characters to search.\' }}\n          </td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    API: dummyjson.com/products/search &mdash; {{ apiProducts().length }} results\n  </div>';
-  protected readonly _src1 = '\n  <pre class="code-block"><code>private readonly http = inject(HttpClient);\nprotected readonly term  = signal(\'\');\n\nprotected readonly results = toSignal(\n  toObservable(this.term).pipe(\n    switchMap((q) =>\n      q.length >= 2\n        ? this.http\n            .get&lt;&#123; products: Product[] &#125;&gt;(`/api/search?q=$&#123;q&#125;`)\n            .pipe(map((r) => r.products))\n        : of([]),\n    ),\n  ),\n  &#123; initialValue: [] as Product[] &#125;,\n);\n\n// Template — no extra debounce needed:\n// &lt;input cngxSearch [debounceMs]="400" (searchChange)="term.set($event)" /&gt;</code></pre>';
+  protected readonly _srcHtml0 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="400"\n      (searchChange)="apiTerm.set($event)"\n      placeholder="Search products… (min 2 chars)"\n      class="search-input"\n    />\n    @if (apiLoading()) {\n      <span class="term-badge">loading…</span>\n    } @else if (apiTerm()) {\n      <span class="term-badge">{{ apiTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Title</th><th>Brand</th><th>Category</th><th>Price</th><th>Rating</th></tr>\n      </thead>\n      <tbody>\n        @for (p of apiProducts(); track p.id) {\n          <tr>\n            <td>{{ p.title }}</td>\n            <td>{{ p.brand }}</td>\n            <td>{{ p.category }}</td>\n            <td>{{ p.price | currency }}</td>\n            <td>{{ p.rating }}</td>\n          </tr>\n        } @empty {\n          <tr><td colspan="5" class="empty-cell">\n            {{ apiTerm().length >= 2 ? \'No results.\' : \'Type at least 2 characters to search.\' }}\n          </td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    API: dummyjson.com/products/search &mdash; {{ apiProducts().length }} results\n  </div>';
+  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>private readonly http = inject(HttpClient);\nprotected readonly term  = signal(\'\');\n\nprotected readonly results = toSignal(\n  toObservable(this.term).pipe(\n    switchMap((q) =>\n      q.length >= 2\n        ? this.http\n            .get&lt;&#123; products: Product[] &#125;&gt;(`/api/search?q=$&#123;q&#125;`)\n            .pipe(map((r) => r.products))\n        : of([]),\n    ),\n  ),\n  &#123; initialValue: [] as Product[] &#125;,\n);\n\n// Template — no extra debounce needed:\n// &lt;input cngxSearch [debounceMs]="400" (searchChange)="term.set($event)" /&gt;</code></pre>';
 
   private readonly http = inject(HttpClient);
 

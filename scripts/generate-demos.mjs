@@ -630,26 +630,32 @@ export function generateComponentFile(story, meta) {
   const subtitleFields = story.sections
     .map((s, i) =>
       s.subtitle
-        ? `  protected readonly _s${i} = '${s.subtitle.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';`
+        ? `  protected readonly _s${i} = '${s.subtitle.replaceAll('\\', '\\\\').replaceAll('\'', String.raw`\'`)}';`
         : null,
     )
     .filter(Boolean);
 
-  // Build source string fields for each section
-  const sourceFields = story.sections.map((section, i) => {
-    // Escape single quotes and backslashes for embedding in a TS string literal
-    const escaped = section.template
-      .replace(/\\/g, '\\\\')
-      .replace(/'/g, "\\'")
-      .replace(/\n/g, '\\n');
-    return `  protected readonly _src${i} = '${escaped}';`;
+  // Build source string fields for each section (HTML, TS, CSS)
+  const sourceFields = story.sections.flatMap((section, i) => {
+    const escapeStr = (s) =>
+      s.replaceAll('\\', '\\\\').replaceAll('\'', String.raw`\'`).replaceAll('\n', '\\n');
+    const fields = [`  protected readonly _srcHtml${i} = '${escapeStr(section.template)}';`];
+    if (section.setup) {
+      fields.push(`  protected readonly _srcTs${i} = '${escapeStr(section.setup)}';`);
+    }
+    if (section.css) {
+      fields.push(`  protected readonly _srcCss${i} = '${escapeStr(section.css)}';`);
+    }
+    return fields;
   });
 
   // Template sections
   const templateParts = story.sections.map((section, i) => {
     const isPlayground = hasControls && i === 0;
     const subtitleAttr = section.subtitle ? `\n        [subtitle]="_s${i}"` : '';
-    const sourceAttr = `\n        [source]="_src${i}"`;
+    const sourceHtmlAttr = `\n        [sourceHtml]="_srcHtml${i}"`;
+    const sourceTsAttr = section.setup ? `\n        [sourceTs]="_srcTs${i}"` : '';
+    const sourceCssAttr = section.css ? `\n        [sourceCss]="_srcCss${i}"` : '';
     // Escape backticks and ${} interpolations so they survive being embedded in a TS template literal.
     const tpl = section.template.replaceAll('`', '\\`').replaceAll('${', '\\${');
     if (isPlayground) {
@@ -660,7 +666,7 @@ export function generateComponentFile(story, meta) {
       ].join('\n');
     }
     return [
-      `      <app-example-card title="${section.title}"${subtitleAttr}${sourceAttr}>`,
+      `      <app-example-card title="${section.title}"${subtitleAttr}${sourceHtmlAttr}${sourceTsAttr}${sourceCssAttr}>`,
       `        ${tpl}`,
       `      </app-example-card>`,
     ].join('\n');
@@ -671,10 +677,10 @@ export function generateComponentFile(story, meta) {
     ? `\n      [apiComponents]="[${story.apiComponents.map((c) => `'${c}'`).join(', ')}]"`
     : '';
   const overviewAttr = story.overview
-    ? `\n      overview="${story.overview.replace(/"/g, '&quot;')}"`
+    ? `\n      overview="${story.overview.replaceAll('"', '&quot;')}"`
     : '';
   const descriptionAttr = story.description
-    ? `\n      description="${story.description.replace(/"/g, '&quot;')}"`
+    ? `\n      description="${story.description.replaceAll('"', '&quot;')}"`
     : '';
 
   const wrappedTemplate = [
@@ -706,10 +712,10 @@ export function generateComponentFile(story, meta) {
 
   const hostDirectivesLines = story.hostDirectives?.length
     ? [
-        `  hostDirectives: [`,
-        ...story.hostDirectives.map((d) => `    { directive: ${d} },`),
-        `  ],`,
-      ]
+      `  hostDirectives: [`,
+      ...story.hostDirectives.map((d) => `    { directive: ${d} },`),
+      `  ],`,
+    ]
     : [];
 
   return [

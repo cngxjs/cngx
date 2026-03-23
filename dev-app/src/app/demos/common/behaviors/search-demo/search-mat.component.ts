@@ -27,7 +27,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch inside mat-form-field"
         [subtitle]="_s0"
-        [source]="_src0">
+        [sourceHtml]="_srcHtml0">
         
   <mat-form-field appearance="outline" style="width:100%">
     <mat-label>Search people</mat-label>
@@ -63,7 +63,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="mat-form-field — Filled variant"
         [subtitle]="_s1"
-        [source]="_src1">
+        [sourceHtml]="_srcHtml1">
         
   <mat-form-field appearance="fill" style="width:100%">
     <mat-label>Search people</mat-label>
@@ -101,8 +101,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 export class SearchMatDemoComponent {
   protected readonly _s0 = 'Add both <code>matInput</code> and <code>cngxSearch</code> to the same <code>&lt;input&gt;</code>. Material handles the field chrome; <code>cngxSearch</code> handles debounce + <code>(searchChange)</code>. No conflicts.';
   protected readonly _s1 = 'Works with all Material form-field appearances: <code>outline</code>, <code>fill</code>.';
-  protected readonly _src0 = '\n  <mat-form-field appearance="outline" style="width:100%">\n    <mat-label>Search people</mat-label>\n    <mat-icon matPrefix>search</mat-icon>\n    <input\n      matInput\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Name, role or location…"\n    />\n    @if (searchTerm()) {\n      <mat-icon matSuffix style="cursor:pointer" (click)="searchTerm.set(\'\')">close</mat-icon>\n    }\n  </mat-form-field>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    searchChange: <strong>{{ searchTerm() || \'—\' }}</strong> &mdash; {{ searchRows().length }} results\n  </div>';
-  protected readonly _src1 = '\n  <mat-form-field appearance="fill" style="width:100%">\n    <mat-label>Search people</mat-label>\n    <mat-icon matPrefix>search</mat-icon>\n    <input\n      matInput\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Name, role or location…"\n    />\n    @if (searchTerm()) {\n      <mat-icon matSuffix style="cursor:pointer" (click)="searchTerm.set(\'\')">close</mat-icon>\n    }\n    <mat-hint>{{ searchRows().length }} / {{ searchRows().length + (searchTerm() ? 0 : 0) }} results</mat-hint>\n  </mat-form-field>\n  <div class="table-wrap" style="margin-top:0.5rem">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>';
+  protected readonly _srcHtml0 = '\n  <mat-form-field appearance="outline" style="width:100%">\n    <mat-label>Search people</mat-label>\n    <mat-icon matPrefix>search</mat-icon>\n    <input\n      matInput\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Name, role or location…"\n    />\n    @if (searchTerm()) {\n      <mat-icon matSuffix style="cursor:pointer" (click)="searchTerm.set(\'\')">close</mat-icon>\n    }\n  </mat-form-field>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    searchChange: <strong>{{ searchTerm() || \'—\' }}</strong> &mdash; {{ searchRows().length }} results\n  </div>';
+  protected readonly _srcHtml1 = '\n  <mat-form-field appearance="fill" style="width:100%">\n    <mat-label>Search people</mat-label>\n    <mat-icon matPrefix>search</mat-icon>\n    <input\n      matInput\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Name, role or location…"\n    />\n    @if (searchTerm()) {\n      <mat-icon matSuffix style="cursor:pointer" (click)="searchTerm.set(\'\')">close</mat-icon>\n    }\n    <mat-hint>{{ searchRows().length }} / {{ searchRows().length + (searchTerm() ? 0 : 0) }} results</mat-hint>\n  </mat-form-field>\n  <div class="table-wrap" style="margin-top:0.5rem">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>';
 
   protected readonly searchTerm = signal('');
 

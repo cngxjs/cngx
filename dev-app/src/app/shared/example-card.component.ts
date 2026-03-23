@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+
+type SourceTab = 'html' | 'ts' | 'css';
 
 @Component({
   selector: 'app-example-card',
@@ -9,7 +11,7 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
       <header class="example-header">
         <div class="example-header-row">
           <h2 class="example-title">{{ title() }}</h2>
-          @if (source()) {
+          @if (hasSource()) {
             <button class="source-toggle"
                     [class.source-toggle--active]="showSource()"
                     (click)="showSource.set(!showSource())"
@@ -29,7 +31,18 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
       </header>
       @if (showSource()) {
         <div class="source-panel">
-          <pre class="source-code"><code>{{ source() }}</code></pre>
+          <div class="source-tabs" role="tablist">
+            @for (tab of visibleTabs(); track tab) {
+              <button class="source-tab"
+                      [class.source-tab--active]="activeSourceTab() === tab"
+                      role="tab"
+                      [attr.aria-selected]="activeSourceTab() === tab"
+                      (click)="activeSourceTab.set(tab)">
+                {{ tab.toUpperCase() }}
+              </button>
+            }
+          </div>
+          <pre class="source-code"><code>{{ activeSourceContent() }}</code></pre>
         </div>
       }
       <div class="example-content">
@@ -165,6 +178,37 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
         overflow: auto;
       }
 
+      .source-tabs {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 0 1rem;
+      }
+
+      .source-tab {
+        padding: 0.5rem 0.75rem;
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.4);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        cursor: pointer;
+        transition: all 0.15s;
+
+        &:hover {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        &--active {
+          color: var(--accent);
+          border-bottom-color: var(--accent);
+        }
+      }
+
       .source-code {
         margin: 0;
         padding: 1rem 1.5rem;
@@ -187,6 +231,42 @@ import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core
 export class ExampleCardComponent {
   readonly title = input.required<string>();
   readonly subtitle = input('');
+
+  /** @deprecated Use sourceHtml instead. Kept for backward compat. */
   readonly source = input('');
+  readonly sourceHtml = input('');
+  readonly sourceTs = input('');
+  readonly sourceCss = input('');
+
   readonly showSource = signal(false);
+  readonly activeSourceTab = signal<SourceTab>('html');
+
+  protected readonly hasSource = computed(
+    () => !!(this.source() || this.sourceHtml() || this.sourceTs() || this.sourceCss()),
+  );
+
+  protected readonly visibleTabs = computed<SourceTab[]>(() => {
+    const tabs: SourceTab[] = [];
+    if (this.source() || this.sourceHtml()) {
+      tabs.push('html');
+    }
+    if (this.sourceTs()) {
+      tabs.push('ts');
+    }
+    if (this.sourceCss()) {
+      tabs.push('css');
+    }
+    return tabs;
+  });
+
+  protected readonly activeSourceContent = computed(() => {
+    switch (this.activeSourceTab()) {
+      case 'html':
+        return this.sourceHtml() || this.source();
+      case 'ts':
+        return this.sourceTs();
+      case 'css':
+        return this.sourceCss();
+    }
+  });
 }

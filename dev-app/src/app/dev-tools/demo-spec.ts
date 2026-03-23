@@ -98,4 +98,9 @@ export interface SectionSpec {
    * Example: `['CngxSort', 'CngxSortHeader']`
    */
   imports?: string[];
+  /**
+   * Optional CSS snippet shown in the source view CSS tab.
+   * Use for demo-specific styling that illustrates CSS custom property usage.
+   */
+  css?: string;
 }

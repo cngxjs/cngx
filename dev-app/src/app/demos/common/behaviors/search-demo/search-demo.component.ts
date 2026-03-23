@@ -21,7 +21,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch"
         [subtitle]="_s0"
-        [source]="_src0">
+        [sourceHtml]="_srcHtml0">
         
   <div class="search-row">
     <input
@@ -55,7 +55,7 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="CngxSearch — Zero Debounce"
         [subtitle]="_s1"
-        [source]="_src1">
+        [sourceHtml]="_srcHtml1">
         
   <div class="search-row">
     <input
@@ -90,8 +90,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 export class SearchDemoComponent {
   protected readonly _s0 = '<code>input[cngxSearch]</code> debounces the native <code>input</code> event and emits <code>(searchChange)</code> after the delay. <code>[debounceMs]</code> controls the delay (default 300 ms). Consumer drives filtering via a <code>computed()</code>.';
   protected readonly _s1 = 'Setting <code>[debounceMs]="0"</code> makes the search synchronous — every keystroke fires immediately. Useful when the dataset is small or filtering is cheap.';
-  protected readonly _src0 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Search name, role, or location…"\n      class="search-input"\n    />\n    @if (searchTerm()) {\n      <span class="term-badge">{{ searchTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    searchChange: <strong>{{ searchTerm() || \'—\' }}</strong> &mdash; {{ searchRows().length }} results\n  </div>';
-  protected readonly _src1 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="0"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Instant search…"\n      class="search-input"\n    />\n    @if (searchTerm()) {\n      <span class="term-badge">{{ searchTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>';
+  protected readonly _srcHtml0 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Search name, role, or location…"\n      class="search-input"\n    />\n    @if (searchTerm()) {\n      <span class="term-badge">{{ searchTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="output-badge">\n    searchChange: <strong>{{ searchTerm() || \'—\' }}</strong> &mdash; {{ searchRows().length }} results\n  </div>';
+  protected readonly _srcHtml1 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="0"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Instant search…"\n      class="search-input"\n    />\n    @if (searchTerm()) {\n      <span class="term-badge">{{ searchTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n      </thead>\n      <tbody>\n        @for (row of searchRows(); track row.name) {\n          <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n        } @empty {\n          <tr><td colspan="3" class="empty-cell">No results for "{{ searchTerm() }}".</td></tr>\n        }\n      </tbody>\n    </table>\n  </div>';
 
   protected readonly searchTerm = signal('');
 
