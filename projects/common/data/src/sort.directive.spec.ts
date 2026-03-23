@@ -1,152 +1,133 @@
 import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createDirectiveFixture, spyOnOutput, type DirectiveFixture } from '@cngx/testing';
 import { CngxSort } from './sort.directive';
 
 @Component({
   template: '<div cngxSort></div>',
   imports: [CngxSort],
 })
-class TestHost {}
+class Host {}
 
 describe('CngxSort', () => {
-  beforeEach(() => TestBed.configureTestingModule({ imports: [TestHost] }));
+  let ctx: DirectiveFixture<CngxSort, Host>;
 
-  function getDir(): CngxSort {
-    const fixture = TestBed.createComponent(TestHost);
-    fixture.detectChanges();
-    return fixture.debugElement.query(By.directive(CngxSort)).injector.get(CngxSort);
-  }
+  beforeEach(async () => {
+    ctx = await createDirectiveFixture(CngxSort, Host);
+  });
 
   it('starts with no active sort', () => {
-    const dir = getDir();
-    expect(dir.sort()).toBeNull();
-    expect(dir.isActive()).toBe(false);
+    expect(ctx.directive.sort()).toBeNull();
+    expect(ctx.directive.isActive()).toBe(false);
   });
 
   it('setSort sets active field with asc direction', () => {
-    const dir = getDir();
-    dir.setSort('name');
-    expect(dir.active()).toBe('name');
-    expect(dir.direction()).toBe('asc');
-    expect(dir.sort()).toEqual({ active: 'name', direction: 'asc' });
+    ctx.directive.setSort('name');
+    expect(ctx.directive.active()).toBe('name');
+    expect(ctx.directive.direction()).toBe('asc');
+    expect(ctx.directive.sort()).toEqual({ active: 'name', direction: 'asc' });
   });
 
-  it('setSort on same field toggles direction asc → desc', () => {
-    const dir = getDir();
-    dir.setSort('name');
-    dir.setSort('name');
-    expect(dir.direction()).toBe('desc');
+  it('setSort on same field toggles direction asc -> desc', () => {
+    ctx.directive.setSort('name');
+    ctx.directive.setSort('name');
+    expect(ctx.directive.direction()).toBe('desc');
   });
 
-  it('setSort on same field toggles direction desc → asc', () => {
-    const dir = getDir();
-    dir.setSort('name');
-    dir.setSort('name');
-    dir.setSort('name');
-    expect(dir.direction()).toBe('asc');
+  it('setSort on same field toggles direction desc -> asc', () => {
+    ctx.directive.setSort('name');
+    ctx.directive.setSort('name');
+    ctx.directive.setSort('name');
+    expect(ctx.directive.direction()).toBe('asc');
   });
 
   it('setSort on a different field resets to asc', () => {
-    const dir = getDir();
-    dir.setSort('name');
-    dir.setSort('name'); // desc
-    dir.setSort('age');
-    expect(dir.active()).toBe('age');
-    expect(dir.direction()).toBe('asc');
+    ctx.directive.setSort('name');
+    ctx.directive.setSort('name');
+    ctx.directive.setSort('age');
+    expect(ctx.directive.active()).toBe('age');
+    expect(ctx.directive.direction()).toBe('asc');
   });
 
   it('clear() removes active sort', () => {
-    const dir = getDir();
-    dir.setSort('name');
-    dir.clear();
-    expect(dir.sort()).toBeNull();
-    expect(dir.isActive()).toBe(false);
+    ctx.directive.setSort('name');
+    ctx.directive.clear();
+    expect(ctx.directive.sort()).toBeNull();
+    expect(ctx.directive.isActive()).toBe(false);
   });
 
   it('emits sortChange on setSort', () => {
-    const dir = getDir();
-    const spy = vi.fn();
-    dir.sortChange.subscribe(spy);
-    dir.setSort('name');
-    expect(spy).toHaveBeenCalledWith({ active: 'name', direction: 'asc' });
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('name');
+    expect(spy.lastValue()).toEqual({ active: 'name', direction: 'asc' });
+    spy.destroy();
   });
 
   it('emits sortsChange on setSort', () => {
-    const dir = getDir();
-    const spy = vi.fn();
-    dir.sortsChange.subscribe(spy);
-    dir.setSort('name');
-    expect(spy).toHaveBeenCalledWith([{ active: 'name', direction: 'asc' }]);
+    const spy = spyOnOutput(ctx.directive.sortsChange);
+    ctx.directive.setSort('name');
+    expect(spy.lastValue()).toEqual([{ active: 'name', direction: 'asc' }]);
+    spy.destroy();
   });
 
   it('emits sortsChange with empty array on clear()', () => {
-    const dir = getDir();
-    const spy = vi.fn();
-    dir.sortsChange.subscribe(spy);
-    dir.setSort('name');
-    dir.clear();
-    expect(spy).toHaveBeenLastCalledWith([]);
+    const spy = spyOnOutput(ctx.directive.sortsChange);
+    ctx.directive.setSort('name');
+    ctx.directive.clear();
+    expect(spy.lastValue()).toEqual([]);
+    spy.destroy();
   });
 
   describe('multi-sort (additive = true)', () => {
     it('appends a new field as asc', () => {
-      const dir = getDir();
-      dir.setSort('name');
-      dir.setSort('age', true);
-      expect(dir.sorts()).toEqual([
+      ctx.directive.setSort('name');
+      ctx.directive.setSort('age', true);
+      expect(ctx.directive.sorts()).toEqual([
         { active: 'name', direction: 'asc' },
         { active: 'age', direction: 'asc' },
       ]);
     });
 
-    it('cycles an existing field asc → desc', () => {
-      const dir = getDir();
-      dir.setSort('name');
-      dir.setSort('name', true);
-      expect(dir.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
+    it('cycles an existing field asc -> desc', () => {
+      ctx.directive.setSort('name');
+      ctx.directive.setSort('name', true);
+      expect(ctx.directive.sorts()).toEqual([{ active: 'name', direction: 'desc' }]);
     });
 
     it('removes a field when it is already desc', () => {
-      const dir = getDir();
-      dir.setSort('name');
-      dir.setSort('name', true); // → desc
-      dir.setSort('name', true); // → removed
-      expect(dir.sorts()).toEqual([]);
-      expect(dir.isActive()).toBe(false);
+      ctx.directive.setSort('name');
+      ctx.directive.setSort('name', true);
+      ctx.directive.setSort('name', true);
+      expect(ctx.directive.sorts()).toEqual([]);
+      expect(ctx.directive.isActive()).toBe(false);
     });
 
     it('non-additive click replaces the full stack', () => {
-      const dir = getDir();
-      dir.setSort('name');
-      dir.setSort('age', true);
-      dir.setSort('role'); // plain click — replaces
-      expect(dir.sorts()).toEqual([{ active: 'role', direction: 'asc' }]);
+      ctx.directive.setSort('name');
+      ctx.directive.setSort('age', true);
+      ctx.directive.setSort('role');
+      expect(ctx.directive.sorts()).toEqual([{ active: 'role', direction: 'asc' }]);
     });
 
     it('emits sortsChange with the full stack on additive setSort', () => {
-      const dir = getDir();
-      const spy = vi.fn();
-      dir.sortsChange.subscribe(spy);
-      dir.setSort('name');
-      dir.setSort('age', true);
-      expect(spy).toHaveBeenLastCalledWith([
+      const spy = spyOnOutput(ctx.directive.sortsChange);
+      ctx.directive.setSort('name');
+      ctx.directive.setSort('age', true);
+      expect(spy.lastValue()).toEqual([
         { active: 'name', direction: 'asc' },
         { active: 'age', direction: 'asc' },
       ]);
+      spy.destroy();
     });
 
     it('does not emit sortChange when the last field is removed', () => {
-      const dir = getDir();
-      const spy = vi.fn();
-      dir.setSort('name');
-      dir.sortChange.subscribe(spy);
-      dir.setSort('name', true); // desc
-      dir.setSort('name', true); // removed
-      // sortChange only fires when there is still a primary sort
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ active: 'name', direction: 'desc' });
+      ctx.directive.setSort('name');
+      const spy = spyOnOutput(ctx.directive.sortChange);
+      ctx.directive.setSort('name', true);
+      ctx.directive.setSort('name', true);
+      expect(spy.callCount()).toBe(1);
+      expect(spy.values()[0]).toEqual({ active: 'name', direction: 'desc' });
+      spy.destroy();
     });
   });
 });
