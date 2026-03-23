@@ -1,4 +1,12 @@
-import { afterNextRender, Directive, effect, ElementRef, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 /**
  * Navigation link atom. Applied to `<a>` or `<button>` elements in a
@@ -39,7 +47,7 @@ import { afterNextRender, Directive, effect, ElementRef, inject, input, signal }
   host: {
     '[class.cngx-nav-link]': 'true',
     '[class.cngx-nav-link--active]': 'active()',
-    '[attr.aria-current]': "active() ? ariaCurrent() : null",
+    '[attr.aria-current]': 'active() ? ariaCurrent() : null',
     '[attr.tabindex]': '_needsFocusFix() ? 0 : null',
     '[attr.role]': "_needsFocusFix() ? 'link' : null",
     '[style.--cngx-nav-depth]': 'depth()',
@@ -66,8 +74,8 @@ export class CngxNavLink {
     // Runs after render so projected content is available.
     afterNextRender(() => {
       const text = el.textContent?.trim();
-      if (text && !el.hasAttribute('data-initial')) {
-        el.setAttribute('data-initial', text.charAt(0).toUpperCase());
+      if (text && !Object.hasOwn(el.dataset, 'initial')) {
+        el.dataset['initial'] = text.charAt(0).toUpperCase();
       }
     });
 

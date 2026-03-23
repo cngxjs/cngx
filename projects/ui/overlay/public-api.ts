@@ -3,5 +3,5 @@
  * @module @cngx/ui/overlay
  */
 
-export * from './src/overlay.service';
-export * from './src/overlay-ref';
+export { CngxOverlay, provideOverlay, type CngxOverlayConfig } from './src/overlay.service';
+export { CngxOverlayRef } from './src/overlay-ref';

@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { CngxSortHeader, CngxPaginate } from '@cngx/common';
-import { CngxMatPaginator } from '@cngx/ui';
+import { CngxMatPaginator } from '@cngx/ui/material';
 import { MatTableModule } from '@angular/material/table';
 import { CngxFilter, CngxSort, injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

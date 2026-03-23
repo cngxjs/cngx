@@ -21,10 +21,15 @@ import { MatIconButton } from '@angular/material/button';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatIcon } from '@angular/material/icon';
 import { NgTemplateOutlet } from '@angular/common';
-import { CngxTreetablePresenter } from './treetable-presenter';
-import { CngxTreetableRow } from './treetable-row.directive';
-import { CngxCellTpl, CngxEmptyTpl, CngxHeaderTpl } from './column-template.directive';
-import { resolveCellTpl, resolveHeaderTpl } from './column-template.utils';
+import {
+  CngxTreetablePresenter,
+  CngxTreetableRow,
+  CngxCellTpl,
+  CngxEmptyTpl,
+  CngxHeaderTpl,
+  resolveCellTpl,
+  resolveHeaderTpl,
+} from '@cngx/data-display/treetable';
 
 /**
  * Angular Material tree table.

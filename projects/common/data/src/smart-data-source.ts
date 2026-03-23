@@ -2,10 +2,10 @@ import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import type { Observable } from 'rxjs';
-import { CngxPaginate } from '../behaviors/data/paginate.directive';
-import { CngxFilter } from '../behaviors/data/filter.directive';
-import { CngxSort } from '../behaviors/data/sort.directive';
-import { CngxSearch } from '../behaviors/interactive/search.directive';
+import { CngxPaginate } from './paginate.directive';
+import { CngxFilter } from './filter.directive';
+import { CngxSort } from './sort.directive';
+import { CngxSearch } from '@cngx/common/interactive';
 
 /** Optional customisation for {@link CngxSmartDataSource}. */
 export interface CngxSmartDataSourceOptions<T> {

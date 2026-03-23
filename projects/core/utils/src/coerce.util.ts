@@ -33,8 +33,3 @@ export function coerceNumberProperty(value: unknown, fallback = 0): number {
 
   return Number.isNaN(parsed) ? fallback : parsed;
 }
-
-/** Coerces a value to an array. */
-export function coerceArray<T>(value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value];
-}

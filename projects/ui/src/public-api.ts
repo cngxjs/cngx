@@ -4,7 +4,6 @@
  */
 
 export * from './lib/ui';
-export { CngxMatPaginator } from './lib/paginator/mat-paginator';
 export { CngxSpeakButton } from './lib/speak/speak-button';
 export { CngxSidenavLayout } from './lib/sidenav/sidenav-layout';
 export { CngxSidenav, type SidenavPosition, type SidenavMode } from './lib/sidenav/sidenav';

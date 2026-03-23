@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
-import { type CngxPaginate } from '@cngx/common';
+import { type CngxPaginate } from '@cngx/common/data';
 
 /**
  * Material paginator wrapper that connects to a {@link CngxPaginate} directive

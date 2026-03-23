@@ -2,8 +2,8 @@ import { Component, type Injector, runInInjectionContext, signal } from '@angula
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CngxFilter } from '../behaviors/data/filter.directive';
-import { CngxSort } from '../behaviors/data/sort.directive';
+import { CngxFilter } from './filter.directive';
+import { CngxSort } from './sort.directive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
 interface Item {

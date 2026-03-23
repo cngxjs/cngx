@@ -1,5 +1,5 @@
 /**
  * @module @cngx/core/utils
  */
-export * from './src/coerce.util';
-export * from './src/memo.util';
+export { coerceBooleanProperty, coerceNumberProperty } from './src/coerce.util';
+export { memoize } from './src/memo.util';

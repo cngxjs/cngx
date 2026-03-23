@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'sass:math';
 @use '@angular/material' as mat;
 
 // ─── cngx-nav-link theming ──────────────────────────────────────────
@@ -39,7 +40,7 @@
 
 @mixin density($theme) {
   $scale: mat.get-theme-density($theme);
-  $scale: if($scale < -4, -4, if($scale > 0, 0, $scale));
+  $scale: math.clamp(-4, $scale, 0);
 
   $paddings: (0: 10px 16px, -1: 8px 12px, -2: 6px 8px, -3: 4px 6px, -4: 2px 4px);
 

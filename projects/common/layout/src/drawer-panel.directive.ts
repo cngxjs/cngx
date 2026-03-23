@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { computed, Directive, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
-import { CngxFocusTrap } from '../../a11y/focus-trap.directive';
+import { CngxFocusTrap } from '@cngx/common/a11y';
 import type { CngxDrawer, DrawerPosition } from './drawer.directive';
 
 /** How the drawer panel interacts with the content area. */

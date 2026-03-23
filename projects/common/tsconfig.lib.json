@@ -10,9 +10,13 @@
     "sourceMap": true,
     "types": [],
     "paths": {
-      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
+      "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
+      "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
+      "@cngx/common/data": ["projects/common/data/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

@@ -109,7 +109,7 @@
     "common": {
       "projectType": "library",
       "root": "projects/common",
-      "sourceRoot": "projects/common/src",
+      "sourceRoot": "projects/common",
       "prefix": "cngx",
       "architect": {
         "build": {
