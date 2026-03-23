@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   signal,
@@ -10,6 +11,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ApiDataService } from './api-data.service';
 import { ApiTableComponent } from './api-table.component';
+import type { ApiEntry } from './api-types';
 
 type DocTab = 'overview' | 'examples' | 'api';
 
@@ -221,10 +223,19 @@ export class DocShellComponent {
     return f && TABS.some((t) => t.id === f) ? (f as DocTab) : 'examples';
   });
 
-  readonly apiEntries = computed(() => {
-    const names = this.apiComponents();
-    return names.length > 0 ? this.apiService.getEntries(names)() : [];
-  });
+  // Populated async when apiComponents input is set.
+  readonly apiEntries = signal<ApiEntry[]>([]);
+
+  constructor() {
+    effect(() => {
+      const names = this.apiComponents();
+      if (names.length === 0) {
+        this.apiEntries.set([]);
+        return;
+      }
+      this.apiService.loadEntries(names).then((entries) => this.apiEntries.set(entries));
+    });
+  }
 
   protected setTab(tab: DocTab): void {
     this.router.navigate([], {

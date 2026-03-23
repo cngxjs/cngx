@@ -1,4 +1,4 @@
-import { Injectable, signal, type Signal } from '@angular/core';
+import { Injectable } from '@angular/core';
 import type { ApiEntry, ApiInput, ApiMethod, ApiOutput } from './api-types';
 
 interface CompodocEntry {
@@ -45,29 +45,22 @@ export class ApiDataService {
   private cache: CompodocJson | null = null;
   private loading: Promise<CompodocJson> | null = null;
 
-  /** Returns a signal that resolves to API entries for the given class names. */
-  getEntries(classNames: string[]): Signal<ApiEntry[]> {
-    const result = signal<ApiEntry[]>([]);
-
+  /** Loads API entries for the given class names. Fetches compodoc JSON once and caches. */
+  async loadEntries(classNames: string[]): Promise<ApiEntry[]> {
     if (classNames.length === 0) {
-      return result.asReadonly();
+      return [];
     }
-
-    this.load().then((doc) => {
-      const all = [
-        ...(doc.directives ?? []),
-        ...(doc.components ?? []),
-        ...(doc.injectables ?? []),
-        ...(doc.classes ?? []),
-      ];
-      const entries = classNames
-        .map((name) => all.find((e) => e.name === name))
-        .filter((e): e is CompodocEntry => !!e)
-        .map((e) => this.mapEntry(e));
-      result.set(entries);
-    });
-
-    return result.asReadonly();
+    const doc = await this.load();
+    const all = [
+      ...(doc.directives ?? []),
+      ...(doc.components ?? []),
+      ...(doc.injectables ?? []),
+      ...(doc.classes ?? []),
+    ];
+    return classNames
+      .map((name) => all.find((e) => e.name === name))
+      .filter((e): e is CompodocEntry => !!e)
+      .map((e) => this.mapEntry(e));
   }
 
   private async load(): Promise<CompodocJson> {
