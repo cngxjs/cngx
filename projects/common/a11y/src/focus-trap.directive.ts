@@ -53,8 +53,9 @@ export class CngxFocusTrap {
     this._trap = inject(FocusTrapFactory).create(el.nativeElement as HTMLElement);
 
     effect(() => {
-      this._trap.enabled = this.enabled();
-      if (this.enabled() && this.autoFocus()) {
+      const enabled = this.enabled();
+      this._trap.enabled = enabled;
+      if (enabled && this.autoFocus()) {
         void this._trap.focusFirstTabbableElementWhenReady();
       }
     });

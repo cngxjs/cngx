@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
 import { type CngxPaginate } from '@cngx/common/data';
 
@@ -26,6 +26,7 @@ import { type CngxPaginate } from '@cngx/common/data';
 @Component({
   selector: 'cngx-mat-paginator',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatPaginatorModule],
   template: `
     <mat-paginator

@@ -112,7 +112,11 @@ export class CngxSort {
     }
   }
 
-  /** Clears all active sorts. */
+  /**
+   * Clears all active sorts. Emits `sortsChange` with an empty array.
+   * Does not emit `sortChange` — consumers watching only primary sort
+   * should also listen to `sortsChange` or check `isActive()`.
+   */
   clear(): void {
     this._sorts.set([]);
     this.sortsChange.emit([]);
