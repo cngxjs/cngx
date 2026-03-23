@@ -1,4 +1,4 @@
-import { afterNextRender, Directive, effect, ElementRef, inject, input, output } from '@angular/core';
+import { Directive, effect, ElementRef, inject, input, output } from '@angular/core';
 
 /**
  * Manages backdrop overlay behavior: visibility, click-to-close, and
@@ -59,23 +59,20 @@ export class CngxBackdrop {
   readonly backdropClick = output<void>();
 
   private readonly _el = inject(ElementRef<HTMLElement>);
-  private _siblings: HTMLElement[] | null = null;
 
   constructor() {
-    afterNextRender(() => {
-      const el = this._el.nativeElement as HTMLElement;
-      const parent = el.parentElement;
-      this._siblings = parent
-        ? Array.from(parent.children).filter(
-            (child): child is HTMLElement => child !== el && child instanceof HTMLElement,
-          )
-        : [];
-    });
+    // Cache siblings once on first effect run (DOM is available at this point).
+    let siblings: HTMLElement[] | null = null;
 
     effect(() => {
-      const siblings = this._siblings;
       if (!siblings) {
-        return;
+        const el = this._el.nativeElement as HTMLElement;
+        const parent = el.parentElement;
+        siblings = parent
+          ? Array.from(parent.children).filter(
+              (child): child is HTMLElement => child !== el && child instanceof HTMLElement,
+            )
+          : [];
       }
       if (this.visible()) {
         siblings.forEach((el) => el.setAttribute('inert', ''));

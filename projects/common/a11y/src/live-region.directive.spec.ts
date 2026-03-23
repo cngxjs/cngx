@@ -57,11 +57,11 @@ describe('CngxLiveRegion', () => {
     expect(el.getAttribute('aria-relevant')).toBe('additions text');
   });
 
-  it('sets role=status for off politeness', () => {
+  it('removes role when politeness is off', () => {
     const { fixture, el, host } = setup();
     host.politeness.set('off');
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(el.getAttribute('role')).toBe('status');
+    expect(el.getAttribute('role')).toBeNull();
   });
 });
