@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Backdrop',
+  navLabel: 'Backdrop',
+  navCategory: 'layout',
   description:
     'Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.',
   apiComponents: ['CngxBackdrop'],

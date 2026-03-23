@@ -333,7 +333,7 @@ export function generateNavFile(demos) {
     .map(([lib, items]) => {
       const itemEntries = items
         .map((d) => {
-          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+          const label = d.story?.navLabel ?? d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
           return `      { label: '${label}', path: '${d.routePath}' },`;
         })
         .join('\n');
@@ -386,10 +386,11 @@ export function generateNavHtmlBlock(demos) {
 
   return [...libGroups.entries()]
     .map(([lib, items]) => {
-      // Sub-group by category (segments[1] when segments.length >= 3)
+      // Sub-group by category: use story.navCategory if set, otherwise segments[1]
       const catGroups = new Map();
       for (const demo of items) {
-        const cat = demo.segments?.length >= 3 ? demo.segments[1] : null;
+        const cat = demo.story?.navCategory
+          ?? (demo.segments?.length >= 3 ? demo.segments[1] : null);
         if (!catGroups.has(cat)) catGroups.set(cat, []);
         catGroups.get(cat).push(demo);
       }
@@ -418,9 +419,8 @@ export function generateNavHtmlBlock(demos) {
 }
 
 /**
- * Renders nav links for demos, grouping multi-story dirs into collapsible sub-groups.
- * @param {Array<{routePath, title?, name, demoDir}>} items
- * @returns {string}
+ * Groups demos by directory. Multi-story dirs get a collapsible sub-group.
+ * Single-story dirs render as a plain link.
  */
 function renderDirGroups(items) {
   const dirGroups = new Map();
@@ -434,15 +434,15 @@ function renderDirGroups(items) {
     .map((dirItems) => {
       if (dirItems.length === 1) {
         const d = dirItems[0];
-        const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+        const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
         return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
       }
-      // Multiple stories in same dir → collapsible group
-      const dirBase = basename(dirItems[0].demoDir).replace(/-demo$/, '');
-      const groupLabel = capitalise(dirBase);
+      // Multiple stories in same dir → collapsible sub-group
+      const groupLabel = dirItems[0].story?.navLabel?.split(' ')[0]
+        ?? capitalise(basename(dirItems[0].demoDir).replace(/-demo$/, ''));
       const links = dirItems
         .map((d) => {
-          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+          const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
           return `          <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
         })
         .join('\n');

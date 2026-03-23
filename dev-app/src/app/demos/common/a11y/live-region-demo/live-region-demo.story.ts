@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'LiveRegion',
+  navLabel: 'LiveRegion',
+  navCategory: 'a11y',
   description: 'Configures the host element as an ARIA live region for screen reader announcements.',
   apiComponents: ['CngxLiveRegion'],
   setup: `

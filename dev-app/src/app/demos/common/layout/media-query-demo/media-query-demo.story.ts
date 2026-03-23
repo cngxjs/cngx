@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'MediaQuery',
+  navLabel: 'MediaQuery',
+  navCategory: 'layout',
   description:
     'Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes.',
   apiComponents: ['CngxMediaQuery'],

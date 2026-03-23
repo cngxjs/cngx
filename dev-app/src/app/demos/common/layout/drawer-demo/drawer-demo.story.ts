@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Drawer',
+  navLabel: 'Drawer',
+  navCategory: 'layout',
   description:
     'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.',
   apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent'],

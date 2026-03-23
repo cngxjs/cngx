@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'mat-table — Paginate (Material)',
+  navLabel: 'mat-table (Paginate)',
+  navCategory: 'data',
   apiComponents: ['CngxSort', 'CngxSortHeader', 'CngxFilter', 'CngxPaginate', 'CngxMatPaginator'],
   hostDirectives: ['CngxSort', 'CngxFilter'],
   moduleImports: [

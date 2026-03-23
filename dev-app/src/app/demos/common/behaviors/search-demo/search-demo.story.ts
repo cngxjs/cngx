@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Search',
+  navLabel: 'Search',
+  navCategory: 'interactive',
   apiComponents: ['CngxSearch'],
   moduleImports: [
     "import { PEOPLE, type Person } from '../../../../fixtures';",

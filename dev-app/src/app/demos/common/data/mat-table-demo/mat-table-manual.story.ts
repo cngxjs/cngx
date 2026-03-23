@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'mat-table — DataSource (Manual Pipeline)',
+  navLabel: 'mat-table (Manual)',
+  navCategory: 'data',
   apiComponents: ['CngxSort', 'CngxSortHeader', 'CngxFilter'],
   hostDirectives: ['CngxSort', 'CngxFilter'],
   moduleImports: [

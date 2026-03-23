@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'SwipeDismiss',
+  navLabel: 'SwipeDismiss',
+  navCategory: 'interactive',
   description:
     'Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals.',
   apiComponents: ['CngxSwipeDismiss'],

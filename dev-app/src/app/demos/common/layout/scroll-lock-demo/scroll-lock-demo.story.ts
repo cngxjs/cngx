@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'ScrollLock',
+  navLabel: 'ScrollLock',
+  navCategory: 'layout',
   description: 'Prevents body scrolling when active. Essential for modals, drawers, and overlays.',
   apiComponents: ['CngxScrollLock'],
   moduleImports: ["import { CngxScrollLock } from '@cngx/common';"],

@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Sidenav',
+  navLabel: 'Sidenav',
   description:
     'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
   apiComponents: ['CngxSidenav', 'CngxSidenavLayout', 'CngxSidenavContent'],

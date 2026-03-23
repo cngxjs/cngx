@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'IntersectionObserver',
+  navLabel: 'IntersectionObserver',
+  navCategory: 'layout',
   description: 'Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.',
   apiComponents: ['CngxIntersectionObserver'],
   sections: [

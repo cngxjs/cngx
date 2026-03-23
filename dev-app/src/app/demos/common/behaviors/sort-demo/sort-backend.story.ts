@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Sort — Backend',
+  navLabel: 'Sort (Backend)',
+  navCategory: 'data',
   apiComponents: ['CngxSort', 'CngxSortHeader'],
   moduleImports: [
     "import { HttpClient } from '@angular/common/http';",

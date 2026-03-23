@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Paginate — List',
+  navLabel: 'Paginate (List)',
+  navCategory: 'data',
   apiComponents: ['CngxPaginate', 'CngxMatPaginator'],
   moduleImports: [
     "import { PEOPLE, type Person } from '../../../../fixtures';",

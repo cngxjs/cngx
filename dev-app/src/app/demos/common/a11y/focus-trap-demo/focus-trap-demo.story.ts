@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'FocusTrap',
+  navLabel: 'FocusTrap',
+  navCategory: 'a11y',
   description: 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.',
   apiComponents: ['CngxFocusTrap'],
   setup: `

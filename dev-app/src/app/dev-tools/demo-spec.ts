@@ -6,8 +6,16 @@
  * app.routes.ts, app-nav.ts, and the nav block in app.html.
  */
 export interface DemoSpec {
-  /** Displayed title of the demo page and nav link. */
+  /** Displayed title of the demo page heading. */
   title: string;
+  /** Short label for the sidebar nav. Falls back to `title` if not set. */
+  navLabel?: string;
+  /**
+   * Nav category override. By default the generator groups by filesystem path
+   * (e.g. `behaviors/`). Set this to group under a specific entry point name
+   * (e.g. `'data'` for `@cngx/common/data`).
+   */
+  navCategory?: string;
   /** Optional description shown as a subtitle on the page. */
   description?: string;
   /**

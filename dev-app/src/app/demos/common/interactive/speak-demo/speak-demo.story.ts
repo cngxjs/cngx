@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Speak',
+  navLabel: 'Speak',
+  navCategory: 'interactive',
   description: 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.',
   apiComponents: ['CngxSpeak'],
   setup: `
