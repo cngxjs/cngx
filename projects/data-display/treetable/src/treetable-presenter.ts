@@ -6,7 +6,6 @@ import {
   input,
   linkedSignal,
   output,
-  type Signal,
   signal,
   type TrackByFunction,
   untracked,
@@ -177,7 +176,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In uncontrolled mode this reflects the internal state; in controlled mode
    * it mirrors the `expandedIds` input.
    */
-  readonly expandedIds: Signal<ReadonlySet<string>> = computed(
+  readonly expandedIds = computed(
     () => this.expandedIdsInput() ?? this._expandedIds(),
   );
 
@@ -221,7 +220,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In uncontrolled mode this reflects internal state; in controlled mode
    * it mirrors the `selectedIds` input.
    */
-  readonly selectedIds: Signal<ReadonlySet<string>> = computed(
+  readonly selectedIds = computed(
     () => this.selectedIdsInput() ?? this._selectedIds(),
   );
 
@@ -286,6 +285,9 @@ export class CngxTreetablePresenter<T = unknown> {
     });
 
     // Sync SelectionModel when selectedIds input changes (controlled mode).
+    // SelectionModel.changed fires synchronously during deselect/select, so the
+    // subscription above updates _selectedIds and emits outputs within the same
+    // microtask. untracked() prevents this effect from re-tracking those writes.
     effect(() => {
       const input = this.selectedIdsInput();
       if (input === undefined) {
