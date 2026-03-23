@@ -3,6 +3,7 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxBackdrop } from '@cngx/common';
 
 @Component({
@@ -11,12 +12,16 @@ import { CngxBackdrop } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxBackdrop,
   ],
   template: `
-    <app-example-card title="CngxBackdrop — Overlay with inert"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Backdrop"
+      description="Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.">
+      <app-example-card title="CngxBackdrop — Overlay with inert"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
   </div>
@@ -39,11 +44,13 @@ import { CngxBackdrop } from '@cngx/common';
     </span>
     <span class="status-badge">clicks: {{ clickCount() }}</span>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class BackdropDemoComponent {
   protected readonly _s0 = 'When visible, <code>[cngxBackdrop]</code> adds <code>inert</code> to all sibling elements — they become unfocusable and non-interactive. Click the backdrop to dismiss.';
+  protected readonly _src0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>\n  </div>\n\n  <div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">\n    <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"\n         class="drawer-backdrop"></div>\n\n    <div style="padding: 1rem;">\n      <p>This content becomes <code>inert</code> when the backdrop is visible.</p>\n      <button class="sort-btn" (click)="clickCount.update(n => n + 1)">\n        Try clicking me (won\'t work when inert)\n      </button>\n    </div>\n  </div>\n\n  <div class="status-row" style="margin-top: 0.75rem;">\n    <span class="status-badge" [class.active]="showBackdrop()">\n      {{ showBackdrop() ? \'visible\' : \'hidden\' }}\n    </span>\n    <span class="status-badge">clicks: {{ clickCount() }}</span>\n  </div>';
 
   protected readonly showBackdrop = signal(false);
   protected readonly clickCount = signal(0);

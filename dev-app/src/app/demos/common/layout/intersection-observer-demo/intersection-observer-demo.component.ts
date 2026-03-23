@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxIntersectionObserver } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxIntersectionObserver } from '@cngx/common/layout';
 import { DecimalPipe } from '@angular/common';
 
 @Component({
@@ -12,13 +13,17 @@ import { DecimalPipe } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxIntersectionObserver,
     DecimalPipe,
   ],
   template: `
-    <app-example-card title="CngxIntersectionObserver — Scroll Sentinel"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="IntersectionObserver"
+      description="Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.">
+      <app-example-card title="CngxIntersectionObserver — Scroll Sentinel"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div
     style="
       height: 200px;
@@ -65,11 +70,13 @@ import { DecimalPipe } from '@angular/common';
       <span class="event-value">{{ leaveCount() }}×</span>
     </div>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class IntersectionObserverDemoComponent {
   protected readonly _s0 = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions.';
+  protected readonly _src0 = '\n  <div\n    style="\n      height: 200px;\n      overflow-y: auto;\n      border: 1px solid var(--cngx-border, #ddd);\n      border-radius: 6px;\n      padding: 0 16px;\n    "\n  >\n    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">\n      ↓ Scroll down to reach the sentinel\n    </div>\n\n    <div\n      cngxIntersectionObserver\n      #io="cngxIntersectionObserver"\n      [rootMargin]="\'0px\'"\n      (entered)="enterCount.update(n => n + 1)"\n      (left)="leaveCount.update(n => n + 1)"\n      style="\n        padding: 16px;\n        text-align: center;\n        border-radius: 6px;\n        transition: background 0.3s;\n      "\n      [style.background]="io.isIntersecting() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-surface-alt, #f8f9fa)\'"\n    >\n      {{ io.isIntersecting() ? \'Visible!\' : \'Hidden\' }}\n      — ratio: {{ io.intersectionRatio() | number:\'1.2-2\' }}\n    </div>\n\n    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">\n      ↑ Scroll back up\n    </div>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">entered</span>\n      <span class="event-value">{{ enterCount() }}×</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">left</span>\n      <span class="event-value">{{ leaveCount() }}×</span>\n    </div>\n  </div>';
 
   protected enterCount = signal(0);
   protected leaveCount = signal(0);

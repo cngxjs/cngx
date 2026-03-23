@@ -3,6 +3,7 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxMediaQuery } from '@cngx/common';
 
 @Component({
@@ -11,12 +12,16 @@ import { CngxMediaQuery } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxMediaQuery,
   ],
   template: `
-    <app-example-card title="CngxMediaQuery — Viewport Breakpoints"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="MediaQuery"
+      description="Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes.">
+      <app-example-card title="CngxMediaQuery — Viewport Breakpoints"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>
@@ -43,9 +48,11 @@ import { CngxMediaQuery } from '@cngx/common';
       prefers-dark: {{ darkPref.matches() }}
     </span>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class MediaQueryDemoComponent {
   protected readonly _s0 = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> with automatic cleanup. Resize your browser to see the signals update in real time.';
+  protected readonly _src0 = '\n  <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(prefers-reduced-motion: reduce)" #motion="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(prefers-color-scheme: dark)" #darkPref="cngxMediaQuery"></div>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="tablet.matches()">\n      tablet (768px+): {{ tablet.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="desktop.matches()">\n      desktop (1024px+): {{ desktop.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="wide.matches()">\n      wide (1440px+): {{ wide.matches() }}\n    </span>\n  </div>\n\n  <div class="status-row" style="margin-top: 0.5rem;">\n    <span class="status-badge" [class.active]="motion.matches()">\n      reduced-motion: {{ motion.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="darkPref.matches()">\n      prefers-dark: {{ darkPref.matches() }}\n    </span>\n  </div>';
 }

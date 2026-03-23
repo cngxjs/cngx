@@ -590,6 +590,7 @@ export function generateComponentFile(story, meta) {
 
   const sharedImportLines = [
     `import { ExampleCardComponent } from '${sharedRelativePath}/example-card.component';`,
+    `import { DocShellComponent } from '${sharedRelativePath}/doc-shell.component';`,
   ];
   if (hasControls) {
     sharedImportLines.push(
@@ -618,6 +619,7 @@ export function generateComponentFile(story, meta) {
   // Decorator imports array entries
   const decoratorImports = [
     'ExampleCardComponent',
+    'DocShellComponent',
     ...(hasControls ? ['PlaygroundComponent'] : []),
     ...allStoryImports,
   ];
@@ -633,25 +635,53 @@ export function generateComponentFile(story, meta) {
     )
     .filter(Boolean);
 
+  // Build source string fields for each section
+  const sourceFields = story.sections.map((section, i) => {
+    // Escape single quotes and backslashes for embedding in a TS string literal
+    const escaped = section.template
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\n/g, '\\n');
+    return `  protected readonly _src${i} = '${escaped}';`;
+  });
+
   // Template sections
   const templateParts = story.sections.map((section, i) => {
     const isPlayground = hasControls && i === 0;
-    const subtitleAttr = section.subtitle ? `\n      [subtitle]="_s${i}"` : '';
+    const subtitleAttr = section.subtitle ? `\n        [subtitle]="_s${i}"` : '';
+    const sourceAttr = `\n        [source]="_src${i}"`;
     // Escape backticks and ${} interpolations so they survive being embedded in a TS template literal.
     const tpl = section.template.replaceAll('`', '\\`').replaceAll('${', '\\${');
     if (isPlayground) {
       return [
-        `    <app-playground [playground]="pg">`,
-        `      ${tpl}`,
-        `    </app-playground>`,
+        `      <app-playground [playground]="pg">`,
+        `        ${tpl}`,
+        `      </app-playground>`,
       ].join('\n');
     }
     return [
-      `    <app-example-card title="${section.title}"${subtitleAttr}>`,
-      `      ${tpl}`,
-      `    </app-example-card>`,
+      `      <app-example-card title="${section.title}"${subtitleAttr}${sourceAttr}>`,
+      `        ${tpl}`,
+      `      </app-example-card>`,
     ].join('\n');
   });
+
+  // DocShell wrapper
+  const apiComponentsAttr = story.apiComponents?.length
+    ? `\n      [apiComponents]="[${story.apiComponents.map((c) => `'${c}'`).join(', ')}]"`
+    : '';
+  const overviewAttr = story.overview
+    ? `\n      overview="${story.overview.replace(/"/g, '&quot;')}"`
+    : '';
+  const descriptionAttr = story.description
+    ? `\n      description="${story.description.replace(/"/g, '&quot;')}"`
+    : '';
+
+  const wrappedTemplate = [
+    `    <app-doc-shell title="${story.title}"${descriptionAttr}${overviewAttr}${apiComponentsAttr}>`,
+    ...templateParts,
+    `    </app-doc-shell>`,
+  ];
 
   // Class body
   const controlFields = controls.map(renderControlCode);
@@ -667,6 +697,7 @@ export function generateComponentFile(story, meta) {
 
   const classBodyParts = [
     ...subtitleFields,
+    ...sourceFields,
     ...controlFields,
     ...(pgLine ? [pgLine] : []),
     ...sharedSetup,
@@ -696,7 +727,7 @@ export function generateComponentFile(story, meta) {
     ...decoratorImports.map((n) => `    ${n},`),
     `  ],`,
     `  template: \``,
-    ...templateParts,
+    ...wrappedTemplate,
     `  \`,`,
     `})`,
     `export class ${className} {`,

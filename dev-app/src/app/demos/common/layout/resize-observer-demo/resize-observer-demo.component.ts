@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxResizeObserver } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxResizeObserver } from '@cngx/common/layout';
 import { DecimalPipe } from '@angular/common';
 
 @Component({
@@ -12,13 +13,17 @@ import { DecimalPipe } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxResizeObserver,
     DecimalPipe,
   ],
   template: `
-    <app-example-card title="CngxResizeObserver — Live Size"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="ResizeObserver"
+      description="Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.">
+      <app-example-card title="CngxResizeObserver — Live Size"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">
     Drag the handle to resize the box below.
   </p>
@@ -63,9 +68,11 @@ import { DecimalPipe } from '@angular/common';
       <span class="event-value">{{ ro.height() | number:'1.2-2' }} px</span>
     </div>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class ResizeObserverDemoComponent {
   protected readonly _s0 = '<code>[cngxResizeObserver]</code> wraps the ResizeObserver API. <code>width()</code>, <code>height()</code>, and <code>isReady()</code> are readonly signals updated on every resize.';
+  protected readonly _src0 = '\n  <p style="margin-bottom: 8px; color: var(--cngx-text-secondary, #666);">\n    Drag the handle to resize the box below.\n  </p>\n  <div\n    cngxResizeObserver\n    #ro="cngxResizeObserver"\n    style="\n      resize: horizontal;\n      overflow: auto;\n      min-width: 200px;\n      max-width: 100%;\n      width: 300px;\n      height: 120px;\n      background: var(--cngx-surface-alt, #f8f9fa);\n      border: 1px solid var(--cngx-border, #ddd);\n      border-radius: 6px;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-size: 0.875rem;\n      color: var(--cngx-text-secondary, #666);\n    "\n  >\n    @if (ro.isReady()) {\n      {{ ro.width() | number:\'1.0-0\' }} × {{ ro.height() | number:\'1.0-0\' }} px\n    } @else {\n      Waiting for first measurement…\n    }\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">isReady</span>\n      <span class="event-value">{{ ro.isReady() }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">width</span>\n      <span class="event-value">{{ ro.width() | number:\'1.2-2\' }} px</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">height</span>\n      <span class="event-value">{{ ro.height() | number:\'1.2-2\' }} px</span>\n    </div>\n  </div>';
 }

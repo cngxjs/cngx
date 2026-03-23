@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxFocusVisible } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxFocusVisible } from '@cngx/common/a11y';
 
 @Component({
   selector: 'app-focus-visible-demo',
@@ -11,12 +12,16 @@ import { CngxFocusVisible } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxFocusVisible,
   ],
   template: `
-    <app-example-card title="CngxFocusVisible — Keyboard vs Pointer"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="FocusVisible"
+      description="Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.">
+      <app-example-card title="CngxFocusVisible — Keyboard vs Pointer"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">
     Tab into the buttons below using the keyboard. Then click with the mouse.
     Only keyboard focus shows the custom ring.
@@ -60,10 +65,11 @@ import { CngxFocusVisible } from '@cngx/common';
       <span class="event-value">{{ fv2.focusVisible() }}</span>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Form Fields — Custom Focus Ring"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Form Fields — Custom Focus Ring"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px;">
     <div>
       <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 4px;">Name</label>
@@ -133,12 +139,15 @@ import { CngxFocusVisible } from '@cngx/common';
       <span class="event-value">{{ fvSubmit.focusVisible() ? 'keyboard focus' : 'no keyboard focus' }}</span>
     </div>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class FocusVisibleDemoComponent {
   protected readonly _s0 = '<code>[cngxFocusVisible]</code> adds the <code>cngx-focus-visible</code> class when the element receives keyboard focus. Mouse/touch focus does not add the class. Unlike native <code>:focus-visible</code>, the signal is available in TypeScript for conditional logic beyond CSS.';
   protected readonly _s1 = 'Apply <code>[cngxFocusVisible]</code> to form elements to show a focus ring only for keyboard users. Mouse-clicking an input focuses it but does not trigger the ring — reducing visual noise for pointer users.';
+  protected readonly _src0 = '\n  <p style="margin-bottom: 12px; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">\n    Tab into the buttons below using the keyboard. Then click with the mouse.\n    Only keyboard focus shows the custom ring.\n  </p>\n\n  <div class="button-row">\n    <button\n      cngxFocusVisible\n      #fv1="cngxFocusVisible"\n      class="sort-btn"\n      style="outline: none; position: relative;"\n      [style.box-shadow]="fv1.focusVisible() ? \'0 0 0 3px var(--cngx-accent, #f5a623)\' : \'none\'"\n    >\n      Button A\n      @if (fv1.focusVisible()) {\n        <span class="chip chip--active" style="margin-left: 4px; font-size: 0.7rem;">kbd</span>\n      }\n    </button>\n\n    <button\n      cngxFocusVisible\n      #fv2="cngxFocusVisible"\n      class="sort-btn"\n      style="outline: none; position: relative;"\n      [style.box-shadow]="fv2.focusVisible() ? \'0 0 0 3px var(--cngx-accent, #f5a623)\' : \'none\'"\n    >\n      Button B\n      @if (fv2.focusVisible()) {\n        <span class="chip chip--active" style="margin-left: 4px; font-size: 0.7rem;">kbd</span>\n      }\n    </button>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">Button A focusVisible</span>\n      <span class="event-value">{{ fv1.focusVisible() }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">Button B focusVisible</span>\n      <span class="event-value">{{ fv2.focusVisible() }}</span>\n    </div>\n  </div>';
+  protected readonly _src1 = '\n  <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px;">\n    <div>\n      <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 4px;">Name</label>\n      <input\n        cngxFocusVisible\n        #fvName="cngxFocusVisible"\n        [value]="name()"\n        (input)="name.set($any($event.target).value)"\n        placeholder="Jane Doe"\n        style="\n          width: 100%;\n          padding: 8px 12px;\n          border-radius: 6px;\n          border: 1px solid var(--cngx-border, #ddd);\n          outline: none;\n          font-size: 0.875rem;\n          transition: box-shadow 0.15s;\n        "\n        [style.box-shadow]="fvName.focusVisible() ? \'0 0 0 2px var(--cngx-accent, #f5a623)\' : \'none\'"\n      />\n    </div>\n\n    <div>\n      <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 4px;">Email</label>\n      <input\n        cngxFocusVisible\n        #fvEmail="cngxFocusVisible"\n        [value]="email()"\n        (input)="email.set($any($event.target).value)"\n        placeholder="jane@example.com"\n        type="email"\n        style="\n          width: 100%;\n          padding: 8px 12px;\n          border-radius: 6px;\n          border: 1px solid var(--cngx-border, #ddd);\n          outline: none;\n          font-size: 0.875rem;\n          transition: box-shadow 0.15s;\n        "\n        [style.box-shadow]="fvEmail.focusVisible() ? \'0 0 0 2px var(--cngx-accent, #f5a623)\' : \'none\'"\n      />\n    </div>\n\n    <button\n      cngxFocusVisible\n      #fvSubmit="cngxFocusVisible"\n      class="sort-btn"\n      style="outline: none; align-self: flex-start;"\n      [style.box-shadow]="fvSubmit.focusVisible() ? \'0 0 0 2px var(--cngx-accent, #f5a623)\' : \'none\'"\n    >\n      Submit\n    </button>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">Name field</span>\n      <span class="event-value">{{ fvName.focusVisible() ? \'keyboard focus\' : \'no keyboard focus\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">Email field</span>\n      <span class="event-value">{{ fvEmail.focusVisible() ? \'keyboard focus\' : \'no keyboard focus\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">Submit button</span>\n      <span class="event-value">{{ fvSubmit.focusVisible() ? \'keyboard focus\' : \'no keyboard focus\' }}</span>\n    </div>\n  </div>';
 
   protected name = signal('');
   protected email = signal('');

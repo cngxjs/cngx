@@ -3,6 +3,7 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
 
 @Component({
@@ -11,12 +12,16 @@ import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxSwipeDismiss,
   ],
   template: `
-    <app-example-card title="CngxSwipeDismiss — Directional Swipe"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="SwipeDismiss"
+      description="Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals.">
+      <app-example-card title="CngxSwipeDismiss — Directional Swipe"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="filter-row">
     <span class="filter-label">Direction:</span>
     @for (d of swipeDirs; track d) {
@@ -61,11 +66,13 @@ import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
       dismissed: {{ swipeCount() }}
     </span>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class SwipeDismissDemoComponent {
   protected readonly _s0 = 'Swipe the box in the selected direction to trigger dismissal. <code>swipeProgress</code> updates in real time during the gesture (0 to 1). <code>(swiped)</code> emits when the threshold is exceeded.';
+  protected readonly _src0 = '\n  <div class="filter-row">\n    <span class="filter-label">Direction:</span>\n    @for (d of swipeDirs; track d) {\n      <button class="chip" [class.chip--active]="swipeDir() === d"\n              (click)="swipeDir.set(d)">{{ d }}</button>\n    }\n  </div>\n\n  <div [cngxSwipeDismiss]="swipeDir()" #swipe="cngxSwipeDismiss"\n       [threshold]="60"\n       (swiped)="swipeCount.update(n => n + 1)"\n       style="\n         touch-action: none;\n         user-select: none;\n         padding: 2rem;\n         border: 2px dashed var(--cngx-border, #ccc);\n         border-radius: 8px;\n         text-align: center;\n         margin-top: 0.75rem;\n         cursor: grab;\n         background: var(--cngx-surface-alt, #f9fafb);\n         transition: transform 0.1s ease;\n       "\n       [style.transform]="swipe.swiping() ? \'scale(0.98)\' : \'scale(1)\'"\n       [style.border-color]="swipe.swiping() ? \'var(--interactive, #f5a623)\' : \'\'">\n    <p style="margin: 0; font-size: 1.25rem; font-weight: 600">\n      Swipe {{ swipeDir() }}\n    </p>\n    <p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--text-muted, #888)">\n      threshold: 60px\n    </p>\n  </div>\n\n  <div class="status-row" style="margin-top: 0.75rem;">\n    <span class="status-badge" [class.active]="swipe.swiping()">\n      {{ swipe.swiping() ? \'swiping\' : \'idle\' }}\n    </span>\n    <span class="status-badge">\n      progress: {{ (swipe.swipeProgress() * 100).toFixed(0) }}%\n    </span>\n    <span class="status-badge">\n      dismissed: {{ swipeCount() }}\n    </span>\n  </div>';
 
   protected readonly swipeDir = signal<SwipeDirection>('left');
   protected readonly swipeDirs: SwipeDirection[] = ['left', 'right', 'up', 'down'];

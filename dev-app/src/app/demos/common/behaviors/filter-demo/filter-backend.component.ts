@@ -3,6 +3,7 @@
 
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CurrencyPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { catchError, finalize, map, of, switchMap } from 'rxjs';
@@ -15,12 +16,15 @@ import { type DJProduct, type DJCategory } from '../../../../fixtures';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CurrencyPipe,
   ],
   template: `
-    <app-example-card title="Server-Side Filter by Category (DummyJSON)"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Filter — Backend">
+      <app-example-card title="Server-Side Filter by Category (DummyJSON)"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="filter-row">
     <span class="filter-label">Category:</span>
     <button
@@ -68,10 +72,11 @@ import { type DJProduct, type DJCategory } from '../../../../fixtures';
     </span>
     <span class="status-badge">{{ apiProducts().length }} results</span>
   </div>
-    </app-example-card>
-    <app-example-card title="Pattern: Local CngxFilter vs Server-Side"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Pattern: Local CngxFilter vs Server-Side"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <pre class="code-block"><code>// ── Local (CngxFilter) ──────────────────────────────────────
 // Good when: data is already fetched, small dataset
 protected readonly pred = computed(() =>
@@ -93,12 +98,15 @@ protected readonly rows = toSignal(
   ),
   &#123; initialValue: [] &#125;,
 );</code></pre>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class FilterBackendDemoComponent {
   protected readonly _s0 = 'For server-side filtering, skip <code>CngxFilter</code> — the API does the filtering. A <code>signal</code> holds the active category; <code>toObservable()</code> + <code>switchMap</code> fetches the right endpoint on every change.';
   protected readonly _s1 = 'Use <code>CngxFilter</code> when data is already in memory. Use a signal + API call when the server owns the data. The two patterns are independent — pick the right one per use case.';
+  protected readonly _src0 = '\n  <div class="filter-row">\n    <span class="filter-label">Category:</span>\n    <button\n      type="button"\n      class="chip"\n      [class.chip--active]="activeSlug() === null"\n      (click)="activeSlug.set(null)"\n    >All</button>\n    @for (cat of categories().slice(0, 10); track cat.slug) {\n      <button\n        type="button"\n        class="chip"\n        [class.chip--active]="activeSlug() === cat.slug"\n        (click)="activeSlug.set(cat.slug)"\n      >{{ cat.name }}</button>\n    }\n  </div>\n  <div class="table-wrap">\n    <table class="demo-table">\n      <thead>\n        <tr><th>Title</th><th>Brand</th><th>Category</th><th>Price</th><th>Rating</th></tr>\n      </thead>\n      <tbody>\n        @if (apiLoading()) {\n          <tr><td colspan="5" class="empty-cell">Loading…</td></tr>\n        } @else {\n          @for (p of apiProducts(); track p.id) {\n            <tr>\n              <td>{{ p.title }}</td>\n              <td>{{ p.brand }}</td>\n              <td>{{ p.category }}</td>\n              <td>{{ p.price | currency }}</td>\n              <td>{{ p.rating }}</td>\n            </tr>\n          } @empty {\n            <tr><td colspan="5" class="empty-cell">No products.</td></tr>\n          }\n        }\n      </tbody>\n    </table>\n  </div>\n  <div class="status-row">\n    <span class="status-badge" [class.active]="activeSlug() !== null">\n      filter {{ activeSlug() ?? \'off\' }}\n    </span>\n    <span class="status-badge">{{ apiProducts().length }} results</span>\n  </div>';
+  protected readonly _src1 = '\n  <pre class="code-block"><code>// ── Local (CngxFilter) ──────────────────────────────────────\n// Good when: data is already fetched, small dataset\nprotected readonly pred = computed(() =>\n  this.activeRole() ? (p: Person) => p.role === this.activeRole() : null\n);\n// &lt;div [cngxFilter]="pred()"&gt;\n\n// ── Server-side ──────────────────────────────────────────────\n// Good when: data lives on the server, large dataset\nprotected readonly category = signal&lt;string | null&gt;(null);\nprotected readonly rows = toSignal(\n  toObservable(this.category).pipe(\n    switchMap((cat) =>\n      cat\n        ? http.get&lt;&#123; products: Product[] &#125;&gt;(`/api/products/category/$&#123;cat&#125;`)\n        : http.get&lt;&#123; products: Product[] &#125;&gt;(\'/api/products\'),\n    ),\n    map((r) => r.products),\n  ),\n  &#123; initialValue: [] &#125;,\n);</code></pre>';
 
   private readonly http = inject(HttpClient);
 

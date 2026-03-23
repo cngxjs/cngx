@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxFocusTrap } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxFocusTrap } from '@cngx/common/a11y';
 
 @Component({
   selector: 'app-focus-trap-demo',
@@ -11,12 +12,16 @@ import { CngxFocusTrap } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxFocusTrap,
   ],
   template: `
-    <app-example-card title="CngxFocusTrap — Modal Dialog"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="FocusTrap"
+      description="Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.">
+      <app-example-card title="CngxFocusTrap — Modal Dialog"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
     <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">
@@ -73,10 +78,11 @@ import { CngxFocusTrap } from '@cngx/common';
   <div class="output-badge" style="margin-top: 12px">
     Modal: <strong>{{ modalOpen() ? 'open — focus trapped' : 'closed' }}</strong>
   </div>
-    </app-example-card>
-    <app-example-card title="CngxFocusTrap — Slide-out Drawer"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="CngxFocusTrap — Slide-out Drawer"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="drawerSide.set('left'); drawerOpen.set(true)">Open left drawer</button>
     <button class="sort-btn" (click)="drawerSide.set('right'); drawerOpen.set(true)">Open right drawer</button>
@@ -156,12 +162,15 @@ import { CngxFocusTrap } from '@cngx/common';
   <div class="output-badge" style="margin-top: 12px">
     Drawer: <strong>{{ drawerOpen() ? drawerSide() + ' — focus trapped' : 'closed' }}</strong>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class FocusTrapDemoComponent {
   protected readonly _s0 = '<code>[cngxFocusTrap]</code> wraps the CDK <code>FocusTrap</code>. When <code>[enabled]="true"</code>, Tab and Shift+Tab cycle only within the host. <code>[autoFocus]="true"</code> (default) moves focus to the first tabbable element automatically.';
   protected readonly _s1 = 'A drawer that slides in from either side. Focus is trapped inside while open. Demonstrates <code>[cngxFocusTrap]</code> on a non-modal overlay — useful for filters, settings, or navigation panels.';
+  protected readonly _src0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>\n    <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">\n      <input type="checkbox" [checked]="autoFocus()" (change)="autoFocus.set($any($event.target).checked)" />\n      autoFocus\n    </label>\n  </div>\n\n  @if (modalOpen()) {\n    <div\n      style="\n        position: fixed; inset: 0;\n        background: rgba(0,0,0,0.4);\n        display: flex; align-items: center; justify-content: center;\n        z-index: 100;\n      "\n      (click)="modalOpen.set(false)"\n    >\n      <div\n        cngxFocusTrap\n        [enabled]="modalOpen()"\n        [autoFocus]="autoFocus()"\n        (keydown.escape)="modalOpen.set(false)"\n        (click)="$event.stopPropagation()"\n        style="\n          background: var(--cngx-surface, #fff);\n          border-radius: 8px;\n          padding: 24px;\n          width: 380px;\n          box-shadow: 0 8px 32px rgba(0,0,0,0.18);\n          display: flex;\n          flex-direction: column;\n          gap: 12px;\n        "\n        tabindex="-1"\n        role="dialog"\n        aria-modal="true"\n        aria-label="Confirm action"\n      >\n        <h3 style="margin: 0;">Confirm Action</h3>\n        <p style="margin: 0; font-size: 0.875rem; color: var(--cngx-text-secondary, #666);">\n          Are you sure you want to proceed? This action cannot be undone.\n          Tab cycles only within this dialog. Press Escape or click outside to close.\n        </p>\n        <input placeholder="Type CONFIRM to proceed" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;" />\n        <div class="button-row" style="justify-content: flex-end;">\n          <button class="sort-btn" (click)="modalOpen.set(false)">Cancel</button>\n          <button class="sort-btn" style="background: var(--cngx-accent, #f5a623); color: #000; font-weight: 500;" (click)="modalOpen.set(false)">Confirm</button>\n        </div>\n      </div>\n    </div>\n  }\n\n  <div class="output-badge" style="margin-top: 12px">\n    Modal: <strong>{{ modalOpen() ? \'open — focus trapped\' : \'closed\' }}</strong>\n  </div>';
+  protected readonly _src1 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="drawerSide.set(\'left\'); drawerOpen.set(true)">Open left drawer</button>\n    <button class="sort-btn" (click)="drawerSide.set(\'right\'); drawerOpen.set(true)">Open right drawer</button>\n  </div>\n\n  @if (drawerOpen()) {\n    <div\n      style="\n        position: fixed; inset: 0;\n        background: rgba(0,0,0,0.3);\n        z-index: 100;\n        display: flex;\n      "\n      [style.justify-content]="drawerSide() === \'right\' ? \'flex-end\' : \'flex-start\'"\n      (click)="drawerOpen.set(false)"\n    >\n      <div\n        cngxFocusTrap\n        [enabled]="drawerOpen()"\n        (keydown.escape)="drawerOpen.set(false)"\n        (click)="$event.stopPropagation()"\n        tabindex="-1"\n        role="dialog"\n        aria-modal="true"\n        [attr.aria-label]="drawerSide() + \' drawer\'"\n        style="\n          width: 300px;\n          height: 100%;\n          background: var(--cngx-surface, #fff);\n          box-shadow: 0 0 24px rgba(0,0,0,0.15);\n          display: flex;\n          flex-direction: column;\n          padding: 20px;\n          gap: 12px;\n        "\n      >\n        <div style="display: flex; justify-content: space-between; align-items: center;">\n          <h3 style="margin: 0; font-size: 1rem;">Filter Options</h3>\n          <button class="sort-btn" (click)="drawerOpen.set(false)" aria-label="Close drawer" style="padding: 4px 8px;">&#x2715;</button>\n        </div>\n\n        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem;">\n          Category\n          <select style="padding: 6px 10px; border-radius: 4px; border: 1px solid var(--cngx-border, #ddd);">\n            <option>All categories</option>\n            <option>Electronics</option>\n            <option>Clothing</option>\n            <option>Books</option>\n          </select>\n        </label>\n\n        <label style="display: flex; flex-direction: column; gap: 4px; font-size: 0.8125rem;">\n          Price range\n          <input type="range" min="0" max="500" value="250" style="width: 100%;" />\n        </label>\n\n        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8125rem;">\n          <input type="checkbox" />\n          In stock only\n        </label>\n\n        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8125rem;">\n          <input type="checkbox" />\n          Free shipping\n        </label>\n\n        <div style="flex: 1;"></div>\n\n        <div class="button-row">\n          <button class="sort-btn" (click)="drawerOpen.set(false)">Apply filters</button>\n          <button class="sort-btn" (click)="drawerOpen.set(false)">Reset</button>\n        </div>\n      </div>\n    </div>\n  }\n\n  <div class="output-badge" style="margin-top: 12px">\n    Drawer: <strong>{{ drawerOpen() ? drawerSide() + \' — focus trapped\' : \'closed\' }}</strong>\n  </div>';
 
   protected modalOpen = signal(false);
   protected autoFocus = signal(true);

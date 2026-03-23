@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxLiveRegion } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxLiveRegion } from '@cngx/common/a11y';
 
 @Component({
   selector: 'app-live-region-demo',
@@ -11,12 +12,16 @@ import { CngxLiveRegion } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxLiveRegion,
   ],
   template: `
-    <app-example-card title="CngxLiveRegion — Polite vs Assertive"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="LiveRegion"
+      description="Configures the host element as an ARIA live region for screen reader announcements.">
+      <app-example-card title="CngxLiveRegion — Polite vs Assertive"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="politeness.set('polite')">
       <span class="chip" [class.chip--active]="politeness() === 'polite'">polite</span>
@@ -68,10 +73,11 @@ import { CngxLiveRegion } from '@cngx/common';
       <span class="event-value">true</span>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Form Validation — Assertive Error Announcements"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Form Validation — Assertive Error Announcements"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
     <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
     <input
@@ -98,12 +104,15 @@ import { CngxLiveRegion } from '@cngx/common';
     Type an invalid email to see the error. A screen reader would announce the error
     message immediately due to <code>aria-live="assertive"</code> and <code>role="alert"</code>.
   </p>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class LiveRegionDemoComponent {
   protected readonly _s0 = '<code>[cngxLiveRegion]</code> manages <code>aria-live</code>, <code>aria-atomic</code>, and <code>role</code> on the host element. Screen readers announce content changes — <code>polite</code> queues after the current utterance, <code>assertive</code> interrupts.';
   protected readonly _s1 = '<code>[cngxLiveRegion]</code> with <code>assertive</code> politeness on a validation error message. Screen readers interrupt to announce the error immediately when the message content changes.';
+  protected readonly _src0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="politeness.set(\'polite\')">\n      <span class="chip" [class.chip--active]="politeness() === \'polite\'">polite</span>\n    </button>\n    <button class="sort-btn" (click)="politeness.set(\'assertive\')">\n      <span class="chip" [class.chip--active]="politeness() === \'assertive\'">assertive</span>\n    </button>\n    <button class="sort-btn" (click)="politeness.set(\'off\')">\n      <span class="chip" [class.chip--active]="politeness() === \'off\'">off</span>\n    </button>\n  </div>\n\n  <div class="button-row" style="margin-top: 8px">\n    <button class="sort-btn" (click)="announce()">\n      Trigger announcement\n    </button>\n    <button class="sort-btn" (click)="message.set(\'\')">Clear</button>\n  </div>\n\n  <div\n    cngxLiveRegion\n    [politeness]="politeness()"\n    style="\n      margin-top: 12px;\n      padding: 10px 14px;\n      border-radius: 6px;\n      min-height: 40px;\n      border: 1px solid var(--cngx-border, #ddd);\n      transition: background 0.3s, border-color 0.3s;\n    "\n    [style.background]="flashActive() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-surface-alt, #f8f9fa)\'"\n    [style.borderColor]="flashActive() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-border, #ddd)\'"\n    [style.color]="flashActive() ? \'#000\' : \'inherit\'"\n  >\n    {{ message() || \'Waiting for announcement…\' }}\n  </div>\n\n  <div class="event-grid" style="margin-top: 10px">\n    <div class="event-row">\n      <span class="event-label">aria-live</span>\n      <span class="event-value">{{ politeness() }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">role</span>\n      <span class="event-value">{{ politeness() === \'assertive\' ? \'alert\' : \'status\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">aria-atomic</span>\n      <span class="event-value">true</span>\n    </div>\n  </div>';
+  protected readonly _src1 = '\n  <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">\n    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>\n    <input\n      type="text"\n      placeholder="user@example.com"\n      [value]="email()"\n      (input)="email.set($any($event.target).value)"\n      [style.borderColor]="emailError() ? \'#e53e3e\' : \'var(--cngx-border, #ddd)\'"\n      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"\n      aria-describedby="email-error"\n    />\n    <div\n      id="email-error"\n      cngxLiveRegion\n      [politeness]="\'assertive\'"\n      style="min-height: 1.25rem; font-size: 0.8125rem;"\n      [style.color]="emailError() ? \'#e53e3e\' : \'transparent\'"\n    >\n      {{ emailError() }}\n    </div>\n  </div>\n\n  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">\n    Type an invalid email to see the error. A screen reader would announce the error\n    message immediately due to <code>aria-live="assertive"</code> and <code>role="alert"</code>.\n  </p>';
 
   protected message = signal('');
   protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');

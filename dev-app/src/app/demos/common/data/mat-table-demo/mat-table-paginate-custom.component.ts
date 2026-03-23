@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxPaginate } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxPaginate } from '@cngx/common/data';
 import { PEOPLE } from '../../../../fixtures';
 
 @Component({
@@ -12,12 +13,15 @@ import { PEOPLE } from '../../../../fixtures';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxPaginate,
   ],
   template: `
-    <app-example-card title="CngxPaginate — Headless with Custom Nav"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="mat-table — Paginate (Custom nav)">
+      <app-example-card title="CngxPaginate — Headless with Custom Nav"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div cngxPaginate #pg="cngxPaginate" [total]="people().length" [cngxPageSize]="3" style="display:contents">
     <div class="table-wrap">
       <table class="demo-table">
@@ -58,10 +62,11 @@ import { PEOPLE } from '../../../../fixtures';
       <span class="status-badge">showing {{ pg.range()[0] + 1 }}–{{ pg.range()[1] > pg.total() ? pg.total() : pg.range()[1] }} of {{ pg.total() }}</span>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="ARIA Pattern Reference"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="ARIA Pattern Reference"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <pre class="code-block"><code>&lt;div cngxPaginate #pg="cngxPaginate" [total]="items.length"&gt;
   &lt;!-- list or table reads pg.range() --&gt;
   &#64;for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) &#123; ... &#125;
@@ -86,12 +91,15 @@ import { PEOPLE } from '../../../../fixtures';
     Page &#123;<!-- -->&#123; pg.pageIndex() + 1 &#125;<!-- -->&#125; of &#123;<!-- -->&#123; pg.totalPages() &#125;<!-- -->&#125;
   &lt;/span&gt;
 &lt;/div&gt;</code></pre>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class MatTablePaginateCustomDemoComponent {
   protected readonly _s0 = '<code>CngxPaginate</code> is purely headless — it has no template of its own. Consumers read <code>isFirst()</code>, <code>isLast()</code>, <code>pageIndex()</code>, and <code>totalPages()</code> to build any pagination UI they need. Here the directive lives on a <code>&lt;div&gt;</code> wrapper via template ref <code>#pg</code>. The <code>@for</code> loop slices the array using <code>pg.range()</code> directly in the template — no DataSource, no Material dependency.';
   protected readonly _s1 = 'Required ARIA attributes for accessible custom paginators. <code>CngxPaginate</code> exposes exactly the signals needed: <code>isFirst()</code>, <code>isLast()</code>, <code>pageIndex()</code>, <code>totalPages()</code>. The directive itself does <em>not</em> manage ARIA — that is the rendering layer\'s responsibility (headless principle).';
+  protected readonly _src0 = '\n  <div cngxPaginate #pg="cngxPaginate" [total]="people().length" [cngxPageSize]="3" style="display:contents">\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead><tr><th>Name</th><th>Role</th><th>Location</th></tr></thead>\n        <tbody>\n          @for (p of people().slice(pg.range()[0], pg.range()[1]); track p.name) {\n            <tr><td>{{ p.name }}</td><td>{{ p.role }}</td><td>{{ p.location }}</td></tr>\n          }\n        </tbody>\n      </table>\n    </div>\n\n    <!-- Custom accessible pagination nav — no Material dependency -->\n    <nav role="navigation" aria-label="Pagination" class="button-row">\n      <button type="button" [disabled]="pg.isFirst()" (click)="pg.first()" aria-label="First page">&laquo;</button>\n      <button type="button" [disabled]="pg.isFirst()" (click)="pg.previous()" aria-label="Previous page">&lsaquo;</button>\n\n      @for (i of pageIndices(pg.totalPages()); track i) {\n        <button type="button"\n          (click)="pg.setPage(i)"\n          [attr.aria-current]="pg.pageIndex() === i ? \'page\' : null"\n          [attr.aria-label]="\'Page \' + (i + 1)"\n          [class.chip--active]="pg.pageIndex() === i"\n          class="chip">{{ i + 1 }}</button>\n      }\n\n      <button type="button" [disabled]="pg.isLast()" (click)="pg.next()" aria-label="Next page">&rsaquo;</button>\n      <button type="button" [disabled]="pg.isLast()" (click)="pg.last()" aria-label="Last page">&raquo;</button>\n    </nav>\n\n    <!-- Live region — screen readers announce page changes -->\n    <span aria-live="polite" aria-atomic="true" class="visually-hidden">\n      Page {{ pg.pageIndex() + 1 }} of {{ pg.totalPages() }}\n    </span>\n\n    <div class="status-row">\n      <span class="status-badge">page {{ pg.pageIndex() + 1 }} of {{ pg.totalPages() }}</span>\n      <span class="status-badge">showing {{ pg.range()[0] + 1 }}–{{ pg.range()[1] > pg.total() ? pg.total() : pg.range()[1] }} of {{ pg.total() }}</span>\n    </div>\n  </div>';
+  protected readonly _src1 = '\n  <pre class="code-block"><code>&lt;div cngxPaginate #pg="cngxPaginate" [total]="items.length"&gt;\n  &lt;!-- list or table reads pg.range() --&gt;\n  &#64;for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) &#123; ... &#125;\n\n  &lt;nav role="navigation" aria-label="Pagination"&gt;\n    &lt;button [disabled]="pg.isFirst()" (click)="pg.previous()" aria-label="Previous page"&gt;&lt;/button&gt;\n\n    &#64;for (i of pageIndices(pg.totalPages()); track i) &#123;\n      &lt;button\n        (click)="pg.setPage(i)"\n        [attr.aria-current]="pg.pageIndex() === i ? \'page\' : null"\n        [attr.aria-label]="\'Page \' + (i + 1)"&gt;\n        &#123;<!-- -->&#123; i + 1 &#125;<!-- -->&#125;\n      &lt;/button&gt;\n    &#125;\n\n    &lt;button [disabled]="pg.isLast()" (click)="pg.next()" aria-label="Next page"&gt;&lt;/button&gt;\n  &lt;/nav&gt;\n\n  &lt;!-- Live region — screen readers announce page changes --&gt;\n  &lt;span aria-live="polite" aria-atomic="true" class="visually-hidden"&gt;\n    Page &#123;<!-- -->&#123; pg.pageIndex() + 1 &#125;<!-- -->&#125; of &#123;<!-- -->&#123; pg.totalPages() &#125;<!-- -->&#125;\n  &lt;/span&gt;\n&lt;/div&gt;</code></pre>';
 
   protected readonly people = signal(PEOPLE);
 

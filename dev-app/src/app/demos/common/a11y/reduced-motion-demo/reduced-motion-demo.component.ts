@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxReducedMotion } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxReducedMotion } from '@cngx/common/a11y';
 
 @Component({
   selector: 'app-reduced-motion-demo',
@@ -11,12 +12,16 @@ import { CngxReducedMotion } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxReducedMotion,
   ],
   template: `
-    <app-example-card title="CngxReducedMotion — Animation Toggle"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="ReducedMotion"
+      description="Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.">
+      <app-example-card title="CngxReducedMotion — Animation Toggle"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div
     cngxReducedMotion
     #rm="cngxReducedMotion"
@@ -90,10 +95,11 @@ import { CngxReducedMotion } from '@cngx/common';
       to { transform: translateX(0); opacity: 1; }
     }
   </style>
-    </app-example-card>
-    <app-example-card title="Toast Notifications — Motion-aware"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Toast Notifications — Motion-aware"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div cngxReducedMotion #rm2="cngxReducedMotion">
     <button class="sort-btn" (click)="addNotification()">
       Add notification
@@ -150,12 +156,15 @@ import { CngxReducedMotion } from '@cngx/common';
       </div>
     </div>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class ReducedMotionDemoComponent {
   protected readonly _s0 = '<code>[cngxReducedMotion]</code> reflects <code>prefers-reduced-motion: reduce</code> as a signal. Use it in TypeScript to conditionally skip animations, transitions, or auto-playing media — not just CSS. The <code>cngx-reduced-motion</code> class on the host element enables CSS-only overrides too.';
   protected readonly _s1 = 'Notifications that slide in with animation, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. This demonstrates using the signal in TypeScript logic, not just CSS.';
+  protected readonly _src0 = '\n  <div\n    cngxReducedMotion\n    #rm="cngxReducedMotion"\n  >\n    <div style="display: flex; gap: 24px; align-items: center;">\n      <div\n        style="\n          width: 60px;\n          height: 60px;\n          border-radius: 50%;\n          background: var(--cngx-accent, #f5a623);\n          flex-shrink: 0;\n        "\n        [style.animation]="rm.prefersReducedMotion() ? \'none\' : \'cngx-demo-spin 2s linear infinite\'"\n      ></div>\n\n      <div\n        style="\n          width: 120px;\n          height: 8px;\n          border-radius: 4px;\n          background: var(--cngx-surface-alt, #f0f0f0);\n          overflow: hidden;\n        "\n      >\n        <div\n          style="\n            width: 40%;\n            height: 100%;\n            border-radius: 4px;\n            background: var(--cngx-accent, #f5a623);\n          "\n          [style.animation]="rm.prefersReducedMotion() ? \'none\' : \'cngx-demo-progress 1.5s ease-in-out infinite\'"\n        ></div>\n      </div>\n    </div>\n\n    <div class="event-grid" style="margin-top: 16px">\n      <div class="event-row">\n        <span class="event-label">prefersReducedMotion</span>\n        <span class="event-value">{{ rm.prefersReducedMotion() }}</span>\n      </div>\n      <div class="event-row">\n        <span class="event-label">CSS class</span>\n        <span class="event-value">{{ rm.prefersReducedMotion() ? \'cngx-reduced-motion\' : \'(none)\' }}</span>\n      </div>\n    </div>\n\n    <p style="margin-top: 12px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">\n      @if (rm.prefersReducedMotion()) {\n        Reduced motion is active — animations disabled. Turn off "Reduce motion"\n        in your OS accessibility settings to see them.\n      } @else {\n        Animations are running. Enable "Reduce motion" in your OS to test.\n        On macOS: System Settings > Accessibility > Display > Reduce motion.\n      }\n    </p>\n  </div>\n\n  <style>\n    @keyframes cngx-demo-spin {\n      from { transform: rotate(0deg); }\n      to { transform: rotate(360deg); }\n    }\n    @keyframes cngx-demo-progress {\n      0%, 100% { transform: translateX(-100%); }\n      50% { transform: translateX(200%); }\n    }\n    @keyframes cngx-demo-slide-in {\n      from { transform: translateX(100%); opacity: 0; }\n      to { transform: translateX(0); opacity: 1; }\n    }\n  </style>';
+  protected readonly _src1 = '\n  <div cngxReducedMotion #rm2="cngxReducedMotion">\n    <button class="sort-btn" (click)="addNotification()">\n      Add notification\n    </button>\n\n    <div style="\n      margin-top: 12px;\n      display: flex;\n      flex-direction: column;\n      gap: 8px;\n      min-height: 60px;\n    ">\n      @for (n of notifications(); track n.id) {\n        <div\n          style="\n            padding: 10px 14px;\n            border-radius: 6px;\n            background: var(--cngx-surface-alt, #f8f9fa);\n            border: 1px solid var(--cngx-border, #ddd);\n            display: flex;\n            align-items: center;\n            justify-content: space-between;\n            font-size: 0.8125rem;\n          "\n          [style.animation]="rm2.prefersReducedMotion() ? \'none\' : \'cngx-demo-slide-in 0.3s ease-out\'"\n        >\n          <span>{{ n.text }}</span>\n          <button\n            class="sort-btn"\n            style="padding: 2px 8px; font-size: 0.75rem;"\n            (click)="removeNotification(n.id)"\n          >dismiss</button>\n        </div>\n      } @empty {\n        <div style="\n          padding: 16px;\n          text-align: center;\n          color: var(--cngx-text-secondary, #999);\n          font-size: 0.8125rem;\n        ">\n          No notifications. Click the button above to add one.\n        </div>\n      }\n    </div>\n\n    <div class="event-grid" style="margin-top: 12px">\n      <div class="event-row">\n        <span class="event-label">Active notifications</span>\n        <span class="event-value">{{ notifications().length }}</span>\n      </div>\n      <div class="event-row">\n        <span class="event-label">Animation</span>\n        <span class="event-value">{{ rm2.prefersReducedMotion() ? \'instant (no motion)\' : \'slide-in 0.3s\' }}</span>\n      </div>\n    </div>\n  </div>';
 
   protected notifications = signal<{ id: number; text: string }[]>([]);
   private _nextId = 0;

@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxSort, CngxSortHeader } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxSort, CngxSortHeader } from '@cngx/common/data';
 import { CurrencyPipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { catchError, finalize, map, of, switchMap } from 'rxjs';
@@ -16,14 +17,17 @@ import { type DJProduct } from '../../../../fixtures';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxSort,
     CngxSortHeader,
     CurrencyPipe,
   ],
   template: `
-    <app-example-card title="CngxSort + HttpClient (DummyJSON)"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Sort — Backend">
+      <app-example-card title="CngxSort + HttpClient (DummyJSON)"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div cngxSort #sort="cngxSort" (sortChange)="sortState.set($event)">
     <div class="table-wrap">
       <table class="demo-table">
@@ -73,10 +77,11 @@ import { type DJProduct } from '../../../../fixtures';
   } @else {
     <div class="output-badge">API: dummyjson.com/products?limit=10 (unsorted)</div>
   }
-    </app-example-card>
-    <app-example-card title="Pattern: sortChange → API params"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Pattern: sortChange → API params"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <pre class="code-block"><code>protected readonly sortState =
   signal&lt;&#123; active: string; direction: 'asc' | 'desc' &#125; | null&gt;(null);
 
@@ -94,12 +99,15 @@ protected readonly rows = toSignal(
 
 // Template:
 // &lt;div cngxSort (sortChange)="sortState.set($event)"&gt;</code></pre>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class SortBackendDemoComponent {
   protected readonly _s0 = '<code>(sortChange)</code> updates a signal → <code>toObservable()</code> → <code>switchMap</code> calls the API with <code>sortBy</code> + <code>order</code> params. <code>switchMap</code> automatically cancels any in-flight request when the sort changes.';
   protected readonly _s1 = '<code>(sortChange)</code> emits <code>&#123; active, direction &#125;</code> or <code>null</code> (sort cleared). Map directly to query params — no extra transform needed.';
+  protected readonly _src0 = '\n  <div cngxSort #sort="cngxSort" (sortChange)="sortState.set($event)">\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr>\n            <th>\n              <button cngxSortHeader="title" [cngxSortRef]="sort" #tH="cngxSortHeader" class="sort-btn">\n                Title @if (tH.isActive()) {<span class="sort-arrow">{{ tH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>Brand</th>\n            <th>Category</th>\n            <th>\n              <button cngxSortHeader="price" [cngxSortRef]="sort" #pH="cngxSortHeader" class="sort-btn">\n                Price @if (pH.isActive()) {<span class="sort-arrow">{{ pH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="rating" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n                Rating @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n          </tr>\n        </thead>\n        <tbody>\n          @if (apiLoading()) {\n            <tr><td colspan="5" class="empty-cell">Loading…</td></tr>\n          } @else {\n            @for (p of apiProducts(); track p.id) {\n              <tr>\n                <td>{{ p.title }}</td>\n                <td>{{ p.brand }}</td>\n                <td>{{ p.category }}</td>\n                <td>{{ p.price | currency }}</td>\n                <td>{{ p.rating }}</td>\n              </tr>\n            }\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  @if (sortState(); as s) {\n    <div class="output-badge">\n      API: sortBy=<strong>{{ s.active }}</strong> order=<strong>{{ s.direction }}</strong>\n    </div>\n  } @else {\n    <div class="output-badge">API: dummyjson.com/products?limit=10 (unsorted)</div>\n  }';
+  protected readonly _src1 = '\n  <pre class="code-block"><code>protected readonly sortState =\n  signal&lt;&#123; active: string; direction: \'asc\' | \'desc\' &#125; | null&gt;(null);\n\nprotected readonly rows = toSignal(\n  toObservable(this.sortState).pipe(\n    switchMap((s) => &#123;\n      const url = s\n        ? `/api/products?sortBy=$&#123;s.active&#125;&order=$&#123;s.direction&#125;`\n        : \'/api/products\';\n      return this.http.get&lt;Product[]&gt;(url);\n    &#125;),\n  ),\n  &#123; initialValue: [] &#125;,\n);\n\n// Template:\n// &lt;div cngxSort (sortChange)="sortState.set($event)"&gt;</code></pre>';
 
   private readonly http = inject(HttpClient);
 

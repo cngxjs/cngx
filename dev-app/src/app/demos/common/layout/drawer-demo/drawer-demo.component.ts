@@ -3,6 +3,7 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop, type DrawerMode } from '@cngx/common';
 import { CngxAriaExpanded } from '@cngx/common';
 
@@ -12,6 +13,7 @@ import { CngxAriaExpanded } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxDrawer,
     CngxDrawerPanel,
     CngxDrawerContent,
@@ -20,9 +22,12 @@ import { CngxAriaExpanded } from '@cngx/common';
     CngxBackdrop,
   ],
   template: `
-    <app-example-card title="Basic — Scroll Lock + Backdrop"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Drawer"
+      description="Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.">
+      <app-example-card title="Basic — Scroll Lock + Backdrop"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="drawer-container">
     <button class="sort-btn"
             [cngxAriaExpanded]="drawer.opened()" [controls]="'basic-panel'"
@@ -60,10 +65,11 @@ import { CngxAriaExpanded } from '@cngx/common';
       {{ drawer.opened() ? 'open' : 'closed' }}
     </span>
   </div>
-    </app-example-card>
-    <app-example-card title="Direction — All Four Sides"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Direction — All Four Sides"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div class="filter-row">
     <span class="filter-label">Position:</span>
     @for (d of directions; track d) {
@@ -94,10 +100,11 @@ import { CngxAriaExpanded } from '@cngx/common';
       </main>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Mode — Over / Push / Side"
-      [subtitle]="_s2">
-      
+      </app-example-card>
+      <app-example-card title="Mode — Over / Push / Side"
+        [subtitle]="_s2"
+        [source]="_src2">
+        
   <div class="filter-row">
     <span class="filter-label">Mode:</span>
     @for (m of modes; track m) {
@@ -139,10 +146,11 @@ import { CngxAriaExpanded } from '@cngx/common';
       </main>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Controlled Mode"
-      [subtitle]="_s3">
-      
+      </app-example-card>
+      <app-example-card title="Controlled Mode"
+        [subtitle]="_s3"
+        [source]="_src3">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
       External toggle: {{ controlledOpen() ? 'open' : 'closed' }}
@@ -175,10 +183,11 @@ import { CngxAriaExpanded } from '@cngx/common';
       controlledOpen: {{ controlledOpen() }}
     </span>
   </div>
-    </app-example-card>
-    <app-example-card title="Events — openedChange & closed"
-      [subtitle]="_s4">
-      
+      </app-example-card>
+      <app-example-card title="Events — openedChange & closed"
+        [subtitle]="_s4"
+        [source]="_src4">
+        
   <div cngxDrawer #evDrawer="cngxDrawer"
        (openedChange)="logEvent('openedChange: ' + $event)"
        (closed)="logEvent('closed')"
@@ -210,10 +219,11 @@ import { CngxAriaExpanded } from '@cngx/common';
       <div class="event-row"><span class="event-value">No events yet</span></div>
     }
   </div>
-    </app-example-card>
-    <app-example-card title="Pattern — Consumer Wiring"
-      [subtitle]="_s5">
-      
+      </app-example-card>
+      <app-example-card title="Pattern — Consumer Wiring"
+        [subtitle]="_s5"
+        [source]="_src5">
+        
   <pre class="code-block"><code>&lt;div cngxDrawer #drawer="cngxDrawer"&gt;
   &lt;!-- Consumer wires CngxAriaExpanded on the trigger --&gt;
   &lt;button [cngxAriaExpanded]="drawer.opened()"
@@ -235,7 +245,8 @@ import { CngxAriaExpanded } from '@cngx/common';
   &lt;div class="backdrop" [class.visible]="drawer.opened()"
        (click)="drawer.close()"&gt;&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class DrawerDemoComponent {
@@ -245,6 +256,12 @@ export class DrawerDemoComponent {
   protected readonly _s3 = 'Bind <code>[cngxDrawerOpened]</code> to a signal for controlled state. The parent owns the truth — internal <code>toggle()</code> still emits <code>(openedChange)</code> but the controlled input wins.';
   protected readonly _s4 = '<code>(openedChange)</code> emits on every state change. <code>(closed)</code> emits only on close. Both are useful for side effects like analytics or saving state.';
   protected readonly _s5 = 'The drawer system is fully headless. Directives set CSS classes; the consumer styles them. <code>CngxAriaExpanded</code> and <code>CngxFocusTrap</code> are wired by the consumer — not auto-injected.';
+  protected readonly _src0 = '\n  <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()" class="drawer-container">\n    <button class="sort-btn"\n            [cngxAriaExpanded]="drawer.opened()" [controls]="\'basic-panel\'"\n            (click)="drawer.toggle()">\n      {{ drawer.opened() ? \'Close\' : \'Open\' }} Drawer\n    </button>\n\n    <div class="drawer-layout">\n      <div [cngxBackdrop]="drawer.opened()" (backdropClick)="drawer.close()"\n           class="drawer-backdrop"></div>\n\n      <nav [cngxDrawerPanel]="drawer" position="left"\n           [enabled]="drawer.opened()" [autoFocus]="true"\n           id="basic-panel" role="navigation"\n           class="drawer-panel">\n        <div class="drawer-panel-content">\n          <strong>Navigation</strong>\n          <a href="javascript:void(0)">Home</a>\n          <a href="javascript:void(0)">Settings</a>\n          <a href="javascript:void(0)">Profile</a>\n          <button class="sort-btn" (click)="drawer.close()">Close</button>\n        </div>\n      </nav>\n\n      <main [cngxDrawerContent]="drawer" class="drawer-main">\n        <p>Main content area. The drawer slides over from the left.</p>\n        <p>Press <strong>Escape</strong>, click the backdrop, or click outside to close.</p>\n        <p><code>[cngxScrollLock]</code> prevents background scrolling.</p>\n      </main>\n    </div>\n  </div>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="drawer.opened()">\n      {{ drawer.opened() ? \'open\' : \'closed\' }}\n    </span>\n  </div>';
+  protected readonly _src1 = '\n  <div class="filter-row">\n    <span class="filter-label">Position:</span>\n    @for (d of directions; track d) {\n      <button class="chip" [class.chip--active]="direction() === d"\n              (click)="direction.set(d)">{{ d }}</button>\n    }\n  </div>\n\n  <div cngxDrawer #dirDrawer="cngxDrawer" class="drawer-container drawer-container--bordered">\n    <button class="sort-btn" (click)="dirDrawer.toggle()">\n      Toggle {{ direction() }} drawer\n    </button>\n\n    <div class="drawer-layout drawer-layout--relative">\n      <aside [cngxDrawerPanel]="dirDrawer" [position]="direction()"\n             [enabled]="dirDrawer.opened()"\n             class="drawer-panel drawer-panel--direction"\n             [class.drawer-panel--horizontal]="direction() === \'left\' || direction() === \'right\'"\n             [class.drawer-panel--vertical]="direction() === \'top\' || direction() === \'bottom\'">\n        <div class="drawer-panel-content">\n          <strong>{{ direction() }} panel</strong>\n          <button class="sort-btn" (click)="dirDrawer.close()">Close</button>\n        </div>\n      </aside>\n\n      <main [cngxDrawerContent]="dirDrawer" class="drawer-main drawer-main--tall">\n        <p>Content shifts when the drawer opens. Direction: <strong>{{ direction() }}</strong></p>\n      </main>\n    </div>\n  </div>';
+  protected readonly _src2 = '\n  <div class="filter-row">\n    <span class="filter-label">Mode:</span>\n    @for (m of modes; track m) {\n      <button class="chip" [class.chip--active]="mode() === m"\n              (click)="mode.set(m)">{{ m }}</button>\n    }\n  </div>\n\n  <div cngxDrawer #modeDrawer="cngxDrawer" class="drawer-container drawer-container--bordered">\n    @if (mode() !== \'side\') {\n      <button class="sort-btn" (click)="modeDrawer.toggle()">\n        Toggle {{ mode() }} drawer\n      </button>\n    }\n\n    <div class="drawer-layout drawer-layout--relative"\n         [class.drawer-layout--push]="mode() === \'push\' || mode() === \'side\'">\n      <aside [cngxDrawerPanel]="modeDrawer" position="left" [mode]="mode()"\n             [enabled]="modeDrawer.opened() && mode() !== \'side\'"\n             class="drawer-panel"\n             [class.drawer-panel--static]="mode() === \'push\' || mode() === \'side\'">\n        <div class="drawer-panel-content">\n          <strong>{{ mode() }} panel</strong>\n          @if (mode() !== \'side\') {\n            <button class="sort-btn" (click)="modeDrawer.close()">Close</button>\n          }\n        </div>\n      </aside>\n\n      <main [cngxDrawerContent]="modeDrawer" class="drawer-main drawer-main--tall">\n        <p>Mode: <strong>{{ mode() }}</strong></p>\n        @if (mode() === \'side\') {\n          <p>Always visible — no toggle button needed.</p>\n        } @else if (mode() === \'push\') {\n          <p>Content shifts when the drawer opens.</p>\n        } @else {\n          <p>Panel overlays content.</p>\n        }\n      </main>\n    </div>\n  </div>';
+  protected readonly _src3 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">\n      External toggle: {{ controlledOpen() ? \'open\' : \'closed\' }}\n    </button>\n  </div>\n\n  <div cngxDrawer #ctrlDrawer="cngxDrawer"\n       [cngxDrawerOpened]="controlledOpen()"\n       (openedChange)="controlledOpen.set($event)"\n       class="drawer-container drawer-container--bordered">\n    <div class="drawer-layout">\n      <nav [cngxDrawerPanel]="ctrlDrawer" position="left"\n           [enabled]="ctrlDrawer.opened()"\n           class="drawer-panel">\n        <div class="drawer-panel-content">\n          <strong>Controlled</strong>\n          <p>State owned by parent signal.</p>\n          <button class="sort-btn" (click)="ctrlDrawer.close()">Close</button>\n        </div>\n      </nav>\n\n      <main class="drawer-main">\n        <p>Controlled mode — drawer opens/closes via the external signal.</p>\n      </main>\n    </div>\n  </div>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="controlledOpen()">\n      controlledOpen: {{ controlledOpen() }}\n    </span>\n  </div>';
+  protected readonly _src4 = '\n  <div cngxDrawer #evDrawer="cngxDrawer"\n       (openedChange)="logEvent(\'openedChange: \' + $event)"\n       (closed)="logEvent(\'closed\')"\n       class="drawer-container drawer-container--bordered">\n    <button class="sort-btn" (click)="evDrawer.toggle()">Toggle</button>\n\n    <div class="drawer-layout">\n      <aside [cngxDrawerPanel]="evDrawer" position="right"\n             [enabled]="evDrawer.opened()"\n             class="drawer-panel">\n        <div class="drawer-panel-content">\n          <strong>Right panel</strong>\n          <button class="sort-btn" (click)="evDrawer.close()">Close</button>\n        </div>\n      </aside>\n\n      <main class="drawer-main">\n        <p>Open/close to see events logged below.</p>\n      </main>\n    </div>\n  </div>\n\n  <div class="event-grid">\n    @for (ev of events(); track $index) {\n      <div class="event-row">\n        <span class="event-value">{{ ev }}</span>\n      </div>\n    } @empty {\n      <div class="event-row"><span class="event-value">No events yet</span></div>\n    }\n  </div>';
+  protected readonly _src5 = '\n  <pre class="code-block"><code>&lt;div cngxDrawer #drawer="cngxDrawer"&gt;\n  &lt;!-- Consumer wires CngxAriaExpanded on the trigger --&gt;\n  &lt;button [cngxAriaExpanded]="drawer.opened()"\n          [controls]="\'sidebar\'" (click)="drawer.toggle()"&gt;\n    Menu\n  &lt;/button&gt;\n\n  &lt;!-- CngxFocusTrap is a hostDirective — consumer binds [enabled] --&gt;\n  &lt;nav [cngxDrawerPanel]="drawer" position="left"\n       [enabled]="drawer.opened()" [autoFocus]="true"\n       id="sidebar" role="navigation"&gt;\n    ...\n  &lt;/nav&gt;\n\n  &lt;!-- Optional: content shifts via CSS --&gt;\n  &lt;main [cngxDrawerContent]="drawer"&gt;...&lt;/main&gt;\n\n  &lt;!-- Optional: backdrop is pure CSS --&gt;\n  &lt;div class="backdrop" [class.visible]="drawer.opened()"\n       (click)="drawer.close()"&gt;&lt;/div&gt;\n&lt;/div&gt;</code></pre>';
 
   // Controlled drawer
   protected readonly controlledOpen = signal(false);

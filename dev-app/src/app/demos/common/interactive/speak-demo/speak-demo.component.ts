@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxSpeak } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxSpeak } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-speak-demo',
@@ -11,12 +12,16 @@ import { CngxSpeak } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxSpeak,
   ],
   template: `
-    <app-example-card title="CngxSpeak — Headless Read-aloud"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Speak"
+      description="Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.">
+      <app-example-card title="CngxSpeak — Headless Read-aloud"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
     <div style="display: flex; align-items: flex-start; gap: 8px;">
       <div
@@ -84,10 +89,11 @@ import { CngxSpeak } from '@cngx/common';
       <span class="event-value">{{ tts1.speaking() || tts2.speaking() }}</span>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Form Error — Read-aloud on Demand"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Form Error — Read-aloud on Demand"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
     <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
     <input
@@ -117,12 +123,15 @@ import { CngxSpeak } from '@cngx/common';
     For screen reader a11y, use <code>[cngxLiveRegion]</code> on the error element
     (see LiveRegion demo). CngxSpeak is a cognitive UX feature, not an a11y tool.
   </p>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class SpeakDemoComponent {
   protected readonly _s0 = '<code>[cngxSpeak]</code> is headless — no DOM, no CSS, no button. It exposes <code>speaking()</code>, <code>supported()</code>, <code>toggle()</code>, <code>speak()</code>, and <code>cancel()</code>. The consumer renders their own button. For a ready-made button, see <code>CngxSpeakButton</code> in the <code>@cngx/ui</code> section.';
   protected readonly _s1 = 'Pair <code>[cngxSpeak]</code> with a custom button to let users hear validation errors. The button only appears when there is an error.';
+  protected readonly _src0 = '\n  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">\n    <div style="display: flex; align-items: flex-start; gap: 8px;">\n      <div\n        [cngxSpeak]="\'Welcome to the CNGX component library. This is a headless, typed, production-grade set of Angular directives built for serious applications.\'"\n        #tts1="cngxSpeak"\n        style="\n          padding: 16px 20px;\n          border-radius: 8px;\n          background: linear-gradient(135deg, var(--cngx-surface-alt, #f8f9fa), var(--cngx-surface, #fff));\n          border: 1px solid var(--cngx-border, #ddd);\n          line-height: 1.6;\n          font-size: 0.875rem;\n          flex: 1;\n        "\n      >\n        Welcome to the CNGX component library. This is a headless, typed,\n        production-grade set of Angular directives built for serious applications.\n      </div>\n      <button\n        class="sort-btn"\n        (click)="tts1.toggle()"\n        [style.background]="tts1.speaking() ? \'var(--cngx-accent, #f5a623)\' : \'\'"\n        [style.color]="tts1.speaking() ? \'#000\' : \'\'"\n      >\n        {{ tts1.speaking() ? \'Stop\' : \'Listen\' }}\n      </button>\n    </div>\n\n    <div style="display: flex; align-items: flex-start; gap: 8px;">\n      <div\n        [cngxSpeak]="\'Your order has been shipped and is expected to arrive within 3 to 5 business days. Track your package using the link in your confirmation email.\'"\n        #tts2="cngxSpeak"\n        style="\n          padding: 16px 20px;\n          border-radius: 8px;\n          border-left: 4px solid var(--cngx-accent, #f5a623);\n          background: var(--cngx-surface-alt, #f8f9fa);\n          line-height: 1.6;\n          font-size: 0.875rem;\n          flex: 1;\n        "\n      >\n        <strong style="display: block; margin-bottom: 4px;">Order Shipped</strong>\n        Your order has been shipped and is expected to arrive within 3–5 business\n        days. Track your package using the link in your confirmation email.\n      </div>\n      <button\n        class="sort-btn"\n        (click)="tts2.toggle()"\n        [style.background]="tts2.speaking() ? \'var(--cngx-accent, #f5a623)\' : \'\'"\n        [style.color]="tts2.speaking() ? \'#000\' : \'\'"\n      >\n        {{ tts2.speaking() ? \'Stop\' : \'Listen\' }}\n      </button>\n    </div>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">TTS supported</span>\n      <span class="event-value">{{ tts1.supported }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">Any speaking</span>\n      <span class="event-value">{{ tts1.speaking() || tts2.speaking() }}</span>\n    </div>\n  </div>';
+  protected readonly _src1 = '\n  <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">\n    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>\n    <input\n      type="text"\n      placeholder="user@example.com"\n      [value]="email()"\n      (input)="email.set($any($event.target).value)"\n      [style.borderColor]="emailError() ? \'#e53e3e\' : \'var(--cngx-border, #ddd)\'"\n      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"\n    />\n    <div style="min-height: 1.25rem; font-size: 0.8125rem; display: flex; align-items: center; gap: 6px;"\n         [style.color]="emailError() ? \'#e53e3e\' : \'transparent\'">\n      <span [cngxSpeak]="emailError()" #ttsErr="cngxSpeak">{{ emailError() }}</span>\n      @if (emailError()) {\n        <button\n          class="sort-btn"\n          style="padding: 2px 8px; font-size: 0.75rem;"\n          (click)="ttsErr.toggle()"\n        >\n          {{ ttsErr.speaking() ? \'stop\' : \'hear error\' }}\n        </button>\n      }\n    </div>\n  </div>\n\n  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">\n    For screen reader a11y, use <code>[cngxLiveRegion]</code> on the error element\n    (see LiveRegion demo). CngxSpeak is a cognitive UX feature, not an a11y tool.\n  </p>';
 
   protected email = signal('');
   protected emailError = computed(() => {

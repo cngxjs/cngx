@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxClickOutside } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxClickOutside } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-click-outside-demo',
@@ -11,12 +12,16 @@ import { CngxClickOutside } from '@cngx/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxClickOutside,
   ],
   template: `
-    <app-example-card title="CngxClickOutside — Dropdown"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="ClickOutside"
+      description="Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.">
+      <app-example-card title="CngxClickOutside — Dropdown"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="open.set(!open())">
       Toggle dropdown ({{ open() ? 'open' : 'closed' }})
@@ -44,10 +49,11 @@ import { CngxClickOutside } from '@cngx/common';
   <div class="output-badge" style="margin-top:12px">
     Dropdown: <strong>{{ open() ? 'open' : 'closed' }}</strong>
   </div>
-    </app-example-card>
-    <app-example-card title="CngxClickOutside — enabled toggle"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="CngxClickOutside — enabled toggle"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div class="button-row">
     <button class="sort-btn" (click)="enabled.set(!enabled())">
       {{ enabled() ? 'Disable' : 'Enable' }} outside detection
@@ -73,12 +79,15 @@ import { CngxClickOutside } from '@cngx/common';
   <div class="output-badge" style="margin-top:12px">
     Outside clicks detected: <strong>{{ clickCount() }}</strong>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class ClickOutsideDemoComponent {
   protected readonly _s0 = '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the event target is outside the host. Works for both mouse and touch via the Pointer Events API.';
   protected readonly _s1 = 'When <code>[enabled]="false"</code> the directive is inactive and no events are emitted.';
+  protected readonly _src0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="open.set(!open())">\n      Toggle dropdown ({{ open() ? \'open\' : \'closed\' }})\n    </button>\n  </div>\n\n  @if (open()) {\n    <div\n      cngxClickOutside\n      (clickOutside)="open.set(false)"\n      style="\n        display: inline-block;\n        padding: 12px 16px;\n        border: 1px solid var(--cngx-border, #ddd);\n        border-radius: 6px;\n        background: var(--cngx-surface-alt, #f8f9fa);\n        margin-top: 8px;\n      "\n    >\n      <p style="margin: 0 0 8px">I close when you click outside me.</p>\n      <button class="sort-btn" (click)="$event.stopPropagation()">Inner button (won\'t close)</button>\n    </div>\n  }\n\n  <div class="output-badge" style="margin-top:12px">\n    Dropdown: <strong>{{ open() ? \'open\' : \'closed\' }}</strong>\n  </div>';
+  protected readonly _src1 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="enabled.set(!enabled())">\n      {{ enabled() ? \'Disable\' : \'Enable\' }} outside detection\n    </button>\n    <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? \'enabled\' : \'disabled\' }}</span>\n  </div>\n\n  <div\n    cngxClickOutside\n    [enabled]="enabled()"\n    (clickOutside)="clickCount.update(n => n + 1)"\n    style="\n      padding: 16px;\n      border: 2px dashed var(--cngx-border, #aaa);\n      border-radius: 6px;\n      margin-top: 8px;\n      text-align: center;\n    "\n  >\n    Click outside this box\n  </div>\n\n  <div class="output-badge" style="margin-top:12px">\n    Outside clicks detected: <strong>{{ clickCount() }}</strong>\n  </div>';
 
   protected open = signal(false);
   protected clickCount = signal(0);

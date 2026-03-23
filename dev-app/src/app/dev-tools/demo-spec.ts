@@ -40,6 +40,16 @@ export interface DemoSpec {
    * Example: `['CngxSort', 'CngxFilter']`
    */
   hostDirectives?: string[];
+  /**
+   * Compodoc class names whose API should appear in the API tab.
+   * Example: `['CngxSort', 'CngxSortHeader']`
+   */
+  apiComponents?: string[];
+  /**
+   * Longer overview text for the Overview tab. Supports HTML.
+   * Falls back to `description` if not set.
+   */
+  overview?: string;
   /** At least one section (= one ExampleCard). */
   sections: [SectionSpec, ...SectionSpec[]];
 }

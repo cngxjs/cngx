@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxFilter } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxFilter } from '@cngx/common/data';
 import { PEOPLE, type Person } from '../../../../fixtures';
 
 @Component({
@@ -12,12 +13,15 @@ import { PEOPLE, type Person } from '../../../../fixtures';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxFilter,
   ],
   template: `
-    <app-example-card title="CngxFilter — Multi (addPredicate / removePredicate)"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="Filter — Multi">
+      <app-example-card title="CngxFilter — Multi (addPredicate / removePredicate)"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div [cngxFilter]="null" #filterRef="cngxFilter" class="filter-container">
     <div class="filter-row">
       <span class="filter-label">Location:</span>
@@ -77,10 +81,11 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     </span>
     <span class="status-badge">{{ multiRows().length }} / {{ totalPeople }} rows</span>
   </div>
-    </app-example-card>
-    <app-example-card title="OR within dimension + AND across dimensions"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="OR within dimension + AND across dimensions"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <div [cngxFilter]="null" #filterRef2="cngxFilter" class="filter-container">
     <div class="filter-row">
       <span class="filter-label">Location (OR):</span>
@@ -131,12 +136,15 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     </span>
     <span class="status-badge">{{ orRows().length }} / {{ totalPeople }} rows</span>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class FilterMultiDemoComponent {
   protected readonly _s0 = 'Each filter chip calls <code>addPredicate(key, fn)</code> or <code>removePredicate(key)</code>. All active predicates are AND-combined automatically. <code>activeCount()</code> shows how many named predicates are stacked.';
   protected readonly _s1 = 'Multiple values per dimension are possible by keeping a <code>Set</code> inside a single named predicate. Click <em>London</em> and <em>Rome</em> to see OR in action. Adding a role filter stacks on top as AND.';
+  protected readonly _src0 = '\n  <div [cngxFilter]="null" #filterRef="cngxFilter" class="filter-container">\n    <div class="filter-row">\n      <span class="filter-label">Location:</span>\n      <button\n        type="button"\n        class="chip"\n        [class.chip--active]="activeLocation() === null"\n        (click)="setLocationFilter(filterRef, null)"\n      >All</button>\n      @for (loc of locations; track loc) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="activeLocation() === loc"\n          (click)="setLocationFilter(filterRef, loc)"\n        >{{ loc }}</button>\n      }\n    </div>\n    <div class="filter-row">\n      <span class="filter-label">Role:</span>\n      <button\n        type="button"\n        class="chip"\n        [class.chip--active]="activeRole() === null"\n        (click)="setRoleFilter(filterRef, null)"\n      >All</button>\n      @for (role of roles; track role) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="activeRole() === role"\n          (click)="setRoleFilter(filterRef, role)"\n        >{{ role }}</button>\n      }\n    </div>\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n        </thead>\n        <tbody>\n          @for (row of multiRows(); track row.name) {\n            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n          } @empty {\n            <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filterRef.isActive()">\n      isActive: {{ filterRef.isActive() }}\n    </span>\n    <span class="status-badge" [class.active]="filterRef.activeCount() > 0">\n      activeCount: {{ filterRef.activeCount() }}\n    </span>\n    <span class="status-badge">{{ multiRows().length }} / {{ totalPeople }} rows</span>\n  </div>';
+  protected readonly _src1 = '\n  <div [cngxFilter]="null" #filterRef2="cngxFilter" class="filter-container">\n    <div class="filter-row">\n      <span class="filter-label">Location (OR):</span>\n      @for (loc of locations; track loc) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="selectedLocations().has(loc)"\n          (click)="toggleLocation(filterRef2, loc)"\n        >{{ loc }}</button>\n      }\n    </div>\n    <div class="filter-row">\n      <span class="filter-label">Role (OR):</span>\n      @for (role of roles; track role) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="selectedRoles().has(role)"\n          (click)="toggleRole2(filterRef2, role)"\n        >{{ role }}</button>\n      }\n    </div>\n    <div class="button-row" style="margin-bottom:.75rem">\n      <button type="button" (click)="clearOrFilters(filterRef2)">Clear all</button>\n    </div>\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n        </thead>\n        <tbody>\n          @for (row of orRows(); track row.name) {\n            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n          } @empty {\n            <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filterRef2.isActive()">\n      isActive: {{ filterRef2.isActive() }}\n    </span>\n    <span class="status-badge" [class.active]="filterRef2.activeCount() > 0">\n      activeCount: {{ filterRef2.activeCount() }}\n    </span>\n    <span class="status-badge">{{ orRows().length }} / {{ totalPeople }} rows</span>\n  </div>';
 
   protected readonly totalPeople = PEOPLE.length;
   protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort((a, b) => a.localeCompare(b));

@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
-import { CngxSortHeader } from '@cngx/common';
+import { DocShellComponent } from '../../../../shared/doc-shell.component';
+import { CngxSortHeader } from '@cngx/common/data';
 import { MatTableModule } from '@angular/material/table';
 import { CngxFilter, CngxSort, injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';
@@ -18,13 +19,16 @@ import { PEOPLE, type Person } from '../../../../fixtures';
   ],
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxSortHeader,
     MatTableModule,
   ],
   template: `
-    <app-example-card title="DataSource + mat-table — Manual Pipeline with Multi-Sort & Multi-Filter"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="mat-table — DataSource (Manual Pipeline)">
+      <app-example-card title="DataSource + mat-table — Manual Pipeline with Multi-Sort & Multi-Filter"
+        [subtitle]="_s0"
+        [source]="_src0">
+        
   <div class="filter-row">
     <span class="filter-label">Location (OR):</span>
     @for (loc of locations; track loc) {
@@ -97,10 +101,11 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     </span>
     <span class="status-badge">{{ processed().length }} / {{ total }} rows</span>
   </div>
-    </app-example-card>
-    <app-example-card title="Pipeline — How the pieces connect"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Pipeline — How the pieces connect"
+        [subtitle]="_s1"
+        [source]="_src1">
+        
   <pre class="code-block"><code>// 1. Directives auto-discovered via hostDirectives + inject()
 protected readonly sort   = inject(CngxSort,   &#123; host: true &#125;);
 protected readonly filter = inject(CngxFilter, &#123; host: true &#125;);
@@ -130,12 +135,15 @@ protected readonly ds = injectDataSource(this.processed);
 
 // 4. mat-table
 // &lt;mat-table [dataSource]="ds"&gt; — same as any CDK DataSource</code></pre>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class MatTableManualDemoComponent {
   protected readonly _s0 = 'A manual <code>computed()</code> owns the full pipeline: multi-filter (AND across dimensions, OR within), text search, and multi-sort (Shift+click). <code>injectDataSource(computed)</code> bridges the signal to <code>mat-table</code>. Pipeline order — filter → search → sort — keeps the sort operating on the smallest possible set.';
   protected readonly _s1 = 'Everything flows through one <code>computed()</code>. Angular\'s reactivity reruns it automatically whenever any signal changes — no subscriptions, no manual triggering. Shift+click a column header to stack secondary sort keys.';
+  protected readonly _src0 = '\n  <div class="filter-row">\n    <span class="filter-label">Location (OR):</span>\n    @for (loc of locations; track loc) {\n      <button type="button" class="chip"\n        [class.chip--active]="selectedLocations().has(loc)"\n        (click)="toggleLocation(loc)">{{ loc }}</button>\n    }\n  </div>\n  <div class="filter-row">\n    <span class="filter-label">Role (OR):</span>\n    @for (role of roles; track role) {\n      <button type="button" class="chip"\n        [class.chip--active]="selectedRoles().has(role)"\n        (click)="toggleRole(role)">{{ role }}</button>\n    }\n  </div>\n  <div class="search-row">\n    <input\n      type="text"\n      class="search-input"\n      placeholder="Search…"\n      [value]="searchTerm()"\n      (input)="searchTerm.set($any($event.target).value)"\n    />\n    <button type="button" (click)="clearAll()">Clear all</button>\n  </div>\n\n  <mat-table [dataSource]="ds" class="table-wrap">\n    <ng-container matColumnDef="name">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n          Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="role">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n          Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.role }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="location">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n          Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.location }}</mat-cell>\n    </ng-container>\n\n    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>\n    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>\n    <div *matNoDataRow class="empty-cell">No results.</div>\n  </mat-table>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filter.isActive()">\n      filters: {{ filter.activeCount() }}\n    </span>\n    <span class="status-badge" [class.active]="!!searchTerm()">\n      search: {{ searchTerm() || \'off\' }}\n    </span>\n    <span class="status-badge" [class.active]="sort.isActive()">\n      sort: {{ sort.isActive() ? sort.active() + \' \' + sort.direction() : \'off\' }}\n    </span>\n    <span class="status-badge">{{ processed().length }} / {{ total }} rows</span>\n  </div>';
+  protected readonly _src1 = '\n  <pre class="code-block"><code>// 1. Directives auto-discovered via hostDirectives + inject()\nprotected readonly sort   = inject(CngxSort,   &#123; host: true &#125;);\nprotected readonly filter = inject(CngxFilter, &#123; host: true &#125;);\nprotected readonly searchTerm = signal(\'\');  // plain signal — no directive needed\n\n// 2. One computed() owns the full pipeline\nprivate readonly processed = computed(() => &#123;\n  let list = PEOPLE;\n\n  // filter first — cheapest, reduces the set early\n  const pred = this.filter.predicate();\n  if (pred) list = list.filter(pred);\n\n  // text search — runs on already-filtered set\n  const term = this.searchTerm().toLowerCase();\n  if (term) list = list.filter(p => matchesSearch(p, term));\n\n  // sort last — operates on smallest possible set\n  const s = this.sort.sort();        // primary SortEntry | null\n  if (s) list = [...list].sort((a, b) => compare(a, b, s));\n\n  return list;\n&#125;);\n\n// 3. Bridge signal → CDK DataSource → mat-table\nprotected readonly ds = injectDataSource(this.processed);\n\n// 4. mat-table\n// &lt;mat-table [dataSource]="ds"&gt; — same as any CDK DataSource</code></pre>';
 
   protected readonly sort   = inject(CngxSort,           { host: true });
   protected readonly filter = inject(CngxFilter<Person>, { host: true });
