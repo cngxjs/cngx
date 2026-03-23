@@ -42,6 +42,10 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
   private readonly sort = inject(CngxSort, { optional: true });
   private readonly filter = inject(CngxFilter, { optional: true });
+  // CngxSearch typically lives on a child <input> below the component injector,
+  // so this inject returns null in the common case. It resolves only when CngxSearch
+  // is placed as a hostDirective on the same component. For child-input search,
+  // use injectDataSource() + manual computed() instead.
   private readonly search = inject(CngxSearch, { optional: true });
   private readonly paginate = inject(CngxPaginate, { optional: true });
 

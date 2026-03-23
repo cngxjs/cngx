@@ -77,7 +77,13 @@ export class CngxIntersectionObserver {
   private readonly _doc = inject(DOCUMENT);
   private _observer: IntersectionObserver | null = null;
 
+  private readonly _win = this._doc.defaultView;
+
   constructor() {
+    if (!this._win) {
+      return;
+    }
+
     effect((onCleanup) => {
       const root = this.root();
       const rootMargin = this.rootMargin();

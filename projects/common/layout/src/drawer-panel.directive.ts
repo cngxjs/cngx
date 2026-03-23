@@ -78,6 +78,7 @@ export class CngxDrawerPanel {
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {
         if (
+          this.mode() !== 'side' &&
           this.isOpen() &&
           this.closeOnClickOutside() &&
           !(this.drawerRef().elementRef.nativeElement as HTMLElement).contains(e.target as Node)

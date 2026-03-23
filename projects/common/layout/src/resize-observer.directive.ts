@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   computed,
   DestroyRef,
@@ -60,18 +61,24 @@ export class CngxResizeObserver {
   readonly resize = output<ResizeObserverEntry>();
 
   private readonly _el = inject(ElementRef<HTMLElement>);
-
-  private readonly _observer = new ResizeObserver((entries) => {
-    this._entry.set(entries[0]);
-    this.resize.emit(entries[0]);
-  });
+  private readonly _win = inject(DOCUMENT).defaultView;
+  private _observer: ResizeObserver | null = null;
 
   constructor() {
-    effect(() => {
-      this._observer.disconnect();
-      this._observer.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
+    if (!this._win) {
+      return;
+    }
+
+    this._observer = new this._win.ResizeObserver((entries: ResizeObserverEntry[]) => {
+      this._entry.set(entries[0]);
+      this.resize.emit(entries[0]);
     });
 
-    inject(DestroyRef).onDestroy(() => this._observer.disconnect());
+    effect(() => {
+      this._observer!.disconnect();
+      this._observer!.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
+    });
+
+    inject(DestroyRef).onDestroy(() => this._observer?.disconnect());
   }
 }

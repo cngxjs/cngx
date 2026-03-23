@@ -38,7 +38,7 @@ export class CngxTreetableRow<T = unknown> {
    */
   readonly selected = input(false);
 
-  private readonly hoverable = inject(CngxHoverable);
+  private readonly hoverable = inject(CngxHoverable, { host: true });
   /** `true` when both `highlight` is enabled and the row is currently hovered. */
   readonly highlighted = computed(() => this.highlight() && this.hoverable.hovered());
 }

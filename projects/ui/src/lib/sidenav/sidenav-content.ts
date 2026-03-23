@@ -30,8 +30,8 @@ import { CngxSidenavLayout } from './sidenav-layout';
   encapsulation: ViewEncapsulation.None,
   host: {
     '[class.cngx-sidenav-content]': 'true',
-    '[style.margin-inline-start]': 'marginStart()',
-    '[style.margin-inline-end]': 'marginEnd()',
+    '[style.margin-inline-start]': 'marginStart',
+    '[style.margin-inline-end]': 'marginEnd',
   },
   template: `<ng-content />`,
 })
