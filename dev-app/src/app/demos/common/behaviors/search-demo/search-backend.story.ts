@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Search — Backend',
+  apiComponents: ['CngxSearch'],
   moduleImports: [
     "import { HttpClient } from '@angular/common/http';",
     "import { catchError, finalize, map, of, switchMap } from 'rxjs';",

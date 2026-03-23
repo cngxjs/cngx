@@ -20,7 +20,8 @@ import { type DJProduct, type DJCategory } from '../../../../fixtures';
     CurrencyPipe,
   ],
   template: `
-    <app-doc-shell title="Filter — Backend">
+    <app-doc-shell title="Filter — Backend"
+      [apiComponents]="['CngxFilter']">
       <app-example-card title="Server-Side Filter by Category (DummyJSON)"
         [subtitle]="_s0"
         [source]="_src0">

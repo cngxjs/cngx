@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'LiveRegion',
   description: 'Configures the host element as an ARIA live region for screen reader announcements.',
+  apiComponents: ['CngxLiveRegion'],
   setup: `
   protected message = signal('');
   protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');

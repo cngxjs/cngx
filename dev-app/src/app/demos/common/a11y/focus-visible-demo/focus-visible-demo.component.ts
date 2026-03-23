@@ -17,7 +17,8 @@ import { CngxFocusVisible } from '@cngx/common/a11y';
   ],
   template: `
     <app-doc-shell title="FocusVisible"
-      description="Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.">
+      description="Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard."
+      [apiComponents]="['CngxFocusVisible']">
       <app-example-card title="CngxFocusVisible — Keyboard vs Pointer"
         [subtitle]="_s0"
         [source]="_src0">

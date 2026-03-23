@@ -17,7 +17,8 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
   ],
   template: `
     <app-doc-shell title="FocusTrap"
-      description="Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.">
+      description="Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components."
+      [apiComponents]="['CngxFocusTrap']">
       <app-example-card title="CngxFocusTrap — Modal Dialog"
         [subtitle]="_s0"
         [source]="_src0">

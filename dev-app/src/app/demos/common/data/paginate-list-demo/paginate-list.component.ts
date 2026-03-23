@@ -19,7 +19,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxMatPaginator,
   ],
   template: `
-    <app-doc-shell title="Paginate — List">
+    <app-doc-shell title="Paginate — List"
+      [apiComponents]="['CngxPaginate', 'CngxMatPaginator']">
       <app-example-card title="Paginated List — CngxPaginate + CngxMatPaginator"
         [subtitle]="_s0"
         [source]="_src0">

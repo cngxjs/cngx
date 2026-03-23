@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Sort — Multi-Key',
+  apiComponents: ['CngxSort', 'CngxSortHeader'],
   moduleImports: [
     "import { type SortEntry } from '@cngx/common';",
     "import { PEOPLE, type Person } from '../../../../fixtures';",

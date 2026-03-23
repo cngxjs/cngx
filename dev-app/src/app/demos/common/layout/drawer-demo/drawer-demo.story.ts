@@ -4,6 +4,7 @@ export const STORY: DemoSpec = {
   title: 'Drawer',
   description:
     'Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.',
+  apiComponents: ['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent'],
   moduleImports: [
     "import { CngxDrawer, CngxDrawerPanel, CngxDrawerContent, CngxScrollLock, CngxBackdrop, type DrawerMode } from '@cngx/common';",
     "import { CngxAriaExpanded } from '@cngx/common';",

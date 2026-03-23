@@ -19,7 +19,8 @@ import { DecimalPipe } from '@angular/common';
   ],
   template: `
     <app-doc-shell title="ResizeObserver"
-      description="Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.">
+      description="Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals."
+      [apiComponents]="['CngxResizeObserver']">
       <app-example-card title="CngxResizeObserver — Live Size"
         [subtitle]="_s0"
         [source]="_src0">

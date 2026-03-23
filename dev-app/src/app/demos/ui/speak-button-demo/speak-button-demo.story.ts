@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'SpeakButton',
   description: 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.',
+  apiComponents: ['CngxSpeakButton', 'CngxSpeak'],
   moduleImports: [
     "import { MatIconButton, MatMiniFabButton } from '@angular/material/button';",
     "import { MatIcon } from '@angular/material/icon';",

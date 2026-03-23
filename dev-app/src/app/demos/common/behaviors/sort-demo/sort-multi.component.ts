@@ -19,7 +19,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxSortHeader,
   ],
   template: `
-    <app-doc-shell title="Sort — Multi-Key">
+    <app-doc-shell title="Sort — Multi-Key"
+      [apiComponents]="['CngxSort', 'CngxSortHeader']">
       <app-example-card title="Multi-Key Sort (Shift+Click)"
         [subtitle]="_s0"
         [source]="_src0">

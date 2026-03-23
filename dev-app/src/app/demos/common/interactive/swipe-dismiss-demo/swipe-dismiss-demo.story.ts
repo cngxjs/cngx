@@ -4,6 +4,7 @@ export const STORY: DemoSpec = {
   title: 'SwipeDismiss',
   description:
     'Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals.',
+  apiComponents: ['CngxSwipeDismiss'],
   moduleImports: [
     "import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';",
   ],

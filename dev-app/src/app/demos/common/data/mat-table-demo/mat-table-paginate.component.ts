@@ -27,7 +27,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     MatTableModule,
   ],
   template: `
-    <app-doc-shell title="mat-table — Paginate (Material)">
+    <app-doc-shell title="mat-table — Paginate (Material)"
+      [apiComponents]="['CngxSort', 'CngxSortHeader', 'CngxFilter', 'CngxPaginate', 'CngxMatPaginator']">
       <app-example-card title="mat-table + CngxPaginate + CngxMatPaginator"
         [subtitle]="_s0"
         [source]="_src0">

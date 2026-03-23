@@ -17,7 +17,8 @@ import { CngxSwipeDismiss, type SwipeDirection } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="SwipeDismiss"
-      description="Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals.">
+      description="Detects directional swipe gestures via Pointer Events. Emits when the gesture exceeds a threshold. Exposes swiping and progress signals."
+      [apiComponents]="['CngxSwipeDismiss']">
       <app-example-card title="CngxSwipeDismiss — Directional Swipe"
         [subtitle]="_s0"
         [source]="_src0">

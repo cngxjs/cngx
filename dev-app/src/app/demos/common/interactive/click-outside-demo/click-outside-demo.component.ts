@@ -17,7 +17,8 @@ import { CngxClickOutside } from '@cngx/common/interactive';
   ],
   template: `
     <app-doc-shell title="ClickOutside"
-      description="Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.">
+      description="Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays."
+      [apiComponents]="['CngxClickOutside']">
       <app-example-card title="CngxClickOutside — Dropdown"
         [subtitle]="_s0"
         [source]="_src0">

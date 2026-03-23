@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'mat-table — Paginate (Custom nav)',
+  apiComponents: ['CngxPaginate'],
   moduleImports: [
     "import { PEOPLE } from '../../../../fixtures';",
   ],

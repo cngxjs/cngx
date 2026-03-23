@@ -17,7 +17,8 @@ import { CngxScrollLock } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="ScrollLock"
-      description="Prevents body scrolling when active. Essential for modals, drawers, and overlays.">
+      description="Prevents body scrolling when active. Essential for modals, drawers, and overlays."
+      [apiComponents]="['CngxScrollLock']">
       <app-example-card title="CngxScrollLock — Toggle"
         [subtitle]="_s0"
         [source]="_src0">

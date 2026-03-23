@@ -20,7 +20,8 @@ import { CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge } from '@cngx/com
   ],
   template: `
     <app-doc-shell title="Nav"
-      description="Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.">
+      description="Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus."
+      [apiComponents]="['CngxNavLink', 'CngxNavGroup', 'CngxNavBadge', 'CngxNavLabel']">
       <app-example-card title="Nav Links — Active State + Depth"
         [subtitle]="_s0"
         [source]="_src0">

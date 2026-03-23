@@ -23,7 +23,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxSortHeader,
   ],
   template: `
-    <app-doc-shell title="SmartDataSource">
+    <app-doc-shell title="SmartDataSource"
+      [apiComponents]="['CngxSort', 'CngxFilter', 'CngxPaginate']">
       <app-example-card title="CngxSmartDataSource — Auto-Wired"
         [subtitle]="_s0"
         [source]="_src0">

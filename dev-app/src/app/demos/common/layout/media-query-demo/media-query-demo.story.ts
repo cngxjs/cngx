@@ -4,6 +4,7 @@ export const STORY: DemoSpec = {
   title: 'MediaQuery',
   description:
     'Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes.',
+  apiComponents: ['CngxMediaQuery'],
   moduleImports: ["import { CngxMediaQuery } from '@cngx/common';"],
   sections: [
     {

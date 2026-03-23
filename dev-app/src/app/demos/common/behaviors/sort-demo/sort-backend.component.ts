@@ -23,7 +23,8 @@ import { type DJProduct } from '../../../../fixtures';
     CurrencyPipe,
   ],
   template: `
-    <app-doc-shell title="Sort — Backend">
+    <app-doc-shell title="Sort — Backend"
+      [apiComponents]="['CngxSort', 'CngxSortHeader']">
       <app-example-card title="CngxSort + HttpClient (DummyJSON)"
         [subtitle]="_s0"
         [source]="_src0">

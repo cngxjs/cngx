@@ -23,7 +23,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     MatIconModule,
   ],
   template: `
-    <app-doc-shell title="Search — mat-form-field">
+    <app-doc-shell title="Search — mat-form-field"
+      [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch inside mat-form-field"
         [subtitle]="_s0"
         [source]="_src0">

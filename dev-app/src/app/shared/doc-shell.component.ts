@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  input,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -33,18 +26,24 @@ const TABS: { id: DocTab; label: string }[] = [
       }
     </header>
 
-    <nav class="doc-tabs" role="tablist" aria-label="Documentation sections"
-         (keydown)="handleTabKeydown($event)">
+    <nav
+      class="doc-tabs"
+      role="tablist"
+      aria-label="Documentation sections"
+      (keydown)="handleTabKeydown($event)"
+    >
       @for (tab of tabs; track tab.id; let i = $index) {
-        <button class="doc-tab"
-                [class.doc-tab--active]="activeTab() === tab.id"
-                role="tab"
-                [id]="'tab-' + tab.id"
-                [attr.aria-selected]="activeTab() === tab.id"
-                [attr.aria-controls]="'panel-' + tab.id"
-                [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
-                (click)="setTab(tab.id)"
-                (focus)="focusedIndex.set(i)">
+        <button
+          class="doc-tab"
+          [class.doc-tab--active]="activeTab() === tab.id"
+          role="tab"
+          [id]="'tab-' + tab.id"
+          [attr.aria-selected]="activeTab() === tab.id"
+          [attr.aria-controls]="'panel-' + tab.id"
+          [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
+          (click)="setTab(tab.id)"
+          (focus)="focusedIndex.set(i)"
+        >
           {{ tab.label }}
         </button>
       }
@@ -239,7 +238,7 @@ export class DocShellComponent {
 
   protected handleTabKeydown(event: KeyboardEvent): void {
     const idx = this.focusedIndex();
-    let next = idx;
+    let next: number;
 
     switch (event.key) {
       case 'ArrowRight':
@@ -262,7 +261,9 @@ export class DocShellComponent {
     this.focusedIndex.set(next);
     this.setTab(TABS[next].id);
 
-    const btn = (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')[next];
+    const btn = (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')[
+      next
+    ];
     btn?.focus();
   }
 }

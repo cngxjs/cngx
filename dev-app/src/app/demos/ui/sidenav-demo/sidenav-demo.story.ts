@@ -4,6 +4,7 @@ export const STORY: DemoSpec = {
   title: 'Sidenav',
   description:
     'Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.',
+  apiComponents: ['CngxSidenav', 'CngxSidenavLayout', 'CngxSidenavContent'],
   moduleImports: [
     "import { CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter } from '@cngx/ui';",
     "import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/common';",

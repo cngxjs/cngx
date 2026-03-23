@@ -19,7 +19,8 @@ import { DecimalPipe } from '@angular/common';
   ],
   template: `
     <app-doc-shell title="IntersectionObserver"
-      description="Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.">
+      description="Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals."
+      [apiComponents]="['CngxIntersectionObserver']">
       <app-example-card title="CngxIntersectionObserver — Scroll Sentinel"
         [subtitle]="_s0"
         [source]="_src0">

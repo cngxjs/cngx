@@ -24,7 +24,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     MatTableModule,
   ],
   template: `
-    <app-doc-shell title="mat-table — DataSource (Manual Pipeline)">
+    <app-doc-shell title="mat-table — DataSource (Manual Pipeline)"
+      [apiComponents]="['CngxSort', 'CngxSortHeader', 'CngxFilter']">
       <app-example-card title="DataSource + mat-table — Manual Pipeline with Multi-Sort & Multi-Filter"
         [subtitle]="_s0"
         [source]="_src0">

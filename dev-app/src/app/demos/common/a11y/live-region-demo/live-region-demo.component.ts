@@ -17,7 +17,8 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
   ],
   template: `
     <app-doc-shell title="LiveRegion"
-      description="Configures the host element as an ARIA live region for screen reader announcements.">
+      description="Configures the host element as an ARIA live region for screen reader announcements."
+      [apiComponents]="['CngxLiveRegion']">
       <app-example-card title="CngxLiveRegion — Polite vs Assertive"
         [subtitle]="_s0"
         [source]="_src0">

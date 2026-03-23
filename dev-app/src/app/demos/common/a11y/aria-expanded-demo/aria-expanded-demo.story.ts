@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'AriaExpanded',
   description: 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).',
+  apiComponents: ['CngxAriaExpanded'],
   setup: `
   protected open = signal(false);
   protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });

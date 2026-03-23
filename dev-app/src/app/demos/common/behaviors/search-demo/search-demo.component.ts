@@ -17,7 +17,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxSearch,
   ],
   template: `
-    <app-doc-shell title="Search">
+    <app-doc-shell title="Search"
+      [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch"
         [subtitle]="_s0"
         [source]="_src0">

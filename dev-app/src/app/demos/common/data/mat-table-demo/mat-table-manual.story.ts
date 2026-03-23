@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'mat-table — DataSource (Manual Pipeline)',
+  apiComponents: ['CngxSort', 'CngxSortHeader', 'CngxFilter'],
   hostDirectives: ['CngxSort', 'CngxFilter'],
   moduleImports: [
     "import { CngxFilter, CngxSort, injectDataSource } from '@cngx/common';",

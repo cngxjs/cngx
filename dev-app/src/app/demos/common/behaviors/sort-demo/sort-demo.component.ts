@@ -18,7 +18,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxSortHeader,
   ],
   template: `
-    <app-doc-shell title="Sort">
+    <app-doc-shell title="Sort"
+      [apiComponents]="['CngxSort', 'CngxSortHeader']">
       <app-example-card title="CngxSort + CngxSortHeader"
         [subtitle]="_s0"
         [source]="_src0">

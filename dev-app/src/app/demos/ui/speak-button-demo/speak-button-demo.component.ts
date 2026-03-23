@@ -24,7 +24,8 @@ import { MatIcon } from '@angular/material/icon';
   ],
   template: `
     <app-doc-shell title="SpeakButton"
-      description="Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.">
+      description="Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties."
+      [apiComponents]="['CngxSpeakButton', 'CngxSpeak']">
       <app-example-card title="CngxSpeakButton — Styled Speaker Icon"
         [subtitle]="_s0"
         [source]="_src0">

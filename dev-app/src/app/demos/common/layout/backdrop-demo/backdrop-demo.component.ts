@@ -17,7 +17,8 @@ import { CngxBackdrop } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="Backdrop"
-      description="Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.">
+      description="Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y."
+      [apiComponents]="['CngxBackdrop']">
       <app-example-card title="CngxBackdrop — Overlay with inert"
         [subtitle]="_s0"
         [source]="_src0">

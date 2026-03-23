@@ -17,7 +17,8 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
   ],
   template: `
     <app-doc-shell title="AriaExpanded"
-      description="Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).">
+      description="Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels)."
+      [apiComponents]="['CngxAriaExpanded']">
       <app-example-card title="CngxAriaExpanded — Disclosure Pattern"
         [subtitle]="_s0"
         [source]="_src0">

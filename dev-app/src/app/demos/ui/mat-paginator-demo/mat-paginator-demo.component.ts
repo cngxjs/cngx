@@ -21,7 +21,8 @@ import { PEOPLE } from '../../../fixtures';
   ],
   template: `
     <app-doc-shell title="MatPaginator"
-      description="Material paginator wrapper that connects to a headless CngxPaginate directive via explicit reference binding.">
+      description="Material paginator wrapper that connects to a headless CngxPaginate directive via explicit reference binding."
+      [apiComponents]="['CngxMatPaginator', 'CngxPaginate']">
       <app-example-card title="CngxMatPaginator — Material Paginator"
         [subtitle]="_s0"
         [source]="_src0">

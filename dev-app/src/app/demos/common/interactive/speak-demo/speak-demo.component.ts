@@ -17,7 +17,8 @@ import { CngxSpeak } from '@cngx/common/interactive';
   ],
   template: `
     <app-doc-shell title="Speak"
-      description="Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.">
+      description="Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience."
+      [apiComponents]="['CngxSpeak']">
       <app-example-card title="CngxSpeak — Headless Read-aloud"
         [subtitle]="_s0"
         [source]="_src0">

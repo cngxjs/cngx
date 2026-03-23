@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'ClickOutside',
   description: 'Emits an event when the user interacts outside the host element. Useful for closing dropdowns, tooltips, and overlays.',
+  apiComponents: ['CngxClickOutside'],
   setup: `
   protected open = signal(false);
   protected clickCount = signal(0);

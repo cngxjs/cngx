@@ -26,7 +26,8 @@ import { CngxNavLink, CngxNavLabel, CngxNavGroup, CngxNavBadge } from '@cngx/com
   ],
   template: `
     <app-doc-shell title="Sidenav"
-      description="Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching.">
+      description="Declarative sidebar organism with Material theming, nav atoms (links, groups, badges, labels), dual sidebar support, and responsive mode switching."
+      [apiComponents]="['CngxSidenav', 'CngxSidenavLayout', 'CngxSidenavContent']">
       <app-example-card title="Full Navigation Sidebar"
         [subtitle]="_s0"
         [source]="_src0">

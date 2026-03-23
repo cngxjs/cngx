@@ -2,6 +2,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'SmartDataSource',
+  apiComponents: ['CngxSort', 'CngxFilter', 'CngxPaginate'],
   hostDirectives: ['CngxSort', 'CngxFilter'],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",

@@ -22,7 +22,8 @@ import { type DJProduct } from '../../../../fixtures';
     CurrencyPipe,
   ],
   template: `
-    <app-doc-shell title="Search — Backend">
+    <app-doc-shell title="Search — Backend"
+      [apiComponents]="['CngxSearch']">
       <app-example-card title="CngxSearch + HttpClient (DummyJSON)"
         [subtitle]="_s0"
         [source]="_src0">

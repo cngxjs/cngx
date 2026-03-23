@@ -21,7 +21,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxMatPaginator,
   ],
   template: `
-    <app-doc-shell title="DataSource">
+    <app-doc-shell title="DataSource"
+      [apiComponents]="['CngxPaginate', 'CngxMatPaginator']">
       <app-example-card title="CngxDataSource — Signal → Observable Bridge"
         [subtitle]="_s0"
         [source]="_src0">

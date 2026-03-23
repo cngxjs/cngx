@@ -4,6 +4,7 @@ export const STORY: DemoSpec = {
   title: 'Backdrop',
   description:
     'Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.',
+  apiComponents: ['CngxBackdrop'],
   moduleImports: ["import { CngxBackdrop } from '@cngx/common';"],
   setup: `
   protected readonly showBackdrop = signal(false);

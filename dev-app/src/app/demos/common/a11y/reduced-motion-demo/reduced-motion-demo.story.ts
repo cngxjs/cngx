@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'ReducedMotion',
   description: 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.',
+  apiComponents: ['CngxReducedMotion'],
   setup: `
   protected notifications = signal<{ id: number; text: string }[]>([]);
   private _nextId = 0;

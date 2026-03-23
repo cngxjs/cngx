@@ -35,7 +35,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     CngxMatPaginator,
   ],
   template: `
-    <app-doc-shell title="Treetable">
+    <app-doc-shell title="Treetable"
+      [apiComponents]="['CngxTreetablePresenter', 'CngxTreetable', 'CngxMaterialTreetable']">
       <app-playground [playground]="pg">
         
   <div class="table-wrap">

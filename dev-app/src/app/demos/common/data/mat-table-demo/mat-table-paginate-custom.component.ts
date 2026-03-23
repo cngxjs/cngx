@@ -17,7 +17,8 @@ import { PEOPLE } from '../../../../fixtures';
     CngxPaginate,
   ],
   template: `
-    <app-doc-shell title="mat-table — Paginate (Custom nav)">
+    <app-doc-shell title="mat-table — Paginate (Custom nav)"
+      [apiComponents]="['CngxPaginate']">
       <app-example-card title="CngxPaginate — Headless with Custom Nav"
         [subtitle]="_s0"
         [source]="_src0">

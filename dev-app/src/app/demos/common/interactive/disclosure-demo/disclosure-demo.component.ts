@@ -17,7 +17,8 @@ import { CngxDisclosure } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="Disclosure"
-      description="Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.">
+      description="Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels."
+      [apiComponents]="['CngxDisclosure']">
       <app-example-card title="Basic — Uncontrolled"
         [subtitle]="_s0"
         [source]="_src0">

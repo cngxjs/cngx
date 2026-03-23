@@ -3,6 +3,7 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'MatPaginator',
   description: 'Material paginator wrapper that connects to a headless CngxPaginate directive via explicit reference binding.',
+  apiComponents: ['CngxMatPaginator', 'CngxPaginate'],
   moduleImports: [
     "import { viewChild } from '@angular/core';",
     "import { PEOPLE } from '../../../fixtures';",

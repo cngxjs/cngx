@@ -23,7 +23,8 @@ import { CngxAriaExpanded } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="Drawer"
-      description="Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes.">
+      description="Headless drawer/sidebar system: CngxDrawer (state), CngxDrawerPanel (sliding panel), CngxDrawerContent (content offset). Supports left/right/top/bottom, focus trapping, click-outside close, Escape key, and controlled+uncontrolled modes."
+      [apiComponents]="['CngxDrawer', 'CngxDrawerPanel', 'CngxDrawerContent']">
       <app-example-card title="Basic — Scroll Lock + Backdrop"
         [subtitle]="_s0"
         [source]="_src0">

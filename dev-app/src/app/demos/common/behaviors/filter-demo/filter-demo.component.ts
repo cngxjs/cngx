@@ -17,7 +17,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     CngxFilter,
   ],
   template: `
-    <app-doc-shell title="Filter">
+    <app-doc-shell title="Filter"
+      [apiComponents]="['CngxFilter']">
       <app-example-card title="CngxFilter — Controlled"
         [subtitle]="_s0"
         [source]="_src0">

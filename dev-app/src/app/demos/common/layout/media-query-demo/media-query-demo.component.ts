@@ -17,7 +17,8 @@ import { CngxMediaQuery } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="MediaQuery"
-      description="Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes.">
+      description="Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes."
+      [apiComponents]="['CngxMediaQuery']">
       <app-example-card title="CngxMediaQuery — Viewport Breakpoints"
         [subtitle]="_s0"
         [source]="_src0">

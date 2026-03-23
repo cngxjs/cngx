@@ -17,7 +17,8 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   ],
   template: `
     <app-doc-shell title="ReducedMotion"
-      description="Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.">
+      description="Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion."
+      [apiComponents]="['CngxReducedMotion']">
       <app-example-card title="CngxReducedMotion — Animation Toggle"
         [subtitle]="_s0"
         [source]="_src0">

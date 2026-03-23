@@ -24,7 +24,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
     MatTableModule,
   ],
   template: `
-    <app-doc-shell title="mat-table — SmartDataSource">
+    <app-doc-shell title="mat-table — SmartDataSource"
+      [apiComponents]="['CngxSort', 'CngxSortHeader', 'CngxFilter']">
       <app-example-card title="SmartDataSource + mat-table — auto-wired Sort & Filter"
         [subtitle]="_s0"
         [source]="_src0">
