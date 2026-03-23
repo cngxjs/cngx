@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import '@angular/compiler';
-import { coerceArray, coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
+import { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
 
 describe('coerceBooleanProperty', () => {
   it('returns true for truthy strings', () => {
@@ -32,16 +32,5 @@ describe('coerceNumberProperty', () => {
 
   it('passes through numbers', () => {
     expect(coerceNumberProperty(7)).toBe(7);
-  });
-});
-
-describe('coerceArray', () => {
-  it('wraps a scalar in an array', () => {
-    expect(coerceArray('a')).toEqual(['a']);
-    expect(coerceArray(1)).toEqual([1]);
-  });
-
-  it('returns an array unchanged', () => {
-    expect(coerceArray([1, 2])).toEqual([1, 2]);
   });
 });

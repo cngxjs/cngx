@@ -5,9 +5,10 @@ import {
   Component,
   computed,
   contentChildren,
+  DestroyRef,
   effect,
-  ElementRef,
   inject,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -47,6 +48,7 @@ import { CngxSidenav } from './sidenav';
   styleUrl: './sidenav-layout.scss',
   host: {
     '[class.cngx-sidenav-layout]': 'true',
+    '[class.cngx-sidenav-layout--ready]': 'ready()',
     '[class.cngx-sidenav-layout--has-overlay]': 'hasOverlay()',
   },
   template: `
@@ -60,43 +62,62 @@ import { CngxSidenav } from './sidenav';
   `,
 })
 export class CngxSidenavLayout {
-  private readonly _sidenavs = contentChildren(CngxSidenav);
+  /** @internal */
+  readonly ready = signal(false);
+
+  private readonly sidenavs = contentChildren(CngxSidenav);
 
   /** The start-positioned sidenav, if any. */
   readonly startSidenav = computed(() =>
-    this._sidenavs().find((s) => s.position() === 'start') ?? null,
+    this.sidenavs().find((s) => s.position() === 'start') ?? null,
   );
 
   /** The end-positioned sidenav, if any. */
   readonly endSidenav = computed(() =>
-    this._sidenavs().find((s) => s.position() === 'end') ?? null,
+    this.sidenavs().find((s) => s.position() === 'end') ?? null,
   );
 
   /** Whether any sidenav is open in overlay mode. */
   readonly hasOverlay = computed(() =>
-    this._sidenavs().some((s) => s.isOverlay() && s.opened()),
+    this.sidenavs().some((s) => s.isOverlay() && s.opened()),
   );
 
   constructor() {
     const doc = inject(DOCUMENT);
-    const el = inject(ElementRef<HTMLElement>);
 
     // Enable transitions only after first render to prevent jank on load
-    afterNextRender(() => {
-      requestAnimationFrame(() => {
-        (el.nativeElement as HTMLElement).classList.add('cngx-sidenav-layout--ready');
-      });
-    });
+    afterNextRender(() => this.ready.set(true));
 
-    // Scroll lock when overlay is active
+    // Scroll lock when overlay is active.
+    // Uses the same dataset-based ref-counting as CngxScrollLock so
+    // multiple lock sources don't corrupt each other's restore values.
+    const html = doc.documentElement;
+    const locked = signal(false);
+
     effect(() => {
-      const html = doc.documentElement;
-      if (this.hasOverlay()) {
+      if (this.hasOverlay() && !locked()) {
+        if (!html.dataset['cngxPrevOverflow']) {
+          html.dataset['cngxPrevOverflow'] = html.style.overflow;
+          html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
+        }
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
-      } else {
-        html.style.overflow = '';
-        html.style.scrollbarGutter = '';
+        locked.set(true);
+      } else if (!this.hasOverlay() && locked()) {
+        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
+        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
+        delete html.dataset['cngxPrevOverflow'];
+        delete html.dataset['cngxPrevScrollbarGutter'];
+        locked.set(false);
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      if (locked()) {
+        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
+        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
+        delete html.dataset['cngxPrevOverflow'];
+        delete html.dataset['cngxPrevScrollbarGutter'];
       }
     });
 
@@ -107,7 +128,7 @@ export class CngxSidenavLayout {
         if (!this.hasOverlay()) {
           return;
         }
-        for (const nav of this._sidenavs()) {
+        for (const nav of this.sidenavs()) {
           if (
             nav.isOverlay() &&
             nav.opened() &&
@@ -121,7 +142,7 @@ export class CngxSidenavLayout {
 
   /** Closes all sidenavs that are currently in overlay mode. */
   closeAllOverlays(): void {
-    for (const nav of this._sidenavs()) {
+    for (const nav of this.sidenavs()) {
       if (nav.isOverlay() && nav.opened()) {
         nav.close();
       }

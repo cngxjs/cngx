@@ -1,5 +1,5 @@
 /**
  * @module @cngx/core/tokens
  */
-export * from './src/environment.token';
-export * from './src/window.token';
+export { ENVIRONMENT, type Environment, provideEnvironment } from './src/environment.token';
+export { WINDOW, provideWindow, injectWindow } from './src/window.token';

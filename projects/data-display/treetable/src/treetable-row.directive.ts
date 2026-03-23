@@ -24,21 +24,21 @@ import type { FlatNode } from './models';
 })
 export class CngxTreetableRow<T = unknown> {
   /** The flat node this row represents. Required. */
-  node = input.required<FlatNode<T>>();
+  readonly node = input.required<FlatNode<T>>();
   /**
    * When `true`, the row is highlighted while hovered.
    * Typically driven by `resolvedOptions().highlightRowOnHover`.
    * @defaultValue `false`
    */
-  highlight = input(false);
+  readonly highlight = input(false);
   /**
    * When `true`, applies the `cngx-treetable__row--selected` CSS class.
    * Driven by the selection model in {@link CngxTreetablePresenter}.
    * @defaultValue `false`
    */
-  selected = input(false);
+  readonly selected = input(false);
 
-  private readonly hoverable = inject(CngxHoverable);
+  private readonly hoverable = inject(CngxHoverable, { host: true });
   /** `true` when both `highlight` is enabled and the row is currently hovered. */
   readonly highlighted = computed(() => this.highlight() && this.hoverable.hovered());
 }

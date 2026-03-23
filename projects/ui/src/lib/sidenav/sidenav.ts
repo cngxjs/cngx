@@ -1,8 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -11,6 +11,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 
 /** Logical position — flips in RTL. */
 export type SidenavPosition = 'start' | 'end';
@@ -68,14 +69,15 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[class.cngx-sidenav--expanded]': 'expanded()',
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[attr.aria-hidden]': "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.aria-hidden]':
+      "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
-    'role': 'complementary',
+    role: 'complementary',
     '[attr.aria-label]': 'ariaLabel() || null',
     '(keydown.escape)': 'closeIfOverlay()',
-    '(mouseenter)': '_onMouseEnter()',
-    '(mouseleave)': '_onMouseLeave()',
+    '(mouseenter)': 'handleMouseEnter()',
+    '(mouseleave)': 'handleMouseLeave()',
   },
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
@@ -84,13 +86,15 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     </div>
     <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
     @if (resizable()) {
-      <div class="cngx-sidenav__resize-handle"
-           (pointerdown)="_onResizeStart($event)"
-           role="separator"
-           [attr.aria-orientation]="'vertical'"
-           [attr.aria-valuenow]="_widthPx()"
-           [attr.aria-valuemin]="_minWidthPx()"
-           [attr.aria-valuemax]="_maxWidthPx()"></div>
+      <div
+        class="cngx-sidenav__resize-handle"
+        (pointerdown)="handleResizeStart($event)"
+        role="separator"
+        [attr.aria-orientation]="'vertical'"
+        [attr.aria-valuenow]="widthPx()"
+        [attr.aria-valuemin]="minWidthPx()"
+        [attr.aria-valuemax]="maxWidthPx()"
+      ></div>
     }
   `,
 })
@@ -137,28 +141,28 @@ export class CngxSidenav {
   readonly shortcut = input<string | undefined>(undefined);
 
   /** Whether a resize drag is in progress. */
-  private readonly _resizing = signal(false);
-  readonly resizing = this._resizing.asReadonly();
+  private readonly resizingState = signal(false);
+  readonly resizing = this.resizingState.asReadonly();
 
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
   /** Whether the mini-mode rail is currently expanded (hover or programmatic). */
-  private readonly _expanded = signal(false);
-  readonly expanded = this._expanded.asReadonly();
+  private readonly expandedState = signal(false);
+  readonly expanded = this.expandedState.asReadonly();
 
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
   // ── Responsive media query (inlined, not CngxMediaQuery directive) ──
-  private readonly _mediaMatches = signal(false);
+  private readonly mediaMatches = signal(false);
 
   /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
   readonly effectiveMode = computed<SidenavMode>(() => {
     if (!this.responsive()) {
       return this.mode();
     }
-    return this._mediaMatches() ? 'side' : this.mode();
+    return this.mediaMatches() ? 'side' : this.mode();
   });
 
   /** Whether this sidenav is in overlay mode (over). */
@@ -166,80 +170,74 @@ export class CngxSidenav {
 
   /** Resolved width — mini mode uses miniWidth unless expanded. */
   readonly effectiveWidth = computed(() => {
-    if (this.effectiveMode() === 'mini' && !this._expanded()) {
+    if (this.effectiveMode() === 'mini' && !this.expandedState()) {
       return this.miniWidth();
     }
     return this.width();
   });
 
+  private readonly doc = inject(DOCUMENT);
+  private readonly win = this.doc.defaultView;
+
+  /** Tracks the previous effective mode to detect transitions. */
+  private readonly prevMode = signal<SidenavMode | undefined>(undefined);
+
   constructor() {
     // Wire responsive matchMedia
-    let cleanupMedia: (() => void) | undefined;
-    effect(() => {
-      cleanupMedia?.();
+    effect((onCleanup) => {
       const query = this.responsive();
-      if (!query) {
+      const win = this.win;
+      if (!query || !win) {
         return;
       }
-      const mql = window.matchMedia(query);
-      this._mediaMatches.set(mql.matches);
-      const handler = (e: MediaQueryListEvent): void => this._mediaMatches.set(e.matches);
+      const mql = win.matchMedia(query);
+      this.mediaMatches.set(mql.matches);
+      const handler = (e: MediaQueryListEvent): void => this.mediaMatches.set(e.matches);
       mql.addEventListener('change', handler);
-      cleanupMedia = () => mql.removeEventListener('change', handler);
+      onCleanup(() => mql.removeEventListener('change', handler));
     });
-    const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(() => cleanupMedia?.());
 
-    // Keyboard shortcut toggle
-    let cleanupShortcut: (() => void) | undefined;
-    effect(() => {
-      cleanupShortcut?.();
-      const combo = this.shortcut();
-      if (!combo) {return;}
-      const parts = combo.toLowerCase().split('+').map((s) => s.trim());
-      const key = parts.pop()!;
-      const needsCtrl = parts.includes('ctrl');
-      const needsMeta = parts.includes('meta');
-      const needsMod = parts.includes('mod');
-      const needsShift = parts.includes('shift');
-      const needsAlt = parts.includes('alt');
-
+    // Keyboard shortcut toggle.
+    // Uses document.addEventListener instead of a host listener because:
+    // 1. The shortcut is a global hotkey — it must fire regardless of focus.
+    // 2. The combo string is a signal that can change at runtime, so the
+    //    listener must be torn down and re-registered on each change.
+    // 3. Angular host listeners don't support dynamic registration/teardown
+    //    driven by signal values — effect(onCleanup) handles this cleanly.
+    const isMac = this.win?.navigator?.userAgent?.includes('Mac') ?? false;
+    effect((onCleanup) => {
+      const shortcut = this.shortcut();
+      if (!shortcut) {
+        return;
+      }
+      const combo = parseKeyCombo(shortcut);
       const handler = (e: KeyboardEvent): void => {
-        if (e.key.toLowerCase() !== key) {return;}
-        if (needsShift && !e.shiftKey) {return;}
-        if (needsAlt && !e.altKey) {return;}
-        if (needsMod) {
-          // mod = meta on Mac, ctrl elsewhere
-          const isMac = navigator.platform?.startsWith('Mac') ?? navigator.userAgent.includes('Mac');
-          if (isMac ? !e.metaKey : !e.ctrlKey) {return;}
-        } else {
-          if (needsCtrl && !e.ctrlKey) {return;}
-          if (needsMeta && !e.metaKey) {return;}
+        if (matchesKeyCombo(e, combo, isMac)) {
+          e.preventDefault();
+          this.opened.set(!this.opened());
         }
-        e.preventDefault();
-        // Bypass mode guards — shortcut is always intentional
-        this.opened.set(!this.opened());
       };
-      document.addEventListener('keydown', handler);
-      cleanupShortcut = () => document.removeEventListener('keydown', handler);
+      this.doc.addEventListener('keydown', handler);
+      onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
-    destroyRef.onDestroy(() => cleanupShortcut?.());
 
-    // Sync opened state on mode transitions:
-    // When leaving side/mini mode the sidenav was visible regardless of `opened`.
-    // Ensure `opened` is true so it stays visible in the new mode.
-    let prevMode: SidenavMode | undefined;
+    // Sync opened state on mode transitions.
+    // prevMode is a plain signal updated at the end of each run so the
+    // effect can compare previous vs current mode without linkedSignal
+    // (which updates eagerly before the effect reads it).
     effect(() => {
       const mode = this.effectiveMode();
-      const alwaysVisible = (m: SidenavMode | undefined) => m === 'side' || m === 'mini';
-      if (alwaysVisible(prevMode) && !alwaysVisible(mode)) {
-        this.opened.set(true);
+      const prev = this.prevMode();
+      if (prev !== undefined) {
+        const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+        if (alwaysVisible(prev) && !alwaysVisible(mode)) {
+          this.opened.set(true);
+        }
+        if (prev === 'mini' && mode !== 'mini') {
+          this.expandedState.set(false);
+        }
       }
-      // Reset expanded state when leaving mini mode
-      if (prevMode === 'mini' && mode !== 'mini') {
-        this._expanded.set(false);
-      }
-      prevMode = mode;
+      this.prevMode.set(mode);
     });
   }
 
@@ -274,48 +272,50 @@ export class CngxSidenav {
 
   /** Expand the mini rail to full width. */
   expand(): void {
-    this._expanded.set(true);
+    this.expandedState.set(true);
   }
 
   /** Collapse the expanded mini rail back to miniWidth. */
   collapse(): void {
-    this._expanded.set(false);
+    this.expandedState.set(false);
   }
 
   /** @internal */
-  _onMouseEnter(): void {
+  handleMouseEnter(): void {
     if (this.effectiveMode() === 'mini' && this.expandOnHover()) {
-      this._expanded.set(true);
+      this.expandedState.set(true);
     }
   }
 
   /** @internal */
-  _onMouseLeave(): void {
+  handleMouseLeave(): void {
     if (this.effectiveMode() === 'mini') {
-      this._expanded.set(false);
+      this.expandedState.set(false);
     }
   }
 
   // ── Resize ──────────────────────────────────────────────────────
 
   /** @internal Parse a CSS px value to a number. */
-  _widthPx = computed(() => parseInt(this.width(), 10) || 280);
-  _minWidthPx = computed(() => parseInt(this.minWidth(), 10) || 120);
-  _maxWidthPx = computed(() => parseInt(this.maxWidth(), 10) || 600);
+  widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
+  minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
+  maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
 
   /** @internal */
-  _onResizeStart(e: PointerEvent): void {
-    if (!this.resizable()) {return;}
+  handleResizeStart(e: PointerEvent): void {
+    if (!this.resizable()) {
+      return;
+    }
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-    this._resizing.set(true);
+    this.resizingState.set(true);
     const startX = e.clientX;
     const el = this.elementRef.nativeElement as HTMLElement;
     const startWidth = el.getBoundingClientRect().width;
     const isEnd = this.position() === 'end';
-    const min = this._minWidthPx();
-    const max = this._maxWidthPx();
+    const min = this.minWidthPx();
+    const max = this.maxWidthPx();
     let currentWidth = startWidth;
     let rafId = 0;
 
@@ -333,14 +333,14 @@ export class CngxSidenav {
 
     const onUp = (): void => {
       cancelAnimationFrame(rafId);
-      this._resizing.set(false);
+      this.resizingState.set(false);
       // Sync final width back to the model (single CD cycle)
       this.width.set(`${currentWidth}px`);
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
+      this.doc.removeEventListener('pointermove', onMove);
+      this.doc.removeEventListener('pointerup', onUp);
     };
 
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
+    this.doc.addEventListener('pointermove', onMove);
+    this.doc.addEventListener('pointerup', onUp);
   }
 }

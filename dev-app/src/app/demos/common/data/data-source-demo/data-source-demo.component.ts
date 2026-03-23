@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { CngxPaginate } from '@cngx/common';
-import { CngxMatPaginator } from '@cngx/ui';
+import { CngxMatPaginator } from '@cngx/ui/material';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { injectDataSource } from '@cngx/common';
 import { PEOPLE, type Person } from '../../../../fixtures';

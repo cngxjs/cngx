@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   ViewEncapsulation,
 } from '@angular/core';
@@ -31,16 +30,16 @@ import { CngxSidenavLayout } from './sidenav-layout';
   encapsulation: ViewEncapsulation.None,
   host: {
     '[class.cngx-sidenav-content]': 'true',
-    '[style.margin-inline-start]': 'marginStart()',
-    '[style.margin-inline-end]': 'marginEnd()',
+    '[style.margin-inline-start]': 'marginStart',
+    '[style.margin-inline-end]': 'marginEnd',
   },
   template: `<ng-content />`,
 })
 export class CngxSidenavContent {
-  private readonly _layout = inject(CngxSidenavLayout, { optional: true });
+  private readonly layout = inject(CngxSidenavLayout, { optional: true });
 
   constructor() {
-    if (!this._layout) {
+    if (!this.layout) {
       throw new Error(
         'cngx-sidenav-content must be placed inside a cngx-sidenav-layout.',
       );
@@ -57,8 +56,8 @@ export class CngxSidenavContent {
    *
    * Kept as a public computed so tests and consumers can still read it.
    */
-  readonly marginStart = computed(() => '0');
+  readonly marginStart = '0';
 
   /** Margin offset for the end sidenav — same rationale as start. */
-  readonly marginEnd = computed(() => '0');
+  readonly marginEnd = '0';
 }

@@ -1,5 +1,5 @@
 import { type OverlayRef as CdkOverlayRef } from '@angular/cdk/overlay';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 /** Typed wrapper around a CDK OverlayRef that exposes a close result stream. */
 export class CngxOverlayRef<R = unknown> {
@@ -8,7 +8,10 @@ export class CngxOverlayRef<R = unknown> {
   readonly afterClosed$ = this._afterClosed.asObservable();
 
   constructor(private readonly cdkRef: CdkOverlayRef) {
-    cdkRef.backdropClick().subscribe(() => this.close());
+    cdkRef
+      .backdropClick()
+      .pipe(takeUntil(this._afterClosed))
+      .subscribe(() => this.close());
   }
 
   close(result?: R): void {

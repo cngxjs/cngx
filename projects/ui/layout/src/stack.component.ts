@@ -1,11 +1,24 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export type StackDirection = 'row' | 'column';
 export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
 export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
+const GAP_DEFAULTS: Record<StackGap, string> = {
+  none: '0',
+  xs: 'var(--cngx-gap-xs, 4px)',
+  sm: 'var(--cngx-gap-sm, 8px)',
+  md: 'var(--cngx-gap-md, 16px)',
+  lg: 'var(--cngx-gap-lg, 24px)',
+  xl: 'var(--cngx-gap-xl, 32px)',
+};
+
 /**
  * Composable flex-based stack layout component.
+ *
+ * Gap tokens use CSS custom properties (`--cngx-gap-xs` through `--cngx-gap-xl`)
+ * with sensible fallback defaults. Override them at any scope to match your
+ * application's spacing scale.
  *
  * @example
  * <cngx-stack direction="row" gap="md" align="center">
@@ -16,6 +29,7 @@ export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 @Component({
   selector: 'cngx-stack',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content />',
   styles: [
     `
@@ -40,15 +54,5 @@ export class CngxStack {
     return alignValue === 'stretch' ? 'stretch' : `flex-${alignValue}`;
   });
 
-  protected readonly gapValue = computed(() => {
-    const map: Record<StackGap, string> = {
-      none: '0',
-      xs: '4px',
-      sm: '8px',
-      md: '16px',
-      lg: '24px',
-      xl: '32px',
-    };
-    return map[this.gap()];
-  });
+  protected readonly gapValue = computed(() => GAP_DEFAULTS[this.gap()]);
 }

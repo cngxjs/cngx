@@ -6,7 +6,6 @@ import {
   input,
   linkedSignal,
   output,
-  type Signal,
   signal,
   type TrackByFunction,
   untracked,
@@ -44,13 +43,13 @@ export class CngxTreetablePresenter<T = unknown> {
    * The tree data to display. Accepts either a single root {@link Node} or an
    * array of root nodes for a forest.
    */
-  tree = input.required<Node<T> | Node<T>[]>();
+  readonly tree = input.required<Node<T> | Node<T>[]>();
 
   /**
    * Per-instance display options that override the application-wide
    * {@link TreetableConfig} provided via {@link provideTreetable}.
    */
-  options = input<TreetableOptions<T>>();
+  readonly options = input<TreetableOptions<T>>();
 
   /**
    * Optional function to derive a stable, domain-meaningful ID from a node's
@@ -64,7 +63,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * @param path - Zero-based index array from root to the current node.
    * @returns A string that is unique within the current tree.
    */
-  nodeId = input<(node: T, path: readonly number[]) => string>();
+  readonly nodeId = input<(node: T, path: readonly number[]) => string>();
 
   /**
    * Controlled expand state. When bound, the component operates in
@@ -93,7 +92,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * Uses Angular CDK's `SelectionModel` internally.
    * @defaultValue `'none'`
    */
-  selectionMode = input<'none' | 'single' | 'multi'>('none');
+  readonly selectionMode = input<'none' | 'single' | 'multi'>('none');
 
   /**
    * When `true`, renders a checkbox column (`_select`) to the left of the data
@@ -101,7 +100,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In `'multi'` mode a "select all" checkbox is shown in the column header.
    * @defaultValue `false`
    */
-  showCheckboxes = input<boolean>(false);
+  readonly showCheckboxes = input<boolean>(false);
 
   /**
    * Controlled selection state. When bound, the component operates in
@@ -127,28 +126,28 @@ export class CngxTreetablePresenter<T = unknown> {
    *
    * @defaultValue `node => node.id`
    */
-  trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
+  readonly trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
 
   /** Emitted when the user clicks a row or activates it via keyboard. */
-  nodeClicked = output<FlatNode<T>>();
+  readonly nodeClicked = output<FlatNode<T>>();
 
   /** Emitted when a node transitions from collapsed to expanded. */
-  nodeExpanded = output<FlatNode<T>>();
+  readonly nodeExpanded = output<FlatNode<T>>();
 
   /** Emitted when a node transitions from expanded to collapsed. */
-  nodeCollapsed = output<FlatNode<T>>();
+  readonly nodeCollapsed = output<FlatNode<T>>();
 
   /**
    * Emitted after every expand/collapse toggle with the new full set of
    * expanded IDs. Use this to synchronise an external `expandedIds` binding.
    */
-  expandedIdsChange = output<ReadonlySet<string>>();
+  readonly expandedIdsChange = output<ReadonlySet<string>>();
 
   /**
    * Emitted whenever the selection changes. The value is an array of the
    * currently selected node IDs.
    */
-  selectionChanged = output<readonly string[]>();
+  readonly selectionChanged = output<readonly string[]>();
 
   /**
    * Emitted after every selection change with the new full set of selected IDs.
@@ -160,14 +159,14 @@ export class CngxTreetablePresenter<T = unknown> {
    *   (selectedIdsChange)="myIds = $event" />
    * ```
    */
-  selectedIdsChange = output<ReadonlySet<string>>();
+  readonly selectedIdsChange = output<ReadonlySet<string>>();
 
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 
   /** All nodes in the tree flattened to a single array, depth-first. */
   readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()));
 
-  private readonly _expandedIds = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
+  private readonly expandedIdsState = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
     source: this.flatNodes,
     computation: (nodes) => getInitialExpandedIds(nodes),
   });
@@ -177,8 +176,8 @@ export class CngxTreetablePresenter<T = unknown> {
    * In uncontrolled mode this reflects the internal state; in controlled mode
    * it mirrors the `expandedIds` input.
    */
-  readonly expandedIds: Signal<ReadonlySet<string>> = computed(
-    () => this.expandedIdsInput() ?? this._expandedIds(),
+  readonly expandedIds = computed(
+    () => this.expandedIdsInput() ?? this.expandedIdsState(),
   );
 
   /** The subset of `flatNodes` that should be rendered (all ancestors expanded). */
@@ -213,16 +212,18 @@ export class CngxTreetablePresenter<T = unknown> {
 
   // ── Selection ──────────────────────────────────────────────────────────────
 
-  private _selectionModel = new SelectionModel<string>(false, []);
-  private readonly _selectedIds = signal<ReadonlySet<string>>(new Set());
+  private readonly selectionModel = linkedSignal(() =>
+    new SelectionModel<string>(this.selectionMode() === 'multi', []),
+  );
+  private readonly selectedIdsState = signal<ReadonlySet<string>>(new Set());
 
   /**
    * The current set of selected node IDs.
    * In uncontrolled mode this reflects internal state; in controlled mode
    * it mirrors the `selectedIds` input.
    */
-  readonly selectedIds: Signal<ReadonlySet<string>> = computed(
-    () => this.selectedIdsInput() ?? this._selectedIds(),
+  readonly selectedIds = computed(
+    () => this.selectedIdsInput() ?? this.selectedIdsState(),
   );
 
   /**
@@ -269,15 +270,16 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly focusedNodeId = signal<string | null>(null);
 
   constructor() {
-    // Recreate SelectionModel and re-subscribe whenever selectionMode changes.
+    // Subscribe to SelectionModel.changed whenever the model is recreated
+    // (linkedSignal recreates on selectionMode change). Syncs selectedIdsState
+    // and emits outputs.
     effect((onCleanup) => {
-      const isMulti = this.selectionMode() === 'multi';
-      this._selectionModel = new SelectionModel<string>(isMulti, []);
-      this._selectedIds.set(new Set());
+      const model = this.selectionModel();
+      this.selectedIdsState.set(new Set());
 
-      const sub = this._selectionModel.changed.subscribe(() => {
-        const next = new Set(this._selectionModel.selected);
-        this._selectedIds.set(next);
+      const sub = model.changed.subscribe(() => {
+        const next = new Set(model.selected);
+        this.selectedIdsState.set(next);
         this.selectionChanged.emit([...next]);
         this.selectedIdsChange.emit(next);
       });
@@ -286,13 +288,17 @@ export class CngxTreetablePresenter<T = unknown> {
     });
 
     // Sync SelectionModel when selectedIds input changes (controlled mode).
+    // SelectionModel.changed fires synchronously during deselect/select, so the
+    // subscription above updates selectedIdsState and emits outputs within the same
+    // microtask. untracked() prevents this effect from re-tracking those writes.
     effect(() => {
       const input = this.selectedIdsInput();
       if (input === undefined) {
         return;
       }
+      const model = this.selectionModel();
       const inputSet = new Set(input);
-      const current = new Set(this._selectionModel.selected);
+      const current = new Set(model.selected);
       const toDeselect = [...current].filter((id) => !inputSet.has(id));
       const toSelect = [...inputSet].filter((id) => !current.has(id));
       if (toDeselect.length === 0 && toSelect.length === 0) {
@@ -300,10 +306,10 @@ export class CngxTreetablePresenter<T = unknown> {
       }
       untracked(() => {
         if (toDeselect.length) {
-          this._selectionModel.deselect(...toDeselect);
+          model.deselect(...toDeselect);
         }
         if (toSelect.length) {
-          this._selectionModel.select(...toSelect);
+          model.select(...toSelect);
         }
       });
     });
@@ -336,11 +342,11 @@ export class CngxTreetablePresenter<T = unknown> {
     const next = new Set(current);
     if (next.has(node.id)) {
       next.delete(node.id);
-      this._expandedIds.set(next);
+      this.expandedIdsState.set(next);
       this.nodeCollapsed.emit(node);
     } else {
       next.add(node.id);
-      this._expandedIds.set(next);
+      this.expandedIdsState.set(next);
       this.nodeExpanded.emit(node);
     }
     this.expandedIdsChange.emit(next);
@@ -354,7 +360,7 @@ export class CngxTreetablePresenter<T = unknown> {
     if (this.selectionMode() === 'none') {
       return;
     }
-    this._selectionModel.toggle(node.id);
+    this.selectionModel().toggle(node.id);
   }
 
   /**
@@ -366,9 +372,9 @@ export class CngxTreetablePresenter<T = unknown> {
       return;
     }
     if (this.isAllSelected()) {
-      this._selectionModel.clear();
+      this.selectionModel().clear();
     } else {
-      this._selectionModel.select(...this.visibleNodes().map((n) => n.id));
+      this.selectionModel().select(...this.visibleNodes().map((n) => n.id));
     }
   }
 

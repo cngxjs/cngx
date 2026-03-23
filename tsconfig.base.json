@@ -20,6 +20,10 @@
     "isolatedModules": true,
     "paths": {
       "@cngx/common": ["projects/common/src/public-api.ts"],
+      "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
+      "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
+      "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
+      "@cngx/common/data": ["projects/common/data/public-api.ts"],
       "@cngx/core": ["projects/core/src/public-api.ts"],
       "@cngx/core/tokens": ["projects/core/tokens/public-api.ts"],
       "@cngx/core/utils": ["projects/core/utils/public-api.ts"],
@@ -29,10 +33,13 @@
       "@cngx/ui": ["projects/ui/src/public-api.ts"],
       "@cngx/ui/layout": ["projects/ui/layout/public-api.ts"],
       "@cngx/ui/overlay": ["projects/ui/overlay/public-api.ts"],
+      "@cngx/ui/material": ["projects/ui/material/public-api.ts"],
       "@cngx/utils": ["projects/utils/src/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/src/public-api.ts"],
-      "@cngx/data-display/treetable": ["projects/data-display/treetable/src/index.ts"]
+      "@cngx/data-display/treetable": ["projects/data-display/treetable/src/index.ts"],
+      "@cngx/data-display/mat-treetable": ["projects/data-display/mat-treetable/src/index.ts"],
+      "@cngx/testing": ["projects/testing/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

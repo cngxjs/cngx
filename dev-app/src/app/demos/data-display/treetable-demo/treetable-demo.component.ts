@@ -5,9 +5,10 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { PlaygroundComponent } from '../../../shared/playground.component';
 import { Playground } from '../../../shared/playground';
-import { CngxTreetable, CngxMaterialTreetable, CngxEmptyTpl, CngxHeaderTpl, CngxCellTpl } from '@cngx/data-display/treetable';
+import { CngxTreetable, CngxEmptyTpl, CngxHeaderTpl, CngxCellTpl } from '@cngx/data-display/treetable';
+import { CngxMaterialTreetable } from '@cngx/data-display/mat-treetable';
 import { CngxSearch, CngxSort, CngxSortHeader, CngxPaginate } from '@cngx/common';
-import { CngxMatPaginator } from '@cngx/ui';
+import { CngxMatPaginator } from '@cngx/ui/material';
 import { ORG_TREE, type Employee } from '../../../fixtures';
 import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
 import type { FlatNode, Node } from '@cngx/data-display/treetable';
