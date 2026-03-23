@@ -5,9 +5,10 @@ import {
   Component,
   computed,
   contentChildren,
+  DestroyRef,
   effect,
-  ElementRef,
   inject,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -47,6 +48,7 @@ import { CngxSidenav } from './sidenav';
   styleUrl: './sidenav-layout.scss',
   host: {
     '[class.cngx-sidenav-layout]': 'true',
+    '[class.cngx-sidenav-layout--ready]': '_ready()',
     '[class.cngx-sidenav-layout--has-overlay]': 'hasOverlay()',
   },
   template: `
@@ -60,6 +62,9 @@ import { CngxSidenav } from './sidenav';
   `,
 })
 export class CngxSidenavLayout {
+  /** @internal */
+  readonly _ready = signal(false);
+
   private readonly _sidenavs = contentChildren(CngxSidenav);
 
   /** The start-positioned sidenav, if any. */
@@ -79,33 +84,40 @@ export class CngxSidenavLayout {
 
   constructor() {
     const doc = inject(DOCUMENT);
-    const el = inject(ElementRef<HTMLElement>);
 
     // Enable transitions only after first render to prevent jank on load
-    afterNextRender(() => {
-      requestAnimationFrame(() => {
-        (el.nativeElement as HTMLElement).classList.add('cngx-sidenav-layout--ready');
-      });
-    });
+    afterNextRender(() => this._ready.set(true));
 
-    // Scroll lock when overlay is active (ref-counted to coexist with CngxScrollLock)
+    // Scroll lock when overlay is active.
+    // Uses the same dataset-based ref-counting as CngxScrollLock so
+    // multiple lock sources don't corrupt each other's restore values.
     const html = doc.documentElement;
-    let locked = false;
+    const locked = signal(false);
+
     effect(() => {
-      if (this.hasOverlay() && !locked) {
+      if (this.hasOverlay() && !locked()) {
         if (!html.dataset['cngxPrevOverflow']) {
           html.dataset['cngxPrevOverflow'] = html.style.overflow;
           html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
         }
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
-        locked = true;
-      } else if (!this.hasOverlay() && locked) {
+        locked.set(true);
+      } else if (!this.hasOverlay() && locked()) {
         html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
         html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
         delete html.dataset['cngxPrevOverflow'];
         delete html.dataset['cngxPrevScrollbarGutter'];
-        locked = false;
+        locked.set(false);
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      if (locked()) {
+        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
+        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
+        delete html.dataset['cngxPrevOverflow'];
+        delete html.dataset['cngxPrevScrollbarGutter'];
       }
     });
 

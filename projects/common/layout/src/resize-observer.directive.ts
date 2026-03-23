@@ -61,24 +61,23 @@ export class CngxResizeObserver {
   readonly resize = output<ResizeObserverEntry>();
 
   private readonly _el = inject(ElementRef<HTMLElement>);
-  private readonly _win = inject(DOCUMENT).defaultView;
-  private _observer: ResizeObserver | null = null;
 
   constructor() {
-    if (!this._win) {
+    const win = inject(DOCUMENT).defaultView;
+    if (!win) {
       return;
     }
 
-    this._observer = new this._win.ResizeObserver((entries: ResizeObserverEntry[]) => {
+    const observer = new win.ResizeObserver((entries: ResizeObserverEntry[]) => {
       this._entry.set(entries[0]);
       this.resize.emit(entries[0]);
     });
 
     effect(() => {
-      this._observer!.disconnect();
-      this._observer!.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
+      observer.disconnect();
+      observer.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
     });
 
-    inject(DestroyRef).onDestroy(() => this._observer?.disconnect());
+    inject(DestroyRef).onDestroy(() => observer.disconnect());
   }
 }

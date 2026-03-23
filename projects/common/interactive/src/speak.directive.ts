@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { DestroyRef, Directive, effect, inject, input, signal } from '@angular/core';
+import { afterNextRender, DestroyRef, Directive, effect, inject, input, signal } from '@angular/core';
 
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.
@@ -66,7 +66,7 @@ export class CngxSpeak {
   private readonly _speaking = signal(false);
   private readonly _supported: boolean;
   private readonly _synth: SpeechSynthesis | null;
-  private _initialized = false;
+  private readonly _initialized = signal(false);
 
   /** Whether the browser supports the SpeechSynthesis API. */
   readonly supported: boolean;
@@ -80,13 +80,11 @@ export class CngxSpeak {
     this._supported = !!this._synth;
     this.supported = this._supported;
 
+    afterNextRender(() => this._initialized.set(true));
+
     effect(() => {
       const value = this.text();
-      if (!this._initialized) {
-        this._initialized = true;
-        return;
-      }
-      if (!value || !this.enabled() || !this._synth) {
+      if (!this._initialized() || !value || !this.enabled() || !this._synth) {
         return;
       }
       this._speak(value);

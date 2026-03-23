@@ -75,12 +75,10 @@ export class CngxIntersectionObserver {
 
   private readonly _el = inject(ElementRef<HTMLElement>);
   private readonly _doc = inject(DOCUMENT);
-  private _observer: IntersectionObserver | null = null;
-
-  private readonly _win = this._doc.defaultView;
 
   constructor() {
-    if (!this._win) {
+    const win = this._doc.defaultView;
+    if (!win) {
       return;
     }
 
@@ -88,12 +86,9 @@ export class CngxIntersectionObserver {
       const root = this.root();
       const rootMargin = this.rootMargin();
       const threshold = this.threshold();
-
-      this._observer?.disconnect();
-
       const resolvedRoot = root ? this._doc.querySelector(root) : null;
 
-      this._observer = new IntersectionObserver(
+      const observer = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
           const wasIntersecting = this._entry()?.isIntersecting ?? false;
@@ -109,9 +104,9 @@ export class CngxIntersectionObserver {
         { root: resolvedRoot, rootMargin, threshold },
       );
 
-      this._observer.observe(this._el.nativeElement as HTMLElement);
+      observer.observe(this._el.nativeElement as HTMLElement);
 
-      onCleanup(() => this._observer?.disconnect());
+      onCleanup(() => observer.disconnect());
     });
   }
 }

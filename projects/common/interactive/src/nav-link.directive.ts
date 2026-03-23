@@ -83,9 +83,7 @@ export class CngxNavLink {
       if (!this._initialized() || !this.active() || !this.scrollOnActive()) {
         return;
       }
-      requestAnimationFrame(() => {
-        el.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
-      });
+      el.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     });
   }
 
