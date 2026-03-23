@@ -36,6 +36,6 @@ describe('CngxStack', () => {
   it('maps gap "sm" to 8px', () => {
     fixture.componentRef.setInput('gap', 'sm');
     fixture.detectChanges();
-    expect(host.style.gap).toBe('8px');
+    expect(host.style.gap).toBe('var(--cngx-gap-sm, 8px)');
   });
 });

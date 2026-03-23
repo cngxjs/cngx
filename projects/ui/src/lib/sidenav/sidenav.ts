@@ -7,7 +7,7 @@ import {
   ElementRef,
   inject,
   input,
-  linkedSignal,
+
   model,
   signal,
   ViewEncapsulation,
@@ -70,10 +70,11 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     '[class.cngx-sidenav--expanded]': 'expanded()',
     '[class.cngx-sidenav--resizable]': 'resizable()',
     '[class.cngx-sidenav--resizing]': 'resizing()',
-    '[attr.aria-hidden]': "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
+    '[attr.aria-hidden]':
+      "effectiveMode() === 'side' || effectiveMode() === 'mini' ? null : !opened()",
     '[style.--cngx-sidenav-width]': 'effectiveWidth()',
     '[style.--cngx-sidenav-mini-width]': 'miniWidth()',
-    'role': 'complementary',
+    role: 'complementary',
     '[attr.aria-label]': 'ariaLabel() || null',
     '(keydown.escape)': 'closeIfOverlay()',
     '(mouseenter)': '_onMouseEnter()',
@@ -86,13 +87,15 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     </div>
     <ng-content select="cngx-sidenav-footer, [cngxSidenavFooter]" />
     @if (resizable()) {
-      <div class="cngx-sidenav__resize-handle"
-           (pointerdown)="_onResizeStart($event)"
-           role="separator"
-           [attr.aria-orientation]="'vertical'"
-           [attr.aria-valuenow]="_widthPx()"
-           [attr.aria-valuemin]="_minWidthPx()"
-           [attr.aria-valuemax]="_maxWidthPx()"></div>
+      <div
+        class="cngx-sidenav__resize-handle"
+        (pointerdown)="_onResizeStart($event)"
+        role="separator"
+        [attr.aria-orientation]="'vertical'"
+        [attr.aria-valuenow]="_widthPx()"
+        [attr.aria-valuemin]="_minWidthPx()"
+        [attr.aria-valuemax]="_maxWidthPx()"
+      ></div>
     }
   `,
 })
@@ -178,7 +181,7 @@ export class CngxSidenav {
   private readonly _win = this._doc.defaultView;
 
   /** Tracks the previous effective mode to detect transitions. */
-  private readonly _prevMode = linkedSignal<SidenavMode>(() => this.effectiveMode());
+  private readonly _prevMode = signal<SidenavMode | undefined>(undefined);
 
   constructor() {
     // Wire responsive matchMedia
@@ -219,17 +222,23 @@ export class CngxSidenav {
       onCleanup(() => this._doc.removeEventListener('keydown', handler));
     });
 
-    // Sync opened state on mode transitions
+    // Sync opened state on mode transitions.
+    // _prevMode is a plain signal updated at the end of each run so the
+    // effect can compare previous vs current mode without linkedSignal
+    // (which updates eagerly before the effect reads it).
     effect(() => {
       const mode = this.effectiveMode();
       const prev = this._prevMode();
-      const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
-      if (alwaysVisible(prev) && !alwaysVisible(mode)) {
-        this.opened.set(true);
+      if (prev !== undefined) {
+        const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+        if (alwaysVisible(prev) && !alwaysVisible(mode)) {
+          this.opened.set(true);
+        }
+        if (prev === 'mini' && mode !== 'mini') {
+          this._expanded.set(false);
+        }
       }
-      if (prev === 'mini' && mode !== 'mini') {
-        this._expanded.set(false);
-      }
+      this._prevMode.set(mode);
     });
   }
 
@@ -289,13 +298,15 @@ export class CngxSidenav {
   // ── Resize ──────────────────────────────────────────────────────
 
   /** @internal Parse a CSS px value to a number. */
-  _widthPx = computed(() => parseInt(this.width(), 10) || 280);
-  _minWidthPx = computed(() => parseInt(this.minWidth(), 10) || 120);
-  _maxWidthPx = computed(() => parseInt(this.maxWidth(), 10) || 600);
+  _widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
+  _minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
+  _maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
 
   /** @internal */
   _onResizeStart(e: PointerEvent): void {
-    if (!this.resizable()) {return;}
+    if (!this.resizable()) {
+      return;
+    }
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
