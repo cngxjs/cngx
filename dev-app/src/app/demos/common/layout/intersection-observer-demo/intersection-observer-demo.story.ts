@@ -7,7 +7,7 @@ export const STORY: DemoSpec = {
   sections: [
     {
       title: 'CngxIntersectionObserver — Scroll Sentinel',
-      subtitle: '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions.',
+      subtitle: '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions. Set <code>[root]</code> to a CSS selector to observe within a scroll container instead of the viewport.',
       imports: ['CngxIntersectionObserver', 'DecimalPipe'],
       setup: `
   protected enterCount = signal(0);
@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
   `,
       template: `
   <div
+    class="io-scroll-root"
     style="
       height: 200px;
       overflow-y: auto;
@@ -23,13 +24,14 @@ export const STORY: DemoSpec = {
       padding: 0 16px;
     "
   >
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-end; padding-bottom: 16px; color: var(--cngx-text-secondary, #666);">
       ↓ Scroll down to reach the sentinel
     </div>
 
     <div
       cngxIntersectionObserver
       #io="cngxIntersectionObserver"
+      [root]="'.io-scroll-root'"
       [rootMargin]="'0px'"
       (entered)="enterCount.update(n => n + 1)"
       (left)="leaveCount.update(n => n + 1)"
@@ -45,7 +47,7 @@ export const STORY: DemoSpec = {
       — ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
     </div>
 
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-start; padding-top: 16px; color: var(--cngx-text-secondary, #666);">
       ↑ Scroll back up
     </div>
   </div>

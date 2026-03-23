@@ -27,6 +27,7 @@ import { DecimalPipe } from '@angular/common';
         [sourceTs]="_srcTs0">
         
   <div
+    class="io-scroll-root"
     style="
       height: 200px;
       overflow-y: auto;
@@ -35,13 +36,14 @@ import { DecimalPipe } from '@angular/common';
       padding: 0 16px;
     "
   >
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-end; padding-bottom: 16px; color: var(--cngx-text-secondary, #666);">
       ↓ Scroll down to reach the sentinel
     </div>
 
     <div
       cngxIntersectionObserver
       #io="cngxIntersectionObserver"
+      [root]="'.io-scroll-root'"
       [rootMargin]="'0px'"
       (entered)="enterCount.update(n => n + 1)"
       (left)="leaveCount.update(n => n + 1)"
@@ -57,7 +59,7 @@ import { DecimalPipe } from '@angular/common';
       — ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
     </div>
 
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-start; padding-top: 16px; color: var(--cngx-text-secondary, #666);">
       ↑ Scroll back up
     </div>
   </div>
@@ -77,8 +79,9 @@ import { DecimalPipe } from '@angular/common';
   `,
 })
 export class IntersectionObserverDemoComponent {
-  protected readonly _s0 = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions.';
+  protected readonly _s0 = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions. Set <code>[root]</code> to a CSS selector to observe within a scroll container instead of the viewport.';
   protected readonly _srcHtml0 = `<div
+    class="io-scroll-root"
     style="
       height: 200px;
       overflow-y: auto;
@@ -87,13 +90,14 @@ export class IntersectionObserverDemoComponent {
       padding: 0 16px;
     "
   >
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-end; padding-bottom: 16px; color: var(--cngx-text-secondary, #666);">
       ↓ Scroll down to reach the sentinel
     </div>
 
     <div
       cngxIntersectionObserver
       #io="cngxIntersectionObserver"
+      [root]="'.io-scroll-root'"
       [rootMargin]="'0px'"
       (entered)="enterCount.update(n => n + 1)"
       (left)="leaveCount.update(n => n + 1)"
@@ -109,7 +113,7 @@ export class IntersectionObserverDemoComponent {
       — ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
     </div>
 
-    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+    <div style="height: 400px; display: flex; align-items: flex-start; padding-top: 16px; color: var(--cngx-text-secondary, #666);">
       ↑ Scroll back up
     </div>
   </div>
