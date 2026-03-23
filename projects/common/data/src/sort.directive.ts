@@ -40,12 +40,12 @@ export class CngxSort {
    */
   readonly multiSort = input<boolean>(false);
 
-  private readonly _sorts = signal<SortEntry[]>([]);
+  private readonly sortsState = signal<SortEntry[]>([]);
 
   /** The active sort column of the primary entry (controlled takes precedence in single-sort mode). */
-  readonly active = computed(() => this.activeInput() ?? this._sorts()[0]?.active);
+  readonly active = computed(() => this.activeInput() ?? this.sortsState()[0]?.active);
   /** The active sort direction of the primary entry (controlled takes precedence in single-sort mode). */
-  readonly direction = computed(() => this.directionInput() ?? this._sorts()[0]?.direction);
+  readonly direction = computed(() => this.directionInput() ?? this.sortsState()[0]?.direction);
 
   /**
    * The primary sort state, or `null` when no sort is active.
@@ -59,7 +59,7 @@ export class CngxSort {
    * All active sort entries in priority order.
    * Contains at most one entry when additive mode has not been used.
    */
-  readonly sorts = this._sorts.asReadonly();
+  readonly sorts = this.sortsState.asReadonly();
 
   /** `true` when at least one sort is active. */
   readonly isActive = computed(() => this.sorts().length > 0);
@@ -86,7 +86,7 @@ export class CngxSort {
    */
   setSort(field: string, additive = false): void {
     if (additive) {
-      const current = this._sorts();
+      const current = this.sortsState();
       const idx = current.findIndex((s) => s.active === field);
       let next: SortEntry[];
       if (idx === -1) {
@@ -96,17 +96,17 @@ export class CngxSort {
       } else {
         next = current.filter((_, i) => i !== idx);
       }
-      this._sorts.set(next);
+      this.sortsState.set(next);
       this.sortsChange.emit(next);
       if (next[0]) {
         this.sortChange.emit(next[0]);
       }
     } else {
-      const current = this._sorts();
+      const current = this.sortsState();
       const dir: 'asc' | 'desc' =
         field === current[0]?.active ? (current[0].direction === 'asc' ? 'desc' : 'asc') : 'asc';
       const entry: SortEntry = { active: field, direction: dir };
-      this._sorts.set([entry]);
+      this.sortsState.set([entry]);
       this.sortChange.emit(entry);
       this.sortsChange.emit([entry]);
     }
@@ -118,7 +118,7 @@ export class CngxSort {
    * should also listen to `sortsChange` or check `isActive()`.
    */
   clear(): void {
-    this._sorts.set([]);
+    this.sortsState.set([]);
     this.sortsChange.emit([]);
   }
 }

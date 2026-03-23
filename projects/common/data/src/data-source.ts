@@ -24,12 +24,12 @@ import type { Observable } from 'rxjs';
 export class CngxDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
 
-  constructor(private readonly _data: Signal<T[]>) {
+  constructor(private readonly data: Signal<T[]>) {
     super();
   }
 
   override connect(): Observable<T[]> {
-    return toObservable(this._data, { injector: this.injector });
+    return toObservable(this.data, { injector: this.injector });
   }
 
   override disconnect(): void {

@@ -32,11 +32,11 @@ export class CngxSearch {
   /** Debounce delay in milliseconds. @defaultValue 300 */
   readonly debounceMs = input<number>(300);
 
-  private readonly _term = signal('');
+  private readonly termState = signal('');
   /** The current (debounced) search term. */
-  readonly term = this._term.asReadonly();
+  readonly term = this.termState.asReadonly();
   /** `true` when the search term is non-empty. */
-  readonly hasValue = computed(() => this._term().length > 0);
+  readonly hasValue = computed(() => this.termState().length > 0);
 
   /** Emitted after each debounced input event with the new term. */
   readonly searchChange = output<string>();
@@ -54,14 +54,14 @@ export class CngxSearch {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((term) => {
-        this._term.set(term);
+        this.termState.set(term);
         this.searchChange.emit(term);
       });
   }
 
   /** Clears the search term and resets the input element value. */
   clear(): void {
-    this._term.set('');
+    this.termState.set('');
     this.renderer.setProperty(this.el.nativeElement, 'value', '');
     this.searchChange.emit('');
   }

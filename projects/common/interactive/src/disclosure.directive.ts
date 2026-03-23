@@ -64,17 +64,17 @@ export class CngxDisclosure {
   /** The `id` of the controlled content element. Sets `aria-controls`. */
   readonly controls = input<string | undefined>(undefined);
 
-  private readonly _opened = signal(false);
+  private readonly openedState = signal(false);
 
   /** Resolved opened state — controlled input wins over internal state. */
-  readonly opened = computed(() => this.openedInput() ?? this._opened());
+  readonly opened = computed(() => this.openedInput() ?? this.openedState());
 
   /** Emitted when the opened state changes. */
   readonly openedChange = output<boolean>();
 
   /** Opens the disclosure. */
   open(): void {
-    this._opened.set(true);
+    this.openedState.set(true);
     this.openedChange.emit(true);
   }
 
@@ -83,7 +83,7 @@ export class CngxDisclosure {
     if (!this.opened()) {
       return;
     }
-    this._opened.set(false);
+    this.openedState.set(false);
     this.openedChange.emit(false);
   }
 

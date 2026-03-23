@@ -53,21 +53,21 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
    * Items after filter and search are applied, before sort and pagination.
    * Use `filteredCount()` to get the pre-pagination count for paginator `total`.
    */
-  private readonly _filtered: Signal<T[]>;
+  private readonly filtered: Signal<T[]>;
 
   /** Number of items after filtering/searching, before pagination. */
   readonly filteredCount: Signal<number>;
 
-  private readonly _processed: Signal<T[]>;
+  private readonly processed: Signal<T[]>;
 
   constructor(
-    private readonly _data: Signal<T[]>,
+    private readonly data: Signal<T[]>,
     private readonly options?: CngxSmartDataSourceOptions<T>,
   ) {
     super();
 
-    this._filtered = computed(() => {
-      let items = this._data();
+    this.filtered = computed(() => {
+      let items = this.data();
 
       // Filter via CngxFilter (predicate function)
       const predicate = this.filter?.predicate();
@@ -97,10 +97,10 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
       return items;
     });
 
-    this.filteredCount = computed(() => this._filtered().length);
+    this.filteredCount = computed(() => this.filtered().length);
 
-    this._processed = computed(() => {
-      let items = this._filtered();
+    this.processed = computed(() => {
+      let items = this.filtered();
 
       // Sort via CngxSort — respects the full multi-sort stack in priority order
       const sorts = this.sort?.sorts() ?? [];
@@ -142,7 +142,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   }
 
   override connect(): Observable<T[]> {
-    return toObservable(this._processed, { injector: this.injector });
+    return toObservable(this.processed, { injector: this.injector });
   }
 
   override disconnect(): void {

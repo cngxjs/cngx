@@ -41,17 +41,17 @@ export class CngxClickOutside {
   /** Emitted when the user interacts outside the host element. */
   readonly clickOutside = output<PointerEvent | MouseEvent | TouchEvent>();
 
-  private readonly _el = inject(ElementRef<HTMLElement>);
-  private readonly _doc = inject(DOCUMENT);
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly doc = inject(DOCUMENT);
 
   constructor() {
     toObservable(this.eventType)
       .pipe(
-        switchMap((type) => fromEvent<PointerEvent | MouseEvent | TouchEvent>(this._doc, type)),
+        switchMap((type) => fromEvent<PointerEvent | MouseEvent | TouchEvent>(this.doc, type)),
         takeUntilDestroyed(),
       )
       .subscribe((e) => {
-        if (this.enabled() && !(this._el.nativeElement as HTMLElement).contains(e.target as Node)) {
+        if (this.enabled() && !(this.el.nativeElement as HTMLElement).contains(e.target as Node)) {
           this.clickOutside.emit(e);
         }
       });

@@ -36,24 +36,24 @@ export class CngxMediaQuery {
   /** The CSS media query string to evaluate. */
   readonly query = input.required<string>({ alias: 'cngxMediaQuery' });
 
-  private readonly _matches = signal(false);
-  private readonly _win = inject(DOCUMENT).defaultView;
+  private readonly matchesState = signal(false);
+  private readonly win = inject(DOCUMENT).defaultView;
 
   /** Whether the media query currently matches. */
-  readonly matches = this._matches.asReadonly();
+  readonly matches = this.matchesState.asReadonly();
 
   constructor() {
     effect((onCleanup) => {
-      const win = this._win;
+      const win = this.win;
       if (!win) {
-        this._matches.set(false);
+        this.matchesState.set(false);
         return;
       }
 
       const mql = win.matchMedia(this.query());
-      this._matches.set(mql.matches);
+      this.matchesState.set(mql.matches);
 
-      const handler = (e: MediaQueryListEvent): void => this._matches.set(e.matches);
+      const handler = (e: MediaQueryListEvent): void => this.matchesState.set(e.matches);
       mql.addEventListener('change', handler);
       onCleanup(() => mql.removeEventListener('change', handler));
     });

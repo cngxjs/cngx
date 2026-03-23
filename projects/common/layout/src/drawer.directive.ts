@@ -48,10 +48,10 @@ export class CngxDrawer {
   /** Controlled opened state. When bound, takes precedence over internal state. */
   readonly openedInput = input<boolean | undefined>(undefined, { alias: 'cngxDrawerOpened' });
 
-  private readonly _opened = signal(false);
+  private readonly openedState = signal(false);
 
   /** Resolved opened state — controlled input wins over internal state. */
-  readonly opened = computed(() => this.openedInput() ?? this._opened());
+  readonly opened = computed(() => this.openedInput() ?? this.openedState());
 
   /** Emitted when the opened state changes. Wire to a signal for two-way binding. */
   readonly openedChange = output<boolean>();
@@ -60,7 +60,7 @@ export class CngxDrawer {
 
   /** Opens the drawer. */
   open(): void {
-    this._opened.set(true);
+    this.openedState.set(true);
     this.openedChange.emit(true);
   }
 
@@ -69,7 +69,7 @@ export class CngxDrawer {
     if (!this.opened()) {
       return;
     }
-    this._opened.set(false);
+    this.openedState.set(false);
     this.openedChange.emit(false);
     this.closed.emit();
   }

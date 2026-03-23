@@ -48,8 +48,8 @@ import {
     '[class.cngx-nav-link]': 'true',
     '[class.cngx-nav-link--active]': 'active()',
     '[attr.aria-current]': 'active() ? ariaCurrent() : null',
-    '[attr.tabindex]': '_needsFocusFix() ? 0 : null',
-    '[attr.role]': "_needsFocusFix() ? 'link' : null",
+    '[attr.tabindex]': 'needsFocusFix() ? 0 : null',
+    '[attr.role]': "needsFocusFix() ? 'link' : null",
     '[style.--cngx-nav-depth]': 'depth()',
   },
 })
@@ -59,28 +59,28 @@ export class CngxNavLink {
    * for focusability. Checked after render so Angular bindings like `[href]` are applied.
    * @internal
    */
-  readonly _needsFocusFix = signal(false);
+  readonly needsFocusFix = signal(false);
 
-  private readonly _initialized = signal(false);
+  private readonly initialized = signal(false);
 
   constructor() {
     const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
 
     afterNextRender(() => {
       if (el.tagName === 'A') {
-        this._needsFocusFix.set(!el.hasAttribute('href'));
+        this.needsFocusFix.set(!el.hasAttribute('href'));
       }
       const text = el.textContent?.trim();
       if (text && !Object.hasOwn(el.dataset, 'initial')) {
         el.dataset['initial'] = text.charAt(0).toUpperCase();
       }
-      this._initialized.set(true);
+      this.initialized.set(true);
     });
 
     // Scroll into view when becoming active (e.g., after route change).
     // Skips the initial render to avoid scroll jank on page load.
     effect(() => {
-      if (!this._initialized() || !this.active() || !this.scrollOnActive()) {
+      if (!this.initialized() || !this.active() || !this.scrollOnActive()) {
         return;
       }
       el.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });

@@ -28,7 +28,7 @@ import { type CngxSort } from './sort.directive';
   exportAs: 'cngxSortHeader',
   standalone: true,
   host: {
-    '(click)': 'onSort($event)',
+    '(click)': 'handleSort($event)',
     '[attr.aria-sort]': 'ariaSort()',
     '[class.cngx-sort-header--active]': 'isActive()',
     '[class.cngx-sort-header--asc]': 'isAsc()',
@@ -41,18 +41,18 @@ export class CngxSortHeader {
   /** Explicit reference to the owning `CngxSort`. */
   readonly cngxSortRef = input.required<CngxSort>();
 
-  private readonly _entry = computed(() =>
+  private readonly entry = computed(() =>
     this.cngxSortRef()
       .sorts()
       .find((s) => s.active === this.field()),
   );
 
   /** `true` when this column is part of the active sort (primary or secondary). */
-  readonly isActive = computed(() => this._entry() !== undefined);
+  readonly isActive = computed(() => this.entry() !== undefined);
   /** `true` when this column is active and sorted ascending. */
-  readonly isAsc = computed(() => this._entry()?.direction === 'asc');
+  readonly isAsc = computed(() => this.entry()?.direction === 'asc');
   /** `true` when this column is active and sorted descending. */
-  readonly isDesc = computed(() => this._entry()?.direction === 'desc');
+  readonly isDesc = computed(() => this.entry()?.direction === 'desc');
 
   /**
    * 1-based position of this column in the sort stack.
@@ -74,7 +74,7 @@ export class CngxSortHeader {
     return this.isAsc() ? 'ascending' : 'descending';
   });
 
-  protected onSort(event?: MouseEvent): void {
+  protected handleSort(event?: MouseEvent): void {
     const additive = this.cngxSortRef().multiSort() && (event?.shiftKey ?? false);
     this.cngxSortRef().setSort(this.field(), additive);
   }

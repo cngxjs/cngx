@@ -63,52 +63,52 @@ export class CngxSpeak {
   /** Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()`. */
   readonly enabled = input(true);
 
-  private readonly _speaking = signal(false);
-  private readonly _supported: boolean;
-  private readonly _synth: SpeechSynthesis | null;
-  private readonly _initialized = signal(false);
+  private readonly speakingState = signal(false);
+  private readonly supportedState: boolean;
+  private readonly synth: SpeechSynthesis | null;
+  private readonly initialized = signal(false);
 
   /** Whether the browser supports the SpeechSynthesis API. */
   readonly supported: boolean;
 
   /** `true` while an utterance is being spoken. */
-  readonly speaking = this._speaking.asReadonly();
+  readonly speaking = this.speakingState.asReadonly();
 
   constructor() {
     const win = inject(DOCUMENT).defaultView;
-    this._synth = win?.speechSynthesis ?? null;
-    this._supported = !!this._synth;
-    this.supported = this._supported;
+    this.synth = win?.speechSynthesis ?? null;
+    this.supportedState = !!this.synth;
+    this.supported = this.supportedState;
 
-    afterNextRender(() => this._initialized.set(true));
+    afterNextRender(() => this.initialized.set(true));
 
     effect(() => {
       const value = this.text();
-      if (!this._initialized() || !value || !this.enabled() || !this._synth) {
+      if (!this.initialized() || !value || !this.enabled() || !this.synth) {
         return;
       }
-      this._speak(value);
+      this.performSpeak(value);
     });
 
-    inject(DestroyRef).onDestroy(() => this._synth?.cancel());
+    inject(DestroyRef).onDestroy(() => this.synth?.cancel());
   }
 
   /** Speak arbitrary text. Always works regardless of `enabled`. */
   speak(text: string): void {
-    if (text && this._synth) {
-      this._speak(text);
+    if (text && this.synth) {
+      this.performSpeak(text);
     }
   }
 
   /** Cancel any ongoing speech. */
   cancel(): void {
-    this._synth?.cancel();
-    this._speaking.set(false);
+    this.synth?.cancel();
+    this.speakingState.set(false);
   }
 
   /** Toggle speech: speak text if idle, cancel if speaking. */
   toggle(): void {
-    if (this._speaking()) {
+    if (this.speakingState()) {
       this.cancel();
     } else {
       const text = this.text();
@@ -118,8 +118,8 @@ export class CngxSpeak {
     }
   }
 
-  private _speak(text: string): void {
-    const synth = this._synth!;
+  private performSpeak(text: string): void {
+    const synth = this.synth!;
     synth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -131,9 +131,9 @@ export class CngxSpeak {
       utterance.lang = lang;
     }
 
-    utterance.onstart = () => this._speaking.set(true);
-    utterance.onend = () => this._speaking.set(false);
-    utterance.onerror = () => this._speaking.set(false);
+    utterance.onstart = () => this.speakingState.set(true);
+    utterance.onend = () => this.speakingState.set(false);
+    utterance.onerror = () => this.speakingState.set(false);
 
     synth.speak(utterance);
   }

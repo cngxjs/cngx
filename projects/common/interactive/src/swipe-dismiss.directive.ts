@@ -47,13 +47,13 @@ export class CngxSwipeDismiss {
   /** Emitted when a swipe gesture completes past the threshold. */
   readonly swiped = output<void>();
 
-  private readonly _swiping = signal(false);
-  private readonly _swipeProgress = signal(0);
+  private readonly swipingState = signal(false);
+  private readonly swipeProgressState = signal(0);
 
   /** Whether a swipe gesture is currently in progress. */
-  readonly swiping = this._swiping.asReadonly();
+  readonly swiping = this.swipingState.asReadonly();
   /** Progress of the current swipe from 0 to 1 (clamped). */
-  readonly swipeProgress = this._swipeProgress.asReadonly();
+  readonly swipeProgress = this.swipeProgressState.asReadonly();
 
   constructor() {
     const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
@@ -72,21 +72,21 @@ export class CngxSwipeDismiss {
 
           return pointerMove$.pipe(
             tap((move) => {
-              const delta = this._getDelta(startX, startY, move.clientX, move.clientY);
+              const delta = this.getDelta(startX, startY, move.clientX, move.clientY);
               if (delta > 0) {
-                this._swiping.set(true);
-                this._swipeProgress.set(Math.min(1, delta / this.threshold()));
+                this.swipingState.set(true);
+                this.swipeProgressState.set(Math.min(1, delta / this.threshold()));
               }
             }),
             takeUntil(
               pointerUp$.pipe(
-                map((end) => this._getDelta(startX, startY, end.clientX, end.clientY)),
+                map((end) => this.getDelta(startX, startY, end.clientX, end.clientY)),
                 tap((delta) => {
                   if (delta >= this.threshold()) {
                     this.swiped.emit();
                   }
-                  this._swiping.set(false);
-                  this._swipeProgress.set(0);
+                  this.swipingState.set(false);
+                  this.swipeProgressState.set(0);
                 }),
               ),
             ),
@@ -97,7 +97,7 @@ export class CngxSwipeDismiss {
       .subscribe();
   }
 
-  private _getDelta(startX: number, startY: number, endX: number, endY: number): number {
+  private getDelta(startX: number, startY: number, endX: number, endY: number): number {
     const dir = this.direction();
     switch (dir) {
       case 'left':

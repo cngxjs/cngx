@@ -48,7 +48,7 @@ import { CngxSidenav } from './sidenav';
   styleUrl: './sidenav-layout.scss',
   host: {
     '[class.cngx-sidenav-layout]': 'true',
-    '[class.cngx-sidenav-layout--ready]': '_ready()',
+    '[class.cngx-sidenav-layout--ready]': 'ready()',
     '[class.cngx-sidenav-layout--has-overlay]': 'hasOverlay()',
   },
   template: `
@@ -63,30 +63,30 @@ import { CngxSidenav } from './sidenav';
 })
 export class CngxSidenavLayout {
   /** @internal */
-  readonly _ready = signal(false);
+  readonly ready = signal(false);
 
-  private readonly _sidenavs = contentChildren(CngxSidenav);
+  private readonly sidenavs = contentChildren(CngxSidenav);
 
   /** The start-positioned sidenav, if any. */
   readonly startSidenav = computed(() =>
-    this._sidenavs().find((s) => s.position() === 'start') ?? null,
+    this.sidenavs().find((s) => s.position() === 'start') ?? null,
   );
 
   /** The end-positioned sidenav, if any. */
   readonly endSidenav = computed(() =>
-    this._sidenavs().find((s) => s.position() === 'end') ?? null,
+    this.sidenavs().find((s) => s.position() === 'end') ?? null,
   );
 
   /** Whether any sidenav is open in overlay mode. */
   readonly hasOverlay = computed(() =>
-    this._sidenavs().some((s) => s.isOverlay() && s.opened()),
+    this.sidenavs().some((s) => s.isOverlay() && s.opened()),
   );
 
   constructor() {
     const doc = inject(DOCUMENT);
 
     // Enable transitions only after first render to prevent jank on load
-    afterNextRender(() => this._ready.set(true));
+    afterNextRender(() => this.ready.set(true));
 
     // Scroll lock when overlay is active.
     // Uses the same dataset-based ref-counting as CngxScrollLock so
@@ -128,7 +128,7 @@ export class CngxSidenavLayout {
         if (!this.hasOverlay()) {
           return;
         }
-        for (const nav of this._sidenavs()) {
+        for (const nav of this.sidenavs()) {
           if (
             nav.isOverlay() &&
             nav.opened() &&
@@ -142,7 +142,7 @@ export class CngxSidenavLayout {
 
   /** Closes all sidenavs that are currently in overlay mode. */
   closeAllOverlays(): void {
-    for (const nav of this._sidenavs()) {
+    for (const nav of this.sidenavs()) {
       if (nav.isOverlay() && nav.opened()) {
         nav.close();
       }

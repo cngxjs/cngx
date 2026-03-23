@@ -40,16 +40,16 @@ export class CngxReducedMotion {
 
   constructor() {
     const win = inject(DOCUMENT).defaultView;
-    const _pref = signal(false);
+    const pref = signal(false);
 
     if (win) {
       const mq = win.matchMedia('(prefers-reduced-motion: reduce)');
-      _pref.set(mq.matches);
-      const listener = (e: MediaQueryListEvent) => _pref.set(e.matches);
+      pref.set(mq.matches);
+      const listener = (e: MediaQueryListEvent) => pref.set(e.matches);
       mq.addEventListener('change', listener);
       inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', listener));
     }
 
-    this.prefersReducedMotion = _pref.asReadonly();
+    this.prefersReducedMotion = pref.asReadonly();
   }
 }

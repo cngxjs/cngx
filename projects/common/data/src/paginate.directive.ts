@@ -36,13 +36,13 @@ export class CngxPaginate {
    */
   readonly total = input<number>(0);
 
-  private readonly _pageIndex = signal(0);
-  private readonly _pageSize = signal(10);
+  private readonly pageIndexState = signal(0);
+  private readonly pageSizeState = signal(10);
 
   /** Current page index (0-based). Controlled input takes precedence. */
-  readonly pageIndex = computed(() => this.pageIndexInput() ?? this._pageIndex());
+  readonly pageIndex = computed(() => this.pageIndexInput() ?? this.pageIndexState());
   /** Current page size. Controlled input takes precedence. */
-  readonly pageSize = computed(() => this.pageSizeInput() ?? this._pageSize());
+  readonly pageSize = computed(() => this.pageSizeInput() ?? this.pageSizeState());
 
   /** Total number of pages (minimum 1). */
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize())));
@@ -72,7 +72,7 @@ export class CngxPaginate {
    */
   setPage(index: number): void {
     const clamped = Math.max(0, Math.min(index, this.totalPages() - 1));
-    this._pageIndex.set(clamped);
+    this.pageIndexState.set(clamped);
     this.pageChange.emit(clamped);
   }
 
@@ -81,10 +81,10 @@ export class CngxPaginate {
    * Emits `pageSizeChange` and, when `resetPage` is `true`, `pageChange`.
    */
   setPageSize(size: number, resetPage = true): void {
-    this._pageSize.set(size);
+    this.pageSizeState.set(size);
     this.pageSizeChange.emit(size);
     if (resetPage) {
-      this._pageIndex.set(0);
+      this.pageIndexState.set(0);
       this.pageChange.emit(0);
     }
   }

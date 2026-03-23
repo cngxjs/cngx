@@ -46,21 +46,21 @@ export class CngxResizeObserver {
   /** Which box model to observe. `'content-box'` (default), `'border-box'`, or `'device-pixel-content-box'`. */
   readonly box = input<ResizeObserverBoxOptions>('content-box');
 
-  private readonly _entry = signal<ResizeObserverEntry | null>(null);
+  private readonly entryState = signal<ResizeObserverEntry | null>(null);
 
   /** The full `DOMRectReadOnly` of the content box. `null` before first observation. */
-  readonly contentRect = computed(() => this._entry()?.contentRect ?? null);
+  readonly contentRect = computed(() => this.entryState()?.contentRect ?? null);
   /** Current width in pixels. `0` before first observation. */
-  readonly width = computed(() => this._entry()?.contentRect.width ?? 0);
+  readonly width = computed(() => this.entryState()?.contentRect.width ?? 0);
   /** Current height in pixels. `0` before first observation. */
-  readonly height = computed(() => this._entry()?.contentRect.height ?? 0);
+  readonly height = computed(() => this.entryState()?.contentRect.height ?? 0);
   /** `true` after the first resize observation has been received. */
-  readonly isReady = computed(() => this._entry() !== null);
+  readonly isReady = computed(() => this.entryState() !== null);
 
   /** Emitted on every resize with the raw `ResizeObserverEntry`. */
   readonly resize = output<ResizeObserverEntry>();
 
-  private readonly _el = inject(ElementRef<HTMLElement>);
+  private readonly el = inject(ElementRef<HTMLElement>);
 
   constructor() {
     const win = inject(DOCUMENT).defaultView;
@@ -69,13 +69,13 @@ export class CngxResizeObserver {
     }
 
     const observer = new win.ResizeObserver((entries: ResizeObserverEntry[]) => {
-      this._entry.set(entries[0]);
+      this.entryState.set(entries[0]);
       this.resize.emit(entries[0]);
     });
 
     effect(() => {
       observer.disconnect();
-      observer.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
+      observer.observe(this.el.nativeElement as HTMLElement, { box: this.box() });
     });
 
     inject(DestroyRef).onDestroy(() => observer.disconnect());

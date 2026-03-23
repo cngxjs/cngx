@@ -46,30 +46,30 @@ export class CngxFocusTrap {
   /** Computed signal reflecting the current trap state. */
   readonly isActive = computed(() => this.enabled());
 
-  private readonly _trap: FocusTrap;
+  private readonly trap: FocusTrap;
 
   constructor() {
     const el = inject(ElementRef<HTMLElement>);
-    this._trap = inject(FocusTrapFactory).create(el.nativeElement as HTMLElement);
+    this.trap = inject(FocusTrapFactory).create(el.nativeElement as HTMLElement);
 
     effect(() => {
       const enabled = this.enabled();
-      this._trap.enabled = enabled;
+      this.trap.enabled = enabled;
       if (enabled && this.autoFocus()) {
-        void this._trap.focusFirstTabbableElementWhenReady();
+        void this.trap.focusFirstTabbableElementWhenReady();
       }
     });
 
-    inject(DestroyRef).onDestroy(() => this._trap.destroy());
+    inject(DestroyRef).onDestroy(() => this.trap.destroy());
   }
 
   /** Programmatically focus the first tabbable element within the trap. */
   focusFirst(): void {
-    void this._trap.focusFirstTabbableElementWhenReady();
+    void this.trap.focusFirstTabbableElementWhenReady();
   }
 
   /** Programmatically focus the last tabbable element within the trap. */
   focusLast(): void {
-    void this._trap.focusLastTabbableElementWhenReady();
+    void this.trap.focusLastTabbableElementWhenReady();
   }
 }

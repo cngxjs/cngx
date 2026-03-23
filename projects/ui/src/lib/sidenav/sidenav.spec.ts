@@ -278,21 +278,21 @@ describe('CngxSidenav mini mode', () => {
     expect(left.expanded()).toBe(false);
   });
 
-  it('_onMouseEnter sets expanded to true in mini mode', () => {
+  it('handleMouseEnter sets expanded to true in mini mode', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
     fixture.detectChanges();
-    left._onMouseEnter();
+    left.handleMouseEnter();
     expect(left.expanded()).toBe(true);
   });
 
-  it('_onMouseLeave sets expanded to false in mini mode', () => {
+  it('handleMouseLeave sets expanded to false in mini mode', () => {
     const { fixture, left, host } = setupDual();
     host.mode.set('mini');
     fixture.detectChanges();
-    left._onMouseEnter();
+    left.handleMouseEnter();
     expect(left.expanded()).toBe(true);
-    left._onMouseLeave();
+    left.handleMouseLeave();
     expect(left.expanded()).toBe(false);
   });
 
@@ -309,7 +309,7 @@ describe('CngxSidenav mini mode', () => {
     host.mode.set('mini');
     host.width.set('300px');
     fixture.detectChanges();
-    left._onMouseEnter();
+    left.handleMouseEnter();
     expect(left.effectiveWidth()).toBe('300px');
   });
 
@@ -332,7 +332,7 @@ describe('CngxSidenav mini mode', () => {
     const left = fixture.debugElement
       .queryAll(By.directive(CngxSidenav))[0]
       .injector.get(CngxSidenav);
-    left._onMouseEnter();
+    left.handleMouseEnter();
     fixture.detectChanges();
     expect(leftEl.classList.contains('cngx-sidenav--expanded')).toBe(true);
   });

@@ -17,25 +17,25 @@ import { Directive, signal } from '@angular/core';
   exportAs: 'cngxFocusVisible',
   standalone: true,
   host: {
-    '(pointerdown)': '_pointerActive = true',
-    '(focusin)': 'onFocus()',
-    '(focusout)': 'onBlur()',
+    '(pointerdown)': 'pointerActive = true',
+    '(focusin)': 'handleFocus()',
+    '(focusout)': 'handleBlur()',
     '[class.cngx-focus-visible]': 'focusVisible()',
   },
 })
 export class CngxFocusVisible {
-  private readonly _focusVisible = signal(false);
-  readonly focusVisible = this._focusVisible.asReadonly();
+  private readonly focusVisibleState = signal(false);
+  readonly focusVisible = this.focusVisibleState.asReadonly();
 
   /** @internal */
-  _pointerActive = false;
+  pointerActive = false;
 
-  protected onFocus(): void {
-    this._focusVisible.set(!this._pointerActive);
-    this._pointerActive = false;
+  protected handleFocus(): void {
+    this.focusVisibleState.set(!this.pointerActive);
+    this.pointerActive = false;
   }
 
-  protected onBlur(): void {
-    this._focusVisible.set(false);
+  protected handleBlur(): void {
+    this.focusVisibleState.set(false);
   }
 }

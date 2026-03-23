@@ -76,8 +76,8 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     role: 'complementary',
     '[attr.aria-label]': 'ariaLabel() || null',
     '(keydown.escape)': 'closeIfOverlay()',
-    '(mouseenter)': '_onMouseEnter()',
-    '(mouseleave)': '_onMouseLeave()',
+    '(mouseenter)': 'handleMouseEnter()',
+    '(mouseleave)': 'handleMouseLeave()',
   },
   template: `
     <ng-content select="cngx-sidenav-header, [cngxSidenavHeader]" />
@@ -88,12 +88,12 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
     @if (resizable()) {
       <div
         class="cngx-sidenav__resize-handle"
-        (pointerdown)="_onResizeStart($event)"
+        (pointerdown)="handleResizeStart($event)"
         role="separator"
         [attr.aria-orientation]="'vertical'"
-        [attr.aria-valuenow]="_widthPx()"
-        [attr.aria-valuemin]="_minWidthPx()"
-        [attr.aria-valuemax]="_maxWidthPx()"
+        [attr.aria-valuenow]="widthPx()"
+        [attr.aria-valuemin]="minWidthPx()"
+        [attr.aria-valuemax]="maxWidthPx()"
       ></div>
     }
   `,
@@ -141,28 +141,28 @@ export class CngxSidenav {
   readonly shortcut = input<string | undefined>(undefined);
 
   /** Whether a resize drag is in progress. */
-  private readonly _resizing = signal(false);
-  readonly resizing = this._resizing.asReadonly();
+  private readonly resizingState = signal(false);
+  readonly resizing = this.resizingState.asReadonly();
 
   /** Two-way opened state. Supports `[(opened)]="signal"`. */
   readonly opened = model<boolean>(false);
 
   /** Whether the mini-mode rail is currently expanded (hover or programmatic). */
-  private readonly _expanded = signal(false);
-  readonly expanded = this._expanded.asReadonly();
+  private readonly expandedState = signal(false);
+  readonly expanded = this.expandedState.asReadonly();
 
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
   // ── Responsive media query (inlined, not CngxMediaQuery directive) ──
-  private readonly _mediaMatches = signal(false);
+  private readonly mediaMatches = signal(false);
 
   /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
   readonly effectiveMode = computed<SidenavMode>(() => {
     if (!this.responsive()) {
       return this.mode();
     }
-    return this._mediaMatches() ? 'side' : this.mode();
+    return this.mediaMatches() ? 'side' : this.mode();
   });
 
   /** Whether this sidenav is in overlay mode (over). */
@@ -170,29 +170,29 @@ export class CngxSidenav {
 
   /** Resolved width — mini mode uses miniWidth unless expanded. */
   readonly effectiveWidth = computed(() => {
-    if (this.effectiveMode() === 'mini' && !this._expanded()) {
+    if (this.effectiveMode() === 'mini' && !this.expandedState()) {
       return this.miniWidth();
     }
     return this.width();
   });
 
-  private readonly _doc = inject(DOCUMENT);
-  private readonly _win = this._doc.defaultView;
+  private readonly doc = inject(DOCUMENT);
+  private readonly win = this.doc.defaultView;
 
   /** Tracks the previous effective mode to detect transitions. */
-  private readonly _prevMode = signal<SidenavMode | undefined>(undefined);
+  private readonly prevMode = signal<SidenavMode | undefined>(undefined);
 
   constructor() {
     // Wire responsive matchMedia
     effect((onCleanup) => {
       const query = this.responsive();
-      const win = this._win;
+      const win = this.win;
       if (!query || !win) {
         return;
       }
       const mql = win.matchMedia(query);
-      this._mediaMatches.set(mql.matches);
-      const handler = (e: MediaQueryListEvent): void => this._mediaMatches.set(e.matches);
+      this.mediaMatches.set(mql.matches);
+      const handler = (e: MediaQueryListEvent): void => this.mediaMatches.set(e.matches);
       mql.addEventListener('change', handler);
       onCleanup(() => mql.removeEventListener('change', handler));
     });
@@ -204,7 +204,7 @@ export class CngxSidenav {
     //    listener must be torn down and re-registered on each change.
     // 3. Angular host listeners don't support dynamic registration/teardown
     //    driven by signal values — effect(onCleanup) handles this cleanly.
-    const isMac = this._win?.navigator?.userAgent?.includes('Mac') ?? false;
+    const isMac = this.win?.navigator?.userAgent?.includes('Mac') ?? false;
     effect((onCleanup) => {
       const shortcut = this.shortcut();
       if (!shortcut) {
@@ -217,27 +217,27 @@ export class CngxSidenav {
           this.opened.set(!this.opened());
         }
       };
-      this._doc.addEventListener('keydown', handler);
-      onCleanup(() => this._doc.removeEventListener('keydown', handler));
+      this.doc.addEventListener('keydown', handler);
+      onCleanup(() => this.doc.removeEventListener('keydown', handler));
     });
 
     // Sync opened state on mode transitions.
-    // _prevMode is a plain signal updated at the end of each run so the
+    // prevMode is a plain signal updated at the end of each run so the
     // effect can compare previous vs current mode without linkedSignal
     // (which updates eagerly before the effect reads it).
     effect(() => {
       const mode = this.effectiveMode();
-      const prev = this._prevMode();
+      const prev = this.prevMode();
       if (prev !== undefined) {
         const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
         if (alwaysVisible(prev) && !alwaysVisible(mode)) {
           this.opened.set(true);
         }
         if (prev === 'mini' && mode !== 'mini') {
-          this._expanded.set(false);
+          this.expandedState.set(false);
         }
       }
-      this._prevMode.set(mode);
+      this.prevMode.set(mode);
     });
   }
 
@@ -272,50 +272,50 @@ export class CngxSidenav {
 
   /** Expand the mini rail to full width. */
   expand(): void {
-    this._expanded.set(true);
+    this.expandedState.set(true);
   }
 
   /** Collapse the expanded mini rail back to miniWidth. */
   collapse(): void {
-    this._expanded.set(false);
+    this.expandedState.set(false);
   }
 
   /** @internal */
-  _onMouseEnter(): void {
+  handleMouseEnter(): void {
     if (this.effectiveMode() === 'mini' && this.expandOnHover()) {
-      this._expanded.set(true);
+      this.expandedState.set(true);
     }
   }
 
   /** @internal */
-  _onMouseLeave(): void {
+  handleMouseLeave(): void {
     if (this.effectiveMode() === 'mini') {
-      this._expanded.set(false);
+      this.expandedState.set(false);
     }
   }
 
   // ── Resize ──────────────────────────────────────────────────────
 
   /** @internal Parse a CSS px value to a number. */
-  _widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
-  _minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
-  _maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
+  widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
+  minWidthPx = computed(() => Number.parseInt(this.minWidth(), 10) || 120);
+  maxWidthPx = computed(() => Number.parseInt(this.maxWidth(), 10) || 600);
 
   /** @internal */
-  _onResizeStart(e: PointerEvent): void {
+  handleResizeStart(e: PointerEvent): void {
     if (!this.resizable()) {
       return;
     }
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
-    this._resizing.set(true);
+    this.resizingState.set(true);
     const startX = e.clientX;
     const el = this.elementRef.nativeElement as HTMLElement;
     const startWidth = el.getBoundingClientRect().width;
     const isEnd = this.position() === 'end';
-    const min = this._minWidthPx();
-    const max = this._maxWidthPx();
+    const min = this.minWidthPx();
+    const max = this.maxWidthPx();
     let currentWidth = startWidth;
     let rafId = 0;
 
@@ -333,14 +333,14 @@ export class CngxSidenav {
 
     const onUp = (): void => {
       cancelAnimationFrame(rafId);
-      this._resizing.set(false);
+      this.resizingState.set(false);
       // Sync final width back to the model (single CD cycle)
       this.width.set(`${currentWidth}px`);
-      this._doc.removeEventListener('pointermove', onMove);
-      this._doc.removeEventListener('pointerup', onUp);
+      this.doc.removeEventListener('pointermove', onMove);
+      this.doc.removeEventListener('pointerup', onUp);
     };
 
-    this._doc.addEventListener('pointermove', onMove);
-    this._doc.addEventListener('pointerup', onUp);
+    this.doc.addEventListener('pointermove', onMove);
+    this.doc.addEventListener('pointerup', onUp);
   }
 }

@@ -67,15 +67,15 @@ export class CngxNavGroup {
   /** Nesting depth for indentation. Consumer sets manually. */
   readonly depth = input<number>(0);
 
-  private readonly _registry = inject(CngxNavGroupRegistry, { optional: true });
-  private readonly _config = inject(CNGX_NAV_CONFIG, { optional: true });
+  private readonly registry = inject(CngxNavGroupRegistry, { optional: true });
+  private readonly config = inject(CNGX_NAV_CONFIG, { optional: true });
 
   constructor() {
-    this._registry?.register(this);
-    inject(DestroyRef).onDestroy(() => this._registry?.unregister(this));
+    this.registry?.register(this);
+    inject(DestroyRef).onDestroy(() => this.registry?.unregister(this));
 
-    const singleAccordion = this._config?.singleAccordion ?? CNGX_NAV_DEFAULTS.singleAccordion;
-    const registry = this._registry;
+    const singleAccordion = this.config?.singleAccordion ?? CNGX_NAV_DEFAULTS.singleAccordion;
+    const registry = this.registry;
     if (singleAccordion && registry) {
       effect(() => {
         if (this.disclosure.opened()) {

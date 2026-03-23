@@ -59,12 +59,12 @@ export class CngxIntersectionObserver {
   /** Visibility ratio(s) at which the callback fires. `0` = any pixel visible, `1` = fully visible. */
   readonly threshold = input<number | number[]>(0);
 
-  private readonly _entry = signal<IntersectionObserverEntry | null>(null);
+  private readonly entryState = signal<IntersectionObserverEntry | null>(null);
 
   /** `true` when any part of the element is visible within the root. */
-  readonly isIntersecting = computed(() => this._entry()?.isIntersecting ?? false);
+  readonly isIntersecting = computed(() => this.entryState()?.isIntersecting ?? false);
   /** The fraction of the element currently visible (0–1). */
-  readonly intersectionRatio = computed(() => this._entry()?.intersectionRatio ?? 0);
+  readonly intersectionRatio = computed(() => this.entryState()?.intersectionRatio ?? 0);
 
   /** Emitted on every intersection change with the raw `IntersectionObserverEntry`. */
   readonly intersectionChange = output<IntersectionObserverEntry>();
@@ -73,11 +73,11 @@ export class CngxIntersectionObserver {
   /** Emitted once when the element leaves the observed area. */
   readonly left = output<void>();
 
-  private readonly _el = inject(ElementRef<HTMLElement>);
-  private readonly _doc = inject(DOCUMENT);
+  private readonly el = inject(ElementRef<HTMLElement>);
+  private readonly doc = inject(DOCUMENT);
 
   constructor() {
-    const win = this._doc.defaultView;
+    const win = this.doc.defaultView;
     if (!win) {
       return;
     }
@@ -86,13 +86,13 @@ export class CngxIntersectionObserver {
       const root = this.root();
       const rootMargin = this.rootMargin();
       const threshold = this.threshold();
-      const resolvedRoot = root ? this._doc.querySelector(root) : null;
+      const resolvedRoot = root ? this.doc.querySelector(root) : null;
 
       const observer = new IntersectionObserver(
         (entries) => {
           const entry = entries[0];
-          const wasIntersecting = this._entry()?.isIntersecting ?? false;
-          this._entry.set(entry);
+          const wasIntersecting = this.entryState()?.isIntersecting ?? false;
+          this.entryState.set(entry);
           this.intersectionChange.emit(entry);
           if (entry.isIntersecting && !wasIntersecting) {
             this.entered.emit();
@@ -104,7 +104,7 @@ export class CngxIntersectionObserver {
         { root: resolvedRoot, rootMargin, threshold },
       );
 
-      observer.observe(this._el.nativeElement as HTMLElement);
+      observer.observe(this.el.nativeElement as HTMLElement);
 
       onCleanup(() => observer.disconnect());
     });

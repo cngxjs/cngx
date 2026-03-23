@@ -166,7 +166,7 @@ export class CngxTreetablePresenter<T = unknown> {
   /** All nodes in the tree flattened to a single array, depth-first. */
   readonly flatNodes = computed(() => flattenTree(this.tree(), this.nodeId()));
 
-  private readonly _expandedIds = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
+  private readonly expandedIdsState = linkedSignal<FlatNode<T>[], ReadonlySet<string>>({
     source: this.flatNodes,
     computation: (nodes) => getInitialExpandedIds(nodes),
   });
@@ -177,7 +177,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * it mirrors the `expandedIds` input.
    */
   readonly expandedIds = computed(
-    () => this.expandedIdsInput() ?? this._expandedIds(),
+    () => this.expandedIdsInput() ?? this.expandedIdsState(),
   );
 
   /** The subset of `flatNodes` that should be rendered (all ancestors expanded). */
@@ -212,10 +212,10 @@ export class CngxTreetablePresenter<T = unknown> {
 
   // ── Selection ──────────────────────────────────────────────────────────────
 
-  private readonly _selectionModel = linkedSignal(() =>
+  private readonly selectionModel = linkedSignal(() =>
     new SelectionModel<string>(this.selectionMode() === 'multi', []),
   );
-  private readonly _selectedIds = signal<ReadonlySet<string>>(new Set());
+  private readonly selectedIdsState = signal<ReadonlySet<string>>(new Set());
 
   /**
    * The current set of selected node IDs.
@@ -223,7 +223,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * it mirrors the `selectedIds` input.
    */
   readonly selectedIds = computed(
-    () => this.selectedIdsInput() ?? this._selectedIds(),
+    () => this.selectedIdsInput() ?? this.selectedIdsState(),
   );
 
   /**
@@ -271,15 +271,15 @@ export class CngxTreetablePresenter<T = unknown> {
 
   constructor() {
     // Subscribe to SelectionModel.changed whenever the model is recreated
-    // (linkedSignal recreates on selectionMode change). Syncs _selectedIds
+    // (linkedSignal recreates on selectionMode change). Syncs selectedIdsState
     // and emits outputs.
     effect((onCleanup) => {
-      const model = this._selectionModel();
-      this._selectedIds.set(new Set());
+      const model = this.selectionModel();
+      this.selectedIdsState.set(new Set());
 
       const sub = model.changed.subscribe(() => {
         const next = new Set(model.selected);
-        this._selectedIds.set(next);
+        this.selectedIdsState.set(next);
         this.selectionChanged.emit([...next]);
         this.selectedIdsChange.emit(next);
       });
@@ -289,14 +289,14 @@ export class CngxTreetablePresenter<T = unknown> {
 
     // Sync SelectionModel when selectedIds input changes (controlled mode).
     // SelectionModel.changed fires synchronously during deselect/select, so the
-    // subscription above updates _selectedIds and emits outputs within the same
+    // subscription above updates selectedIdsState and emits outputs within the same
     // microtask. untracked() prevents this effect from re-tracking those writes.
     effect(() => {
       const input = this.selectedIdsInput();
       if (input === undefined) {
         return;
       }
-      const model = this._selectionModel();
+      const model = this.selectionModel();
       const inputSet = new Set(input);
       const current = new Set(model.selected);
       const toDeselect = [...current].filter((id) => !inputSet.has(id));
@@ -342,11 +342,11 @@ export class CngxTreetablePresenter<T = unknown> {
     const next = new Set(current);
     if (next.has(node.id)) {
       next.delete(node.id);
-      this._expandedIds.set(next);
+      this.expandedIdsState.set(next);
       this.nodeCollapsed.emit(node);
     } else {
       next.add(node.id);
-      this._expandedIds.set(next);
+      this.expandedIdsState.set(next);
       this.nodeExpanded.emit(node);
     }
     this.expandedIdsChange.emit(next);
@@ -360,7 +360,7 @@ export class CngxTreetablePresenter<T = unknown> {
     if (this.selectionMode() === 'none') {
       return;
     }
-    this._selectionModel().toggle(node.id);
+    this.selectionModel().toggle(node.id);
   }
 
   /**
@@ -372,9 +372,9 @@ export class CngxTreetablePresenter<T = unknown> {
       return;
     }
     if (this.isAllSelected()) {
-      this._selectionModel().clear();
+      this.selectionModel().clear();
     } else {
-      this._selectionModel().select(...this.visibleNodes().map((n) => n.id));
+      this.selectionModel().select(...this.visibleNodes().map((n) => n.id));
     }
   }
 

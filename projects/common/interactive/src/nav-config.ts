@@ -28,9 +28,9 @@ export interface CngxNavConfig {
 /** A feature configuration function returned by `withXxx()` helpers. */
 export interface NavConfigFeature {
   /** @internal */
-  readonly _apply: (config: CngxNavConfig) => CngxNavConfig;
+  readonly apply: (config: CngxNavConfig) => CngxNavConfig;
   /** @internal */
-  readonly _providers?: Provider[];
+  readonly providers?: Provider[];
 }
 
 /** Default nav configuration values. */
@@ -71,9 +71,9 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
   let config: CngxNavConfig = {};
   const extraProviders: Provider[] = [];
   for (const f of features) {
-    config = f._apply(config);
-    if (f._providers) {
-      extraProviders.push(...f._providers);
+    config = f.apply(config);
+    if (f.providers) {
+      extraProviders.push(...f.providers);
     }
   }
   const providers: Provider[] = [
@@ -88,17 +88,17 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
 
 /** Enable single-accordion mode (only one nav group open at a time). */
 export function withSingleAccordion(): NavConfigFeature {
-  return { _apply: (c) => ({ ...c, singleAccordion: true }) };
+  return { apply: (c) => ({ ...c, singleAccordion: true }) };
 }
 
 /** Set the indentation per depth level in px. */
 export function withNavIndent(px: number): NavConfigFeature {
-  return { _apply: (c) => ({ ...c, indent: px }) };
+  return { apply: (c) => ({ ...c, indent: px }) };
 }
 
 /** Set the animation duration for nav group expand/collapse in ms. */
 export function withNavAnimation(ms: number): NavConfigFeature {
-  return { _apply: (c) => ({ ...c, animationDuration: ms }) };
+  return { apply: (c) => ({ ...c, animationDuration: ms }) };
 }
 
 /**

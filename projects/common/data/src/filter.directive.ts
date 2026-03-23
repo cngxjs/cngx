@@ -40,16 +40,16 @@ export class CngxFilter<T = unknown> {
   /** Controlled predicate. When bound, takes precedence over the `'default'` internal predicate. */
   readonly predicateInput = input<((value: T) => boolean) | null>(null, { alias: 'cngxFilter' });
 
-  private readonly _predicates = signal<Map<string, (value: T) => boolean>>(new Map());
+  private readonly predicatesState = signal<Map<string, (value: T) => boolean>>(new Map());
 
   /**
    * All active named predicates.
    * Use `addPredicate` / `removePredicate` to manage this map.
    */
-  readonly predicates = this._predicates.asReadonly();
+  readonly predicates = this.predicatesState.asReadonly();
 
   /** Number of active named predicates (controlled input not counted). */
-  readonly activeCount = computed(() => this._predicates().size);
+  readonly activeCount = computed(() => this.predicatesState().size);
 
   /**
    * The combined predicate — AND of all active named predicates plus the
@@ -57,7 +57,7 @@ export class CngxFilter<T = unknown> {
    */
   readonly predicate = computed((): ((value: T) => boolean) | null => {
     const controlled = this.predicateInput();
-    const map = this._predicates();
+    const map = this.predicatesState();
 
     const fns: ((value: T) => boolean)[] = [];
     if (controlled) {
@@ -90,9 +90,9 @@ export class CngxFilter<T = unknown> {
    * Emits `predicatesChange` with the updated map.
    */
   addPredicate(key: string, fn: (value: T) => boolean): void {
-    const next = new Map(this._predicates());
+    const next = new Map(this.predicatesState());
     next.set(key, fn);
-    this._predicates.set(next);
+    this.predicatesState.set(next);
     this.predicatesChange.emit(next);
   }
 
@@ -101,13 +101,13 @@ export class CngxFilter<T = unknown> {
    * Emits `predicatesChange` with the updated map.
    */
   removePredicate(key: string): void {
-    const current = this._predicates();
+    const current = this.predicatesState();
     if (!current.has(key)) {
       return;
     }
     const next = new Map(current);
     next.delete(key);
-    this._predicates.set(next);
+    this.predicatesState.set(next);
     this.predicatesChange.emit(next);
   }
 
@@ -126,7 +126,7 @@ export class CngxFilter<T = unknown> {
 
   /** Removes all named predicates and emits `filterChange` with `null`. */
   clear(): void {
-    this._predicates.set(new Map());
+    this.predicatesState.set(new Map());
     this.predicatesChange.emit(new Map());
     this.filterChange.emit(null);
   }

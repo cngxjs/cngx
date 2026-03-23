@@ -24,21 +24,21 @@ export interface NavGroupRef {
  */
 @Injectable()
 export class CngxNavGroupRegistry {
-  private readonly _groups = new Set<NavGroupRef>();
+  private readonly groups = new Set<NavGroupRef>();
 
   /** @internal */
   register(group: NavGroupRef): void {
-    this._groups.add(group);
+    this.groups.add(group);
   }
 
   /** @internal */
   unregister(group: NavGroupRef): void {
-    this._groups.delete(group);
+    this.groups.delete(group);
   }
 
   /** Closes all groups except the specified one. */
   closeOthers(except: NavGroupRef): void {
-    for (const group of this._groups) {
+    for (const group of this.groups) {
       if (group !== except && group.disclosure.opened()) {
         group.disclosure.close();
       }

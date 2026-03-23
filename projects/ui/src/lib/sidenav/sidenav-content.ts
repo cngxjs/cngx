@@ -36,10 +36,10 @@ import { CngxSidenavLayout } from './sidenav-layout';
   template: `<ng-content />`,
 })
 export class CngxSidenavContent {
-  private readonly _layout = inject(CngxSidenavLayout, { optional: true });
+  private readonly layout = inject(CngxSidenavLayout, { optional: true });
 
   constructor() {
-    if (!this._layout) {
+    if (!this.layout) {
       throw new Error(
         'cngx-sidenav-content must be placed inside a cngx-sidenav-layout.',
       );

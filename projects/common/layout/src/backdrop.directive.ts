@@ -47,7 +47,7 @@ import { Directive, effect, ElementRef, inject, input, output } from '@angular/c
   host: {
     '[class.cngx-backdrop--visible]': 'visible()',
     '[attr.aria-hidden]': '!visible()',
-    '(click)': 'onHostClick()',
+    '(click)': 'handleHostClick()',
   },
 })
 export class CngxBackdrop {
@@ -58,7 +58,7 @@ export class CngxBackdrop {
   /** Emitted when the backdrop is clicked (and `closeOnClick` is true). */
   readonly backdropClick = output<void>();
 
-  private readonly _el = inject(ElementRef<HTMLElement>);
+  private readonly el = inject(ElementRef<HTMLElement>);
 
   constructor() {
     // Cache siblings once on first effect run (DOM is available at this point).
@@ -66,7 +66,7 @@ export class CngxBackdrop {
 
     effect(() => {
       if (!siblings) {
-        const el = this._el.nativeElement as HTMLElement;
+        const el = this.el.nativeElement as HTMLElement;
         const parent = el.parentElement;
         siblings = parent
           ? Array.from(parent.children).filter(
@@ -83,7 +83,7 @@ export class CngxBackdrop {
   }
 
   /** @internal */
-  protected onHostClick(): void {
+  protected handleHostClick(): void {
     if (this.visible() && this.closeOnClick()) {
       this.backdropClick.emit();
     }
