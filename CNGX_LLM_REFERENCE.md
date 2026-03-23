@@ -314,6 +314,30 @@ Consumer kann jede Variable auf dem Host-Element überschreiben — kein SCSS-Ei
 > **Barrel Files** nicht verwenden — Module Boundaries via Sheriff enforced.
 > **Public API** (`index.ts`) der Library ist kein Barrel File — das ist Standard Angular Library Pattern.
 
+### Member Naming & Visibility
+
+| Konvention | Beispiel |
+|-|-|
+| Private Members: **kein** `_` Prefix | `private readonly speakingState = signal(false)` (nicht `_speakingState`) |
+| Event Handler: `handle` Prefix (nicht `on`) | `handlePointerDown()`, `handleHostClick()` (nicht `onPointerDown`) |
+| Template-genutzte interne Members: `protected` | `protected readonly state = inject(...)` |
+| Öffentliche API: `readonly` | `readonly active = this.activeState.asReadonly()` |
+
+**Warum kein `_` Prefix:**
+TypeScript's `private` Keyword reicht. Underscore-Prefix ist ein Überbleibsel aus JavaScript und
+kollidiert mit Angular's Template-Binding-Syntax. Private-naming per `_` ist visuell noisy
+und nicht konsistent mit dem Rest des Angular-Ökosystems.
+
+**Warum `handle` statt `on`:**
+`on` suggeriert einen Event-Listener (passiv). `handle` macht klar: diese Methode
+**verarbeitet** das Event aktiv. Außerdem: `(click)="handleClick()"` liest sich klarer
+als `(click)="onClick()"` weil `on` redundant zum `()` Binding ist.
+
+**Warum `protected` für Template-Members:**
+Interne Members die nur im eigenen Template genutzt werden sollten `protected` sein —
+sie sind nicht Teil der öffentlichen API, aber Angular braucht Zugriff im Template.
+`protected` verhindert versehentliche Nutzung durch Consumers via Instanz-Referenz.
+
 ### Function naming — vollständige Entscheidungsregel
 
 | Situation                                     | Prefix    | Beispiel                                        |
@@ -354,10 +378,11 @@ export class MyComponent {
   exportAs: 'cngxRipple', // immer exportAs
   standalone: true,
   host: {
-    '(pointerdown)': 'onPointerDown($event)',
+    '(pointerdown)': 'handlePointerDown($event)',  // handle, nicht on
+    '[style.opacity]': 'rippleStyle().opacity',
   },
 })
-export class CngxRippleDirective {
+export class CngxRipple {                          // kein Suffix
   // Signal input() — nicht @Input() Decorator
   readonly color = input<string>('currentColor');
   readonly disabled = input<boolean>(false);
@@ -365,32 +390,34 @@ export class CngxRippleDirective {
   // Signal output() — nicht EventEmitter
   readonly rippleStart = output<void>();
 
-  // Privater interner State
-  private readonly _active = signal(false);
+  // Privater interner State — kein _ Prefix
+  private readonly activeState = signal(false);
 
   // Readonly Public API
-  readonly active = this._active.asReadonly();
+  readonly active = this.activeState.asReadonly();
 
   // Computed für abgeleiteten State
-  readonly rippleStyle = computed(() => ({
+  protected readonly rippleStyle = computed(() => ({
     backgroundColor: this.color(),
-    opacity: this._active() ? 0.12 : 0,
+    opacity: this.activeState() ? 0.12 : 0,
   }));
 
-  // inject() statt Constructor-Parameter
-  private readonly renderer = inject(Renderer2);
+  // inject() statt Constructor-Parameter — kein _ Prefix
   private readonly el = inject(ElementRef);
 
   // effect() im Constructor — NICHT in ngOnInit (NG0203!)
   constructor() {
     effect(() => {
-      this.renderer.setStyle(this.el.nativeElement, 'opacity', this._active() ? 0.12 : 0);
+      // Host bindings bevorzugen, effect nur für echte Side-Effects
     });
   }
 
-  protected onPointerDown(): void {
-    if (this.disabled()) return;
-    this._active.set(true);
+  // Template-Handler: protected + handle Prefix
+  protected handlePointerDown(): void {
+    if (this.disabled()) {
+      return;
+    }
+    this.activeState.set(true);
     this.rippleStart.emit();
   }
 }
@@ -918,12 +945,19 @@ besser tree-shakeable. Beispiel: `Version` ist ein Interface, `makeVersion()` er
 - **11.2** Kein `providedIn: 'root'` für Feature-Logic
 - **12.1** Events über `output()` — kein `EventEmitter`
 
+### Naming & Visibility
+
+- **N-1** Kein `_` Prefix für private Members — `private readonly activeState` statt `_activeState`
+- **N-2** Event Handler: `handle` Prefix — `handlePointerDown()`, `handleHostClick()` (nicht `onPointerDown`)
+- **N-3** Template-genutzte interne Members: `protected` — `protected readonly state = inject(...)`
+- **N-4** Öffentliche API: `readonly` — `readonly active = this.activeState.asReadonly()`
+
 ### Implementierung
 
 - **13.1** Host Directives mit expliziten Input/Output-Mappings — immer, auch bei identischen Namen
 - **13.3** `inject(X, { host: true })` — nicht `@Host()` Decorator
 - **13.6** Directive-zu-Directive-Referenzen via `input.required<T>()` — kein ancestor-inject
-- **15.4** `Renderer2` für DOM-Ops — nicht `nativeElement` direkt
+- **15.4** Host Bindings bevorzugen — `Renderer2` nur wenn Host Binding nicht möglich
 - **16.1** `effect()` im Constructor oder Field-Initializer — **nicht ngOnInit**
 - **16.3** `takeUntilDestroyed()` statt manuelles `takeUntil(destroyed$)`
 
@@ -957,6 +991,20 @@ ngOnInit() { effect(() => { ... }); }
 
 // ❌ State in Effect ändern
 effect(() => { this._count.set(this.items().length); });
+
+// ❌ Underscore-Prefix für private Members
+private readonly _active = signal(false);
+// → private readonly activeState = signal(false);
+
+// ❌ "on" Prefix für Event Handler
+protected onPointerDown(): void { }
+host: { '(click)': 'onClick()' }
+// → protected handlePointerDown(): void { }
+// → host: { '(click)': 'handleClick()' }
+
+// ❌ Interne Template-Members ohne protected
+readonly state = inject(CngxPresenter); // public — Consumer kann zugreifen
+// → protected readonly state = inject(CngxPresenter);
 
 // ❌ BehaviorSubject für lokalen State
 private _loading$ = new BehaviorSubject(false);
