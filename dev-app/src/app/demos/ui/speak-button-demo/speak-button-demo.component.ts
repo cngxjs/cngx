@@ -87,7 +87,7 @@ import { MatIcon } from '@angular/material/icon';
   <div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">TTS supported</span>
-      <span class="event-value">{{ tts1.supported() }}</span>
+      <span class="event-value">{{ tts1.supported }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Speaking</span>
