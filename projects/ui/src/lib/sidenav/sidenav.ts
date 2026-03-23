@@ -194,7 +194,13 @@ export class CngxSidenav {
       onCleanup(() => mql.removeEventListener('change', handler));
     });
 
-    // Keyboard shortcut toggle
+    // Keyboard shortcut toggle.
+    // Uses document.addEventListener instead of a host listener because:
+    // 1. The shortcut is a global hotkey — it must fire regardless of focus.
+    // 2. The combo string is a signal that can change at runtime, so the
+    //    listener must be torn down and re-registered on each change.
+    // 3. Angular host listeners don't support dynamic registration/teardown
+    //    driven by signal values — effect(onCleanup) handles this cleanly.
     effect((onCleanup) => {
       const combo = this.shortcut();
       if (!combo) {
