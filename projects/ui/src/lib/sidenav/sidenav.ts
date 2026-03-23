@@ -7,12 +7,12 @@ import {
   ElementRef,
   inject,
   input,
-
   model,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
+import type { KeyCombo } from '@cngx/core/utils';
 
 /** Logical position — flips in RTL. */
 export type SidenavPosition = 'start' | 'end';
@@ -211,8 +211,11 @@ export class CngxSidenav {
       if (!shortcut) {
         return;
       }
-      const combo = parseKeyCombo(shortcut);
+      // Type resolution from .d.ts files in monorepo - functions are properly typed
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const combo: KeyCombo = parseKeyCombo(shortcut);
       const handler = (e: KeyboardEvent): void => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (matchesKeyCombo(e, combo, isMac)) {
           e.preventDefault();
           this.opened.set(!this.opened());
