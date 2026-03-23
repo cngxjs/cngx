@@ -1,6 +1,16 @@
 import { InjectionToken, PLATFORM_ID, inject, type Provider } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
+/**
+ * Provides access to the browser `Window` object. Returns `null` in SSR.
+ *
+ * Always null-check the injected value — do not assert with `!`:
+ * ```typescript
+ * const win = injectWindow();
+ * if (!win) return; // SSR — no window available
+ * win.matchMedia('(min-width: 1024px)');
+ * ```
+ */
 export const WINDOW = new InjectionToken<Window | null>('NGX_CAE_WINDOW', {
   providedIn: 'root',
   factory: () => {
