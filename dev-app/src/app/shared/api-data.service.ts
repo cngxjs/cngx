@@ -79,11 +79,16 @@ export class ApiDataService {
   }
 
   private mapEntry(e: CompodocEntry): ApiEntry {
+    // Strip usage examples (everything from the first <h3> or <b>Example) —
+    // examples belong in the Examples tab, not in the API description.
+    const rawDesc = e.description?.trim() ?? '';
+    const desc = rawDesc.split(/<h3>|<b>Example/)[0]?.trim() ?? '';
+
     return {
       name: e.name,
       selector: e.selector ?? '',
       exportAs: e.exportAs ?? '',
-      description: e.rawdescription?.trim() ?? '',
+      description: desc,
       inputs: (e.inputsClass ?? []).map((i) => this.mapInput(i)),
       outputs: (e.outputsClass ?? []).map((o) => this.mapOutput(o)),
       methods: (e.methodsClass ?? [])
@@ -97,7 +102,7 @@ export class ApiDataService {
       name: i.name,
       type: i.type ?? 'unknown',
       defaultValue: i.defaultValue ?? '',
-      description: i.rawdescription?.trim() ?? '',
+      description: i.description?.trim() ?? '',
       required: i.required ?? false,
     };
   }
@@ -106,7 +111,7 @@ export class ApiDataService {
     return {
       name: o.name,
       type: o.type ?? 'EventEmitter',
-      description: o.rawdescription?.trim() ?? '',
+      description: o.description?.trim() ?? '',
     };
   }
 
@@ -115,7 +120,7 @@ export class ApiDataService {
     return {
       name: m.name,
       returnType: m.returnType ?? 'void',
-      description: m.rawdescription?.trim() ?? '',
+      description: m.description?.trim() ?? '',
       args,
     };
   }

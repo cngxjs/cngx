@@ -20,7 +20,7 @@ import type { ApiEntry } from './api-types';
           </p>
         }
         @if (entry.description) {
-          <p class="api-description">{{ entry.description }}</p>
+          <div class="api-description" [innerHTML]="entry.description"></div>
         }
 
         @if (entry.inputs.length) {
@@ -41,7 +41,7 @@ import type { ApiEntry } from './api-types';
                     <td><code>{{ inp.name }}</code>@if (inp.required) { <span class="api-required">*</span> }</td>
                     <td><code class="api-type">{{ inp.type }}</code></td>
                     <td>{{ inp.defaultValue || '-' }}</td>
-                    <td>{{ inp.description }}</td>
+                    <td [innerHTML]="inp.description"></td>
                   </tr>
                 }
               </tbody>
@@ -65,7 +65,7 @@ import type { ApiEntry } from './api-types';
                   <tr>
                     <td><code>{{ out.name }}</code></td>
                     <td><code class="api-type">{{ out.type }}</code></td>
-                    <td>{{ out.description }}</td>
+                    <td [innerHTML]="out.description"></td>
                   </tr>
                 }
               </tbody>
@@ -89,7 +89,7 @@ import type { ApiEntry } from './api-types';
                   <tr>
                     <td><code>{{ method.name }}</code></td>
                     <td><code class="api-type">({{ method.args }}) => {{ method.returnType }}</code></td>
-                    <td>{{ method.description }}</td>
+                    <td [innerHTML]="method.description"></td>
                   </tr>
                 }
               </tbody>
@@ -145,6 +145,32 @@ import type { ApiEntry } from './api-types';
         color: var(--text-primary);
         line-height: 1.6;
         margin: 0 0 1rem;
+
+        ::ng-deep {
+          p { margin: 0.5rem 0; }
+          code {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border: 1px solid var(--code-border);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+          }
+          pre {
+            background: var(--code-bg, #1e1e2e);
+            color: var(--code-text, #cdd6f4);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            margin: 0.75rem 0;
+          }
+          b, strong { font-weight: 600; }
+          ul, ol { padding-left: 1.25rem; margin: 0.5rem 0; }
+        }
       }
 
       .api-section-title {
@@ -180,6 +206,16 @@ import type { ApiEntry } from './api-types';
           border-bottom: 1px solid var(--card-border);
           vertical-align: top;
           line-height: 1.5;
+
+          ::ng-deep {
+            p { margin: 0.25rem 0; }
+            code {
+              background: var(--code-bg);
+              padding: 0.1rem 0.25rem;
+              border-radius: 2px;
+              font-size: 0.85em;
+            }
+          }
         }
 
         code {
