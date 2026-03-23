@@ -44,13 +44,13 @@ export class CngxTreetablePresenter<T = unknown> {
    * The tree data to display. Accepts either a single root {@link Node} or an
    * array of root nodes for a forest.
    */
-  tree = input.required<Node<T> | Node<T>[]>();
+  readonly tree = input.required<Node<T> | Node<T>[]>();
 
   /**
    * Per-instance display options that override the application-wide
    * {@link TreetableConfig} provided via {@link provideTreetable}.
    */
-  options = input<TreetableOptions<T>>();
+  readonly options = input<TreetableOptions<T>>();
 
   /**
    * Optional function to derive a stable, domain-meaningful ID from a node's
@@ -64,7 +64,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * @param path - Zero-based index array from root to the current node.
    * @returns A string that is unique within the current tree.
    */
-  nodeId = input<(node: T, path: readonly number[]) => string>();
+  readonly nodeId = input<(node: T, path: readonly number[]) => string>();
 
   /**
    * Controlled expand state. When bound, the component operates in
@@ -93,7 +93,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * Uses Angular CDK's `SelectionModel` internally.
    * @defaultValue `'none'`
    */
-  selectionMode = input<'none' | 'single' | 'multi'>('none');
+  readonly selectionMode = input<'none' | 'single' | 'multi'>('none');
 
   /**
    * When `true`, renders a checkbox column (`_select`) to the left of the data
@@ -101,7 +101,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In `'multi'` mode a "select all" checkbox is shown in the column header.
    * @defaultValue `false`
    */
-  showCheckboxes = input<boolean>(false);
+  readonly showCheckboxes = input<boolean>(false);
 
   /**
    * Controlled selection state. When bound, the component operates in
@@ -127,28 +127,28 @@ export class CngxTreetablePresenter<T = unknown> {
    *
    * @defaultValue `node => node.id`
    */
-  trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
+  readonly trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
 
   /** Emitted when the user clicks a row or activates it via keyboard. */
-  nodeClicked = output<FlatNode<T>>();
+  readonly nodeClicked = output<FlatNode<T>>();
 
   /** Emitted when a node transitions from collapsed to expanded. */
-  nodeExpanded = output<FlatNode<T>>();
+  readonly nodeExpanded = output<FlatNode<T>>();
 
   /** Emitted when a node transitions from expanded to collapsed. */
-  nodeCollapsed = output<FlatNode<T>>();
+  readonly nodeCollapsed = output<FlatNode<T>>();
 
   /**
    * Emitted after every expand/collapse toggle with the new full set of
    * expanded IDs. Use this to synchronise an external `expandedIds` binding.
    */
-  expandedIdsChange = output<ReadonlySet<string>>();
+  readonly expandedIdsChange = output<ReadonlySet<string>>();
 
   /**
    * Emitted whenever the selection changes. The value is an array of the
    * currently selected node IDs.
    */
-  selectionChanged = output<readonly string[]>();
+  readonly selectionChanged = output<readonly string[]>();
 
   /**
    * Emitted after every selection change with the new full set of selected IDs.
@@ -160,7 +160,7 @@ export class CngxTreetablePresenter<T = unknown> {
    *   (selectedIdsChange)="myIds = $event" />
    * ```
    */
-  selectedIdsChange = output<ReadonlySet<string>>();
+  readonly selectedIdsChange = output<ReadonlySet<string>>();
 
   private readonly config = inject(CNGX_TREETABLE_CONFIG);
 

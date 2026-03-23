@@ -89,14 +89,16 @@ export class CngxSidenavLayout {
     });
 
     // Scroll lock when overlay is active
+    const html = doc.documentElement;
+    const origOverflow = html.style.overflow;
+    const origScrollbarGutter = html.style.scrollbarGutter;
     effect(() => {
-      const html = doc.documentElement;
       if (this.hasOverlay()) {
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
       } else {
-        html.style.overflow = '';
-        html.style.scrollbarGutter = '';
+        html.style.overflow = origOverflow;
+        html.style.scrollbarGutter = origScrollbarGutter;
       }
     });
 

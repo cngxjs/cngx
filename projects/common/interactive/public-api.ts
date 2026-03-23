@@ -8,6 +8,7 @@ export { CngxNavBadge, type NavBadgeVariant } from './src/nav-badge.directive';
 export {
   CNGX_NAV_CONFIG,
   provideNavConfig,
+  injectNavConfig,
   type CngxNavConfig,
 } from './src/nav-config';
 export { CngxNavGroup } from './src/nav-group.directive';

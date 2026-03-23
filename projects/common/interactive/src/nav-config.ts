@@ -1,4 +1,5 @@
-import { InjectionToken } from '@angular/core';
+import { inject, InjectionToken, type Provider } from '@angular/core';
+import { CngxNavGroupRegistry } from './nav-group-registry';
 
 /** Configuration options for the cngx nav system. */
 export interface CngxNavConfig {
@@ -42,18 +43,14 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
  * ### Single-accordion sidebar
  * ```typescript
  * @Component({
- *   providers: [
- *     { provide: CNGX_NAV_CONFIG, useValue: { singleAccordion: true } },
- *   ],
+ *   providers: [provideNavConfig({ singleAccordion: true })],
  * })
  * class SidebarComponent { }
  * ```
  *
  * ### Custom indent
  * ```typescript
- * providers: [
- *   { provide: CNGX_NAV_CONFIG, useValue: { indent: 16 } },
- * ]
+ * providers: [provideNavConfig({ indent: 16 })]
  * ```
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
@@ -61,10 +58,25 @@ export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFI
 /**
  * Convenience provider function for nav configuration.
  *
+ * Automatically includes `CngxNavGroupRegistry` when `singleAccordion: true`,
+ * so consumers don't need to provide it separately.
+ *
  * ```typescript
  * providers: [provideNavConfig({ singleAccordion: true })]
  * ```
  */
-export function provideNavConfig(config: CngxNavConfig) {
-  return { provide: CNGX_NAV_CONFIG, useValue: config };
+export function provideNavConfig(config: CngxNavConfig): Provider[] {
+  const providers: Provider[] = [{ provide: CNGX_NAV_CONFIG, useValue: config }];
+  if (config.singleAccordion) {
+    providers.push(CngxNavGroupRegistry);
+  }
+  return providers;
+}
+
+/**
+ * Injects the resolved nav config, merging provided values with defaults.
+ * Must be called in an injection context.
+ */
+export function injectNavConfig(): Readonly<Required<CngxNavConfig>> {
+  return { ...CNGX_NAV_DEFAULTS, ...inject(CNGX_NAV_CONFIG, { optional: true }) };
 }

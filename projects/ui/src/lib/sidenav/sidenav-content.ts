@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   ViewEncapsulation,
 } from '@angular/core';
@@ -57,8 +56,8 @@ export class CngxSidenavContent {
    *
    * Kept as a public computed so tests and consumers can still read it.
    */
-  readonly marginStart = computed(() => '0');
+  readonly marginStart = '0';
 
   /** Margin offset for the end sidenav — same rationale as start. */
-  readonly marginEnd = computed(() => '0');
+  readonly marginEnd = '0';
 }

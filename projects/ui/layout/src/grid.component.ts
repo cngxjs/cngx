@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
  * Composable CSS grid layout component.
@@ -12,6 +12,7 @@ import { Component, computed, input } from '@angular/core';
 @Component({
   selector: 'cngx-grid',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content />',
   styles: [
     `

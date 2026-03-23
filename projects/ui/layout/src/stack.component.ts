@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 export type StackDirection = 'row' | 'column';
 export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
@@ -16,6 +16,7 @@ export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 @Component({
   selector: 'cngx-stack',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content />',
   styles: [
     `

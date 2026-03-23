@@ -1,12 +1,13 @@
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   effect,
   ElementRef,
   inject,
   input,
+  linkedSignal,
   model,
   signal,
   ViewEncapsulation,
@@ -172,30 +173,33 @@ export class CngxSidenav {
     return this.width();
   });
 
+  private readonly _doc = inject(DOCUMENT);
+  private readonly _win = this._doc.defaultView;
+
+  /** Tracks the previous effective mode to detect transitions. */
+  private readonly _prevMode = linkedSignal<SidenavMode>(() => this.effectiveMode());
+
   constructor() {
     // Wire responsive matchMedia
-    let cleanupMedia: (() => void) | undefined;
-    effect(() => {
-      cleanupMedia?.();
+    effect((onCleanup) => {
       const query = this.responsive();
-      if (!query) {
+      const win = this._win;
+      if (!query || !win) {
         return;
       }
-      const mql = window.matchMedia(query);
+      const mql = win.matchMedia(query);
       this._mediaMatches.set(mql.matches);
       const handler = (e: MediaQueryListEvent): void => this._mediaMatches.set(e.matches);
       mql.addEventListener('change', handler);
-      cleanupMedia = () => mql.removeEventListener('change', handler);
+      onCleanup(() => mql.removeEventListener('change', handler));
     });
-    const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(() => cleanupMedia?.());
 
     // Keyboard shortcut toggle
-    let cleanupShortcut: (() => void) | undefined;
-    effect(() => {
-      cleanupShortcut?.();
+    effect((onCleanup) => {
       const combo = this.shortcut();
-      if (!combo) {return;}
+      if (!combo) {
+        return;
+      }
       const parts = combo.toLowerCase().split('+').map((s) => s.trim());
       const key = parts.pop()!;
       const needsCtrl = parts.includes('ctrl');
@@ -205,41 +209,46 @@ export class CngxSidenav {
       const needsAlt = parts.includes('alt');
 
       const handler = (e: KeyboardEvent): void => {
-        if (e.key.toLowerCase() !== key) {return;}
-        if (needsShift && !e.shiftKey) {return;}
-        if (needsAlt && !e.altKey) {return;}
+        if (e.key.toLowerCase() !== key) {
+          return;
+        }
+        if (needsShift && !e.shiftKey) {
+          return;
+        }
+        if (needsAlt && !e.altKey) {
+          return;
+        }
         if (needsMod) {
-          // mod = meta on Mac, ctrl elsewhere
-          const isMac = navigator.platform?.startsWith('Mac') ?? navigator.userAgent.includes('Mac');
-          if (isMac ? !e.metaKey : !e.ctrlKey) {return;}
+          const isMac = (this._win as Window & { navigator: Navigator }).navigator?.userAgent?.includes('Mac') ?? false;
+          if (isMac ? !e.metaKey : !e.ctrlKey) {
+            return;
+          }
         } else {
-          if (needsCtrl && !e.ctrlKey) {return;}
-          if (needsMeta && !e.metaKey) {return;}
+          if (needsCtrl && !e.ctrlKey) {
+            return;
+          }
+          if (needsMeta && !e.metaKey) {
+            return;
+          }
         }
         e.preventDefault();
-        // Bypass mode guards — shortcut is always intentional
         this.opened.set(!this.opened());
       };
-      document.addEventListener('keydown', handler);
-      cleanupShortcut = () => document.removeEventListener('keydown', handler);
+      this._doc.addEventListener('keydown', handler);
+      onCleanup(() => this._doc.removeEventListener('keydown', handler));
     });
-    destroyRef.onDestroy(() => cleanupShortcut?.());
 
-    // Sync opened state on mode transitions:
-    // When leaving side/mini mode the sidenav was visible regardless of `opened`.
-    // Ensure `opened` is true so it stays visible in the new mode.
-    let prevMode: SidenavMode | undefined;
+    // Sync opened state on mode transitions
     effect(() => {
       const mode = this.effectiveMode();
-      const alwaysVisible = (m: SidenavMode | undefined) => m === 'side' || m === 'mini';
-      if (alwaysVisible(prevMode) && !alwaysVisible(mode)) {
+      const prev = this._prevMode();
+      const alwaysVisible = (m: SidenavMode) => m === 'side' || m === 'mini';
+      if (alwaysVisible(prev) && !alwaysVisible(mode)) {
         this.opened.set(true);
       }
-      // Reset expanded state when leaving mini mode
-      if (prevMode === 'mini' && mode !== 'mini') {
+      if (prev === 'mini' && mode !== 'mini') {
         this._expanded.set(false);
       }
-      prevMode = mode;
     });
   }
 
@@ -336,11 +345,11 @@ export class CngxSidenav {
       this._resizing.set(false);
       // Sync final width back to the model (single CD cycle)
       this.width.set(`${currentWidth}px`);
-      document.removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerup', onUp);
+      this._doc.removeEventListener('pointermove', onMove);
+      this._doc.removeEventListener('pointerup', onUp);
     };
 
-    document.addEventListener('pointermove', onMove);
-    document.addEventListener('pointerup', onUp);
+    this._doc.addEventListener('pointermove', onMove);
+    this._doc.addEventListener('pointerup', onUp);
   }
 }
