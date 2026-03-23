@@ -1,4 +1,4 @@
-import { Directive, ElementRef, inject, input, Renderer2, effect } from '@angular/core';
+import { Directive, input } from '@angular/core';
 
 /**
  * Configures the host element as an ARIA live region.
@@ -8,7 +8,7 @@ import { Directive, ElementRef, inject, input, Renderer2, effect } from '@angula
  * `assertive` announcements interrupt immediately. `off` disables announcements.
  *
  * Sets `role="alert"` for assertive regions and `role="status"` for polite regions
- * via an `effect()` — no manual attribute wiring needed.
+ * via a host binding — no manual attribute wiring needed.
  *
  * Unlike CDK's `LiveAnnouncer` service (which creates a hidden DOM element and
  * requires imperative `announce()` calls), this directive decorates your own
@@ -39,6 +39,7 @@ import { Directive, ElementRef, inject, input, Renderer2, effect } from '@angula
     '[attr.aria-live]': 'politeness()',
     '[attr.aria-atomic]': 'atomic()',
     '[attr.aria-relevant]': 'relevant()',
+    '[attr.role]': "politeness() === 'assertive' ? 'alert' : 'status'",
   },
 })
 export class CngxLiveRegion {
@@ -53,16 +54,4 @@ export class CngxLiveRegion {
   readonly atomic = input<boolean>(true);
   /** Which types of content changes to announce. Space-separated: `additions`, `removals`, `text`. */
   readonly relevant = input<string>('additions text');
-
-  constructor() {
-    const el = inject(ElementRef<HTMLElement>);
-    const renderer = inject(Renderer2);
-    effect(() => {
-      renderer.setAttribute(
-        el.nativeElement,
-        'role',
-        this.politeness() === 'assertive' ? 'alert' : 'status',
-      );
-    });
-  }
 }

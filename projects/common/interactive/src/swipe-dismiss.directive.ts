@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { Directive, ElementRef, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, switchMap, takeUntil, tap, filter, map } from 'rxjs';
@@ -56,10 +57,11 @@ export class CngxSwipeDismiss {
 
   constructor() {
     const nativeEl = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+    const doc = inject(DOCUMENT);
 
     const pointerDown$ = fromEvent<PointerEvent>(nativeEl, 'pointerdown');
-    const pointerMove$ = fromEvent<PointerEvent>(document, 'pointermove');
-    const pointerUp$ = fromEvent<PointerEvent>(document, 'pointerup');
+    const pointerMove$ = fromEvent<PointerEvent>(doc, 'pointermove');
+    const pointerUp$ = fromEvent<PointerEvent>(doc, 'pointerup');
 
     pointerDown$
       .pipe(

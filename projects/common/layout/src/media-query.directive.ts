@@ -1,4 +1,5 @@
-import { DestroyRef, Directive, effect, inject, input, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Directive, effect, inject, input, signal } from '@angular/core';
 
 /**
  * Reactive media query directive that exposes a `matches` signal.
@@ -36,24 +37,25 @@ export class CngxMediaQuery {
   readonly query = input.required<string>({ alias: 'cngxMediaQuery' });
 
   private readonly _matches = signal(false);
+  private readonly _win = inject(DOCUMENT).defaultView;
 
   /** Whether the media query currently matches. */
   readonly matches = this._matches.asReadonly();
 
   constructor() {
-    let cleanup: (() => void) | undefined;
+    effect((onCleanup) => {
+      const win = this._win;
+      if (!win) {
+        this._matches.set(false);
+        return;
+      }
 
-    effect(() => {
-      cleanup?.();
-
-      const mql = window.matchMedia(this.query());
+      const mql = win.matchMedia(this.query());
       this._matches.set(mql.matches);
 
       const handler = (e: MediaQueryListEvent): void => this._matches.set(e.matches);
       mql.addEventListener('change', handler);
-      cleanup = () => mql.removeEventListener('change', handler);
+      onCleanup(() => mql.removeEventListener('change', handler));
     });
-
-    inject(DestroyRef).onDestroy(() => cleanup?.());
   }
 }

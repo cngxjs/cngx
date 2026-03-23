@@ -2,13 +2,13 @@ import {
   computed,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 /**
  * Observes size changes of the host element via the `ResizeObserver` API.
@@ -67,10 +67,9 @@ export class CngxResizeObserver {
   });
 
   constructor() {
-    // Re-observe when `box` input changes.
-    toObservable(this.box).subscribe((box) => {
+    effect(() => {
       this._observer.disconnect();
-      this._observer.observe(this._el.nativeElement as HTMLElement, { box });
+      this._observer.observe(this._el.nativeElement as HTMLElement, { box: this.box() });
     });
 
     inject(DestroyRef).onDestroy(() => this._observer.disconnect());

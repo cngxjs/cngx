@@ -1,16 +1,14 @@
 import { DOCUMENT } from '@angular/common';
 import {
   computed,
-  DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { combineLatest } from 'rxjs';
 
 /**
  * Observes whether the host element is visible in the viewport or a scroll container.
@@ -54,10 +52,6 @@ import { combineLatest } from 'rxjs';
   standalone: true,
 })
 export class CngxIntersectionObserver {
-  /**
-   * CSS selector for the scroll container to use as the root.
-   * `null` (default) uses the viewport.
-   */
   /** CSS selector for the scroll container root. `null` (default) uses the viewport. */
   readonly root = input<string | null>(null);
   /** Margin around the root, using CSS margin syntax (e.g. `'100px 0px'`). */
@@ -84,42 +78,34 @@ export class CngxIntersectionObserver {
   private _observer: IntersectionObserver | null = null;
 
   constructor() {
-    combineLatest([
-      toObservable(this.root),
-      toObservable(this.rootMargin),
-      toObservable(this.threshold),
-    ]).subscribe(([root, rootMargin, threshold]) => {
-      this._buildObserver(root, rootMargin, threshold);
+    effect((onCleanup) => {
+      const root = this.root();
+      const rootMargin = this.rootMargin();
+      const threshold = this.threshold();
+
+      this._observer?.disconnect();
+
+      const resolvedRoot = root ? this._doc.querySelector(root) : null;
+
+      this._observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const wasIntersecting = this._entry()?.isIntersecting ?? false;
+          this._entry.set(entry);
+          this.intersectionChange.emit(entry);
+          if (entry.isIntersecting && !wasIntersecting) {
+            this.entered.emit();
+          }
+          if (!entry.isIntersecting && wasIntersecting) {
+            this.left.emit();
+          }
+        },
+        { root: resolvedRoot, rootMargin, threshold },
+      );
+
+      this._observer.observe(this._el.nativeElement as HTMLElement);
+
+      onCleanup(() => this._observer?.disconnect());
     });
-
-    inject(DestroyRef).onDestroy(() => this._observer?.disconnect());
-  }
-
-  private _buildObserver(
-    root: string | null,
-    rootMargin: string,
-    threshold: number | number[],
-  ): void {
-    this._observer?.disconnect();
-
-    const resolvedRoot = root ? this._doc.querySelector(root) : null;
-
-    this._observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        const wasIntersecting = this._entry()?.isIntersecting ?? false;
-        this._entry.set(entry);
-        this.intersectionChange.emit(entry);
-        if (entry.isIntersecting && !wasIntersecting) {
-          this.entered.emit();
-        }
-        if (!entry.isIntersecting && wasIntersecting) {
-          this.left.emit();
-        }
-      },
-      { root: resolvedRoot, rootMargin, threshold },
-    );
-
-    this._observer.observe(this._el.nativeElement as HTMLElement);
   }
 }

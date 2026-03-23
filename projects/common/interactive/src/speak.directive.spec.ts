@@ -79,6 +79,6 @@ describe('CngxSpeak', () => {
 
   it('reports supported based on speechSynthesis availability', () => {
     const { dir } = setup();
-    expect(dir.supported()).toBe(true);
+    expect(dir.supported).toBe(true);
   });
 });

@@ -34,27 +34,23 @@ export class CngxScrollLock {
   readonly enabled = input<boolean>(false, { alias: 'cngxScrollLock' });
 
   constructor() {
-    const doc = inject(DOCUMENT);
-    let prevOverflow = '';
-    let prevScrollbarGutter = '';
+    const html = inject(DOCUMENT).documentElement;
+    const originalOverflow = html.style.overflow;
+    const originalScrollbarGutter = html.style.scrollbarGutter;
 
     effect(() => {
-      const html = doc.documentElement;
       if (this.enabled()) {
-        prevOverflow = html.style.overflow;
-        prevScrollbarGutter = html.style.scrollbarGutter;
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
       } else {
-        html.style.overflow = prevOverflow;
-        html.style.scrollbarGutter = prevScrollbarGutter;
+        html.style.overflow = originalOverflow;
+        html.style.scrollbarGutter = originalScrollbarGutter;
       }
     });
 
     inject(DestroyRef).onDestroy(() => {
-      const html = doc.documentElement;
-      html.style.overflow = prevOverflow;
-      html.style.scrollbarGutter = prevScrollbarGutter;
+      html.style.overflow = originalOverflow;
+      html.style.scrollbarGutter = originalScrollbarGutter;
     });
   }
 }
