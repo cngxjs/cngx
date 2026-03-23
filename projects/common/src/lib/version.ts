@@ -1,3 +1,3 @@
-import { Version } from '@cngx/utils';
+import { makeVersion } from '@cngx/utils';
 
-export const VERSION = new Version('0.0.0-PLACEHOLDER');
+export const VERSION = makeVersion('0.0.0-PLACEHOLDER');

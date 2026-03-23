@@ -17,9 +17,14 @@ export interface TreetableConfig {
   capitaliseHeader?: boolean;
 }
 
+/** A feature configuration function returned by `withXxx()` helpers. */
+export interface TreetableFeature {
+  /** @internal */
+  readonly _apply: (config: TreetableConfig) => TreetableConfig;
+}
+
 /**
  * Injection token for the application-wide {@link TreetableConfig}.
- * Inject this token to read the resolved configuration in custom extensions.
  *
  * @example
  * ```ts
@@ -32,18 +37,31 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
 
 /**
  * Registers application-wide defaults for all treetable instances.
- * Call this in your `ApplicationConfig` providers array.
- *
- * @param config - Optional partial configuration; unset keys use component defaults.
- * @returns An `EnvironmentProviders` value to be passed to `bootstrapApplication`.
+ * Accepts `withXxx()` feature functions for composable configuration.
  *
  * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
- *   providers: [provideTreetable({ highlightRowOnHover: true })],
+ *   providers: [
+ *     provideTreetable(withHighlightOnHover(), withCapitaliseHeaders(false)),
+ *   ],
  * });
  * ```
  */
-export function provideTreetable(config: TreetableConfig = {}): EnvironmentProviders {
+export function provideTreetable(...features: TreetableFeature[]): EnvironmentProviders {
+  let config: TreetableConfig = {};
+  for (const f of features) {
+    config = f._apply(config);
+  }
   return makeEnvironmentProviders([{ provide: CNGX_TREETABLE_CONFIG, useValue: config }]);
+}
+
+/** Enable row highlight on hover for all treetable instances. */
+export function withHighlightOnHover(enabled = true): TreetableFeature {
+  return { _apply: (c) => ({ ...c, highlightRowOnHover: enabled }) };
+}
+
+/** Control whether column headers are auto-capitalised. */
+export function withCapitaliseHeaders(enabled = true): TreetableFeature {
+  return { _apply: (c) => ({ ...c, capitaliseHeader: enabled }) };
 }

@@ -12,6 +12,7 @@ import {
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import { matchesKeyCombo, parseKeyCombo } from '@cngx/core/utils';
 
 /** Logical position — flips in RTL. */
 export type SidenavPosition = 'start' | 'end';
@@ -201,44 +202,18 @@ export class CngxSidenav {
     //    listener must be torn down and re-registered on each change.
     // 3. Angular host listeners don't support dynamic registration/teardown
     //    driven by signal values — effect(onCleanup) handles this cleanly.
+    const isMac = this._win?.navigator?.userAgent?.includes('Mac') ?? false;
     effect((onCleanup) => {
-      const combo = this.shortcut();
-      if (!combo) {
+      const shortcut = this.shortcut();
+      if (!shortcut) {
         return;
       }
-      const parts = combo.toLowerCase().split('+').map((s) => s.trim());
-      const key = parts.pop()!;
-      const needsCtrl = parts.includes('ctrl');
-      const needsMeta = parts.includes('meta');
-      const needsMod = parts.includes('mod');
-      const needsShift = parts.includes('shift');
-      const needsAlt = parts.includes('alt');
-
+      const combo = parseKeyCombo(shortcut);
       const handler = (e: KeyboardEvent): void => {
-        if (e.key.toLowerCase() !== key) {
-          return;
+        if (matchesKeyCombo(e, combo, isMac)) {
+          e.preventDefault();
+          this.opened.set(!this.opened());
         }
-        if (needsShift && !e.shiftKey) {
-          return;
-        }
-        if (needsAlt && !e.altKey) {
-          return;
-        }
-        if (needsMod) {
-          const isMac = (this._win as Window & { navigator: Navigator }).navigator?.userAgent?.includes('Mac') ?? false;
-          if (isMac ? !e.metaKey : !e.ctrlKey) {
-            return;
-          }
-        } else {
-          if (needsCtrl && !e.ctrlKey) {
-            return;
-          }
-          if (needsMeta && !e.metaKey) {
-            return;
-          }
-        }
-        e.preventDefault();
-        this.opened.set(!this.opened());
       };
       this._doc.addEventListener('keydown', handler);
       onCleanup(() => this._doc.removeEventListener('keydown', handler));

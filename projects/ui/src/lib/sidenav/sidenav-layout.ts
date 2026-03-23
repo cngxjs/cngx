@@ -88,17 +88,24 @@ export class CngxSidenavLayout {
       });
     });
 
-    // Scroll lock when overlay is active
+    // Scroll lock when overlay is active (ref-counted to coexist with CngxScrollLock)
     const html = doc.documentElement;
-    const origOverflow = html.style.overflow;
-    const origScrollbarGutter = html.style.scrollbarGutter;
+    let locked = false;
     effect(() => {
-      if (this.hasOverlay()) {
+      if (this.hasOverlay() && !locked) {
+        if (!html.dataset['cngxPrevOverflow']) {
+          html.dataset['cngxPrevOverflow'] = html.style.overflow;
+          html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
+        }
         html.style.overflow = 'hidden';
         html.style.scrollbarGutter = 'stable';
-      } else {
-        html.style.overflow = origOverflow;
-        html.style.scrollbarGutter = origScrollbarGutter;
+        locked = true;
+      } else if (!this.hasOverlay() && locked) {
+        html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
+        html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
+        delete html.dataset['cngxPrevOverflow'];
+        delete html.dataset['cngxPrevScrollbarGutter'];
+        locked = false;
       }
     });
 

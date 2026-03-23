@@ -1,14 +1,42 @@
 import { DOCUMENT } from '@angular/common';
 import { DestroyRef, Directive, effect, inject, input } from '@angular/core';
 
+/** Shared ref-count for scroll lock instances on the same document. */
+const lockCounts = new WeakMap<HTMLElement, number>();
+
+function acquireScrollLock(html: HTMLElement): void {
+  const count = lockCounts.get(html) ?? 0;
+  if (count === 0) {
+    html.dataset['cngxPrevOverflow'] = html.style.overflow;
+    html.dataset['cngxPrevScrollbarGutter'] = html.style.scrollbarGutter;
+    html.style.overflow = 'hidden';
+    html.style.scrollbarGutter = 'stable';
+  }
+  lockCounts.set(html, count + 1);
+}
+
+function releaseScrollLock(html: HTMLElement): void {
+  const count = lockCounts.get(html) ?? 0;
+  if (count <= 1) {
+    html.style.overflow = html.dataset['cngxPrevOverflow'] ?? '';
+    html.style.scrollbarGutter = html.dataset['cngxPrevScrollbarGutter'] ?? '';
+    delete html.dataset['cngxPrevOverflow'];
+    delete html.dataset['cngxPrevScrollbarGutter'];
+    lockCounts.set(html, 0);
+  } else {
+    lockCounts.set(html, count - 1);
+  }
+}
+
 /**
  * Prevents scrolling on the document body when enabled.
  *
  * Sets `overflow: hidden` and `scrollbar-gutter: stable` on `<html>` to
  * prevent layout shift when the scrollbar disappears. Restores original
- * values on disable or destroy.
+ * values when all lock instances are released.
  *
- * Reusable for any overlay: drawers, modals, dialogs, bottom sheets.
+ * Multiple instances are ref-counted — the original styles are only
+ * restored when the last lock is released.
  *
  * @usageNotes
  *
@@ -35,22 +63,22 @@ export class CngxScrollLock {
 
   constructor() {
     const html = inject(DOCUMENT).documentElement;
-    const originalOverflow = html.style.overflow;
-    const originalScrollbarGutter = html.style.scrollbarGutter;
+    let locked = false;
 
     effect(() => {
-      if (this.enabled()) {
-        html.style.overflow = 'hidden';
-        html.style.scrollbarGutter = 'stable';
-      } else {
-        html.style.overflow = originalOverflow;
-        html.style.scrollbarGutter = originalScrollbarGutter;
+      if (this.enabled() && !locked) {
+        acquireScrollLock(html);
+        locked = true;
+      } else if (!this.enabled() && locked) {
+        releaseScrollLock(html);
+        locked = false;
       }
     });
 
     inject(DestroyRef).onDestroy(() => {
-      html.style.overflow = originalOverflow;
-      html.style.scrollbarGutter = originalScrollbarGutter;
+      if (locked) {
+        releaseScrollLock(html);
+      }
     });
   }
 }

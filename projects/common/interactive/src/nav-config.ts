@@ -25,6 +25,14 @@ export interface CngxNavConfig {
   animationDuration?: number;
 }
 
+/** A feature configuration function returned by `withXxx()` helpers. */
+export interface NavConfigFeature {
+  /** @internal */
+  readonly _apply: (config: CngxNavConfig) => CngxNavConfig;
+  /** @internal */
+  readonly _providers?: Provider[];
+}
+
 /** Default nav configuration values. */
 export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
   indent: 12,
@@ -35,42 +43,62 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
 /**
  * Injection token for nav system configuration.
  *
- * Provide at any level (root, component, or route) to configure
- * nav behavior for that scope.
- *
  * @usageNotes
  *
- * ### Single-accordion sidebar
+ * ### Using feature functions
  * ```typescript
  * @Component({
- *   providers: [provideNavConfig({ singleAccordion: true })],
+ *   providers: [provideNavConfig(withSingleAccordion(), withNavIndent(16))],
  * })
  * class SidebarComponent { }
- * ```
- *
- * ### Custom indent
- * ```typescript
- * providers: [provideNavConfig({ indent: 16 })]
  * ```
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
 
 /**
- * Convenience provider function for nav configuration.
+ * Provides nav system configuration. Accepts `withXxx()` feature functions
+ * for composable setup.
  *
- * Automatically includes `CngxNavGroupRegistry` when `singleAccordion: true`,
- * so consumers don't need to provide it separately.
+ * Automatically includes `CngxNavGroupRegistry` when `singleAccordion` is enabled
+ * (either directly or via `withSingleAccordion()`).
  *
+ * @example
  * ```typescript
- * providers: [provideNavConfig({ singleAccordion: true })]
+ * providers: [provideNavConfig(withSingleAccordion(), withNavIndent(16))]
  * ```
  */
-export function provideNavConfig(config: CngxNavConfig): Provider[] {
-  const providers: Provider[] = [{ provide: CNGX_NAV_CONFIG, useValue: config }];
+export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
+  let config: CngxNavConfig = {};
+  const extraProviders: Provider[] = [];
+  for (const f of features) {
+    config = f._apply(config);
+    if (f._providers) {
+      extraProviders.push(...f._providers);
+    }
+  }
+  const providers: Provider[] = [
+    { provide: CNGX_NAV_CONFIG, useValue: config },
+    ...extraProviders,
+  ];
   if (config.singleAccordion) {
     providers.push(CngxNavGroupRegistry);
   }
   return providers;
+}
+
+/** Enable single-accordion mode (only one nav group open at a time). */
+export function withSingleAccordion(): NavConfigFeature {
+  return { _apply: (c) => ({ ...c, singleAccordion: true }) };
+}
+
+/** Set the indentation per depth level in px. */
+export function withNavIndent(px: number): NavConfigFeature {
+  return { _apply: (c) => ({ ...c, indent: px }) };
+}
+
+/** Set the animation duration for nav group expand/collapse in ms. */
+export function withNavAnimation(ms: number): NavConfigFeature {
+  return { _apply: (c) => ({ ...c, animationDuration: ms }) };
 }
 
 /**

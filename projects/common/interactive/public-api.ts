@@ -9,7 +9,11 @@ export {
   CNGX_NAV_CONFIG,
   provideNavConfig,
   injectNavConfig,
+  withSingleAccordion,
+  withNavIndent,
+  withNavAnimation,
   type CngxNavConfig,
+  type NavConfigFeature,
 } from './src/nav-config';
 export { CngxNavGroup } from './src/nav-group.directive';
 export { CngxNavGroupRegistry } from './src/nav-group-registry';

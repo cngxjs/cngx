@@ -212,7 +212,9 @@ export class CngxTreetablePresenter<T = unknown> {
 
   // ── Selection ──────────────────────────────────────────────────────────────
 
-  private _selectionModel = new SelectionModel<string>(false, []);
+  private readonly _selectionModel = linkedSignal(() =>
+    new SelectionModel<string>(this.selectionMode() === 'multi', []),
+  );
   private readonly _selectedIds = signal<ReadonlySet<string>>(new Set());
 
   /**
@@ -268,14 +270,15 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly focusedNodeId = signal<string | null>(null);
 
   constructor() {
-    // Recreate SelectionModel and re-subscribe whenever selectionMode changes.
+    // Subscribe to SelectionModel.changed whenever the model is recreated
+    // (linkedSignal recreates on selectionMode change). Syncs _selectedIds
+    // and emits outputs.
     effect((onCleanup) => {
-      const isMulti = this.selectionMode() === 'multi';
-      this._selectionModel = new SelectionModel<string>(isMulti, []);
+      const model = this._selectionModel();
       this._selectedIds.set(new Set());
 
-      const sub = this._selectionModel.changed.subscribe(() => {
-        const next = new Set(this._selectionModel.selected);
+      const sub = model.changed.subscribe(() => {
+        const next = new Set(model.selected);
         this._selectedIds.set(next);
         this.selectionChanged.emit([...next]);
         this.selectedIdsChange.emit(next);
@@ -293,8 +296,9 @@ export class CngxTreetablePresenter<T = unknown> {
       if (input === undefined) {
         return;
       }
+      const model = this._selectionModel();
       const inputSet = new Set(input);
-      const current = new Set(this._selectionModel.selected);
+      const current = new Set(model.selected);
       const toDeselect = [...current].filter((id) => !inputSet.has(id));
       const toSelect = [...inputSet].filter((id) => !current.has(id));
       if (toDeselect.length === 0 && toSelect.length === 0) {
@@ -302,10 +306,10 @@ export class CngxTreetablePresenter<T = unknown> {
       }
       untracked(() => {
         if (toDeselect.length) {
-          this._selectionModel.deselect(...toDeselect);
+          model.deselect(...toDeselect);
         }
         if (toSelect.length) {
-          this._selectionModel.select(...toSelect);
+          model.select(...toSelect);
         }
       });
     });
@@ -356,7 +360,7 @@ export class CngxTreetablePresenter<T = unknown> {
     if (this.selectionMode() === 'none') {
       return;
     }
-    this._selectionModel.toggle(node.id);
+    this._selectionModel().toggle(node.id);
   }
 
   /**
@@ -368,9 +372,9 @@ export class CngxTreetablePresenter<T = unknown> {
       return;
     }
     if (this.isAllSelected()) {
-      this._selectionModel.clear();
+      this._selectionModel().clear();
     } else {
-      this._selectionModel.select(...this.visibleNodes().map((n) => n.id));
+      this._selectionModel().select(...this.visibleNodes().map((n) => n.id));
     }
   }
 
