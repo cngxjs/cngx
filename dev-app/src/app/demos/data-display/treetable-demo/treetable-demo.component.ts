@@ -56,7 +56,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-playground>
       <app-example-card title="CDK Treetable"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div class="table-wrap">
     <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
@@ -70,7 +71,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Material Treetable"
         [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2">
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <div class="table-wrap">
     <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
@@ -83,7 +85,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Single Selection (click-to-select)"
         [subtitle]="_s3"
-        [sourceHtml]="_srcHtml3">
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
         
   <div class="table-wrap">
     <cngx-treetable
@@ -98,7 +101,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Multi Selection (click-to-select)"
         [subtitle]="_s4"
-        [sourceHtml]="_srcHtml4">
+        [sourceHtml]="_srcHtml4"
+        [sourceTs]="_srcTs4">
         
   <div class="table-wrap">
     <cngx-treetable
@@ -114,7 +118,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Material — Single Selection + Checkbox"
         [subtitle]="_s5"
-        [sourceHtml]="_srcHtml5">
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5">
         
   <div class="table-wrap">
     <cngx-mat-treetable
@@ -130,7 +135,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Material — Multi Selection + Checkboxes"
         [subtitle]="_s6"
-        [sourceHtml]="_srcHtml6">
+        [sourceHtml]="_srcHtml6"
+        [sourceTs]="_srcTs6">
         
   <div class="table-wrap">
     <cngx-mat-treetable
@@ -147,7 +153,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Controlled Selection (Two-Way Binding)"
         [subtitle]="_s7"
-        [sourceHtml]="_srcHtml7">
+        [sourceHtml]="_srcHtml7"
+        [sourceTs]="_srcTs7">
         
   <div class="table-wrap">
     <cngx-treetable
@@ -168,7 +175,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Controlled Expand (Two-Way Binding)"
         [subtitle]="_s8"
-        [sourceHtml]="_srcHtml8">
+        [sourceHtml]="_srcHtml8"
+        [sourceTs]="_srcTs8">
         
   <div class="table-wrap">
     <cngx-treetable
@@ -187,7 +195,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Expand &amp; Collapse Outputs"
         [subtitle]="_s9"
-        [sourceHtml]="_srcHtml9">
+        [sourceHtml]="_srcHtml9"
+        [sourceTs]="_srcTs9">
         
   <div class="table-wrap">
     <cngx-treetable
@@ -207,7 +216,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Search — filterTree + nodeMatchesSearch"
         [subtitle]="_s10"
-        [sourceHtml]="_srcHtml10">
+        [sourceHtml]="_srcHtml10"
+        [sourceTs]="_srcTs10">
         
   <div class="search-row">
     <input
@@ -231,7 +241,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Sort — sortTree + CngxSort + CngxSortHeader"
         [subtitle]="_s11"
-        [sourceHtml]="_srcHtml11">
+        [sourceHtml]="_srcHtml11"
+        [sourceTs]="_srcTs11">
         
   <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
     <div class="table-wrap">
@@ -262,7 +273,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="Combined — Sort + Search"
         [subtitle]="_s12"
-        [sourceHtml]="_srcHtml12">
+        [sourceHtml]="_srcHtml12"
+        [sourceTs]="_srcTs12">
         
   <div class="search-row">
     <input
@@ -300,7 +312,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Custom Cell &amp; Header Templates"
         [subtitle]="_s13"
-        [sourceHtml]="_srcHtml13">
+        [sourceHtml]="_srcHtml13"
+        [sourceTs]="_srcTs13">
         
   <div class="table-wrap">
     <cngx-treetable [tree]="tree()">
@@ -318,7 +331,8 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       </app-example-card>
       <app-example-card title="CDK — Custom Empty State"
         [subtitle]="_s14"
-        [sourceHtml]="_srcHtml14">
+        [sourceHtml]="_srcHtml14"
+        [sourceTs]="_srcTs14">
         
   <div class="table-wrap">
     <cngx-treetable [tree]="[]">
@@ -376,23 +390,1522 @@ export class TreetableDemoComponent {
   protected readonly _s13 = '<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (<code>FlatNode</code>), <code>let-value="value"</code> (raw primitive).';
   protected readonly _s14 = '<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.';
   protected readonly _s15 = '<code>CngxPaginate</code> works with treetables by paginating at the root-node level. Slice <code>ORG_TREE.children</code> with <code>pager.range()</code> and pass the result as <code>[tree]</code>. Each "page" shows one department subtree with its full branch intact. This pattern works regardless of Material — swap <code>&lt;cngx-mat-paginator&gt;</code> for any custom nav.';
-  protected readonly _srcHtml0 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      [selectionMode]="$any(selectionMode.value())"\n      [showCheckboxes]="showCheckboxes.value()"\n      [options]="{ highlightRowOnHover: highlightRowOnHover.value(), capitaliseHeader: capitaliseHeader.value() }"\n      (nodeClicked)="lastClickedCdk.set($event)"\n    />\n  </div>\n  @if (lastClickedCdk(); as node) {\n    <div class="output-badge">\n      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}\n    </div>\n  }';
-  protected readonly _srcHtml1 = '\n  <div class="table-wrap">\n    <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />\n  </div>\n  @if (lastClickedCdk(); as node) {\n    <div class="output-badge">\n      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}\n      (depth {{ node.depth }})\n    </div>\n  }';
-  protected readonly _srcHtml2 = '\n  <div class="table-wrap">\n    <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />\n  </div>\n  @if (lastClickedMat(); as node) {\n    <div class="output-badge">\n      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}\n    </div>\n  }';
-  protected readonly _srcHtml3 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      selectionMode="single"\n      (selectionChanged)="singleSelected.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    selectionChanged: <strong>{{ singleSelected()[0] || \'—\' }}</strong>\n  </div>';
-  protected readonly _srcHtml4 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      selectionMode="multi"\n      (selectionChanged)="multiSelected.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    selectionChanged ({{ multiSelected().length }}):\n    <strong>{{ multiSelected().join(\', \') || \'—\' }}</strong>\n  </div>';
-  protected readonly _srcHtml5 = '\n  <div class="table-wrap">\n    <cngx-mat-treetable\n      [tree]="tree()"\n      selectionMode="single"\n      [showCheckboxes]="true"\n      (selectionChanged)="singleCheckboxSelected.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    selectionChanged: <strong>{{ singleCheckboxSelected()[0] || \'—\' }}</strong>\n  </div>';
-  protected readonly _srcHtml6 = '\n  <div class="table-wrap">\n    <cngx-mat-treetable\n      [tree]="tree()"\n      selectionMode="multi"\n      [showCheckboxes]="true"\n      (selectionChanged)="multiCheckboxSelected.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    selectionChanged ({{ multiCheckboxSelected().length }}):\n    <strong>{{ multiCheckboxSelected().join(\', \') || \'—\' }}</strong>\n  </div>';
-  protected readonly _srcHtml7 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      selectionMode="multi"\n      [showCheckboxes]="true"\n      [selectedIds]="controlledIds()"\n      (selectedIdsChange)="controlledIds.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    selectedIds ({{ controlledIds().size }}): <strong>{{ controlledIdsLabel() }}</strong>\n  </div>\n  <div class="button-row">\n    <button type="button" (click)="selectLevel1()">Select all L1</button>\n    <button type="button" (click)="clearSelection()">Clear</button>\n  </div>';
-  protected readonly _srcHtml8 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      [expandedIds]="controlledExpandedIds()"\n      (expandedIdsChange)="controlledExpandedIds.set($event)"\n    />\n  </div>\n  <div class="output-badge">\n    expandedIds ({{ controlledExpandedIds().size }}): <strong>{{ expandedIdsLabel() }}</strong>\n  </div>\n  <div class="button-row">\n    <button type="button" (click)="expandAll()">Expand all</button>\n    <button type="button" (click)="collapseAll()">Collapse all</button>\n  </div>';
-  protected readonly _srcHtml9 = '\n  <div class="table-wrap">\n    <cngx-treetable\n      [tree]="tree()"\n      (nodeExpanded)="lastExpanded.set($event)"\n      (nodeCollapsed)="lastCollapsed.set($event)"\n    />\n  </div>\n  <div class="status-row">\n    <span class="status-badge">\n      nodeExpanded: <strong>{{ lastExpanded()?.value?.name ?? \'—\' }}</strong>\n    </span>\n    <span class="status-badge">\n      nodeCollapsed: <strong>{{ lastCollapsed()?.value?.name ?? \'—\' }}</strong>\n    </span>\n  </div>';
-  protected readonly _srcHtml10 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="searchTerm.set($event)"\n      placeholder="Search employees…"\n      class="search-input"\n    />\n    @if (searchTerm()) {\n      <span class="term-badge">{{ searchTerm() }}</span>\n    }\n  </div>\n  <div class="table-wrap">\n    <cngx-treetable [tree]="searchFilteredTree()">\n      <ng-template cngxEmpty>\n        <div class="empty-state">No results for &quot;{{ searchTerm() }}&quot;.</div>\n      </ng-template>\n    </cngx-treetable>\n  </div>';
-  protected readonly _srcHtml11 = '\n  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">\n    <div class="table-wrap">\n      <cngx-treetable [tree]="sortedTree()">\n        <ng-template [cngxHeader]="\'name\'">\n          <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n            Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n        <ng-template [cngxHeader]="\'role\'">\n          <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n            Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n        <ng-template [cngxHeader]="\'location\'">\n          <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n            Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n      </cngx-treetable>\n    </div>\n  </div>\n  @if (activeSortState(); as s) {\n    <div class="output-badge">\n      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}\n    </div>\n  }';
-  protected readonly _srcHtml12 = '\n  <div class="search-row">\n    <input\n      cngxSearch\n      [debounceMs]="200"\n      (searchChange)="combinedSearchTerm.set($event)"\n      placeholder="Search…"\n      class="search-input"\n    />\n  </div>\n  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">\n    <div class="table-wrap">\n      <cngx-treetable [tree]="combinedTree()">\n        <ng-template [cngxHeader]="\'name\'">\n          <button cngxSortHeader="name" [cngxSortRef]="combinedSort" #cn="cngxSortHeader" class="sort-btn">\n            Name @if (cn.isActive()) {<span class="sort-arrow">{{ cn.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n        <ng-template [cngxHeader]="\'role\'">\n          <button cngxSortHeader="role" [cngxSortRef]="combinedSort" #cr="cngxSortHeader" class="sort-btn">\n            Role @if (cr.isActive()) {<span class="sort-arrow">{{ cr.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n        <ng-template [cngxHeader]="\'location\'">\n          <button cngxSortHeader="location" [cngxSortRef]="combinedSort" #cl="cngxSortHeader" class="sort-btn">\n            Location @if (cl.isActive()) {<span class="sort-arrow">{{ cl.isAsc() ? \'↑\' : \'↓\' }}</span>}\n          </button>\n        </ng-template>\n        <ng-template cngxEmpty>\n          <div class="empty-state">No results for &quot;{{ combinedSearchTerm() }}&quot;.</div>\n        </ng-template>\n      </cngx-treetable>\n    </div>\n  </div>';
-  protected readonly _srcHtml13 = '\n  <div class="table-wrap">\n    <cngx-treetable [tree]="tree()">\n      <ng-template [cngxHeader]="\'name\'">\n        <span class="custom-header">&#9733; Employee</span>\n      </ng-template>\n      <ng-template [cngxCell]="\'name\'" let-node let-value="value">\n        <span [style.font-weight]="node.depth === 0 ? \'700\' : \'400\'">{{ value }}</span>\n      </ng-template>\n      <ng-template [cngxCell]="\'location\'" let-value="value">\n        <span class="location-chip">{{ value }}</span>\n      </ng-template>\n    </cngx-treetable>\n  </div>';
-  protected readonly _srcHtml14 = '\n  <div class="table-wrap">\n    <cngx-treetable [tree]="[]">\n      <ng-template cngxEmpty>\n        <div class="empty-state">\n          <span class="empty-icon">&#128196;</span>\n          <p>No employees found.</p>\n        </div>\n      </ng-template>\n    </cngx-treetable>\n  </div>';
-  protected readonly _srcHtml15 = '\n  <div cngxPaginate #pager="cngxPaginate"\n       [total]="deptTotal"\n       [cngxPageIndex]="deptPageIndex()"\n       [cngxPageSize]="deptPageSize()"\n       (pageChange)="deptPageIndex.set($event)"\n       (pageSizeChange)="deptPageSize.set($event)"\n       style="display:contents">\n    <div class="table-wrap">\n      <cngx-treetable [tree]="deptPage()">\n        <ng-template cngxEmpty>\n          <div class="empty-state">No departments on this page.</div>\n        </ng-template>\n      </cngx-treetable>\n    </div>\n    <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />\n    <div class="status-row">\n      <span class="status-badge">department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span>\n    </div>\n  </div>';
-  protected readonly _srcTs15 = '\n  private readonly _deptRoots: Node<Employee>[] = ORG_TREE.children ?? [];\n  protected readonly deptPageIndex = signal(0);\n  protected readonly deptPageSize  = signal(1);\n  protected readonly deptTotal     = this._deptRoots.length;\n  protected readonly deptPage      = computed(() =>\n    this._deptRoots.slice(\n      this.deptPageIndex() * this.deptPageSize(),\n      (this.deptPageIndex() + 1) * this.deptPageSize(),\n    ),\n  );\n      ';
+  protected readonly _srcHtml0 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [selectionMode]="$any(selectionMode.value())"
+      [showCheckboxes]="showCheckboxes.value()"
+      [options]="{ highlightRowOnHover: highlightRowOnHover.value(), capitaliseHeader: capitaliseHeader.value() }"
+      (nodeClicked)="lastClickedCdk.set($event)"
+    />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+    </div>
+  }`;
+  protected readonly _srcTs0 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml1 = `<div class="table-wrap">
+    <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
+  </div>
+  @if (lastClickedCdk(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+      (depth {{ node.depth }})
+    </div>
+  }`;
+  protected readonly _srcTs1 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml2 = `<div class="table-wrap">
+    <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
+  </div>
+  @if (lastClickedMat(); as node) {
+    <div class="output-badge">
+      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+    </div>
+  }`;
+  protected readonly _srcTs2 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml3 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      (selectionChanged)="singleSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
+  </div>`;
+  protected readonly _srcTs3 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml4 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      (selectionChanged)="multiSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged ({{ multiSelected().length }}):
+    <strong>{{ multiSelected().join(', ') || '—' }}</strong>
+  </div>`;
+  protected readonly _srcTs4 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml5 = `<div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="single"
+      [showCheckboxes]="true"
+      (selectionChanged)="singleCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
+  </div>`;
+  protected readonly _srcTs5 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml6 = `<div class="table-wrap">
+    <cngx-mat-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      (selectionChanged)="multiCheckboxSelected.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectionChanged ({{ multiCheckboxSelected().length }}):
+    <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
+  </div>`;
+  protected readonly _srcTs6 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml7 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      selectionMode="multi"
+      [showCheckboxes]="true"
+      [selectedIds]="controlledIds()"
+      (selectedIdsChange)="controlledIds.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    selectedIds ({{ controlledIds().size }}): <strong>{{ controlledIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="selectLevel1()">Select all L1</button>
+    <button type="button" (click)="clearSelection()">Clear</button>
+  </div>`;
+  protected readonly _srcTs7 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml8 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      [expandedIds]="controlledExpandedIds()"
+      (expandedIdsChange)="controlledExpandedIds.set($event)"
+    />
+  </div>
+  <div class="output-badge">
+    expandedIds ({{ controlledExpandedIds().size }}): <strong>{{ expandedIdsLabel() }}</strong>
+  </div>
+  <div class="button-row">
+    <button type="button" (click)="expandAll()">Expand all</button>
+    <button type="button" (click)="collapseAll()">Collapse all</button>
+  </div>`;
+  protected readonly _srcTs8 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml9 = `<div class="table-wrap">
+    <cngx-treetable
+      [tree]="tree()"
+      (nodeExpanded)="lastExpanded.set($event)"
+      (nodeCollapsed)="lastCollapsed.set($event)"
+    />
+  </div>
+  <div class="status-row">
+    <span class="status-badge">
+      nodeExpanded: <strong>{{ lastExpanded()?.value?.name ?? '—' }}</strong>
+    </span>
+    <span class="status-badge">
+      nodeCollapsed: <strong>{{ lastCollapsed()?.value?.name ?? '—' }}</strong>
+    </span>
+  </div>`;
+  protected readonly _srcTs9 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml10 = `<div class="search-row">
+    <input
+      cngxSearch
+      [debounceMs]="200"
+      (searchChange)="searchTerm.set($event)"
+      placeholder="Search employees…"
+      class="search-input"
+    />
+    @if (searchTerm()) {
+      <span class="term-badge">{{ searchTerm() }}</span>
+    }
+  </div>
+  <div class="table-wrap">
+    <cngx-treetable [tree]="searchFilteredTree()">
+      <ng-template cngxEmpty>
+        <div class="empty-state">No results for &quot;{{ searchTerm() }}&quot;.</div>
+      </ng-template>
+    </cngx-treetable>
+  </div>`;
+  protected readonly _srcTs10 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml11 = `<div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="sortedTree()">
+        <ng-template [cngxHeader]="'name'">
+          <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+            Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'role'">
+          <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+            Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'location'">
+          <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+            Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+  </div>
+  @if (activeSortState(); as s) {
+    <div class="output-badge">
+      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
+    </div>
+  }`;
+  protected readonly _srcTs11 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml12 = `<div class="search-row">
+    <input
+      cngxSearch
+      [debounceMs]="200"
+      (searchChange)="combinedSearchTerm.set($event)"
+      placeholder="Search…"
+      class="search-input"
+    />
+  </div>
+  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="combinedTree()">
+        <ng-template [cngxHeader]="'name'">
+          <button cngxSortHeader="name" [cngxSortRef]="combinedSort" #cn="cngxSortHeader" class="sort-btn">
+            Name @if (cn.isActive()) {<span class="sort-arrow">{{ cn.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'role'">
+          <button cngxSortHeader="role" [cngxSortRef]="combinedSort" #cr="cngxSortHeader" class="sort-btn">
+            Role @if (cr.isActive()) {<span class="sort-arrow">{{ cr.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template [cngxHeader]="'location'">
+          <button cngxSortHeader="location" [cngxSortRef]="combinedSort" #cl="cngxSortHeader" class="sort-btn">
+            Location @if (cl.isActive()) {<span class="sort-arrow">{{ cl.isAsc() ? '↑' : '↓' }}</span>}
+          </button>
+        </ng-template>
+        <ng-template cngxEmpty>
+          <div class="empty-state">No results for &quot;{{ combinedSearchTerm() }}&quot;.</div>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+  </div>`;
+  protected readonly _srcTs12 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml13 = `<div class="table-wrap">
+    <cngx-treetable [tree]="tree()">
+      <ng-template [cngxHeader]="'name'">
+        <span class="custom-header">&#9733; Employee</span>
+      </ng-template>
+      <ng-template [cngxCell]="'name'" let-node let-value="value">
+        <span [style.font-weight]="node.depth === 0 ? '700' : '400'">{{ value }}</span>
+      </ng-template>
+      <ng-template [cngxCell]="'location'" let-value="value">
+        <span class="location-chip">{{ value }}</span>
+      </ng-template>
+    </cngx-treetable>
+  </div>`;
+  protected readonly _srcTs13 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml14 = `<div class="table-wrap">
+    <cngx-treetable [tree]="[]">
+      <ng-template cngxEmpty>
+        <div class="empty-state">
+          <span class="empty-icon">&#128196;</span>
+          <p>No employees found.</p>
+        </div>
+      </ng-template>
+    </cngx-treetable>
+  </div>`;
+  protected readonly _srcTs14 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });`;
+  protected readonly _srcHtml15 = `<div cngxPaginate #pager="cngxPaginate"
+       [total]="deptTotal"
+       [cngxPageIndex]="deptPageIndex()"
+       [cngxPageSize]="deptPageSize()"
+       (pageChange)="deptPageIndex.set($event)"
+       (pageSizeChange)="deptPageSize.set($event)"
+       style="display:contents">
+    <div class="table-wrap">
+      <cngx-treetable [tree]="deptPage()">
+        <ng-template cngxEmpty>
+          <div class="empty-state">No departments on this page.</div>
+        </ng-template>
+      </cngx-treetable>
+    </div>
+    <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />
+    <div class="status-row">
+      <span class="status-badge">department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs15 = `import { ORG_TREE, type Employee } from '../../../fixtures';
+import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+import type { FlatNode, Node } from '@cngx/data-display/treetable';
+
+
+  protected readonly tree = signal<Node<Employee>>(ORG_TREE);
+  protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastClickedMat = signal<FlatNode<Employee> | null>(null);
+
+  // ── Selection ─────────────────────────────────────────────────────────────
+  protected readonly singleSelected = signal<readonly string[]>([]);
+  protected readonly multiSelected = signal<readonly string[]>([]);
+  protected readonly singleCheckboxSelected = signal<readonly string[]>([]);
+  protected readonly multiCheckboxSelected = signal<readonly string[]>([]);
+
+  // ── Controlled selection ──────────────────────────────────────────────────
+  protected readonly controlledIds = signal<ReadonlySet<string>>(new Set(['0-0', '0-1']));
+
+  protected controlledIdsLabel(): string {
+    return [...this.controlledIds()].join(', ') || '—';
+  }
+
+  protected selectLevel1(): void {
+    this.controlledIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected clearSelection(): void {
+    this.controlledIds.set(new Set());
+  }
+
+  // ── Controlled expand ─────────────────────────────────────────────────────
+  protected readonly controlledExpandedIds = signal<ReadonlySet<string>>(new Set(['0']));
+
+  protected expandedIdsLabel(): string {
+    return [...this.controlledExpandedIds()].join(', ') || '—';
+  }
+
+  protected expandAll(): void {
+    this.controlledExpandedIds.set(new Set(['0', '0-0', '0-1', '0-2']));
+  }
+
+  protected collapseAll(): void {
+    this.controlledExpandedIds.set(new Set());
+  }
+
+  // ── Expand / collapse outputs ─────────────────────────────────────────────
+  protected readonly lastExpanded = signal<FlatNode<Employee> | null>(null);
+  protected readonly lastCollapsed = signal<FlatNode<Employee> | null>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────
+  protected readonly searchTerm = signal('');
+
+  protected readonly searchFilteredTree = computed((): Node<Employee>[] => {
+    const term = this.searchTerm();
+    if (!term) return [ORG_TREE];
+    return filterTree([ORG_TREE], (v) => nodeMatchesSearch(v, term));
+  });
+
+  // ── Sort ──────────────────────────────────────────────────────────────────
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortedTree = computed((): Node<Employee>[] => {
+    const state = this.activeSortState();
+    if (!state) return [ORG_TREE];
+    return sortTree([ORG_TREE], state.active, state.direction);
+  });
+
+  // ── Combined sort + search ────────────────────────────────────────────────
+  protected readonly combinedSearchTerm = signal('');
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly combinedTree = computed((): Node<Employee>[] => {
+    let nodes: Node<Employee>[] = [ORG_TREE];
+    const term = this.combinedSearchTerm();
+    if (term) nodes = filterTree(nodes, (v) => nodeMatchesSearch(v, term));
+    const sort = this.combinedSortState();
+    if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
+    return nodes;
+  });
+
+
+  private readonly _deptRoots: Node<Employee>[] = ORG_TREE.children ?? [];
+  protected readonly deptPageIndex = signal(0);
+  protected readonly deptPageSize  = signal(1);
+  protected readonly deptTotal     = this._deptRoots.length;
+  protected readonly deptPage      = computed(() =>
+    this._deptRoots.slice(
+      this.deptPageIndex() * this.deptPageSize(),
+      (this.deptPageIndex() + 1) * this.deptPageSize(),
+    ),
+  );`;
   readonly selectionMode = Playground.select(
     'Selection Mode',
     [{ label: 'none', value: 'none' }, { label: 'single', value: 'single' }, { label: 'multi', value: 'multi' }],

@@ -21,7 +21,8 @@ import { CngxScrollLock } from '@cngx/common';
       [apiComponents]="['CngxScrollLock']">
       <app-example-card title="CngxScrollLock — Toggle"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div [cngxScrollLock]="locked()">
     <div class="button-row">
@@ -47,7 +48,28 @@ import { CngxScrollLock } from '@cngx/common';
 })
 export class ScrollLockDemoComponent {
   protected readonly _s0 = '<code>[cngxScrollLock]</code> sets <code>overflow: hidden</code> and <code>scrollbar-gutter: stable</code> on the document to prevent scrolling while avoiding layout shift from the scrollbar disappearing.';
-  protected readonly _srcHtml0 = '\n  <div [cngxScrollLock]="locked()">\n    <div class="button-row">\n      <button class="sort-btn" (click)="locked.set(!locked())">\n        {{ locked() ? \'Unlock scroll\' : \'Lock scroll\' }}\n      </button>\n    </div>\n\n    <div class="status-row">\n      <span class="status-badge" [class.active]="locked()">\n        scroll {{ locked() ? \'locked\' : \'unlocked\' }}\n      </span>\n    </div>\n\n    <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-muted, #888)">\n      Toggle the lock and try scrolling this page. The scrollbar stays in place via\n      <code>scrollbar-gutter: stable</code>.\n    </p>\n  </div>';
+  protected readonly _srcHtml0 = `<div [cngxScrollLock]="locked()">
+    <div class="button-row">
+      <button class="sort-btn" (click)="locked.set(!locked())">
+        {{ locked() ? 'Unlock scroll' : 'Lock scroll' }}
+      </button>
+    </div>
+
+    <div class="status-row">
+      <span class="status-badge" [class.active]="locked()">
+        scroll {{ locked() ? 'locked' : 'unlocked' }}
+      </span>
+    </div>
+
+    <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-muted, #888)">
+      Toggle the lock and try scrolling this page. The scrollbar stays in place via
+      <code>scrollbar-gutter: stable</code>.
+    </p>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxScrollLock } from '@cngx/common';
+
+
+  protected readonly locked = signal(false);`;
 
   protected readonly locked = signal(false);
   

@@ -21,7 +21,8 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
       [apiComponents]="['CngxLiveRegion']">
       <app-example-card title="CngxLiveRegion — Polite vs Assertive"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div class="button-row">
     <button class="sort-btn" (click)="politeness.set('polite')">
@@ -77,7 +78,8 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
       </app-example-card>
       <app-example-card title="Form Validation — Assertive Error Announcements"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
     <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
@@ -112,8 +114,121 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
 export class LiveRegionDemoComponent {
   protected readonly _s0 = '<code>[cngxLiveRegion]</code> manages <code>aria-live</code>, <code>aria-atomic</code>, and <code>role</code> on the host element. Screen readers announce content changes — <code>polite</code> queues after the current utterance, <code>assertive</code> interrupts.';
   protected readonly _s1 = '<code>[cngxLiveRegion]</code> with <code>assertive</code> politeness on a validation error message. Screen readers interrupt to announce the error immediately when the message content changes.';
-  protected readonly _srcHtml0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="politeness.set(\'polite\')">\n      <span class="chip" [class.chip--active]="politeness() === \'polite\'">polite</span>\n    </button>\n    <button class="sort-btn" (click)="politeness.set(\'assertive\')">\n      <span class="chip" [class.chip--active]="politeness() === \'assertive\'">assertive</span>\n    </button>\n    <button class="sort-btn" (click)="politeness.set(\'off\')">\n      <span class="chip" [class.chip--active]="politeness() === \'off\'">off</span>\n    </button>\n  </div>\n\n  <div class="button-row" style="margin-top: 8px">\n    <button class="sort-btn" (click)="announce()">\n      Trigger announcement\n    </button>\n    <button class="sort-btn" (click)="message.set(\'\')">Clear</button>\n  </div>\n\n  <div\n    cngxLiveRegion\n    [politeness]="politeness()"\n    style="\n      margin-top: 12px;\n      padding: 10px 14px;\n      border-radius: 6px;\n      min-height: 40px;\n      border: 1px solid var(--cngx-border, #ddd);\n      transition: background 0.3s, border-color 0.3s;\n    "\n    [style.background]="flashActive() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-surface-alt, #f8f9fa)\'"\n    [style.borderColor]="flashActive() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-border, #ddd)\'"\n    [style.color]="flashActive() ? \'#000\' : \'inherit\'"\n  >\n    {{ message() || \'Waiting for announcement…\' }}\n  </div>\n\n  <div class="event-grid" style="margin-top: 10px">\n    <div class="event-row">\n      <span class="event-label">aria-live</span>\n      <span class="event-value">{{ politeness() }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">role</span>\n      <span class="event-value">{{ politeness() === \'assertive\' ? \'alert\' : \'status\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">aria-atomic</span>\n      <span class="event-value">true</span>\n    </div>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">\n    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>\n    <input\n      type="text"\n      placeholder="user@example.com"\n      [value]="email()"\n      (input)="email.set($any($event.target).value)"\n      [style.borderColor]="emailError() ? \'#e53e3e\' : \'var(--cngx-border, #ddd)\'"\n      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"\n      aria-describedby="email-error"\n    />\n    <div\n      id="email-error"\n      cngxLiveRegion\n      [politeness]="\'assertive\'"\n      style="min-height: 1.25rem; font-size: 0.8125rem;"\n      [style.color]="emailError() ? \'#e53e3e\' : \'transparent\'"\n    >\n      {{ emailError() }}\n    </div>\n  </div>\n\n  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">\n    Type an invalid email to see the error. A screen reader would announce the error\n    message immediately due to <code>aria-live="assertive"</code> and <code>role="alert"</code>.\n  </p>';
+  protected readonly _srcHtml0 = `<div class="button-row">
+    <button class="sort-btn" (click)="politeness.set('polite')">
+      <span class="chip" [class.chip--active]="politeness() === 'polite'">polite</span>
+    </button>
+    <button class="sort-btn" (click)="politeness.set('assertive')">
+      <span class="chip" [class.chip--active]="politeness() === 'assertive'">assertive</span>
+    </button>
+    <button class="sort-btn" (click)="politeness.set('off')">
+      <span class="chip" [class.chip--active]="politeness() === 'off'">off</span>
+    </button>
+  </div>
+
+  <div class="button-row" style="margin-top: 8px">
+    <button class="sort-btn" (click)="announce()">
+      Trigger announcement
+    </button>
+    <button class="sort-btn" (click)="message.set('')">Clear</button>
+  </div>
+
+  <div
+    cngxLiveRegion
+    [politeness]="politeness()"
+    style="
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      min-height: 40px;
+      border: 1px solid var(--cngx-border, #ddd);
+      transition: background 0.3s, border-color 0.3s;
+    "
+    [style.background]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
+    [style.borderColor]="flashActive() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-border, #ddd)'"
+    [style.color]="flashActive() ? '#000' : 'inherit'"
+  >
+    {{ message() || 'Waiting for announcement…' }}
+  </div>
+
+  <div class="event-grid" style="margin-top: 10px">
+    <div class="event-row">
+      <span class="event-label">aria-live</span>
+      <span class="event-value">{{ politeness() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">role</span>
+      <span class="event-value">{{ politeness() === 'assertive' ? 'alert' : 'status' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">aria-atomic</span>
+      <span class="event-value">true</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs0 = `protected message = signal('');
+  protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+  protected counter = signal(0);
+  protected flashActive = signal(false);
+  protected email = signal('');
+  protected emailError = computed(() => {
+    const v = this.email();
+    if (!v) return '';
+    if (!v.includes('@')) return 'Missing @ symbol';
+    if (!v.includes('.')) return 'Missing domain (e.g. .com)';
+    return '';
+  });
+
+  protected announce(): void {
+    this.counter.update(n => n + 1);
+    this.message.set('Action completed — count: ' + this.counter());
+    this.flashActive.set(true);
+    setTimeout(() => this.flashActive.set(false), 600);
+  }`;
+  protected readonly _srcHtml1 = `<div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
+    <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
+    <input
+      type="text"
+      placeholder="user@example.com"
+      [value]="email()"
+      (input)="email.set($any($event.target).value)"
+      [style.borderColor]="emailError() ? '#e53e3e' : 'var(--cngx-border, #ddd)'"
+      style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--cngx-border, #ddd); font-size: 0.875rem;"
+      aria-describedby="email-error"
+    />
+    <div
+      id="email-error"
+      cngxLiveRegion
+      [politeness]="'assertive'"
+      style="min-height: 1.25rem; font-size: 0.8125rem;"
+      [style.color]="emailError() ? '#e53e3e' : 'transparent'"
+    >
+      {{ emailError() }}
+    </div>
+  </div>
+
+  <p style="margin-top: 12px; font-size: 0.75rem; color: var(--cngx-text-secondary, #999);">
+    Type an invalid email to see the error. A screen reader would announce the error
+    message immediately due to <code>aria-live="assertive"</code> and <code>role="alert"</code>.
+  </p>`;
+  protected readonly _srcTs1 = `protected message = signal('');
+  protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
+  protected counter = signal(0);
+  protected flashActive = signal(false);
+  protected email = signal('');
+  protected emailError = computed(() => {
+    const v = this.email();
+    if (!v) return '';
+    if (!v.includes('@')) return 'Missing @ symbol';
+    if (!v.includes('.')) return 'Missing domain (e.g. .com)';
+    return '';
+  });
+
+  protected announce(): void {
+    this.counter.update(n => n + 1);
+    this.message.set('Action completed — count: ' + this.counter());
+    this.flashActive.set(true);
+    setTimeout(() => this.flashActive.set(false), 600);
+  }`;
 
   protected message = signal('');
   protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');

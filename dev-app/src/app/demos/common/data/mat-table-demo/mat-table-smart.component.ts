@@ -28,7 +28,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSort', 'CngxSortHeader', 'CngxFilter']">
       <app-example-card title="SmartDataSource + mat-table — auto-wired Sort & Filter"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div class="filter-row">
     <span class="filter-label">Location:</span>
@@ -83,7 +84,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Why CngxSearch does not auto-wire"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <pre class="code-block"><code>// Works: CngxSort + CngxFilter as hostDirectives
 // inject() finds them in the same element injector
@@ -110,8 +112,132 @@ class MyTable &#123;
 export class MatTableSmartDemoComponent {
   protected readonly _s0 = '<code>CngxSort</code> and <code>CngxFilter</code> are declared as <code>hostDirectives</code> on the component. <code>injectSmartDataSource()</code> discovers them automatically via <code>inject()</code> — no explicit wiring needed. <code>CngxSmartDataSource</code> extends CDK\'s <code>DataSource&lt;T&gt;</code>, so <code>mat-table</code> accepts it directly as <code>[dataSource]</code>. Multi-filter is fully supported — all named predicates are AND-combined automatically. Multi-sort is also supported — add <code>[multiSort]="true"</code> to the <code>[cngxSort]</code> element and Shift+click column headers.';
   protected readonly _s1 = '<code>inject()</code> traverses the injector tree <em>upward</em> — from the DataSource context to the component and its ancestors. <code>CngxSearch</code> lives on an <code>&lt;input&gt;</code> element inside the template (a child element), which is <em>below</em> the component injector. For search integration use <code>CngxDataSource</code> with a manual <code>computed()</code> — shown in the next demo.';
-  protected readonly _srcHtml0 = '\n  <div class="filter-row">\n    <span class="filter-label">Location:</span>\n    <button type="button" class="chip" [class.chip--active]="activeLocation() === null" (click)="filterBy(null)">All</button>\n    @for (loc of locations; track loc) {\n      <button type="button" class="chip" [class.chip--active]="activeLocation() === loc" (click)="filterBy(loc)">{{ loc }}</button>\n    }\n  </div>\n\n  <mat-table [dataSource]="ds" class="table-wrap">\n    <ng-container matColumnDef="name">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n          Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="role">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n          Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.role }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="location">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n          Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.location }}</mat-cell>\n    </ng-container>\n\n    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>\n    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>\n    <div *matNoDataRow class="empty-cell">No results.</div>\n  </mat-table>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filter.isActive()">\n      filter: {{ filter.isActive() ? \'active\' : \'off\' }}\n    </span>\n    <span class="status-badge" [class.active]="sort.isActive()">\n      sort: {{ sort.isActive() ? sort.active() + \' \' + sort.direction() : \'off\' }}\n    </span>\n    <span class="status-badge">{{ total }} rows total</span>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>// Works: CngxSort + CngxFilter as hostDirectives\n// inject() finds them in the same element injector\n@Component(&#123;\n  hostDirectives: [\n    &#123; directive: CngxSort   &#125;,\n    &#123; directive: CngxFilter &#125;,\n  ],\n&#125;)\nclass MyTable &#123;\n  private readonly ds = injectSmartDataSource(this.items);\n  //  ↑ auto-discovers CngxSort + CngxFilter \n&#125;\n\n// Does not work: CngxSearch is on an &lt;input&gt; inside the template\n// That is a child element — inject() does not traverse downward\n&lt;input cngxSearch #s="cngxSearch"&gt;  ← below the component injector\n\n// Solution: CngxDataSource + manual computed() — see "mat-table — DataSource (Manual Pipeline)"</code></pre>';
+  protected readonly _srcHtml0 = `<div class="filter-row">
+    <span class="filter-label">Location:</span>
+    <button type="button" class="chip" [class.chip--active]="activeLocation() === null" (click)="filterBy(null)">All</button>
+    @for (loc of locations; track loc) {
+      <button type="button" class="chip" [class.chip--active]="activeLocation() === loc" (click)="filterBy(loc)">{{ loc }}</button>
+    }
+  </div>
+
+  <mat-table [dataSource]="ds" class="table-wrap">
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+          Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+          Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.role }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="location">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+          Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.location }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    <div *matNoDataRow class="empty-cell">No results.</div>
+  </mat-table>
+
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filter.isActive()">
+      filter: {{ filter.isActive() ? 'active' : 'off' }}
+    </span>
+    <span class="status-badge" [class.active]="sort.isActive()">
+      sort: {{ sort.isActive() ? sort.active() + ' ' + sort.direction() : 'off' }}
+    </span>
+    <span class="status-badge">{{ total }} rows total</span>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxFilter, CngxSort, injectSmartDataSource } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sort   = inject(CngxSort,           { host: true });
+  protected readonly filter = inject(CngxFilter<Person>, { host: true });
+
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly total = PEOPLE.length;
+  protected readonly displayedColumns = ['name', 'role', 'location'];
+
+  protected readonly activeLocation = signal<string | null>(null);
+
+  private readonly items = signal(PEOPLE);
+
+  // CngxSmartDataSource extends CDK DataSource<T>.
+  // mat-table accepts any CDK DataSource — no adapter needed.
+  protected readonly ds = injectSmartDataSource(this.items);
+
+  protected filterBy(loc: string | null): void {
+    this.activeLocation.set(loc);
+    if (loc === null) {
+      this.filter.clear();
+    } else {
+      this.filter.setPredicate((p) => p.location === loc);
+    }
+  }`;
+  protected readonly _srcHtml1 = `<pre class="code-block"><code>// Works: CngxSort + CngxFilter as hostDirectives
+// inject() finds them in the same element injector
+@Component(&#123;
+  hostDirectives: [
+    &#123; directive: CngxSort   &#125;,
+    &#123; directive: CngxFilter &#125;,
+  ],
+&#125;)
+class MyTable &#123;
+  private readonly ds = injectSmartDataSource(this.items);
+  //  ↑ auto-discovers CngxSort + CngxFilter 
+&#125;
+
+// Does not work: CngxSearch is on an &lt;input&gt; inside the template
+// That is a child element — inject() does not traverse downward
+&lt;input cngxSearch #s="cngxSearch"&gt;  ← below the component injector
+
+// Solution: CngxDataSource + manual computed() — see "mat-table — DataSource (Manual Pipeline)"</code></pre>`;
+  protected readonly _srcTs1 = `import { CngxFilter, CngxSort, injectSmartDataSource } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sort   = inject(CngxSort,           { host: true });
+  protected readonly filter = inject(CngxFilter<Person>, { host: true });
+
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly total = PEOPLE.length;
+  protected readonly displayedColumns = ['name', 'role', 'location'];
+
+  protected readonly activeLocation = signal<string | null>(null);
+
+  private readonly items = signal(PEOPLE);
+
+  // CngxSmartDataSource extends CDK DataSource<T>.
+  // mat-table accepts any CDK DataSource — no adapter needed.
+  protected readonly ds = injectSmartDataSource(this.items);
+
+  protected filterBy(loc: string | null): void {
+    this.activeLocation.set(loc);
+    if (loc === null) {
+      this.filter.clear();
+    } else {
+      this.filter.setPredicate((p) => p.location === loc);
+    }
+  }`;
 
   protected readonly sort   = inject(CngxSort,           { host: true });
   protected readonly filter = inject(CngxFilter<Person>, { host: true });

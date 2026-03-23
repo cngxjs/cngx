@@ -1,7 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
 import { ApiDataService } from './api-data.service';
 import { ApiTableComponent } from './api-table.component';
 
@@ -26,24 +32,18 @@ const TABS: { id: DocTab; label: string }[] = [
       }
     </header>
 
-    <nav
-      class="doc-tabs"
-      role="tablist"
-      aria-label="Documentation sections"
-      (keydown)="handleTabKeydown($event)"
-    >
+    <nav class="doc-tabs" role="tablist" aria-label="Documentation sections"
+         (keydown)="handleTabKeydown($event)">
       @for (tab of tabs; track tab.id; let i = $index) {
-        <button
-          class="doc-tab"
-          [class.doc-tab--active]="activeTab() === tab.id"
-          role="tab"
-          [id]="'tab-' + tab.id"
-          [attr.aria-selected]="activeTab() === tab.id"
-          [attr.aria-controls]="'panel-' + tab.id"
-          [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
-          (click)="setTab(tab.id)"
-          (focus)="focusedIndex.set(i)"
-        >
+        <button class="doc-tab"
+                [class.doc-tab--active]="activeTab() === tab.id"
+                role="tab"
+                [id]="'tab-' + tab.id"
+                [attr.aria-selected]="activeTab() === tab.id"
+                [attr.aria-controls]="'panel-' + tab.id"
+                [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
+                (click)="setTab(tab.id)"
+                (focus)="focusedIndex.set(i)">
           {{ tab.label }}
         </button>
       }
@@ -213,14 +213,12 @@ export class DocShellComponent {
   private readonly router = inject(Router);
   private readonly apiService = inject(ApiDataService);
 
-  private readonly queryTab = toSignal(
-    this.route.queryParamMap.pipe(map((p) => p.get('tab') as DocTab | null)),
-    { initialValue: null },
-  );
+  // Read fragment from URL (#overview, #examples, #api)
+  private readonly fragment = toSignal(this.route.fragment, { initialValue: null });
 
   readonly activeTab = computed<DocTab>(() => {
-    const q = this.queryTab();
-    return q && TABS.some((t) => t.id === q) ? q : 'overview';
+    const f = this.fragment();
+    return f && TABS.some((t) => t.id === f) ? (f as DocTab) : 'examples';
   });
 
   readonly apiEntries = computed(() => {
@@ -231,8 +229,8 @@ export class DocShellComponent {
   protected setTab(tab: DocTab): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab },
-      queryParamsHandling: 'merge',
+      fragment: tab,
+      replaceUrl: true,
     });
   }
 
@@ -261,9 +259,7 @@ export class DocShellComponent {
     this.focusedIndex.set(next);
     this.setTab(TABS[next].id);
 
-    const btn = (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')[
-      next
-    ];
+    const btn = (event.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('[role="tab"]')[next];
     btn?.focus();
   }
 }

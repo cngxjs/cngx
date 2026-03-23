@@ -21,7 +21,8 @@ import { CngxMediaQuery } from '@cngx/common';
       [apiComponents]="['CngxMediaQuery']">
       <app-example-card title="CngxMediaQuery — Viewport Breakpoints"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>
@@ -55,5 +56,31 @@ import { CngxMediaQuery } from '@cngx/common';
 })
 export class MediaQueryDemoComponent {
   protected readonly _s0 = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> with automatic cleanup. Resize your browser to see the signals update in real time.';
-  protected readonly _srcHtml0 = '\n  <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(prefers-reduced-motion: reduce)" #motion="cngxMediaQuery"></div>\n  <div cngxMediaQuery="(prefers-color-scheme: dark)" #darkPref="cngxMediaQuery"></div>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="tablet.matches()">\n      tablet (768px+): {{ tablet.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="desktop.matches()">\n      desktop (1024px+): {{ desktop.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="wide.matches()">\n      wide (1440px+): {{ wide.matches() }}\n    </span>\n  </div>\n\n  <div class="status-row" style="margin-top: 0.5rem;">\n    <span class="status-badge" [class.active]="motion.matches()">\n      reduced-motion: {{ motion.matches() }}\n    </span>\n    <span class="status-badge" [class.active]="darkPref.matches()">\n      prefers-dark: {{ darkPref.matches() }}\n    </span>\n  </div>';
+  protected readonly _srcHtml0 = `<div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
+  <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>
+  <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>
+  <div cngxMediaQuery="(prefers-reduced-motion: reduce)" #motion="cngxMediaQuery"></div>
+  <div cngxMediaQuery="(prefers-color-scheme: dark)" #darkPref="cngxMediaQuery"></div>
+
+  <div class="status-row">
+    <span class="status-badge" [class.active]="tablet.matches()">
+      tablet (768px+): {{ tablet.matches() }}
+    </span>
+    <span class="status-badge" [class.active]="desktop.matches()">
+      desktop (1024px+): {{ desktop.matches() }}
+    </span>
+    <span class="status-badge" [class.active]="wide.matches()">
+      wide (1440px+): {{ wide.matches() }}
+    </span>
+  </div>
+
+  <div class="status-row" style="margin-top: 0.5rem;">
+    <span class="status-badge" [class.active]="motion.matches()">
+      reduced-motion: {{ motion.matches() }}
+    </span>
+    <span class="status-badge" [class.active]="darkPref.matches()">
+      prefers-dark: {{ darkPref.matches() }}
+    </span>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxMediaQuery } from '@cngx/common';`;
 }

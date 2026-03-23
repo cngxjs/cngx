@@ -635,16 +635,27 @@ export function generateComponentFile(story, meta) {
     )
     .filter(Boolean);
 
-  // Build source string fields for each section (HTML, TS, CSS)
+  // Build source string fields for each section (HTML, TS, CSS).
+  // Uses backtick template literals so newlines render properly in the browser.
+  const escBacktick = (s) => s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+
+  // Combine story-level imports + setup for a complete TS view per section
+  const storyLevelTs = [
+    ...(story.moduleImports ?? []),
+    '',
+    ...(story.setup ? [story.setup] : []),
+  ]
+    .join('\n')
+    .trim();
+
   const sourceFields = story.sections.flatMap((section, i) => {
-    const escapeStr = (s) =>
-      s.replaceAll('\\', '\\\\').replaceAll('\'', String.raw`\'`).replaceAll('\n', '\\n');
-    const fields = [`  protected readonly _srcHtml${i} = '${escapeStr(section.template)}';`];
-    if (section.setup) {
-      fields.push(`  protected readonly _srcTs${i} = '${escapeStr(section.setup)}';`);
+    const fields = [`  protected readonly _srcHtml${i} = \`${escBacktick(section.template.trim())}\`;`];
+    const sectionTs = [storyLevelTs, section.setup ?? ''].filter(Boolean).join('\n\n').trim();
+    if (sectionTs) {
+      fields.push(`  protected readonly _srcTs${i} = \`${escBacktick(sectionTs)}\`;`);
     }
     if (section.css) {
-      fields.push(`  protected readonly _srcCss${i} = '${escapeStr(section.css)}';`);
+      fields.push(`  protected readonly _srcCss${i} = \`${escBacktick(section.css.trim())}\`;`);
     }
     return fields;
   });
@@ -654,7 +665,8 @@ export function generateComponentFile(story, meta) {
     const isPlayground = hasControls && i === 0;
     const subtitleAttr = section.subtitle ? `\n        [subtitle]="_s${i}"` : '';
     const sourceHtmlAttr = `\n        [sourceHtml]="_srcHtml${i}"`;
-    const sourceTsAttr = section.setup ? `\n        [sourceTs]="_srcTs${i}"` : '';
+    const sectionTs = [storyLevelTs, section.setup ?? ''].filter(Boolean).join('\n\n').trim();
+    const sourceTsAttr = sectionTs ? `\n        [sourceTs]="_srcTs${i}"` : '';
     const sourceCssAttr = section.css ? `\n        [sourceCss]="_srcCss${i}"` : '';
     // Escape backticks and ${} interpolations so they survive being embedded in a TS template literal.
     const tpl = section.template.replaceAll('`', '\\`').replaceAll('${', '\\${');

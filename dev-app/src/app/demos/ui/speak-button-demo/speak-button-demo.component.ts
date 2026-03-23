@@ -28,7 +28,8 @@ import { MatIcon } from '@angular/material/icon';
       [apiComponents]="['CngxSpeakButton', 'CngxSpeak']">
       <app-example-card title="CngxSpeakButton — Styled Speaker Icon"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
     <div style="display: flex; align-items: flex-start; gap: 8px;">
@@ -103,7 +104,8 @@ import { MatIcon } from '@angular/material/icon';
       </app-example-card>
       <app-example-card title="Theming — CSS Custom Properties"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div style="display: flex; gap: 24px; flex-wrap: wrap;">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
@@ -159,7 +161,8 @@ cngx-speak-button.dark {{ '{' }}
       </app-example-card>
       <app-example-card title="Material Integration — Theme SCSS + mat-icon-button"
         [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2">
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
     <div>
@@ -272,9 +275,248 @@ export class SpeakButtonDemoComponent {
   protected readonly _s0 = '<code>&lt;cngx-speak-button&gt;</code> connects to a <code>CngxSpeak</code> directive via <code>[speakRef]</code>. It renders a speaker icon with wave animation while speaking. Fully themeable via <code>--cngx-speak-btn-*</code> CSS custom properties.';
   protected readonly _s1 = 'Override <code>--cngx-speak-btn-*</code> variables on a parent element to customize size, color, radius, and animation. Each block below shows a different style.';
   protected readonly _s2 = '<code>CngxSpeakButton</code> ships a Material theme SCSS mixin that maps <code>--mat-sys-*</code> tokens to the button CSS variables. Alternatively, skip <code>CngxSpeakButton</code> entirely and use a <code>mat-icon-button</code> with the headless <code>CngxSpeak</code> directive.';
-  protected readonly _srcHtml0 = '\n  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">\n    <div style="display: flex; align-items: flex-start; gap: 8px;">\n      <div\n        [cngxSpeak]="\'CNGX is the missing composition layer between Angular CDK and Angular Material. It makes both declarative and Signal-first without replacing them.\'"\n        [rate]="rate()"\n        [pitch]="pitch()"\n        #tts1="cngxSpeak"\n        style="\n          padding: 16px 20px;\n          border-radius: 8px;\n          background: var(--cngx-surface-alt, #f8f9fa);\n          border: 1px solid var(--cngx-border, #ddd);\n          line-height: 1.6;\n          font-size: 0.875rem;\n          flex: 1;\n        "\n      >\n        CNGX is the missing composition layer between Angular CDK and Angular\n        Material. It makes both declarative and Signal-first without replacing them.\n      </div>\n      <cngx-speak-button [speakRef]="tts1" />\n    </div>\n\n    <div style="display: flex; align-items: flex-start; gap: 8px;">\n      <div\n        [cngxSpeak]="\'Free shipping on orders over 50 dollars. Returns accepted within 30 days. Standard delivery takes 3 to 5 business days.\'"\n        [rate]="rate()"\n        [pitch]="pitch()"\n        #tts2="cngxSpeak"\n        style="\n          padding: 16px 20px;\n          border-radius: 8px;\n          border-left: 4px solid var(--cngx-accent, #f5a623);\n          background: var(--cngx-surface-alt, #f8f9fa);\n          line-height: 1.6;\n          font-size: 0.875rem;\n          flex: 1;\n        "\n      >\n        <strong style="display: block; margin-bottom: 4px;">Shipping Info</strong>\n        Free shipping on orders over $50. Returns accepted within 30 days.\n        Standard delivery takes 3–5 business days.\n      </div>\n      <cngx-speak-button [speakRef]="tts2" />\n    </div>\n  </div>\n\n  <div style="margin-top: 16px; display: flex; gap: 16px; align-items: center; font-size: 0.8125rem;">\n    <label style="display: flex; align-items: center; gap: 6px;">\n      Rate\n      <input type="range" min="0.5" max="2" step="0.1" [value]="rate()" (input)="rate.set(+$any($event.target).value)" style="width: 100px;" />\n      {{ rate() }}x\n    </label>\n    <label style="display: flex; align-items: center; gap: 6px;">\n      Pitch\n      <input type="range" min="0" max="2" step="0.1" [value]="pitch()" (input)="pitch.set(+$any($event.target).value)" style="width: 100px;" />\n      {{ pitch() }}\n    </label>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">TTS supported</span>\n      <span class="event-value">{{ tts1.supported }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">Speaking</span>\n      <span class="event-value">{{ tts1.speaking() || tts2.speaking() }}</span>\n    </div>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <div style="display: flex; gap: 24px; flex-wrap: wrap;">\n    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">\n      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Default</span>\n      <span [cngxSpeak]="\'Default style\'" #ttsA="cngxSpeak"></span>\n      <cngx-speak-button [speakRef]="ttsA" />\n    </div>\n\n    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">\n      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Primary</span>\n      <span [cngxSpeak]="\'Primary color button\'" #ttsP="cngxSpeak"></span>\n      <cngx-speak-button class="speak-btn-primary" [speakRef]="ttsP" />\n    </div>\n\n    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">\n      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Round + Large</span>\n      <span [cngxSpeak]="\'Round large button\'" #ttsB="cngxSpeak"></span>\n      <cngx-speak-button class="speak-btn-round" [speakRef]="ttsB" />\n    </div>\n\n    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">\n      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Ghost</span>\n      <span [cngxSpeak]="\'Ghost style\'" #ttsC="cngxSpeak"></span>\n      <cngx-speak-button class="speak-btn-ghost" [speakRef]="ttsC" />\n    </div>\n\n    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">\n      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Dark</span>\n      <span [cngxSpeak]="\'Dark theme button\'" #ttsD="cngxSpeak"></span>\n      <cngx-speak-button class="speak-btn-dark" [speakRef]="ttsD" />\n    </div>\n  </div>\n\n  <pre class="code-block" style="margin-top: 16px; font-size: 0.75rem;"><code>/* Override via class on the element */\ncngx-speak-button.round {{ \'{\' }}\n  --cngx-speak-btn-size: 40px;\n  --cngx-speak-btn-radius: 50%;\n  --cngx-speak-btn-icon-size: 20px;\n{{ \'}\' }}\n\ncngx-speak-button.ghost {{ \'{\' }}\n  --cngx-speak-btn-border-width: 0;\n  --cngx-speak-btn-bg: transparent;\n{{ \'}\' }}\n\ncngx-speak-button.dark {{ \'{\' }}\n  --cngx-speak-btn-bg: #333;\n  --cngx-speak-btn-color: #fff;\n  --cngx-border: #555;\n{{ \'}\' }}</code></pre>\n\n  <pre class="code-block" style="margin-top: 8px; font-size: 0.75rem;"><code>&lt;cngx-speak-button class="round" [speakRef]="tts" /&gt;</code></pre>';
-  protected readonly _srcHtml2 = '\n  <div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">\n    <div>\n      <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">CngxSpeakButton with Material Theme</h4>\n      <p style="margin: 0 0 8px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">\n        Include the theme mixin in your global styles to auto-derive colors\n        from your Material theme.\n      </p>\n      <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use \'@angular/material\' as mat;\n@use \'@cngx/ui/src/lib/speak/speak-button-theme\' as speak;\n\n$theme: mat.define-theme((\n  color: ( theme-type: light, primary: mat.$azure-palette ),\n));\n\nhtml {{ \'{\' }}\n  @include mat.all-component-themes($theme);\n  @include speak.theme($theme);\n{{ \'}\' }}</code></pre>\n\n      <div style="display: flex; flex-direction: column; gap: 12px;">\n        <div style="display: flex; align-items: center; gap: 8px;">\n          <span\n            [cngxSpeak]="\'Default theme — outlined, uses surface and on-surface-variant colors from the Material palette.\'"\n            #ttsMat="cngxSpeak"\n            style="font-size: 0.875rem;"\n          >\n            Default (outlined)\n          </span>\n          <cngx-speak-button [speakRef]="ttsMat" />\n        </div>\n        <div style="display: flex; align-items: center; gap: 8px;">\n          <span\n            [cngxSpeak]="\'Primary theme — filled with the Material primary color, white icon. Use the speak-btn-primary class.\'"\n            #ttsMatPrimary="cngxSpeak"\n            style="font-size: 0.875rem;"\n          >\n            Primary (filled)\n          </span>\n          <cngx-speak-button class="speak-btn-primary" [speakRef]="ttsMatPrimary" />\n        </div>\n      </div>\n    </div>\n\n    <div>\n      <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">mat-icon-button — fully custom</h4>\n      <p style="margin: 0 0 8px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">\n        Skip <code>CngxSpeakButton</code> entirely. Use a Material icon button\n        with the headless <code>CngxSpeak</code> directive — full Material\n        styling, ripple, and density for free.\n      </p>\n\n      <div style="display: flex; align-items: center; gap: 8px;">\n        <span\n          [cngxSpeak]="\'This uses a Material icon button instead of CngxSpeakButton. Full Material ripple and theming.\'"\n          #ttsIcon="cngxSpeak"\n          style="font-size: 0.875rem;"\n        >\n          Material icon button\n        </span>\n        <button\n          mat-icon-button\n          (click)="ttsIcon.toggle()"\n          [attr.aria-label]="ttsIcon.speaking() ? \'Stop speaking\' : \'Read aloud\'"\n          [color]="ttsIcon.speaking() ? \'primary\' : \'\'"\n        >\n          <mat-icon>{{ ttsIcon.speaking() ? \'stop\' : \'volume_up\' }}</mat-icon>\n        </button>\n      </div>\n\n      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">\n        <span\n          [cngxSpeak]="\'Mini FAB variant with a speaker icon. Works with any Material button variant.\'"\n          #ttsFab="cngxSpeak"\n          style="font-size: 0.875rem;"\n        >\n          Mini FAB variant\n        </span>\n        <button\n          mat-mini-fab\n          (click)="ttsFab.toggle()"\n          [attr.aria-label]="ttsFab.speaking() ? \'Stop speaking\' : \'Read aloud\'"\n          [color]="ttsFab.speaking() ? \'warn\' : \'primary\'"\n        >\n          <mat-icon>{{ ttsFab.speaking() ? \'stop\' : \'record_voice_over\' }}</mat-icon>\n        </button>\n      </div>\n    </div>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">CngxSpeakButton</span>\n      <span class="event-value">{{ ttsMat.speaking() ? \'speaking\' : \'idle\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">mat-icon-button</span>\n      <span class="event-value">{{ ttsIcon.speaking() ? \'speaking\' : \'idle\' }}</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">mat-mini-fab</span>\n      <span class="event-value">{{ ttsFab.speaking() ? \'speaking\' : \'idle\' }}</span>\n    </div>\n  </div>';
+  protected readonly _srcHtml0 = `<div style="display: flex; flex-direction: column; gap: 16px; max-width: 480px;">
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <div
+        [cngxSpeak]="'CNGX is the missing composition layer between Angular CDK and Angular Material. It makes both declarative and Signal-first without replacing them.'"
+        [rate]="rate()"
+        [pitch]="pitch()"
+        #tts1="cngxSpeak"
+        style="
+          padding: 16px 20px;
+          border-radius: 8px;
+          background: var(--cngx-surface-alt, #f8f9fa);
+          border: 1px solid var(--cngx-border, #ddd);
+          line-height: 1.6;
+          font-size: 0.875rem;
+          flex: 1;
+        "
+      >
+        CNGX is the missing composition layer between Angular CDK and Angular
+        Material. It makes both declarative and Signal-first without replacing them.
+      </div>
+      <cngx-speak-button [speakRef]="tts1" />
+    </div>
+
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <div
+        [cngxSpeak]="'Free shipping on orders over 50 dollars. Returns accepted within 30 days. Standard delivery takes 3 to 5 business days.'"
+        [rate]="rate()"
+        [pitch]="pitch()"
+        #tts2="cngxSpeak"
+        style="
+          padding: 16px 20px;
+          border-radius: 8px;
+          border-left: 4px solid var(--cngx-accent, #f5a623);
+          background: var(--cngx-surface-alt, #f8f9fa);
+          line-height: 1.6;
+          font-size: 0.875rem;
+          flex: 1;
+        "
+      >
+        <strong style="display: block; margin-bottom: 4px;">Shipping Info</strong>
+        Free shipping on orders over $50. Returns accepted within 30 days.
+        Standard delivery takes 3–5 business days.
+      </div>
+      <cngx-speak-button [speakRef]="tts2" />
+    </div>
+  </div>
+
+  <div style="margin-top: 16px; display: flex; gap: 16px; align-items: center; font-size: 0.8125rem;">
+    <label style="display: flex; align-items: center; gap: 6px;">
+      Rate
+      <input type="range" min="0.5" max="2" step="0.1" [value]="rate()" (input)="rate.set(+$any($event.target).value)" style="width: 100px;" />
+      {{ rate() }}x
+    </label>
+    <label style="display: flex; align-items: center; gap: 6px;">
+      Pitch
+      <input type="range" min="0" max="2" step="0.1" [value]="pitch()" (input)="pitch.set(+$any($event.target).value)" style="width: 100px;" />
+      {{ pitch() }}
+    </label>
+  </div>
+
+  <div class="event-grid" style="margin-top: 12px">
+    <div class="event-row">
+      <span class="event-label">TTS supported</span>
+      <span class="event-value">{{ tts1.supported }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Speaking</span>
+      <span class="event-value">{{ tts1.speaking() || tts2.speaking() }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs0 = `import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+
+
+  protected rate = signal(1);
+  protected pitch = signal(1);`;
+  protected readonly _srcHtml1 = `<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Default</span>
+      <span [cngxSpeak]="'Default style'" #ttsA="cngxSpeak"></span>
+      <cngx-speak-button [speakRef]="ttsA" />
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Primary</span>
+      <span [cngxSpeak]="'Primary color button'" #ttsP="cngxSpeak"></span>
+      <cngx-speak-button class="speak-btn-primary" [speakRef]="ttsP" />
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Round + Large</span>
+      <span [cngxSpeak]="'Round large button'" #ttsB="cngxSpeak"></span>
+      <cngx-speak-button class="speak-btn-round" [speakRef]="ttsB" />
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Ghost</span>
+      <span [cngxSpeak]="'Ghost style'" #ttsC="cngxSpeak"></span>
+      <cngx-speak-button class="speak-btn-ghost" [speakRef]="ttsC" />
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 0.75rem; color: var(--cngx-text-secondary, #666);">Dark</span>
+      <span [cngxSpeak]="'Dark theme button'" #ttsD="cngxSpeak"></span>
+      <cngx-speak-button class="speak-btn-dark" [speakRef]="ttsD" />
+    </div>
+  </div>
+
+  <pre class="code-block" style="margin-top: 16px; font-size: 0.75rem;"><code>/* Override via class on the element */
+cngx-speak-button.round {{ '{' }}
+  --cngx-speak-btn-size: 40px;
+  --cngx-speak-btn-radius: 50%;
+  --cngx-speak-btn-icon-size: 20px;
+{{ '}' }}
+
+cngx-speak-button.ghost {{ '{' }}
+  --cngx-speak-btn-border-width: 0;
+  --cngx-speak-btn-bg: transparent;
+{{ '}' }}
+
+cngx-speak-button.dark {{ '{' }}
+  --cngx-speak-btn-bg: #333;
+  --cngx-speak-btn-color: #fff;
+  --cngx-border: #555;
+{{ '}' }}</code></pre>
+
+  <pre class="code-block" style="margin-top: 8px; font-size: 0.75rem;"><code>&lt;cngx-speak-button class="round" [speakRef]="tts" /&gt;</code></pre>`;
+  protected readonly _srcTs1 = `import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+
+
+  protected rate = signal(1);
+  protected pitch = signal(1);`;
+  protected readonly _srcHtml2 = `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 480px;">
+    <div>
+      <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">CngxSpeakButton with Material Theme</h4>
+      <p style="margin: 0 0 8px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">
+        Include the theme mixin in your global styles to auto-derive colors
+        from your Material theme.
+      </p>
+      <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use '@angular/material' as mat;
+@use '@cngx/ui/src/lib/speak/speak-button-theme' as speak;
+
+$theme: mat.define-theme((
+  color: ( theme-type: light, primary: mat.$azure-palette ),
+));
+
+html {{ '{' }}
+  @include mat.all-component-themes($theme);
+  @include speak.theme($theme);
+{{ '}' }}</code></pre>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span
+            [cngxSpeak]="'Default theme — outlined, uses surface and on-surface-variant colors from the Material palette.'"
+            #ttsMat="cngxSpeak"
+            style="font-size: 0.875rem;"
+          >
+            Default (outlined)
+          </span>
+          <cngx-speak-button [speakRef]="ttsMat" />
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span
+            [cngxSpeak]="'Primary theme — filled with the Material primary color, white icon. Use the speak-btn-primary class.'"
+            #ttsMatPrimary="cngxSpeak"
+            style="font-size: 0.875rem;"
+          >
+            Primary (filled)
+          </span>
+          <cngx-speak-button class="speak-btn-primary" [speakRef]="ttsMatPrimary" />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin: 0 0 8px; font-size: 0.8125rem; font-weight: 600;">mat-icon-button — fully custom</h4>
+      <p style="margin: 0 0 8px; font-size: 0.8125rem; color: var(--cngx-text-secondary, #666);">
+        Skip <code>CngxSpeakButton</code> entirely. Use a Material icon button
+        with the headless <code>CngxSpeak</code> directive — full Material
+        styling, ripple, and density for free.
+      </p>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span
+          [cngxSpeak]="'This uses a Material icon button instead of CngxSpeakButton. Full Material ripple and theming.'"
+          #ttsIcon="cngxSpeak"
+          style="font-size: 0.875rem;"
+        >
+          Material icon button
+        </span>
+        <button
+          mat-icon-button
+          (click)="ttsIcon.toggle()"
+          [attr.aria-label]="ttsIcon.speaking() ? 'Stop speaking' : 'Read aloud'"
+          [color]="ttsIcon.speaking() ? 'primary' : ''"
+        >
+          <mat-icon>{{ ttsIcon.speaking() ? 'stop' : 'volume_up' }}</mat-icon>
+        </button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+        <span
+          [cngxSpeak]="'Mini FAB variant with a speaker icon. Works with any Material button variant.'"
+          #ttsFab="cngxSpeak"
+          style="font-size: 0.875rem;"
+        >
+          Mini FAB variant
+        </span>
+        <button
+          mat-mini-fab
+          (click)="ttsFab.toggle()"
+          [attr.aria-label]="ttsFab.speaking() ? 'Stop speaking' : 'Read aloud'"
+          [color]="ttsFab.speaking() ? 'warn' : 'primary'"
+        >
+          <mat-icon>{{ ttsFab.speaking() ? 'stop' : 'record_voice_over' }}</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="event-grid" style="margin-top: 12px">
+    <div class="event-row">
+      <span class="event-label">CngxSpeakButton</span>
+      <span class="event-value">{{ ttsMat.speaking() ? 'speaking' : 'idle' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">mat-icon-button</span>
+      <span class="event-value">{{ ttsIcon.speaking() ? 'speaking' : 'idle' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">mat-mini-fab</span>
+      <span class="event-value">{{ ttsFab.speaking() ? 'speaking' : 'idle' }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs2 = `import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+
+
+  protected rate = signal(1);
+  protected pitch = signal(1);`;
 
   protected rate = signal(1);
   protected pitch = signal(1);

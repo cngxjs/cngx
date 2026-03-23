@@ -22,7 +22,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSort', 'CngxSortHeader']">
       <app-example-card title="CngxSort + CngxSortHeader"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
     <div class="table-wrap">
@@ -66,7 +67,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="CngxSort — Controlled Mode"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div cngxSort #sort2="cngxSort"
     [cngxSortActive]="ctrl2Active()"
@@ -116,8 +118,152 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 export class SortDemoComponent {
   protected readonly _s0 = '<code>[cngxSort]</code> is a stateful atom holding the active column and direction. <code>[cngxSortHeader]</code> binds to it via the explicit <code>[cngxSortRef]</code> input — no ancestor injection. Clicking toggles asc → desc → off.';
   protected readonly _s1 = '<code>[cngxSortActive]</code> + <code>[cngxSortDirection]</code> seed the sort externally. The atom still emits <code>(sortChange)</code> on interaction; consumer writes back to keep state in sync.';
-  protected readonly _srcHtml0 = '\n  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr>\n            <th>\n              <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n                Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n                Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n                Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n          </tr>\n        </thead>\n        <tbody>\n          @for (row of sort1Rows(); track row.name) {\n            <tr>\n              <td>{{ row.name }}</td>\n              <td>{{ row.role }}</td>\n              <td>{{ row.location }}</td>\n            </tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  @if (sort1State(); as s) {\n    <div class="output-badge">\n      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}\n    </div>\n  }';
-  protected readonly _srcHtml1 = '\n  <div cngxSort #sort2="cngxSort"\n    [cngxSortActive]="ctrl2Active()"\n    [cngxSortDirection]="ctrl2Dir()"\n    (sortChange)="onSort2Change($event)"\n  >\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr>\n            <th>\n              <button cngxSortHeader="name" [cngxSortRef]="sort2" #n2="cngxSortHeader" class="sort-btn">\n                Name @if (n2.isActive()) {<span class="sort-arrow">{{ n2.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="role" [cngxSortRef]="sort2" #r2="cngxSortHeader" class="sort-btn">\n                Role @if (r2.isActive()) {<span class="sort-arrow">{{ r2.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="location" [cngxSortRef]="sort2" #l2="cngxSortHeader" class="sort-btn">\n                Location @if (l2.isActive()) {<span class="sort-arrow">{{ l2.isAsc() ? \'↑\' : \'↓\' }}</span>}\n              </button>\n            </th>\n          </tr>\n        </thead>\n        <tbody>\n          @for (row of sort2Rows(); track row.name) {\n            <tr>\n              <td>{{ row.name }}</td>\n              <td>{{ row.role }}</td>\n              <td>{{ row.location }}</td>\n            </tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="output-badge">\n    Active: <strong>{{ ctrl2Active() }}</strong> &mdash; {{ ctrl2Dir() }}\n  </div>';
+  protected readonly _srcHtml0 = `<div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr>
+            <th>
+              <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+                Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+                Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+                Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of sort1Rows(); track row.name) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.role }}</td>
+              <td>{{ row.location }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  @if (sort1State(); as s) {
+    <div class="output-badge">
+      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
+    </div>
+  }`;
+  protected readonly _srcTs0 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  // Table 1 — uncontrolled
+  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1Rows = computed((): Person[] => {
+    const s = this.sort1State();
+    if (!s) return PEOPLE;
+    return [...PEOPLE].sort((a, b) => {
+      const av = (a as unknown as Record<string, string>)[s.active] ?? '';
+      const bv = (b as unknown as Record<string, string>)[s.active] ?? '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return s.direction === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  // Table 2 — controlled (pre-seeded, writes back on interaction)
+  protected readonly ctrl2Active = signal<string>('role');
+  protected readonly ctrl2Dir = signal<'asc' | 'desc'>('asc');
+  protected readonly sort2Rows = computed((): Person[] => {
+    const active = this.ctrl2Active();
+    const dir = this.ctrl2Dir();
+    return [...PEOPLE].sort((a, b) => {
+      const av = (a as unknown as Record<string, string>)[active] ?? '';
+      const bv = (b as unknown as Record<string, string>)[active] ?? '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+    if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
+  }`;
+  protected readonly _srcHtml1 = `<div cngxSort #sort2="cngxSort"
+    [cngxSortActive]="ctrl2Active()"
+    [cngxSortDirection]="ctrl2Dir()"
+    (sortChange)="onSort2Change($event)"
+  >
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr>
+            <th>
+              <button cngxSortHeader="name" [cngxSortRef]="sort2" #n2="cngxSortHeader" class="sort-btn">
+                Name @if (n2.isActive()) {<span class="sort-arrow">{{ n2.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="role" [cngxSortRef]="sort2" #r2="cngxSortHeader" class="sort-btn">
+                Role @if (r2.isActive()) {<span class="sort-arrow">{{ r2.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="location" [cngxSortRef]="sort2" #l2="cngxSortHeader" class="sort-btn">
+                Location @if (l2.isActive()) {<span class="sort-arrow">{{ l2.isAsc() ? '↑' : '↓' }}</span>}
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of sort2Rows(); track row.name) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.role }}</td>
+              <td>{{ row.location }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="output-badge">
+    Active: <strong>{{ ctrl2Active() }}</strong> &mdash; {{ ctrl2Dir() }}
+  </div>`;
+  protected readonly _srcTs1 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  // Table 1 — uncontrolled
+  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1Rows = computed((): Person[] => {
+    const s = this.sort1State();
+    if (!s) return PEOPLE;
+    return [...PEOPLE].sort((a, b) => {
+      const av = (a as unknown as Record<string, string>)[s.active] ?? '';
+      const bv = (b as unknown as Record<string, string>)[s.active] ?? '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return s.direction === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  // Table 2 — controlled (pre-seeded, writes back on interaction)
+  protected readonly ctrl2Active = signal<string>('role');
+  protected readonly ctrl2Dir = signal<'asc' | 'desc'>('asc');
+  protected readonly sort2Rows = computed((): Person[] => {
+    const active = this.ctrl2Active();
+    const dir = this.ctrl2Dir();
+    return [...PEOPLE].sort((a, b) => {
+      const av = (a as unknown as Record<string, string>)[active] ?? '';
+      const bv = (b as unknown as Record<string, string>)[active] ?? '';
+      const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  });
+
+  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+    if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
+  }`;
 
   // Table 1 — uncontrolled
   protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);

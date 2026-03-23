@@ -23,7 +23,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSort', 'CngxSortHeader']">
       <app-example-card title="Multi-Key Sort (Shift+Click)"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div cngxSort [multiSort]="true" #sort="cngxSort" (sortsChange)="sorts.set($event)">
     <div class="table-wrap">
@@ -90,7 +91,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Pattern: sortsChange → multi-key sort"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <pre class="code-block"><code>protected readonly sorts = signal&lt;SortEntry[]&gt;([]);
 
@@ -116,8 +118,123 @@ protected readonly rows = computed(() =&gt; &#123;
 export class SortMultiDemoComponent {
   protected readonly _s0 = 'Add <code>[multiSort]="true"</code> to <code>[cngxSort]</code>. Clicking a header sets it as primary sort. <strong>Shift+click</strong> appends it as a secondary key (or cycles it asc → desc → removed). Each header shows its priority number when active.';
   protected readonly _s1 = 'Use <code>(sortsChange)</code> instead of <code>(sortChange)</code> to receive the full sort stack. Apply it with a priority loop in your <code>computed()</code>.';
-  protected readonly _srcHtml0 = '\n  <div cngxSort [multiSort]="true" #sort="cngxSort" (sortsChange)="sorts.set($event)">\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr>\n            <th>\n              <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n                Name\n                @if (nH.isActive()) {\n                  <span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>\n                  @if (sort.multiSort() && sorts().length > 1) {\n                    <span class="sort-priority">{{ nH.priority() }}</span>\n                  }\n                }\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n                Role\n                @if (rH.isActive()) {\n                  <span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>\n                  @if (sort.multiSort() && sorts().length > 1) {\n                    <span class="sort-priority">{{ rH.priority() }}</span>\n                  }\n                }\n              </button>\n            </th>\n            <th>\n              <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n                Location\n                @if (lH.isActive()) {\n                  <span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>\n                  @if (sort.multiSort() && sorts().length > 1) {\n                    <span class="sort-priority">{{ lH.priority() }}</span>\n                  }\n                }\n              </button>\n            </th>\n          </tr>\n        </thead>\n        <tbody>\n          @for (row of rows(); track row.name) {\n            <tr>\n              <td>{{ row.name }}</td>\n              <td>{{ row.role }}</td>\n              <td>{{ row.location }}</td>\n            </tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="output-badge">\n    @if (sorts().length) {\n      @for (s of sorts(); track s.active; let i = $index) {\n        @if (i > 0) { <span>&rarr;</span> }\n        <strong>{{ s.active }}</strong> {{ s.direction }}\n      }\n    } @else {\n      No sort active\n    }\n  </div>';
-  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>protected readonly sorts = signal&lt;SortEntry[]&gt;([]);\n\nprotected readonly rows = computed(() =&gt; &#123;\n  const active = this.sorts();\n  if (!active.length) return DATA;\n  return [...DATA].sort((a, b) =&gt; &#123;\n    for (const s of active) &#123;\n      const cmp = compare(a[s.active], b[s.active]);\n      if (cmp !== 0) return s.direction === \'asc\' ? cmp : -cmp;\n    &#125;\n    return 0;\n  &#125;);\n&#125;);\n\n// Template:\n// &lt;div cngxSort [multiSort]="true" (sortsChange)="sorts.set($event)"&gt;\n// Shift+click a header to add it as a secondary sort key.</code></pre>';
+  protected readonly _srcHtml0 = `<div cngxSort [multiSort]="true" #sort="cngxSort" (sortsChange)="sorts.set($event)">
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr>
+            <th>
+              <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+                Name
+                @if (nH.isActive()) {
+                  <span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>
+                  @if (sort.multiSort() && sorts().length > 1) {
+                    <span class="sort-priority">{{ nH.priority() }}</span>
+                  }
+                }
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+                Role
+                @if (rH.isActive()) {
+                  <span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>
+                  @if (sort.multiSort() && sorts().length > 1) {
+                    <span class="sort-priority">{{ rH.priority() }}</span>
+                  }
+                }
+              </button>
+            </th>
+            <th>
+              <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+                Location
+                @if (lH.isActive()) {
+                  <span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>
+                  @if (sort.multiSort() && sorts().length > 1) {
+                    <span class="sort-priority">{{ lH.priority() }}</span>
+                  }
+                }
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.name) {
+            <tr>
+              <td>{{ row.name }}</td>
+              <td>{{ row.role }}</td>
+              <td>{{ row.location }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="output-badge">
+    @if (sorts().length) {
+      @for (s of sorts(); track s.active; let i = $index) {
+        @if (i > 0) { <span>&rarr;</span> }
+        <strong>{{ s.active }}</strong> {{ s.direction }}
+      }
+    } @else {
+      No sort active
+    }
+  </div>`;
+  protected readonly _srcTs0 = `import { type SortEntry } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sorts = signal<SortEntry[]>([]);
+
+  protected readonly rows = computed((): Person[] => {
+    const active = this.sorts();
+    if (!active.length) return PEOPLE;
+    return [...PEOPLE].sort((a, b) => {
+      for (const s of active) {
+        const av = (a as unknown as Record<string, string>)[s.active] ?? '';
+        const bv = (b as unknown as Record<string, string>)[s.active] ?? '';
+        const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+        if (cmp !== 0) return s.direction === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  });`;
+  protected readonly _srcHtml1 = `<pre class="code-block"><code>protected readonly sorts = signal&lt;SortEntry[]&gt;([]);
+
+protected readonly rows = computed(() =&gt; &#123;
+  const active = this.sorts();
+  if (!active.length) return DATA;
+  return [...DATA].sort((a, b) =&gt; &#123;
+    for (const s of active) &#123;
+      const cmp = compare(a[s.active], b[s.active]);
+      if (cmp !== 0) return s.direction === 'asc' ? cmp : -cmp;
+    &#125;
+    return 0;
+  &#125;);
+&#125;);
+
+// Template:
+// &lt;div cngxSort [multiSort]="true" (sortsChange)="sorts.set($event)"&gt;
+// Shift+click a header to add it as a secondary sort key.</code></pre>`;
+  protected readonly _srcTs1 = `import { type SortEntry } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sorts = signal<SortEntry[]>([]);
+
+  protected readonly rows = computed((): Person[] => {
+    const active = this.sorts();
+    if (!active.length) return PEOPLE;
+    return [...PEOPLE].sort((a, b) => {
+      for (const s of active) {
+        const av = (a as unknown as Record<string, string>)[s.active] ?? '';
+        const bv = (b as unknown as Record<string, string>)[s.active] ?? '';
+        const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+        if (cmp !== 0) return s.direction === 'asc' ? cmp : -cmp;
+      }
+      return 0;
+    });
+  });`;
 
   protected readonly sorts = signal<SortEntry[]>([]);
 

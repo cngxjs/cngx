@@ -21,7 +21,8 @@ import { CngxDisclosure } from '@cngx/common';
       [apiComponents]="['CngxDisclosure']">
       <app-example-card title="Basic — Uncontrolled"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <button cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
     {{ d.opened() ? 'Collapse' : 'Expand' }} answer
@@ -37,7 +38,8 @@ import { CngxDisclosure } from '@cngx/common';
       </app-example-card>
       <app-example-card title="FAQ Accordion"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   @for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
     <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
@@ -55,7 +57,8 @@ import { CngxDisclosure } from '@cngx/common';
       </app-example-card>
       <app-example-card title="Controlled Mode"
         [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2">
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <div class="button-row">
     <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
@@ -82,9 +85,59 @@ export class DisclosureDemoComponent {
   protected readonly _s0 = 'Click the trigger or press <strong>Enter</strong>/<strong>Space</strong> to toggle. <code>aria-expanded</code> and <code>aria-controls</code> are set automatically.';
   protected readonly _s1 = 'Multiple independent disclosures. Each manages its own state — no coordination by default.';
   protected readonly _s2 = 'Bind <code>[cngxDisclosureOpened]</code> to a signal for external state control.';
-  protected readonly _srcHtml0 = '\n  <button cngxDisclosure #d="cngxDisclosure" [controls]="\'faq-1\'" class="sort-btn">\n    {{ d.opened() ? \'Collapse\' : \'Expand\' }} answer\n  </button>\n  @if (d.opened()) {\n    <div id="faq-1" style="padding: 0.75rem; margin-top: 0.5rem; border-left: 3px solid var(--interactive, #f5a623); background: var(--cngx-surface-alt, #f9fafb);">\n      <p style="margin: 0; font-size: 0.875rem;">This content is revealed by the disclosure trigger above.</p>\n    </div>\n  }\n  <div class="status-row" style="margin-top: 0.5rem;">\n    <span class="status-badge" [class.active]="d.opened()">{{ d.opened() ? \'expanded\' : \'collapsed\' }}</span>\n  </div>';
-  protected readonly _srcHtml1 = '\n  @for (q of [\'What is cngx?\', \'Is it free?\', \'How do I install it?\']; track q; let i = $index) {\n    <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">\n      <button cngxDisclosure #faq="cngxDisclosure" [controls]="\'faq-\' + i"\n              style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-primary, #333);">\n        {{ faq.opened() ? \'−\' : \'+\' }} {{ q }}\n      </button>\n      @if (faq.opened()) {\n        <div [id]="\'faq-\' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted, #666);">\n          Answer to "{{ q }}" goes here.\n        </div>\n      }\n    </div>\n  }';
-  protected readonly _srcHtml2 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">\n      External: {{ controlledOpen() ? \'open\' : \'closed\' }}\n    </button>\n  </div>\n  <button cngxDisclosure #cd="cngxDisclosure"\n          [cngxDisclosureOpened]="controlledOpen()"\n          (openedChange)="controlledOpen.set($event)"\n          [controls]="\'ctrl-content\'"\n          class="sort-btn" style="margin-top: 0.5rem;">\n    Trigger: {{ cd.opened() ? \'expanded\' : \'collapsed\' }}\n  </button>\n  @if (cd.opened()) {\n    <div id="ctrl-content" style="padding: 0.75rem; margin-top: 0.5rem; background: var(--cngx-surface-alt, #f9fafb); border-radius: 4px; font-size: 0.875rem;">\n      Controlled content — state owned by parent signal.\n    </div>\n  }';
+  protected readonly _srcHtml0 = `<button cngxDisclosure #d="cngxDisclosure" [controls]="'faq-1'" class="sort-btn">
+    {{ d.opened() ? 'Collapse' : 'Expand' }} answer
+  </button>
+  @if (d.opened()) {
+    <div id="faq-1" style="padding: 0.75rem; margin-top: 0.5rem; border-left: 3px solid var(--interactive, #f5a623); background: var(--cngx-surface-alt, #f9fafb);">
+      <p style="margin: 0; font-size: 0.875rem;">This content is revealed by the disclosure trigger above.</p>
+    </div>
+  }
+  <div class="status-row" style="margin-top: 0.5rem;">
+    <span class="status-badge" [class.active]="d.opened()">{{ d.opened() ? 'expanded' : 'collapsed' }}</span>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxDisclosure } from '@cngx/common';
+
+
+  protected readonly controlledOpen = signal(false);`;
+  protected readonly _srcHtml1 = `@for (q of ['What is cngx?', 'Is it free?', 'How do I install it?']; track q; let i = $index) {
+    <div style="border-bottom: 1px solid var(--border-color, #e0e0e0);">
+      <button cngxDisclosure #faq="cngxDisclosure" [controls]="'faq-' + i"
+              style="width: 100%; text-align: left; padding: 0.75rem 0; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-primary, #333);">
+        {{ faq.opened() ? '−' : '+' }} {{ q }}
+      </button>
+      @if (faq.opened()) {
+        <div [id]="'faq-' + i" style="padding: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted, #666);">
+          Answer to "{{ q }}" goes here.
+        </div>
+      }
+    </div>
+  }`;
+  protected readonly _srcTs1 = `import { CngxDisclosure } from '@cngx/common';
+
+
+  protected readonly controlledOpen = signal(false);`;
+  protected readonly _srcHtml2 = `<div class="button-row">
+    <button class="sort-btn" (click)="controlledOpen.set(!controlledOpen())">
+      External: {{ controlledOpen() ? 'open' : 'closed' }}
+    </button>
+  </div>
+  <button cngxDisclosure #cd="cngxDisclosure"
+          [cngxDisclosureOpened]="controlledOpen()"
+          (openedChange)="controlledOpen.set($event)"
+          [controls]="'ctrl-content'"
+          class="sort-btn" style="margin-top: 0.5rem;">
+    Trigger: {{ cd.opened() ? 'expanded' : 'collapsed' }}
+  </button>
+  @if (cd.opened()) {
+    <div id="ctrl-content" style="padding: 0.75rem; margin-top: 0.5rem; background: var(--cngx-surface-alt, #f9fafb); border-radius: 4px; font-size: 0.875rem;">
+      Controlled content — state owned by parent signal.
+    </div>
+  }`;
+  protected readonly _srcTs2 = `import { CngxDisclosure } from '@cngx/common';
+
+
+  protected readonly controlledOpen = signal(false);`;
 
   protected readonly controlledOpen = signal(false);
   

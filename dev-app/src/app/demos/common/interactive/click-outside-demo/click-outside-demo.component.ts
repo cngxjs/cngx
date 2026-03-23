@@ -21,7 +21,8 @@ import { CngxClickOutside } from '@cngx/common/interactive';
       [apiComponents]="['CngxClickOutside']">
       <app-example-card title="CngxClickOutside — Dropdown"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div class="button-row">
     <button class="sort-btn" (click)="open.set(!open())">
@@ -53,7 +54,8 @@ import { CngxClickOutside } from '@cngx/common/interactive';
       </app-example-card>
       <app-example-card title="CngxClickOutside — enabled toggle"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div class="button-row">
     <button class="sort-btn" (click)="enabled.set(!enabled())">
@@ -87,8 +89,64 @@ import { CngxClickOutside } from '@cngx/common/interactive';
 export class ClickOutsideDemoComponent {
   protected readonly _s0 = '<code>[cngxClickOutside]</code> listens for <code>pointerdown</code> on the document and emits <code>(clickOutside)</code> when the event target is outside the host. Works for both mouse and touch via the Pointer Events API.';
   protected readonly _s1 = 'When <code>[enabled]="false"</code> the directive is inactive and no events are emitted.';
-  protected readonly _srcHtml0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="open.set(!open())">\n      Toggle dropdown ({{ open() ? \'open\' : \'closed\' }})\n    </button>\n  </div>\n\n  @if (open()) {\n    <div\n      cngxClickOutside\n      (clickOutside)="open.set(false)"\n      style="\n        display: inline-block;\n        padding: 12px 16px;\n        border: 1px solid var(--cngx-border, #ddd);\n        border-radius: 6px;\n        background: var(--cngx-surface-alt, #f8f9fa);\n        margin-top: 8px;\n      "\n    >\n      <p style="margin: 0 0 8px">I close when you click outside me.</p>\n      <button class="sort-btn" (click)="$event.stopPropagation()">Inner button (won\'t close)</button>\n    </div>\n  }\n\n  <div class="output-badge" style="margin-top:12px">\n    Dropdown: <strong>{{ open() ? \'open\' : \'closed\' }}</strong>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="enabled.set(!enabled())">\n      {{ enabled() ? \'Disable\' : \'Enable\' }} outside detection\n    </button>\n    <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? \'enabled\' : \'disabled\' }}</span>\n  </div>\n\n  <div\n    cngxClickOutside\n    [enabled]="enabled()"\n    (clickOutside)="clickCount.update(n => n + 1)"\n    style="\n      padding: 16px;\n      border: 2px dashed var(--cngx-border, #aaa);\n      border-radius: 6px;\n      margin-top: 8px;\n      text-align: center;\n    "\n  >\n    Click outside this box\n  </div>\n\n  <div class="output-badge" style="margin-top:12px">\n    Outside clicks detected: <strong>{{ clickCount() }}</strong>\n  </div>';
+  protected readonly _srcHtml0 = `<div class="button-row">
+    <button class="sort-btn" (click)="open.set(!open())">
+      Toggle dropdown ({{ open() ? 'open' : 'closed' }})
+    </button>
+  </div>
+
+  @if (open()) {
+    <div
+      cngxClickOutside
+      (clickOutside)="open.set(false)"
+      style="
+        display: inline-block;
+        padding: 12px 16px;
+        border: 1px solid var(--cngx-border, #ddd);
+        border-radius: 6px;
+        background: var(--cngx-surface-alt, #f8f9fa);
+        margin-top: 8px;
+      "
+    >
+      <p style="margin: 0 0 8px">I close when you click outside me.</p>
+      <button class="sort-btn" (click)="$event.stopPropagation()">Inner button (won't close)</button>
+    </div>
+  }
+
+  <div class="output-badge" style="margin-top:12px">
+    Dropdown: <strong>{{ open() ? 'open' : 'closed' }}</strong>
+  </div>`;
+  protected readonly _srcTs0 = `protected open = signal(false);
+  protected clickCount = signal(0);
+  protected enabled = signal(true);`;
+  protected readonly _srcHtml1 = `<div class="button-row">
+    <button class="sort-btn" (click)="enabled.set(!enabled())">
+      {{ enabled() ? 'Disable' : 'Enable' }} outside detection
+    </button>
+    <span class="chip" [class.chip--active]="enabled()">{{ enabled() ? 'enabled' : 'disabled' }}</span>
+  </div>
+
+  <div
+    cngxClickOutside
+    [enabled]="enabled()"
+    (clickOutside)="clickCount.update(n => n + 1)"
+    style="
+      padding: 16px;
+      border: 2px dashed var(--cngx-border, #aaa);
+      border-radius: 6px;
+      margin-top: 8px;
+      text-align: center;
+    "
+  >
+    Click outside this box
+  </div>
+
+  <div class="output-badge" style="margin-top:12px">
+    Outside clicks detected: <strong>{{ clickCount() }}</strong>
+  </div>`;
+  protected readonly _srcTs1 = `protected open = signal(false);
+  protected clickCount = signal(0);
+  protected enabled = signal(true);`;
 
   protected open = signal(false);
   protected clickCount = signal(0);

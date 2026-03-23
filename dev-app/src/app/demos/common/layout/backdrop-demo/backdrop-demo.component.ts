@@ -21,7 +21,8 @@ import { CngxBackdrop } from '@cngx/common';
       [apiComponents]="['CngxBackdrop']">
       <app-example-card title="CngxBackdrop — Overlay with inert"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div class="button-row">
     <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
@@ -51,7 +52,33 @@ import { CngxBackdrop } from '@cngx/common';
 })
 export class BackdropDemoComponent {
   protected readonly _s0 = 'When visible, <code>[cngxBackdrop]</code> adds <code>inert</code> to all sibling elements — they become unfocusable and non-interactive. Click the backdrop to dismiss.';
-  protected readonly _srcHtml0 = '\n  <div class="button-row">\n    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>\n  </div>\n\n  <div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">\n    <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"\n         class="drawer-backdrop"></div>\n\n    <div style="padding: 1rem;">\n      <p>This content becomes <code>inert</code> when the backdrop is visible.</p>\n      <button class="sort-btn" (click)="clickCount.update(n => n + 1)">\n        Try clicking me (won\'t work when inert)\n      </button>\n    </div>\n  </div>\n\n  <div class="status-row" style="margin-top: 0.75rem;">\n    <span class="status-badge" [class.active]="showBackdrop()">\n      {{ showBackdrop() ? \'visible\' : \'hidden\' }}\n    </span>\n    <span class="status-badge">clicks: {{ clickCount() }}</span>\n  </div>';
+  protected readonly _srcHtml0 = `<div class="button-row">
+    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
+  </div>
+
+  <div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+    <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
+         class="drawer-backdrop"></div>
+
+    <div style="padding: 1rem;">
+      <p>This content becomes <code>inert</code> when the backdrop is visible.</p>
+      <button class="sort-btn" (click)="clickCount.update(n => n + 1)">
+        Try clicking me (won't work when inert)
+      </button>
+    </div>
+  </div>
+
+  <div class="status-row" style="margin-top: 0.75rem;">
+    <span class="status-badge" [class.active]="showBackdrop()">
+      {{ showBackdrop() ? 'visible' : 'hidden' }}
+    </span>
+    <span class="status-badge">clicks: {{ clickCount() }}</span>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxBackdrop } from '@cngx/common';
+
+
+  protected readonly showBackdrop = signal(false);
+  protected readonly clickCount = signal(0);`;
 
   protected readonly showBackdrop = signal(false);
   protected readonly clickCount = signal(0);

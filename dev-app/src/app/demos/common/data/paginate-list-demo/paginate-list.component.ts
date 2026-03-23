@@ -23,7 +23,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxPaginate', 'CngxMatPaginator']">
       <app-example-card title="Paginated List — CngxPaginate + CngxMatPaginator"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
     <ul style="list-style:none;padding:0;margin:0">
@@ -43,7 +44,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Uncontrolled Mode — Zero Class Boilerplate"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <pre class="code-block"><code>// Uncontrolled — zero class boilerplate
 &lt;div cngxPaginate #pg="cngxPaginate" [total]="items.length"&gt;
@@ -69,8 +71,54 @@ protected readonly pageSize  = signal(10);
 export class PaginateListDemoComponent {
   protected readonly _s0 = '<code>CngxPaginate</code> works with any list, not just tables. Put <code>[cngxPaginate]</code> on any wrapper element, bind <code>[total]</code> to the full item count, and slice the array with <code>pg.range()</code> in the <code>@for</code> loop. <code>CngxMatPaginator</code> provides the Material paginator UI via <code>[cngxPaginateRef]</code>.';
   protected readonly _s1 = 'In uncontrolled mode, <code>CngxPaginate</code> manages its own <code>pageIndex</code> and <code>pageSize</code> internally. No component signals needed — just bind <code>[total]</code> and read <code>pg.range()</code> in the template. <code>CngxMatPaginator</code> writes directly to the directive\'s internal state via <code>setPage()</code> / <code>setPageSize()</code>. Use controlled mode (<code>[cngxPageIndex]</code>, <code>(pageChange)</code>) when you need the page state in your component class.';
-  protected readonly _srcHtml0 = '\n  <div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">\n    <ul style="list-style:none;padding:0;margin:0">\n      @for (p of items().slice(pg.range()[0], pg.range()[1]); track p.name) {\n        <li style="padding:8px 0;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">\n          <strong>{{ p.name }}</strong> &mdash; {{ p.role }}, {{ p.location }}\n        </li>\n      }\n    </ul>\n    <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[5, 10, 16]" />\n    <div class="status-row">\n      <span class="status-badge">\n        {{ pg.range()[0] + 1 }}–{{ pg.range()[1] > pg.total() ? pg.total() : pg.range()[1] }} of {{ pg.total() }} people\n      </span>\n    </div>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>// Uncontrolled — zero class boilerplate\n&lt;div cngxPaginate #pg="cngxPaginate" [total]="items.length"&gt;\n  &#64;for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) &#123;\n    &lt;div&gt;&#123;<!-- -->&#123; item.name &#125;<!-- -->&#125;&lt;/div&gt;\n  &#125;\n  &lt;cngx-mat-paginator [cngxPaginateRef]="pg" /&gt;\n&lt;/div&gt;\n\n// Controlled — page state in component class\nprotected readonly pageIndex = signal(0);\nprotected readonly pageSize  = signal(10);\n\n// In template:\n// [cngxPageIndex]="pageIndex()"\n// [cngxPageSize]="pageSize()"\n// (pageChange)="pageIndex.set($event)"\n// (pageSizeChange)="pageSize.set($event)"</code></pre>';
+  protected readonly _srcHtml0 = `<div cngxPaginate #pg="cngxPaginate" [total]="items().length" [cngxPageSize]="5" style="display:contents">
+    <ul style="list-style:none;padding:0;margin:0">
+      @for (p of items().slice(pg.range()[0], pg.range()[1]); track p.name) {
+        <li style="padding:8px 0;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+          <strong>{{ p.name }}</strong> &mdash; {{ p.role }}, {{ p.location }}
+        </li>
+      }
+    </ul>
+    <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[5, 10, 16]" />
+    <div class="status-row">
+      <span class="status-badge">
+        {{ pg.range()[0] + 1 }}–{{ pg.range()[1] > pg.total() ? pg.total() : pg.range()[1] }} of {{ pg.total() }} people
+      </span>
+    </div>
+  </div>`;
+  protected readonly _srcTs0 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  // Expand the dataset so pagination is clearly visible (3 pages of 5)
+  protected readonly items = signal<Person[]>([
+    ...PEOPLE,
+    ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),
+  ]);`;
+  protected readonly _srcHtml1 = `<pre class="code-block"><code>// Uncontrolled — zero class boilerplate
+&lt;div cngxPaginate #pg="cngxPaginate" [total]="items.length"&gt;
+  &#64;for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) &#123;
+    &lt;div&gt;&#123;<!-- -->&#123; item.name &#125;<!-- -->&#125;&lt;/div&gt;
+  &#125;
+  &lt;cngx-mat-paginator [cngxPaginateRef]="pg" /&gt;
+&lt;/div&gt;
+
+// Controlled — page state in component class
+protected readonly pageIndex = signal(0);
+protected readonly pageSize  = signal(10);
+
+// In template:
+// [cngxPageIndex]="pageIndex()"
+// [cngxPageSize]="pageSize()"
+// (pageChange)="pageIndex.set($event)"
+// (pageSizeChange)="pageSize.set($event)"</code></pre>`;
+  protected readonly _srcTs1 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  // Expand the dataset so pagination is clearly visible (3 pages of 5)
+  protected readonly items = signal<Person[]>([
+    ...PEOPLE,
+    ...PEOPLE.map((p: Person) => ({ ...p, name: p.name + ' Jr.' })),
+  ]);`;
 
   // Expand the dataset so pagination is clearly visible (3 pages of 5)
   protected readonly items = signal<Person[]>([

@@ -28,7 +28,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxSort', 'CngxSortHeader', 'CngxFilter']">
       <app-example-card title="DataSource + mat-table — Manual Pipeline with Multi-Sort & Multi-Filter"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div class="filter-row">
     <span class="filter-label">Location (OR):</span>
@@ -105,7 +106,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="Pipeline — How the pieces connect"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <pre class="code-block"><code>// 1. Directives auto-discovered via hostDirectives + inject()
 protected readonly sort   = inject(CngxSort,   &#123; host: true &#125;);
@@ -143,8 +145,271 @@ protected readonly ds = injectDataSource(this.processed);
 export class MatTableManualDemoComponent {
   protected readonly _s0 = 'A manual <code>computed()</code> owns the full pipeline: multi-filter (AND across dimensions, OR within), text search, and multi-sort (Shift+click). <code>injectDataSource(computed)</code> bridges the signal to <code>mat-table</code>. Pipeline order — filter → search → sort — keeps the sort operating on the smallest possible set.';
   protected readonly _s1 = 'Everything flows through one <code>computed()</code>. Angular\'s reactivity reruns it automatically whenever any signal changes — no subscriptions, no manual triggering. Shift+click a column header to stack secondary sort keys.';
-  protected readonly _srcHtml0 = '\n  <div class="filter-row">\n    <span class="filter-label">Location (OR):</span>\n    @for (loc of locations; track loc) {\n      <button type="button" class="chip"\n        [class.chip--active]="selectedLocations().has(loc)"\n        (click)="toggleLocation(loc)">{{ loc }}</button>\n    }\n  </div>\n  <div class="filter-row">\n    <span class="filter-label">Role (OR):</span>\n    @for (role of roles; track role) {\n      <button type="button" class="chip"\n        [class.chip--active]="selectedRoles().has(role)"\n        (click)="toggleRole(role)">{{ role }}</button>\n    }\n  </div>\n  <div class="search-row">\n    <input\n      type="text"\n      class="search-input"\n      placeholder="Search…"\n      [value]="searchTerm()"\n      (input)="searchTerm.set($any($event.target).value)"\n    />\n    <button type="button" (click)="clearAll()">Clear all</button>\n  </div>\n\n  <mat-table [dataSource]="ds" class="table-wrap">\n    <ng-container matColumnDef="name">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">\n          Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="role">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">\n          Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.role }}</mat-cell>\n    </ng-container>\n\n    <ng-container matColumnDef="location">\n      <mat-header-cell *matHeaderCellDef>\n        <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">\n          Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? \'↑\' : \'↓\' }}</span>}\n        </button>\n      </mat-header-cell>\n      <mat-cell *matCellDef="let row">{{ row.location }}</mat-cell>\n    </ng-container>\n\n    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>\n    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>\n    <div *matNoDataRow class="empty-cell">No results.</div>\n  </mat-table>\n\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filter.isActive()">\n      filters: {{ filter.activeCount() }}\n    </span>\n    <span class="status-badge" [class.active]="!!searchTerm()">\n      search: {{ searchTerm() || \'off\' }}\n    </span>\n    <span class="status-badge" [class.active]="sort.isActive()">\n      sort: {{ sort.isActive() ? sort.active() + \' \' + sort.direction() : \'off\' }}\n    </span>\n    <span class="status-badge">{{ processed().length }} / {{ total }} rows</span>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <pre class="code-block"><code>// 1. Directives auto-discovered via hostDirectives + inject()\nprotected readonly sort   = inject(CngxSort,   &#123; host: true &#125;);\nprotected readonly filter = inject(CngxFilter, &#123; host: true &#125;);\nprotected readonly searchTerm = signal(\'\');  // plain signal — no directive needed\n\n// 2. One computed() owns the full pipeline\nprivate readonly processed = computed(() => &#123;\n  let list = PEOPLE;\n\n  // filter first — cheapest, reduces the set early\n  const pred = this.filter.predicate();\n  if (pred) list = list.filter(pred);\n\n  // text search — runs on already-filtered set\n  const term = this.searchTerm().toLowerCase();\n  if (term) list = list.filter(p => matchesSearch(p, term));\n\n  // sort last — operates on smallest possible set\n  const s = this.sort.sort();        // primary SortEntry | null\n  if (s) list = [...list].sort((a, b) => compare(a, b, s));\n\n  return list;\n&#125;);\n\n// 3. Bridge signal → CDK DataSource → mat-table\nprotected readonly ds = injectDataSource(this.processed);\n\n// 4. mat-table\n// &lt;mat-table [dataSource]="ds"&gt; — same as any CDK DataSource</code></pre>';
+  protected readonly _srcHtml0 = `<div class="filter-row">
+    <span class="filter-label">Location (OR):</span>
+    @for (loc of locations; track loc) {
+      <button type="button" class="chip"
+        [class.chip--active]="selectedLocations().has(loc)"
+        (click)="toggleLocation(loc)">{{ loc }}</button>
+    }
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Role (OR):</span>
+    @for (role of roles; track role) {
+      <button type="button" class="chip"
+        [class.chip--active]="selectedRoles().has(role)"
+        (click)="toggleRole(role)">{{ role }}</button>
+    }
+  </div>
+  <div class="search-row">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search…"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+    <button type="button" (click)="clearAll()">Clear all</button>
+  </div>
+
+  <mat-table [dataSource]="ds" class="table-wrap">
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
+          Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.name }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="role">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
+          Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.role }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="location">
+      <mat-header-cell *matHeaderCellDef>
+        <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
+          Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let row">{{ row.location }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    <div *matNoDataRow class="empty-cell">No results.</div>
+  </mat-table>
+
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filter.isActive()">
+      filters: {{ filter.activeCount() }}
+    </span>
+    <span class="status-badge" [class.active]="!!searchTerm()">
+      search: {{ searchTerm() || 'off' }}
+    </span>
+    <span class="status-badge" [class.active]="sort.isActive()">
+      sort: {{ sort.isActive() ? sort.active() + ' ' + sort.direction() : 'off' }}
+    </span>
+    <span class="status-badge">{{ processed().length }} / {{ total }} rows</span>
+  </div>`;
+  protected readonly _srcTs0 = `import { CngxFilter, CngxSort, injectDataSource } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sort   = inject(CngxSort,           { host: true });
+  protected readonly filter = inject(CngxFilter<Person>, { host: true });
+
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly roles = [...new Set(PEOPLE.map((p: Person) => p.role))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly total = PEOPLE.length;
+  protected readonly displayedColumns = ['name', 'role', 'location'];
+
+  // Search is on a child <input> — inject() can't find it from here.
+  // Own the term as a plain signal instead.
+  protected readonly searchTerm = signal('');
+
+  protected readonly selectedLocations = signal<Set<string>>(new Set());
+  protected readonly selectedRoles     = signal<Set<string>>(new Set());
+
+  // ── Manual pipeline: filter → search → sort ─────────────────────────────
+  // Order matters: filter first (cheapest predicate), then text search,
+  // then sort (most expensive — operates on already-reduced set).
+  protected readonly processed = computed((): Person[] => {
+    const pred = this.filter.predicate() as ((p: Person) => boolean) | null;
+    const term = this.searchTerm().trim().toLowerCase();
+    const s = this.sort.sort();
+
+    let list = PEOPLE as Person[];
+    if (pred) list = list.filter(pred);
+    if (term) {
+      list = list.filter((p) =>
+        [p.name, p.role, p.location].some((v) => v.toLowerCase().includes(term)),
+      );
+    }
+    if (s) {
+      const { active, direction } = s;
+      list = [...list].sort((a, b) => {
+        const av = String((a as unknown as Record<string, unknown>)[active] ?? '');
+        const bv = String((b as unknown as Record<string, unknown>)[active] ?? '');
+        const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+        return direction === 'asc' ? cmp : -cmp;
+      });
+    }
+    return list;
+  });
+
+  // Pass the computed signal — DataSource is just a CDK bridge
+  protected readonly ds = injectDataSource(this.processed);
+
+  protected toggleLocation(loc: string): void {
+    const next = new Set(this.selectedLocations());
+    if (next.has(loc)) { next.delete(loc); } else { next.add(loc); }
+    this.selectedLocations.set(next);
+    if (next.size > 0) {
+      this.filter.addPredicate('location', (p) => next.has(p.location));
+    } else {
+      this.filter.removePredicate('location');
+    }
+  }
+
+  protected toggleRole(role: string): void {
+    const next = new Set(this.selectedRoles());
+    if (next.has(role)) { next.delete(role); } else { next.add(role); }
+    this.selectedRoles.set(next);
+    if (next.size > 0) {
+      this.filter.addPredicate('role', (p) => next.has(p.role));
+    } else {
+      this.filter.removePredicate('role');
+    }
+  }
+
+  protected clearAll(): void {
+    this.filter.clear();
+    this.selectedLocations.set(new Set());
+    this.selectedRoles.set(new Set());
+    this.searchTerm.set('');
+    this.sort.clear();
+  }`;
+  protected readonly _srcHtml1 = `<pre class="code-block"><code>// 1. Directives auto-discovered via hostDirectives + inject()
+protected readonly sort   = inject(CngxSort,   &#123; host: true &#125;);
+protected readonly filter = inject(CngxFilter, &#123; host: true &#125;);
+protected readonly searchTerm = signal('');  // plain signal — no directive needed
+
+// 2. One computed() owns the full pipeline
+private readonly processed = computed(() => &#123;
+  let list = PEOPLE;
+
+  // filter first — cheapest, reduces the set early
+  const pred = this.filter.predicate();
+  if (pred) list = list.filter(pred);
+
+  // text search — runs on already-filtered set
+  const term = this.searchTerm().toLowerCase();
+  if (term) list = list.filter(p => matchesSearch(p, term));
+
+  // sort last — operates on smallest possible set
+  const s = this.sort.sort();        // primary SortEntry | null
+  if (s) list = [...list].sort((a, b) => compare(a, b, s));
+
+  return list;
+&#125;);
+
+// 3. Bridge signal → CDK DataSource → mat-table
+protected readonly ds = injectDataSource(this.processed);
+
+// 4. mat-table
+// &lt;mat-table [dataSource]="ds"&gt; — same as any CDK DataSource</code></pre>`;
+  protected readonly _srcTs1 = `import { CngxFilter, CngxSort, injectDataSource } from '@cngx/common';
+import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly sort   = inject(CngxSort,           { host: true });
+  protected readonly filter = inject(CngxFilter<Person>, { host: true });
+
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly roles = [...new Set(PEOPLE.map((p: Person) => p.role))].sort(
+    (a: string, b: string) => a.localeCompare(b),
+  );
+  protected readonly total = PEOPLE.length;
+  protected readonly displayedColumns = ['name', 'role', 'location'];
+
+  // Search is on a child <input> — inject() can't find it from here.
+  // Own the term as a plain signal instead.
+  protected readonly searchTerm = signal('');
+
+  protected readonly selectedLocations = signal<Set<string>>(new Set());
+  protected readonly selectedRoles     = signal<Set<string>>(new Set());
+
+  // ── Manual pipeline: filter → search → sort ─────────────────────────────
+  // Order matters: filter first (cheapest predicate), then text search,
+  // then sort (most expensive — operates on already-reduced set).
+  protected readonly processed = computed((): Person[] => {
+    const pred = this.filter.predicate() as ((p: Person) => boolean) | null;
+    const term = this.searchTerm().trim().toLowerCase();
+    const s = this.sort.sort();
+
+    let list = PEOPLE as Person[];
+    if (pred) list = list.filter(pred);
+    if (term) {
+      list = list.filter((p) =>
+        [p.name, p.role, p.location].some((v) => v.toLowerCase().includes(term)),
+      );
+    }
+    if (s) {
+      const { active, direction } = s;
+      list = [...list].sort((a, b) => {
+        const av = String((a as unknown as Record<string, unknown>)[active] ?? '');
+        const bv = String((b as unknown as Record<string, unknown>)[active] ?? '');
+        const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+        return direction === 'asc' ? cmp : -cmp;
+      });
+    }
+    return list;
+  });
+
+  // Pass the computed signal — DataSource is just a CDK bridge
+  protected readonly ds = injectDataSource(this.processed);
+
+  protected toggleLocation(loc: string): void {
+    const next = new Set(this.selectedLocations());
+    if (next.has(loc)) { next.delete(loc); } else { next.add(loc); }
+    this.selectedLocations.set(next);
+    if (next.size > 0) {
+      this.filter.addPredicate('location', (p) => next.has(p.location));
+    } else {
+      this.filter.removePredicate('location');
+    }
+  }
+
+  protected toggleRole(role: string): void {
+    const next = new Set(this.selectedRoles());
+    if (next.has(role)) { next.delete(role); } else { next.add(role); }
+    this.selectedRoles.set(next);
+    if (next.size > 0) {
+      this.filter.addPredicate('role', (p) => next.has(p.role));
+    } else {
+      this.filter.removePredicate('role');
+    }
+  }
+
+  protected clearAll(): void {
+    this.filter.clear();
+    this.selectedLocations.set(new Set());
+    this.selectedRoles.set(new Set());
+    this.searchTerm.set('');
+    this.sort.clear();
+  }`;
 
   protected readonly sort   = inject(CngxSort,           { host: true });
   protected readonly filter = inject(CngxFilter<Person>, { host: true });

@@ -21,7 +21,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       [apiComponents]="['CngxFilter']">
       <app-example-card title="CngxFilter — Controlled"
         [subtitle]="_s0"
-        [sourceHtml]="_srcHtml0">
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
         
   <div
     [cngxFilter]="filterPredicate()"
@@ -69,7 +70,8 @@ import { PEOPLE, type Person } from '../../../../fixtures';
       </app-example-card>
       <app-example-card title="CngxFilter — Uncontrolled"
         [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1">
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <div
     [cngxFilter]="null"
@@ -122,8 +124,173 @@ import { PEOPLE, type Person } from '../../../../fixtures';
 export class FilterDemoComponent {
   protected readonly _s0 = '<code>[cngxFilter]="pred()"</code> drives the directive from a <code>computed()</code>. When the signal changes, the directive updates automatically. <code>isActive()</code> reflects whether a predicate is set.';
   protected readonly _s1 = '<code>filterRef.setPredicate(fn)</code> mutates the directive\'s internal state imperatively — no bound input needed. <code>(filterChange)</code> emits the new predicate so the consumer can sync local derived state.';
-  protected readonly _srcHtml0 = '\n  <div\n    [cngxFilter]="filterPredicate()"\n    #filterRef="cngxFilter"\n    class="filter-container"\n  >\n    <div class="filter-row">\n      <span class="filter-label">Filter by location:</span>\n      <button\n        type="button"\n        class="chip"\n        [class.chip--active]="activeLocation() === null"\n        (click)="activeLocation.set(null)"\n      >All</button>\n      @for (loc of locations; track loc) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="activeLocation() === loc"\n          (click)="activeLocation.set(loc)"\n        >{{ loc }}</button>\n      }\n    </div>\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n        </thead>\n        <tbody>\n          @for (row of filteredRows(); track row.name) {\n            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n          } @empty {\n            <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filterRef.isActive()">\n      isActive: {{ filterRef.isActive() }}\n    </span>\n    <span class="status-badge">{{ filteredRows().length }} / {{ totalPeople }} rows</span>\n  </div>';
-  protected readonly _srcHtml1 = '\n  <div\n    [cngxFilter]="null"\n    #filterRef2="cngxFilter"\n    (filterChange)="onFilterChange($event)"\n    class="filter-container"\n  >\n    <div class="filter-row">\n      <span class="filter-label">Filter by role:</span>\n      <button\n        type="button"\n        class="chip"\n        [class.chip--active]="activeRole() === null"\n        (click)="filterRef2.clear(); activeRole.set(null)"\n      >All</button>\n      @for (role of roles; track role) {\n        <button\n          type="button"\n          class="chip"\n          [class.chip--active]="activeRole() === role"\n          (click)="filterRef2.setPredicate(rolePred(role)); activeRole.set(role)"\n        >{{ role }}</button>\n      }\n    </div>\n    <div class="table-wrap">\n      <table class="demo-table">\n        <thead>\n          <tr><th>Name</th><th>Role</th><th>Location</th></tr>\n        </thead>\n        <tbody>\n          @for (row of uncontrolledRows(); track row.name) {\n            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>\n          } @empty {\n            <tr><td colspan="3" class="empty-cell">No results.</td></tr>\n          }\n        </tbody>\n      </table>\n    </div>\n  </div>\n  <div class="status-row">\n    <span class="status-badge" [class.active]="filterRef2.isActive()">\n      isActive: {{ filterRef2.isActive() }}\n    </span>\n    <span class="status-badge">{{ uncontrolledRows().length }} / {{ totalPeople }} rows</span>\n  </div>';
+  protected readonly _srcHtml0 = `<div
+    [cngxFilter]="filterPredicate()"
+    #filterRef="cngxFilter"
+    class="filter-container"
+  >
+    <div class="filter-row">
+      <span class="filter-label">Filter by location:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="activeLocation() === null"
+        (click)="activeLocation.set(null)"
+      >All</button>
+      @for (loc of locations; track loc) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="activeLocation() === loc"
+          (click)="activeLocation.set(loc)"
+        >{{ loc }}</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef.isActive()">
+      isActive: {{ filterRef.isActive() }}
+    </span>
+    <span class="status-badge">{{ filteredRows().length }} / {{ totalPeople }} rows</span>
+  </div>`;
+  protected readonly _srcTs0 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly totalPeople = PEOPLE.length;
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort((a, b) => a.localeCompare(b));
+  protected readonly roles = [...new Set(PEOPLE.map((p: Person) => p.role))].sort((a, b) => a.localeCompare(b));
+
+  // ── Controlled mode ──────────────────────────────────────────────────────
+  protected readonly activeLocation = signal<string | null>(null);
+
+  protected readonly filterPredicate = computed(
+    (): ((p: Person) => boolean) | null => {
+      const loc = this.activeLocation();
+      return loc ? (p) => p.location === loc : null;
+    },
+  );
+
+  protected readonly filteredRows = computed((): Person[] => {
+    const pred = this.filterPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  // ── Uncontrolled mode ────────────────────────────────────────────────────
+  protected readonly activeRole = signal<string | null>(null);
+  private readonly uncontrolledPredicate = signal<((p: unknown) => boolean) | null>(null);
+
+  protected readonly uncontrolledRows = computed((): Person[] => {
+    const pred = this.uncontrolledPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  protected rolePred(role: string): (p: unknown) => boolean {
+    return (p) => (p as Person).role === role;
+  }
+
+  protected onFilterChange(pred: ((p: unknown) => boolean) | null): void {
+    this.uncontrolledPredicate.set(pred);
+  }`;
+  protected readonly _srcHtml1 = `<div
+    [cngxFilter]="null"
+    #filterRef2="cngxFilter"
+    (filterChange)="onFilterChange($event)"
+    class="filter-container"
+  >
+    <div class="filter-row">
+      <span class="filter-label">Filter by role:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="activeRole() === null"
+        (click)="filterRef2.clear(); activeRole.set(null)"
+      >All</button>
+      @for (role of roles; track role) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="activeRole() === role"
+          (click)="filterRef2.setPredicate(rolePred(role)); activeRole.set(role)"
+        >{{ role }}</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of uncontrolledRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef2.isActive()">
+      isActive: {{ filterRef2.isActive() }}
+    </span>
+    <span class="status-badge">{{ uncontrolledRows().length }} / {{ totalPeople }} rows</span>
+  </div>`;
+  protected readonly _srcTs1 = `import { PEOPLE, type Person } from '../../../../fixtures';
+
+
+  protected readonly totalPeople = PEOPLE.length;
+  protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort((a, b) => a.localeCompare(b));
+  protected readonly roles = [...new Set(PEOPLE.map((p: Person) => p.role))].sort((a, b) => a.localeCompare(b));
+
+  // ── Controlled mode ──────────────────────────────────────────────────────
+  protected readonly activeLocation = signal<string | null>(null);
+
+  protected readonly filterPredicate = computed(
+    (): ((p: Person) => boolean) | null => {
+      const loc = this.activeLocation();
+      return loc ? (p) => p.location === loc : null;
+    },
+  );
+
+  protected readonly filteredRows = computed((): Person[] => {
+    const pred = this.filterPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  // ── Uncontrolled mode ────────────────────────────────────────────────────
+  protected readonly activeRole = signal<string | null>(null);
+  private readonly uncontrolledPredicate = signal<((p: unknown) => boolean) | null>(null);
+
+  protected readonly uncontrolledRows = computed((): Person[] => {
+    const pred = this.uncontrolledPredicate();
+    if (!pred) return PEOPLE;
+    return PEOPLE.filter((p) => pred(p));
+  });
+
+  protected rolePred(role: string): (p: unknown) => boolean {
+    return (p) => (p as Person).role === role;
+  }
+
+  protected onFilterChange(pred: ((p: unknown) => boolean) | null): void {
+    this.uncontrolledPredicate.set(pred);
+  }`;
 
   protected readonly totalPeople = PEOPLE.length;
   protected readonly locations = [...new Set(PEOPLE.map((p: Person) => p.location))].sort((a, b) => a.localeCompare(b));

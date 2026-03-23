@@ -78,8 +78,57 @@ import { DecimalPipe } from '@angular/common';
 })
 export class IntersectionObserverDemoComponent {
   protected readonly _s0 = '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions.';
-  protected readonly _srcHtml0 = '\n  <div\n    style="\n      height: 200px;\n      overflow-y: auto;\n      border: 1px solid var(--cngx-border, #ddd);\n      border-radius: 6px;\n      padding: 0 16px;\n    "\n  >\n    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">\n      ↓ Scroll down to reach the sentinel\n    </div>\n\n    <div\n      cngxIntersectionObserver\n      #io="cngxIntersectionObserver"\n      [rootMargin]="\'0px\'"\n      (entered)="enterCount.update(n => n + 1)"\n      (left)="leaveCount.update(n => n + 1)"\n      style="\n        padding: 16px;\n        text-align: center;\n        border-radius: 6px;\n        transition: background 0.3s;\n      "\n      [style.background]="io.isIntersecting() ? \'var(--cngx-accent, #f5a623)\' : \'var(--cngx-surface-alt, #f8f9fa)\'"\n    >\n      {{ io.isIntersecting() ? \'Visible!\' : \'Hidden\' }}\n      — ratio: {{ io.intersectionRatio() | number:\'1.2-2\' }}\n    </div>\n\n    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">\n      ↑ Scroll back up\n    </div>\n  </div>\n\n  <div class="event-grid" style="margin-top: 12px">\n    <div class="event-row">\n      <span class="event-label">entered</span>\n      <span class="event-value">{{ enterCount() }}×</span>\n    </div>\n    <div class="event-row">\n      <span class="event-label">left</span>\n      <span class="event-value">{{ leaveCount() }}×</span>\n    </div>\n  </div>';
-  protected readonly _srcTs0 = '\n  protected enterCount = signal(0);\n  protected leaveCount = signal(0);\n  ';
+  protected readonly _srcHtml0 = `<div
+    style="
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--cngx-border, #ddd);
+      border-radius: 6px;
+      padding: 0 16px;
+    "
+  >
+    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+      ↓ Scroll down to reach the sentinel
+    </div>
+
+    <div
+      cngxIntersectionObserver
+      #io="cngxIntersectionObserver"
+      [rootMargin]="'0px'"
+      (entered)="enterCount.update(n => n + 1)"
+      (left)="leaveCount.update(n => n + 1)"
+      style="
+        padding: 16px;
+        text-align: center;
+        border-radius: 6px;
+        transition: background 0.3s;
+      "
+      [style.background]="io.isIntersecting() ? 'var(--cngx-accent, #f5a623)' : 'var(--cngx-surface-alt, #f8f9fa)'"
+    >
+      {{ io.isIntersecting() ? 'Visible!' : 'Hidden' }}
+      — ratio: {{ io.intersectionRatio() | number:'1.2-2' }}
+    </div>
+
+    <div style="height: 180px; display: flex; align-items: center; color: var(--cngx-text-secondary, #666);">
+      ↑ Scroll back up
+    </div>
+  </div>
+
+  <div class="event-grid" style="margin-top: 12px">
+    <div class="event-row">
+      <span class="event-label">entered</span>
+      <span class="event-value">{{ enterCount() }}×</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">left</span>
+      <span class="event-value">{{ leaveCount() }}×</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs0 = `import { DecimalPipe } from '@angular/common';
+
+
+  protected enterCount = signal(0);
+  protected leaveCount = signal(0);`;
 
   protected enterCount = signal(0);
   protected leaveCount = signal(0);
