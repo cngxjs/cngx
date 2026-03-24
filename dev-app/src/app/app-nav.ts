@@ -47,9 +47,15 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/forms',
     items: [
+      { label: 'Autosize', path: 'forms/autosize' },
       { label: 'Form Field', path: 'forms/field' },
+      { label: 'File Drop', path: 'forms/file-drop' },
       { label: 'Input', path: 'forms/input' },
+      { label: 'Mask', path: 'forms/mask' },
       { label: 'Material', path: 'forms/material' },
+      { label: 'Numeric', path: 'forms/numeric' },
+      { label: 'OTP', path: 'forms/otp' },
+      { label: 'Utilities', path: 'forms/utilities' },
     ],
   },
   {

@@ -147,9 +147,19 @@ export const routes: Routes = [
     path: 'forms',
     children: [
       {
+        path: 'autosize',
+        loadComponent: () =>
+          import('./demos/forms/autosize-demo/autosize-demo.component').then((m) => m.AutosizeDemoComponent),
+      },
+      {
         path: 'field',
         loadComponent: () =>
           import('./demos/forms/field-demo/field-demo.component').then((m) => m.FieldDemoComponent),
+      },
+      {
+        path: 'file-drop',
+        loadComponent: () =>
+          import('./demos/forms/file-drop-demo/file-drop-demo.component').then((m) => m.FileDropDemoComponent),
       },
       {
         path: 'input',
@@ -157,11 +167,31 @@ export const routes: Routes = [
           import('./demos/forms/input-demo/input-demo.component').then((m) => m.InputDemoComponent),
       },
       {
+        path: 'mask',
+        loadComponent: () =>
+          import('./demos/forms/mask-demo/mask-demo.component').then((m) => m.MaskDemoComponent),
+      },
+      {
         path: 'material',
         loadComponent: () =>
           import('./demos/forms/material-demo/material-demo.component').then((m) => m.MaterialDemoComponent),
       },
-      { path: '', redirectTo: 'field', pathMatch: 'full' },
+      {
+        path: 'numeric',
+        loadComponent: () =>
+          import('./demos/forms/numeric-demo/numeric-demo.component').then((m) => m.NumericDemoComponent),
+      },
+      {
+        path: 'otp',
+        loadComponent: () =>
+          import('./demos/forms/otp-demo/otp-demo.component').then((m) => m.OtpDemoComponent),
+      },
+      {
+        path: 'utilities',
+        loadComponent: () =>
+          import('./demos/forms/utilities-demo/utilities-demo.component').then((m) => m.UtilitiesDemoComponent),
+      },
+      { path: '', redirectTo: 'autosize', pathMatch: 'full' },
     ],
   },
   {
