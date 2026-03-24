@@ -2,6 +2,7 @@ import { type ApplicationConfig, provideBrowserGlobalErrorListeners, provideZone
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideTreetable, withHighlightOnHover } from '@cngx/data-display/treetable';
+import { provideFormField, withErrorMessages, withConstraintHints, withRequiredMarker } from '@cngx/forms/field';
 
 import { routes } from './app.routes';
 
@@ -12,5 +13,15 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideRouter(routes, withHashLocation()),
     provideTreetable(withHighlightOnHover()),
+    provideFormField(
+      withErrorMessages({
+        required: () => 'This field is required.',
+        email: () => 'Invalid email address.',
+        minLength: (e) => `Minimum ${(e as unknown as { minLength: number }).minLength} characters.`,
+        maxLength: (e) => `Maximum ${(e as unknown as { maxLength: number }).maxLength} characters.`,
+      }),
+      withConstraintHints(),
+      withRequiredMarker(),
+    ),
   ],
 };
