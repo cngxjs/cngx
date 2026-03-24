@@ -37,6 +37,12 @@ jobs:
       - name: Build all libraries
         run: npm run build:libs
 
+      - name: Generate compodoc JSON
+        run: npm run docs:json
+
+      - name: Generate demo components
+        run: npm run demo:generate
+
       - name: Lint
         run: npm run lint
 
