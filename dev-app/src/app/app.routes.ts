@@ -45,29 +45,9 @@ export const routes: Routes = [
           import('./demos/common/behaviors/filter-demo/filter-demo.component').then((m) => m.FilterDemoComponent),
       },
       {
-        path: 'behaviors/filter-backend',
-        loadComponent: () =>
-          import('./demos/common/behaviors/filter-demo/filter-backend.component').then((m) => m.FilterBackendDemoComponent),
-      },
-      {
-        path: 'behaviors/filter-multi',
-        loadComponent: () =>
-          import('./demos/common/behaviors/filter-demo/filter-multi.component').then((m) => m.FilterMultiDemoComponent),
-      },
-      {
         path: 'behaviors/search',
         loadComponent: () =>
           import('./demos/common/behaviors/search-demo/search-demo.component').then((m) => m.SearchDemoComponent),
-      },
-      {
-        path: 'behaviors/search-backend',
-        loadComponent: () =>
-          import('./demos/common/behaviors/search-demo/search-backend.component').then((m) => m.SearchBackendDemoComponent),
-      },
-      {
-        path: 'behaviors/search-mat',
-        loadComponent: () =>
-          import('./demos/common/behaviors/search-demo/search-mat.component').then((m) => m.SearchMatDemoComponent),
       },
       {
         path: 'behaviors/sort',
@@ -75,39 +55,14 @@ export const routes: Routes = [
           import('./demos/common/behaviors/sort-demo/sort-demo.component').then((m) => m.SortDemoComponent),
       },
       {
-        path: 'behaviors/sort-backend',
-        loadComponent: () =>
-          import('./demos/common/behaviors/sort-demo/sort-backend.component').then((m) => m.SortBackendDemoComponent),
-      },
-      {
-        path: 'behaviors/sort-multi',
-        loadComponent: () =>
-          import('./demos/common/behaviors/sort-demo/sort-multi.component').then((m) => m.SortMultiDemoComponent),
-      },
-      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
       },
       {
-        path: 'data/mat-table-manual',
+        path: 'data/mat-table',
         loadComponent: () =>
-          import('./demos/common/data/mat-table-demo/mat-table-manual.component').then((m) => m.MatTableManualDemoComponent),
-      },
-      {
-        path: 'data/mat-table-paginate',
-        loadComponent: () =>
-          import('./demos/common/data/mat-table-demo/mat-table-paginate.component').then((m) => m.MatTablePaginateDemoComponent),
-      },
-      {
-        path: 'data/mat-table-paginate-custom',
-        loadComponent: () =>
-          import('./demos/common/data/mat-table-demo/mat-table-paginate-custom.component').then((m) => m.MatTablePaginateCustomDemoComponent),
-      },
-      {
-        path: 'data/mat-table-smart',
-        loadComponent: () =>
-          import('./demos/common/data/mat-table-demo/mat-table-smart.component').then((m) => m.MatTableSmartDemoComponent),
+          import('./demos/common/data/mat-table-demo/mat-table-demo.component').then((m) => m.MatTableDemoComponent),
       },
       {
         path: 'data/paginate-list',

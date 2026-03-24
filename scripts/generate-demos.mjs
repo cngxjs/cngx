@@ -397,7 +397,13 @@ export function generateNavHtmlBlock(demos) {
 
       const inner = [...catGroups.entries()]
         .map(([cat, catItems]) => {
-          const links = renderDirGroups(catItems);
+          const links = catItems
+            .map((d) => {
+              const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
+              return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+            })
+            .join('\n');
+
           if (cat === null) return links;
           return [
             `      <details class="nav-category" open>`,
@@ -413,44 +419,6 @@ export function generateNavHtmlBlock(demos) {
         `      <span class="nav-label">@cngx/${lib}</span>`,
         inner,
         `    </div>`,
-      ].join('\n');
-    })
-    .join('\n');
-}
-
-/**
- * Groups demos by directory. Multi-story dirs get a collapsible sub-group.
- * Single-story dirs render as a plain link.
- */
-function renderDirGroups(items) {
-  const dirGroups = new Map();
-  for (const demo of items) {
-    const key = demo.demoDir;
-    if (!dirGroups.has(key)) dirGroups.set(key, []);
-    dirGroups.get(key).push(demo);
-  }
-
-  return [...dirGroups.values()]
-    .map((dirItems) => {
-      if (dirItems.length === 1) {
-        const d = dirItems[0];
-        const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
-        return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-      }
-      // Multiple stories in same dir → collapsible sub-group
-      const groupLabel = dirItems[0].story?.navLabel?.split(' ')[0]
-        ?? capitalise(basename(dirItems[0].demoDir).replace(/-demo$/, ''));
-      const links = dirItems
-        .map((d) => {
-          const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
-          return `          <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-        })
-        .join('\n');
-      return [
-        `        <details class="nav-sub-group" open>`,
-        `          <summary class="nav-sub-label">${groupLabel}</summary>`,
-        links,
-        `        </details>`,
       ].join('\n');
     })
     .join('\n');
