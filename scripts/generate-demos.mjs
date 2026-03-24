@@ -406,7 +406,7 @@ export function generateNavHtmlBlock(demos) {
 
           if (cat === null) return links;
           return [
-            `      <details class="nav-category" open>`,
+            `      <details class="nav-category" data-nav-cat="${cat}">`,
             `        <summary class="nav-category-label">${capitalise(cat)}</summary>`,
             links,
             `      </details>`,
