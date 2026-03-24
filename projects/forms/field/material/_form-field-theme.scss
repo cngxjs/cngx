@@ -1,0 +1,156 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-form-field theming ─────────────────────────────────────
+//
+// Optional Material theme integration for cngx-form-field.
+// cngx-form-field itself has zero visual opinion — this mixin maps
+// Material design tokens to CSS custom properties on the child
+// directives (label, hint, error, pending indicator).
+//
+// CSS classes set by the directives:
+//   cngx-form-field:  .cngx-field--error, .cngx-field--touched, .cngx-field--dirty,
+//                     .cngx-field--disabled, .cngx-field--required, .cngx-field--pending,
+//                     .cngx-field--readonly, .cngx-field--hidden, .cngx-field--valid
+//   [cngxLabel]:      .cngx-label--required, .cngx-label--error, .cngx-label--disabled
+//   [cngxInput]:      .cngx-input--error, .cngx-input--focused
+//
+// Include in your global theme stylesheet:
+//
+//   @use '@cngx/forms/field/material/form-field-theme' as form-field;
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include form-field.theme($theme);
+//   }
+
+@mixin base() {
+  --cngx-field-label-font-size: 0.875rem;
+  --cngx-field-label-weight: 500;
+  --cngx-field-hint-font-size: 0.75rem;
+  --cngx-field-error-font-size: 0.75rem;
+  --cngx-field-disabled-opacity: 0.38;
+  --cngx-field-input-border-color: var(--cngx-border, #ccc);
+  --cngx-field-input-error-border-color: var(--cngx-field-error-color, #d32f2f);
+  --cngx-field-input-focus-border-color: var(--cngx-field-focus-color, #1976d2);
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3
+    --cngx-field-label-color: var(--mat-sys-on-surface);
+    --cngx-field-label-required-color: var(--mat-sys-error);
+    --cngx-field-hint-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-error-color: var(--mat-sys-error);
+    --cngx-field-focus-color: var(--mat-sys-primary);
+    --cngx-field-pending-color: var(--mat-sys-primary);
+    --cngx-field-disabled-reason-color: var(--mat-sys-on-surface-variant);
+    --cngx-field-input-border-color: var(--mat-sys-outline);
+    --cngx-field-input-error-border-color: var(--mat-sys-error);
+    --cngx-field-input-focus-border-color: var(--mat-sys-primary);
+    --cngx-field-success-color: var(--mat-sys-primary);
+  } @else {
+    // M2
+    --cngx-field-label-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.87)};
+    --cngx-field-label-required-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-hint-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-error-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-focus-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-pending-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-disabled-reason-color: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
+    --cngx-field-input-border-color: rgba(0, 0, 0, 0.12);
+    --cngx-field-input-error-border-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-field-input-focus-border-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-field-success-color: #2e7d32;
+  }
+}
+
+// ─── Public entrypoint ───────────────────────────────────────────
+
+@mixin theme($theme) {
+  cngx-form-field {
+    @include base();
+    @include color($theme);
+
+    // ── Label ──────────────────────────────────────────────────
+    [cngxLabel] {
+      color: var(--cngx-field-label-color);
+      font-size: var(--cngx-field-label-font-size);
+      font-weight: var(--cngx-field-label-weight);
+
+      &.cngx-label--error {
+        color: var(--cngx-field-error-color);
+      }
+
+      &.cngx-label--disabled {
+        opacity: var(--cngx-field-disabled-opacity);
+      }
+    }
+
+    // ── Hint ───────────────────────────────────────────────────
+    [cngxHint] {
+      color: var(--cngx-field-hint-color);
+      font-size: var(--cngx-field-hint-font-size);
+    }
+
+    // ── Errors ─────────────────────────────────────────────────
+    [cngxError],
+    cngx-field-errors {
+      color: var(--cngx-field-error-color);
+      font-size: var(--cngx-field-error-font-size);
+    }
+
+    // ── Input ──────────────────────────────────────────────────
+    [cngxInput] {
+      border-color: var(--cngx-field-input-border-color);
+
+      &.cngx-input--focused {
+        border-color: var(--cngx-field-input-focus-border-color);
+      }
+
+      &.cngx-input--error {
+        border-color: var(--cngx-field-input-error-border-color);
+      }
+    }
+
+    // ── Char count ──────────────────────────────────────────────
+    cngx-char-count {
+      font-size: var(--cngx-field-char-count-font-size, 0.75rem);
+      color: var(--cngx-field-hint-color);
+
+      &.cngx-char-count--over {
+        color: var(--cngx-field-error-color);
+      }
+    }
+
+    // ── Disabled state ───────────────────────────────────────────
+    &.cngx-field--disabled {
+      opacity: var(--cngx-field-disabled-opacity);
+    }
+
+    // ── Success state ────────────────────────────────────────────
+    &.cngx-field--valid.cngx-field--touched:not(.cngx-field--pending) {
+      [cngxInput] {
+        border-color: var(--cngx-field-success-border-color, var(--cngx-field-success-color, #2e7d32));
+      }
+    }
+
+    // ── Error shake animation ────────────────────────────────────
+    &.cngx-field--error [cngxInput] {
+      animation: cngx-field-shake var(--cngx-field-shake-duration, 0.3s) ease-in-out;
+    }
+  }
+
+  @keyframes cngx-field-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    cngx-form-field.cngx-field--error [cngxInput] {
+      animation: none;
+    }
+  }
+}
