@@ -10,9 +10,10 @@
     "sourceMap": true,
     "types": [],
     "paths": {
-      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"]
+      "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/forms/field": ["projects/forms/field/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "controls/**/*.ts", "validators/**/*.ts"],
+  "include": ["src/**/*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "field/material/**/*.ts", "input/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }
