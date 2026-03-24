@@ -52,6 +52,7 @@ test-output
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 /.claude/auto-memory
+/.claude/skills
 .internal/
 .compodoc/
 /screenshots
