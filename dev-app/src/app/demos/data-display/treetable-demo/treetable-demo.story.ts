@@ -2,6 +2,8 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Treetable',
+  navLabel: 'Treetable',
+  apiComponents: ['CngxTreetablePresenter', 'CngxTreetable', 'CngxMaterialTreetable'],
   moduleImports: [
     "import { ORG_TREE, type Employee } from '../../../fixtures';",
     "import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';",

@@ -2,7 +2,10 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'FocusVisible',
+  navLabel: 'FocusVisible',
+  navCategory: 'a11y',
   description: 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.',
+  apiComponents: ['CngxFocusVisible'],
   setup: `
   protected name = signal('');
   protected email = signal('');

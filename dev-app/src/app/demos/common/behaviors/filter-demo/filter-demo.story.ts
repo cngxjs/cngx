@@ -2,8 +2,15 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Filter',
+  navLabel: 'Filter',
+  navCategory: 'data',
+  apiComponents: ['CngxFilter'],
   moduleImports: [
     "import { PEOPLE, type Person } from '../../../../fixtures';",
+    "import { HttpClient } from '@angular/common/http';",
+    "import { catchError, finalize, map, of, switchMap } from 'rxjs';",
+    "import { toObservable, toSignal } from '@angular/core/rxjs-interop';",
+    "import { type DJProduct, type DJCategory } from '../../../../fixtures';",
   ],
   setup: `
   protected readonly totalPeople = PEOPLE.length;
@@ -43,6 +50,101 @@ export const STORY: DemoSpec = {
   protected onFilterChange(pred: ((p: unknown) => boolean) | null): void {
     this.uncontrolledPredicate.set(pred);
   }
+
+  // ── Multi-filter: AND across dimensions ──────────────────────────────────
+  protected readonly multiActiveLocation = signal<string | null>(null);
+  protected readonly multiActiveRole = signal<string | null>(null);
+  protected readonly multiRows = signal<Person[]>(PEOPLE);
+
+  protected setLocationFilter(filterRef: CngxFilter, loc: string | null): void {
+    this.multiActiveLocation.set(loc);
+    if (loc) {
+      filterRef.addPredicate('location', (p) => (p as Person).location === loc);
+    } else {
+      filterRef.removePredicate('location');
+    }
+    const pred = filterRef.predicate() as ((p: Person) => boolean) | null;
+    this.multiRows.set(pred ? PEOPLE.filter(pred) : PEOPLE);
+  }
+
+  protected setRoleFilter(filterRef: CngxFilter, role: string | null): void {
+    this.multiActiveRole.set(role);
+    if (role) {
+      filterRef.addPredicate('role', (p) => (p as Person).role === role);
+    } else {
+      filterRef.removePredicate('role');
+    }
+    const pred = filterRef.predicate() as ((p: Person) => boolean) | null;
+    this.multiRows.set(pred ? PEOPLE.filter(pred) : PEOPLE);
+  }
+
+  // ── Multi-filter: OR within dimension + AND across dimensions ────────────
+  protected readonly selectedLocations = signal<Set<string>>(new Set());
+  protected readonly selectedRoles = signal<Set<string>>(new Set());
+  protected readonly orRows = signal<Person[]>(PEOPLE);
+
+  protected toggleLocation(filterRef: CngxFilter, loc: string): void {
+    const next = new Set(this.selectedLocations());
+    if (next.has(loc)) { next.delete(loc); } else { next.add(loc); }
+    this.selectedLocations.set(next);
+    if (next.size > 0) {
+      filterRef.addPredicate('location', (p) => next.has((p as Person).location));
+    } else {
+      filterRef.removePredicate('location');
+    }
+    const pred = filterRef.predicate() as ((p: Person) => boolean) | null;
+    this.orRows.set(pred ? PEOPLE.filter(pred) : PEOPLE);
+  }
+
+  protected toggleRole2(filterRef: CngxFilter, role: string): void {
+    const next = new Set(this.selectedRoles());
+    if (next.has(role)) { next.delete(role); } else { next.add(role); }
+    this.selectedRoles.set(next);
+    if (next.size > 0) {
+      filterRef.addPredicate('role', (p) => next.has((p as Person).role));
+    } else {
+      filterRef.removePredicate('role');
+    }
+    const pred = filterRef.predicate() as ((p: Person) => boolean) | null;
+    this.orRows.set(pred ? PEOPLE.filter(pred) : PEOPLE);
+  }
+
+  protected clearOrFilters(filterRef: CngxFilter): void {
+    filterRef.clear();
+    this.selectedLocations.set(new Set());
+    this.selectedRoles.set(new Set());
+    this.orRows.set(PEOPLE);
+  }
+
+  // ── Backend filter ───────────────────────────────────────────────────────
+  private readonly http = inject(HttpClient);
+
+  protected readonly categories = toSignal(
+    this.http
+      .get<DJCategory[]>('https://dummyjson.com/products/categories')
+      .pipe(catchError(() => of([] as DJCategory[]))),
+    { initialValue: [] as DJCategory[] },
+  );
+
+  protected readonly activeSlug = signal<string | null>(null);
+  protected readonly apiLoading = signal(false);
+
+  protected readonly apiProducts = toSignal(
+    toObservable(this.activeSlug).pipe(
+      switchMap((slug) => {
+        this.apiLoading.set(true);
+        const url = slug
+          ? \`https://dummyjson.com/products/category/\${slug}?limit=8&select=id,title,brand,price,rating,category\`
+          : 'https://dummyjson.com/products?limit=8&select=id,title,brand,price,rating,category';
+        return this.http.get<{ products: DJProduct[] }>(url).pipe(
+          map((r) => r.products),
+          catchError(() => of([] as DJProduct[])),
+          finalize(() => this.apiLoading.set(false)),
+        );
+      }),
+    ),
+    { initialValue: [] as DJProduct[] },
+  );
   `,
   sections: [
     {
@@ -142,6 +244,212 @@ export const STORY: DemoSpec = {
     </span>
     <span class="status-badge">{{ uncontrolledRows().length }} / {{ totalPeople }} rows</span>
   </div>`,
+    },
+    {
+      title: 'CngxFilter — Multi (addPredicate / removePredicate)',
+      subtitle:
+        'Each filter chip calls <code>addPredicate(key, fn)</code> or <code>removePredicate(key)</code>. ' +
+        'All active predicates are AND-combined automatically. ' +
+        '<code>activeCount()</code> shows how many named predicates are stacked.',
+      imports: ['CngxFilter'],
+      template: `
+  <div [cngxFilter]="null" #filterRef3="cngxFilter" class="filter-container">
+    <div class="filter-row">
+      <span class="filter-label">Location:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="multiActiveLocation() === null"
+        (click)="setLocationFilter(filterRef3, null)"
+      >All</button>
+      @for (loc of locations; track loc) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="multiActiveLocation() === loc"
+          (click)="setLocationFilter(filterRef3, loc)"
+        >{{ loc }}</button>
+      }
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Role:</span>
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="multiActiveRole() === null"
+        (click)="setRoleFilter(filterRef3, null)"
+      >All</button>
+      @for (role of roles; track role) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="multiActiveRole() === role"
+          (click)="setRoleFilter(filterRef3, role)"
+        >{{ role }}</button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of multiRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef3.isActive()">
+      isActive: {{ filterRef3.isActive() }}
+    </span>
+    <span class="status-badge" [class.active]="filterRef3.activeCount() > 0">
+      activeCount: {{ filterRef3.activeCount() }}
+    </span>
+    <span class="status-badge">{{ multiRows().length }} / {{ totalPeople }} rows</span>
+  </div>`,
+    },
+    {
+      title: 'OR within dimension + AND across dimensions',
+      subtitle:
+        'Multiple values per dimension are possible by keeping a <code>Set</code> inside a single named predicate. ' +
+        'Click <em>London</em> and <em>Rome</em> to see OR in action. ' +
+        'Adding a role filter stacks on top as AND.',
+      imports: ['CngxFilter'],
+      template: `
+  <div [cngxFilter]="null" #filterRef4="cngxFilter" class="filter-container">
+    <div class="filter-row">
+      <span class="filter-label">Location (OR):</span>
+      @for (loc of locations; track loc) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="selectedLocations().has(loc)"
+          (click)="toggleLocation(filterRef4, loc)"
+        >{{ loc }}</button>
+      }
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">Role (OR):</span>
+      @for (role of roles; track role) {
+        <button
+          type="button"
+          class="chip"
+          [class.chip--active]="selectedRoles().has(role)"
+          (click)="toggleRole2(filterRef4, role)"
+        >{{ role }}</button>
+      }
+    </div>
+    <div class="button-row" style="margin-bottom:.75rem">
+      <button type="button" (click)="clearOrFilters(filterRef4)">Clear all</button>
+    </div>
+    <div class="table-wrap">
+      <table class="demo-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Location</th></tr>
+        </thead>
+        <tbody>
+          @for (row of orRows(); track row.name) {
+            <tr><td>{{ row.name }}</td><td>{{ row.role }}</td><td>{{ row.location }}</td></tr>
+          } @empty {
+            <tr><td colspan="3" class="empty-cell">No results.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="filterRef4.isActive()">
+      isActive: {{ filterRef4.isActive() }}
+    </span>
+    <span class="status-badge" [class.active]="filterRef4.activeCount() > 0">
+      activeCount: {{ filterRef4.activeCount() }}
+    </span>
+    <span class="status-badge">{{ orRows().length }} / {{ totalPeople }} rows</span>
+  </div>`,
+    },
+    {
+      title: 'Server-Side Filter by Category (DummyJSON)',
+      subtitle: 'For server-side filtering, skip <code>CngxFilter</code> — the API does the filtering. A <code>signal</code> holds the active category; <code>toObservable()</code> + <code>switchMap</code> fetches the right endpoint on every change.',
+      imports: ['CurrencyPipe'],
+      template: `
+  <div class="filter-row">
+    <span class="filter-label">Category:</span>
+    <button
+      type="button"
+      class="chip"
+      [class.chip--active]="activeSlug() === null"
+      (click)="activeSlug.set(null)"
+    >All</button>
+    @for (cat of categories().slice(0, 10); track cat.slug) {
+      <button
+        type="button"
+        class="chip"
+        [class.chip--active]="activeSlug() === cat.slug"
+        (click)="activeSlug.set(cat.slug)"
+      >{{ cat.name }}</button>
+    }
+  </div>
+  <div class="table-wrap">
+    <table class="demo-table">
+      <thead>
+        <tr><th>Title</th><th>Brand</th><th>Category</th><th>Price</th><th>Rating</th></tr>
+      </thead>
+      <tbody>
+        @if (apiLoading()) {
+          <tr><td colspan="5" class="empty-cell">Loading…</td></tr>
+        } @else {
+          @for (p of apiProducts(); track p.id) {
+            <tr>
+              <td>{{ p.title }}</td>
+              <td>{{ p.brand }}</td>
+              <td>{{ p.category }}</td>
+              <td>{{ p.price | currency }}</td>
+              <td>{{ p.rating }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="empty-cell">No products.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="status-row">
+    <span class="status-badge" [class.active]="activeSlug() !== null">
+      filter {{ activeSlug() ?? 'off' }}
+    </span>
+    <span class="status-badge">{{ apiProducts().length }} results</span>
+  </div>`,
+    },
+    {
+      title: 'Pattern: Local CngxFilter vs Server-Side',
+      subtitle: 'Use <code>CngxFilter</code> when data is already in memory. Use a signal + API call when the server owns the data. The two patterns are independent — pick the right one per use case.',
+      template: `
+  <pre class="code-block"><code>// ── Local (CngxFilter) ──────────────────────────────────────
+// Good when: data is already fetched, small dataset
+protected readonly pred = computed(() =>
+  this.activeRole() ? (p: Person) => p.role === this.activeRole() : null
+);
+// &lt;div [cngxFilter]="pred()"&gt;
+
+// ── Server-side ──────────────────────────────────────────────
+// Good when: data lives on the server, large dataset
+protected readonly category = signal&lt;string | null&gt;(null);
+protected readonly rows = toSignal(
+  toObservable(this.category).pipe(
+    switchMap((cat) =>
+      cat
+        ? http.get&lt;&#123; products: Product[] &#125;&gt;(\`/api/products/category/$&#123;cat&#125;\`)
+        : http.get&lt;&#123; products: Product[] &#125;&gt;('/api/products'),
+    ),
+    map((r) => r.products),
+  ),
+  &#123; initialValue: [] &#125;,
+);</code></pre>`,
     },
   ],
 };

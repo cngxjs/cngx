@@ -50,6 +50,11 @@
               {
                 "glob": "**/*",
                 "input": "dev-app/public"
+              },
+              {
+                "glob": "documentation.json",
+                "input": ".compodoc",
+                "output": "/assets"
               }
             ],
             "styles": [

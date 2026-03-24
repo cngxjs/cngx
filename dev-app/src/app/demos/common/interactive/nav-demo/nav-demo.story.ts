@@ -2,8 +2,11 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Nav',
+  navLabel: 'Nav',
+  navCategory: 'interactive',
   description:
     'Composable navigation atoms: CngxNavLink (active state + depth), CngxNavGroup (accordion), CngxNavLabel (section header), CngxNavBadge (counter/dot). Combine them to build sidebar menus.',
+  apiComponents: ['CngxNavLink', 'CngxNavGroup', 'CngxNavBadge', 'CngxNavLabel'],
   moduleImports: [
     "import { CngxNavLink, CngxNavGroup, CngxNavLabel, CngxNavBadge } from '@cngx/common';",
   ],

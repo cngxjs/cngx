@@ -2,7 +2,10 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'ResizeObserver',
+  navLabel: 'ResizeObserver',
+  navCategory: 'layout',
   description: 'Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.',
+  apiComponents: ['CngxResizeObserver'],
   sections: [
     {
       title: 'CngxResizeObserver — Live Size',

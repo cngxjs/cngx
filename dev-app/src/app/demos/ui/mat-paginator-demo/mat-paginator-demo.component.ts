@@ -3,7 +3,8 @@
 
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
-import { CngxPaginate } from '@cngx/common';
+import { DocShellComponent } from '../../../shared/doc-shell.component';
+import { CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';
 import { viewChild } from '@angular/core';
 import { PEOPLE } from '../../../fixtures';
@@ -14,13 +15,19 @@ import { PEOPLE } from '../../../fixtures';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ExampleCardComponent,
+    DocShellComponent,
     CngxPaginate,
     CngxMatPaginator,
   ],
   template: `
-    <app-example-card title="CngxMatPaginator — Material Paginator"
-      [subtitle]="_s0">
-      
+    <app-doc-shell title="MatPaginator"
+      description="Material paginator wrapper that connects to a headless CngxPaginate directive via explicit reference binding."
+      [apiComponents]="['CngxMatPaginator', 'CngxPaginate']">
+      <app-example-card title="CngxMatPaginator — Material Paginator"
+        [subtitle]="_s0"
+        [sourceHtml]="_srcHtml0"
+        [sourceTs]="_srcTs0">
+        
   <div cngxPaginate #pg="cngxPaginate" [total]="allItems().length">
     <table class="demo-table" style="width: 100%;">
       <thead>
@@ -60,10 +67,12 @@ import { PEOPLE } from '../../../fixtures';
       <span class="event-value">{{ pg.range()[0] + 1 }}–{{ pg.range()[1] }} of {{ pg.total() }}</span>
     </div>
   </div>
-    </app-example-card>
-    <app-example-card title="Headless — Custom Pagination Controls"
-      [subtitle]="_s1">
-      
+      </app-example-card>
+      <app-example-card title="Headless — Custom Pagination Controls"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
   <div cngxPaginate #pg2="cngxPaginate" [total]="allItems().length" [cngxPageSize]="3">
     <ul style="list-style: none; padding: 0; margin: 0;">
       @for (item of allItems().slice(pg2.range()[0], pg2.range()[1]); track item.name) {
@@ -87,12 +96,95 @@ import { PEOPLE } from '../../../fixtures';
       <button class="sort-btn" (click)="pg2.last()" [disabled]="pg2.isLast()">Last</button>
     </div>
   </div>
-    </app-example-card>
+      </app-example-card>
+    </app-doc-shell>
   `,
 })
 export class MatPaginatorDemoComponent {
   protected readonly _s0 = '<code>&lt;cngx-mat-paginator&gt;</code> wraps <code>MatPaginator</code> and connects to a <code>CngxPaginate</code> directive via <code>[cngxPaginateRef]</code>. The headless <code>CngxPaginate</code> manages page state; the Material wrapper renders the UI.';
   protected readonly _s1 = '<code>CngxPaginate</code> is headless — you can build any UI on top. This example uses plain buttons instead of <code>mat-paginator</code>.';
+  protected readonly _srcHtml0 = `<div cngxPaginate #pg="cngxPaginate" [total]="allItems().length">
+    <table class="demo-table" style="width: 100%;">
+      <thead>
+        <tr>
+          <th style="text-align: left;">Name</th>
+          <th style="text-align: left;">Role</th>
+          <th style="text-align: left;">Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of displayedItems(); track item.name) {
+          <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.role }}</td>
+            <td>{{ item.location }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="3" class="empty-cell">No data</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <cngx-mat-paginator [cngxPaginateRef]="pg" [pageSizeOptions]="[3, 5, 10]" />
+
+  <div class="event-grid" style="margin-top: 12px">
+    <div class="event-row">
+      <span class="event-label">Page</span>
+      <span class="event-value">{{ pg.pageIndex() + 1 }} / {{ pg.totalPages() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Page size</span>
+      <span class="event-value">{{ pg.pageSize() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Showing</span>
+      <span class="event-value">{{ pg.range()[0] + 1 }}–{{ pg.range()[1] }} of {{ pg.total() }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs0 = `import { viewChild } from '@angular/core';
+import { PEOPLE } from '../../../fixtures';
+
+
+  protected readonly allItems = signal(PEOPLE);
+  protected readonly pg = viewChild.required<CngxPaginate>('pg');
+  protected readonly displayedItems = computed(() => {
+    const [start, end] = this.pg().range();
+    return this.allItems().slice(start, end);
+  });`;
+  protected readonly _srcHtml1 = `<div cngxPaginate #pg2="cngxPaginate" [total]="allItems().length" [cngxPageSize]="3">
+    <ul style="list-style: none; padding: 0; margin: 0;">
+      @for (item of allItems().slice(pg2.range()[0], pg2.range()[1]); track item.name) {
+        <li style="
+          padding: 8px 12px;
+          border-bottom: 1px solid var(--cngx-border, #eee);
+          font-size: 0.875rem;
+        ">
+          <strong>{{ item.name }}</strong> — {{ item.role }}, {{ item.location }}
+        </li>
+      }
+    </ul>
+
+    <div class="button-row" style="margin-top: 12px; align-items: center;">
+      <button class="sort-btn" (click)="pg2.first()" [disabled]="pg2.isFirst()">First</button>
+      <button class="sort-btn" (click)="pg2.previous()" [disabled]="pg2.isFirst()">Prev</button>
+      <span style="font-size: 0.8125rem; padding: 0 8px;">
+        {{ pg2.pageIndex() + 1 }} / {{ pg2.totalPages() }}
+      </span>
+      <button class="sort-btn" (click)="pg2.next()" [disabled]="pg2.isLast()">Next</button>
+      <button class="sort-btn" (click)="pg2.last()" [disabled]="pg2.isLast()">Last</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs1 = `import { viewChild } from '@angular/core';
+import { PEOPLE } from '../../../fixtures';
+
+
+  protected readonly allItems = signal(PEOPLE);
+  protected readonly pg = viewChild.required<CngxPaginate>('pg');
+  protected readonly displayedItems = computed(() => {
+    const [start, end] = this.pg().range();
+    return this.allItems().slice(start, end);
+  });`;
 
   protected readonly allItems = signal(PEOPLE);
   protected readonly pg = viewChild.required<CngxPaginate>('pg');

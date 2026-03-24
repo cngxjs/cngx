@@ -2,8 +2,11 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Disclosure',
+  navLabel: 'Disclosure',
+  navCategory: 'interactive',
   description:
     'Generic expand/collapse atom. Manages aria-expanded, keyboard interaction (Enter, Space, click), and controlled+uncontrolled state. Usable for accordions, FAQs, nav groups, collapsible panels.',
+  apiComponents: ['CngxDisclosure'],
   moduleImports: ["import { CngxDisclosure } from '@cngx/common';"],
   setup: `
   protected readonly controlledOpen = signal(false);

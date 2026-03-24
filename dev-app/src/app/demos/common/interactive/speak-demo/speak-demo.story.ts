@@ -2,7 +2,10 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'Speak',
+  navLabel: 'Speak',
+  navCategory: 'interactive',
   description: 'Headless text-to-speech directive using the browser SpeechSynthesis API. For dyslexia support, reading assistance, and convenience.',
+  apiComponents: ['CngxSpeak'],
   setup: `
   protected email = signal('');
   protected emailError = computed(() => {
@@ -84,7 +87,7 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">TTS supported</span>
-      <span class="event-value">{{ tts1.supported() }}</span>
+      <span class="event-value">{{ tts1.supported }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Any speaking</span>

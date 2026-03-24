@@ -333,7 +333,7 @@ export function generateNavFile(demos) {
     .map(([lib, items]) => {
       const itemEntries = items
         .map((d) => {
-          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
+          const label = d.story?.navLabel ?? d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
           return `      { label: '${label}', path: '${d.routePath}' },`;
         })
         .join('\n');
@@ -386,20 +386,27 @@ export function generateNavHtmlBlock(demos) {
 
   return [...libGroups.entries()]
     .map(([lib, items]) => {
-      // Sub-group by category (segments[1] when segments.length >= 3)
+      // Sub-group by category: use story.navCategory if set, otherwise segments[1]
       const catGroups = new Map();
       for (const demo of items) {
-        const cat = demo.segments?.length >= 3 ? demo.segments[1] : null;
+        const cat = demo.story?.navCategory
+          ?? (demo.segments?.length >= 3 ? demo.segments[1] : null);
         if (!catGroups.has(cat)) catGroups.set(cat, []);
         catGroups.get(cat).push(demo);
       }
 
       const inner = [...catGroups.entries()]
         .map(([cat, catItems]) => {
-          const links = renderDirGroups(catItems);
+          const links = catItems
+            .map((d) => {
+              const label = d.story?.navLabel ?? d.title ?? capitalise(d.name);
+              return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
+            })
+            .join('\n');
+
           if (cat === null) return links;
           return [
-            `      <details class="nav-category" open>`,
+            `      <details class="nav-category" data-nav-cat="${cat}">`,
             `        <summary class="nav-category-label">${capitalise(cat)}</summary>`,
             links,
             `      </details>`,
@@ -412,45 +419,6 @@ export function generateNavHtmlBlock(demos) {
         `      <span class="nav-label">@cngx/${lib}</span>`,
         inner,
         `    </div>`,
-      ].join('\n');
-    })
-    .join('\n');
-}
-
-/**
- * Renders nav links for demos, grouping multi-story dirs into collapsible sub-groups.
- * @param {Array<{routePath, title?, name, demoDir}>} items
- * @returns {string}
- */
-function renderDirGroups(items) {
-  const dirGroups = new Map();
-  for (const demo of items) {
-    const key = demo.demoDir;
-    if (!dirGroups.has(key)) dirGroups.set(key, []);
-    dirGroups.get(key).push(demo);
-  }
-
-  return [...dirGroups.values()]
-    .map((dirItems) => {
-      if (dirItems.length === 1) {
-        const d = dirItems[0];
-        const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
-        return `        <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-      }
-      // Multiple stories in same dir → collapsible group
-      const dirBase = basename(dirItems[0].demoDir).replace(/-demo$/, '');
-      const groupLabel = capitalise(dirBase);
-      const links = dirItems
-        .map((d) => {
-          const label = d.title ?? capitalise(d.name ?? d.routePath.split('/').pop());
-          return `          <a routerLink="/${d.routePath}" routerLinkActive="active">${label}</a>`;
-        })
-        .join('\n');
-      return [
-        `        <details class="nav-sub-group" open>`,
-        `          <summary class="nav-sub-label">${groupLabel}</summary>`,
-        links,
-        `        </details>`,
       ].join('\n');
     })
     .join('\n');
@@ -590,6 +558,7 @@ export function generateComponentFile(story, meta) {
 
   const sharedImportLines = [
     `import { ExampleCardComponent } from '${sharedRelativePath}/example-card.component';`,
+    `import { DocShellComponent } from '${sharedRelativePath}/doc-shell.component';`,
   ];
   if (hasControls) {
     sharedImportLines.push(
@@ -618,6 +587,7 @@ export function generateComponentFile(story, meta) {
   // Decorator imports array entries
   const decoratorImports = [
     'ExampleCardComponent',
+    'DocShellComponent',
     ...(hasControls ? ['PlaygroundComponent'] : []),
     ...allStoryImports,
   ];
@@ -628,30 +598,76 @@ export function generateComponentFile(story, meta) {
   const subtitleFields = story.sections
     .map((s, i) =>
       s.subtitle
-        ? `  protected readonly _s${i} = '${s.subtitle.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}';`
+        ? `  protected readonly _s${i} = '${s.subtitle.replaceAll('\\', '\\\\').replaceAll('\'', String.raw`\'`)}';`
         : null,
     )
     .filter(Boolean);
 
+  // Build source string fields for each section (HTML, TS, CSS).
+  // Uses backtick template literals so newlines render properly in the browser.
+  const escBacktick = (s) => s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
+
+  // Combine story-level imports + setup for a complete TS view per section
+  const storyLevelTs = [
+    ...(story.moduleImports ?? []),
+    '',
+    ...(story.setup ? [story.setup] : []),
+  ]
+    .join('\n')
+    .trim();
+
+  const sourceFields = story.sections.flatMap((section, i) => {
+    const fields = [`  protected readonly _srcHtml${i} = \`${escBacktick(section.template.trim())}\`;`];
+    const sectionTs = [storyLevelTs, section.setup ?? ''].filter(Boolean).join('\n\n').trim();
+    if (sectionTs) {
+      fields.push(`  protected readonly _srcTs${i} = \`${escBacktick(sectionTs)}\`;`);
+    }
+    if (section.css) {
+      fields.push(`  protected readonly _srcCss${i} = \`${escBacktick(section.css.trim())}\`;`);
+    }
+    return fields;
+  });
+
   // Template sections
   const templateParts = story.sections.map((section, i) => {
     const isPlayground = hasControls && i === 0;
-    const subtitleAttr = section.subtitle ? `\n      [subtitle]="_s${i}"` : '';
+    const subtitleAttr = section.subtitle ? `\n        [subtitle]="_s${i}"` : '';
+    const sourceHtmlAttr = `\n        [sourceHtml]="_srcHtml${i}"`;
+    const sectionTs = [storyLevelTs, section.setup ?? ''].filter(Boolean).join('\n\n').trim();
+    const sourceTsAttr = sectionTs ? `\n        [sourceTs]="_srcTs${i}"` : '';
+    const sourceCssAttr = section.css ? `\n        [sourceCss]="_srcCss${i}"` : '';
     // Escape backticks and ${} interpolations so they survive being embedded in a TS template literal.
     const tpl = section.template.replaceAll('`', '\\`').replaceAll('${', '\\${');
     if (isPlayground) {
       return [
-        `    <app-playground [playground]="pg">`,
-        `      ${tpl}`,
-        `    </app-playground>`,
+        `      <app-playground [playground]="pg">`,
+        `        ${tpl}`,
+        `      </app-playground>`,
       ].join('\n');
     }
     return [
-      `    <app-example-card title="${section.title}"${subtitleAttr}>`,
-      `      ${tpl}`,
-      `    </app-example-card>`,
+      `      <app-example-card title="${section.title}"${subtitleAttr}${sourceHtmlAttr}${sourceTsAttr}${sourceCssAttr}>`,
+      `        ${tpl}`,
+      `      </app-example-card>`,
     ].join('\n');
   });
+
+  // DocShell wrapper
+  const apiComponentsAttr = story.apiComponents?.length
+    ? `\n      [apiComponents]="[${story.apiComponents.map((c) => `'${c}'`).join(', ')}]"`
+    : '';
+  const overviewAttr = story.overview
+    ? `\n      overview="${story.overview.replaceAll('"', '&quot;')}"`
+    : '';
+  const descriptionAttr = story.description
+    ? `\n      description="${story.description.replaceAll('"', '&quot;')}"`
+    : '';
+
+  const wrappedTemplate = [
+    `    <app-doc-shell title="${story.title}"${descriptionAttr}${overviewAttr}${apiComponentsAttr}>`,
+    ...templateParts,
+    `    </app-doc-shell>`,
+  ];
 
   // Class body
   const controlFields = controls.map(renderControlCode);
@@ -667,6 +683,7 @@ export function generateComponentFile(story, meta) {
 
   const classBodyParts = [
     ...subtitleFields,
+    ...sourceFields,
     ...controlFields,
     ...(pgLine ? [pgLine] : []),
     ...sharedSetup,
@@ -675,10 +692,10 @@ export function generateComponentFile(story, meta) {
 
   const hostDirectivesLines = story.hostDirectives?.length
     ? [
-        `  hostDirectives: [`,
-        ...story.hostDirectives.map((d) => `    { directive: ${d} },`),
-        `  ],`,
-      ]
+      `  hostDirectives: [`,
+      ...story.hostDirectives.map((d) => `    { directive: ${d} },`),
+      `  ],`,
+    ]
     : [];
 
   return [
@@ -696,7 +713,7 @@ export function generateComponentFile(story, meta) {
     ...decoratorImports.map((n) => `    ${n},`),
     `  ],`,
     `  template: \``,
-    ...templateParts,
+    ...wrappedTemplate,
     `  \`,`,
     `})`,
     `export class ${className} {`,

@@ -39,7 +39,7 @@ export class App {
   });
 
   constructor() {
-    // Scroll to top + scroll sidebar to active item on route change
+    // Scroll to top + auto-expand nav category + scroll sidebar to active item
     effect(() => {
       this.url(); // track
       if (isPlatformBrowser(this.platformId)) {
@@ -47,7 +47,15 @@ export class App {
         // Delay slightly so Angular updates the active class first
         setTimeout(() => {
           const active = document.querySelector('.nav a.active') as HTMLElement | null;
-          active?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          if (!active) {
+            return;
+          }
+          // Auto-expand the <details> category containing the active link
+          const category = active.closest('details.nav-category') as HTMLDetailsElement | null;
+          if (category && !category.open) {
+            category.open = true;
+          }
+          active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }, 50);
       }
     });

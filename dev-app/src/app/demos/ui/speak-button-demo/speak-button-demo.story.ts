@@ -2,7 +2,9 @@ import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'SpeakButton',
+  navLabel: 'SpeakButton',
   description: 'Ready-made speaker button component that connects to a CngxSpeak directive. Fully themeable via CSS custom properties.',
+  apiComponents: ['CngxSpeakButton', 'CngxSpeak'],
   moduleImports: [
     "import { MatIconButton, MatMiniFabButton } from '@angular/material/button';",
     "import { MatIcon } from '@angular/material/icon';",
@@ -83,7 +85,7 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top: 12px">
     <div class="event-row">
       <span class="event-label">TTS supported</span>
-      <span class="event-value">{{ tts1.supported() }}</span>
+      <span class="event-value">{{ tts1.supported }}</span>
     </div>
     <div class="event-row">
       <span class="event-label">Speaking</span>

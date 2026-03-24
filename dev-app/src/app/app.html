@@ -57,7 +57,7 @@
       <!-- @generated:nav:start -->
     <div class="nav-group">
       <span class="nav-label">@cngx/common</span>
-      <details class="nav-category" open>
+      <details class="nav-category" data-nav-cat="a11y">
         <summary class="nav-category-label">A11y</summary>
         <a routerLink="/common/a11y/aria-expanded" routerLinkActive="active">AriaExpanded</a>
         <a routerLink="/common/a11y/focus-trap" routerLinkActive="active">FocusTrap</a>
@@ -65,49 +65,25 @@
         <a routerLink="/common/a11y/live-region" routerLinkActive="active">LiveRegion</a>
         <a routerLink="/common/a11y/reduced-motion" routerLinkActive="active">ReducedMotion</a>
       </details>
-      <details class="nav-category" open>
-        <summary class="nav-category-label">Behaviors</summary>
-        <details class="nav-sub-group" open>
-          <summary class="nav-sub-label">Filter</summary>
-          <a routerLink="/common/behaviors/filter-backend" routerLinkActive="active">Filter — Backend</a>
-          <a routerLink="/common/behaviors/filter" routerLinkActive="active">Filter</a>
-          <a routerLink="/common/behaviors/filter-multi" routerLinkActive="active">Filter — Multi</a>
-        </details>
-        <details class="nav-sub-group" open>
-          <summary class="nav-sub-label">Search</summary>
-          <a routerLink="/common/behaviors/search-backend" routerLinkActive="active">Search — Backend</a>
-          <a routerLink="/common/behaviors/search" routerLinkActive="active">Search</a>
-          <a routerLink="/common/behaviors/search-mat" routerLinkActive="active">Search — mat-form-field</a>
-        </details>
-        <details class="nav-sub-group" open>
-          <summary class="nav-sub-label">Sort</summary>
-          <a routerLink="/common/behaviors/sort-backend" routerLinkActive="active">Sort — Backend</a>
-          <a routerLink="/common/behaviors/sort" routerLinkActive="active">Sort</a>
-          <a routerLink="/common/behaviors/sort-multi" routerLinkActive="active">Sort — Multi-Key</a>
-        </details>
-      </details>
-      <details class="nav-category" open>
+      <details class="nav-category" data-nav-cat="data">
         <summary class="nav-category-label">Data</summary>
+        <a routerLink="/common/behaviors/filter" routerLinkActive="active">Filter</a>
+        <a routerLink="/common/behaviors/sort" routerLinkActive="active">Sort</a>
         <a routerLink="/common/data/data-source" routerLinkActive="active">DataSource</a>
-        <details class="nav-sub-group" open>
-          <summary class="nav-sub-label">Mat-table</summary>
-          <a routerLink="/common/data/mat-table-manual" routerLinkActive="active">mat-table — DataSource (Manual Pipeline)</a>
-          <a routerLink="/common/data/mat-table-paginate-custom" routerLinkActive="active">mat-table — Paginate (Custom nav)</a>
-          <a routerLink="/common/data/mat-table-paginate" routerLinkActive="active">mat-table — Paginate (Material)</a>
-          <a routerLink="/common/data/mat-table-smart" routerLinkActive="active">mat-table — SmartDataSource</a>
-        </details>
-        <a routerLink="/common/data/paginate-list" routerLinkActive="active">Paginate — List</a>
+        <a routerLink="/common/data/mat-table" routerLinkActive="active">mat-table</a>
+        <a routerLink="/common/data/paginate-list" routerLinkActive="active">Paginate (List)</a>
         <a routerLink="/common/data/smart-data-source" routerLinkActive="active">SmartDataSource</a>
       </details>
-      <details class="nav-category" open>
+      <details class="nav-category" data-nav-cat="interactive">
         <summary class="nav-category-label">Interactive</summary>
+        <a routerLink="/common/behaviors/search" routerLinkActive="active">Search</a>
         <a routerLink="/common/interactive/click-outside" routerLinkActive="active">ClickOutside</a>
         <a routerLink="/common/interactive/disclosure" routerLinkActive="active">Disclosure</a>
         <a routerLink="/common/interactive/nav" routerLinkActive="active">Nav</a>
         <a routerLink="/common/interactive/speak" routerLinkActive="active">Speak</a>
         <a routerLink="/common/interactive/swipe-dismiss" routerLinkActive="active">SwipeDismiss</a>
       </details>
-      <details class="nav-category" open>
+      <details class="nav-category" data-nav-cat="layout">
         <summary class="nav-category-label">Layout</summary>
         <a routerLink="/common/layout/backdrop" routerLinkActive="active">Backdrop</a>
         <a routerLink="/common/layout/drawer" routerLinkActive="active">Drawer</a>

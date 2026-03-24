@@ -2,6 +2,9 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
   title: 'DataSource',
+  navLabel: 'DataSource',
+  navCategory: 'data',
+  apiComponents: ['CngxPaginate', 'CngxMatPaginator'],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { injectDataSource } from '@cngx/common';",
