@@ -144,6 +144,27 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'forms',
+    children: [
+      {
+        path: 'field',
+        loadComponent: () =>
+          import('./demos/forms/field-demo/field-demo.component').then((m) => m.FieldDemoComponent),
+      },
+      {
+        path: 'input',
+        loadComponent: () =>
+          import('./demos/forms/input-demo/input-demo.component').then((m) => m.InputDemoComponent),
+      },
+      {
+        path: 'material',
+        loadComponent: () =>
+          import('./demos/forms/material-demo/material-demo.component').then((m) => m.MaterialDemoComponent),
+      },
+      { path: '', redirectTo: 'field', pathMatch: 'full' },
+    ],
+  },
+  {
     path: 'ui',
     children: [
       {

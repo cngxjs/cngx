@@ -45,6 +45,14 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: '@cngx/forms',
+    items: [
+      { label: 'Form Field', path: 'forms/field' },
+      { label: 'Input', path: 'forms/input' },
+      { label: 'Material', path: 'forms/material' },
+    ],
+  },
+  {
     label: '@cngx/ui',
     items: [
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
