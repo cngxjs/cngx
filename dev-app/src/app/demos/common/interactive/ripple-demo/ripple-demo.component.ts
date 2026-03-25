@@ -30,7 +30,7 @@ import { CngxRipple } from '@cngx/common/interactive';
       Default Ripple
     </button>
 
-    <button cngxRipple [rippleColor]="'rgba(245,166,35,0.3)'" class="chip"
+    <button cngxRipple [rippleColor]="'#f5a623'" class="chip"
             >
       Custom Color
     </button>
@@ -72,7 +72,7 @@ export class RippleDemoComponent {
       Default Ripple
     </button>
 
-    <button cngxRipple [rippleColor]="'rgba(245,166,35,0.3)'" class="chip"
+    <button cngxRipple [rippleColor]="'#f5a623'" class="chip"
             >
       Custom Color
     </button>

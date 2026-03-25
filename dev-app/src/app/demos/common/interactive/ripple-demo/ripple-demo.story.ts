@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
       Default Ripple
     </button>
 
-    <button cngxRipple [rippleColor]="'rgba(245,166,35,0.3)'" class="chip"
+    <button cngxRipple [rippleColor]="'#f5a623'" class="chip"
             >
       Custom Color
     </button>

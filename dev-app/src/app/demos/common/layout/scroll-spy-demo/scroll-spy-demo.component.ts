@@ -26,7 +26,7 @@ import { CngxScrollSpy } from '@cngx/common/layout';
         [sourceTs]="_srcTs0">
         
   <div style="display:flex;gap:16px;max-width:600px">
-    <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" #spy="cngxScrollSpy"
+    <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" [threshold]="0.1" #spy="cngxScrollSpy"
          style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px;padding-top:8px">
       @for (id of sectionIds; track id) {
         <a [href]="'#' + id"
@@ -62,7 +62,7 @@ import { CngxScrollSpy } from '@cngx/common/layout';
 export class ScrollSpyDemoComponent {
   protected readonly _s0 = 'Scroll the container. The nav highlights the most visible section. Active section ID is exposed as a signal.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:16px;max-width:600px">
-    <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" #spy="cngxScrollSpy"
+    <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" [threshold]="0.1" #spy="cngxScrollSpy"
          style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px;padding-top:8px">
       @for (id of sectionIds; track id) {
         <a [href]="'#' + id"

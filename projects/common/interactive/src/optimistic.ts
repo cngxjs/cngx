@@ -2,7 +2,7 @@ import { signal, type WritableSignal, type Signal } from '@angular/core';
 import { type Observable, take } from 'rxjs';
 
 /** State exposed by the optimistic action. */
-export interface OptimisticState<T> {
+export interface OptimisticState {
   /** Whether a rollback occurred on the last invocation. */
   readonly rolledBack: Signal<boolean>;
   /** The error from the last failed action (null if successful). */
@@ -44,11 +44,11 @@ export interface OptimisticState<T> {
 export function optimistic<T>(
   current: WritableSignal<T>,
   action: (value: T) => Observable<T>,
-): [(newValue: T) => void, OptimisticState<T>] {
+): [(newValue: T) => void, OptimisticState] {
   const rolledBackState = signal(false);
   const errorState = signal<unknown>(null);
 
-  const state: OptimisticState<T> = {
+  const state: OptimisticState = {
     rolledBack: rolledBackState.asReadonly(),
     error: errorState.asReadonly(),
   };

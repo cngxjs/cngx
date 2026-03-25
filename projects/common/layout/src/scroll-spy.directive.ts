@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Directive, effect, inject, input, output, signal } from '@angular/core';
+import { afterNextRender, Directive, effect, inject, input, output, signal } from '@angular/core';
 
 /**
  * Tracks which section is currently most visible in the viewport.
@@ -51,64 +51,85 @@ export class CngxScrollSpy {
   private readonly doc = inject(DOCUMENT);
   /** Running map of section ID → last observed intersection ratio. */
   private readonly ratios = new Map<string, number>();
+  private initialized = false;
 
   constructor() {
-    effect((onCleanup) => {
-      const ids = this.sections();
-      const thresholdValue = this.threshold();
-      const rootSelector = this.root();
-      const rootMarginValue = this.rootMargin();
-
-      this.ratios.clear();
-
-      const elements = ids
-        .map((id) => this.doc.getElementById(id))
-        .filter((el): el is HTMLElement => el !== null);
-
-      if (elements.length === 0) {
-        return;
-      }
-
-      const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
-
-      // Use fine-grained thresholds (0..1 in 0.1 steps) to get accurate ratios.
-      // The callback fires for each threshold crossing, updating the ratio map.
-      // The section with the highest ratio above the minimum threshold wins.
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // Update ratio map with latest observations
-          for (const entry of entries) {
-            this.ratios.set(entry.target.id, entry.intersectionRatio);
-          }
-
-          // Find the most-visible section that meets the minimum threshold
-          let bestId: string | null = null;
-          let bestRatio = 0;
-
-          for (const [id, ratio] of this.ratios) {
-            if (ratio >= thresholdValue && ratio > bestRatio) {
-              bestRatio = ratio;
-              bestId = id;
-            }
-          }
-
-          if (bestId !== this.activeIdState()) {
-            this.activeIdState.set(bestId);
-            this.activeIdChange.emit(bestId);
-          }
-        },
-        {
-          root: resolvedRoot,
-          rootMargin: rootMarginValue,
-          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-        },
-      );
-
-      for (const el of elements) {
-        observer.observe(el);
-      }
-
-      onCleanup(() => observer.disconnect());
+    // Wait for DOM to be ready before querying section elements.
+    afterNextRender(() => {
+      this.initialized = true;
+      this.setupObserver();
     });
+
+    // Re-create observer when inputs change (after init).
+    effect((onCleanup) => {
+      // Track all inputs so the effect re-runs when they change
+      this.sections();
+      this.threshold();
+      this.root();
+      this.rootMargin();
+
+      if (!this.initialized) return;
+
+      const cleanup = this.setupObserver();
+      if (cleanup) onCleanup(cleanup);
+    });
+  }
+
+  /**
+   * Creates an IntersectionObserver for the current sections.
+   * Returns a cleanup function that disconnects the observer.
+   */
+  private setupObserver(): (() => void) | undefined {
+    const ids = this.sections();
+    const thresholdValue = this.threshold();
+    const rootSelector = this.root();
+    const rootMarginValue = this.rootMargin();
+
+    this.ratios.clear();
+
+    const elements = ids
+      .map((id) => this.doc.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    const resolvedRoot = rootSelector
+      ? (this.doc.querySelector(rootSelector) as Element | null)
+      : null;
+
+    // Fine-grained thresholds (0..1 in 0.1 steps) for accurate ratio tracking.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          this.ratios.set(entry.target.id, entry.intersectionRatio);
+        }
+
+        let bestId: string | null = null;
+        let bestRatio = 0;
+
+        for (const [id, ratio] of this.ratios) {
+          if (ratio >= thresholdValue && ratio > bestRatio) {
+            bestRatio = ratio;
+            bestId = id;
+          }
+        }
+
+        if (bestId !== this.activeIdState()) {
+          this.activeIdState.set(bestId);
+          this.activeIdChange.emit(bestId);
+        }
+      },
+      {
+        root: resolvedRoot,
+        rootMargin: rootMarginValue,
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+      },
+    );
+
+    for (const el of elements) {
+      observer.observe(el);
+    }
+
+    return () => observer.disconnect();
   }
 }

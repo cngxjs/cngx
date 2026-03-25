@@ -32,3 +32,5 @@ export { withRetry, type RetryConfig, type RetryState } from './src/with-retry';
 export { optimistic, type OptimisticState } from './src/optimistic';
 export { CngxBeforeUnload } from './src/before-unload.directive';
 export { canDeactivateWhenClean } from './src/can-deactivate';
+export { CngxPressRipple } from './src/press-ripple.directive';
+export { CngxCopyBlock } from './src/copy-block';

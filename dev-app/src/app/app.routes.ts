@@ -105,6 +105,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/copy-block',
+        loadComponent: () =>
+          import('./demos/common/interactive/copy-block-demo/copy-block-demo.component').then((m) => m.CopyBlockDemoComponent),
+      },
+      {
         path: 'interactive/copy-text',
         loadComponent: () =>
           import('./demos/common/interactive/copy-text-demo/copy-text-demo.component').then((m) => m.CopyTextDemoComponent),
@@ -130,9 +135,19 @@ export const routes: Routes = [
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
       },
       {
+        path: 'interactive/press-ripple',
+        loadComponent: () =>
+          import('./demos/common/interactive/press-ripple-demo/press-ripple-demo.component').then((m) => m.PressRippleDemoComponent),
+      },
+      {
         path: 'interactive/pressable',
         loadComponent: () =>
           import('./demos/common/interactive/pressable-demo/pressable-demo.component').then((m) => m.PressableDemoComponent),
+      },
+      {
+        path: 'interactive/retry',
+        loadComponent: () =>
+          import('./demos/common/interactive/retry-demo/retry-demo.component').then((m) => m.RetryDemoComponent),
       },
       {
         path: 'interactive/ripple',
@@ -158,6 +173,11 @@ export const routes: Routes = [
         path: 'layout/drawer',
         loadComponent: () =>
           import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
+      },
+      {
+        path: 'layout/expandable-text',
+        loadComponent: () =>
+          import('./demos/common/layout/expandable-text-demo/expandable-text-demo.component').then((m) => m.ExpandableTextDemoComponent),
       },
       {
         path: 'layout/highlight',
