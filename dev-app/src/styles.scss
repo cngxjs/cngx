@@ -2,6 +2,8 @@
 @use '../../projects/data-display/treetable/mat-treetable-theme' as treetable;
 @use '../../projects/ui/src/lib/speak/speak-button-theme' as speak;
 @use '../../projects/ui/src/lib/sidenav/sidenav-theme' as sidenav;
+@use '../../projects/ui/src/lib/skeleton/skeleton-theme' as skeleton;
+@use '../../projects/ui/src/lib/action-button/action-button-theme' as async-btn;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -31,6 +33,8 @@ html {
   @include treetable.theme($theme);
   @include speak.theme($theme);
   @include sidenav.theme($theme);
+  @include skeleton.theme($theme);
+  @include async-btn.theme($theme);
 }
 
 [data-theme='dark'] {
@@ -38,6 +42,8 @@ html {
   @include treetable.theme($dark-theme);
   @include speak.theme($dark-theme);
   @include sidenav.theme($dark-theme);
+  @include skeleton.theme($dark-theme);
+  @include async-btn.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

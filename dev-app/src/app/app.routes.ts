@@ -75,6 +75,11 @@ export const routes: Routes = [
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
       },
       {
+        path: 'interactive/async-click',
+        loadComponent: () =>
+          import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),
+      },
+      {
         path: 'interactive/click-outside',
         loadComponent: () =>
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
@@ -110,6 +115,11 @@ export const routes: Routes = [
           import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
       },
       {
+        path: 'layout/infinite-scroll',
+        loadComponent: () =>
+          import('./demos/common/layout/infinite-scroll-demo/infinite-scroll-demo.component').then((m) => m.InfiniteScrollDemoComponent),
+      },
+      {
         path: 'layout/intersection-observer',
         loadComponent: () =>
           import('./demos/common/layout/intersection-observer-demo/intersection-observer-demo.component').then((m) => m.IntersectionObserverDemoComponent),
@@ -128,6 +138,11 @@ export const routes: Routes = [
         path: 'layout/scroll-lock',
         loadComponent: () =>
           import('./demos/common/layout/scroll-lock-demo/scroll-lock-demo.component').then((m) => m.ScrollLockDemoComponent),
+      },
+      {
+        path: 'layout/skeleton',
+        loadComponent: () =>
+          import('./demos/common/layout/skeleton-demo/skeleton-demo.component').then((m) => m.SkeletonDemoComponent),
       },
       { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
     ],
@@ -198,6 +213,11 @@ export const routes: Routes = [
     path: 'ui',
     children: [
       {
+        path: 'async-button',
+        loadComponent: () =>
+          import('./demos/ui/async-button-demo/async-button-demo.component').then((m) => m.AsyncButtonDemoComponent),
+      },
+      {
         path: 'mat-paginator',
         loadComponent: () =>
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
@@ -208,11 +228,16 @@ export const routes: Routes = [
           import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
       },
       {
+        path: 'skeleton',
+        loadComponent: () =>
+          import('./demos/ui/skeleton-demo/skeleton-demo.component').then((m) => m.SkeletonDemoComponent),
+      },
+      {
         path: 'speak-button',
         loadComponent: () =>
           import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
       },
-      { path: '', redirectTo: 'mat-paginator', pathMatch: 'full' },
+      { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],
   },
   { path: '**', redirectTo: '' },
