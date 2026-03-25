@@ -62,8 +62,10 @@
     overflow: auto;
     scrollbar-gutter: stable;
     transition:
-      opacity var(--cngx-dialog-transition-duration, 0.2s) var(--cngx-dialog-transition-easing, ease),
-      transform var(--cngx-dialog-transition-duration, 0.2s) var(--cngx-dialog-transition-easing, ease);
+      opacity var(--cngx-dialog-transition-duration, 0.2s)
+        var(--cngx-dialog-transition-easing, ease),
+      transform var(--cngx-dialog-transition-duration, 0.2s)
+        var(--cngx-dialog-transition-easing, ease);
   }
 
   // ── Backdrop ────────────────────────────────────────────────────

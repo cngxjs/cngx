@@ -11,3 +11,12 @@ export { CngxResizeObserver } from './src/resize-observer.directive';
 export { CngxScrollLock } from './src/scroll-lock.directive';
 export { CngxSkeleton } from './src/skeleton.directive';
 export { CngxInfiniteScroll } from './src/infinite-scroll.directive';
+export { CngxStickyHeader } from './src/sticky-header.directive';
+export { CngxScrollSpy } from './src/scroll-spy.directive';
+export { CngxTruncate } from './src/truncate.directive';
+export { CngxHighlight } from './src/highlight.directive';
+export {
+  CngxExpandableText,
+  CngxExpandableToggle,
+  type CngxExpandableToggleContext,
+} from './src/expandable-text';

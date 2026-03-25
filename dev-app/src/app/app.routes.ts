@@ -20,6 +20,16 @@ export const routes: Routes = [
           import('./demos/common/a11y/aria-expanded-demo/aria-expanded-demo.component').then((m) => m.AriaExpandedDemoComponent),
       },
       {
+        path: 'a11y/autofocus',
+        loadComponent: () =>
+          import('./demos/common/a11y/autofocus-demo/autofocus-demo.component').then((m) => m.AutofocusDemoComponent),
+      },
+      {
+        path: 'a11y/focus-restore',
+        loadComponent: () =>
+          import('./demos/common/a11y/focus-restore-demo/focus-restore-demo.component').then((m) => m.FocusRestoreDemoComponent),
+      },
+      {
         path: 'a11y/focus-trap',
         loadComponent: () =>
           import('./demos/common/a11y/focus-trap-demo/focus-trap-demo.component').then((m) => m.FocusTrapDemoComponent),
@@ -38,6 +48,11 @@ export const routes: Routes = [
         path: 'a11y/reduced-motion',
         loadComponent: () =>
           import('./demos/common/a11y/reduced-motion-demo/reduced-motion-demo.component').then((m) => m.ReducedMotionDemoComponent),
+      },
+      {
+        path: 'a11y/roving-tabindex',
+        loadComponent: () =>
+          import('./demos/common/a11y/roving-tabindex-demo/roving-tabindex-demo.component').then((m) => m.RovingTabindexDemoComponent),
       },
       {
         path: 'behaviors/filter',
@@ -90,14 +105,54 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/copy-block',
+        loadComponent: () =>
+          import('./demos/common/interactive/copy-block-demo/copy-block-demo.component').then((m) => m.CopyBlockDemoComponent),
+      },
+      {
+        path: 'interactive/copy-text',
+        loadComponent: () =>
+          import('./demos/common/interactive/copy-text-demo/copy-text-demo.component').then((m) => m.CopyTextDemoComponent),
+      },
+      {
         path: 'interactive/disclosure',
         loadComponent: () =>
           import('./demos/common/interactive/disclosure-demo/disclosure-demo.component').then((m) => m.DisclosureDemoComponent),
       },
       {
+        path: 'interactive/keyboard-shortcut',
+        loadComponent: () =>
+          import('./demos/common/interactive/keyboard-shortcut-demo/keyboard-shortcut-demo.component').then((m) => m.KeyboardShortcutDemoComponent),
+      },
+      {
+        path: 'interactive/long-press',
+        loadComponent: () =>
+          import('./demos/common/interactive/long-press-demo/long-press-demo.component').then((m) => m.LongPressDemoComponent),
+      },
+      {
         path: 'interactive/nav',
         loadComponent: () =>
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
+      },
+      {
+        path: 'interactive/press-ripple',
+        loadComponent: () =>
+          import('./demos/common/interactive/press-ripple-demo/press-ripple-demo.component').then((m) => m.PressRippleDemoComponent),
+      },
+      {
+        path: 'interactive/pressable',
+        loadComponent: () =>
+          import('./demos/common/interactive/pressable-demo/pressable-demo.component').then((m) => m.PressableDemoComponent),
+      },
+      {
+        path: 'interactive/retry',
+        loadComponent: () =>
+          import('./demos/common/interactive/retry-demo/retry-demo.component').then((m) => m.RetryDemoComponent),
+      },
+      {
+        path: 'interactive/ripple',
+        loadComponent: () =>
+          import('./demos/common/interactive/ripple-demo/ripple-demo.component').then((m) => m.RippleDemoComponent),
       },
       {
         path: 'interactive/speak',
@@ -118,6 +173,16 @@ export const routes: Routes = [
         path: 'layout/drawer',
         loadComponent: () =>
           import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
+      },
+      {
+        path: 'layout/expandable-text',
+        loadComponent: () =>
+          import('./demos/common/layout/expandable-text-demo/expandable-text-demo.component').then((m) => m.ExpandableTextDemoComponent),
+      },
+      {
+        path: 'layout/highlight',
+        loadComponent: () =>
+          import('./demos/common/layout/highlight-demo/highlight-demo.component').then((m) => m.HighlightDemoComponent),
       },
       {
         path: 'layout/infinite-scroll',
@@ -145,9 +210,24 @@ export const routes: Routes = [
           import('./demos/common/layout/scroll-lock-demo/scroll-lock-demo.component').then((m) => m.ScrollLockDemoComponent),
       },
       {
+        path: 'layout/scroll-spy',
+        loadComponent: () =>
+          import('./demos/common/layout/scroll-spy-demo/scroll-spy-demo.component').then((m) => m.ScrollSpyDemoComponent),
+      },
+      {
         path: 'layout/skeleton',
         loadComponent: () =>
           import('./demos/common/layout/skeleton-demo/skeleton-demo.component').then((m) => m.SkeletonDemoComponent),
+      },
+      {
+        path: 'layout/sticky-header',
+        loadComponent: () =>
+          import('./demos/common/layout/sticky-header-demo/sticky-header-demo.component').then((m) => m.StickyHeaderDemoComponent),
+      },
+      {
+        path: 'layout/truncate',
+        loadComponent: () =>
+          import('./demos/common/layout/truncate-demo/truncate-demo.component').then((m) => m.TruncateDemoComponent),
       },
       { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
     ],

@@ -38,7 +38,7 @@ import { DIALOG_REF } from './dialog-ref';
   exportAs: 'cngxBottomSheet',
   standalone: true,
   host: {
-    'class': 'cngx-bottom-sheet',
+    class: 'cngx-bottom-sheet',
   },
 })
 export class CngxBottomSheet {
