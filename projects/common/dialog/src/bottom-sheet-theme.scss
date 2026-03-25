@@ -1,0 +1,92 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-bottom-sheet theming ──────────────────────────────────
+//
+// Include in your global theme stylesheet:
+//
+//   @use '@cngx/common/dialog/bottom-sheet-theme' as bottom-sheet;
+//   @include bottom-sheet.theme($theme);
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-bottom-sheet-radius: 16px 16px 0 0;
+  --cngx-bottom-sheet-padding: 24px;
+  --cngx-bottom-sheet-max-width: 100%;
+  --cngx-bottom-sheet-max-height: 80vh;
+  --cngx-bottom-sheet-handle-width: 40px;
+  --cngx-bottom-sheet-handle-height: 4px;
+  --cngx-bottom-sheet-handle-color: #ccc;
+  --cngx-bottom-sheet-handle-radius: 2px;
+  --cngx-bottom-sheet-handle-margin: 0 auto 16px;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-bottom-sheet-handle-color: var(--mat-sys-outline-variant);
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  // Override the UA top-layer centering for bottom positioning
+  dialog.cngx-bottom-sheet {
+    margin: 0;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: var(--cngx-bottom-sheet-max-width, 100%);
+    max-height: var(--cngx-bottom-sheet-max-height, 80vh);
+    border-radius: var(--cngx-bottom-sheet-radius, 16px 16px 0 0);
+    padding: var(--cngx-bottom-sheet-padding, 24px);
+    // Override dialog-theme defaults that conflict
+    --cngx-dialog-border-radius: var(--cngx-bottom-sheet-radius, 16px 16px 0 0);
+    --cngx-dialog-padding: var(--cngx-bottom-sheet-padding, 24px);
+    --cngx-dialog-max-width: var(--cngx-bottom-sheet-max-width, 100%);
+    --cngx-dialog-max-height: var(--cngx-bottom-sheet-max-height, 80vh);
+  }
+
+  // Drag handle rendered via ::before pseudo-element
+  dialog.cngx-bottom-sheet::before {
+    content: '';
+    display: block;
+    width: var(--cngx-bottom-sheet-handle-width, 40px);
+    height: var(--cngx-bottom-sheet-handle-height, 4px);
+    background: var(--cngx-bottom-sheet-handle-color, #ccc);
+    border-radius: var(--cngx-bottom-sheet-handle-radius, 2px);
+    margin: var(--cngx-bottom-sheet-handle-margin, 0 auto 16px);
+  }
+
+  // Opening animation: slide up from bottom
+  dialog.cngx-bottom-sheet.cngx-dialog--opening {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  dialog.cngx-bottom-sheet.cngx-dialog--open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  dialog.cngx-bottom-sheet.cngx-dialog--closing {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    dialog.cngx-bottom-sheet {
+      transition: none;
+    }
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(dialog.cngx-bottom-sheet) {
+    @include base();
+    @include color($theme);
+  }
+
+  @include styles();
+}

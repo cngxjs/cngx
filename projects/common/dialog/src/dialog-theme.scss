@@ -1,0 +1,137 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-dialog theming ──────────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/common/dialog/dialog-theme' as dialog;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include dialog.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-dialog-backdrop-bg: rgba(0, 0, 0, 0.5);
+  --cngx-dialog-backdrop-blur: 0px;
+  --cngx-dialog-backdrop-opacity: 1;
+  --cngx-dialog-transition-duration: 0.2s;
+  --cngx-dialog-transition-easing: ease;
+  --cngx-dialog-border-radius: 8px;
+  --cngx-dialog-padding: 24px;
+  --cngx-dialog-max-width: 560px;
+  --cngx-dialog-max-height: 80vh;
+  --cngx-dialog-bg: #fff;
+  --cngx-dialog-color: inherit;
+  --cngx-dialog-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --cngx-dialog-drag-cursor: grab;
+  --cngx-dialog-dragging-cursor: grabbing;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — use Material sys tokens
+    --cngx-dialog-bg: var(--mat-sys-surface-container-high);
+    --cngx-dialog-color: var(--mat-sys-on-surface);
+    --cngx-dialog-shadow: 0 8px 32px color-mix(in srgb, var(--mat-sys-shadow) 25%, transparent);
+  } @else {
+    // M2 — derive from palette
+    --cngx-dialog-bg: #{mat.get-theme-color($theme, background, dialog)};
+    --cngx-dialog-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  dialog[cngxDialog] {
+    border: none;
+    border-radius: var(--cngx-dialog-border-radius, 8px);
+    padding: var(--cngx-dialog-padding, 24px);
+    max-width: var(--cngx-dialog-max-width, 560px);
+    max-height: var(--cngx-dialog-max-height, 80vh);
+    width: 100%;
+    background: var(--cngx-dialog-bg, #fff);
+    color: var(--cngx-dialog-color, inherit);
+    box-shadow: var(--cngx-dialog-shadow, 0 8px 32px rgba(0, 0, 0, 0.12));
+    overflow: auto;
+    scrollbar-gutter: stable;
+    transition:
+      opacity var(--cngx-dialog-transition-duration, 0.2s) var(--cngx-dialog-transition-easing, ease),
+      transform var(--cngx-dialog-transition-duration, 0.2s) var(--cngx-dialog-transition-easing, ease);
+  }
+
+  // ── Backdrop ────────────────────────────────────────────────────
+  dialog[cngxDialog]::backdrop {
+    // backdrop-opacity controls visibility (used by CngxDialogStack for nesting).
+    // The background color's own alpha channel controls the darkness level.
+    // No transition — snaps to prevent double-backdrop flash during stacking.
+    // The dialog content has its own smooth enter/exit animation.
+    background: var(--cngx-dialog-backdrop-bg, rgba(0, 0, 0, 0.5));
+    opacity: var(--cngx-dialog-backdrop-opacity, 1);
+    backdrop-filter: blur(var(--cngx-dialog-backdrop-blur, 0px));
+  }
+
+  // ── Open / close transitions ───────────────────────────────────
+  dialog[cngxDialog].cngx-dialog--opening {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  dialog[cngxDialog].cngx-dialog--open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  dialog[cngxDialog].cngx-dialog--closing {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  // ── Draggable ──────────────────────────────────────────────────
+  dialog[cngxDialogDraggable] {
+    transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
+  }
+
+  dialog[cngxDialogDraggable].cngx-dialog--opening {
+    transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+    opacity: 0;
+  }
+
+  dialog[cngxDialogDraggable].cngx-dialog--open {
+    transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(1);
+    opacity: 1;
+  }
+
+  dialog[cngxDialogDraggable].cngx-dialog--closing {
+    transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px)) scale(0.98);
+    opacity: 0;
+  }
+
+  dialog[cngxDialogDraggable].cngx-dialog--dragging {
+    transition: none;
+  }
+
+  // ── Reduced motion ─────────────────────────────────────────────
+  @media (prefers-reduced-motion: reduce) {
+    dialog[cngxDialog] {
+      transition: none;
+    }
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(dialog[cngxDialog]) {
+    @include base();
+    @include color($theme);
+  }
+
+  @include styles();
+}

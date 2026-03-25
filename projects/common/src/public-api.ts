@@ -7,6 +7,7 @@
  *   @cngx/common/interactive
  *   @cngx/common/layout
  *   @cngx/common/data
+ *   @cngx/common/dialog
  *
  * @module @cngx/common
  */
@@ -15,5 +16,6 @@ export * from '@cngx/common/a11y';
 export * from '@cngx/common/interactive';
 export * from '@cngx/common/layout';
 export * from '@cngx/common/data';
+export * from '@cngx/common/dialog';
 
 export { VERSION } from './lib/version';
