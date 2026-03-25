@@ -22,3 +22,4 @@ export { CngxNavLink } from './src/nav-link.directive';
 export { CngxSearch } from './src/search.directive';
 export { CngxSpeak } from './src/speak.directive';
 export { CngxSwipeDismiss, type SwipeDirection } from './src/swipe-dismiss.directive';
+export { CngxAsyncClick, type AsyncAction, type AsyncStatus } from './src/async-click.directive';
