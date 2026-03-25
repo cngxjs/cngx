@@ -26,3 +26,5 @@ export { CngxAsyncClick, type AsyncAction, type AsyncStatus } from './src/async-
 export { CngxPressable } from './src/pressable.directive';
 export { CngxLongPress } from './src/long-press.directive';
 export { CngxKeyboardShortcut } from './src/keyboard-shortcut.directive';
+export { CngxRipple } from './src/ripple.directive';
+export { CngxCopyText } from './src/copy-text.directive';

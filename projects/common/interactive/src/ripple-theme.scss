@@ -1,0 +1,35 @@
+@use '@angular/material' as mat;
+
+/// Ripple theme mixin for `[cngxRipple]`.
+///
+/// CSS vars:
+/// - `--cngx-ripple-color`: ripple fill (default: `currentColor`)
+/// - `--cngx-ripple-opacity`: peak opacity during expand (default: `0.12`)
+/// - `--cngx-ripple-duration`: animation duration (default: `0.5s`)
+///
+/// @example
+///   @use '@cngx/common/interactive/ripple-theme' as ripple;
+///   html { @include ripple.theme($theme); }
+///   [data-theme='dark'] { @include ripple.theme($dark-theme); }
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — derive from on-surface for subtle ripple
+    --cngx-ripple-color: var(--mat-sys-on-surface, currentColor);
+  } @else {
+    // M2 — use foreground
+    --cngx-ripple-color: #{mat.get-theme-color($theme, foreground, base)};
+  }
+}
+
+@mixin base() {
+  --cngx-ripple-opacity: 0.12;
+  --cngx-ripple-duration: 0.5s;
+}
+
+@mixin theme($theme) {
+  :where([cngxRipple]) {
+    @include base();
+    @include color($theme);
+  }
+}

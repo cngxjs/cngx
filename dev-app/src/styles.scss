@@ -6,6 +6,8 @@
 @use '../../projects/ui/src/lib/action-button/action-button-theme' as async-btn;
 @use '../../projects/common/dialog/src/dialog-theme' as dialog;
 @use '../../projects/common/dialog/src/bottom-sheet-theme' as bottom-sheet;
+@use '../../projects/common/interactive/src/ripple' as cngx-ripple;
+@use '../../projects/common/interactive/src/ripple-theme' as ripple;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -39,6 +41,7 @@ html {
   @include async-btn.theme($theme);
   @include dialog.theme($theme);
   @include bottom-sheet.theme($theme);
+  @include ripple.theme($theme);
 }
 
 [data-theme='dark'] {
@@ -50,6 +53,7 @@ html {
   @include async-btn.theme($dark-theme);
   @include dialog.theme($dark-theme);
   @include bottom-sheet.theme($dark-theme);
+  @include ripple.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

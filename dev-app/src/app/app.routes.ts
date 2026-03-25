@@ -105,6 +105,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/copy-text',
+        loadComponent: () =>
+          import('./demos/common/interactive/copy-text-demo/copy-text-demo.component').then((m) => m.CopyTextDemoComponent),
+      },
+      {
         path: 'interactive/disclosure',
         loadComponent: () =>
           import('./demos/common/interactive/disclosure-demo/disclosure-demo.component').then((m) => m.DisclosureDemoComponent),
@@ -130,6 +135,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/pressable-demo/pressable-demo.component').then((m) => m.PressableDemoComponent),
       },
       {
+        path: 'interactive/ripple',
+        loadComponent: () =>
+          import('./demos/common/interactive/ripple-demo/ripple-demo.component').then((m) => m.RippleDemoComponent),
+      },
+      {
         path: 'interactive/speak',
         loadComponent: () =>
           import('./demos/common/interactive/speak-demo/speak-demo.component').then((m) => m.SpeakDemoComponent),
@@ -148,6 +158,11 @@ export const routes: Routes = [
         path: 'layout/drawer',
         loadComponent: () =>
           import('./demos/common/layout/drawer-demo/drawer-demo.component').then((m) => m.DrawerDemoComponent),
+      },
+      {
+        path: 'layout/highlight',
+        loadComponent: () =>
+          import('./demos/common/layout/highlight-demo/highlight-demo.component').then((m) => m.HighlightDemoComponent),
       },
       {
         path: 'layout/infinite-scroll',
