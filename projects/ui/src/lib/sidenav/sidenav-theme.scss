@@ -63,7 +63,13 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.max(-4, math.min(0, $scale));
 
-  $paddings: (0: 16px, -1: 12px, -2: 8px, -3: 6px, -4: 4px);
+  $paddings: (
+    0: 16px,
+    -1: 12px,
+    -2: 8px,
+    -3: 6px,
+    -4: 4px,
+  );
 
   --cngx-sidenav-padding: #{map.get($paddings, $scale)};
 }

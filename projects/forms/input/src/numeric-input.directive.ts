@@ -144,15 +144,13 @@ export class CngxNumericInput implements ControlValueAccessor {
 
   // ── Resolved config (input > global config > default) ────────────────
 
-  private readonly resolvedLocale = computed(() =>
-    this.locale() ?? this.config.numericLocale ?? this.localeId,
+  private readonly resolvedLocale = computed(
+    () => this.locale() ?? this.config.numericLocale ?? this.localeId,
   );
-  private readonly resolvedDecimals = computed(() =>
-    this.decimals() ?? this.config.numericDecimals,
+  private readonly resolvedDecimals = computed(
+    () => this.decimals() ?? this.config.numericDecimals,
   );
-  private readonly resolvedStep = computed(() =>
-    this.step() ?? this.config.numericStep ?? 1,
-  );
+  private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
   // ── Internal state ──────────────────────────────────────────────────
 
@@ -221,8 +219,12 @@ export class CngxNumericInput implements ControlValueAccessor {
 
   // ── ControlValueAccessor ─────────────────────────────────────────────
 
-  private onChange = (_value: number | null): void => { /* noop until registerOnChange */ };
-  private onTouched = (): void => { /* noop until registerOnTouched */ };
+  private onChange = (_value: number | null): void => {
+    /* noop until registerOnChange */
+  };
+  private onTouched = (): void => {
+    /* noop until registerOnTouched */
+  };
 
   writeValue(value: number | null): void {
     this.setValue(value);

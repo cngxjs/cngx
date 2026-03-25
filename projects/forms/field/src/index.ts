@@ -7,7 +7,11 @@ export { CngxError } from './error.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
-export { CngxFormErrors, type FormErrorItem, type CngxFormErrorsSummaryContext } from './form-errors.component';
+export {
+  CngxFormErrors,
+  type FormErrorItem,
+  type CngxFormErrorsSummaryContext,
+} from './form-errors.component';
 export {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_ERROR_MESSAGES,
@@ -30,4 +34,9 @@ export type {
   ErrorMessageFn,
   ErrorMessageMap,
 } from './models';
-export type { FormFieldConfig, FormFieldFeature, ConstraintHintFormatters, ConstraintMetadata } from './form-field.token';
+export type {
+  FormFieldConfig,
+  FormFieldFeature,
+  ConstraintHintFormatters,
+  ConstraintMetadata,
+} from './form-field.token';

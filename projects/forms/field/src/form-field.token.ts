@@ -1,4 +1,9 @@
-import { type Provider, InjectionToken, makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
+import {
+  type Provider,
+  InjectionToken,
+  makeEnvironmentProviders,
+  type EnvironmentProviders,
+} from '@angular/core';
 import type { CngxFormFieldControl, ErrorMessageMap } from './models';
 
 /**
@@ -152,7 +157,9 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  * }))
  * ```
  */
-export function withConstraintHints(formatters?: Partial<ConstraintHintFormatters>): FormFieldFeature {
+export function withConstraintHints(
+  formatters?: Partial<ConstraintHintFormatters>,
+): FormFieldFeature {
   const resolved: ConstraintHintFormatters = { ...DEFAULT_HINT_FORMATTERS, ...formatters };
   return { _apply: (c) => ({ ...c, constraintHints: resolved }) };
 }
@@ -257,8 +264,18 @@ export const DEFAULT_AUTOCOMPLETE_MAPPINGS: Readonly<Record<string, string>> = {
  * @internal Used by `CngxInput` and `withNoSpellcheck()`.
  */
 export const DEFAULT_NO_SPELLCHECK_FIELDS: ReadonlySet<string> = new Set([
-  'email', 'password', 'newpassword', 'confirmpassword',
-  'username', 'url', 'website', 'phone', 'tel', 'zip', 'postalcode', 'code',
+  'email',
+  'password',
+  'newpassword',
+  'confirmpassword',
+  'username',
+  'url',
+  'website',
+  'phone',
+  'tel',
+  'zip',
+  'postalcode',
+  'code',
 ]);
 
 /**
@@ -279,7 +296,10 @@ export function withAutocompleteMappings(mappings: Record<string, string>): Form
   return {
     _apply: (c) => ({
       ...c,
-      autocompleteMappings: { ...(c.autocompleteMappings ?? DEFAULT_AUTOCOMPLETE_MAPPINGS), ...mappings },
+      autocompleteMappings: {
+        ...(c.autocompleteMappings ?? DEFAULT_AUTOCOMPLETE_MAPPINGS),
+        ...mappings,
+      },
     }),
   };
 }
@@ -298,7 +318,10 @@ export function withNoSpellcheck(fields: string[]): FormFieldFeature {
   return {
     _apply: (c) => ({
       ...c,
-      noSpellcheckFields: new Set([...(c.noSpellcheckFields ?? DEFAULT_NO_SPELLCHECK_FIELDS), ...fields]),
+      noSpellcheckFields: new Set([
+        ...(c.noSpellcheckFields ?? DEFAULT_NO_SPELLCHECK_FIELDS),
+        ...fields,
+      ]),
     }),
   };
 }

@@ -62,7 +62,7 @@ import {
   standalone: true,
   exportAs: 'cngxInfiniteScroll',
   host: {
-    'class': 'cngx-infinite-scroll',
+    class: 'cngx-infinite-scroll',
     '[class.cngx-infinite-scroll--loading]': 'isLoading()',
     '[attr.aria-busy]': 'isLoading() || null',
   },

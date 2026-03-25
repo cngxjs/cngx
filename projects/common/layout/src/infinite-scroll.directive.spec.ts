@@ -20,15 +20,24 @@ class MockIntersectionObserver {
 }
 
 function triggerIntersection(isIntersecting: boolean): void {
-  mockCallback?.([{ isIntersecting, intersectionRatio: isIntersecting ? 1 : 0 } as Partial<IntersectionObserverEntry>]);
+  mockCallback?.([
+    {
+      isIntersecting,
+      intersectionRatio: isIntersecting ? 1 : 0,
+    } as Partial<IntersectionObserverEntry>,
+  ]);
 }
 
 // ── Test host ───────────────────────────────────────────────────────────
 
 @Component({
-  template: `<div cngxInfiniteScroll
-    [enabled]="enabled()" [loading]="loading()" [debounceMs]="debounceMs()"
-    (loadMore)="onLoadMore()"></div>`,
+  template: `<div
+    cngxInfiniteScroll
+    [enabled]="enabled()"
+    [loading]="loading()"
+    [debounceMs]="debounceMs()"
+    (loadMore)="onLoadMore()"
+  ></div>`,
   imports: [CngxInfiniteScroll],
 })
 class Host {
@@ -48,9 +57,15 @@ function setup(overrides: { enabled?: boolean; loading?: boolean; debounceMs?: n
 
   const fixture = TestBed.createComponent(Host);
   const host = fixture.componentInstance;
-  if (overrides.enabled != null) {host.enabled.set(overrides.enabled);}
-  if (overrides.loading != null) {host.loading.set(overrides.loading);}
-  if (overrides.debounceMs != null) {host.debounceMs.set(overrides.debounceMs);}
+  if (overrides.enabled != null) {
+    host.enabled.set(overrides.enabled);
+  }
+  if (overrides.loading != null) {
+    host.loading.set(overrides.loading);
+  }
+  if (overrides.debounceMs != null) {
+    host.debounceMs.set(overrides.debounceMs);
+  }
   fixture.detectChanges();
   TestBed.flushEffects();
 

@@ -56,8 +56,7 @@ import { CngxSidenav } from './sidenav';
     <ng-content select="cngx-sidenav-content" />
     <ng-content select="cngx-sidenav[position=end]" />
     @if (hasOverlay()) {
-      <div class="cngx-sidenav-backdrop"
-           (click)="closeAllOverlays()"></div>
+      <div class="cngx-sidenav-backdrop" (click)="closeAllOverlays()"></div>
     }
   `,
 })
@@ -68,19 +67,15 @@ export class CngxSidenavLayout {
   private readonly sidenavs = contentChildren(CngxSidenav);
 
   /** The start-positioned sidenav, if any. */
-  readonly startSidenav = computed(() =>
-    this.sidenavs().find((s) => s.position() === 'start') ?? null,
+  readonly startSidenav = computed(
+    () => this.sidenavs().find((s) => s.position() === 'start') ?? null,
   );
 
   /** The end-positioned sidenav, if any. */
-  readonly endSidenav = computed(() =>
-    this.sidenavs().find((s) => s.position() === 'end') ?? null,
-  );
+  readonly endSidenav = computed(() => this.sidenavs().find((s) => s.position() === 'end') ?? null);
 
   /** Whether any sidenav is open in overlay mode. */
-  readonly hasOverlay = computed(() =>
-    this.sidenavs().some((s) => s.isOverlay() && s.opened()),
-  );
+  readonly hasOverlay = computed(() => this.sidenavs().some((s) => s.isOverlay() && s.opened()));
 
   constructor() {
     const doc = inject(DOCUMENT);

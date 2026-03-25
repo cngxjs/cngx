@@ -41,7 +41,8 @@ cngx-sidenav {
   &.cngx-sidenav--open {
     visibility: visible;
     transition:
-      width var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
+      width var(--cngx-sidenav-transition-duration, 0.25s)
+        var(--cngx-sidenav-transition-easing, ease),
       visibility 0s 0s;
   }
 
@@ -57,8 +58,12 @@ cngx-sidenav {
     top: 0;
     bottom: 0;
 
-    &.cngx-sidenav--start { left: 0; }
-    &.cngx-sidenav--end { right: 0; }
+    &.cngx-sidenav--start {
+      left: 0;
+    }
+    &.cngx-sidenav--end {
+      right: 0;
+    }
   }
 
   // Push/side/mini mode: in flex flow, push content naturally
@@ -94,10 +99,12 @@ cngx-sidenav {
 
   // Borders
   &.cngx-sidenav--start {
-    border-right: var(--cngx-sidenav-border-width, 1px) solid var(--cngx-sidenav-border-color, #e0e0e0);
+    border-right: var(--cngx-sidenav-border-width, 1px) solid
+      var(--cngx-sidenav-border-color, #e0e0e0);
   }
   &.cngx-sidenav--end {
-    border-left: var(--cngx-sidenav-border-width, 1px) solid var(--cngx-sidenav-border-color, #e0e0e0);
+    border-left: var(--cngx-sidenav-border-width, 1px) solid
+      var(--cngx-sidenav-border-color, #e0e0e0);
     order: 2; // flex order: content first, end sidenav last
   }
 }
@@ -149,7 +156,8 @@ cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) {
   margin-top: auto;
   padding: var(--cngx-sidenav-padding, 16px);
   background: var(--cngx-sidenav-footer-bg, transparent);
-  border-top: 1px solid var(--cngx-sidenav-footer-border-color, var(--cngx-sidenav-border-color, #e0e0e0));
+  border-top: 1px solid
+    var(--cngx-sidenav-footer-border-color, var(--cngx-sidenav-border-color, #e0e0e0));
   font-size: var(--cngx-sidenav-footer-font-size, 0.75rem);
   opacity: 0.7;
 }
@@ -166,7 +174,9 @@ cngx-sidenav .cngx-nav-link {
   font-size: var(--cngx-nav-link-font-size);
   color: var(--cngx-nav-link-color);
   border-radius: var(--cngx-nav-link-radius);
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &:hover {
     color: var(--cngx-nav-link-hover-color);
@@ -201,7 +211,9 @@ cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-nav-link {
   }
 
   // Hide badges in mini mode
-  [cngxNavBadge] { display: none; }
+  [cngxNavBadge] {
+    display: none;
+  }
 }
 
 // ── Nav group collapsible content ──────────────────────────────────
@@ -242,8 +254,14 @@ cngx-sidenav.cngx-sidenav--mini:not(.cngx-sidenav--expanded) .cngx-nav-link {
   touch-action: none; // prevent scroll on drag
 
   // Position: on the border edge
-  .cngx-sidenav--start & { right: 0; transform: translateX(50%); }
-  .cngx-sidenav--end & { left: 0; transform: translateX(-50%); }
+  .cngx-sidenav--start & {
+    right: 0;
+    transform: translateX(50%);
+  }
+  .cngx-sidenav--end & {
+    left: 0;
+    transform: translateX(-50%);
+  }
 
   &:hover,
   .cngx-sidenav--resizing & {
@@ -271,8 +289,10 @@ cngx-sidenav-content {
   overflow: auto;
   order: 1; // between start and end sidenavs
   transition:
-    margin-inline-start var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease),
-    margin-inline-end var(--cngx-sidenav-transition-duration, 0.25s) var(--cngx-sidenav-transition-easing, ease);
+    margin-inline-start var(--cngx-sidenav-transition-duration, 0.25s)
+      var(--cngx-sidenav-transition-easing, ease),
+    margin-inline-end var(--cngx-sidenav-transition-duration, 0.25s)
+      var(--cngx-sidenav-transition-easing, ease);
 }
 
 // ── Backdrop ───────────────────────────────────────────────────────

@@ -102,7 +102,10 @@ export class CngxInput implements CngxFormFieldControl {
 
   /** @internal — normalized field name for autocomplete/spellcheck lookup. */
   private readonly normalizedName = computed(() =>
-    this.presenter?.name()?.toLowerCase().replaceAll(/[^a-z]/g, ''),
+    this.presenter
+      ?.name()
+      ?.toLowerCase()
+      .replaceAll(/[^a-z]/g, ''),
   );
 
   /** @internal */

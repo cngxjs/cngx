@@ -96,7 +96,8 @@ describe('CngxFormField', () => {
       fixture.componentInstance.field.set(mock.accessor);
       fixture.detectChanges();
 
-      const formFieldEl = fixture.debugElement.query(By.directive(CngxFormField)).nativeElement as HTMLElement;
+      const formFieldEl = fixture.debugElement.query(By.directive(CngxFormField))
+        .nativeElement as HTMLElement;
       expect(getComputedStyle(formFieldEl).display).toBe('contents');
     });
 
@@ -246,7 +247,8 @@ describe('CngxFormField', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const errorEl = fixture.debugElement.query(By.directive(CngxError)).nativeElement as HTMLElement;
+      const errorEl = fixture.debugElement.query(By.directive(CngxError))
+        .nativeElement as HTMLElement;
       expect(errorEl.id).toBe('cngx-password-error');
       expect(errorEl.getAttribute('aria-hidden')).toBe('true');
       expect(errorEl.textContent?.trim()).toBe('Manual error');

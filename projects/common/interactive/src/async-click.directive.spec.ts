@@ -45,7 +45,9 @@ class DivHost {
 
 function setupButton(overrides: { enabled?: boolean } = {}) {
   const fixture = TestBed.createComponent(ButtonHost);
-  if (overrides.enabled != null) {fixture.componentInstance.enabled.set(overrides.enabled);}
+  if (overrides.enabled != null) {
+    fixture.componentInstance.enabled.set(overrides.enabled);
+  }
   fixture.detectChanges();
   TestBed.flushEffects();
   const btn = fixture.nativeElement.querySelector('button') as HTMLButtonElement;

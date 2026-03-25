@@ -134,9 +134,11 @@ export function withCustomTokens(tokens: MaskTokenMap): InputConfigFeature {
 }
 
 /** Set defaults for `CngxNumericInput`. */
-export function withNumericDefaults(
-  defaults: { locale?: string; decimals?: number; step?: number },
-): InputConfigFeature {
+export function withNumericDefaults(defaults: {
+  locale?: string;
+  decimals?: number;
+  step?: number;
+}): InputConfigFeature {
   return (config) => ({
     ...config,
     ...(defaults.locale != null && { numericLocale: defaults.locale }),

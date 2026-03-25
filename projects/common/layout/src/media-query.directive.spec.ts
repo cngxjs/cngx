@@ -21,18 +21,20 @@ describe('CngxMediaQuery', () => {
     removeSpy = vi.fn();
 
     // window.matchMedia may not exist in the test env; define it
-    (globalThis as Record<string, unknown>)['matchMedia'] = vi.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: vi.fn((_event: string, handler: (e: { matches: boolean }) => void) => {
-        changeHandler = handler;
-      }),
-      removeEventListener: removeSpy,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
+    (globalThis as Record<string, unknown>)['matchMedia'] = vi
+      .fn()
+      .mockImplementation((query: string) => ({
+        matches: false,
+        media: query,
+        addEventListener: vi.fn((_event: string, handler: (e: { matches: boolean }) => void) => {
+          changeHandler = handler;
+        }),
+        removeEventListener: removeSpy,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
   });
 
   afterEach(() => {
@@ -44,7 +46,9 @@ describe('CngxMediaQuery', () => {
     const fixture = TestBed.createComponent(TestHost);
     fixture.detectChanges();
     TestBed.flushEffects();
-    const dir = fixture.debugElement.query(By.directive(CngxMediaQuery)).injector.get(CngxMediaQuery);
+    const dir = fixture.debugElement
+      .query(By.directive(CngxMediaQuery))
+      .injector.get(CngxMediaQuery);
     return { fixture, dir };
   }
 

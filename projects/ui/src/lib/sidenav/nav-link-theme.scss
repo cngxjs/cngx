@@ -17,7 +17,10 @@
 
     --cngx-nav-link-color: var(--mat-sys-on-surface-variant, #{$_on-surface-variant});
     --cngx-nav-link-hover-color: var(--mat-sys-on-surface, #{$_on-surface});
-    --cngx-nav-link-active-color: var(--mat-sys-on-secondary-container, #{$_on-secondary-container});
+    --cngx-nav-link-active-color: var(
+      --mat-sys-on-secondary-container,
+      #{$_on-secondary-container}
+    );
     --cngx-nav-link-active-bg: var(--mat-sys-secondary-container, #{$_secondary-container});
     --cngx-nav-link-active-indicator: var(--mat-sys-primary, #{$_primary});
   } @else {
@@ -42,7 +45,13 @@
   $scale: mat.get-theme-density($theme);
   $scale: math.clamp(-4, $scale, 0);
 
-  $paddings: (0: 10px 16px, -1: 8px 12px, -2: 6px 8px, -3: 4px 6px, -4: 2px 4px);
+  $paddings: (
+    0: 10px 16px,
+    -1: 8px 12px,
+    -2: 6px 8px,
+    -3: 4px 6px,
+    -4: 2px 4px,
+  );
 
   --cngx-nav-link-padding: #{map.get($paddings, $scale)};
 }

@@ -57,9 +57,9 @@ import type { CngxFieldAccessor } from './models';
         <ul class="cngx-form-errors__list">
           @for (err of errorItems(); track err.fieldName) {
             <li>
-              <a (click)="err.focus()" (keydown.enter)="err.focus()"
-                 tabindex="0" role="link">
-                <strong>{{ err.fieldName }}</strong>: {{ err.message }}
+              <a (click)="err.focus()" (keydown.enter)="err.focus()" tabindex="0" role="link">
+                <strong>{{ err.fieldName }}</strong
+                >: {{ err.message }}
               </a>
             </li>
           }
@@ -104,7 +104,8 @@ export class CngxFormErrors {
   readonly show = input(false);
 
   /** Optional custom template. */
-  protected readonly customTpl = contentChild<TemplateRef<CngxFormErrorsSummaryContext>>(TemplateRef);
+  protected readonly customTpl =
+    contentChild<TemplateRef<CngxFormErrorsSummaryContext>>(TemplateRef);
 
   /** @internal — resolved error items with focus capability. */
   protected readonly errorItems = computed<FormErrorItem[]>(() => {

@@ -37,7 +37,9 @@ export function adaptFormControl(
   const requiredSignal = signal(hasRequiredValidator(control));
   const disabledSignal = signal(control.disabled);
   const pendingSignal = signal(control.pending);
-  const errorsSignal = signal<{ kind: string; message?: string; fieldTree: unknown }[]>(adaptErrors(control.errors));
+  const errorsSignal = signal<{ kind: string; message?: string; fieldTree: unknown }[]>(
+    adaptErrors(control.errors),
+  );
   const readonlySignal = signal(false);
   const hiddenSignal = signal(false);
   const submittingSignal = signal(false);
@@ -93,7 +95,9 @@ export function adaptFormControl(
       control.markAsDirty();
       syncState();
     },
-    focusBoundControl: () => { /* noop — Reactive Forms has no focusBoundControl */ },
+    focusBoundControl: () => {
+      /* noop — Reactive Forms has no focusBoundControl */
+    },
     reset: (value?: unknown) => {
       control.reset(value);
       syncState();
@@ -111,7 +115,8 @@ function adaptErrors(
     return [];
   }
   return Object.entries(errors).map(([key, value]: [string, unknown]) => {
-    const extra = typeof value === 'object' && value !== null ? value as Record<string, unknown> : {};
+    const extra =
+      typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
     return {
       kind: key,
       message: typeof value === 'string' ? value : undefined,

@@ -69,8 +69,12 @@ export class CngxInputFormat implements ControlValueAccessor {
 
   // ── ControlValueAccessor ─────────────────────────────────────────────
 
-  private onChange = (_value: string): void => { /* noop until registerOnChange */ };
-  private onTouched = (): void => { /* noop until registerOnTouched */ };
+  private onChange = (_value: string): void => {
+    /* noop until registerOnChange */
+  };
+  private onTouched = (): void => {
+    /* noop until registerOnTouched */
+  };
 
   writeValue(value: string | null): void {
     const raw = value ?? '';

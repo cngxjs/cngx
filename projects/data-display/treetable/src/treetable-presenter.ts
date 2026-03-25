@@ -176,9 +176,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In uncontrolled mode this reflects the internal state; in controlled mode
    * it mirrors the `expandedIds` input.
    */
-  readonly expandedIds = computed(
-    () => this.expandedIdsInput() ?? this.expandedIdsState(),
-  );
+  readonly expandedIds = computed(() => this.expandedIdsInput() ?? this.expandedIdsState());
 
   /** The subset of `flatNodes` that should be rendered (all ancestors expanded). */
   readonly visibleNodes = computed(() =>
@@ -212,8 +210,8 @@ export class CngxTreetablePresenter<T = unknown> {
 
   // ── Selection ──────────────────────────────────────────────────────────────
 
-  private readonly selectionModel = linkedSignal(() =>
-    new SelectionModel<string>(this.selectionMode() === 'multi', []),
+  private readonly selectionModel = linkedSignal(
+    () => new SelectionModel<string>(this.selectionMode() === 'multi', []),
   );
   private readonly selectedIdsState = signal<ReadonlySet<string>>(new Set());
 
@@ -222,9 +220,7 @@ export class CngxTreetablePresenter<T = unknown> {
    * In uncontrolled mode this reflects internal state; in controlled mode
    * it mirrors the `selectedIds` input.
    */
-  readonly selectedIds = computed(
-    () => this.selectedIdsInput() ?? this.selectedIdsState(),
-  );
+  readonly selectedIds = computed(() => this.selectedIdsInput() ?? this.selectedIdsState());
 
   /**
    * `true` when every visible node is selected.

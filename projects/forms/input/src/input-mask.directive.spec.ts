@@ -6,9 +6,16 @@ import { CngxInputMask, type MaskTokenMap } from './input-mask.directive';
 // ── Test host ───────────────────────────────────────────────────────
 
 @Component({
-  template: `<input [cngxInputMask]="mask()" [placeholder]="ph()" [guide]="guide()"
-    [includeLiterals]="includeLiterals()" [prefix]="prefix()" [suffix]="suffix()"
-    [transform]="transform()" [customTokens]="customTokens()" />`,
+  template: `<input
+    [cngxInputMask]="mask()"
+    [placeholder]="ph()"
+    [guide]="guide()"
+    [includeLiterals]="includeLiterals()"
+    [prefix]="prefix()"
+    [suffix]="suffix()"
+    [transform]="transform()"
+    [customTokens]="customTokens()"
+  />`,
   imports: [CngxInputMask],
 })
 class Host {
@@ -36,9 +43,7 @@ function setup(
     locale?: string;
   } = {},
 ) {
-  const providers = overrides.locale
-    ? [{ provide: LOCALE_ID, useValue: overrides.locale }]
-    : [];
+  const providers = overrides.locale ? [{ provide: LOCALE_ID, useValue: overrides.locale }] : [];
 
   TestBed.configureTestingModule({ providers });
   const fixture = TestBed.createComponent(Host);

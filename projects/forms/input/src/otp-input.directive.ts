@@ -201,7 +201,9 @@ export class CngxOtpInput {
 
     // Focus the next empty slot or the last filled one
     const nextEmpty = vals.findIndex((v, i) => i >= startIndex && !v);
-    this.focusAt(nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, this.length() - 1));
+    this.focusAt(
+      nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, this.length() - 1),
+    );
 
     if (vals.length === this.length() && vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));

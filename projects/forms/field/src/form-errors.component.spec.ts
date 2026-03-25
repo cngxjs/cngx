@@ -63,7 +63,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     expect(el.querySelector('ul')).toBeNull();
   });
 
@@ -73,7 +74,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     expect(el.querySelector('ul')).toBeNull();
   });
 
@@ -88,7 +90,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     const items = el.querySelectorAll('li');
     expect(items.length).toBe(3);
     expect(items[0].textContent).toContain('email');
@@ -106,7 +109,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     expect(el.getAttribute('role')).toBe('alert');
   });
 
@@ -118,7 +122,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     const link = el.querySelector('a');
     expect(link?.getAttribute('tabindex')).toBe('0');
     expect(link?.getAttribute('role')).toBe('link');
@@ -131,7 +136,8 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     expect(el.querySelector('li')).toBeNull();
   });
 
@@ -146,8 +152,11 @@ describe('CngxFormErrors', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const el = fixture.debugElement.query(By.directive(CngxFormErrors)).nativeElement as HTMLElement;
+    const el = fixture.debugElement.query(By.directive(CngxFormErrors))
+      .nativeElement as HTMLElement;
     expect(el.querySelector('.custom-summary')?.textContent).toContain('1 errors');
-    expect(el.querySelector('.custom-item')?.textContent).toContain('email: This field is required.');
+    expect(el.querySelector('.custom-item')?.textContent).toContain(
+      'email: This field is required.',
+    );
   });
 });

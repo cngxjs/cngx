@@ -110,11 +110,23 @@ export class CngxAutosize {
   }
 
   private computeMinHeight(rows: number): number {
-    return rows * this.lineHeight + this.paddingTop + this.paddingBottom + this.borderTop + this.borderBottom;
+    return (
+      rows * this.lineHeight +
+      this.paddingTop +
+      this.paddingBottom +
+      this.borderTop +
+      this.borderBottom
+    );
   }
 
   private computeMaxHeight(rows: number): number {
-    return rows * this.lineHeight + this.paddingTop + this.paddingBottom + this.borderTop + this.borderBottom;
+    return (
+      rows * this.lineHeight +
+      this.paddingTop +
+      this.paddingBottom +
+      this.borderTop +
+      this.borderBottom
+    );
   }
 
   private observeResize(): void {

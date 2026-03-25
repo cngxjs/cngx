@@ -1,12 +1,4 @@
-import {
-  DestroyRef,
-  Directive,
-  inject,
-  input,
-  output,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
 
 /**
  * Clipboard copy behavior for input fields, tokens, API keys.

@@ -7,8 +7,12 @@ import { CngxBackdrop } from './backdrop.directive';
 @Component({
   template: `
     <div class="container">
-      <div [cngxBackdrop]="visible()" [closeOnClick]="closeOnClick()"
-           (backdropClick)="clicked()" class="backdrop"></div>
+      <div
+        [cngxBackdrop]="visible()"
+        [closeOnClick]="closeOnClick()"
+        (backdropClick)="clicked()"
+        class="backdrop"
+      ></div>
       <div class="sibling-a">A</div>
       <div class="sibling-b">B</div>
     </div>

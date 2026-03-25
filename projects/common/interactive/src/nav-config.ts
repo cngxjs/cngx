@@ -76,10 +76,7 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
       extraProviders.push(...f.providers);
     }
   }
-  const providers: Provider[] = [
-    { provide: CNGX_NAV_CONFIG, useValue: config },
-    ...extraProviders,
-  ];
+  const providers: Provider[] = [{ provide: CNGX_NAV_CONFIG, useValue: config }, ...extraProviders];
   if (config.singleAccordion) {
     providers.push(CngxNavGroupRegistry);
   }

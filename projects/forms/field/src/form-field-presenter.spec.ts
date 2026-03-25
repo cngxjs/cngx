@@ -30,7 +30,9 @@ describe('CngxFormFieldPresenter', () => {
     host.field.set(mock.accessor);
     fixture.detectChanges();
     TestBed.flushEffects();
-    presenter = fixture.debugElement.query(By.directive(CngxFormFieldPresenter)).injector.get(CngxFormFieldPresenter);
+    presenter = fixture.debugElement
+      .query(By.directive(CngxFormFieldPresenter))
+      .injector.get(CngxFormFieldPresenter);
     ref = mock.ref;
     return { mock, presenter, ref };
   }
@@ -243,7 +245,12 @@ describe('CngxFormFieldPresenter', () => {
     it('returns length range when both min and max length set', () => {
       TestBed.configureTestingModule({
         imports: [TestHost],
-        providers: [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_CONFIG,
+            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+          },
+        ],
       });
       const mock = createMockField({ name: 'pw', minLength: 8, maxLength: 64 });
       fixture = TestBed.createComponent(TestHost);
@@ -251,7 +258,9 @@ describe('CngxFormFieldPresenter', () => {
       host.field.set(mock.accessor);
       fixture.detectChanges();
       TestBed.flushEffects();
-      presenter = fixture.debugElement.query(By.directive(CngxFormFieldPresenter)).injector.get(CngxFormFieldPresenter);
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
 
       expect(presenter.constraintHints()).toEqual(['8–64 characters']);
     });
@@ -259,7 +268,12 @@ describe('CngxFormFieldPresenter', () => {
     it('returns min-only hint', () => {
       TestBed.configureTestingModule({
         imports: [TestHost],
-        providers: [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_CONFIG,
+            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+          },
+        ],
       });
       const mock = createMockField({ name: 'pw', minLength: 8 });
       fixture = TestBed.createComponent(TestHost);
@@ -267,7 +281,9 @@ describe('CngxFormFieldPresenter', () => {
       host.field.set(mock.accessor);
       fixture.detectChanges();
       TestBed.flushEffects();
-      presenter = fixture.debugElement.query(By.directive(CngxFormFieldPresenter)).injector.get(CngxFormFieldPresenter);
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
 
       expect(presenter.constraintHints()).toEqual(['Min. 8 characters']);
     });
@@ -275,7 +291,12 @@ describe('CngxFormFieldPresenter', () => {
     it('returns max-only hint', () => {
       TestBed.configureTestingModule({
         imports: [TestHost],
-        providers: [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_CONFIG,
+            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+          },
+        ],
       });
       const mock = createMockField({ name: 'pw', maxLength: 64 });
       fixture = TestBed.createComponent(TestHost);
@@ -283,7 +304,9 @@ describe('CngxFormFieldPresenter', () => {
       host.field.set(mock.accessor);
       fixture.detectChanges();
       TestBed.flushEffects();
-      presenter = fixture.debugElement.query(By.directive(CngxFormFieldPresenter)).injector.get(CngxFormFieldPresenter);
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
 
       expect(presenter.constraintHints()).toEqual(['Max. 64 characters']);
     });
@@ -291,7 +314,12 @@ describe('CngxFormFieldPresenter', () => {
     it('returns numeric range hints for min/max', () => {
       TestBed.configureTestingModule({
         imports: [TestHost],
-        providers: [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { constraintHints: DEFAULT_HINT_FORMATTERS } }],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_CONFIG,
+            useValue: { constraintHints: DEFAULT_HINT_FORMATTERS },
+          },
+        ],
       });
       const mock = createMockField({ name: 'age', min: 18, max: 99 });
       fixture = TestBed.createComponent(TestHost);
@@ -299,7 +327,9 @@ describe('CngxFormFieldPresenter', () => {
       host.field.set(mock.accessor);
       fixture.detectChanges();
       TestBed.flushEffects();
-      presenter = fixture.debugElement.query(By.directive(CngxFormFieldPresenter)).injector.get(CngxFormFieldPresenter);
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
 
       expect(presenter.constraintHints()).toEqual(['18–99']);
     });

@@ -172,12 +172,16 @@ export class CngxAsyncClick {
         ? firstValueFrom(result$, { defaultValue: undefined })
         : result$;
       await promise;
-      if (this.destroyed) { return; }
+      if (this.destroyed) {
+        return;
+      }
       this.pendingState.set(false);
       this.succeededState.set(true);
       this.scheduleFeedbackReset();
     } catch (err: unknown) {
-      if (this.destroyed) { return; }
+      if (this.destroyed) {
+        return;
+      }
       this.pendingState.set(false);
       this.failedState.set(true);
       this.errorState.set(err);

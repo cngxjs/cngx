@@ -64,7 +64,6 @@ describe('CngxSkeleton', () => {
     expect(el.getAttribute('aria-busy')).toBeNull();
   });
 
-
   it('should apply .cngx-skeleton--shimmer when loading + shimmer', () => {
     const { el } = setup({ loading: true, shimmer: true });
     expect(el.classList.contains('cngx-skeleton--shimmer')).toBe(true);
