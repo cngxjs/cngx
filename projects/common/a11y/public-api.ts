@@ -6,3 +6,6 @@ export { CngxFocusTrap } from './src/focus-trap.directive';
 export { CngxFocusVisible } from './src/focus-visible.directive';
 export { CngxLiveRegion } from './src/live-region.directive';
 export { CngxReducedMotion } from './src/reduced-motion.directive';
+export { CngxAutofocus } from './src/autofocus.directive';
+export { CngxFocusRestore } from './src/focus-restore.directive';
+export { CngxRovingTabindex, CngxRovingItem } from './src/roving-tabindex.directive';

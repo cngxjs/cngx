@@ -23,3 +23,6 @@ export { CngxSearch } from './src/search.directive';
 export { CngxSpeak } from './src/speak.directive';
 export { CngxSwipeDismiss, type SwipeDirection } from './src/swipe-dismiss.directive';
 export { CngxAsyncClick, type AsyncAction, type AsyncStatus } from './src/async-click.directive';
+export { CngxPressable } from './src/pressable.directive';
+export { CngxLongPress } from './src/long-press.directive';
+export { CngxKeyboardShortcut } from './src/keyboard-shortcut.directive';
