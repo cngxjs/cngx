@@ -433,7 +433,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     let done = false;
     const finishOnce = () => {
-      if (done) {return;}
+      if (done) {
+        return;
+      }
       done = true;
       dialog.removeEventListener('transitionend', onTransitionEnd);
       clearTimeout(fallbackTimer);
@@ -442,8 +444,12 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     const onTransitionEnd = (e: TransitionEvent) => {
       // Only finalize after the longest-running property completes
-      if (e.target !== dialog) {return;}
-      if (longestProp !== 'all' && e.propertyName !== longestProp) {return;}
+      if (e.target !== dialog) {
+        return;
+      }
+      if (longestProp !== 'all' && e.propertyName !== longestProp) {
+        return;
+      }
       finishOnce();
     };
 
@@ -523,7 +529,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   }
 
   private warnNonModalA11y(): void {
-    if (!isDevMode()) {return;}
+    if (!isDevMode()) {
+      return;
+    }
 
     // Non-modal dialogs are silent to SR. Warn if no aria-live sibling found.
     const trigger = this.triggerElement();

@@ -60,15 +60,21 @@ export class CngxDialogClose {
   protected readonly ariaLabel = computed(() => {
     // Explicit override wins
     const explicit = this.label();
-    if (explicit !== undefined) {return explicit || null;}
+    if (explicit !== undefined) {
+      return explicit || null;
+    }
 
     // If host already has aria-label attribute set by the consumer, don't override
     const el = this.elRef.nativeElement as HTMLElement;
-    if (el.hasAttribute('aria-label')) {return null;}
+    if (el.hasAttribute('aria-label')) {
+      return null;
+    }
 
     // Check text content — if descriptive (multi-char word), no label needed
     const text = el.textContent?.trim() ?? '';
-    if (text.length > 1) {return null;}
+    if (text.length > 1) {
+      return null;
+    }
 
     // Icon-only or single char (e.g. "X", "x") — set default
     return 'Close dialog';

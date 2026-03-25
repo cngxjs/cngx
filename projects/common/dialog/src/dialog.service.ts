@@ -253,17 +253,16 @@ export class CngxDialogOpener {
         });
       } else {
         // TemplateRef
-        outletVcr.createEmbeddedView(content, { $implicit: innerDialog }, { injector: childInjector });
+        outletVcr.createEmbeddedView(
+          content,
+          { $implicit: innerDialog },
+          { injector: childInjector },
+        );
       }
     }
 
     // 4. Build the CngxDialogRef
-    const dialogRef = new CngxDialogRef<T>(
-      innerDialog,
-      outletRef,
-      contentRef,
-      this.injector,
-    );
+    const dialogRef = new CngxDialogRef<T>(innerDialog, outletRef, contentRef, this.injector);
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
@@ -274,7 +273,11 @@ export class CngxDialogOpener {
     // 6. Cleanup when dialog closes
     effect(
       () => {
-        if (innerDialog.state() === 'closed' && outletRef.hostView && !outletRef.hostView.destroyed) {
+        if (
+          innerDialog.state() === 'closed' &&
+          outletRef.hostView &&
+          !outletRef.hostView.destroyed
+        ) {
           this.cleanup(dialogRef);
         }
       },

@@ -145,11 +145,16 @@ export class CngxDialogDraggable {
 
   private handlePointerDown(event: PointerEvent): void {
     // Only primary button
-    if (event.button !== 0) {return;}
+    if (event.button !== 0) {
+      return;
+    }
 
     // Don't drag if the target is an interactive element inside the handle
     const target = event.target as HTMLElement;
-    if (target.closest('button, a, input, select, textarea, [tabindex]') && target !== this.currentHandle) {
+    if (
+      target.closest('button, a, input, select, textarea, [tabindex]') &&
+      target !== this.currentHandle
+    ) {
       return;
     }
 
@@ -211,8 +216,12 @@ export class CngxDialogDraggable {
       this.positionState.set(this.snap(x, y));
     }
 
-    if (this.boundMove) {this.doc.removeEventListener('pointermove', this.boundMove);}
-    if (this.boundUp) {this.doc.removeEventListener('pointerup', this.boundUp);}
+    if (this.boundMove) {
+      this.doc.removeEventListener('pointermove', this.boundMove);
+    }
+    if (this.boundUp) {
+      this.doc.removeEventListener('pointerup', this.boundUp);
+    }
     this.boundMove = null;
     this.boundUp = null;
   }
@@ -220,9 +229,7 @@ export class CngxDialogDraggable {
   private handleKeyDown(event: KeyboardEvent): void {
     const grid = this.gridSize();
     // When grid is active, Arrow keys step by grid size (Shift = 5x grid)
-    const step = grid > 0
-      ? (event.shiftKey ? grid * 5 : grid)
-      : (event.shiftKey ? 50 : 10);
+    const step = grid > 0 ? (event.shiftKey ? grid * 5 : grid) : event.shiftKey ? 50 : 10;
     const { x, y } = this.positionState();
 
     switch (event.key) {
@@ -251,7 +258,9 @@ export class CngxDialogDraggable {
 
   private snap(x: number, y: number): { x: number; y: number } {
     const grid = this.gridSize();
-    if (grid <= 0) {return { x, y };}
+    if (grid <= 0) {
+      return { x, y };
+    }
     return {
       x: Math.round(x / grid) * grid,
       y: Math.round(y / grid) * grid,
@@ -259,8 +268,12 @@ export class CngxDialogDraggable {
   }
 
   private cleanup(): void {
-    if (this.boundMove) {this.doc.removeEventListener('pointermove', this.boundMove);}
-    if (this.boundUp) {this.doc.removeEventListener('pointerup', this.boundUp);}
+    if (this.boundMove) {
+      this.doc.removeEventListener('pointermove', this.boundMove);
+    }
+    if (this.boundUp) {
+      this.doc.removeEventListener('pointerup', this.boundUp);
+    }
     if (this.currentHandle && this.boundPointerDown) {
       this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
     }
