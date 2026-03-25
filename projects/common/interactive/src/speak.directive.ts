@@ -1,5 +1,13 @@
 import { DOCUMENT } from '@angular/common';
-import { afterNextRender, DestroyRef, Directive, effect, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  DestroyRef,
+  Directive,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 /**
  * Headless text-to-speech directive using the browser's SpeechSynthesis API.

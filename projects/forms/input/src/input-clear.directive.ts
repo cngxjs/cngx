@@ -1,12 +1,4 @@
-import {
-  DestroyRef,
-  Directive,
-  inject,
-  input,
-  output,
-  signal,
-  type Signal,
-} from '@angular/core';
+import { DestroyRef, Directive, inject, input, output, signal, type Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
 

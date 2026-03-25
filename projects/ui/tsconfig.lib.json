@@ -13,6 +13,7 @@
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
       "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
+      "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
       "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"]
     }
   },

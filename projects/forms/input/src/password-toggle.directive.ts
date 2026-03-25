@@ -37,8 +37,8 @@ export class CngxPasswordToggle {
   protected readonly inputType = computed(() => (this.visibleState() ? 'text' : 'password'));
 
   /** @internal — autocomplete hint for new vs current password. */
-  protected readonly autocomplete = computed(() =>
-    this.el.nativeElement.autocomplete || 'current-password',
+  protected readonly autocomplete = computed(
+    () => this.el.nativeElement.autocomplete || 'current-password',
   );
 
   /** Toggle password visibility. */

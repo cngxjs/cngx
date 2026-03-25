@@ -39,7 +39,8 @@ import { Directive, input } from '@angular/core';
     '[attr.aria-live]': 'politeness()',
     '[attr.aria-atomic]': 'atomic()',
     '[attr.aria-relevant]': 'relevant()',
-    '[attr.role]': "politeness() === 'off' ? null : politeness() === 'assertive' ? 'alert' : 'status'",
+    '[attr.role]':
+      "politeness() === 'off' ? null : politeness() === 'assertive' ? 'alert' : 'status'",
   },
 })
 export class CngxLiveRegion {

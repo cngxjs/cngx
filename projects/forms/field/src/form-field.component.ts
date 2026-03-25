@@ -27,7 +27,11 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
   selector: 'cngx-form-field',
   standalone: true,
   template: `<ng-content />`,
-  styles: `:host { display: contents; }`,
+  styles: `
+    :host {
+      display: contents;
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [
     {

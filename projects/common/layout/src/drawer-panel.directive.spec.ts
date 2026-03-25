@@ -16,8 +16,11 @@ let mockTrap: {
 @Component({
   template: `
     <div cngxDrawer #drawer="cngxDrawer">
-      <nav [cngxDrawerPanel]="drawer" [position]="position()"
-           [closeOnClickOutside]="closeOnClickOutside()">
+      <nav
+        [cngxDrawerPanel]="drawer"
+        [position]="position()"
+        [closeOnClickOutside]="closeOnClickOutside()"
+      >
         <a href="#">Link</a>
       </nav>
     </div>
@@ -135,7 +138,8 @@ describe('CngxDrawerPanel', () => {
     fixture.detectChanges();
 
     // Click on the drawer container element (parent of the panel)
-    const drawerEl = fixture.debugElement.query(By.directive(CngxDrawer)).nativeElement as HTMLElement;
+    const drawerEl = fixture.debugElement.query(By.directive(CngxDrawer))
+      .nativeElement as HTMLElement;
     drawerEl.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(drawer.opened()).toBe(true);
   });

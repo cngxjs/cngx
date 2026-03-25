@@ -5,8 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { CngxSwipeDismiss } from './swipe-dismiss.directive';
 
 @Component({
-  template: `<div cngxSwipeDismiss="left" [threshold]="threshold()" [enabled]="enabled()"
-                  (swiped)="swiped()"></div>`,
+  template: `<div
+    cngxSwipeDismiss="left"
+    [threshold]="threshold()"
+    [enabled]="enabled()"
+    (swiped)="swiped()"
+  ></div>`,
   imports: [CngxSwipeDismiss],
 })
 class TestHost {
@@ -28,9 +32,15 @@ describe('CngxSwipeDismiss', () => {
   }
 
   function simulateSwipe(el: HTMLElement, startX: number, endX: number): void {
-    el.dispatchEvent(new PointerEvent('pointerdown', { clientX: startX, clientY: 100, bubbles: true }));
-    document.dispatchEvent(new PointerEvent('pointermove', { clientX: endX, clientY: 100, bubbles: true }));
-    document.dispatchEvent(new PointerEvent('pointerup', { clientX: endX, clientY: 100, bubbles: true }));
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', { clientX: startX, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointermove', { clientX: endX, clientY: 100, bubbles: true }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { clientX: endX, clientY: 100, bubbles: true }),
+    );
   }
 
   it('starts with swiping=false and progress=0', () => {

@@ -22,7 +22,10 @@ export interface KeyCombo {
  * ```
  */
 export function parseKeyCombo(combo: string): KeyCombo {
-  const parts = combo.toLowerCase().split('+').map((s) => s.trim());
+  const parts = combo
+    .toLowerCase()
+    .split('+')
+    .map((s) => s.trim());
   const key = parts.pop() ?? '';
   return {
     key,

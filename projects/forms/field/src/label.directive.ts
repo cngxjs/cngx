@@ -39,9 +39,14 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (label can be any element)
   selector: '[cngxLabel]',
   standalone: true,
-  template: `<ng-content />@if (markerVisible()) { <span class="cngx-label__required" aria-hidden="true">{{ markerText() }}</span> }`,
+  template: `<ng-content />
+    @if (markerVisible()) {
+      <span class="cngx-label__required" aria-hidden="true">{{ markerText() }}</span>
+    }`,
   styles: `
-    :host { display: contents; }
+    :host {
+      display: contents;
+    }
     .cngx-label__required {
       color: var(--cngx-field-required-color, var(--cngx-field-error-color, #d32f2f));
       margin-inline-start: 0.125em;

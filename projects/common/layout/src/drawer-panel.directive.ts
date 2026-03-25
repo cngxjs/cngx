@@ -43,7 +43,7 @@ export type DrawerMode = 'over' | 'push' | 'side';
     '[class.cngx-drawer-panel--push]': "mode() === 'push'",
     '[class.cngx-drawer-panel--side]': "mode() === 'side'",
     '[attr.aria-hidden]': "mode() === 'side' ? null : !isOpen()",
-    'role': 'complementary',
+    role: 'complementary',
   },
 })
 export class CngxDrawerPanel {

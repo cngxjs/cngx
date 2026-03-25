@@ -25,9 +25,7 @@ function setup() {
   fixture.detectChanges();
   TestBed.flushEffects();
   const directive = fixture.componentInstance.otp();
-  const inputs = Array.from(
-    fixture.nativeElement.querySelectorAll('input'),
-  ) as HTMLInputElement[];
+  const inputs = Array.from(fixture.nativeElement.querySelectorAll('input')) as HTMLInputElement[];
   return { fixture, directive, inputs };
 }
 

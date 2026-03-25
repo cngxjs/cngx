@@ -1,0 +1,82 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-skeleton theming ──────────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/skeleton/skeleton-theme' as skeleton;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include skeleton.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-skeleton-bg: #e0e0e0;
+  --cngx-skeleton-shimmer-color: #f5f5f5;
+  --cngx-skeleton-radius: 4px;
+  --cngx-skeleton-shimmer-duration: 1.5s;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — use Material sys tokens
+    --cngx-skeleton-bg: var(--mat-sys-surface-container);
+    --cngx-skeleton-shimmer-color: var(--mat-sys-surface-container-high);
+  } @else {
+    // M2 — derive from palette
+    --cngx-skeleton-bg: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+    --cngx-skeleton-shimmer-color: #{rgba(mat.get-theme-color($theme, background, card), 0.8)};
+  }
+}
+
+// ─── Shimmer animation ──────────────────────────────────────────
+
+@keyframes cngx-skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  .cngx-skeleton--shimmer .cngx-skeleton-bone {
+    background-color: var(--cngx-skeleton-bg, #e0e0e0);
+    background-image: linear-gradient(
+      90deg,
+      var(--cngx-skeleton-bg, #e0e0e0) 0%,
+      var(--cngx-skeleton-shimmer-color, #f5f5f5) 50%,
+      var(--cngx-skeleton-bg, #e0e0e0) 100%
+    );
+    background-size: 200% 100%;
+    animation: cngx-skeleton-shimmer var(--cngx-skeleton-shimmer-duration, 1.5s) ease-in-out
+      infinite;
+    border-radius: var(--cngx-skeleton-radius, 4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cngx-skeleton--shimmer .cngx-skeleton-bone {
+      animation: none;
+    }
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(.cngx-skeleton) {
+    @include base();
+    @include color($theme);
+  }
+
+  @include styles();
+}

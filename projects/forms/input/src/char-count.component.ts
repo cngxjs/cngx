@@ -48,12 +48,12 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
   standalone: true,
   imports: [NgTemplateOutlet],
   template: `@if (customTpl()) {
-    <ng-container *ngTemplateOutlet="customTpl()!; context: tplContext()" />
-  } @else if (resolvedMax() != null) {
-    <span>{{ currentLength() }}/{{ resolvedMax() }}</span>
-  } @else if (resolvedMin() != null) {
-    <span>{{ currentLength() }} (min {{ resolvedMin() }})</span>
-  }`,
+      <ng-container *ngTemplateOutlet="customTpl()!; context: tplContext()" />
+    } @else if (resolvedMax() != null) {
+      <span>{{ currentLength() }}/{{ resolvedMax() }}</span>
+    } @else if (resolvedMin() != null) {
+      <span>{{ currentLength() }} (min {{ resolvedMin() }})</span>
+    }`,
   styles: `
     :host {
       display: contents;

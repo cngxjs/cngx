@@ -6,8 +6,13 @@ import { CngxNavGroup } from './nav-group.directive';
 
 @Component({
   template: `
-    <button cngxNavGroup #group="cngxNavGroup" [controls]="'group-content'"
-            [depth]="depth()" id="group-label">
+    <button
+      cngxNavGroup
+      #group="cngxNavGroup"
+      [controls]="'group-content'"
+      [depth]="depth()"
+      id="group-label"
+    >
       Settings
     </button>
     @if (group.disclosure.opened()) {

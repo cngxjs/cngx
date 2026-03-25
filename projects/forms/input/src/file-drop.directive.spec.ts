@@ -3,7 +3,13 @@ import { TestBed } from '@angular/core/testing';
 import { CngxFileDrop } from './file-drop.directive';
 
 @Component({
-  template: `<div cngxFileDrop [accept]="accept" [maxSize]="maxSize" [multiple]="multiple" #drop="cngxFileDrop"></div>`,
+  template: `<div
+    cngxFileDrop
+    [accept]="accept"
+    [maxSize]="maxSize"
+    [multiple]="multiple"
+    #drop="cngxFileDrop"
+  ></div>`,
   imports: [CngxFileDrop],
 })
 class Host {

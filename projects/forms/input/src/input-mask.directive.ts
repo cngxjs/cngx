@@ -60,7 +60,9 @@ function parseMask(pattern: string, customTokens?: MaskTokenMap): MaskToken[] {
 // ── Multi-pattern support ───────────────────────────────────────────────
 
 function selectPattern(patterns: string[], rawLength: number, customTokens?: MaskTokenMap): string {
-  if (patterns.length === 1) {return patterns[0];}
+  if (patterns.length === 1) {
+    return patterns[0];
+  }
 
   // Pick the shortest pattern whose slot count can still accommodate rawLength,
   // or the longest pattern if rawLength exceeds all.
@@ -106,9 +108,13 @@ function applyMask(
         rawOut += ch;
         rawIdx++;
       } else if (token.optional) {
-        if (guide) {masked += placeholder;}
+        if (guide) {
+          masked += placeholder;
+        }
       } else {
-        if (guide) {masked += placeholder;}
+        if (guide) {
+          masked += placeholder;
+        }
       }
     }
   }
@@ -119,10 +125,14 @@ function applyMask(
   let ri = 0;
   for (const token of tokens) {
     if (token.kind === 'slot') {
-      if (!token.optional) {requiredCount++;}
+      if (!token.optional) {
+        requiredCount++;
+      }
       const c = raw[ri];
       if (c != null && token.test!.test(c)) {
-        if (!token.optional) {filledCount++;}
+        if (!token.optional) {
+          filledCount++;
+        }
         ri++;
       }
     }
@@ -133,23 +143,23 @@ function applyMask(
 
 function nextSlotIndex(tokens: MaskToken[], from: number): number {
   for (let i = from; i < tokens.length; i++) {
-    if (tokens[i].kind === 'slot') {return i;}
+    if (tokens[i].kind === 'slot') {
+      return i;
+    }
   }
   return tokens.length;
 }
 
 function prevSlotIndex(tokens: MaskToken[], from: number): number {
   for (let i = from - 1; i >= 0; i--) {
-    if (tokens[i].kind === 'slot') {return i;}
+    if (tokens[i].kind === 'slot') {
+      return i;
+    }
   }
   return -1;
 }
 
-function firstEmptySlot(
-  tokens: MaskToken[],
-  masked: string,
-  placeholder: string,
-): number {
+function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string): number {
   for (let i = 0; i < tokens.length; i++) {
     if (tokens[i].kind === 'slot' && (i >= masked.length || masked[i] === placeholder)) {
       return i;
@@ -277,19 +287,34 @@ function resolvePreset(
 
 function resolveZip(region: string, zips: Record<string, string>): { patterns: string[] } {
   const pattern = zips[region];
-  if (!pattern) {return { patterns: ['00000'] };}
-  if (pattern.includes('|')) {return { patterns: pattern.split('|') };}
+  if (!pattern) {
+    return { patterns: ['00000'] };
+  }
+  if (pattern.includes('|')) {
+    return { patterns: pattern.split('|') };
+  }
   return { patterns: [pattern] };
 }
 
 function localeToRegion(locale: string): string {
   // Extract region from locale like 'de-CH', 'en-US', 'fr-FR'
   const parts = locale.split('-');
-  if (parts.length >= 2) {return parts[1].toUpperCase();}
+  if (parts.length >= 2) {
+    return parts[1].toUpperCase();
+  }
   // Fallback: map language to most common region
   const fallback: Record<string, string> = {
-    en: 'US', de: 'DE', fr: 'FR', it: 'IT', es: 'ES',
-    pt: 'BR', nl: 'NL', ru: 'RU', ja: 'JP', zh: 'CN', ko: 'KR',
+    en: 'US',
+    de: 'DE',
+    fr: 'FR',
+    it: 'IT',
+    es: 'ES',
+    pt: 'BR',
+    nl: 'NL',
+    ru: 'RU',
+    ja: 'JP',
+    zh: 'CN',
+    ko: 'KR',
   };
   return fallback[parts[0].toLowerCase()] ?? 'US';
 }
@@ -437,18 +462,18 @@ export class CngxInputMask implements ControlValueAccessor {
 
   // ── Resolved config (input > global config > default) ────────────────
 
-  private readonly resolvedPlaceholder = computed(() =>
-    this.placeholder() ?? this.config.maskPlaceholder ?? '_',
+  private readonly resolvedPlaceholder = computed(
+    () => this.placeholder() ?? this.config.maskPlaceholder ?? '_',
   );
 
-  private readonly resolvedGuide = computed(() =>
-    this.guide() ?? this.config.maskGuide ?? true,
-  );
+  private readonly resolvedGuide = computed(() => this.guide() ?? this.config.maskGuide ?? true);
 
   private readonly resolvedCustomTokens = computed(() => {
     const fromInput = this.customTokens();
     const fromConfig = this.config.customTokens;
-    if (fromInput && fromConfig) {return { ...fromConfig, ...fromInput };}
+    if (fromInput && fromConfig) {
+      return { ...fromConfig, ...fromInput };
+    }
     return fromInput ?? fromConfig;
   });
 
@@ -551,8 +576,12 @@ export class CngxInputMask implements ControlValueAccessor {
 
   // ── ControlValueAccessor ─────────────────────────────────────────────
 
-  private onChange = (_value: string): void => { /* noop until registerOnChange */ };
-  private onTouched = (): void => { /* noop until registerOnTouched */ };
+  private onChange = (_value: string): void => {
+    /* noop until registerOnChange */
+  };
+  private onTouched = (): void => {
+    /* noop until registerOnTouched */
+  };
 
   writeValue(value: string | null): void {
     this.rawState.set(value ?? '');
@@ -634,7 +663,9 @@ export class CngxInputMask implements ControlValueAccessor {
   protected handlePaste(event: ClipboardEvent): void {
     event.preventDefault();
     const pasted = event.clipboardData?.getData('text') ?? '';
-    if (!pasted) {return;}
+    if (!pasted) {
+      return;
+    }
 
     const el = this.el.nativeElement;
     const tokens = this.tokens();
@@ -694,7 +725,9 @@ export class CngxInputMask implements ControlValueAccessor {
 
   /** @internal */
   protected handleFocus(): void {
-    if (!this.resolvedGuide()) {return;}
+    if (!this.resolvedGuide()) {
+      return;
+    }
     const el = this.el.nativeElement;
     const tokens = this.tokens();
     const masked = this.maskedValueCore();
@@ -706,16 +739,9 @@ export class CngxInputMask implements ControlValueAccessor {
     });
   }
 
-
-
   // ── Mask manipulation ───────────────────────────────────────────────
 
-  private insertChars(
-    chars: string,
-    selStart: number,
-    selEnd: number,
-    tokens: MaskToken[],
-  ): void {
+  private insertChars(chars: string, selStart: number, selEnd: number, tokens: MaskToken[]): void {
     const el = this.el.nativeElement;
     const prefixLen = this.prefix().length;
     const currentRaw = this.rawState();
@@ -732,12 +758,15 @@ export class CngxInputMask implements ControlValueAccessor {
     // For multi-pattern: use the longest pattern's tokens for filtering
     // so chars beyond the current pattern's capacity aren't rejected.
     const patterns = this.resolvedPatterns();
-    const filterTokens = patterns.length > 1
-      ? parseMask(
-          patterns.reduce((a, b) => slotCount(a, customDefs) >= slotCount(b, customDefs) ? a : b),
-          customDefs,
-        )
-      : tokens;
+    const filterTokens =
+      patterns.length > 1
+        ? parseMask(
+            patterns.reduce((a, b) =>
+              slotCount(a, customDefs) >= slotCount(b, customDefs) ? a : b,
+            ),
+            customDefs,
+          )
+        : tokens;
 
     let filtered = '';
     let tokenIdx = selStart;
@@ -745,7 +774,9 @@ export class CngxInputMask implements ControlValueAccessor {
       while (tokenIdx < filterTokens.length && filterTokens[tokenIdx].kind === 'literal') {
         tokenIdx++;
       }
-      if (tokenIdx >= filterTokens.length) {break;}
+      if (tokenIdx >= filterTokens.length) {
+        break;
+      }
       const token = filterTokens[tokenIdx];
       if (token.test!.test(ch)) {
         let transformed = ch;
@@ -761,16 +792,19 @@ export class CngxInputMask implements ControlValueAccessor {
       }
     }
 
-    if (!filtered) {return;}
+    if (!filtered) {
+      return;
+    }
 
     const newRaw = raw.slice(0, rawBefore) + filtered + raw.slice(rawBefore);
 
     // For multi-pattern: find the max slot count across all resolved patterns
     // so we don't truncate prematurely when a longer pattern is available.
     const allPatterns = this.resolvedPatterns();
-    const maxSlots = allPatterns.length > 1
-      ? Math.max(...allPatterns.map((p) => slotCount(p, this.resolvedCustomTokens())))
-      : tokens.filter((t) => t.kind === 'slot').length;
+    const maxSlots =
+      allPatterns.length > 1
+        ? Math.max(...allPatterns.map((p) => slotCount(p, this.resolvedCustomTokens())))
+        : tokens.filter((t) => t.kind === 'slot').length;
     const truncated = newRaw.slice(0, maxSlots);
 
     this.updateRaw(truncated);
@@ -798,13 +832,17 @@ export class CngxInputMask implements ControlValueAccessor {
       return;
     }
 
-    if (selStart === 0) {return;}
+    if (selStart === 0) {
+      return;
+    }
 
     let target = selStart - 1;
     while (target >= 0 && tokens[target]?.kind === 'literal') {
       target--;
     }
-    if (target < 0) {return;}
+    if (target < 0) {
+      return;
+    }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
     const raw = this.rawState();
@@ -831,7 +869,9 @@ export class CngxInputMask implements ControlValueAccessor {
     while (target < tokens.length && tokens[target].kind === 'literal') {
       target++;
     }
-    if (target >= tokens.length) {return;}
+    if (target >= tokens.length) {
+      return;
+    }
 
     const rawIdx = this.rawIndexFromCursor(target, tokens);
     const raw = this.rawState();
@@ -860,7 +900,9 @@ export class CngxInputMask implements ControlValueAccessor {
   private rawIndexFromCursor(cursorPos: number, tokens: MaskToken[]): number {
     let rawIdx = 0;
     for (let i = 0; i < cursorPos && i < tokens.length; i++) {
-      if (tokens[i].kind === 'slot') {rawIdx++;}
+      if (tokens[i].kind === 'slot') {
+        rawIdx++;
+      }
     }
     return rawIdx;
   }
@@ -890,15 +932,21 @@ export class CngxInputMask implements ControlValueAccessor {
     const prev = this.rawState();
     // Resolve tokens for the *target* raw length (handles multi-pattern switching)
     const targetPattern = selectPattern(
-      this.resolvedPatterns(), newRaw.length, this.resolvedCustomTokens(),
+      this.resolvedPatterns(),
+      newRaw.length,
+      this.resolvedCustomTokens(),
     );
     const targetTokens = parseMask(targetPattern, this.resolvedCustomTokens());
 
     let validated = '';
     let ti = 0;
     for (const ch of newRaw) {
-      while (ti < targetTokens.length && targetTokens[ti].kind === 'literal') {ti++;}
-      if (ti >= targetTokens.length) {break;}
+      while (ti < targetTokens.length && targetTokens[ti].kind === 'literal') {
+        ti++;
+      }
+      if (ti >= targetTokens.length) {
+        break;
+      }
       if (targetTokens[ti].test!.test(ch)) {
         validated += ch;
         ti++;

@@ -122,7 +122,8 @@ describe('CngxLabel', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement as HTMLElement;
+      const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
+        .nativeElement as HTMLElement;
       const marker = labelEl.querySelector('.cngx-label__required');
       expect(marker).not.toBeNull();
       expect(marker!.textContent?.trim()).toBe('*');
@@ -140,7 +141,8 @@ describe('CngxLabel', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement as HTMLElement;
+      const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
+        .nativeElement as HTMLElement;
       expect(labelEl.querySelector('.cngx-label__required')).toBeNull();
     });
 
@@ -148,14 +150,18 @@ describe('CngxLabel', () => {
       const mock = createMockField({ name: 'email', required: true });
       TestBed.configureTestingModule({
         imports: [TestHost],
-        providers: [{ provide: CNGX_FORM_FIELD_CONFIG, useValue: { requiredMarker: '(Pflichtfeld)' } }],
+        providers: [
+          { provide: CNGX_FORM_FIELD_CONFIG, useValue: { requiredMarker: '(Pflichtfeld)' } },
+        ],
       });
       const fixture = TestBed.createComponent(TestHost);
       fixture.componentInstance.field.set(mock.accessor);
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const marker = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement.querySelector('.cngx-label__required');
+      const marker = fixture.debugElement
+        .query(By.directive(CngxLabel))
+        .nativeElement.querySelector('.cngx-label__required');
       expect(marker!.textContent?.trim()).toBe('(Pflichtfeld)');
     });
 
@@ -170,7 +176,8 @@ describe('CngxLabel', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement as HTMLElement;
+      const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
+        .nativeElement as HTMLElement;
       expect(labelEl.querySelector('.cngx-label__required')).toBeNull();
 
       mock.ref.required.set(true);
@@ -194,7 +201,8 @@ describe('CngxLabel', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const labelEl = fixture.debugElement.query(By.directive(CngxLabel)).nativeElement as HTMLElement;
+      const labelEl = fixture.debugElement.query(By.directive(CngxLabel))
+        .nativeElement as HTMLElement;
       expect(labelEl.querySelector('.cngx-label__required')).toBeNull();
     });
   });

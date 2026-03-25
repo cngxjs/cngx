@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core';
 import { CngxSidenavLayout } from './sidenav-layout';
 
 /**
@@ -40,9 +35,7 @@ export class CngxSidenavContent {
 
   constructor() {
     if (!this.layout) {
-      throw new Error(
-        'cngx-sidenav-content must be placed inside a cngx-sidenav-layout.',
-      );
+      throw new Error('cngx-sidenav-content must be placed inside a cngx-sidenav-layout.');
     }
   }
 

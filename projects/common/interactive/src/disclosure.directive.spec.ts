@@ -6,10 +6,13 @@ import { CngxDisclosure } from './disclosure.directive';
 
 @Component({
   template: `
-    <button cngxDisclosure #d="cngxDisclosure"
-            [cngxDisclosureOpened]="controlled()"
-            [controls]="'content-1'"
-            (openedChange)="changed($event)">
+    <button
+      cngxDisclosure
+      #d="cngxDisclosure"
+      [cngxDisclosureOpened]="controlled()"
+      [controls]="'content-1'"
+      (openedChange)="changed($event)"
+    >
       Toggle
     </button>
     @if (d.opened()) {

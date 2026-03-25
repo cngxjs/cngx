@@ -11,9 +11,15 @@ import type { CngxFieldAccessor } from './models';
 @Component({
   template: `
     <cngx-form-field [field]="field()">
-      <label cngxLabel>Name
+      <label cngxLabel
+        >Name
         <cngx-required>
-          <ng-template><span class="custom-dot" style="display:inline-block;width:6px;height:6px;background:red;border-radius:50%"></span></ng-template>
+          <ng-template
+            ><span
+              class="custom-dot"
+              style="display:inline-block;width:6px;height:6px;background:red;border-radius:50%"
+            ></span
+          ></ng-template>
         </cngx-required>
       </label>
     </cngx-form-field>
@@ -105,7 +111,8 @@ describe('CngxRequired', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const el = fixture.debugElement.query(By.directive(CngxRequired)).nativeElement as HTMLElement;
+      const el = fixture.debugElement.query(By.directive(CngxRequired))
+        .nativeElement as HTMLElement;
       expect(el.textContent?.trim()).toBe('(Pflichtfeld)');
       expect(el.getAttribute('aria-hidden')).toBe('true');
     });
@@ -122,7 +129,8 @@ describe('CngxRequired', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const el = fixture.debugElement.query(By.directive(CngxRequired)).nativeElement as HTMLElement;
+      const el = fixture.debugElement.query(By.directive(CngxRequired))
+        .nativeElement as HTMLElement;
       expect(el.querySelector('.custom-dot')).not.toBeNull();
       // The default text marker (*) should not be present — only the custom template
       expect(el.textContent).not.toContain('*');
@@ -138,7 +146,8 @@ describe('CngxRequired', () => {
       fixture.detectChanges();
       TestBed.flushEffects();
 
-      const el = fixture.debugElement.query(By.directive(CngxRequired)).nativeElement as HTMLElement;
+      const el = fixture.debugElement.query(By.directive(CngxRequired))
+        .nativeElement as HTMLElement;
       expect(el.querySelector('.custom-dot')).toBeNull();
     });
   });

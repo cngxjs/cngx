@@ -25,6 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'mat-table', path: 'common/data/mat-table' },
       { label: 'Paginate (List)', path: 'common/data/paginate-list' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
+      { label: 'Async Click', path: 'common/interactive/async-click' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
       { label: 'Disclosure', path: 'common/interactive/disclosure' },
       { label: 'Nav', path: 'common/interactive/nav' },
@@ -32,10 +33,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'SwipeDismiss', path: 'common/interactive/swipe-dismiss' },
       { label: 'Backdrop', path: 'common/layout/backdrop' },
       { label: 'Drawer', path: 'common/layout/drawer' },
+      { label: 'Infinite Scroll', path: 'common/layout/infinite-scroll' },
       { label: 'IntersectionObserver', path: 'common/layout/intersection-observer' },
       { label: 'MediaQuery', path: 'common/layout/media-query' },
       { label: 'ResizeObserver', path: 'common/layout/resize-observer' },
       { label: 'ScrollLock', path: 'common/layout/scroll-lock' },
+      { label: 'Skeleton', path: 'common/layout/skeleton' },
     ],
   },
   {
@@ -61,8 +64,10 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/ui',
     items: [
+      { label: 'ActionButton', path: 'ui/async-button' },
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
       { label: 'Sidenav', path: 'ui/sidenav' },
+      { label: 'Skeleton', path: 'ui/skeleton' },
       { label: 'SpeakButton', path: 'ui/speak-button' },
     ],
   },

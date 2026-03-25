@@ -1,0 +1,137 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-action-button theming ─────────────────────────────────
+//
+// Include in your global theme stylesheet alongside the Material theme:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/action-button/action-button-theme' as action-btn;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include action-btn.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-action-btn-transition: 0.2s ease;
+  --cngx-action-btn-radius: 6px;
+  --cngx-action-btn-padding: 8px 16px;
+  --cngx-action-btn-border: #ddd;
+  --cngx-action-btn-pending-opacity: 0.7;
+  --cngx-action-btn-succeeded-bg: #e8f5e9;
+  --cngx-action-btn-succeeded-color: #2e7d32;
+  --cngx-action-btn-succeeded-border: #2e7d32;
+  --cngx-action-btn-failed-bg: #ffebee;
+  --cngx-action-btn-failed-color: #c62828;
+  --cngx-action-btn-failed-border: #c62828;
+  --cngx-action-btn-ghost-hover-bg: rgba(0, 0, 0, 0.04);
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — use Material sys tokens
+    --cngx-action-btn-succeeded-bg: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
+    --cngx-action-btn-succeeded-color: var(--mat-sys-primary);
+    --cngx-action-btn-succeeded-border: var(--mat-sys-primary);
+    --cngx-action-btn-failed-bg: color-mix(in srgb, var(--mat-sys-error) 12%, transparent);
+    --cngx-action-btn-failed-color: var(--mat-sys-error);
+    --cngx-action-btn-failed-border: var(--mat-sys-error);
+    --cngx-action-btn-border: var(--mat-sys-outline-variant);
+    --cngx-action-btn-ghost-hover-bg: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  } @else {
+    // M2 — derive from palette
+    --cngx-action-btn-succeeded-bg: #{rgba(mat.get-theme-color($theme, primary), 0.08)};
+    --cngx-action-btn-succeeded-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-action-btn-succeeded-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-action-btn-failed-bg: #{rgba(mat.get-theme-color($theme, warn), 0.08)};
+    --cngx-action-btn-failed-color: #{mat.get-theme-color($theme, warn)};
+    --cngx-action-btn-failed-border: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  // ── State classes (work on both atom and molecule) ─────────────
+
+  .cngx-async--pending {
+    opacity: var(--cngx-action-btn-pending-opacity, 0.7);
+    cursor: wait;
+    transition: opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--succeeded {
+    background-color: var(--cngx-action-btn-succeeded-bg, #e8f5e9);
+    color: var(--cngx-action-btn-succeeded-color, #2e7d32);
+    border-color: var(--cngx-action-btn-succeeded-border, #2e7d32);
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-async--failed {
+    background-color: var(--cngx-action-btn-failed-bg, #ffebee);
+    color: var(--cngx-action-btn-failed-color, #c62828);
+    border-color: var(--cngx-action-btn-failed-border, #c62828);
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  // ── Variant classes ───────────────────────────────────────────
+
+  .cngx-action-button {
+    cursor: pointer;
+    border: 1px solid var(--cngx-action-btn-border, #ddd);
+    border-radius: var(--cngx-action-btn-radius, 6px);
+    padding: var(--cngx-action-btn-padding, 8px 16px);
+    font: inherit;
+    background: var(--cngx-action-btn-bg, transparent);
+    color: inherit;
+    transition:
+      background-color var(--cngx-action-btn-transition, 0.2s ease),
+      color var(--cngx-action-btn-transition, 0.2s ease),
+      border-color var(--cngx-action-btn-transition, 0.2s ease),
+      opacity var(--cngx-action-btn-transition, 0.2s ease);
+  }
+
+  .cngx-action-button--primary {
+    background: var(--cngx-action-btn-primary-bg, var(--mat-sys-primary, #1976d2));
+    color: var(--cngx-action-btn-primary-color, var(--mat-sys-on-primary, #fff));
+    border-color: var(--cngx-action-btn-primary-bg, var(--mat-sys-primary, #1976d2));
+  }
+
+  .cngx-action-button--secondary {
+    background: var(--cngx-action-btn-secondary-bg, transparent);
+    color: var(--cngx-action-btn-secondary-color, var(--mat-sys-primary, #1976d2));
+    border-color: var(--cngx-action-btn-secondary-border, var(--mat-sys-outline, #79747e));
+  }
+
+  .cngx-action-button--ghost {
+    background: transparent;
+    color: var(--cngx-action-btn-ghost-color, var(--mat-sys-on-surface-variant, #49454f));
+    border-color: transparent;
+  }
+
+  .cngx-action-button--ghost:hover {
+    background: var(--cngx-action-btn-ghost-hover-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(cngx-action-button),
+  :where([cngxAsyncClick]) {
+    @include base();
+    @include color($theme);
+  }
+
+  @include styles();
+}

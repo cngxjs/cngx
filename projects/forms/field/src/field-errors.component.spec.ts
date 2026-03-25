@@ -130,10 +130,7 @@ describe('CngxFieldErrors', () => {
     it('renders multiple errors', () => {
       ref.touched.set(true);
       ref.invalid.set(true);
-      ref.errors.set([
-        mockValidationError('required'),
-        mockValidationError('email'),
-      ]);
+      ref.errors.set([mockValidationError('required'), mockValidationError('email')]);
       fixture.detectChanges();
       TestBed.flushEffects();
       const items = errorsEl.querySelectorAll('p');

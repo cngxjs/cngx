@@ -58,13 +58,22 @@ import { type CngxSpeak } from '@cngx/common';
     .cngx-speak-button__btn:hover {
       color: var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623));
       border-color: var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623));
-      background: var(--cngx-speak-btn-hover-bg, var(--cngx-speak-btn-bg, var(--cngx-surface, #fff)));
+      background: var(
+        --cngx-speak-btn-hover-bg,
+        var(--cngx-speak-btn-bg, var(--cngx-surface, #fff))
+      );
     }
 
     .cngx-speak-button--speaking .cngx-speak-button__btn {
       color: var(--cngx-speak-btn-speaking-color, #fff);
-      background: var(--cngx-speak-btn-speaking-bg, var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623)));
-      border-color: var(--cngx-speak-btn-speaking-bg, var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623)));
+      background: var(
+        --cngx-speak-btn-speaking-bg,
+        var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623))
+      );
+      border-color: var(
+        --cngx-speak-btn-speaking-bg,
+        var(--cngx-speak-btn-active-color, var(--cngx-accent, #f5a623))
+      );
     }
 
     .cngx-speak-button__icon {
@@ -78,20 +87,31 @@ import { type CngxSpeak } from '@cngx/common';
       type="button"
       class="cngx-speak-button__btn"
       [attr.aria-label]="speakRef().speaking() ? 'Stop speaking' : 'Read aloud'"
-      (click)="speakRef().toggle()">
+      (click)="speakRef().toggle()"
+    >
       @if (speakRef().speaking()) {
-        <svg class="cngx-speak-button__icon" viewBox="0 0 24 24"
-             fill="currentColor" aria-hidden="true">
-          <rect x="6" y="6" width="12" height="12" rx="2"/>
+        <svg
+          class="cngx-speak-button__icon"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <rect x="6" y="6" width="12" height="12" rx="2" />
         </svg>
       } @else {
-        <svg class="cngx-speak-button__icon" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round"
-             aria-hidden="true">
-          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-          <path d="M15.54 8.46a5 5 0 010 7.07"/>
-          <path d="M19.07 4.93a10 10 0 010 14.14"/>
+        <svg
+          class="cngx-speak-button__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M11 5L6 9H2v6h4l5 4V5z" />
+          <path d="M15.54 8.46a5 5 0 010 7.07" />
+          <path d="M19.07 4.93a10 10 0 010 14.14" />
         </svg>
       }
     </button>

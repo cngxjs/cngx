@@ -4,9 +4,16 @@ import { LOCALE_ID } from '@angular/core';
 import { CngxNumericInput } from './numeric-input.directive';
 
 @Component({
-  template: `<input cngxNumericInput [min]="min()" [max]="max()" [step]="step()"
-    [decimals]="decimals()" [formatOnBlur]="formatOnBlur()" [allowNegative]="allowNegative()"
-    [locale]="locale()" />`,
+  template: `<input
+    cngxNumericInput
+    [min]="min()"
+    [max]="max()"
+    [step]="step()"
+    [decimals]="decimals()"
+    [formatOnBlur]="formatOnBlur()"
+    [allowNegative]="allowNegative()"
+    [locale]="locale()"
+  />`,
   imports: [CngxNumericInput],
 })
 class Host {
@@ -35,13 +42,27 @@ function setup(
   TestBed.configureTestingModule({ providers });
   const fixture = TestBed.createComponent(Host);
   const host = fixture.componentInstance;
-  if (overrides.min != null) {host.min.set(overrides.min);}
-  if (overrides.max != null) {host.max.set(overrides.max);}
-  if (overrides.step != null) {host.step.set(overrides.step);}
-  if (overrides.decimals != null) {host.decimals.set(overrides.decimals);}
-  if (overrides.formatOnBlur != null) {host.formatOnBlur.set(overrides.formatOnBlur);}
-  if (overrides.allowNegative != null) {host.allowNegative.set(overrides.allowNegative);}
-  if (overrides.locale != null) {host.locale.set(overrides.locale);}
+  if (overrides.min != null) {
+    host.min.set(overrides.min);
+  }
+  if (overrides.max != null) {
+    host.max.set(overrides.max);
+  }
+  if (overrides.step != null) {
+    host.step.set(overrides.step);
+  }
+  if (overrides.decimals != null) {
+    host.decimals.set(overrides.decimals);
+  }
+  if (overrides.formatOnBlur != null) {
+    host.formatOnBlur.set(overrides.formatOnBlur);
+  }
+  if (overrides.allowNegative != null) {
+    host.allowNegative.set(overrides.allowNegative);
+  }
+  if (overrides.locale != null) {
+    host.locale.set(overrides.locale);
+  }
   fixture.detectChanges();
   TestBed.flushEffects();
 
@@ -51,7 +72,9 @@ function setup(
 }
 
 function typeChar(input: HTMLInputElement, char: string, pos?: number): boolean {
-  if (pos != null) {input.setSelectionRange(pos, pos);}
+  if (pos != null) {
+    input.setSelectionRange(pos, pos);
+  }
   const event = new InputEvent('beforeinput', {
     inputType: 'insertText',
     data: char,
