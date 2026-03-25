@@ -35,19 +35,14 @@ describe('withRetry', () => {
   });
 
   it('throws after all attempts exhausted', async () => {
-    vi.useFakeTimers();
-    const action = vi.fn().mockRejectedValue(new Error('always fails'));
+    const action = vi.fn().mockImplementation(async () => { throw new Error('always fails'); });
 
-    const [retryable, state] = withRetry(action, { maxAttempts: 2, delay: 50, backoff: 'linear' });
+    const [retryable, state] = withRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
 
-    const promise = retryable();
-    await vi.advanceTimersByTimeAsync(50);
-
-    await expect(promise).rejects.toThrow('always fails');
+    await expect(retryable()).rejects.toThrow('always fails');
     expect(action).toHaveBeenCalledTimes(2);
     expect(state.exhausted()).toBe(true);
     expect(state.attempt()).toBe(2);
-    vi.useRealTimers();
   });
 
   it('reset() clears all state', async () => {
