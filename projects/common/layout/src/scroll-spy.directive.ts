@@ -68,10 +68,14 @@ export class CngxScrollSpy {
       this.root();
       this.rootMargin();
 
-      if (!this.initialized) return;
+      if (!this.initialized) {
+        return;
+      }
 
       const cleanup = this.setupObserver();
-      if (cleanup) onCleanup(cleanup);
+      if (cleanup) {
+        onCleanup(cleanup);
+      }
     });
   }
 
@@ -91,10 +95,12 @@ export class CngxScrollSpy {
       .map((id) => this.doc.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
 
-    if (elements.length === 0) return;
+    if (elements.length === 0) {
+      return;
+    }
 
     const resolvedRoot = rootSelector
-      ? (this.doc.querySelector(rootSelector) as Element | null)
+      ? this.doc.querySelector(rootSelector)
       : null;
 
     // Fine-grained thresholds (0..1 in 0.1 steps) for accurate ratio tracking.
