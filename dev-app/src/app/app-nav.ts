@@ -25,6 +25,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'mat-table', path: 'common/data/mat-table' },
       { label: 'Paginate (List)', path: 'common/data/paginate-list' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
+      { label: 'Dialog', path: 'common/dialog/dialog' },
       { label: 'Async Click', path: 'common/interactive/async-click' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
       { label: 'Disclosure', path: 'common/interactive/disclosure' },

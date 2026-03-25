@@ -14,9 +14,10 @@
       "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
       "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
       "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
-      "@cngx/common/data": ["projects/common/data/public-api.ts"]
+      "@cngx/common/data": ["projects/common/data/public-api.ts"],
+      "@cngx/common/dialog": ["projects/common/dialog/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts"],
+  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

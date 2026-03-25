@@ -75,6 +75,11 @@ export const routes: Routes = [
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
       },
       {
+        path: 'dialog/dialog',
+        loadComponent: () =>
+          import('./demos/common/dialog/dialog-demo/dialog-demo.component').then((m) => m.DialogDemoComponent),
+      },
+      {
         path: 'interactive/async-click',
         loadComponent: () =>
           import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),

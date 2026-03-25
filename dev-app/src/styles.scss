@@ -4,6 +4,8 @@
 @use '../../projects/ui/src/lib/sidenav/sidenav-theme' as sidenav;
 @use '../../projects/ui/src/lib/skeleton/skeleton-theme' as skeleton;
 @use '../../projects/ui/src/lib/action-button/action-button-theme' as async-btn;
+@use '../../projects/common/dialog/src/dialog-theme' as dialog;
+@use '../../projects/common/dialog/src/bottom-sheet-theme' as bottom-sheet;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -35,6 +37,8 @@ html {
   @include sidenav.theme($theme);
   @include skeleton.theme($theme);
   @include async-btn.theme($theme);
+  @include dialog.theme($theme);
+  @include bottom-sheet.theme($theme);
 }
 
 [data-theme='dark'] {
@@ -44,6 +48,8 @@ html {
   @include sidenav.theme($dark-theme);
   @include skeleton.theme($dark-theme);
   @include async-btn.theme($dark-theme);
+  @include dialog.theme($dark-theme);
+  @include bottom-sheet.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
