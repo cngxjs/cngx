@@ -73,6 +73,65 @@ Ready-made speaker button that connects to `CngxSpeak` (headless,
 
 **Material theme:** `@use '@cngx/ui/src/lib/speak/speak-button-theme'`
 
+### CngxSkeletonContainer
+
+Skeleton loading container with built-in placeholder repetition. Wraps the
+headless `CngxSkeleton` atom with template projection so the consumer doesn't
+need `@if`/`@for` boilerplate.
+
+```html
+<cngx-skeleton [loading]="loading()" [count]="3">
+  <ng-template cngxSkeletonPlaceholder let-i let-last="last">
+    <div class="skeleton-card" [style.width]="last ? '60%' : '100%'"></div>
+  </ng-template>
+  <app-real-content />
+</cngx-skeleton>
+```
+
+**Inputs:** `loading` (boolean), `shimmer` (boolean, respects `prefers-reduced-motion`), `count` (number)
+
+**Template:** project `<ng-template cngxSkeletonPlaceholder>` for loading state; default `<ng-content>` for loaded state. Context: `$implicit` (index), `index`, `count`, `first`, `last`.
+
+**CSS Classes:** `cngx-skeleton`, `cngx-skeleton--loading`, `cngx-skeleton--shimmer`
+
+**Selector:** `cngx-skeleton` -- exportAs `"cngxSkeletonContainer"`
+
+### CngxActionButton
+
+Action button molecule with built-in async status communication. Composes
+`CngxAsyncClick` internally, adding template projection for pending/succeeded/failed
+states and an `aria-live` region for screen reader announcements.
+
+```html
+<cngx-action-button [action]="save">
+  Save
+  <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
+  <ng-template cngxSucceeded>Saved!</ng-template>
+  <ng-template cngxFailed let-err>{{ err }} -- retry?</ng-template>
+</cngx-action-button>
+```
+
+**Inputs:**
+
+| Input | Type | Default | Description |
+|-|-|-|-|
+| `action` | `AsyncAction` | required | Async action to execute on click |
+| `feedbackDuration` | `number` | `2000` | Duration in ms to show feedback state |
+| `enabled` | `boolean` | `true` | When `false`, clicks are ignored |
+| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Button type attribute |
+| `variant` | `ActionButtonVariant` | `'primary'` | Visual variant (`'primary'`, `'secondary'`, `'ghost'`) |
+| `pendingLabel` | `string` | -- | Fallback text while pending (when no `cngxPending` template) |
+| `succeededLabel` | `string` | -- | Fallback text after success (when no `cngxSucceeded` template) |
+| `failedLabel` | `string` | -- | Fallback text after failure (when no `cngxFailed` template) |
+| `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |
+| `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to `failedLabel`) |
+
+**Template directives:** `cngxPending`, `cngxSucceeded`, `cngxFailed` (project `<ng-template>` for each state)
+
+**CSS Classes:** `cngx-action-button`, `cngx-action-button--{variant}`
+
+**Selector:** `cngx-action-button` -- exportAs `"cngxActionButton"`
+
 ### CngxSidenav
 
 Declarative sidebar organism with dual-sidebar support, responsive mode
