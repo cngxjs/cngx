@@ -9,3 +9,5 @@ export { CngxIntersectionObserver } from './src/intersection-observer.directive'
 export { CngxMediaQuery } from './src/media-query.directive';
 export { CngxResizeObserver } from './src/resize-observer.directive';
 export { CngxScrollLock } from './src/scroll-lock.directive';
+export { CngxSkeleton } from './src/skeleton.directive';
+export { CngxInfiniteScroll } from './src/infinite-scroll.directive';
