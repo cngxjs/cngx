@@ -28,3 +28,7 @@ export { CngxLongPress } from './src/long-press.directive';
 export { CngxKeyboardShortcut } from './src/keyboard-shortcut.directive';
 export { CngxRipple } from './src/ripple.directive';
 export { CngxCopyText } from './src/copy-text.directive';
+export { withRetry, type RetryConfig, type RetryState } from './src/with-retry';
+export { optimistic, type OptimisticState } from './src/optimistic';
+export { CngxBeforeUnload } from './src/before-unload.directive';
+export { canDeactivateWhenClean } from './src/can-deactivate';
