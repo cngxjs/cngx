@@ -8,6 +8,8 @@
 @use '../../projects/common/dialog/src/bottom-sheet-theme' as bottom-sheet;
 @use '../../projects/common/interactive/src/ripple' as cngx-ripple;
 @use '../../projects/common/interactive/src/ripple-theme' as ripple;
+@use '../../projects/common/popover/src/tooltip-theme' as tooltip;
+@use '../../projects/common/popover/src/tooltip-indicator' as tooltip-indicator;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -42,7 +44,10 @@ html {
   @include dialog.theme($theme);
   @include bottom-sheet.theme($theme);
   @include ripple.theme($theme);
+  @include tooltip.theme($theme);
 }
+
+@include tooltip-indicator.touch-only();
 
 [data-theme='dark'] {
   @include mat.all-component-colors($dark-theme);
@@ -54,6 +59,7 @@ html {
   @include dialog.theme($dark-theme);
   @include bottom-sheet.theme($dark-theme);
   @include ripple.theme($dark-theme);
+  @include tooltip.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

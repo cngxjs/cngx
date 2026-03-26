@@ -56,6 +56,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Skeleton', path: 'common/layout/skeleton' },
       { label: 'StickyHeader', path: 'common/layout/sticky-header' },
       { label: 'Truncate', path: 'common/layout/truncate' },
+      { label: 'Popover', path: 'common/popover/popover' },
+      { label: 'Tooltip', path: 'common/popover/tooltip' },
     ],
   },
   {
