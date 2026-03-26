@@ -4,5 +4,5 @@
     "outDir": "../../out-tsc/spec",
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "a11y/**/*.spec.ts", "interactive/**/*.spec.ts", "layout/**/*.spec.ts", "data/**/*.spec.ts", "dialog/**/*.spec.ts"]
+  "include": ["src/**/*.d.ts", "src/**/*.spec.ts", "a11y/**/*.spec.ts", "interactive/**/*.spec.ts", "layout/**/*.spec.ts", "data/**/*.spec.ts", "dialog/**/*.spec.ts", "popover/**/*.spec.ts"]
 }

@@ -1,0 +1,55 @@
+// ─── cngx-tooltip indicator ──────────────────────────────────────
+//
+// Optional CSS-only indicator for tooltip triggers. Shows a small
+// info icon next to elements with `[cngxTooltip]`.
+//
+// By default, the indicator only appears on touch devices (hover: none).
+// To show on all devices, import the `always` mixin instead.
+//
+//   @use '@cngx/common/popover/tooltip-indicator' as indicator;
+//
+//   // Touch-only (recommended)
+//   @include indicator.touch-only();
+//
+//   // Always visible
+//   @include indicator.always();
+//
+// Customizable via CSS custom properties on the trigger element:
+//
+//   --cngx-tooltip-indicator-size      (default: 14px)
+//   --cngx-tooltip-indicator-gap       (default: 4px)
+//   --cngx-tooltip-indicator-color     (default: currentColor)
+//   --cngx-tooltip-indicator-opacity   (default: 0.5)
+//   --cngx-tooltip-indicator-icon      (default: info circle SVG)
+
+// Info circle icon (Heroicons 20/solid — MIT)
+$_default-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z' clip-rule='evenodd'/%3E%3C/svg%3E");
+
+@mixin _indicator-styles() {
+  [cngxTooltip]::after {
+    content: '';
+    display: inline-block;
+    width: var(--cngx-tooltip-indicator-size, 14px);
+    height: var(--cngx-tooltip-indicator-size, 14px);
+    margin-inline-start: var(--cngx-tooltip-indicator-gap, 4px);
+    vertical-align: middle;
+    background: var(--cngx-tooltip-indicator-color, currentColor);
+    mask-image: var(--cngx-tooltip-indicator-icon, #{$_default-icon});
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    opacity: var(--cngx-tooltip-indicator-opacity, 0.5);
+    pointer-events: none;
+  }
+}
+
+/// Show indicator only on touch devices (no hover capability).
+@mixin touch-only() {
+  @media (hover: none) {
+    @include _indicator-styles();
+  }
+}
+
+/// Show indicator on all devices (desktop + mobile).
+@mixin always() {
+  @include _indicator-styles();
+}
