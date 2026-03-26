@@ -140,20 +140,20 @@ describe('CngxPopover', () => {
 
   describe('Escape key', () => {
     it('should hide on Escape when closeOnEscape is true', () => {
-      const { fixture, popoverEl } = setup(BasicHost);
+      const { fixture } = setup(BasicHost);
       const host = fixture.componentInstance as BasicHost;
       host.popover().show();
-      popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       fixture.detectChanges();
       expect(host.popover().state()).toBe('closed');
     });
 
     it('should not hide on Escape when closeOnEscape is false', () => {
-      const { fixture, popoverEl } = setup(NoEscapeHost);
+      const { fixture } = setup(NoEscapeHost);
       const host = fixture.componentInstance as NoEscapeHost;
       host.popover().show();
       const stateBefore = host.popover().state();
-      popoverEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
       fixture.detectChanges();
       expect(host.popover().state()).toBe(stateBefore);
     });

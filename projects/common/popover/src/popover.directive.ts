@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import {
   computed,
   DestroyRef,
@@ -15,8 +16,31 @@ import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
 import type { PopoverMode, PopoverPlacement, PopoverState } from './popover.types';
 
-/** Module-level registry of open popovers for exclusive behavior. */
+/** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
+
+/** Single document-level Escape listener shared by all popover instances. */
+let escapeListenerInstalled = false;
+function installGlobalEscapeListener(doc: Document): void {
+  if (escapeListenerInstalled) {
+    return;
+  }
+  escapeListenerInstalled = true;
+  doc.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || openPopovers.size === 0) {
+      return;
+    }
+    // Route to the most recently opened (last in Set iteration order)
+    let last: CngxPopover | undefined;
+    for (const p of openPopovers) {
+      last = p;
+    }
+    if (last?.closeOnEscape()) {
+      e.stopPropagation();
+      last.hide();
+    }
+  });
+}
 
 /**
  * Signal-driven state machine for the native Popover API.
@@ -60,12 +84,12 @@ const openPopovers = new Set<CngxPopover>();
     '[style.position-anchor]': 'cssAnchorRef()',
     '[style.margin]': 'cssMargin()',
     '(toggle)': 'handleToggle($event)',
-    '(keydown.escape)': 'handleEscape()',
   },
 })
 export class CngxPopover {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly doc = inject(DOCUMENT);
 
   // ── Inputs ────────────────────────────────────────────────────────
 
@@ -132,7 +156,7 @@ export class CngxPopover {
     if (SUPPORTS_ANCHOR) {
       effect(() => {
         this.elRef.nativeElement.style.setProperty(
-          ANCHOR_AREA_PROPERTY,
+          ANCHOR_AREA_PROPERTY as string,
           POSITION_AREA[this.placement()],
         );
       });
@@ -177,6 +201,7 @@ export class CngxPopover {
     openPopovers.add(this);
     this.stateSignal.set('opening');
     this.elRef.nativeElement.showPopover();
+    installGlobalEscapeListener(this.doc);
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
         this.stateSignal.set('open');
@@ -207,12 +232,6 @@ export class CngxPopover {
     // Sync with browser when it closes the popover (e.g. popover="auto" light dismiss)
     if (e.newState === 'closed' && this.stateSignal() !== 'closed') {
       this.stateSignal.set('closed');
-    }
-  }
-
-  protected handleEscape(): void {
-    if (this.closeOnEscape()) {
-      this.hide();
     }
   }
 
