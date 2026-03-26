@@ -35,7 +35,9 @@ describe('withRetry', () => {
   });
 
   it('throws after all attempts exhausted', async () => {
-    const action = vi.fn().mockImplementation(async () => { throw new Error('always fails'); });
+    const action = vi.fn().mockImplementation(async () => {
+      throw new Error('always fails');
+    });
 
     const [retryable, state] = withRetry(action, { maxAttempts: 2, delay: 10, backoff: 'linear' });
 

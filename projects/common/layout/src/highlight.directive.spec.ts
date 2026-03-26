@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CngxHighlight } from './highlight.directive';
 
 @Component({
-  template: `<p [cngxHighlight]="term()" #hl="cngxHighlight">Angular Signals are powerful signals for Angular apps.</p>`,
+  template: `<p [cngxHighlight]="term()" #hl="cngxHighlight">
+    Angular Signals are powerful signals for Angular apps.
+  </p>`,
   imports: [CngxHighlight],
 })
 class TestHost {

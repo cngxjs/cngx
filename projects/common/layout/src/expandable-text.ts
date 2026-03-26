@@ -91,7 +91,7 @@ export class CngxExpandableToggle {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    'style': 'display:block',
+    style: 'display:block',
   },
   template: `
     <div [cngxTruncate]="lines()" [(expanded)]="expanded" #trunc="cngxTruncate">
@@ -99,13 +99,17 @@ export class CngxExpandableToggle {
     </div>
     @if (trunc.isClamped() || expanded()) {
       @if (customToggle(); as tpl) {
-        <ng-container [ngTemplateOutlet]="tpl.templateRef"
-                      [ngTemplateOutletContext]="toggleContext()" />
+        <ng-container
+          [ngTemplateOutlet]="tpl.templateRef"
+          [ngTemplateOutletContext]="toggleContext()"
+        />
       } @else {
-        <button type="button"
-                class="cngx-expandable-text__toggle"
-                [attr.aria-expanded]="expanded()"
-                (click)="expanded.set(!expanded())">
+        <button
+          type="button"
+          class="cngx-expandable-text__toggle"
+          [attr.aria-expanded]="expanded()"
+          (click)="expanded.set(!expanded())"
+        >
           {{ expanded() ? lessLabel() : moreLabel() }}
         </button>
       }

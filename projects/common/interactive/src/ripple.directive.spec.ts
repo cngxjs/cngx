@@ -38,8 +38,7 @@ describe('CngxRipple', () => {
 
   it('sets CSS custom properties on the wave', () => {
     const { host } = setup();
-    host.getBoundingClientRect = () =>
-      ({ left: 0, top: 0, width: 100, height: 50 }) as DOMRect;
+    host.getBoundingClientRect = () => ({ left: 0, top: 0, width: 100, height: 50 }) as DOMRect;
     host.dispatchEvent(new PointerEvent('pointerdown', { clientX: 30, clientY: 20 }));
     const wave = host.querySelector('.cngx-ripple__wave') as HTMLElement;
     expect(wave.style.getPropertyValue('--cngx-ripple-x')).toBe('30px');
