@@ -8,6 +8,14 @@ export { CngxPopover } from './src/popover.directive';
 export { CngxPopoverTrigger } from './src/popover-trigger.directive';
 export { CngxTooltip } from './src/tooltip.directive';
 
+// Floating UI fallback (opt-in)
+export {
+  CNGX_FLOATING_FALLBACK,
+  provideFloatingFallback,
+  type ComputePositionFn,
+  type FloatingFallbackConfig,
+} from './src/floating-fallback';
+
 // Panel molecule
 export type { CngxPopoverPanelConfig, PopoverPanelFeature } from './src/popover-panel.types';
 export {

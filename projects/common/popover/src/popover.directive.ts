@@ -7,6 +7,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   signal,
   untracked,
 } from '@angular/core';
@@ -14,6 +15,7 @@ import {
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type { PopoverMode, PopoverPlacement, PopoverState } from './popover.types';
 
 /** Module-level registry of open popovers (insertion-ordered). */
@@ -40,6 +42,24 @@ function installGlobalEscapeListener(doc: Document): void {
       last.hide();
     }
   });
+}
+
+/** Warns once when the Popover API is missing. */
+let popoverApiWarned = false;
+function warnMissingPopoverApi(el: HTMLElement): void {
+  if (popoverApiWarned || !isDevMode()) {
+    return;
+  }
+  if (typeof el.showPopover !== 'function') {
+    popoverApiWarned = true;
+    console.warn(
+      'CngxPopover: The native Popover API is not supported in this browser. ' +
+        'Install @oddbird/popover-polyfill and import it in your polyfills:\n\n' +
+        '  npm install @oddbird/popover-polyfill\n' +
+        '  // polyfills.ts\n' +
+        "  import '@oddbird/popover-polyfill';\n",
+    );
+  }
 }
 
 /**
@@ -90,6 +110,7 @@ export class CngxPopover {
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly doc = inject(DOCUMENT);
+  private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
 
   // ── Inputs ────────────────────────────────────────────────────────
 
@@ -156,7 +177,7 @@ export class CngxPopover {
     if (SUPPORTS_ANCHOR) {
       effect(() => {
         this.elRef.nativeElement.style.setProperty(
-          ANCHOR_AREA_PROPERTY as string,
+          ANCHOR_AREA_PROPERTY,
           POSITION_AREA[this.placement()],
         );
       });
@@ -187,6 +208,7 @@ export class CngxPopover {
 
   /** Open the popover. No-op if not `closed`. */
   show(): void {
+    warnMissingPopoverApi(this.elRef.nativeElement);
     if (this.stateSignal() !== 'closed') {
       return;
     }
@@ -202,6 +224,7 @@ export class CngxPopover {
     this.stateSignal.set('opening');
     this.elRef.nativeElement.showPopover();
     installGlobalEscapeListener(this.doc);
+    this.applyFloatingPosition();
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
         this.stateSignal.set('open');
@@ -236,6 +259,34 @@ export class CngxPopover {
   }
 
   // ── Private ───────────────────────────────────────────────────────
+
+  /**
+   * Apply Floating UI positioning when CSS Anchor is not supported
+   * and the consumer has provided the fallback via `provideFloatingFallback()`.
+   */
+  private applyFloatingPosition(): void {
+    if (SUPPORTS_ANCHOR || !this.floatingFallback) {
+      return;
+    }
+    const anchor = this.anchorElement();
+    if (!anchor) {
+      return;
+    }
+
+    const fb = this.floatingFallback;
+    const el = this.popoverElement;
+    const placement = FLOATING_PLACEMENT[this.placement()];
+    const offsetVal = this.offset();
+
+    // Build middleware: prepend offset if not already in the consumer's list
+    const middleware = fb.middleware ?? [];
+
+    void fb.computePosition(anchor, el, { placement, middleware }).then(({ x, y }) => {
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.margin = `${offsetVal}px`;
+    });
+  }
 
   private get popoverElement(): HTMLElement {
     return this.elRef.nativeElement;

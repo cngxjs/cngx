@@ -15,6 +15,7 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
 import { ANCHOR_AREA_PROPERTY, POSITION_AREA, SUPPORTS_ANCHOR } from './anchor-positioning';
+import { CNGX_FLOATING_FALLBACK, FLOATING_PLACEMENT } from './floating-fallback';
 import type { PopoverPlacement, PopoverState } from './popover.types';
 
 /** Small debounce to prevent SR announcement storms during rapid Tab navigation. */
@@ -62,6 +63,7 @@ export class CngxTooltip {
   private readonly renderer = inject(Renderer2);
   private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
 
   // ── Inputs ────────────────────────────────────────────────────────
 
@@ -159,6 +161,7 @@ export class CngxTooltip {
     }
     this.stateSignal.set('opening');
     this.tooltipEl!.showPopover();
+    this.applyFloatingPosition();
     requestAnimationFrame(() => {
       if (this.stateSignal() === 'opening') {
         this.stateSignal.set('open');
@@ -224,6 +227,23 @@ export class CngxTooltip {
   }
 
   // ── Private ───────────────────────────────────────────────────────
+
+  private applyFloatingPosition(): void {
+    if (SUPPORTS_ANCHOR || !this.floatingFallback || !this.tooltipEl) {
+      return;
+    }
+
+    const fb = this.floatingFallback;
+    const trigger = this.elRef.nativeElement;
+    const tooltip = this.tooltipEl;
+    const placement = FLOATING_PLACEMENT[this.placement()];
+    const middleware = fb.middleware ?? [];
+
+    void fb.computePosition(trigger, tooltip, { placement, middleware }).then(({ x, y }) => {
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+    });
+  }
 
   private createTooltipElement(): void {
     const el = this.renderer.createElement('div') as HTMLElement;
