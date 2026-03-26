@@ -10,6 +10,7 @@
 @use '../../projects/common/interactive/src/ripple-theme' as ripple;
 @use '../../projects/common/popover/src/tooltip-theme' as tooltip;
 @use '../../projects/common/popover/src/tooltip-indicator' as tooltip-indicator;
+@use '../../projects/common/popover/src/popover-panel-theme' as panel;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -45,6 +46,7 @@ html {
   @include bottom-sheet.theme($theme);
   @include ripple.theme($theme);
   @include tooltip.theme($theme);
+  @include panel.theme($theme);
 }
 
 @include tooltip-indicator.touch-only();
@@ -60,6 +62,7 @@ html {
   @include bottom-sheet.theme($dark-theme);
   @include ripple.theme($dark-theme);
   @include tooltip.theme($dark-theme);
+  @include panel.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

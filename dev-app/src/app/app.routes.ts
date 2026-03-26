@@ -235,6 +235,11 @@ export const routes: Routes = [
           import('./demos/common/popover/popover-demo/popover-demo.component').then((m) => m.PopoverDemoComponent),
       },
       {
+        path: 'popover/popover-panel',
+        loadComponent: () =>
+          import('./demos/common/popover/popover-panel-demo/popover-panel-demo.component').then((m) => m.PopoverPanelDemoComponent),
+      },
+      {
         path: 'popover/tooltip',
         loadComponent: () =>
           import('./demos/common/popover/tooltip-demo/tooltip-demo.component').then((m) => m.TooltipDemoComponent),
