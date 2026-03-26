@@ -16,4 +16,5 @@ export {
   type CngxSkeletonPlaceholderContext,
 } from './lib/skeleton/skeleton-placeholder';
 export { CngxActionButton, type ActionButtonVariant } from './lib/action-button/action-button';
-export { CngxPending, CngxSucceeded, CngxFailed } from './lib/action-button/action-button-status';
+// Re-export from @cngx/common/interactive for backwards compatibility
+export { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';
