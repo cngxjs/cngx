@@ -56,11 +56,9 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
         
   <div style="max-width:320px">
     <cngx-card>
-      <img cngxCardMedia
-           [decorative]="false"
-           aspectRatio="16/9"
-           src="https://picsum.photos/seed/cngx/640/360"
-           alt="Landscape photo" />
+      <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+        <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
+      </div>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Beautiful Place</h3>
         <span cngxCardSubtitle>Somewhere in the mountains</span>
@@ -112,7 +110,7 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
   <div style="max-width:320px">
     <cngx-card [loading]="loading()">
       @if (loading()) {
-        <cngx-card-skeleton [lines]="3" [showMedia]="true" />
+        <cngx-card-skeleton [lines]="2" />
       } @else {
         <header cngxCardHeader>
           <h3 cngxCardTitle>Vitals Overview</h3>
@@ -253,11 +251,9 @@ export class CardDemoComponent {
   protected loading = signal(false);`;
   protected readonly _srcHtml1 = `<div style="max-width:320px">
     <cngx-card>
-      <img cngxCardMedia
-           [decorative]="false"
-           aspectRatio="16/9"
-           src="https://picsum.photos/seed/cngx/640/360"
-           alt="Landscape photo" />
+      <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
+        <img src="https://picsum.photos/seed/cngx/640/360" alt="Landscape photo" />
+      </div>
       <header cngxCardHeader>
         <h3 cngxCardTitle>Beautiful Place</h3>
         <span cngxCardSubtitle>Somewhere in the mountains</span>
@@ -307,7 +303,7 @@ export class CardDemoComponent {
   <div style="max-width:320px">
     <cngx-card [loading]="loading()">
       @if (loading()) {
-        <cngx-card-skeleton [lines]="3" [showMedia]="true" />
+        <cngx-card-skeleton [lines]="2" />
       } @else {
         <header cngxCardHeader>
           <h3 cngxCardTitle>Vitals Overview</h3>
