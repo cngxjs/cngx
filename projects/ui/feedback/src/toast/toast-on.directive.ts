@@ -1,7 +1,7 @@
 import { Directive, effect, inject, input } from '@angular/core';
 import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
-import { CngxToastService } from './toast.service';
+import { CngxToaster } from './toast.service';
 
 /**
  * Declarative state-to-toast bridge.
@@ -39,7 +39,10 @@ import { CngxToastService } from './toast.service';
   standalone: true,
 })
 export class CngxToastOn {
-  private readonly toast = inject(CngxToastService);
+  private readonly toast = inject(CngxToaster, { optional: true });
+
+  // Validated non-null ref — constructor throws if missing
+  private readonly toastService: CngxToaster;
 
   /** The async state to watch. */
   readonly state = input.required<CngxAsyncState<unknown>>({ alias: 'cngxToastOn' });
@@ -60,13 +63,20 @@ export class CngxToastOn {
   readonly toastErrorDuration = input<number | 'persistent'>('persistent');
 
   constructor() {
+    if (!this.toast) {
+      throw new Error(
+        '[cngxToastOn] CngxToaster not found. ' +
+        'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
+      );
+    }
+    this.toastService = this.toast;
+
     let previousStatus: AsyncStatus = 'idle';
 
     effect(() => {
       const s = this.state();
       const status = s.status();
 
-      // Only fire on actual transitions, not initial state
       if (status === previousStatus) {
         return;
       }
@@ -75,7 +85,7 @@ export class CngxToastOn {
       if (status === 'success') {
         const msg = this.toastSuccess();
         if (msg) {
-          this.toast.show({
+          this.toastService.show({
             message: msg,
             severity: 'success',
             duration: this.toastSuccessDuration(),
@@ -93,7 +103,7 @@ export class CngxToastOn {
                 ? err.message
                 : `${err as string}`
               : undefined;
-          this.toast.show({
+          this.toastService.show({
             message: detail ? `${msg}: ${detail}` : msg,
             severity: 'error',
             duration: this.toastErrorDuration(),

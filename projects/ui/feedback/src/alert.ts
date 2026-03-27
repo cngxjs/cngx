@@ -66,10 +66,9 @@ export class CngxAlertIcon {
     '[class.cngx-alert--success]': 'severity() === "success"',
     '[class.cngx-alert--warning]': 'severity() === "warning"',
     '[class.cngx-alert--error]': 'severity() === "error"',
-    '[class.cngx-alert--hidden]': '!isVisible()',
-    '[attr.role]': 'ariaRole()',
-    '[attr.aria-atomic]': '"true"',
-    '[attr.aria-label]': 'title() || null',
+    '[attr.role]': 'isVisible() ? ariaRole() : null',
+    '[attr.aria-atomic]': 'isVisible() ? "true" : null',
+    '[attr.aria-label]': 'isVisible() ? (title() || null) : null',
     '[attr.hidden]': '!isVisible() || null',
   },
   template: `
@@ -234,6 +233,8 @@ export class CngxAlert {
   // ── State-driven visibility ─────────────────────────────────────────
 
   private readonly manualDismissed = signal(false);
+  private readonly minDisplayHold = signal(false);
+  private minDisplayTimer: ReturnType<typeof setTimeout> | undefined;
 
   /** @internal — ARIA role: 'alert' for error/warning, 'status' for info/success. */
   protected readonly ariaRole = computed(() => {
@@ -241,7 +242,13 @@ export class CngxAlert {
     return s === 'error' || s === 'warning' ? 'alert' : 'status';
   });
 
-  /** @internal */
+  /**
+   * @internal — visibility logic:
+   * - No state binding: always visible (static alert)
+   * - State bound: visible on error OR success (with 3s min-display for success)
+   * - Manual dismiss overrides everything
+   * - minDisplayHold keeps visible during the 3s window after success
+   */
   protected readonly isVisible = computed(() => {
     if (this.manualDismissed()) {
       return false;
@@ -252,21 +259,64 @@ export class CngxAlert {
       return true;
     }
 
-    return s.status() === 'error';
+    const status = s.status();
+
+    // Error/warning: always show
+    if (status === 'error') {
+      return true;
+    }
+
+    // Success: show briefly (minDisplayHold manages the 3s window)
+    if (status === 'success' && this.minDisplayHold()) {
+      return true;
+    }
+
+    // Loading after error: keep error alert visible during retry
+    if (status === 'loading' && this.minDisplayHold()) {
+      return true;
+    }
+
+    return false;
   });
 
   constructor() {
+    // Reset manual dismiss and start min-display timer on state transitions
     effect(() => {
       const s = this.state();
-      if (s?.status() === 'error') {
+      if (!s) {
+        return;
+      }
+      const status = s.status();
+
+      if (status === 'error') {
         this.manualDismissed.set(false);
+        this.minDisplayHold.set(true);
+        this.clearMinDisplayTimer();
+      }
+
+      if (status === 'success') {
+        // Start 3s min-display timer — alert stays visible then auto-hides
+        this.clearMinDisplayTimer();
+        this.minDisplayHold.set(true);
+        this.minDisplayTimer = setTimeout(() => {
+          this.minDisplayTimer = undefined;
+          this.minDisplayHold.set(false);
+        }, 3000);
       }
     });
+  }
+
+  private clearMinDisplayTimer(): void {
+    if (this.minDisplayTimer !== undefined) {
+      clearTimeout(this.minDisplayTimer);
+      this.minDisplayTimer = undefined;
+    }
   }
 
   /** @internal */
   protected handleDismiss(): void {
     this.manualDismissed.set(true);
+    this.clearMinDisplayTimer();
     this.dismissed.emit();
   }
 }

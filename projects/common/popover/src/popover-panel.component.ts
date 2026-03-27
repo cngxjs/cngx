@@ -90,7 +90,7 @@ import { CngxPopover } from './popover.directive';
       @if (closeTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl.templateRef" />
       } @else {
-        <cngx-close-button class="cngx-popover-panel__close" (click)="popover.hide()" />
+        <cngx-close-button label="Close" class="cngx-popover-panel__close" (click)="popover.hide()" />
       }
     }
 

@@ -54,7 +54,6 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
     '[class.cngx-loading-indicator--spinner]': 'variant() === "spinner"',
     '[class.cngx-loading-indicator--bar]': 'variant() === "bar"',
     '[attr.role]': '"status"',
-    '[attr.aria-live]': '"polite"',
     '[attr.aria-label]': 'visible() ? label() : null',
     '[attr.aria-busy]': 'isActive() || null',
   },

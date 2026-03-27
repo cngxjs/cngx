@@ -9,7 +9,7 @@ import {
 import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
 
 import type { AlertSeverity } from './alert';
-import { CngxToastService } from './toast/toast.service';
+import { CngxToaster } from './toast/toast.service';
 
 /**
  * Global configuration for all feedback components.
@@ -178,7 +178,7 @@ export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
 /**
  * Enable the toast system within `provideFeedback()`.
  *
- * Provides `CngxToastService` at the environment level.
+ * Provides `CngxToaster` at the environment level.
  * Without this feature, `CngxToastOn` and `CngxToastOutlet` will throw
  * a `NullInjectorError` at runtime.
  *
@@ -204,6 +204,6 @@ export function withToasts(opts?: {
       toastDefaultDuration: opts?.defaultDuration,
       toastDedupWindow: opts?.dedupWindow,
     }),
-    _providers: [CngxToastService],
+    _providers: [CngxToaster],
   };
 }

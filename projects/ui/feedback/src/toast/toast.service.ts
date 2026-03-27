@@ -39,6 +39,8 @@ export interface ToastState {
   readonly config: Required<Pick<ToastConfig, 'message' | 'severity' | 'dismissible'>> &
     Pick<ToastConfig, 'action'> & { duration: number | 'persistent' };
   readonly createdAt: number;
+  /** Timestamp when the current timer started (created or last resumed). */
+  readonly timerStartedAt: number;
   /** Dedup counter — incremented when identical toast fires again. */
   readonly count: number;
   /** Remaining ms when timer was paused (hover/focus). `undefined` = not paused. */
@@ -60,7 +62,7 @@ export interface ToastState {
  * @category feedback
  */
 @Injectable()
-export class CngxToastService {
+export class CngxToaster {
   private readonly destroyRef = inject(DestroyRef);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private nextId = 0;
@@ -122,6 +124,7 @@ export class CngxToastService {
       id,
       config: { message: config.message, severity, duration, dismissible, action: config.action },
       createdAt: now,
+      timerStartedAt: now,
       count: 1,
       pausedRemaining: undefined,
       timer: duration !== 'persistent' ? this.startTimer(id, duration) : undefined,
@@ -139,7 +142,7 @@ export class CngxToastService {
         if (t.id !== id || t.timer === undefined) {
           return t;
         }
-        const elapsed = Date.now() - t.createdAt;
+        const elapsed = Date.now() - t.timerStartedAt;
         const duration = t.config.duration;
         if (typeof duration !== 'number') {
           return t;
@@ -160,6 +163,7 @@ export class CngxToastService {
         return {
           ...t,
           pausedRemaining: undefined,
+          timerStartedAt: Date.now(),
           timer: this.startTimer(t.id, t.pausedRemaining),
         };
       }),
@@ -215,5 +219,5 @@ export class CngxToastService {
  * ```
  */
 export function provideToasts(): EnvironmentProviders {
-  return makeEnvironmentProviders([CngxToastService]);
+  return makeEnvironmentProviders([CngxToaster]);
 }

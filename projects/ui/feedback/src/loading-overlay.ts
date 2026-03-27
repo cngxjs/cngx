@@ -146,25 +146,35 @@ export class CngxLoadingOverlay {
   private readonly spinnerEl = viewChild<ElementRef<HTMLElement>>('spinnerEl');
 
   constructor() {
+    // Phase 1: save focus when loading starts (immediate, before delay)
     effect(() => {
       const active = this.isActive();
-
       if (active) {
-        // Phase 1: save focus if it's inside the content wrapper
         const activeEl = this.doc.activeElement as HTMLElement | null;
         const wrapper = this.contentWrapper().nativeElement;
         if (activeEl && wrapper.contains(activeEl)) {
           this.savedFocus.set(activeEl);
         }
-        // Phase 2: move focus to spinner after a tick (needs to be in DOM)
+      }
+    });
+
+    // Phase 2: move focus to spinner when overlay becomes visible (after delay)
+    effect(() => {
+      const vis = this.visible();
+      if (vis) {
         queueMicrotask(() => {
           const spinner = this.spinnerEl()?.nativeElement;
-          if (spinner && this.isActive()) {
+          if (spinner) {
             spinner.focus({ preventScroll: true });
           }
         });
-      } else {
-        // Phase 3: restore focus
+      }
+    });
+
+    // Phase 3: restore focus when loading ends
+    effect(() => {
+      const active = this.isActive();
+      if (!active) {
         const saved = this.savedFocus();
         if (saved) {
           this.savedFocus.set(null);

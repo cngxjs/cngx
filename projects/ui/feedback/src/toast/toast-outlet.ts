@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
-import { CngxToastService, type ToastState } from './toast.service';
+import { CngxToaster, type ToastState } from './toast.service';
 
 /** Position for the toast stack. */
 export type ToastPosition =
@@ -24,7 +24,7 @@ export type ToastPosition =
 /**
  * Toast outlet — renders the toast stack at a fixed viewport position.
  *
- * Place once in the app shell. Reads from `CngxToastService` reactively.
+ * Place once in the app shell. Reads from `CngxToaster` reactively.
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
  * @usageNotes
@@ -60,8 +60,8 @@ export type ToastPosition =
             ? 'alert'
             : 'status'
         "
-        (mouseenter)="service.pauseTimer(toast.id)"
-        (mouseleave)="service.resumeTimer(toast.id)"
+        (pointerenter)="service.pauseTimer(toast.id)"
+        (pointerleave)="service.resumeTimer(toast.id)"
         (focusin)="service.pauseTimer(toast.id)"
         (focusout)="service.resumeTimer(toast.id)"
       >
@@ -269,7 +269,7 @@ export type ToastPosition =
   `,
 })
 export class CngxToastOutlet {
-  protected readonly service = inject(CngxToastService);
+  protected readonly service = inject(CngxToaster);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
 
   /** Stack position. */
@@ -284,11 +284,12 @@ export class CngxToastOutlet {
   /** @internal */
   protected readonly positionClass = computed(() => `cngx-toast-outlet--${this.position()}`);
 
-  /** @internal — slice to maxVisible. */
+  /** @internal — slice to maxVisible, respecting insert position. */
   protected readonly visibleToasts = computed(() => {
     const all = this.service.toasts();
     const max = this.maxVisible();
-    return all.length > max ? all.slice(0, max) : all;
+    const sliced = all.length > max ? all.slice(0, max) : all;
+    return this.insertPosition() === 'end' ? [...sliced].reverse() : sliced;
   });
 
   /** @internal — resolve icon component from global config or null. */

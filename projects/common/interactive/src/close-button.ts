@@ -115,8 +115,12 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
   `,
 })
 export class CngxCloseButton {
-  /** Accessible label for the button. */
-  readonly label = input<string>('Close');
+  /**
+   * Accessible label for the button.
+   * Default `"Close"` is generic — provide a contextual label for standalone use
+   * (e.g. `"Close dialog"`, `"Dismiss notification"`).
+   */
+  readonly label = input.required<string>();
 
   /** @internal — global icon from CNGX_CLOSE_ICON token. */
   protected readonly customIcon = inject(CNGX_CLOSE_ICON, { optional: true });

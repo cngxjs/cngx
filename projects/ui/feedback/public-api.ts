@@ -18,7 +18,7 @@ export {
   withToasts,
 } from './src/feedback-config';
 export {
-  CngxToastService,
+  CngxToaster,
   provideToasts,
   type ToastConfig,
   type ToastRef,
