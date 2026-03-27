@@ -25,6 +25,8 @@ export const STORY: DemoSpec = {
     '<p>Selection is a two-way <code>model()</code>. Disabled cards communicate <em>why</em> via <code>aria-describedby</code>.</p>',
   moduleImports: [
     "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';",
+    "import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';",
+    "import { CngxDisclosure } from '@cngx/common/interactive';",
   ],
   setup: `
   protected selected = signal(false);
@@ -225,6 +227,76 @@ export const STORY: DemoSpec = {
         <button class="chip">Edit</button>
         <button class="chip">Delete</button>
       </div>
+    </cngx-card>
+  </div>`,
+    },
+    {
+      title: 'Card with Expandable Text',
+      subtitle:
+        'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxExpandableText', 'CngxExpandableToggle'],
+      template: `
+  <div style="max-width:400px">
+    <cngx-card>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Patient Notes</h3>
+      </header>
+      <div cngxCardBody>
+        <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">
+          Patient Maria Muster was admitted on 15.03.2026 with recurring lower back pain.
+          Initial assessment shows limited range of motion in lumbar spine. Prescribed
+          physiotherapy 3x weekly. Follow-up MRI scheduled for 01.04.2026. Patient reports
+          pain level 6/10 on admission, reduced to 4/10 after initial treatment.
+          Medication adjusted: Ibuprofen 400mg 3x daily, Pantoprazol 20mg 1x daily.
+          Social history: lives alone, needs home care support for daily activities.
+          Next evaluation planned for 22.03.2026.
+          <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
+            <button (click)="toggle()" class="chip" style="margin-top:8px">
+              {{ expanded ? 'Show less' : 'Read more' }}
+            </button>
+          </ng-template>
+        </cngx-expandable-text>
+      </div>
+    </cngx-card>
+  </div>`,
+    },
+    {
+      title: 'Card with Disclosure (Expand/Collapse)',
+      subtitle:
+        'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxDisclosure'],
+      template: `
+  <div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
+    <cngx-card>
+      <header cngxCardHeader cngxDisclosure #d1="cngxDisclosure" [controls]="'detail-1'"
+              style="cursor:pointer;user-select:none">
+        <h3 cngxCardTitle>1000004: Angst</h3>
+        <span cngxCardSubtitle>Status: Aktiv | {{ d1.opened() ? 'Expanded' : 'Collapsed' }}</span>
+      </header>
+      @if (d1.opened()) {
+        <div cngxCardBody id="detail-1">
+          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+            Hat vorbeugende/therapeutische Massnahmen erlernt und wendet sie an.
+            Evaluierungsdatum: 17.10.2025. Setzt Hilfsmittel fachgerecht und
+            selbststaendig ein. Evaluierungsdatum: 27.03.2026.
+          </p>
+        </div>
+      }
+    </cngx-card>
+    <cngx-card>
+      <header cngxCardHeader cngxDisclosure #d2="cngxDisclosure" [controls]="'detail-2'"
+              style="cursor:pointer;user-select:none">
+        <h3 cngxCardTitle>3000004: Denkprozess veraendert</h3>
+        <span cngxCardSubtitle>Status: Aktiv | {{ d2.opened() ? 'Expanded' : 'Collapsed' }}</span>
+      </header>
+      @if (d2.opened()) {
+        <div cngxCardBody id="detail-2">
+          <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+            Gefahrenquellen in der Wohnung sind reduziert/ausgeschaltet.
+            Kann Tagesablauf selbst gestalten.
+          </p>
+        </div>
+      }
     </cngx-card>
   </div>`,
     },

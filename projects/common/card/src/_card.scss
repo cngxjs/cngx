@@ -11,7 +11,7 @@ cngx-card {
     border-color 150ms ease,
     background 150ms ease;
   min-height: 44px;
-  min-width: 44px;
+  min-width: var(--cngx-card-min-width, 120px);
   touch-action: manipulation;
 
   // --- Interactive ---
