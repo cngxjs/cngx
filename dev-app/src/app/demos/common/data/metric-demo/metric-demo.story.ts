@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Metric',
   navLabel: 'Metric',
-  navCategory: 'card',
+  navCategory: 'data',
   description:
     'Displays a locale-aware formatted number with optional unit. Composable — works inside any card variant or standalone.',
   apiComponents: ['CngxMetric'],
@@ -11,7 +11,7 @@ export const STORY: DemoSpec = {
     '<p><code>cngx-metric</code> uses <code>Intl.NumberFormat</code> with the injected <code>LOCALE_ID</code>. ' +
     'Null values render as an em-dash. The <code>aria-label</code> includes value and unit.</p>',
   moduleImports: [
-    "import { CngxMetric } from '@cngx/common/card';",
+    "import { CngxMetric } from '@cngx/common/data';",
     "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
   ],
   sections: [

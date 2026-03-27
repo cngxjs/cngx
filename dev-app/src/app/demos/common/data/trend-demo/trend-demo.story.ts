@@ -3,7 +3,7 @@ import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 export const STORY: DemoSpec = {
   title: 'Trend',
   navLabel: 'Trend',
-  navCategory: 'card',
+  navCategory: 'data',
   description:
     'Displays a directional trend indicator with arrow icon and formatted percentage. Consumer can override the SR label for full context.',
   apiComponents: ['CngxTrend'],
@@ -12,8 +12,9 @@ export const STORY: DemoSpec = {
     'The <code>label</code> input overrides the generated SR label — the consumer knows context better ' +
     '("vs. last month" vs. the generic default).</p>',
   moduleImports: [
-    "import { CngxTrend } from '@cngx/common/card';",
-    "import { CngxMetric, CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
+    "import { CngxTrend } from '@cngx/common/data';",
+    "import { CngxMetric } from '@cngx/common/data';",
+    "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
   ],
   sections: [
     {

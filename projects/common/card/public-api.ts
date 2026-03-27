@@ -22,7 +22,5 @@ export { CngxCardSkeleton } from './src/card-skeleton.component';
 export { CngxCardGrid } from './src/card-grid.component';
 export { CngxCardGridEmpty } from './src/card-grid-empty.directive';
 
-// Composable atoms
-export { CngxMetric } from './src/metric.component';
-export { CngxTrend } from './src/trend.component';
+// Card-specific atoms
 export { CngxCardTimestamp } from './src/card-timestamp.component';

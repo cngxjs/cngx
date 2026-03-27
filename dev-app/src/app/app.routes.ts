@@ -80,16 +80,6 @@ export const routes: Routes = [
           import('./demos/common/card/card-grid-demo/card-grid-demo.component').then((m) => m.CardGridDemoComponent),
       },
       {
-        path: 'card/metric',
-        loadComponent: () =>
-          import('./demos/common/card/metric-demo/metric-demo.component').then((m) => m.MetricDemoComponent),
-      },
-      {
-        path: 'card/trend',
-        loadComponent: () =>
-          import('./demos/common/card/trend-demo/trend-demo.component').then((m) => m.TrendDemoComponent),
-      },
-      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
@@ -100,6 +90,11 @@ export const routes: Routes = [
           import('./demos/common/data/mat-table-demo/mat-table-demo.component').then((m) => m.MatTableDemoComponent),
       },
       {
+        path: 'data/metric',
+        loadComponent: () =>
+          import('./demos/common/data/metric-demo/metric-demo.component').then((m) => m.MetricDemoComponent),
+      },
+      {
         path: 'data/paginate-list',
         loadComponent: () =>
           import('./demos/common/data/paginate-list-demo/paginate-list.component').then((m) => m.PaginateListDemoComponent),
@@ -108,6 +103,11 @@ export const routes: Routes = [
         path: 'data/smart-data-source',
         loadComponent: () =>
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
+      },
+      {
+        path: 'data/trend',
+        loadComponent: () =>
+          import('./demos/common/data/trend-demo/trend-demo.component').then((m) => m.TrendDemoComponent),
       },
       {
         path: 'dialog/dialog',
