@@ -39,10 +39,10 @@ import {
       <div class="cngx-card-skeleton__media"></div>
     }
     <div class="cngx-card-skeleton__title"></div>
-    @for (_ of lineArray(); track $index) {
+    @for (_ of lineArray(); track $index; let last = $last) {
       <div
         class="cngx-card-skeleton__line"
-        [style.width]="$index === lineArray().length - 1 ? '60%' : '100%'"
+        [style.width]="last ? '60%' : '100%'"
       ></div>
     }
   `,

@@ -115,9 +115,10 @@ export class CngxCardGrid {
   readonly activeEmptyTemplate = computed(() => {
     const reason = this.emptyReason();
     const templates = this.emptyTemplates();
-    return (
-      templates.find((t) => t.reason() === reason) ??
-      templates.find((t) => !t.reason() || t.reason() === '')
-    );
+    const fallback = templates.find((t) => !t.reason());
+    if (!reason) {
+      return fallback;
+    }
+    return templates.find((t) => t.reason() === reason) ?? fallback;
   });
 }

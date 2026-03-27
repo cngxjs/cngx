@@ -100,10 +100,11 @@ cngx-card {
 
 // --- Slots ---
 .cngx-card__media {
-  margin: calc(-1 * var(--cngx-card-padding, 16px));
+  margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
   margin-bottom: 0;
   overflow: hidden;
-  border-radius: var(--cngx-card-radius, 12px) var(--cngx-card-radius, 12px) 0 0;
+  border-radius: var(--cngx-card-radius, var(--cngx-radius-md, 12px))
+    var(--cngx-card-radius, var(--cngx-radius-md, 12px)) 0 0;
 
   img,
   video {

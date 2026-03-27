@@ -46,7 +46,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  hostDirectives: [{ directive: CngxRovingItem }],
+  hostDirectives: [{ directive: CngxRovingItem, inputs: [], outputs: [] }],
   host: {
     class: 'cngx-card',
     '[attr.role]': 'hostRole()',
@@ -54,7 +54,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
     '[attr.href]': 'hostHref()',
     '[attr.aria-label]': 'ariaLabel() || null',
     '[attr.aria-busy]': 'loading() || null',
-    '[attr.aria-selected]': 'selectable() ? selected() : null',
+    '[attr.aria-selected]': 'interactive() && selectable() ? selected() : null',
     '[attr.aria-disabled]': 'disabled() || null',
     '[attr.aria-describedby]': 'describedByIds()',
     '[class.cngx-card--interactive]': 'interactive()',
@@ -75,7 +75,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
 
     <span
       [id]="disabledReasonId"
-      [attr.aria-hidden]="!disabled() || !disabledReason()"
+      [attr.aria-hidden]="disabled() && disabledReason() ? null : true"
       class="cngx-sr-only"
     >
       {{ disabledReason() }}
@@ -160,23 +160,17 @@ export class CngxCard {
   /** @internal */
   protected readonly liveRegionId = `${this.uid}-live`;
 
-  /** @internal IDs for `aria-describedby`. */
+  /** @internal IDs for `aria-describedby` — always present, aria-hidden controls what SR reads. */
   protected readonly describedByIds = computed(() => {
-    const ids: string[] = [];
-    if (this.disabled() && this.disabledReason()) {
-      ids.push(this.disabledReasonId);
-    }
-    return ids.length ? ids.join(' ') : null;
+    const ids = [this.disabledReasonId];
+    return ids.join(' ');
   });
 
   /** @internal SR live announcement for state changes. */
   protected readonly liveAnnouncement = computed(() => {
-    if (this.loading()) {
-      return 'Loading';
-    }
-    if (this.selected()) {
-      return 'Selected';
-    }
+    if (this.loading()) return 'Loading';
+    if (this.selectable() && this.selected()) return 'Selected';
+    if (this.selectable() && !this.selected()) return 'Deselected';
     return '';
   });
 
