@@ -6,7 +6,7 @@ import {
   makeEnvironmentProviders,
   signal,
 } from '@angular/core';
-import { Subject } from 'rxjs';
+import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from '../alert';
 import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
@@ -30,7 +30,7 @@ export interface ToastRef {
   /** Programmatically dismiss this toast. */
   dismiss(): void;
   /** Emits after the toast is fully removed (post-animation). */
-  afterDismissed(): Subject<void>;
+  afterDismissed(): Observable<void>;
 }
 
 /** Internal toast state tracked by the service. */
@@ -40,16 +40,14 @@ export interface ToastState {
     Pick<ToastConfig, 'action'> & { duration: number | 'persistent' };
   readonly createdAt: number;
   /** Dedup counter — incremented when identical toast fires again. */
-  count: number;
+  readonly count: number;
   /** Remaining ms when timer was paused (hover/focus). `undefined` = not paused. */
-  pausedRemaining: number | undefined;
+  readonly pausedRemaining: number | undefined;
   /** Timer handle for auto-dismiss. */
-  timer: ReturnType<typeof setTimeout> | undefined;
+  readonly timer: ReturnType<typeof setTimeout> | undefined;
   /** Subject that emits on dismiss. */
   readonly dismissed$: Subject<void>;
 }
-
-let nextId = 0;
 
 /**
  * Feature-scoped toast service — not `providedIn: 'root'`.
@@ -65,6 +63,7 @@ let nextId = 0;
 export class CngxToastService {
   private readonly destroyRef = inject(DestroyRef);
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
+  private nextId = 0;
 
   /** Reactive toast stack — read by `CngxToastOutlet`. */
   readonly toasts = signal<readonly ToastState[]>([]);
@@ -102,20 +101,21 @@ export class CngxToastService {
     );
 
     if (existing) {
-      existing.count++;
-      // Reset timer
       if (existing.timer !== undefined) {
         clearTimeout(existing.timer);
       }
-      if (duration !== 'persistent') {
-        existing.timer = this.startTimer(existing.id, duration);
-      }
-      // Force signal update
-      this.toasts.update((ts) => [...ts]);
+      const newTimer = duration !== 'persistent' ? this.startTimer(existing.id, duration) : undefined;
+      this.toasts.update((ts) =>
+        ts.map((t) =>
+          t.id === existing.id
+            ? { ...t, count: t.count + 1, timer: newTimer, pausedRemaining: undefined }
+            : t,
+        ),
+      );
       return this.createRef(existing);
     }
 
-    const id = nextId++;
+    const id = this.nextId++;
     const dismissed$ = new Subject<void>();
     const state: ToastState = {
       id,
@@ -198,7 +198,7 @@ export class CngxToastService {
   private createRef(state: ToastState): ToastRef {
     return {
       dismiss: () => this.dismiss(state.id),
-      afterDismissed: () => state.dismissed$,
+      afterDismissed: () => state.dismissed$.asObservable(),
     };
   }
 }

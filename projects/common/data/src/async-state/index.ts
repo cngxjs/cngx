@@ -5,3 +5,4 @@ export {
   type ReactiveAsyncState,
   type InjectAsyncStateOptions,
 } from './inject-async-state';
+export { resolveAsyncView, type AsyncView } from './resolve-view';

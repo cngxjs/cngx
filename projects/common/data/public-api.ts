@@ -21,7 +21,12 @@ export {
   injectAsyncState,
   type ReactiveAsyncState,
   type InjectAsyncStateOptions,
+  resolveAsyncView,
+  type AsyncView,
 } from './src/async-state';
+
+// Async structural directive
+export { CngxAsync, type CngxAsyncContext } from './src/async.directive';
 
 // Display atoms
 export { CngxMetric } from './src/metric.component';

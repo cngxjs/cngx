@@ -24,3 +24,10 @@ export {
 } from './src/toast/toast.service';
 export { CngxToastOutlet, type ToastPosition } from './src/toast/toast-outlet';
 export { CngxToastOn } from './src/toast/toast-on.directive';
+export {
+  CngxAsyncContainer,
+  CngxAsyncSkeletonTpl,
+  CngxAsyncContentTpl,
+  CngxAsyncEmptyTpl,
+  CngxAsyncErrorTpl,
+} from './src/async-container/async-container';

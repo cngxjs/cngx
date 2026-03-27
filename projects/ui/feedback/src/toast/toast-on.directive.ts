@@ -70,13 +70,7 @@ export class CngxToastOn {
       if (status === previousStatus) {
         return;
       }
-      const prev = previousStatus;
       previousStatus = status;
-
-      // Don't fire on initial idle
-      if (prev === 'idle' && status === 'idle') {
-        return;
-      }
 
       if (status === 'success') {
         const msg = this.toastSuccess();

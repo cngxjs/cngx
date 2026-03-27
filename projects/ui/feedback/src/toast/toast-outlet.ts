@@ -45,7 +45,6 @@ export type ToastPosition =
     '[class]': 'positionClass()',
     role: 'region',
     'aria-label': 'Notifications',
-    '[attr.aria-live]': '"polite"',
   },
   template: `
     @for (toast of visibleToasts(); track toast.id) {
