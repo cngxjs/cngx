@@ -165,6 +165,15 @@
         <summary class="nav-category-label">Ui</summary>
         <a routerLink="/ui/empty-state" routerLinkActive="active">EmptyState</a>
       </details>
+      <details class="nav-category" data-nav-cat="feedback">
+        <summary class="nav-category-label">Feedback</summary>
+        <a routerLink="/ui/feedback/alert" routerLinkActive="active">Alert</a>
+        <a routerLink="/ui/feedback/async-container" routerLinkActive="active">Async Container</a>
+        <a routerLink="/ui/feedback/loading-indicator" routerLinkActive="active">Loading Indicator</a>
+        <a routerLink="/ui/feedback/loading-overlay" routerLinkActive="active">Loading Overlay</a>
+        <a routerLink="/ui/feedback/progress" routerLinkActive="active">Progress</a>
+        <a routerLink="/ui/feedback/toast" routerLinkActive="active">Toast</a>
+      </details>
     </div>
 <!-- @generated:nav:end -->
     </nav>
@@ -174,3 +183,4 @@
     <router-outlet></router-outlet>
   </main>
 </div>
+<cngx-toast-outlet position="bottom-end" />

@@ -90,6 +90,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'ActionButton', path: 'ui/async-button' },
       { label: 'EmptyState', path: 'ui/empty-state' },
+      { label: 'Alert', path: 'ui/feedback/alert' },
+      { label: 'Async Container', path: 'ui/feedback/async-container' },
+      { label: 'Loading Indicator', path: 'ui/feedback/loading-indicator' },
+      { label: 'Loading Overlay', path: 'ui/feedback/loading-overlay' },
+      { label: 'Progress', path: 'ui/feedback/progress' },
+      { label: 'Toast', path: 'ui/feedback/toast' },
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
       { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'Skeleton', path: 'ui/skeleton' },
