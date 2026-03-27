@@ -7,7 +7,8 @@ import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxCardBadge } from '@cngx/common/card';
 import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 @Component({
   selector: 'app-card-demo',
@@ -30,6 +31,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
     CngxExpandableText,
     CngxExpandableToggle,
     CngxDisclosure,
+    CngxSpeak,
+    CngxSpeakButton,
   ],
   template: `
     <app-doc-shell title="Card"
@@ -356,6 +359,59 @@ import { CngxDisclosure } from '@cngx/common/interactive';
     </cngx-card>
   </div>
       </app-example-card>
+      <app-example-card title="Card with Speak Badge"
+        [subtitle]="_s11"
+        [sourceHtml]="_srcHtml11"
+        [sourceTs]="_srcTs11">
+        
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
+    <cngx-card style="overflow:visible">
+      <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts1"
+                          class="speak-btn-round" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Project Summary</h3>
+        <span cngxCardSubtitle>Q1 2026</span>
+      </header>
+      <div cngxCardBody
+           [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
+           [enabled]="false"
+           #tts1="cngxSpeak">
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          12 features shipped
+        </p>
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          3 bugs resolved
+        </p>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          98% uptime &mdash; next: public beta
+        </p>
+      </div>
+    </cngx-card>
+
+    <cngx-card style="overflow:visible">
+      <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts2"
+                          class="speak-btn-round" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Team Updates</h3>
+        <span cngxCardSubtitle>Latest activity</span>
+      </header>
+      <div cngxCardBody
+           [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
+           [enabled]="false"
+           #tts2="cngxSpeak">
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          Anna: Dashboard redesign done
+        </p>
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          Ben: API refactor merged
+        </p>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          Clara: A11y audit started
+        </p>
+      </div>
+    </cngx-card>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -371,6 +427,7 @@ export class CardDemoComponent {
   protected readonly _s8 = '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?';
   protected readonly _s9 = 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.';
   protected readonly _s10 = 'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.';
+  protected readonly _s11 = 'A <code>cngx-speak-button</code> positioned as a badge reads the card content aloud. The <code>[cngxSpeak]</code> directive on the card body provides the text; the button connects via <code>[speakRef]</code>.';
   protected readonly _srcHtml0 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
@@ -387,7 +444,8 @@ export class CardDemoComponent {
   </div>`;
   protected readonly _srcTs0 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -417,7 +475,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs1 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -453,7 +512,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs2 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -484,7 +544,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs3 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -531,7 +592,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs4 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -558,7 +620,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs5 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -584,7 +647,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs6 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -612,7 +676,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs7 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -683,7 +748,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs8 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -721,7 +787,8 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs9 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
@@ -767,7 +834,70 @@ import { CngxDisclosure } from '@cngx/common/interactive';
   </div>`;
   protected readonly _srcTs10 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
-import { CngxDisclosure } from '@cngx/common/interactive';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
+
+
+  protected selected = signal(false);
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
+  protected readonly _srcHtml11 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;max-width:760px">
+    <cngx-card style="overflow:visible">
+      <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts1"
+                          class="speak-btn-round" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Project Summary</h3>
+        <span cngxCardSubtitle>Q1 2026</span>
+      </header>
+      <div cngxCardBody
+           [cngxSpeak]="'Project Summary, Q1 2026. 12 features shipped. 3 bugs resolved. 98 percent uptime. Next milestone: public beta in April.'"
+           [enabled]="false"
+           #tts1="cngxSpeak">
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          12 features shipped
+        </p>
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          3 bugs resolved
+        </p>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          98% uptime &mdash; next: public beta
+        </p>
+      </div>
+    </cngx-card>
+
+    <cngx-card style="overflow:visible">
+      <cngx-speak-button cngxCardBadge position="top-end" [speakRef]="tts2"
+                          class="speak-btn-round" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Team Updates</h3>
+        <span cngxCardSubtitle>Latest activity</span>
+      </header>
+      <div cngxCardBody
+           [cngxSpeak]="'Team Updates. Anna completed the dashboard redesign. Ben merged the API refactor. Clara started the accessibility audit.'"
+           [enabled]="false"
+           #tts2="cngxSpeak">
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          Anna: Dashboard redesign done
+        </p>
+        <p style="margin:0 0 4px;color:var(--text-muted);font-size:0.875rem">
+          Ben: API refactor merged
+        </p>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          Clara: A11y audit started
+        </p>
+      </div>
+    </cngx-card>
+  </div>`;
+  protected readonly _srcTs11 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
+import { CngxDisclosure, CngxSpeak } from '@cngx/common/interactive';
+import { CngxSpeakButton } from '@cngx/ui';
 
 
   protected selected = signal(false);
