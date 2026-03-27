@@ -14,4 +14,13 @@ export {
   withSpinnerTemplate,
   withAlertIcons,
   withLoadingDefaults,
+  withToasts,
 } from './src/feedback-config';
+export {
+  CngxToastService,
+  provideToasts,
+  type ToastConfig,
+  type ToastRef,
+} from './src/toast/toast.service';
+export { CngxToastOutlet, type ToastPosition } from './src/toast/toast-outlet';
+export { CngxToastOn } from './src/toast/toast-on.directive';

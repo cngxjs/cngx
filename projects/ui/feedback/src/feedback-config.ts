@@ -5,7 +5,9 @@ import {
   type Type,
   makeEnvironmentProviders,
 } from '@angular/core';
+
 import type { AlertSeverity } from './alert';
+import { CngxToastService } from './toast/toast.service';
 
 /**
  * Global configuration for all feedback components.
@@ -25,6 +27,12 @@ export interface FeedbackConfig {
 
   /** Default minimum display time in ms for loading indicators. */
   loadingMinDuration?: number;
+
+  /** Default auto-dismiss duration for toasts in ms. */
+  toastDefaultDuration?: number;
+
+  /** Dedup window for identical toasts in ms. */
+  toastDedupWindow?: number;
 }
 
 /**
@@ -141,5 +149,34 @@ export function withLoadingDefaults(opts: {
       loadingDelay: opts.delay ?? c.loadingDelay,
       loadingMinDuration: opts.minDuration ?? c.loadingMinDuration,
     }),
+  };
+}
+
+/**
+ * Enable the toast system within `provideFeedback()`.
+ *
+ * Provides `CngxToastService` at the environment level.
+ * Without this feature, `CngxToastOn` and `CngxToastOutlet` will throw
+ * a `NullInjectorError` at runtime.
+ *
+ * @param opts Optional toast defaults.
+ *
+ * @example
+ * ```ts
+ * provideFeedback(
+ *   withToasts(),
+ *   withAlertIcons({ error: MyErrorIcon }),
+ * )
+ * ```
+ */
+export function withToasts(opts?: {
+  /** Default auto-dismiss duration in ms. */
+  defaultDuration?: number;
+  /** Dedup window in ms. */
+  dedupWindow?: number;
+}): FeedbackFeature {
+  return {
+    _apply: (c) => ({ ...c, toastDefaultDuration: opts?.defaultDuration, toastDedupWindow: opts?.dedupWindow }),
+    _providers: [CngxToastService],
   };
 }
