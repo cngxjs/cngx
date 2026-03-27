@@ -1,0 +1,49 @@
+cngx-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-skeleton-gap, 10px);
+}
+
+%_shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--cngx-skeleton-bg, #e0e0e0) 25%,
+    var(--cngx-skeleton-shimmer, #f5f5f5) 50%,
+    var(--cngx-skeleton-bg, #e0e0e0) 75%
+  );
+  background-size: 200% 100%;
+  animation: cngx-skeleton-shimmer 1.5s ease-in-out infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+.cngx-card-skeleton__media {
+  height: var(--cngx-skeleton-media-height, 120px);
+  border-radius: var(--cngx-radius-sm, 4px);
+  @extend %_shimmer;
+}
+
+.cngx-card-skeleton__title {
+  height: var(--cngx-skeleton-title-height, 1.25rem);
+  width: 55%;
+  border-radius: var(--cngx-radius-sm, 4px);
+  @extend %_shimmer;
+}
+
+.cngx-card-skeleton__line {
+  height: var(--cngx-skeleton-line-height, 0.875rem);
+  border-radius: var(--cngx-radius-sm, 4px);
+  @extend %_shimmer;
+}
+
+@keyframes cngx-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

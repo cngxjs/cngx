@@ -17,6 +17,7 @@
 @use '../../projects/common/card/src/metric' as cngx-metric;
 @use '../../projects/common/card/src/trend' as cngx-trend;
 @use '../../projects/common/card/src/card-timestamp' as cngx-card-timestamp;
+@use '../../projects/common/card/src/card-skeleton' as cngx-card-skeleton;
 @use '../../projects/ui/empty-state/src/empty-state-theme' as empty-state;
 @use '../../projects/ui/empty-state/src/empty-state' as cngx-empty-state;
 @use './app/demos/demo-shared';

@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 @Component({
   selector: 'app-card-demo',
@@ -15,16 +15,21 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
     DocShellComponent,
     CngxCard,
     CngxCardHeader,
+    CngxCardTitle,
+    CngxCardSubtitle,
     CngxCardBody,
     CngxCardFooter,
+    CngxCardMedia,
+    CngxCardAccent,
+    CngxCardSkeleton,
     CngxCardActions,
   ],
   template: `
     <app-doc-shell title="Card"
       description="Semantic card component with three archetypes: display (article), action (button), and link. Supports selection, loading, disabled with reason, and SR live announcements."
       overview="<p><code>cngx-card</code> uses the host element as the semantic role — no inner wrapper. The <code>as</code> input sets the archetype: <code>&quot;article&quot;</code> (display), <code>&quot;button&quot;</code> (action), or <code>&quot;link&quot;</code> (navigation).</p><p>Selection is a two-way <code>model()</code>. Disabled cards communicate <em>why</em> via <code>aria-describedby</code>.</p>"
-      [apiComponents]="['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxCardMedia', 'CngxCardFooter', 'CngxCardActions', 'CngxCardBadge']">
-      <app-example-card title="Display Card (article)"
+      [apiComponents]="['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardMedia', 'CngxCardFooter', 'CngxCardActions', 'CngxCardBadge', 'CngxCardAccent', 'CngxCardSkeleton']">
+      <app-example-card title="Title + Subtitle + Footer"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
@@ -32,11 +37,11 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
   <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Patient Overview</h3>
+        <h3 cngxCardTitle>Patient Overview</h3>
+        <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Maria Muster, Room 12</p>
-        <p style="margin:4px 0 0;font-size:0.875rem;color:var(--text-muted)">Status: Active</p>
+        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
         <small style="color:var(--text-muted)">Last updated: today</small>
@@ -44,10 +49,85 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
     </cngx-card>
   </div>
       </app-example-card>
-      <app-example-card title="Action Card with Selection"
+      <app-example-card title="Card with Image"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
+        
+  <div style="max-width:320px">
+    <cngx-card>
+      <img cngxCardMedia
+           [decorative]="false"
+           aspectRatio="16/9"
+           src="https://picsum.photos/seed/cngx/640/360"
+           alt="Landscape photo" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Beautiful Place</h3>
+        <span cngxCardSubtitle>Somewhere in the mountains</span>
+      </header>
+      <div cngxCardBody>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          A scenic view with full-bleed image using aspect-ratio 16/9.
+        </p>
+      </div>
+    </cngx-card>
+  </div>
+      </app-example-card>
+      <app-example-card title="Severity Accent"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+    <cngx-card cngxCardAccent="danger">
+      <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="warning">
+      <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="success">
+      <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="info">
+      <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="neutral">
+      <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+    </cngx-card>
+  </div>
+      </app-example-card>
+      <app-example-card title="Skeleton Loading"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
+        
+  <div class="button-row" style="margin-bottom:12px">
+    <button (click)="loading.update(v => !v)">Toggle loading</button>
+  </div>
+  <div style="max-width:320px">
+    <cngx-card [loading]="loading()">
+      @if (loading()) {
+        <cngx-card-skeleton [lines]="3" [showMedia]="true" />
+      } @else {
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
+      }
+    </cngx-card>
+  </div>
+      </app-example-card>
+      <app-example-card title="Action Card with Selection"
+        [subtitle]="_s4"
+        [sourceHtml]="_srcHtml4"
+        [sourceTs]="_srcTs4">
         
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card as="button" [selectable]="true" [(selected)]="selected"
@@ -84,9 +164,9 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
   </div>
       </app-example-card>
       <app-example-card title="Loading State"
-        [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
+        [subtitle]="_s5"
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5">
         
   <div class="button-row" style="margin-bottom:12px">
     <button (click)="loading.update(v => !v)">Toggle loading</button>
@@ -103,9 +183,9 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
   </div>
       </app-example-card>
       <app-example-card title="Disabled with Reason"
-        [subtitle]="_s3"
-        [sourceHtml]="_srcHtml3"
-        [sourceTs]="_srcTs3">
+        [subtitle]="_s6"
+        [sourceHtml]="_srcHtml6"
+        [sourceTs]="_srcTs6">
         
   <div style="max-width:400px">
     <cngx-card as="button" [disabled]="true"
@@ -121,9 +201,9 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
   </div>
       </app-example-card>
       <app-example-card title="Interactive Card with Actions"
-        [subtitle]="_s4"
-        [sourceHtml]="_srcHtml4"
-        [sourceTs]="_srcTs4">
+        [subtitle]="_s7"
+        [sourceHtml]="_srcHtml7"
+        [sourceTs]="_srcTs7">
         
   <div style="max-width:400px">
     <cngx-card>
@@ -144,31 +224,106 @@ import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions
   `,
 })
 export class CardDemoComponent {
-  protected readonly _s0 = 'Default archetype. No primary action — <code>role="article"</code> on the host.';
-  protected readonly _s1 = 'The entire card is clickable. <code>[(selected)]</code> toggles on click and keyboard. Try clicking the cards.';
-  protected readonly _s2 = 'Sets <code>aria-busy="true"</code> and announces "Loading" via SR live region. Toggle to see the visual effect.';
-  protected readonly _s3 = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
-  protected readonly _s4 = 'Multiple independent actions inside. The card itself is <code>role="article"</code> — the buttons carry the interaction.';
+  protected readonly _s0 = '<code>[cngxCardTitle]</code> and <code>[cngxCardSubtitle]</code> provide consistent typography inside the header.';
+  protected readonly _s1 = '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.';
+  protected readonly _s2 = '<code>[cngxCardAccent]</code> adds a colored top border + tinted background. Five severity levels.';
+  protected readonly _s3 = '<code>cngx-card-skeleton</code> replaces content during loading. Toggle to compare skeleton vs. real content.';
+  protected readonly _s4 = 'The entire card is clickable. <code>[(selected)]</code> toggles on click and keyboard. Try clicking the cards.';
+  protected readonly _s5 = 'Sets <code>aria-busy="true"</code> and announces "Loading" via SR live region. Toggle to see the visual effect.';
+  protected readonly _s6 = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
+  protected readonly _s7 = 'Multiple independent actions inside. The card itself is <code>role="article"</code> — the buttons carry the interaction.';
   protected readonly _srcHtml0 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Patient Overview</h3>
+        <h3 cngxCardTitle>Patient Overview</h3>
+        <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Maria Muster, Room 12</p>
-        <p style="margin:4px 0 0;font-size:0.875rem;color:var(--text-muted)">Status: Active</p>
+        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
         <small style="color:var(--text-muted)">Last updated: today</small>
       </footer>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+  protected readonly _srcTs0 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 
   protected selected = signal(false);
   protected loading = signal(false);`;
-  protected readonly _srcHtml1 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
+  protected readonly _srcHtml1 = `<div style="max-width:320px">
+    <cngx-card>
+      <img cngxCardMedia
+           [decorative]="false"
+           aspectRatio="16/9"
+           src="https://picsum.photos/seed/cngx/640/360"
+           alt="Landscape photo" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Beautiful Place</h3>
+        <span cngxCardSubtitle>Somewhere in the mountains</span>
+      </header>
+      <div cngxCardBody>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          A scenic view with full-bleed image using aspect-ratio 16/9.
+        </p>
+      </div>
+    </cngx-card>
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+
+
+  protected selected = signal(false);
+  protected loading = signal(false);`;
+  protected readonly _srcHtml2 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+    <cngx-card cngxCardAccent="danger">
+      <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="warning">
+      <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="success">
+      <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="info">
+      <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="neutral">
+      <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+    </cngx-card>
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+
+
+  protected selected = signal(false);
+  protected loading = signal(false);`;
+  protected readonly _srcHtml3 = `<div class="button-row" style="margin-bottom:12px">
+    <button (click)="loading.update(v => !v)">Toggle loading</button>
+  </div>
+  <div style="max-width:320px">
+    <cngx-card [loading]="loading()">
+      @if (loading()) {
+        <cngx-card-skeleton [lines]="3" [showMedia]="true" />
+      } @else {
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
+      }
+    </cngx-card>
+  </div>`;
+  protected readonly _srcTs3 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
+
+
+  protected selected = signal(false);
+  protected loading = signal(false);`;
+  protected readonly _srcHtml4 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card as="button" [selectable]="true" [(selected)]="selected"
                ariaLabel="Select patient Maria Muster">
       <header cngxCardHeader>
@@ -201,12 +356,12 @@ export class CardDemoComponent {
       <span class="event-value">{{ selected() }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs1 = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+  protected readonly _srcTs4 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 
   protected selected = signal(false);
   protected loading = signal(false);`;
-  protected readonly _srcHtml2 = `<div class="button-row" style="margin-bottom:12px">
+  protected readonly _srcHtml5 = `<div class="button-row" style="margin-bottom:12px">
     <button (click)="loading.update(v => !v)">Toggle loading</button>
   </div>
   <div style="max-width:300px">
@@ -219,12 +374,12 @@ export class CardDemoComponent {
       </div>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+  protected readonly _srcTs5 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 
   protected selected = signal(false);
   protected loading = signal(false);`;
-  protected readonly _srcHtml3 = `<div style="max-width:400px">
+  protected readonly _srcHtml6 = `<div style="max-width:400px">
     <cngx-card as="button" [disabled]="true"
                disabledReason="Only nursing staff can edit residents"
                ariaLabel="Edit resident">
@@ -236,12 +391,12 @@ export class CardDemoComponent {
       </div>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs3 = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+  protected readonly _srcTs6 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 
   protected selected = signal(false);
   protected loading = signal(false);`;
-  protected readonly _srcHtml4 = `<div style="max-width:400px">
+  protected readonly _srcHtml7 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
         <h3 style="margin:0;font-weight:600;font-size:1rem">Pflegeplan</h3>
@@ -255,7 +410,7 @@ export class CardDemoComponent {
       </div>
     </cngx-card>
   </div>`;
-  protected readonly _srcTs4 = `import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';
+  protected readonly _srcTs7 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 
 
   protected selected = signal(false);

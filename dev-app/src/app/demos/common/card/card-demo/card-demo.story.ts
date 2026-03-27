@@ -9,18 +9,22 @@ export const STORY: DemoSpec = {
   apiComponents: [
     'CngxCard',
     'CngxCardHeader',
+    'CngxCardTitle',
+    'CngxCardSubtitle',
     'CngxCardBody',
     'CngxCardMedia',
     'CngxCardFooter',
     'CngxCardActions',
     'CngxCardBadge',
+    'CngxCardAccent',
+    'CngxCardSkeleton',
   ],
   overview:
     '<p><code>cngx-card</code> uses the host element as the semantic role — no inner wrapper. ' +
     'The <code>as</code> input sets the archetype: <code>"article"</code> (display), <code>"button"</code> (action), or <code>"link"</code> (navigation).</p>' +
     '<p>Selection is a two-way <code>model()</code>. Disabled cards communicate <em>why</em> via <code>aria-describedby</code>.</p>',
   moduleImports: [
-    "import { CngxCard, CngxCardHeader, CngxCardBody, CngxCardFooter, CngxCardActions } from '@cngx/common/card';",
+    "import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';",
   ],
   setup: `
   protected selected = signal(false);
@@ -28,23 +32,101 @@ export const STORY: DemoSpec = {
   `,
   sections: [
     {
-      title: 'Display Card (article)',
+      title: 'Title + Subtitle + Footer',
       subtitle:
-        'Default archetype. No primary action — <code>role="article"</code> on the host.',
-      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxCardFooter'],
+        '<code>[cngxCardTitle]</code> and <code>[cngxCardSubtitle]</code> provide consistent typography inside the header.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardFooter'],
       template: `
   <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 style="margin:0;font-weight:600;font-size:1rem">Patient Overview</h3>
+        <h3 cngxCardTitle>Patient Overview</h3>
+        <span cngxCardSubtitle>Maria Muster, Room 12</span>
       </header>
       <div cngxCardBody>
-        <p style="margin:0;color:var(--text-muted)">Maria Muster, Room 12</p>
-        <p style="margin:4px 0 0;font-size:0.875rem;color:var(--text-muted)">Status: Active</p>
+        <p style="margin:0;color:var(--text-muted)">Status: Active. Last vitals normal.</p>
       </div>
       <footer cngxCardFooter>
         <small style="color:var(--text-muted)">Last updated: today</small>
       </footer>
+    </cngx-card>
+  </div>`,
+    },
+    {
+      title: 'Card with Image',
+      subtitle:
+        '<code>[cngxCardMedia]</code> handles full-bleed images with <code>aspectRatio</code> and <code>decorative</code> inputs.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardSubtitle', 'CngxCardBody', 'CngxCardMedia'],
+      template: `
+  <div style="max-width:320px">
+    <cngx-card>
+      <img cngxCardMedia
+           [decorative]="false"
+           aspectRatio="16/9"
+           src="https://picsum.photos/seed/cngx/640/360"
+           alt="Landscape photo" />
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Beautiful Place</h3>
+        <span cngxCardSubtitle>Somewhere in the mountains</span>
+      </header>
+      <div cngxCardBody>
+        <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
+          A scenic view with full-bleed image using aspect-ratio 16/9.
+        </p>
+      </div>
+    </cngx-card>
+  </div>`,
+    },
+    {
+      title: 'Severity Accent',
+      subtitle:
+        '<code>[cngxCardAccent]</code> adds a colored top border + tinted background. Five severity levels.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardAccent'],
+      template: `
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+    <cngx-card cngxCardAccent="danger">
+      <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Critical alert</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="warning">
+      <header cngxCardHeader><h3 cngxCardTitle>Warning</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Needs attention</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="success">
+      <header cngxCardHeader><h3 cngxCardTitle>Success</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">All clear</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="info">
+      <header cngxCardHeader><h3 cngxCardTitle>Info</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">For your information</div>
+    </cngx-card>
+    <cngx-card cngxCardAccent="neutral">
+      <header cngxCardHeader><h3 cngxCardTitle>Neutral</h3></header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">Default state</div>
+    </cngx-card>
+  </div>`,
+    },
+    {
+      title: 'Skeleton Loading',
+      subtitle:
+        '<code>cngx-card-skeleton</code> replaces content during loading. Toggle to compare skeleton vs. real content.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardSkeleton'],
+      template: `
+  <div class="button-row" style="margin-bottom:12px">
+    <button (click)="loading.update(v => !v)">Toggle loading</button>
+  </div>
+  <div style="max-width:320px">
+    <cngx-card [loading]="loading()">
+      @if (loading()) {
+        <cngx-card-skeleton [lines]="3" [showMedia]="true" />
+      } @else {
+        <header cngxCardHeader>
+          <h3 cngxCardTitle>Vitals Overview</h3>
+        </header>
+        <div cngxCardBody>
+          <p style="margin:0;color:var(--text-muted)">Heart rate, blood pressure, SpO2 values from the last 24 hours.</p>
+        </div>
+      }
     </cngx-card>
   </div>`,
     },
