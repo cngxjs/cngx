@@ -70,6 +70,26 @@ export const routes: Routes = [
           import('./demos/common/behaviors/sort-demo/sort-demo.component').then((m) => m.SortDemoComponent),
       },
       {
+        path: 'card/card',
+        loadComponent: () =>
+          import('./demos/common/card/card-demo/card-demo.component').then((m) => m.CardDemoComponent),
+      },
+      {
+        path: 'card/card-grid',
+        loadComponent: () =>
+          import('./demos/common/card/card-grid-demo/card-grid-demo.component').then((m) => m.CardGridDemoComponent),
+      },
+      {
+        path: 'card/metric',
+        loadComponent: () =>
+          import('./demos/common/card/metric-demo/metric-demo.component').then((m) => m.MetricDemoComponent),
+      },
+      {
+        path: 'card/trend',
+        loadComponent: () =>
+          import('./demos/common/card/trend-demo/trend-demo.component').then((m) => m.TrendDemoComponent),
+      },
+      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
