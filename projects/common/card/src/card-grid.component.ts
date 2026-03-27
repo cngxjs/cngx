@@ -65,7 +65,7 @@ import type { EmptyReason } from './card.types';
     class: 'cngx-card-grid',
     '[attr.role]': 'semanticList() ? "list" : null',
     '[style.--cngx-card-grid-min]': 'minWidth()',
-    '[style.--cngx-card-grid-gap]': 'gap()',
+    '[style.--cngx-card-grid-gap]': 'density() === "default" ? gap() : null',
     '[class.cngx-card-grid--compact]': 'density() === "compact"',
     '[class.cngx-card-grid--comfortable]': 'density() === "comfortable"',
   },
