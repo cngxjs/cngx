@@ -3,13 +3,13 @@ import { Directive } from '@angular/core';
 /**
  * Structural slot directive for the card header region.
  *
- * Apply as an attribute on any element inside `<cngx-card>` to mark it
- * as the header content. Typically used on a `<header>` element.
+ * Must be placed on a native `<header>` element — the selector enforces
+ * semantic correctness at compile time.
  *
  * ```html
  * <cngx-card>
  *   <header cngxCardHeader>
- *     <h3>Title</h3>
+ *     <h3 cngxCardTitle>Title</h3>
  *   </header>
  * </cngx-card>
  * ```
@@ -17,7 +17,7 @@ import { Directive } from '@angular/core';
  * @category card
  */
 @Directive({
-  selector: '[cngxCardHeader]',
+  selector: 'header[cngxCardHeader]',
   standalone: true,
   host: { class: 'cngx-card__header' },
 })

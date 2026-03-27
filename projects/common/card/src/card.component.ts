@@ -67,9 +67,9 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
   },
   template: `
     <ng-content select="[cngxCardMedia]" />
-    <ng-content select="[cngxCardHeader]" />
+    <ng-content select="header[cngxCardHeader]" />
     <ng-content select="[cngxCardBody]" />
-    <ng-content select="[cngxCardFooter]" />
+    <ng-content select="footer[cngxCardFooter]" />
     <ng-content select="[cngxCardActions]" />
     <ng-content />
 
