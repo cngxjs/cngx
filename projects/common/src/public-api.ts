@@ -8,6 +8,7 @@
  *   @cngx/common/layout
  *   @cngx/common/data
  *   @cngx/common/dialog
+ *   @cngx/common/popover
  *
  * @module @cngx/common
  */
@@ -17,5 +18,6 @@ export * from '@cngx/common/interactive';
 export * from '@cngx/common/layout';
 export * from '@cngx/common/data';
 export * from '@cngx/common/dialog';
+export * from '@cngx/common/popover';
 
 export { VERSION } from './lib/version';

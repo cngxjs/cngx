@@ -1,0 +1,358 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-popover-panel theming ──────────────────────────────────────
+//
+//   @use '@cngx/common/popover/popover-panel-theme' as panel;
+//   html { @include panel.theme($theme); }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-pp-bg: #fff;
+  --cngx-pp-color: #1e293b;
+  --cngx-pp-border-radius: 12px;
+  --cngx-pp-padding: 16px;
+  --cngx-pp-max-width: 360px;
+  --cngx-pp-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --cngx-pp-border: 1px solid rgba(0, 0, 0, 0.08);
+  --cngx-pp-arrow-size: 8px;
+  --cngx-pp-close-size: 28px;
+  --cngx-pp-transition-duration: 200ms;
+  --cngx-pp-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Header
+  --cngx-pp-header-font-size: 0.875rem;
+  --cngx-pp-header-font-weight: 600;
+  --cngx-pp-header-gap: 8px;
+
+  // Footer
+  --cngx-pp-footer-gap: 8px;
+  --cngx-pp-footer-border-top: 1px solid rgba(0, 0, 0, 0.06);
+  --cngx-pp-footer-padding-top: 12px;
+  --cngx-pp-footer-margin-top: 12px;
+
+  // Accent (overridden per variant)
+  --cngx-pp-accent: transparent;
+  --cngx-pp-accent-text: inherit;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-pp-bg: var(--mat-sys-surface-container);
+    --cngx-pp-color: var(--mat-sys-on-surface);
+    --cngx-pp-shadow: 0 8px 24px color-mix(in srgb, var(--mat-sys-shadow) 18%, transparent);
+    --cngx-pp-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-pp-footer-border-top: 1px solid var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-pp-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-pp-color: #{mat.get-theme-color($theme, foreground, text)};
+  }
+}
+
+// ─── Variant colors ──────────────────────────────────────────────
+
+@mixin _variant-colors($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    .cngx-popover-panel--info {
+      --cngx-pp-accent: var(--mat-sys-primary-container);
+      --cngx-pp-accent-text: var(--mat-sys-on-primary-container);
+    }
+    .cngx-popover-panel--success {
+      --cngx-pp-accent: var(--mat-sys-secondary-container);
+      --cngx-pp-accent-text: var(--mat-sys-on-secondary-container);
+    }
+    .cngx-popover-panel--warning {
+      --cngx-pp-accent: var(--mat-sys-tertiary-container);
+      --cngx-pp-accent-text: var(--mat-sys-on-tertiary-container);
+    }
+    .cngx-popover-panel--danger {
+      --cngx-pp-accent: var(--mat-sys-error-container);
+      --cngx-pp-accent-text: var(--mat-sys-on-error-container);
+    }
+  } @else {
+    .cngx-popover-panel--info {
+      --cngx-pp-accent: #dbeafe;
+      --cngx-pp-accent-text: #1e40af;
+    }
+    .cngx-popover-panel--success {
+      --cngx-pp-accent: #d1fae5;
+      --cngx-pp-accent-text: #065f46;
+    }
+    .cngx-popover-panel--warning {
+      --cngx-pp-accent: #fef3c7;
+      --cngx-pp-accent-text: #92400e;
+    }
+    .cngx-popover-panel--danger {
+      --cngx-pp-accent: #fee2e2;
+      --cngx-pp-accent-text: #991b1b;
+    }
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  cngx-popover-panel {
+    position: fixed;
+    inset: unset;
+    box-sizing: border-box;
+    background: var(--cngx-pp-bg, #fff);
+    color: var(--cngx-pp-color, #1e293b);
+    border-radius: var(--cngx-pp-border-radius, 12px);
+    border: var(--cngx-pp-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--cngx-pp-shadow, 0 8px 24px rgba(0, 0, 0, 0.12));
+    padding: var(--cngx-pp-padding, 16px);
+    max-width: var(--cngx-pp-max-width, 360px);
+    width: max-content;
+    overflow: visible;
+    transition:
+      opacity var(--cngx-pp-transition-duration, 200ms)
+        var(--cngx-pp-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+      transform var(--cngx-pp-transition-duration, 200ms)
+        var(--cngx-pp-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  // Popover open state — browser hides [popover] by default
+  cngx-popover-panel:popover-open {
+    display: block;
+  }
+
+  // ── Transitions ────────────────────────────────────────────────
+  cngx-popover-panel.cngx-popover--opening {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  cngx-popover-panel.cngx-popover--open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  cngx-popover-panel.cngx-popover--closing {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+
+  // ── Header ─────────────────────────────────────────────────────
+  .cngx-popover-panel__header {
+    font-size: var(--cngx-pp-header-font-size, 0.875rem);
+    font-weight: var(--cngx-pp-header-font-weight, 600);
+    margin-bottom: var(--cngx-pp-header-gap, 8px);
+    color: var(--cngx-pp-accent-text, inherit);
+  }
+
+  // ── Body ───────────────────────────────────────────────────────
+  .cngx-popover-panel__body {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  // ── Footer ─────────────────────────────────────────────────────
+  .cngx-popover-panel__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--cngx-pp-footer-gap, 8px);
+    border-top: var(--cngx-pp-footer-border-top, 1px solid rgba(0, 0, 0, 0.06));
+    padding-top: var(--cngx-pp-footer-padding-top, 12px);
+    margin-top: var(--cngx-pp-footer-margin-top, 12px);
+  }
+
+  // ── Close button ───────────────────────────────────────────────
+  .cngx-popover-panel__close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--cngx-pp-close-size);
+    height: var(--cngx-pp-close-size);
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    transition:
+      opacity 150ms,
+      background 150ms;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.06);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cngx-pp-accent-text, currentColor);
+      outline-offset: 2px;
+      opacity: 1;
+    }
+  }
+
+  // ── Arrow ──────────────────────────────────────────────────────
+  .cngx-popover-panel__arrow {
+    position: absolute;
+    width: calc(var(--cngx-pp-arrow-size, 8px) * 2);
+    height: calc(var(--cngx-pp-arrow-size, 8px) * 2);
+    background: var(--cngx-pp-bg, #fff);
+    border: var(--cngx-pp-border, 1px solid rgba(0, 0, 0, 0.08));
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  // Arrow placement — derived from position-area
+  // Bottom placement: arrow on top
+  [style*='position-area: bottom'] > .cngx-popover-panel__arrow,
+  [style*='position-area:bottom'] > .cngx-popover-panel__arrow {
+    top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    left: 50%;
+    margin-left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    border-right: none;
+    border-bottom: none;
+  }
+
+  // Top placement: arrow on bottom
+  [style*='position-area: top'] > .cngx-popover-panel__arrow,
+  [style*='position-area:top'] > .cngx-popover-panel__arrow {
+    bottom: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    left: 50%;
+    margin-left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    border-left: none;
+    border-top: none;
+  }
+
+  // Left placement: arrow on right
+  [style*='position-area: left'] > .cngx-popover-panel__arrow,
+  [style*='position-area:left'] > .cngx-popover-panel__arrow {
+    right: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    top: 50%;
+    margin-top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    border-left: none;
+    border-bottom: none;
+  }
+
+  // Right placement: arrow on left
+  [style*='position-area: right'] > .cngx-popover-panel__arrow,
+  [style*='position-area:right'] > .cngx-popover-panel__arrow {
+    left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    top: 50%;
+    margin-top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
+    border-right: none;
+    border-top: none;
+  }
+
+  // ── Variant accent strip + fallback colors ─────────────────────
+  .cngx-popover-panel--info {
+    --cngx-pp-accent: #dbeafe;
+    --cngx-pp-accent-text: #1e40af;
+    border-left: 3px solid var(--cngx-pp-accent-text);
+  }
+  .cngx-popover-panel--success {
+    --cngx-pp-accent: #d1fae5;
+    --cngx-pp-accent-text: #065f46;
+    border-left: 3px solid var(--cngx-pp-accent-text);
+  }
+  .cngx-popover-panel--warning {
+    --cngx-pp-accent: #fef3c7;
+    --cngx-pp-accent-text: #92400e;
+    border-left: 3px solid var(--cngx-pp-accent-text);
+  }
+  .cngx-popover-panel--danger {
+    --cngx-pp-accent: #fee2e2;
+    --cngx-pp-accent-text: #991b1b;
+    border-left: 3px solid var(--cngx-pp-accent-text);
+  }
+
+  // ── Action button base styles ──────────────────────────────────
+  .cngx-popover-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid var(--cngx-pp-border, rgba(0, 0, 0, 0.08));
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background 150ms,
+      border-color 150ms,
+      color 150ms;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--cngx-pp-accent-text, currentColor);
+      outline-offset: 2px;
+    }
+    &:disabled,
+    &[aria-disabled='true'] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .cngx-popover-action--primary {
+    background: var(--cngx-pp-accent, var(--mat-sys-primary, #3b82f6));
+    color: var(--cngx-pp-accent-text, var(--mat-sys-on-primary, #fff));
+    border-color: transparent;
+    &:hover {
+      filter: brightness(0.95);
+      background: var(--cngx-pp-accent);
+    }
+  }
+
+  .cngx-popover-action--danger {
+    background: var(--mat-sys-error, #dc2626);
+    color: var(--mat-sys-on-error, #fff);
+    border-color: transparent;
+    &:hover {
+      filter: brightness(0.95);
+    }
+  }
+
+  .cngx-popover-action--ghost {
+    border-color: transparent;
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  // ── Loading/Error/Empty states ─────────────────────────────────
+  .cngx-popover-panel__loading,
+  .cngx-popover-panel__error,
+  .cngx-popover-panel__empty {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .cngx-popover-panel__error {
+    color: var(--mat-sys-error, #dc2626);
+  }
+
+  .cngx-popover-panel__empty {
+    opacity: 0.6;
+  }
+
+  // ── Reduced motion ─────────────────────────────────────────────
+  @media (prefers-reduced-motion: reduce) {
+    cngx-popover-panel {
+      transition: none;
+    }
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(cngx-popover-panel) {
+    @include base();
+    @include color($theme);
+  }
+  @include _variant-colors($theme);
+  @include styles();
+}

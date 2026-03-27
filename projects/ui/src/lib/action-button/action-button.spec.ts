@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { CngxActionButton } from './action-button';
-import { CngxFailed, CngxPending, CngxSucceeded } from './action-button-status';
+import { CngxFailed, CngxPending, CngxSucceeded } from '@cngx/common/interactive';
 
 function deferred<T = void>() {
   let resolve!: (value: T) => void;

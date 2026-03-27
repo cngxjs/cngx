@@ -6,8 +6,13 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CngxAsyncClick, type AsyncAction } from '@cngx/common/interactive';
-import { CngxFailed, CngxPending, CngxSucceeded } from './action-button-status';
+import {
+  CngxAsyncClick,
+  CngxFailed,
+  CngxPending,
+  CngxSucceeded,
+  type AsyncAction,
+} from '@cngx/common/interactive';
 
 /** Visual variant for the action button — maps to a CSS class. */
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';

@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
 import { CngxCopyText } from './copy-text.directive';
 
@@ -40,18 +35,20 @@ import { CngxCopyText } from './copy-text.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    'class': 'cngx-copy-block',
+    class: 'cngx-copy-block',
     '[class.cngx-copy-block--copied]': 'false',
   },
   template: `
     <div class="cngx-copy-block__content">
       <ng-content />
     </div>
-    <button type="button"
-            class="cngx-copy-block__button"
-            [cngxCopyText]="value()"
-            #cp="cngxCopyText"
-            [class.cngx-copy-block__button--copied]="cp.copied()">
+    <button
+      type="button"
+      class="cngx-copy-block__button"
+      [cngxCopyText]="value()"
+      #cp="cngxCopyText"
+      [class.cngx-copy-block__button--copied]="cp.copied()"
+    >
       {{ cp.copied() ? copiedLabel() : buttonLabel() }}
       <span aria-live="polite" class="cngx-sr-only">
         {{ cp.copied() ? srAnnouncement() : '' }}
@@ -78,7 +75,9 @@ import { CngxCopyText } from './copy-text.directive';
       border-radius: var(--cngx-copy-block-btn-radius, 4px);
       padding: var(--cngx-copy-block-btn-padding, 4px 8px);
       font-size: var(--cngx-copy-block-btn-font-size, 0.75rem);
-      transition: background 0.15s, border-color 0.15s;
+      transition:
+        background 0.15s,
+        border-color 0.15s;
     }
     .cngx-copy-block__button--copied {
       background: var(--cngx-copy-block-btn-copied-bg, #e8f5e9);

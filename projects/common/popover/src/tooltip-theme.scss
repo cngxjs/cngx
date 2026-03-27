@@ -1,0 +1,139 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-tooltip theming ──────────────────────────────────────
+//
+// Aligns with Material's tooltip token API (inverse-surface / inverse-on-surface)
+// so cngx tooltips feel native in a Material app.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/common/popover/tooltip-theme' as tooltip;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include tooltip.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-tooltip-bg: #1c1b1f;
+  --cngx-tooltip-color: #f4eff4;
+  --cngx-tooltip-font-family: inherit;
+  --cngx-tooltip-font-size: 0.75rem;
+  --cngx-tooltip-line-height: 1rem;
+  --cngx-tooltip-font-weight: 400;
+  --cngx-tooltip-letter-spacing: 0.033em;
+  --cngx-tooltip-padding-block: 4px;
+  --cngx-tooltip-padding-inline: 8px;
+  --cngx-tooltip-border-radius: 4px;
+  --cngx-tooltip-max-width: 200px;
+  --cngx-tooltip-transition-duration: 150ms;
+  --cngx-tooltip-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — matches Material's tooltip tokens: inverse-surface / inverse-on-surface
+    --cngx-tooltip-bg: var(--mat-sys-inverse-surface);
+    --cngx-tooltip-color: var(--mat-sys-inverse-on-surface);
+  } @else {
+    // M2 — derive from palette
+    --cngx-tooltip-bg: #{mat.get-theme-color($theme, background, tooltip)};
+    --cngx-tooltip-color: #fff;
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3 — body-small per spec
+    --cngx-tooltip-font-family: var(--mat-sys-body-small-font, inherit);
+    --cngx-tooltip-font-size: var(--mat-sys-body-small-size, 0.75rem);
+    --cngx-tooltip-line-height: var(--mat-sys-body-small-line-height, 1rem);
+    --cngx-tooltip-font-weight: var(--mat-sys-body-small-weight, 400);
+    --cngx-tooltip-letter-spacing: var(--mat-sys-body-small-tracking, 0.033em);
+  }
+}
+
+@mixin density($theme) {
+  // Touch devices need larger tooltip padding for readability.
+  // Material's density scale: 0 (default), -1, -2, -3 (most compact).
+  @media (hover: none) {
+    --cngx-tooltip-padding-block: 8px;
+    --cngx-tooltip-padding-inline: 16px;
+    --cngx-tooltip-font-size: 0.875rem;
+    --cngx-tooltip-line-height: 1.25rem;
+    --cngx-tooltip-max-width: 280px;
+  }
+}
+
+// ─── Structural styles ──────────────────────────────────────────
+
+@mixin styles() {
+  .cngx-tooltip {
+    position: fixed;
+    inset: unset;
+    border: none;
+    margin: 0;
+    box-sizing: border-box;
+
+    background: var(--cngx-tooltip-bg, #1c1b1f);
+    color: var(--cngx-tooltip-color, #f4eff4);
+    font-family: var(--cngx-tooltip-font-family, inherit);
+    font-size: var(--cngx-tooltip-font-size, 0.75rem);
+    line-height: var(--cngx-tooltip-line-height, 1rem);
+    font-weight: var(--cngx-tooltip-font-weight, 400);
+    letter-spacing: var(--cngx-tooltip-letter-spacing, 0.033em);
+    padding: var(--cngx-tooltip-padding-block, 4px) var(--cngx-tooltip-padding-inline, 8px);
+    border-radius: var(--cngx-tooltip-border-radius, 4px);
+    max-width: var(--cngx-tooltip-max-width, 200px);
+    width: max-content;
+    word-wrap: break-word;
+    white-space: normal;
+    pointer-events: none;
+
+    // Popover API top-layer — no z-index needed
+    transition:
+      opacity var(--cngx-tooltip-transition-duration, 150ms)
+        var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1)),
+      transform var(--cngx-tooltip-transition-duration, 150ms)
+        var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
+  }
+
+  // ── Open / close transitions ───────────────────────────────────
+  .cngx-tooltip.cngx-popover--opening {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  .cngx-tooltip.cngx-popover--open {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .cngx-tooltip.cngx-popover--closing {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  // ── Reduced motion ─────────────────────────────────────────────
+  @media (prefers-reduced-motion: reduce) {
+    .cngx-tooltip {
+      transition: none;
+    }
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(.cngx-tooltip) {
+    @include base();
+    @include color($theme);
+    @include typography($theme);
+    @include density($theme);
+  }
+
+  @include styles();
+}

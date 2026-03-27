@@ -13,12 +13,12 @@ import {
   signal,
 } from '@angular/core';
 
+import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
 import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
-
-let nextUid = 0;
 
 /** Shared ref-count for scroll lock on the same document. */
 const lockCounts = new WeakMap<HTMLElement, number>();
@@ -207,7 +207,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   // ── State ─────────────────────────────────────────────────────────
   private readonly stateSignal = signal<DialogState>('closed');
   private readonly resultSignal = signal<T | 'dismissed' | undefined>(undefined);
-  private readonly idSignal = signal(`cngx-dialog-${nextUid++}`);
+  private readonly idSignal = signal(nextUid('cngx-dialog'));
   private readonly triggerElement = signal<HTMLElement | null>(null);
 
   /**
@@ -390,9 +390,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   }
 
   private startClosing(): void {
-    if (this.hasTransition()) {
+    if (hasTransition(this.dialogElement)) {
       this.stateSignal.set('closing');
-      this.listenForTransitionEnd();
+      onTransitionDone(this.dialogElement, () => this.finalize());
     } else {
       this.finalize();
     }
@@ -412,50 +412,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     this.stateSignal.set('closed');
     this.returnFocus();
-  }
-
-  private hasTransition(): boolean {
-    const duration = getComputedStyle(this.dialogElement).transitionDuration;
-    return duration.split(',').some((d) => Number.parseFloat(d.trim()) > 0);
-  }
-
-  private listenForTransitionEnd(): void {
-    const dialog = this.dialogElement;
-    const style = getComputedStyle(dialog);
-    const durations = style.transitionDuration.split(',');
-    const properties = style.transitionProperty.split(',').map((p) => p.trim());
-    const parsedDurations = durations.map((d) => Number.parseFloat(d.trim()) * 1000);
-    const maxDuration = Math.max(...parsedDurations);
-
-    // Identify the longest-running property to wait for
-    const longestPropIndex = parsedDurations.indexOf(maxDuration);
-    const longestProp = properties[longestPropIndex] ?? properties[0] ?? 'all';
-
-    let done = false;
-    const finishOnce = () => {
-      if (done) {
-        return;
-      }
-      done = true;
-      dialog.removeEventListener('transitionend', onTransitionEnd);
-      clearTimeout(fallbackTimer);
-      this.finalize();
-    };
-
-    const onTransitionEnd = (e: TransitionEvent) => {
-      // Only finalize after the longest-running property completes
-      if (e.target !== dialog) {
-        return;
-      }
-      if (longestProp !== 'all' && e.propertyName !== longestProp) {
-        return;
-      }
-      finishOnce();
-    };
-
-    // Fallback timeout in case transitionend never fires
-    const fallbackTimer = setTimeout(finishOnce, maxDuration + 50);
-    dialog.addEventListener('transitionend', onTransitionEnd);
   }
 
   private moveFocus(): void {

@@ -99,9 +99,7 @@ export class CngxScrollSpy {
       return;
     }
 
-    const resolvedRoot = rootSelector
-      ? this.doc.querySelector(rootSelector)
-      : null;
+    const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
 
     // Fine-grained thresholds (0..1 in 0.1 steps) for accurate ratio tracking.
     const observer = new IntersectionObserver(
