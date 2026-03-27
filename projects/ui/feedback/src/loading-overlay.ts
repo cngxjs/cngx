@@ -91,7 +91,8 @@ import { createVisibilityTimer } from './visibility-timer';
       justify-content: center;
       background: var(--cngx-loading-overlay-backdrop-bg, rgba(255, 255, 255, 0.5));
       opacity: var(--cngx-loading-overlay-backdrop-opacity, 1);
-      transition: opacity 150ms ease;
+      transition: opacity var(--cngx-overlay-transition-duration, 150ms)
+        var(--cngx-overlay-transition-easing, ease);
     }
 
     .cngx-loading-overlay__spinner-wrapper {
@@ -140,11 +141,9 @@ export class CngxLoadingOverlay {
 
   private readonly savedFocus = signal<HTMLElement | null>(null);
 
-  private readonly contentWrapper =
-    viewChild.required<ElementRef<HTMLElement>>('contentWrapper');
+  private readonly contentWrapper = viewChild.required<ElementRef<HTMLElement>>('contentWrapper');
 
-  private readonly spinnerEl =
-    viewChild<ElementRef<HTMLElement>>('spinnerEl');
+  private readonly spinnerEl = viewChild<ElementRef<HTMLElement>>('spinnerEl');
 
   constructor() {
     effect(() => {

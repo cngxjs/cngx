@@ -104,7 +104,8 @@ export class CngxToastService {
       if (existing.timer !== undefined) {
         clearTimeout(existing.timer);
       }
-      const newTimer = duration !== 'persistent' ? this.startTimer(existing.id, duration) : undefined;
+      const newTimer =
+        duration !== 'persistent' ? this.startTimer(existing.id, duration) : undefined;
       this.toasts.update((ts) =>
         ts.map((t) =>
           t.id === existing.id

@@ -119,7 +119,11 @@
     --cngx-alert-success-border: color-mix(in srgb, var(--mat-sys-tertiary) 30%, transparent);
     --cngx-alert-success-icon: var(--mat-sys-tertiary);
 
-    --cngx-alert-warning-bg: color-mix(in srgb, var(--mat-sys-secondary) 8%, var(--mat-sys-surface));
+    --cngx-alert-warning-bg: color-mix(
+      in srgb,
+      var(--mat-sys-secondary) 8%,
+      var(--mat-sys-surface)
+    );
     --cngx-alert-warning-border: color-mix(in srgb, var(--mat-sys-secondary) 30%, transparent);
     --cngx-alert-warning-icon: var(--mat-sys-secondary);
 
@@ -200,9 +204,21 @@
 
 @mixin density($level: 0) {
   $sizes: (
-    0:  (target: 32px, icon: 16px, padding: 8px),
-    -1: (target: 28px, icon: 14px, padding: 7px),
-    -2: (target: 24px, icon: 12px, padding: 6px),
+    0: (
+      target: 32px,
+      icon: 16px,
+      padding: 8px,
+    ),
+    -1: (
+        target: 28px,
+        icon: 14px,
+        padding: 7px,
+      ),
+    -2: (
+        target: 24px,
+        icon: 12px,
+        padding: 6px,
+      ),
   );
 
   $preset: map-get($sizes, $level);

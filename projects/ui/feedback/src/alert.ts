@@ -15,6 +15,8 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
+import { CngxCloseButton } from '@cngx/common/interactive';
+
 import { CNGX_FEEDBACK_CONFIG } from './feedback-config';
 
 /** Severity level for the alert — determines visual style, icon, and ARIA role. */
@@ -55,7 +57,7 @@ export class CngxAlertIcon {
 @Component({
   selector: 'cngx-alert',
   standalone: true,
-  imports: [NgComponentOutlet],
+  imports: [NgComponentOutlet, CngxCloseButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -126,25 +128,7 @@ export class CngxAlertIcon {
       </div>
     </div>
     @if (dismissible()) {
-      <button
-        type="button"
-        class="cngx-alert__dismiss"
-        aria-label="Dismiss"
-        (click)="handleDismiss()"
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      <cngx-close-button label="Dismiss" class="cngx-alert__dismiss" (click)="handleDismiss()" />
     }
   `,
   styles: `
@@ -214,28 +198,6 @@ export class CngxAlertIcon {
 
     .cngx-alert__dismiss {
       flex-shrink: 0;
-      appearance: none;
-      background: none;
-      border: none;
-      padding: var(--cngx-alert-dismiss-padding, 4px);
-      cursor: pointer;
-      color: inherit;
-      opacity: var(--cngx-alert-dismiss-opacity, 0.5);
-      border-radius: var(--cngx-alert-dismiss-radius, 4px);
-    }
-
-    .cngx-alert__dismiss:hover {
-      opacity: var(--cngx-alert-dismiss-hover-opacity, 1);
-    }
-
-    .cngx-alert__dismiss:focus-visible {
-      outline: 2px solid var(--cngx-alert-icon-color, currentColor);
-      outline-offset: 2px;
-    }
-
-    .cngx-alert__dismiss svg {
-      width: var(--cngx-alert-dismiss-icon-size, 16px);
-      height: var(--cngx-alert-dismiss-icon-size, 16px);
     }
 
     .cngx-alert--hidden {
@@ -265,7 +227,9 @@ export class CngxAlert {
   protected readonly customIcon = contentChild(CngxAlertIcon);
 
   /** @internal — global icon component for the current severity (from provideFeedback config). */
-  protected readonly globalIcon = computed(() => this.config?.alertIcons?.[this.severity()] ?? null);
+  protected readonly globalIcon = computed(
+    () => this.config?.alertIcons?.[this.severity()] ?? null,
+  );
 
   // ── State-driven visibility ─────────────────────────────────────────
 

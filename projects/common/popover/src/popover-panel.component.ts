@@ -1,4 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
+import { CngxCloseButton } from '@cngx/common/interactive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -64,7 +65,7 @@ import { CngxPopover } from './popover.directive';
 @Component({
   selector: 'cngx-popover-panel',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CngxCloseButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   exportAs: 'cngxPopoverPanel',
@@ -89,23 +90,7 @@ import { CngxPopover } from './popover.directive';
       @if (closeTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl.templateRef" />
       } @else {
-        <button
-          class="cngx-popover-panel__close"
-          (click)="popover.hide()"
-          aria-label="Close"
-          type="button"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
+        <cngx-close-button class="cngx-popover-panel__close" (click)="popover.hide()" />
       }
     }
 

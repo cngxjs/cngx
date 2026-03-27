@@ -117,12 +117,14 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
       height: 100%;
       background: var(--cngx-progress-color, currentColor);
       border-radius: inherit;
-      transition: width 300ms ease-out;
+      transition: width var(--cngx-progress-transition-duration, 300ms)
+        var(--cngx-progress-transition-easing, ease-out);
     }
 
     .cngx-progress--indeterminate .cngx-progress__fill {
       width: 40%;
-      animation: cngx-progress-indeterminate 1.5s ease-in-out infinite;
+      animation: cngx-progress-indeterminate var(--cngx-progress-indeterminate-duration, 1.5s)
+        var(--cngx-progress-indeterminate-easing, ease-in-out) infinite;
     }
 
     .cngx-progress__label {
@@ -151,11 +153,12 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
 
     .cngx-progress__circle-fill {
       stroke: var(--cngx-progress-color, currentColor);
-      transition: stroke-dashoffset 300ms ease-out;
+      transition: stroke-dashoffset var(--cngx-progress-transition-duration, 300ms)
+        var(--cngx-progress-transition-easing, ease-out);
     }
 
     .cngx-progress--indeterminate .cngx-progress__circle {
-      animation: cngx-spin 0.8s linear infinite;
+      animation: cngx-spin var(--cngx-spin-duration, 0.8s) var(--cngx-spin-easing, linear) infinite;
     }
 
     .cngx-progress--indeterminate .cngx-progress__circle-fill {
@@ -190,7 +193,8 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
     @media (prefers-reduced-motion: reduce) {
       .cngx-progress--indeterminate .cngx-progress__fill,
       .cngx-progress--indeterminate .cngx-progress__circle {
-        animation: cngx-pulse 2s ease-in-out infinite;
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
       }
 
       .cngx-progress--indeterminate .cngx-progress__fill {
@@ -211,7 +215,6 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
   `,
 })
 export class CngxProgress {
-
   /** Bind an async state — reads `progress()` for determinate mode. */
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 

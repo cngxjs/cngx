@@ -36,3 +36,4 @@ export { CngxBeforeUnload } from './src/before-unload.directive';
 export { canDeactivateWhenClean } from './src/can-deactivate';
 export { CngxPressRipple } from './src/press-ripple.directive';
 export { CngxCopyBlock } from './src/copy-block';
+export { CngxCloseButton, CNGX_CLOSE_ICON } from './src/close-button';

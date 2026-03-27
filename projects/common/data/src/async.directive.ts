@@ -153,17 +153,17 @@ export class CngxAsync<T> {
     }
   }
 
-  private renderTemplate(tpl: TemplateRef<unknown> | undefined, context?: Record<string, unknown>): void {
+  private renderTemplate(
+    tpl: TemplateRef<unknown> | undefined,
+    context?: Record<string, unknown>,
+  ): void {
     if (tpl) {
       this.vcr.createEmbeddedView(tpl, context);
     }
   }
 
   /** Type guard for template type inference. */
-  static ngTemplateContextGuard<T>(
-    _dir: CngxAsync<T>,
-    _ctx: unknown,
-  ): _ctx is CngxAsyncContext<T> {
+  static ngTemplateContextGuard<T>(_dir: CngxAsync<T>, _ctx: unknown): _ctx is CngxAsyncContext<T> {
     return true;
   }
 }

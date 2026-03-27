@@ -87,9 +87,12 @@ export class CngxToastOn {
         const msg = this.toastError();
         if (msg) {
           const err = s.error();
-          const detail = this.toastErrorDetail() && err != null
-            ? (err instanceof Error ? err.message : `${err as string}`)
-            : undefined;
+          const detail =
+            this.toastErrorDetail() && err != null
+              ? err instanceof Error
+                ? err.message
+                : `${err as string}`
+              : undefined;
           this.toast.show({
             message: detail ? `${msg}: ${detail}` : msg,
             severity: 'error',

@@ -6,6 +6,8 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
+import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
+
 import type { AlertSeverity } from './alert';
 import { CngxToastService } from './toast/toast.service';
 
@@ -27,6 +29,9 @@ export interface FeedbackConfig {
 
   /** Default minimum display time in ms for loading indicators. */
   loadingMinDuration?: number;
+
+  /** Custom close/dismiss icon component — replaces default X SVG globally. */
+  closeIconComponent?: Type<unknown>;
 
   /** Default auto-dismiss duration for toasts in ms. */
   toastDefaultDuration?: number;
@@ -153,6 +158,24 @@ export function withLoadingDefaults(opts: {
 }
 
 /**
+ * Replace the built-in X SVG in all close/dismiss buttons globally.
+ *
+ * The component receives no inputs — it should render a single icon.
+ * Per-instance override via content projection on `CngxCloseButton` takes precedence.
+ *
+ * @example
+ * ```ts
+ * provideFeedback(withCloseIcon(MyLucideXIcon))
+ * ```
+ */
+export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
+  return {
+    _apply: (c) => ({ ...c, closeIconComponent: component }),
+    _providers: [{ provide: CNGX_CLOSE_ICON, useValue: component }],
+  };
+}
+
+/**
  * Enable the toast system within `provideFeedback()`.
  *
  * Provides `CngxToastService` at the environment level.
@@ -176,7 +199,11 @@ export function withToasts(opts?: {
   dedupWindow?: number;
 }): FeedbackFeature {
   return {
-    _apply: (c) => ({ ...c, toastDefaultDuration: opts?.defaultDuration, toastDedupWindow: opts?.dedupWindow }),
+    _apply: (c) => ({
+      ...c,
+      toastDefaultDuration: opts?.defaultDuration,
+      toastDedupWindow: opts?.dedupWindow,
+    }),
     _providers: [CngxToastService],
   };
 }

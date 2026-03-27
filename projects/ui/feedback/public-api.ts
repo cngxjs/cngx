@@ -14,6 +14,7 @@ export {
   withSpinnerTemplate,
   withAlertIcons,
   withLoadingDefaults,
+  withCloseIcon,
   withToasts,
 } from './src/feedback-config';
 export {

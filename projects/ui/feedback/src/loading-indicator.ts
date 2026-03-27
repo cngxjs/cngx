@@ -109,7 +109,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
     .cngx-loading-indicator__spinner {
       width: var(--cngx-loading-indicator-size, 24px);
       height: var(--cngx-loading-indicator-size, 24px);
-      animation: cngx-spin 0.8s linear infinite;
+      animation: cngx-spin var(--cngx-spin-duration, 0.8s) var(--cngx-spin-easing, linear) infinite;
     }
 
     .cngx-loading-indicator__spinner-track {
@@ -133,7 +133,8 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
       height: 100%;
       background: var(--cngx-loading-indicator-color, currentColor);
       border-radius: inherit;
-      animation: cngx-bar-indeterminate 1.5s ease-in-out infinite;
+      animation: cngx-bar-indeterminate var(--cngx-bar-duration, 1.5s)
+        var(--cngx-bar-easing, ease-in-out) infinite;
     }
 
     @keyframes cngx-spin {
@@ -156,11 +157,13 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
 
     @media (prefers-reduced-motion: reduce) {
       .cngx-loading-indicator__spinner {
-        animation: cngx-pulse 2s ease-in-out infinite;
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
       }
 
       .cngx-loading-indicator__bar-fill {
-        animation: cngx-pulse 2s ease-in-out infinite;
+        animation: cngx-pulse var(--cngx-pulse-duration, 2s) var(--cngx-pulse-easing, ease-in-out)
+          infinite;
         width: 100%;
         transform: none;
       }
