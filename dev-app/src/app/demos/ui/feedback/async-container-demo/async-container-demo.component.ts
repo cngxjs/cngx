@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
-import { createManualState } from '@cngx/common/data';
+import { CngxAsync, createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-async-container-demo',
@@ -14,6 +14,7 @@ import { createManualState } from '@cngx/common/data';
   imports: [
     ExampleCardComponent,
     DocShellComponent,
+    CngxAsync,
     CngxAsyncContainer,
     CngxAsyncSkeletonTpl,
     CngxAsyncContentTpl,
@@ -22,33 +23,51 @@ import { createManualState } from '@cngx/common/data';
   ],
   template: `
     <app-doc-shell title="Async Container"
-      description="Full template-slot container that coordinates skeleton, content, empty, and error states from a CngxAsyncState."
-      [apiComponents]="['CngxAsyncContainer']">
-      <app-example-card title="Full State Machine"
+      description="Coordinates skeleton, content, empty, and error states from a single CngxAsyncState. Two APIs: *cngxAsync (minimal) and <cngx-async-container> (full control)."
+      [apiComponents]="['CngxAsyncContainer', 'CngxAsync']">
+      <app-example-card title="Minimal — *cngxAsync"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-    <button (click)="loadData()" class="chip">Load Data</button>
+    <button (click)="loadPeople()" class="chip">Load People</button>
     <button (click)="loadEmpty()" class="chip">Load Empty</button>
     <button (click)="loadError()" class="chip">Load Error</button>
-    <button (click)="refresh()" class="chip" [disabled]="state.isFirstLoad()">Refresh</button>
-    <button (click)="state.reset()" class="chip">Reset</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
   </div>
 
   <div class="event-grid" style="margin-bottom:16px">
     <div class="event-row">
       <span class="event-label">Status</span>
-      <span class="event-value">{{ state.status() }}</span>
+      <span class="event-value">{{ people.status() }}</span>
     </div>
   </div>
 
-  <cngx-async-container [state]="state" ariaLabel="People list">
+  <ul *cngxAsync="people; let data" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+    @for (name of data; track name) {
+      <li style="padding:8px 12px;background:var(--cngx-card-bg,#f8fafc);border-radius:4px">{{ name }}</li>
+    }
+  </ul>
+      </app-example-card>
+      <app-example-card title="Full Control — cngx-async-container"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+    <button (click)="loadPeople()" class="chip">Load</button>
+    <button (click)="loadEmpty()" class="chip">Empty</button>
+    <button (click)="loadError()" class="chip">Error</button>
+    <button (click)="refreshPeople()" class="chip" [disabled]="people.isFirstLoad()">Refresh</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
+  </div>
+
+  <cngx-async-container [state]="people" ariaLabel="People list">
     <ng-template cngxAsyncSkeleton>
       <div style="display:flex;flex-direction:column;gap:8px">
         @for (i of [1,2,3]; track i) {
-          <div style="height:24px;background:#e5e7eb;border-radius:4px;animation:pulse 1.5s ease-in-out infinite"></div>
+          <div style="height:24px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:4px"></div>
         }
       </div>
     </ng-template>
@@ -62,14 +81,88 @@ import { createManualState } from '@cngx/common/data';
     </ng-template>
 
     <ng-template cngxAsyncEmpty>
-      <p style="color:var(--cngx-muted,#64748b);text-align:center;padding:24px">No people found.</p>
+      <div style="text-align:center;padding:32px;color:var(--cngx-muted,#64748b)">
+        <p style="font-size:1.25rem;margin:0 0 8px">No people found</p>
+        <p style="margin:0">Try a different search or add a new person.</p>
+      </div>
     </ng-template>
 
     <ng-template cngxAsyncError let-err>
-      <div style="color:var(--cngx-alert-error-icon,#ef4444);padding:16px;text-align:center">
-        Error: {{ err }}
-        <button (click)="loadData()" class="chip" style="margin-top:8px">Retry</button>
+      <div style="text-align:center;padding:24px;color:var(--cngx-alert-error-icon,#ef4444)">
+        <p style="font-size:1.125rem;margin:0 0 8px">Failed to load</p>
+        <p style="margin:0 0 12px;opacity:0.8">{{ err }}</p>
+        <button (click)="loadPeople()" class="chip">Retry</button>
       </div>
+    </ng-template>
+  </cngx-async-container>
+      </app-example-card>
+      <app-example-card title="Single Object (not a list)"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button (click)="loadProduct()" class="chip">Load Product</button>
+    <button (click)="loadNoProduct()" class="chip">Load Not Found</button>
+    <button (click)="product.reset()" class="chip">Reset</button>
+  </div>
+
+  <div *cngxAsync="product; let item" style="border:1px solid var(--cngx-border,#e2e8f0);border-radius:8px;padding:20px">
+    @if (item) {
+      <h3 style="margin:0 0 8px">{{ item.name }}</h3>
+      <p style="margin:0;font-size:1.5rem;font-weight:600">\${{ item.price }}</p>
+    } @else {
+      <p style="margin:0;color:var(--cngx-muted,#64748b)">Product not found.</p>
+    }
+  </div>
+      </app-example-card>
+      <app-example-card title="Refresh vs. First Load"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
+        
+  <p style="margin:0 0 12px;font-size:0.875rem;color:var(--cngx-muted,#64748b)">
+    1. Click "Load" to see the skeleton.<br>
+    2. After data appears, click "Refresh" — old data stays, bar appears at top.<br>
+    3. This is the key UX difference: refresh preserves context, first load does not.
+  </p>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button (click)="loadPeople()" class="chip">{{ people.isFirstLoad() ? 'Load' : 'Re-Load (resets)' }}</button>
+    <button (click)="refreshPeople()" class="chip" [disabled]="people.isFirstLoad()">Refresh</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
+  </div>
+
+  <div class="event-grid" style="margin-bottom:12px">
+    <div class="event-row">
+      <span class="event-label">Status</span>
+      <span class="event-value">{{ people.status() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isFirstLoad</span>
+      <span class="event-value">{{ people.isFirstLoad() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isRefreshing</span>
+      <span class="event-value">{{ people.isRefreshing() }}</span>
+    </div>
+  </div>
+
+  <cngx-async-container [state]="people" ariaLabel="People (refresh demo)" style="position:relative">
+    <ng-template cngxAsyncSkeleton>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        @for (i of [1,2,3]; track i) {
+          <div style="height:24px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:4px"></div>
+        }
+      </div>
+    </ng-template>
+
+    <ng-template cngxAsyncContent let-data>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+        @for (name of data; track name) {
+          <li style="padding:8px 12px;background:var(--cngx-card-bg,#f8fafc);border-radius:4px">{{ name }}</li>
+        }
+      </ul>
     </ng-template>
   </cngx-async-container>
       </app-example-card>
@@ -77,27 +170,79 @@ import { createManualState } from '@cngx/common/data';
   `,
 })
 export class AsyncContainerDemoComponent {
-  protected readonly _s0 = 'Four templates for four states. Built-in refresh indicator bar.';
+  protected readonly _s0 = 'One line. Defaults for skeleton, empty, and error. The host element IS the content — no wrapper.';
+  protected readonly _s1 = 'Four named templates for four states. Built-in refresh indicator bar. Click "Load" then "Refresh" to see the difference.';
+  protected readonly _s2 = 'Works with any data type — not just arrays. Shows product details or "not found".';
+  protected readonly _s3 = 'First load shows skeleton. Refresh keeps old content visible + shows a bar indicator at the top. The user never loses scroll context.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-    <button (click)="loadData()" class="chip">Load Data</button>
+    <button (click)="loadPeople()" class="chip">Load People</button>
     <button (click)="loadEmpty()" class="chip">Load Empty</button>
     <button (click)="loadError()" class="chip">Load Error</button>
-    <button (click)="refresh()" class="chip" [disabled]="state.isFirstLoad()">Refresh</button>
-    <button (click)="state.reset()" class="chip">Reset</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
   </div>
 
   <div class="event-grid" style="margin-bottom:16px">
     <div class="event-row">
       <span class="event-label">Status</span>
-      <span class="event-value">{{ state.status() }}</span>
+      <span class="event-value">{{ people.status() }}</span>
     </div>
   </div>
 
-  <cngx-async-container [state]="state" ariaLabel="People list">
+  <ul *cngxAsync="people; let data" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+    @for (name of data; track name) {
+      <li style="padding:8px 12px;background:var(--cngx-card-bg,#f8fafc);border-radius:4px">{{ name }}</li>
+    }
+  </ul>`;
+  protected readonly _srcTs0 = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
+import { CngxAsync, createManualState } from '@cngx/common/data';
+
+
+  // ── Shared state for all demos ──
+  protected readonly people = createManualState<string[]>();
+  protected readonly product = createManualState<{ name: string; price: number } | null>();
+
+  protected loadPeople(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
+  }
+
+  protected loadEmpty(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess([]), 2000);
+  }
+
+  protected loadError(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setError('Network timeout — server unreachable'), 2000);
+  }
+
+  protected refreshPeople(): void {
+    this.people.set('refreshing');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']), 2000);
+  }
+
+  protected loadProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess({ name: 'Widget Pro', price: 49.99 }), 1500);
+  }
+
+  protected loadNoProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess(null), 1500);
+  }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+    <button (click)="loadPeople()" class="chip">Load</button>
+    <button (click)="loadEmpty()" class="chip">Empty</button>
+    <button (click)="loadError()" class="chip">Error</button>
+    <button (click)="refreshPeople()" class="chip" [disabled]="people.isFirstLoad()">Refresh</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
+  </div>
+
+  <cngx-async-container [state]="people" ariaLabel="People list">
     <ng-template cngxAsyncSkeleton>
       <div style="display:flex;flex-direction:column;gap:8px">
         @for (i of [1,2,3]; track i) {
-          <div style="height:24px;background:#e5e7eb;border-radius:4px;animation:pulse 1.5s ease-in-out infinite"></div>
+          <div style="height:24px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:4px"></div>
         }
       </div>
     </ng-template>
@@ -111,78 +256,222 @@ export class AsyncContainerDemoComponent {
     </ng-template>
 
     <ng-template cngxAsyncEmpty>
-      <p style="color:var(--cngx-muted,#64748b);text-align:center;padding:24px">No people found.</p>
+      <div style="text-align:center;padding:32px;color:var(--cngx-muted,#64748b)">
+        <p style="font-size:1.25rem;margin:0 0 8px">No people found</p>
+        <p style="margin:0">Try a different search or add a new person.</p>
+      </div>
     </ng-template>
 
     <ng-template cngxAsyncError let-err>
-      <div style="color:var(--cngx-alert-error-icon,#ef4444);padding:16px;text-align:center">
-        Error: {{ err }}
-        <button (click)="loadData()" class="chip" style="margin-top:8px">Retry</button>
+      <div style="text-align:center;padding:24px;color:var(--cngx-alert-error-icon,#ef4444)">
+        <p style="font-size:1.125rem;margin:0 0 8px">Failed to load</p>
+        <p style="margin:0 0 12px;opacity:0.8">{{ err }}</p>
+        <button (click)="loadPeople()" class="chip">Retry</button>
       </div>
     </ng-template>
   </cngx-async-container>`;
-  protected readonly _srcTs0 = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
-import { createManualState } from '@cngx/common/data';
+  protected readonly _srcTs1 = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
+import { CngxAsync, createManualState } from '@cngx/common/data';
 
 
-  protected readonly state = createManualState<string[]>();
+  // ── Shared state for all demos ──
+  protected readonly people = createManualState<string[]>();
+  protected readonly product = createManualState<{ name: string; price: number } | null>();
 
-  protected loadData(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setSuccess(['Alice', 'Bob', 'Charlie']);
-    }, 2000);
+  protected loadPeople(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
   }
 
   protected loadEmpty(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setSuccess([]);
-    }, 2000);
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess([]), 2000);
   }
 
   protected loadError(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setError('Network timeout');
-    }, 2000);
+    this.people.set('loading');
+    setTimeout(() => this.people.setError('Network timeout — server unreachable'), 2000);
   }
 
-  protected refresh(): void {
-    this.state.set('refreshing');
-    setTimeout(() => {
-      this.state.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']);
-    }, 2000);
+  protected refreshPeople(): void {
+    this.people.set('refreshing');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']), 2000);
+  }
+
+  protected loadProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess({ name: 'Widget Pro', price: 49.99 }), 1500);
+  }
+
+  protected loadNoProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess(null), 1500);
+  }`;
+  protected readonly _srcHtml2 = `<div style="display:flex;gap:8px;margin-bottom:16px">
+    <button (click)="loadProduct()" class="chip">Load Product</button>
+    <button (click)="loadNoProduct()" class="chip">Load Not Found</button>
+    <button (click)="product.reset()" class="chip">Reset</button>
+  </div>
+
+  <div *cngxAsync="product; let item" style="border:1px solid var(--cngx-border,#e2e8f0);border-radius:8px;padding:20px">
+    @if (item) {
+      <h3 style="margin:0 0 8px">{{ item.name }}</h3>
+      <p style="margin:0;font-size:1.5rem;font-weight:600">\${{ item.price }}</p>
+    } @else {
+      <p style="margin:0;color:var(--cngx-muted,#64748b)">Product not found.</p>
+    }
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
+import { CngxAsync, createManualState } from '@cngx/common/data';
+
+
+  // ── Shared state for all demos ──
+  protected readonly people = createManualState<string[]>();
+  protected readonly product = createManualState<{ name: string; price: number } | null>();
+
+  protected loadPeople(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
+  }
+
+  protected loadEmpty(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess([]), 2000);
+  }
+
+  protected loadError(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setError('Network timeout — server unreachable'), 2000);
+  }
+
+  protected refreshPeople(): void {
+    this.people.set('refreshing');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']), 2000);
+  }
+
+  protected loadProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess({ name: 'Widget Pro', price: 49.99 }), 1500);
+  }
+
+  protected loadNoProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess(null), 1500);
+  }`;
+  protected readonly _srcHtml3 = `<p style="margin:0 0 12px;font-size:0.875rem;color:var(--cngx-muted,#64748b)">
+    1. Click "Load" to see the skeleton.<br>
+    2. After data appears, click "Refresh" — old data stays, bar appears at top.<br>
+    3. This is the key UX difference: refresh preserves context, first load does not.
+  </p>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button (click)="loadPeople()" class="chip">{{ people.isFirstLoad() ? 'Load' : 'Re-Load (resets)' }}</button>
+    <button (click)="refreshPeople()" class="chip" [disabled]="people.isFirstLoad()">Refresh</button>
+    <button (click)="people.reset()" class="chip">Reset</button>
+  </div>
+
+  <div class="event-grid" style="margin-bottom:12px">
+    <div class="event-row">
+      <span class="event-label">Status</span>
+      <span class="event-value">{{ people.status() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isFirstLoad</span>
+      <span class="event-value">{{ people.isFirstLoad() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">isRefreshing</span>
+      <span class="event-value">{{ people.isRefreshing() }}</span>
+    </div>
+  </div>
+
+  <cngx-async-container [state]="people" ariaLabel="People (refresh demo)" style="position:relative">
+    <ng-template cngxAsyncSkeleton>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        @for (i of [1,2,3]; track i) {
+          <div style="height:24px;background:var(--cngx-skeleton-bg,#e5e7eb);border-radius:4px"></div>
+        }
+      </div>
+    </ng-template>
+
+    <ng-template cngxAsyncContent let-data>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px">
+        @for (name of data; track name) {
+          <li style="padding:8px 12px;background:var(--cngx-card-bg,#f8fafc);border-radius:4px">{{ name }}</li>
+        }
+      </ul>
+    </ng-template>
+  </cngx-async-container>`;
+  protected readonly _srcTs3 = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';
+import { CngxAsync, createManualState } from '@cngx/common/data';
+
+
+  // ── Shared state for all demos ──
+  protected readonly people = createManualState<string[]>();
+  protected readonly product = createManualState<{ name: string; price: number } | null>();
+
+  protected loadPeople(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
+  }
+
+  protected loadEmpty(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess([]), 2000);
+  }
+
+  protected loadError(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setError('Network timeout — server unreachable'), 2000);
+  }
+
+  protected refreshPeople(): void {
+    this.people.set('refreshing');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']), 2000);
+  }
+
+  protected loadProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess({ name: 'Widget Pro', price: 49.99 }), 1500);
+  }
+
+  protected loadNoProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess(null), 1500);
   }`;
 
-  protected readonly state = createManualState<string[]>();
+  // ── Shared state for all demos ──
+  protected readonly people = createManualState<string[]>();
+  protected readonly product = createManualState<{ name: string; price: number } | null>();
 
-  protected loadData(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setSuccess(['Alice', 'Bob', 'Charlie']);
-    }, 2000);
+  protected loadPeople(): void {
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie']), 2000);
   }
 
   protected loadEmpty(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setSuccess([]);
-    }, 2000);
+    this.people.set('loading');
+    setTimeout(() => this.people.setSuccess([]), 2000);
   }
 
   protected loadError(): void {
-    this.state.set('loading');
-    setTimeout(() => {
-      this.state.setError('Network timeout');
-    }, 2000);
+    this.people.set('loading');
+    setTimeout(() => this.people.setError('Network timeout — server unreachable'), 2000);
   }
 
-  protected refresh(): void {
-    this.state.set('refreshing');
-    setTimeout(() => {
-      this.state.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']);
-    }, 2000);
+  protected refreshPeople(): void {
+    this.people.set('refreshing');
+    setTimeout(() => this.people.setSuccess(['Alice', 'Bob', 'Charlie', 'Diana']), 2000);
+  }
+
+  protected loadProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess({ name: 'Widget Pro', price: 49.99 }), 1500);
+  }
+
+  protected loadNoProduct(): void {
+    this.product.set('loading');
+    setTimeout(() => this.product.setSuccess(null), 1500);
   }
   
 }
