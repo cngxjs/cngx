@@ -231,6 +231,53 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
+      title: 'Card with Badge',
+      subtitle:
+        '<code>[cngxCardBadge]</code> positions any element at a corner of the card. The badge itself carries the semantics — the directive is pure positioning.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardTitle', 'CngxCardBody', 'CngxCardBadge'],
+      template: `
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;max-width:660px">
+    <cngx-card style="overflow:visible">
+      <span cngxCardBadge position="top-end"
+            style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+                   border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700">
+        P
+      </span>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Care Plan</h3>
+      </header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+        Next evaluation: 18.07.2025
+      </div>
+    </cngx-card>
+    <cngx-card style="overflow:visible">
+      <span cngxCardBadge position="top-end"
+            style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
+                   border-radius:11px;background:#3b82f6;color:#fff;font-size:0.7rem;font-weight:700;padding:0 6px">
+        3
+      </span>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>Notifications</h3>
+      </header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+        3 unread messages
+      </div>
+    </cngx-card>
+    <cngx-card style="overflow:visible">
+      <span cngxCardBadge position="top-start"
+            style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
+            role="status" aria-label="Online">
+      </span>
+      <header cngxCardHeader>
+        <h3 cngxCardTitle>User Status</h3>
+      </header>
+      <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
+        Badge at top-start with status dot
+      </div>
+    </cngx-card>
+  </div>`,
+    },
+    {
       title: 'Card with Expandable Text',
       subtitle:
         'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.',
@@ -239,17 +286,18 @@ export const STORY: DemoSpec = {
   <div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Patient Notes</h3>
+        <h3 cngxCardTitle>Project Notes</h3>
       </header>
       <div cngxCardBody>
         <cngx-expandable-text [lines]="3" #exp="cngxExpandableText">
-          Patient Maria Muster was admitted on 15.03.2026 with recurring lower back pain.
-          Initial assessment shows limited range of motion in lumbar spine. Prescribed
-          physiotherapy 3x weekly. Follow-up MRI scheduled for 01.04.2026. Patient reports
-          pain level 6/10 on admission, reduced to 4/10 after initial treatment.
-          Medication adjusted: Ibuprofen 400mg 3x daily, Pantoprazol 20mg 1x daily.
-          Social history: lives alone, needs home care support for daily activities.
-          Next evaluation planned for 22.03.2026.
+          The project was initialized on 15.03.2026 with a focus on improving user
+          onboarding flows. Initial analysis shows a 34% drop-off rate on the second
+          step. Proposed changes include simplifying the form layout, adding inline
+          validation, and introducing a progress indicator. A/B testing is scheduled
+          for 01.04.2026. Early user feedback indicates positive reception of the
+          simplified layout. Additional requirements: SSO integration for enterprise
+          customers, GDPR-compliant data handling for EU users.
+          Next review planned for 22.03.2026.
           <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
             <button (click)="toggle()" class="chip" style="margin-top:8px">
               {{ expanded ? 'Show less' : 'Read more' }}
@@ -270,15 +318,14 @@ export const STORY: DemoSpec = {
     <cngx-card>
       <header cngxCardHeader cngxDisclosure #d1="cngxDisclosure" [controls]="'detail-1'"
               style="cursor:pointer;user-select:none">
-        <h3 cngxCardTitle>1000004: Angst</h3>
-        <span cngxCardSubtitle>Status: Aktiv | {{ d1.opened() ? 'Expanded' : 'Collapsed' }}</span>
+        <h3 cngxCardTitle>Issue #1042: Anxiety Management</h3>
+        <span cngxCardSubtitle>Status: Active | {{ d1.opened() ? 'Expanded' : 'Collapsed' }}</span>
       </header>
       @if (d1.opened()) {
         <div cngxCardBody id="detail-1">
           <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
-            Hat vorbeugende/therapeutische Massnahmen erlernt und wendet sie an.
-            Evaluierungsdatum: 17.10.2025. Setzt Hilfsmittel fachgerecht und
-            selbststaendig ein. Evaluierungsdatum: 27.03.2026.
+            Patient has learned preventive measures and applies them independently.
+            Evaluation: 17.10.2025. Uses aids correctly. Next evaluation: 27.03.2026.
           </p>
         </div>
       }
@@ -286,14 +333,14 @@ export const STORY: DemoSpec = {
     <cngx-card>
       <header cngxCardHeader cngxDisclosure #d2="cngxDisclosure" [controls]="'detail-2'"
               style="cursor:pointer;user-select:none">
-        <h3 cngxCardTitle>3000004: Denkprozess veraendert</h3>
-        <span cngxCardSubtitle>Status: Aktiv | {{ d2.opened() ? 'Expanded' : 'Collapsed' }}</span>
+        <h3 cngxCardTitle>Issue #3004: Cognitive Adjustment</h3>
+        <span cngxCardSubtitle>Status: Active | {{ d2.opened() ? 'Expanded' : 'Collapsed' }}</span>
       </header>
       @if (d2.opened()) {
         <div cngxCardBody id="detail-2">
           <p style="margin:0;color:var(--text-muted);font-size:0.875rem">
-            Gefahrenquellen in der Wohnung sind reduziert/ausgeschaltet.
-            Kann Tagesablauf selbst gestalten.
+            Hazard sources in the environment have been reduced.
+            Can organize daily routine independently.
           </p>
         </div>
       }
