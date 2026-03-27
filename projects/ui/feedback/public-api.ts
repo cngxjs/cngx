@@ -25,6 +25,7 @@ export {
 } from './src/toast/toast.service';
 export { CngxToastOutlet, type ToastPosition } from './src/toast/toast-outlet';
 export { CngxToastOn } from './src/toast/toast-on.directive';
+export { CngxToast } from './src/toast/toast.component';
 export {
   CngxAsyncContainer,
   CngxAsyncSkeletonTpl,

@@ -5,13 +5,15 @@ export const STORY: DemoSpec = {
   navLabel: 'Toast',
   navCategory: 'feedback',
   description: 'Programmatic and declarative toast notifications with dedup, timer pause on hover/touch, and severity-based styling.',
-  apiComponents: ['CngxToastOutlet', 'CngxToastOn', 'CngxToaster'],
+  apiComponents: ['CngxToastOutlet', 'CngxToastOn', 'CngxToaster', 'CngxToast'],
   moduleImports: [
-    "import { CngxToaster } from '@cngx/ui/feedback';",
+    "import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';",
+    "import { createManualState } from '@cngx/common/data';",
   ],
   setup: `
   private readonly toaster = inject(CngxToaster);
 
+  // ── Programmatic demos ──
   protected showSuccess(): void {
     this.toaster.show({ message: 'Item saved successfully', severity: 'success' });
   }
@@ -45,27 +47,84 @@ export const STORY: DemoSpec = {
   protected clearAll(): void {
     this.toaster.dismissAll();
   }
+
+  // ── Declarative <cngx-toast> demos ──
+  protected readonly showSaved = signal(false);
+  protected readonly showDeleted = signal(false);
+
+  protected triggerSave(): void {
+    this.showSaved.set(true);
+    setTimeout(() => this.showSaved.set(false), 100);
+  }
+
+  protected triggerDelete(): void {
+    this.showDeleted.set(true);
+    setTimeout(() => this.showDeleted.set(false), 100);
+  }
+
+  // ── Declarative [cngxToastOn] demo ──
+  protected readonly saveState = createManualState<string>();
+
+  protected simulateSave(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setSuccess('done'), 1500);
+  }
+
+  protected simulateError(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setError('Network timeout'), 1500);
+  }
   `,
   sections: [
     {
-      title: 'Severity Variants',
-      subtitle: 'Four severity levels. Error toasts are persistent by default.',
+      title: 'Programmatic (CngxToaster)',
+      subtitle: 'Inject <code>CngxToaster</code> and call <code>.show()</code>. Four severity levels, dedup, action buttons.',
       template: `
   <div style="display:flex;flex-wrap:wrap;gap:8px">
     <button (click)="showSuccess()" class="chip">Success</button>
     <button (click)="showError()" class="chip">Error (persistent)</button>
     <button (click)="showInfo()" class="chip">Info</button>
     <button (click)="showWarning()" class="chip">Warning</button>
+    <button (click)="showWithAction()" class="chip">With Undo Action</button>
+    <button (click)="showDuplicates()" class="chip">5x Dedup</button>
     <button (click)="clearAll()" class="chip">Clear All</button>
   </div>`,
     },
     {
-      title: 'Action Button + Dedup',
-      subtitle: 'Toast with undo action. Click "Duplicates" to test dedup counter.',
+      title: 'Declarative (<cngx-toast>)',
+      subtitle: 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing — pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.',
+      imports: ['CngxToast'],
       template: `
   <div style="display:flex;gap:8px">
-    <button (click)="showWithAction()" class="chip">Delete with Undo</button>
-    <button (click)="showDuplicates()" class="chip">5x Duplicates</button>
+    <button (click)="triggerSave()" class="chip">Save Item</button>
+    <button (click)="triggerDelete()" class="chip">Delete Item</button>
+  </div>
+
+  <cngx-toast severity="success" message="Item saved" [when]="showSaved()" />
+  <cngx-toast severity="warning" message="Item deleted — this cannot be undone" [when]="showDeleted()" [duration]="8000" />`,
+    },
+    {
+      title: 'State Bridge ([cngxToastOn])',
+      subtitle: 'Bind a <code>CngxAsyncState</code> — fires toast automatically on <code>success</code> or <code>error</code> transitions.',
+      imports: ['CngxToastOn'],
+      template: `
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button (click)="simulateSave()"
+      [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
+      class="chip">
+      {{ saveState.isPending() ? 'Saving...' : 'Save (1.5s)' }}
+    </button>
+    <button (click)="simulateError()"
+      class="chip">
+      Simulate Error (1.5s)
+    </button>
+  </div>
+
+  <div class="event-grid">
+    <div class="event-row">
+      <span class="event-label">Status</span>
+      <span class="event-value">{{ saveState.status() }}</span>
+    </div>
   </div>`,
     },
   ],
