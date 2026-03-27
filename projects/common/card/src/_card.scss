@@ -8,8 +8,10 @@ cngx-card {
   color: var(--cngx-card-color, var(--mat-sys-on-surface, #1d1b20));
   transition:
     box-shadow 150ms ease,
-    border-color 150ms ease;
+    border-color 150ms ease,
+    background 150ms ease;
   min-height: 44px;
+  min-width: 44px;
   touch-action: manipulation;
 
   // --- Interactive ---
@@ -74,6 +76,7 @@ cngx-card {
   // --- Loading ---
   &.cngx-card--loading {
     pointer-events: none;
+    cursor: wait;
 
     // Shimmer overlay
     &::after {

@@ -21,6 +21,7 @@ import { Directive, input } from '@angular/core';
     class: 'cngx-card__media',
     '[style.aspect-ratio]': 'aspectRatio() !== "auto" ? aspectRatio() : null',
     '[attr.aria-hidden]': 'decorative() || null',
+    '[attr.loading]': '"lazy"',
   },
 })
 export class CngxCardMedia {
