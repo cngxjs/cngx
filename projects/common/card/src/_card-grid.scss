@@ -1,0 +1,15 @@
+cngx-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cngx-card-grid-min, 280px), 1fr));
+  gap: var(--cngx-card-grid-gap, var(--cngx-gap-md, 16px));
+
+  &.cngx-card-grid--compact {
+    --cngx-card-grid-gap: var(--cngx-gap-xs, 8px);
+    --cngx-card-padding: var(--cngx-space-sm, 8px);
+  }
+
+  &.cngx-card-grid--comfortable {
+    --cngx-card-grid-gap: var(--cngx-gap-lg, 24px);
+    --cngx-card-padding: var(--cngx-space-lg, 24px);
+  }
+}

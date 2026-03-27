@@ -1,0 +1,18 @@
+cngx-metric {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--cngx-metric-gap, var(--cngx-space-2xs, 2px));
+}
+
+.cngx-metric__value {
+  font-size: var(--cngx-metric-value-size, 1.75rem);
+  font-weight: var(--cngx-metric-value-weight, 600);
+  color: var(--cngx-metric-value-color, var(--mat-sys-on-surface, #1d1b20));
+  line-height: 1.2;
+}
+
+.cngx-metric__unit {
+  font-size: var(--cngx-metric-unit-size, 0.875rem);
+  font-weight: var(--cngx-metric-unit-weight, 400);
+  color: var(--cngx-metric-unit-color, var(--mat-sys-on-surface-variant, #49454f));
+}

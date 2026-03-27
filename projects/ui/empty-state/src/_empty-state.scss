@@ -1,0 +1,43 @@
+cngx-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cngx-empty-gap, var(--cngx-space-md, 16px));
+  padding: var(--cngx-empty-padding, var(--cngx-space-xl, 48px)) var(--cngx-space-md, 16px);
+  text-align: center;
+  color: var(--cngx-empty-color, var(--mat-sys-on-surface-variant, #49454f));
+}
+
+// Default icon: hidden when consumer projects a custom icon
+.cngx-empty-state__icon-slot:not(:empty) + .cngx-empty-state__default-icon {
+  display: none;
+}
+
+.cngx-empty-state__default-icon {
+  color: var(--cngx-empty-icon-color, var(--mat-sys-on-surface-variant, #49454f));
+  opacity: 0.5;
+}
+
+.cngx-empty-state__icon-slot:empty {
+  display: none;
+}
+
+.cngx-empty-state__title {
+  margin: 0;
+  font-size: var(--cngx-empty-title-size, 1.125rem);
+  font-weight: var(--cngx-empty-title-weight, 500);
+  color: var(--cngx-empty-title-color, var(--mat-sys-on-surface, #1d1b20));
+}
+
+.cngx-empty-state__description {
+  margin: 0;
+  font-size: var(--cngx-empty-desc-size, 0.875rem);
+  line-height: 1.5;
+  max-width: 40ch;
+}
+
+.cngx-empty-state__actions {
+  display: flex;
+  gap: var(--cngx-space-sm, 8px);
+  margin-top: var(--cngx-space-sm, 8px);
+}

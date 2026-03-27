@@ -1,0 +1,56 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-empty-state theming ──────────────────────────────────
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/empty-state/empty-state-theme' as empty;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include empty.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  --cngx-empty-gap: 16px;
+  --cngx-empty-padding: 48px;
+  --cngx-empty-color: #49454f;
+  --cngx-empty-icon-color: #49454f;
+  --cngx-empty-title-size: 1.125rem;
+  --cngx-empty-title-weight: 500;
+  --cngx-empty-title-color: #1d1b20;
+  --cngx-empty-desc-size: 0.875rem;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-empty-color: var(--mat-sys-on-surface-variant);
+    --cngx-empty-icon-color: var(--mat-sys-on-surface-variant);
+    --cngx-empty-title-color: var(--mat-sys-on-surface);
+  } @else {
+    --cngx-empty-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-empty-title-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-empty-icon-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-empty-title-size: var(--mat-sys-title-medium-size, 1.125rem);
+    --cngx-empty-title-weight: var(--mat-sys-title-medium-weight, 500);
+    --cngx-empty-desc-size: var(--mat-sys-body-medium-size, 0.875rem);
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(cngx-empty-state) {
+    @include base();
+    @include color($theme);
+    @include typography($theme);
+  }
+}

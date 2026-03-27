@@ -1,0 +1,11 @@
+cngx-card-timestamp {
+  display: inline-flex;
+  gap: var(--cngx-card-timestamp-gap, var(--cngx-space-2xs, 4px));
+  font-size: var(--cngx-card-timestamp-size, 0.75rem);
+  color: var(--cngx-card-timestamp-color, var(--mat-sys-on-surface-variant, #49454f));
+  line-height: 1.4;
+}
+
+.cngx-card-timestamp__prefix {
+  font-weight: var(--cngx-card-timestamp-prefix-weight, 400);
+}

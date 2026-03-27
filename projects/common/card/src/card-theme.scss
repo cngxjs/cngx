@@ -1,0 +1,121 @@
+@use '@angular/material' as mat;
+
+// ─── cngx-card theming ──────────────────────────────────────
+//
+// Aligns card, metric, trend, badge, and timestamp tokens with
+// Material 3 surface and typography tokens.
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/common/card/card-theme' as card;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include card.theme($theme);
+//   }
+
+// ─── Token definitions ──────────────────────────────────────────
+
+@mixin base() {
+  // Card
+  --cngx-card-padding: 16px;
+  --cngx-card-radius: 12px;
+  --cngx-card-bg: #fff;
+  --cngx-card-color: #1d1b20;
+  --cngx-card-border: 1px solid #c4c7c5;
+  --cngx-card-focus-width: 2px;
+  --cngx-card-focus-offset: 2px;
+  --cngx-card-focus-color: #6750a4;
+  --cngx-card-selected-border: #6750a4;
+  --cngx-card-selected-bar-width: 3px;
+  --cngx-card-disabled-opacity: 0.5;
+  --cngx-card-active-opacity: 0.88;
+  --cngx-card-badge-offset: -6px;
+  --cngx-card-divider: #c4c7c5;
+
+  // Metric
+  --cngx-metric-value-size: 1.75rem;
+  --cngx-metric-value-weight: 600;
+  --cngx-metric-value-color: #1d1b20;
+  --cngx-metric-unit-size: 0.875rem;
+  --cngx-metric-unit-color: #49454f;
+
+  // Trend
+  --cngx-trend-size: 0.8125rem;
+  --cngx-trend-weight: 500;
+  --cngx-trend-color: #49454f;
+  --cngx-trend-up-color: #22c55e;
+  --cngx-trend-down-color: #ef4444;
+
+  // Timestamp
+  --cngx-card-timestamp-size: 0.75rem;
+  --cngx-card-timestamp-color: #49454f;
+
+  // Skeleton
+  --cngx-skeleton-bg: #e0e0e0;
+  --cngx-skeleton-shimmer: #f5f5f5;
+
+  // Grid
+  --cngx-card-grid-min: 280px;
+}
+
+@mixin color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3
+    --cngx-card-bg: var(--mat-sys-surface-container-low);
+    --cngx-card-color: var(--mat-sys-on-surface);
+    --cngx-card-border: 1px solid var(--mat-sys-outline-variant);
+    --cngx-card-focus-color: var(--mat-sys-primary);
+    --cngx-card-selected-border: var(--mat-sys-primary);
+    --cngx-card-divider: var(--mat-sys-outline-variant);
+    --cngx-metric-value-color: var(--mat-sys-on-surface);
+    --cngx-metric-unit-color: var(--mat-sys-on-surface-variant);
+    --cngx-trend-color: var(--mat-sys-on-surface-variant);
+    --cngx-card-timestamp-color: var(--mat-sys-on-surface-variant);
+    --cngx-skeleton-bg: var(--mat-sys-surface-container-high);
+    --cngx-skeleton-shimmer: var(--mat-sys-surface-container);
+  } @else {
+    // M2
+    --cngx-card-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-card-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-card-border: 1px solid #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-card-focus-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-card-selected-border: #{mat.get-theme-color($theme, primary)};
+    --cngx-card-divider: #{mat.get-theme-color($theme, foreground, divider)};
+    --cngx-metric-value-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-metric-unit-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-trend-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+    --cngx-card-timestamp-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+  }
+}
+
+@mixin typography($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    // M3
+    --cngx-metric-value-size: var(--mat-sys-headline-medium-size, 1.75rem);
+    --cngx-metric-value-weight: var(--mat-sys-headline-medium-weight, 600);
+    --cngx-metric-unit-size: var(--mat-sys-body-medium-size, 0.875rem);
+    --cngx-trend-size: var(--mat-sys-label-medium-size, 0.8125rem);
+    --cngx-trend-weight: var(--mat-sys-label-medium-weight, 500);
+    --cngx-card-timestamp-size: var(--mat-sys-body-small-size, 0.75rem);
+  }
+}
+
+@mixin density($theme) {
+  // Touch devices: increase padding for comfortable tap targets
+  @media (hover: none) {
+    --cngx-card-padding: 20px;
+  }
+}
+
+// ─── Public entrypoint ──────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(cngx-card, cngx-card-grid, cngx-metric, cngx-trend, cngx-card-timestamp) {
+    @include base();
+    @include color($theme);
+    @include typography($theme);
+    @include density($theme);
+  }
+}
