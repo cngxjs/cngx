@@ -14,9 +14,10 @@
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
       "@cngx/common": ["dist/common/types/cngx-common.d.ts"],
       "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
-      "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"]
+      "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
+      "@cngx/common/card": ["dist/common/types/cngx-common-card.d.ts"]
     }
   },
-  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts"],
+  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

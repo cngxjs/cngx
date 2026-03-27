@@ -11,3 +11,7 @@ export {
   injectSmartDataSource,
   type CngxSmartDataSourceOptions,
 } from './src/smart-data-source';
+
+// Display atoms
+export { CngxMetric } from './src/metric.component';
+export { CngxTrend } from './src/trend.component';

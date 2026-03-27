@@ -70,6 +70,16 @@ export const routes: Routes = [
           import('./demos/common/behaviors/sort-demo/sort-demo.component').then((m) => m.SortDemoComponent),
       },
       {
+        path: 'card/card',
+        loadComponent: () =>
+          import('./demos/common/card/card-demo/card-demo.component').then((m) => m.CardDemoComponent),
+      },
+      {
+        path: 'card/card-grid',
+        loadComponent: () =>
+          import('./demos/common/card/card-grid-demo/card-grid-demo.component').then((m) => m.CardGridDemoComponent),
+      },
+      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
@@ -80,6 +90,11 @@ export const routes: Routes = [
           import('./demos/common/data/mat-table-demo/mat-table-demo.component').then((m) => m.MatTableDemoComponent),
       },
       {
+        path: 'data/metric',
+        loadComponent: () =>
+          import('./demos/common/data/metric-demo/metric-demo.component').then((m) => m.MetricDemoComponent),
+      },
+      {
         path: 'data/paginate-list',
         loadComponent: () =>
           import('./demos/common/data/paginate-list-demo/paginate-list.component').then((m) => m.PaginateListDemoComponent),
@@ -88,6 +103,11 @@ export const routes: Routes = [
         path: 'data/smart-data-source',
         loadComponent: () =>
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),
+      },
+      {
+        path: 'data/trend',
+        loadComponent: () =>
+          import('./demos/common/data/trend-demo/trend-demo.component').then((m) => m.TrendDemoComponent),
       },
       {
         path: 'dialog/dialog',
@@ -316,6 +336,11 @@ export const routes: Routes = [
         path: 'async-button',
         loadComponent: () =>
           import('./demos/ui/async-button-demo/async-button-demo.component').then((m) => m.AsyncButtonDemoComponent),
+      },
+      {
+        path: 'empty-state',
+        loadComponent: () =>
+          import('./demos/ui/empty-state-demo/empty-state-demo.component').then((m) => m.EmptyStateDemoComponent),
       },
       {
         path: 'mat-paginator',

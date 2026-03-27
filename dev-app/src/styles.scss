@@ -11,6 +11,15 @@
 @use '../../projects/common/popover/src/tooltip-theme' as tooltip;
 @use '../../projects/common/popover/src/tooltip-indicator' as tooltip-indicator;
 @use '../../projects/common/popover/src/popover-panel-theme' as panel;
+@use '../../projects/ui/src/lib/card-theme' as card;
+@use '../../projects/common/card/src/card' as cngx-card;
+@use '../../projects/common/card/src/card-grid' as cngx-card-grid;
+@use '../../projects/common/data/src/metric' as cngx-metric;
+@use '../../projects/common/data/src/trend' as cngx-trend;
+@use '../../projects/common/card/src/card-timestamp' as cngx-card-timestamp;
+@use '../../projects/common/card/src/card-skeleton' as cngx-card-skeleton;
+@use '../../projects/ui/empty-state/src/empty-state-theme' as empty-state;
+@use '../../projects/ui/empty-state/src/empty-state' as cngx-empty-state;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -47,6 +56,8 @@ html {
   @include ripple.theme($theme);
   @include tooltip.theme($theme);
   @include panel.theme($theme);
+  @include card.theme($theme);
+  @include empty-state.theme($theme);
 }
 
 @include tooltip-indicator.touch-only();
@@ -63,6 +74,8 @@ html {
   @include ripple.theme($dark-theme);
   @include tooltip.theme($dark-theme);
   @include panel.theme($dark-theme);
+  @include card.theme($dark-theme);
+  @include empty-state.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────

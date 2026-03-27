@@ -1,0 +1,16 @@
+cngx-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-trend-gap, var(--cngx-space-2xs, 2px));
+  font-size: var(--cngx-trend-size, 0.8125rem);
+  font-weight: var(--cngx-trend-weight, 500);
+  color: var(--cngx-trend-color, var(--mat-sys-on-surface-variant, #49454f));
+
+  &.cngx-trend--up {
+    color: var(--cngx-trend-up-color, var(--cngx-status-success, #22c55e));
+  }
+
+  &.cngx-trend--down {
+    color: var(--cngx-trend-down-color, var(--cngx-status-error, #ef4444));
+  }
+}
