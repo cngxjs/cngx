@@ -179,7 +179,7 @@ Jeder Slot ist semantisch korrekt — kein `<div>` ohne Bedeutung:
 
 ```typescript
 @Directive({
-  selector: '[cngxCardHeader]',
+  selector: 'header[cngxCardHeader]',
   standalone: true,
   host: { class: 'cngx-card__header' },
 })
@@ -207,7 +207,7 @@ export class CngxCardMedia {
 }
 
 @Directive({
-  selector: '[cngxCardFooter]',
+  selector: 'footer[cngxCardFooter]',
   standalone: true,
   host: { class: 'cngx-card__footer' },
 })
@@ -939,12 +939,12 @@ cngx-card {
 ```
 @cngx/common/card/          Level 2
   CngxCard                   Semantic host (article/button/link)
-  CngxCardHeader             Slot-Direktive (flex-wrap Container)
+  CngxCardHeader             header[cngxCardHeader] — erzwingt <header>
   CngxCardTitle              Heading-Typografie (1rem/600)
   CngxCardSubtitle           Sekundärtext (0.8125rem/400, muted)
   CngxCardBody               Slot-Direktive
   CngxCardMedia              Slot-Direktive (decorative, aspectRatio)
-  CngxCardFooter             Slot-Direktive
+  CngxCardFooter             footer[cngxCardFooter] — erzwingt <footer>
   CngxCardActions            Slot-Direktive (align)
   CngxCardBadge              Positioniertes Badge (4 Ecken)
   CngxCardAccent             Severity-basierter Top-Border + getönter Hintergrund

@@ -230,7 +230,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';
         [sourceHtml]="_srcHtml8"
         [sourceTs]="_srcTs8">
         
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;max-width:660px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
@@ -238,37 +238,54 @@ import { CngxDisclosure } from '@cngx/common/interactive';
         P
       </span>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Care Plan</h3>
+        <h3 cngxCardTitle>Static Badge</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        Next evaluation: 18.07.2025
+        Non-interactive span badge
       </div>
     </cngx-card>
-    <cngx-card style="overflow:visible">
-      <span cngxCardBadge position="top-end"
-            style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
-                   border-radius:11px;background:#3b82f6;color:#fff;font-size:0.7rem;font-weight:700;padding:0 6px">
-        3
-      </span>
+
+    <cngx-card as="button" (clicked)="cardClicked.update(n => n + 1)"
+               ariaLabel="Open care plan" style="overflow:visible">
+      <button cngxCardBadge position="top-end"
+              (click)="handleBadgeClick($event)"
+              aria-label="Open permissions dialog"
+              style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+                     border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
+                     border:2px solid #fff;cursor:pointer;padding:0">
+        P
+      </button>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Notifications</h3>
+        <h3 cngxCardTitle>Clickable Badge</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        3 unread messages
+        Button card + button badge. Click each to test event bubbling.
       </div>
     </cngx-card>
+
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-start"
             style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
             role="status" aria-label="Online">
       </span>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>User Status</h3>
+        <h3 cngxCardTitle>Status Dot</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        Badge at top-start with status dot
+        Badge at top-start
       </div>
     </cngx-card>
+  </div>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">Card clicked</span>
+      <span class="event-value">{{ cardClicked() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Badge clicked</span>
+      <span class="event-value">{{ badgeClicked() }}</span>
+    </div>
   </div>
       </app-example-card>
       <app-example-card title="Card with Expandable Text"
@@ -351,7 +368,7 @@ export class CardDemoComponent {
   protected readonly _s5 = 'Sets <code>aria-busy="true"</code> and announces "Loading" via SR live region. Toggle to see the visual effect.';
   protected readonly _s6 = 'Communicates <em>why</em> via <code>aria-describedby</code>. Inspect the card in devtools — the disabled-reason span is always in the DOM.';
   protected readonly _s7 = 'Multiple independent actions inside. The card itself is <code>role="article"</code> — the buttons carry the interaction.';
-  protected readonly _s8 = '<code>[cngxCardBadge]</code> positions any element at a corner of the card. The badge itself carries the semantics — the directive is pure positioning.';
+  protected readonly _s8 = '<code>[cngxCardBadge]</code> positions any element at a corner. Works on <code>&lt;span&gt;</code>, <code>&lt;button&gt;</code>, or <code>&lt;a&gt;</code>. Clickable badge on a button card: does the click bubble to the card or stay on the badge?';
   protected readonly _s9 = 'Long card content with <code>cngx-expandable-text</code> — truncated to 3 lines with a read-more toggle.';
   protected readonly _s10 = 'Card header as disclosure trigger — click to expand/collapse the body content. Uses <code>cngxDisclosure</code> from interactive.';
   protected readonly _srcHtml0 = `<div style="max-width:400px">
@@ -374,7 +391,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml1 = `<div style="max-width:320px">
     <cngx-card>
       <div cngxCardMedia [decorative]="false" aspectRatio="16/9">
@@ -397,7 +421,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml2 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
     <cngx-card cngxCardAccent="danger">
       <header cngxCardHeader><h3 cngxCardTitle>Danger</h3></header>
@@ -426,7 +457,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml3 = `<div class="button-row" style="margin-bottom:12px">
     <button (click)="loading.update(v => !v)">Toggle loading</button>
   </div>
@@ -450,7 +488,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml4 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-width:660px">
     <cngx-card as="button" [selectable]="true" [(selected)]="selected"
                ariaLabel="Select patient Maria Muster">
@@ -490,7 +535,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml5 = `<div class="button-row" style="margin-bottom:12px">
     <button (click)="loading.update(v => !v)">Toggle loading</button>
   </div>
@@ -510,7 +562,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml6 = `<div style="max-width:400px">
     <cngx-card as="button" [disabled]="true"
                disabledReason="Only nursing staff can edit residents"
@@ -529,7 +588,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml7 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
@@ -550,8 +616,15 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
-  protected readonly _srcHtml8 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px;max-width:660px">
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
+  protected readonly _srcHtml8 = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:24px;max-width:760px">
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-end"
             style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
@@ -559,37 +632,54 @@ import { CngxDisclosure } from '@cngx/common/interactive';
         P
       </span>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Care Plan</h3>
+        <h3 cngxCardTitle>Static Badge</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        Next evaluation: 18.07.2025
+        Non-interactive span badge
       </div>
     </cngx-card>
-    <cngx-card style="overflow:visible">
-      <span cngxCardBadge position="top-end"
-            style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
-                   border-radius:11px;background:#3b82f6;color:#fff;font-size:0.7rem;font-weight:700;padding:0 6px">
-        3
-      </span>
+
+    <cngx-card as="button" (clicked)="cardClicked.update(n => n + 1)"
+               ariaLabel="Open care plan" style="overflow:visible">
+      <button cngxCardBadge position="top-end"
+              (click)="handleBadgeClick($event)"
+              aria-label="Open permissions dialog"
+              style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+                     border-radius:50%;background:#ef4444;color:#fff;font-size:0.7rem;font-weight:700;
+                     border:2px solid #fff;cursor:pointer;padding:0">
+        P
+      </button>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>Notifications</h3>
+        <h3 cngxCardTitle>Clickable Badge</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        3 unread messages
+        Button card + button badge. Click each to test event bubbling.
       </div>
     </cngx-card>
+
     <cngx-card style="overflow:visible">
       <span cngxCardBadge position="top-start"
             style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e"
             role="status" aria-label="Online">
       </span>
       <header cngxCardHeader>
-        <h3 cngxCardTitle>User Status</h3>
+        <h3 cngxCardTitle>Status Dot</h3>
       </header>
       <div cngxCardBody style="font-size:0.875rem;color:var(--text-muted)">
-        Badge at top-start with status dot
+        Badge at top-start
       </div>
     </cngx-card>
+  </div>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">Card clicked</span>
+      <span class="event-value">{{ cardClicked() }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Badge clicked</span>
+      <span class="event-value">{{ badgeClicked() }}</span>
+    </div>
   </div>`;
   protected readonly _srcTs8 = `import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia, CngxCardFooter, CngxCardActions, CngxCardAccent, CngxCardSkeleton } from '@cngx/common/card';
 import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
@@ -597,7 +687,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml9 = `<div style="max-width:400px">
     <cngx-card>
       <header cngxCardHeader>
@@ -628,7 +725,14 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
   protected readonly _srcHtml10 = `<div style="max-width:400px;display:flex;flex-direction:column;gap:12px">
     <cngx-card>
       <header cngxCardHeader cngxDisclosure #d1="cngxDisclosure" [controls]="'detail-1'"
@@ -667,9 +771,23 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 
 
   protected selected = signal(false);
-  protected loading = signal(false);`;
+  protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }`;
 
   protected selected = signal(false);
   protected loading = signal(false);
+  protected cardClicked = signal(0);
+  protected badgeClicked = signal(0);
+
+  protected handleBadgeClick(e: MouseEvent): void {
+    e.stopPropagation();
+    this.badgeClicked.update(n => n + 1);
+  }
   
 }
