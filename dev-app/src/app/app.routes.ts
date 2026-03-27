@@ -338,6 +338,11 @@ export const routes: Routes = [
           import('./demos/ui/async-button-demo/async-button-demo.component').then((m) => m.AsyncButtonDemoComponent),
       },
       {
+        path: 'empty-state',
+        loadComponent: () =>
+          import('./demos/ui/empty-state-demo/empty-state-demo.component').then((m) => m.EmptyStateDemoComponent),
+      },
+      {
         path: 'mat-paginator',
         loadComponent: () =>
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),

@@ -89,6 +89,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: '@cngx/ui',
     items: [
       { label: 'ActionButton', path: 'ui/async-button' },
+      { label: 'EmptyState', path: 'ui/empty-state' },
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
       { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'Skeleton', path: 'ui/skeleton' },
