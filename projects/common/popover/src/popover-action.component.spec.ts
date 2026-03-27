@@ -37,7 +37,12 @@ class DismissHost {
 @Component({
   template: `
     <div cngxPopover #pop="cngxPopover">
-      <cngx-popover-action role="confirm" [action]="saveAction" [feedbackDuration]="500" #act="cngxPopoverAction">
+      <cngx-popover-action
+        role="confirm"
+        [action]="saveAction"
+        [feedbackDuration]="500"
+        #act="cngxPopoverAction"
+      >
         Save
         <ng-template cngxPending>Saving...</ng-template>
         <ng-template cngxSucceeded>Saved!</ng-template>

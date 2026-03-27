@@ -66,6 +66,7 @@
     "@angular/cli": "^21.2.2",
     "@angular/compiler-cli": "^21.2.4",
     "@compodoc/compodoc": "^1.2.1",
+    "@floating-ui/dom": "^1.7.6",
     "@types/node": "^22.19.15",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
