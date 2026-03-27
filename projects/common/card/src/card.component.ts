@@ -168,9 +168,15 @@ export class CngxCard {
 
   /** @internal SR live announcement for state changes. */
   protected readonly liveAnnouncement = computed(() => {
-    if (this.loading()) return 'Loading';
-    if (this.selectable() && this.selected()) return 'Selected';
-    if (this.selectable() && !this.selected()) return 'Deselected';
+    if (this.loading()) {
+      return 'Loading';
+    }
+    if (this.selectable() && this.selected()) {
+      return 'Selected';
+    }
+    if (this.selectable() && !this.selected()) {
+      return 'Deselected';
+    }
     return '';
   });
 
