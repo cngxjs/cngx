@@ -11,6 +11,8 @@ import {
   type Signal,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+
 import {
   CngxSkeletonPlaceholder,
   type CngxSkeletonPlaceholderContext,
@@ -61,12 +63,12 @@ import {
   host: {
     style: 'display: contents',
     class: 'cngx-skeleton',
-    '[class.cngx-skeleton--loading]': 'loading()',
+    '[class.cngx-skeleton--loading]': 'isLoading()',
     '[class.cngx-skeleton--shimmer]': 'showShimmer()',
-    '[attr.aria-busy]': 'loading() || null',
+    '[attr.aria-busy]': 'isLoading() || null',
   },
   template: `
-    @if (loading()) {
+    @if (isLoading()) {
       @for (i of indices(); track i) {
         <ng-container
           *ngTemplateOutlet="placeholderTpl()?.templateRef ?? null; context: getContext(i)"
@@ -78,14 +80,20 @@ import {
   `,
 })
 export class CngxSkeletonContainer {
-  /** Controls the loading state. */
+  /** Controls the loading state directly. */
   readonly loading = input<boolean>(false);
+
+  /** Bind an async state — shows skeleton during first load. Takes precedence over `loading`. */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /** Enables the `.cngx-skeleton--shimmer` class (respects `prefers-reduced-motion`). */
   readonly shimmer = input<boolean>(true);
 
   /** Repeat count for the placeholder template. */
   readonly count = input<number>(1);
+
+  /** Derived loading state: `state.isFirstLoad` takes precedence over `loading` input. */
+  protected readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? this.loading());
 
   /** @internal — projected placeholder template. */
   protected readonly placeholderTpl = contentChild(CngxSkeletonPlaceholder);
@@ -112,7 +120,7 @@ export class CngxSkeletonContainer {
 
   /** @internal */
   protected readonly showShimmer = computed(
-    () => this.loading() && this.shimmer() && !this.prefersReducedMotion(),
+    () => this.isLoading() && this.shimmer() && !this.prefersReducedMotion(),
   );
 
   /** @internal */

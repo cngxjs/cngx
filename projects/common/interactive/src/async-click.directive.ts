@@ -8,13 +8,11 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
+import type { AsyncStatus } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 /** Action function that returns a Promise or Observable. */
 export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
-
-/** Discriminated status of an async action lifecycle — `'idle'` before first click, then cycles through `'pending'` / `'succeeded'` | `'failed'` / `'idle'`. */
-export type AsyncStatus = 'idle' | 'pending' | 'succeeded' | 'failed';
 
 /**
  * Async action handler with loading state, auto-disable, and success/error feedback.
@@ -31,8 +29,8 @@ export type AsyncStatus = 'idle' | 'pending' | 'succeeded' | 'failed';
  * <button [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">
  *   @switch (btn.status()) {
  *     @case ('pending')   { Saving... }
- *     @case ('succeeded') { Saved! }
- *     @case ('failed')    { Failed }
+ *     @case ('success')   { Saved! }
+ *     @case ('error')     { Failed }
  *     @default            { Save }
  *   }
  * </button>
@@ -60,8 +58,8 @@ export type AsyncStatus = 'idle' | 'pending' | 'succeeded' | 'failed';
   host: {
     '(click)': 'handleClick($event)',
     '[class.cngx-async--pending]': 'pending()',
-    '[class.cngx-async--succeeded]': 'succeeded()',
-    '[class.cngx-async--failed]': 'failed()',
+    '[class.cngx-async--success]': 'succeeded()',
+    '[class.cngx-async--error]': 'failed()',
     '[attr.aria-busy]': 'pending() || null',
     '[attr.aria-disabled]': 'pending() || null',
     '[attr.disabled]': 'shouldDisable()',
@@ -129,10 +127,10 @@ export class CngxAsyncClick {
       return 'pending';
     }
     if (this.succeededState()) {
-      return 'succeeded';
+      return 'success';
     }
     if (this.failedState()) {
-      return 'failed';
+      return 'error';
     }
     return 'idle';
   });

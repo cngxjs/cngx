@@ -53,7 +53,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * <cngx-popover-action role="confirm" [action]="save" #act="cngxPopoverAction">
  *   @switch (act.status()) {
  *     @case ('pending')   { Saving... }
- *     @case ('succeeded') { Done }
+ *     @case ('success') { Done }
  *     @default            { Save }
  *   }
  * </cngx-popover-action>
@@ -94,14 +94,14 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
               <ng-container *ngTemplateOutlet="idle" />
             }
           }
-          @case ('succeeded') {
+          @case ('success') {
             @if (succeededTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
               <ng-container *ngTemplateOutlet="idle" />
             }
           }
-          @case ('failed') {
+          @case ('error') {
             @if (failedTpl(); as tpl) {
               <ng-container
                 *ngTemplateOutlet="tpl.templateRef; context: { $implicit: btn.error() }"
