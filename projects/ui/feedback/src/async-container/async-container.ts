@@ -13,9 +13,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
+import type { AsyncStatus } from '@cngx/core/utils';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxLoadingIndicator } from '../loading-indicator';
+import { CngxToaster } from '../toast/toast.service';
 
 // ── Template marker directives ──────────────────────────────────────
 
@@ -170,6 +172,8 @@ export class CngxAsyncErrorTpl {
   `,
 })
 export class CngxAsyncContainer<T> {
+  private readonly toaster = inject(CngxToaster, { optional: true });
+
   /** The async state to render. */
   readonly state = input.required<CngxAsyncState<T>>();
 
@@ -178,6 +182,12 @@ export class CngxAsyncContainer<T> {
 
   /** ARIA label for the region. */
   readonly ariaLabel = input<string | undefined>(undefined);
+
+  /** Toast message on success. If set, fires a toast via CngxToaster. */
+  readonly toastSuccess = input<string | undefined>(undefined);
+
+  /** Toast message on error. If set, fires a toast via CngxToaster. */
+  readonly toastError = input<string | undefined>(undefined);
 
   // ── Template queries ──────────────────────────────────────────────
 
@@ -255,6 +265,27 @@ export class CngxAsyncContainer<T> {
       } else if (prev === 'refreshing' && status === 'error') {
         this.announcement.set('Refresh failed');
       }
+
+      // Fire toasts if configured
+      this.fireToast(status);
     });
+  }
+
+  private fireToast(status: AsyncStatus): void {
+    if (!this.toaster) {
+      return;
+    }
+    if (status === 'success') {
+      const msg = this.toastSuccess();
+      if (msg) {
+        this.toaster.show({ message: msg, severity: 'success', duration: 3000 });
+      }
+    }
+    if (status === 'error') {
+      const msg = this.toastError();
+      if (msg) {
+        this.toaster.show({ message: msg, severity: 'error' });
+      }
+    }
   }
 }
