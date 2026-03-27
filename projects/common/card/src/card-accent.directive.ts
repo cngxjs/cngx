@@ -31,8 +31,7 @@ import { Directive, input } from '@angular/core';
 })
 export class CngxCardAccent {
   /** Severity level controlling the accent color. */
-  readonly severity = input<'info' | 'success' | 'warning' | 'danger' | 'neutral'>(
-    'neutral',
-    { alias: 'cngxCardAccent' },
-  );
+  readonly severity = input<'info' | 'success' | 'warning' | 'danger' | 'neutral'>('neutral', {
+    alias: 'cngxCardAccent',
+  });
 }

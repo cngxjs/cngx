@@ -171,22 +171,34 @@ cngx-card {
 
 .cngx-card--accent-info {
   --cngx-card-accent-color: var(--cngx-accent-info, #3b82f6);
-  background: var(--cngx-accent-info-bg, color-mix(in srgb, var(--cngx-accent-info, #3b82f6) 6%, var(--cngx-card-bg, #fff)));
+  background: var(
+    --cngx-accent-info-bg,
+    color-mix(in srgb, var(--cngx-accent-info, #3b82f6) 6%, var(--cngx-card-bg, #fff))
+  );
 }
 
 .cngx-card--accent-success {
   --cngx-card-accent-color: var(--cngx-accent-success, #22c55e);
-  background: var(--cngx-accent-success-bg, color-mix(in srgb, var(--cngx-accent-success, #22c55e) 6%, var(--cngx-card-bg, #fff)));
+  background: var(
+    --cngx-accent-success-bg,
+    color-mix(in srgb, var(--cngx-accent-success, #22c55e) 6%, var(--cngx-card-bg, #fff))
+  );
 }
 
 .cngx-card--accent-warning {
   --cngx-card-accent-color: var(--cngx-accent-warning, #f59e0b);
-  background: var(--cngx-accent-warning-bg, color-mix(in srgb, var(--cngx-accent-warning, #f59e0b) 8%, var(--cngx-card-bg, #fff)));
+  background: var(
+    --cngx-accent-warning-bg,
+    color-mix(in srgb, var(--cngx-accent-warning, #f59e0b) 8%, var(--cngx-card-bg, #fff))
+  );
 }
 
 .cngx-card--accent-danger {
   --cngx-card-accent-color: var(--cngx-accent-danger, #ef4444);
-  background: var(--cngx-accent-danger-bg, color-mix(in srgb, var(--cngx-accent-danger, #ef4444) 8%, var(--cngx-card-bg, #fff)));
+  background: var(
+    --cngx-accent-danger-bg,
+    color-mix(in srgb, var(--cngx-accent-danger, #ef4444) 8%, var(--cngx-card-bg, #fff))
+  );
 }
 
 .cngx-card--accent-neutral {
