@@ -250,11 +250,9 @@ export class CngxAsyncContainer<T> {
         return;
       }
 
-      const firstLoad = s.isFirstLoad();
-
       if (prev === 'idle' && status === 'loading') {
         this.announcement.set('Loading content');
-      } else if (prev === 'loading' && status === 'success' && firstLoad) {
+      } else if (prev === 'loading' && status === 'success') {
         this.announcement.set('Content loaded');
       } else if (prev === 'loading' && status === 'error') {
         this.announcement.set('Error loading content');
