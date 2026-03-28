@@ -1,6 +1,7 @@
 import { DataSource } from '@angular/cdk/collections';
 import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 import { CngxPaginate } from './paginate.directive';
 import { CngxFilter } from './filter.directive';
@@ -22,18 +23,29 @@ export interface CngxSmartDataSourceOptions<T> {
   sortFn?: (a: T, b: T, field: string, direction: 'asc' | 'desc') => number;
 }
 
+function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is CngxAsyncState<T[]> {
+  return 'status' in source && 'data' in source && 'isFirstLoad' in source;
+}
+
 /**
  * A CDK `DataSource` that optionally integrates with `CngxSort`,
  * `CngxFilter`, `CngxSearch`, and `CngxPaginate` present in the injection
  * tree. Each directive is injected optionally — if absent, that processing
  * step is skipped.
  *
- * Use this for simple flat lists where you want automatic wiring. For trees
- * or complex pipelines, prefer {@link CngxDataSource} with a manual
- * `computed()`.
+ * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>`.
+ * When a `CngxAsyncState` is provided, the data source exposes the full
+ * UX state (`isLoading`, `isRefreshing`, `error`, `isEmpty`) so the
+ * table can show skeleton rows, error states, and loading indicators.
  *
  * ```typescript
+ * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
+ *
+ * // With async state — full UX lifecycle
+ * readonly residents = injectAsyncState(() => this.api.getAll(this.filter()));
+ * readonly dataSource = injectSmartDataSource(this.residents);
+ * // dataSource.isLoading(), dataSource.error(), dataSource.isRefreshing()
  * ```
  *
  * @typeParam T - The row item type.
@@ -60,14 +72,54 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
   private readonly processed: Signal<T[]>;
 
+  // ── Async state — only populated when source is CngxAsyncState ─────
+
+  /** The async state source, or `undefined` if constructed from a plain signal. */
+  readonly asyncState: CngxAsyncState<T[]> | undefined;
+
+  /** `true` during initial data load (skeleton phase). */
+  readonly isLoading: Signal<boolean>;
+
+  /** `true` during refresh (data stays visible, loading bar). */
+  readonly isRefreshing: Signal<boolean>;
+
+  /** `true` when any operation is running. Maps to `aria-busy`. */
+  readonly isBusy: Signal<boolean>;
+
+  /** `true` if no successful load has completed yet. */
+  readonly isFirstLoad: Signal<boolean>;
+
+  /** Error from the async state, or `undefined`. */
+  readonly error: Signal<unknown>;
+
+  /** `true` when data is empty AND no operation is running. */
+  readonly isEmpty: Signal<boolean>;
+
   constructor(
-    private readonly data: Signal<T[]>,
+    source: Signal<T[]> | CngxAsyncState<T[]>,
     private readonly options?: CngxSmartDataSourceOptions<T>,
   ) {
     super();
 
+    // Resolve data signal and async state from the source
+    let data: Signal<T[]>;
+    if (isAsyncState(source)) {
+      this.asyncState = source;
+      data = computed(() => source.data() ?? []);
+    } else {
+      this.asyncState = undefined;
+      data = source;
+    }
+
+    const s = this.asyncState;
+    this.isLoading = computed(() => s?.isLoading() ?? false);
+    this.isRefreshing = computed(() => s?.isRefreshing() ?? false);
+    this.isBusy = computed(() => s?.isBusy() ?? false);
+    this.isFirstLoad = computed(() => s?.isFirstLoad() ?? false);
+    this.error = computed(() => s?.error());
+
     this.filtered = computed(() => {
-      let items = this.data();
+      let items = data();
 
       // Filter via CngxFilter (predicate function)
       const predicate = this.filter?.predicate();
@@ -98,6 +150,14 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     });
 
     this.filteredCount = computed(() => this.filtered().length);
+
+    this.isEmpty = computed(() => {
+      // During loading, not "empty" yet — show skeleton instead
+      if (this.isBusy()) {
+        return false;
+      }
+      return this.filteredCount() === 0;
+    });
 
     this.processed = computed(() => {
       let items = this.filtered();
@@ -154,13 +214,22 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * Factory function for {@link CngxSmartDataSource}.
  * Must be called within an injection context (constructor or field initializer).
  *
+ * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>` for
+ * full UX state integration (loading, error, refresh, empty).
+ *
  * @example
- * // Field initializer — injection context
+ * ```typescript
+ * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
+ *
+ * // With async state — table shows skeleton, error, loading bar
+ * readonly residents = injectAsyncState(() => this.api.getAll());
+ * readonly dataSource = injectSmartDataSource(this.residents);
+ * ```
  */
 export function injectSmartDataSource<T>(
-  data: Signal<T[]>,
+  source: Signal<T[]> | CngxAsyncState<T[]>,
   options?: CngxSmartDataSourceOptions<T>,
 ): CngxSmartDataSource<T> {
-  return new CngxSmartDataSource(data, options);
+  return new CngxSmartDataSource(source, options);
 }

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxPaginate } from './paginate.directive';
 
@@ -161,6 +162,89 @@ describe('CngxPaginate', () => {
     dir.pageChange.subscribe(spy);
     dir.setPageSize(5, false);
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  describe('state input — async busy guard', () => {
+    function createMockState(busy: boolean): CngxAsyncState<unknown> {
+      const isBusy = signal(busy);
+      return {
+        status: signal(busy ? 'loading' : 'idle'),
+        data: signal(undefined),
+        error: signal(undefined),
+        progress: signal(undefined),
+        isLoading: isBusy,
+        isPending: signal(false),
+        isRefreshing: signal(false),
+        isBusy,
+        isFirstLoad: signal(false),
+        isEmpty: signal(false),
+        hasData: signal(false),
+        isSettled: signal(!busy),
+        lastUpdated: signal(undefined),
+      };
+    }
+
+    @Component({
+      template: '<div cngxPaginate [total]="100" [state]="state"></div>',
+      imports: [CngxPaginate],
+    })
+    class BusyHost {
+      state: CngxAsyncState<unknown> | undefined = undefined;
+    }
+
+    beforeEach(() => TestBed.configureTestingModule({ imports: [BusyHost] }));
+
+    function getDirWithState(state?: CngxAsyncState<unknown>): CngxPaginate {
+      const fixture = TestBed.createComponent(BusyHost);
+      fixture.componentInstance.state = state;
+      fixture.detectChanges();
+      return fixture.debugElement.query(By.directive(CngxPaginate)).injector.get(CngxPaginate);
+    }
+
+    it('isBusy is false when no state bound', () => {
+      const dir = getDirWithState(undefined);
+      expect(dir.isBusy()).toBe(false);
+    });
+
+    it('isBusy derives from state.isBusy()', () => {
+      const mockState = createMockState(true);
+      const dir = getDirWithState(mockState);
+      expect(dir.isBusy()).toBe(true);
+    });
+
+    it('setPage is no-op when isBusy', () => {
+      const mockState = createMockState(true);
+      const dir = getDirWithState(mockState);
+      const spy = vi.fn();
+      dir.pageChange.subscribe(spy);
+      dir.setPage(2);
+      expect(dir.pageIndex()).toBe(0);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('setPageSize is no-op when isBusy', () => {
+      const mockState = createMockState(true);
+      const dir = getDirWithState(mockState);
+      const spy = vi.fn();
+      dir.pageSizeChange.subscribe(spy);
+      dir.setPageSize(25);
+      expect(dir.pageSize()).toBe(10);
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('next is no-op when isBusy', () => {
+      const mockState = createMockState(true);
+      const dir = getDirWithState(mockState);
+      dir.next();
+      expect(dir.pageIndex()).toBe(0);
+    });
+
+    it('previous is no-op when isBusy', () => {
+      const mockState = createMockState(true);
+      const dir = getDirWithState(mockState);
+      dir.previous();
+      expect(dir.pageIndex()).toBe(0);
+    });
   });
 
   describe('controlled mode', () => {

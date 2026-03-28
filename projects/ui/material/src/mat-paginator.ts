@@ -34,6 +34,7 @@ import { type CngxPaginate } from '@cngx/common/data';
       [pageIndex]="ref().pageIndex()"
       [pageSize]="ref().pageSize()"
       [pageSizeOptions]="pageSizeOptions()"
+      [disabled]="ref().isBusy()"
       (page)="handlePage($event)"
     />
   `,

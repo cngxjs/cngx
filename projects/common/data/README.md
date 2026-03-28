@@ -94,12 +94,12 @@ readonly residents = injectAsyncState(() =>
 | Factory | Use Case | Injection Context |
 |-|-|-|
 | `injectAsyncState(fn)` | Reactive query (GET) — auto-reloads on signal change | Required |
-| `createAtapAsyncState()` | Mutation (POST/PUT/DELETE) — explicit `execute()` | Required |
+| `createAsyncState()` | Mutation (POST/PUT/DELETE) — explicit `execute()` | Required |
 | `createManualState()` | Full manual control — Web Workers, computations | Not needed |
 | `fromResource(ref)` | Bridge for Angular `resource()` | Required |
 | `fromHttpResource(ref)` | Bridge for Angular `httpResource()` with progress | Required |
 
-All return `CngxAtapAsyncState<T>` — the same interface every UI component accepts.
+All return `CngxAsyncState<T>` — the same interface every UI component accepts.
 
 ---
 
@@ -205,7 +205,7 @@ Refresh:            success → refreshing → success
 
 ---
 
-## 2. createAtapAsyncState — Mutation
+## 2. createAsyncState — Mutation
 
 For user-triggered actions (POST, PUT, DELETE). Uses `execute(fn)` which
 sets `pending`, then `success` or `error`.
@@ -213,7 +213,7 @@ sets `pending`, then `success` or `error`.
 ### Save form
 
 ```typescript
-readonly saveAction = createAtapAsyncState<Resident>();
+readonly saveAction = createAsyncState<Resident>();
 
 protected handleSave(): void {
   void this.saveAction.execute(() =>
@@ -248,7 +248,7 @@ protected handleSave(): void {
 ### Delete with refresh
 
 ```typescript
-readonly deleteAction = createAtapAsyncState<void>();
+readonly deleteAction = createAsyncState<void>();
 
 protected handleDelete(id: string): void {
   void this.deleteAction.execute(
@@ -344,7 +344,7 @@ constructor() {
 
 ## RxJS Operators
 
-Three operators that wire Observable pipelines to `ManualAtapAsyncState`
+Three operators that wire Observable pipelines to `ManualAsyncState`
 automatically. No manual `subscribe({ next, error })` boilerplate.
 
 | Operator | Input | Output | What it does |
@@ -503,7 +503,7 @@ handleSave(): void {
 
 ## 4. fromResource — Angular resource() Bridge
 
-Wraps Angular's `resource()` as `CngxAtapAsyncState<T>`. The resource stays
+Wraps Angular's `resource()` as `CngxAsyncState<T>`. The resource stays
 the single source of truth — all signals are derived projections.
 
 ```typescript
@@ -517,7 +517,7 @@ private readonly res = resource({
 readonly items = fromResource(this.res);
 ```
 
-### Template — same as any CngxAtapAsyncState
+### Template — same as any CngxAsyncState
 
 ```html
 <cngx-async-container [state]="items" ariaLabel="Items">
@@ -530,7 +530,7 @@ readonly items = fromResource(this.res);
 ## 5. fromHttpResource — Angular httpResource() Bridge
 
 Like `fromResource` but maps HTTP progress (0-1 float) to
-`CngxAtapAsyncState.progress` (0-100 integer).
+`CngxAsyncState.progress` (0-100 integer).
 
 ```typescript
 private readonly res = httpResource<Report>(() => ({
@@ -661,7 +661,7 @@ export class ResidentList {
   );
 
   // Mutation — explicit execute()
-  readonly deleteState = createAtapAsyncState<void>();
+  readonly deleteState = createAsyncState<void>();
 
   protected makeDelete(id: string): () => Promise<void> {
     return () => this.deleteState.execute(
@@ -703,7 +703,7 @@ cannot become inconsistent.
 
 ---
 
-## CngxAtapAsyncState Interface
+## CngxAsyncState Interface
 
 Every factory returns this interface — every UI component accepts it.
 
@@ -723,6 +723,148 @@ Every factory returns this interface — every UI component accepts it.
 | `isSettled` | `boolean` | `success` or `error` |
 | `lastUpdated` | `Date \| undefined` | Timestamp of last success |
 
+## SmartDataSource — Table with Full UX State
+
+The most powerful integration. Pass a `CngxAsyncState<T[]>` directly
+to `injectSmartDataSource` — the table gets skeleton, error, empty,
+and loading bar for free.
+
+### Setup
+
+```typescript
+// Service
+readonly residents = injectAsyncState(() =>
+  this.api.getAll(this.filter())
+);
+
+// DataSource — accepts CngxAsyncState directly
+readonly dataSource = injectSmartDataSource(this.residents);
+```
+
+### Template — every state mapped to a table view
+
+```html
+<div cngxPaginate #pg="cngxPaginate"
+  [total]="dataSource.filteredCount()" [state]="residents">
+
+  <!-- Skeleton during first load -->
+  @if (dataSource.isFirstLoad()) {
+    <table>
+      @for (i of [1,2,3,4,5]; track i) {
+        <tr><td><div class="skeleton-line"></div></td></tr>
+      }
+    </table>
+  }
+
+  <!-- Error state -->
+  @else if (dataSource.error(); as err) {
+    <cngx-alert severity="error">
+      {{ err }}
+      <button cngxAlertAction (click)="residents.refresh()">Retry</button>
+    </cngx-alert>
+  }
+
+  <!-- Empty state -->
+  @else if (dataSource.isEmpty()) {
+    <cngx-empty-state title="No residents" />
+  }
+
+  <!-- Content — with loading bar during refresh -->
+  @else {
+    @if (dataSource.isRefreshing()) {
+      <cngx-loading-indicator [loading]="true" variant="bar" />
+    }
+    <table mat-table [dataSource]="dataSource" [trackBy]="trackBy">
+      <!-- columns -->
+    </table>
+  }
+
+  <cngx-mat-paginator [cngxPaginateRef]="pg" />
+</div>
+```
+
+### What the DataSource exposes
+
+| Signal | Source | Description |
+|-|-|-|
+| `isLoading` | `state.isLoading()` | True during any load |
+| `isFirstLoad` | `state.isFirstLoad()` | True only on initial load (skeleton) |
+| `isRefreshing` | `state.isRefreshing()` | True during re-query (loading bar) |
+| `isBusy` | `state.isBusy()` | True during any operation (aria-busy) |
+| `error` | `state.error()` | Error from the async operation |
+| `isEmpty` | derived | True when not busy AND filteredCount is 0 |
+| `filteredCount` | derived | Items after filter/search, before pagination |
+| `asyncState` | ref | The original CngxAsyncState for binding to other components |
+
+### Server-side pagination
+
+```typescript
+readonly residents = injectAsyncState(() =>
+  this.api.getPage(this.pageIndex(), this.pageSize(), this.filter())
+);
+// Page change triggers signal change → auto-reload
+// Paginator disabled while loading via [state]
+```
+
+---
+
+## CngxPaginate — Async-Aware Pagination
+
+The paginator accepts `[state]` and blocks navigation while busy:
+
+```html
+<div cngxPaginate #pg="cngxPaginate"
+  [total]="dataSource.filteredCount()" [state]="residents">
+  <!-- table -->
+  <cngx-mat-paginator [cngxPaginateRef]="pg" />
+</div>
+```
+
+- `setPage()`, `next()`, `previous()`, `setPageSize()` are no-ops while `isBusy`
+- `CngxMatPaginator` auto-disables via `[disabled]="ref().isBusy()"`
+- No manual disabled management needed
+
+---
+
+## CngxFileDrop — Upload State
+
+The file drop accepts `[state]` for upload lifecycle feedback:
+
+```html
+<div cngxFileDrop #drop="cngxFileDrop"
+  [accept]="['image/*']" [state]="uploadState"
+  (filesChange)="handleUpload($event)">
+
+  @if (drop.uploading()) {
+    <cngx-progress [state]="uploadState" variant="circular" />
+    <p>Uploading... {{ drop.uploadProgress() ?? 0 }}%</p>
+  } @else if (drop.uploadError()) {
+    <cngx-alert severity="error">Upload failed</cngx-alert>
+  } @else {
+    <p>Drop files or <button (click)="drop.browse()">browse</button></p>
+  }
+</div>
+```
+
+```typescript
+readonly uploadState = createManualState<UploadResult>();
+
+handleUpload(files: File[]): void {
+  this.http.post('/api/upload', files[0], {
+    reportProgress: true, observe: 'events',
+  }).pipe(
+    tapHttpAsyncState(this.uploadState),
+    takeUntilDestroyed(this.destroyRef),
+  ).subscribe();
+}
+```
+
+- `browse()` and drop are blocked while uploading
+- `aria-busy` applied automatically
+- `cngx-file-drop--uploading` CSS class for styling
+
+---
+
 ## UI Components That Accept `[state]`
 
 | Component | What it derives |
@@ -737,3 +879,6 @@ Every factory returns this interface — every UI component accepts it.
 | `cngx-popover-panel` | Loading/error/empty slot selection |
 | `cngx-treetable` | `aria-busy`, `isLoading`, `error`, `isEmpty` |
 | `dialog[cngxDialog]` | `isPending` blocks close, `aria-busy`, error announcement |
+| `[cngxPaginate]` | `isBusy` blocks navigation, disabled paginator |
+| `[cngxFileDrop]` | `uploading`, `uploadProgress`, `uploadError`, blocks drop/browse |
+| `injectSmartDataSource` | `isLoading`, `isRefreshing`, `error`, `isEmpty`, `filteredCount` |
