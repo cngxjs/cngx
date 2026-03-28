@@ -53,9 +53,11 @@ export const STORY: DemoSpec = {
     {
       title: 'Smart Autocomplete and Spellcheck',
       subtitle:
-        '<code>CngxInput</code> auto-infers <code>autocomplete</code> and <code>spellcheck</code> ' +
-        'from the field name. Inspect the inputs in DevTools to see <code>autocomplete="email"</code> ' +
-        'and <code>spellcheck="false"</code>.',
+        '<code>CngxInput</code> auto-infers <code>autocomplete</code> and <code>spellcheck</code> from the field name. ' +
+        'A field named <code>email</code> gets <code>autocomplete="email"</code> and <code>spellcheck="false"</code>. ' +
+        'A field named <code>password</code> gets <code>autocomplete="current-password"</code>. ' +
+        'Override via <code>provideFormField(withAutocompleteMappings({...}), withNoSpellcheck(...))</code>. ' +
+        'The inferred values are shown below each input.',
       imports: ['CngxFormField', 'CngxLabel', 'CngxInput', 'CngxHint', 'CngxFieldErrors', 'FormField'],
       template: `
   <div class="demo-form">
@@ -63,7 +65,7 @@ export const STORY: DemoSpec = {
       <cngx-form-field [field]="emailField">
         <label cngxLabel>E-Mail</label>
         <input cngxInput [formField]="emailField" placeholder="max@example.com" />
-        <span cngxHint>Inspect: autocomplete="email", spellcheck="false"</span>
+        <span cngxHint>autocomplete="email", spellcheck="false" (inferred from field name "email")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -71,7 +73,7 @@ export const STORY: DemoSpec = {
       <cngx-form-field [field]="passwordField">
         <label cngxLabel>Password</label>
         <input cngxInput [formField]="passwordField" type="password" placeholder="At least 8 characters" />
-        <span cngxHint>Inspect: autocomplete="current-password"</span>
+        <span cngxHint>autocomplete="current-password" (inferred from field name "password")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>

@@ -28,9 +28,6 @@ import { CngxFileDrop } from '@cngx/forms/input';
   <div class="demo-form">
     <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000" [multiple]="true"
       #drop="cngxFileDrop"
-      style="border:2px dashed var(--border-color,#ccc);border-radius:8px;padding:32px;text-align:center;transition:border-color 0.2s"
-      [style.borderColor]="drop.dragging() ? 'var(--interactive,#1976d2)' : 'var(--border-color,#ccc)'"
-      [style.background]="drop.dragging() ? 'var(--interactive-subtle-bg,#e3f2fd)' : 'transparent'"
     >
       @if (drop.dragging()) {
         <p style="margin:0;font-weight:500">Drop images here</p>
@@ -70,9 +67,6 @@ export class FileDropDemoComponent {
   protected readonly _srcHtml0 = `<div class="demo-form">
     <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000" [multiple]="true"
       #drop="cngxFileDrop"
-      style="border:2px dashed var(--border-color,#ccc);border-radius:8px;padding:32px;text-align:center;transition:border-color 0.2s"
-      [style.borderColor]="drop.dragging() ? 'var(--interactive,#1976d2)' : 'var(--border-color,#ccc)'"
-      [style.background]="drop.dragging() ? 'var(--interactive-subtle-bg,#e3f2fd)' : 'transparent'"
     >
       @if (drop.dragging()) {
         <p style="margin:0;font-weight:500">Drop images here</p>

@@ -17,7 +17,7 @@ import { CngxMediaQuery } from '@cngx/common';
   ],
   template: `
     <app-doc-shell title="MediaQuery"
-      description="Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes."
+      description="Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic."
       [apiComponents]="['CngxMediaQuery']">
       <app-example-card title="CngxMediaQuery — Viewport Breakpoints"
         [subtitle]="_s0"
@@ -55,7 +55,7 @@ import { CngxMediaQuery } from '@cngx/common';
   `,
 })
 export class MediaQueryDemoComponent {
-  protected readonly _s0 = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> with automatic cleanup. Resize your browser to see the signals update in real time.';
+  protected readonly _s0 = '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. Use this when component logic (not just CSS) needs to respond to viewport or preference changes — e.g. switching between a chart and a table on mobile, or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. Resize your browser to see the signals update live.';
   protected readonly _srcHtml0 = `<div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1024px)" #desktop="cngxMediaQuery"></div>
   <div cngxMediaQuery="(min-width: 1440px)" #wide="cngxMediaQuery"></div>

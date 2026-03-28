@@ -39,7 +39,7 @@ import { CngxInput, CngxPasswordToggle, CngxCharCount } from '@cngx/forms/input'
       <cngx-form-field [field]="emailField">
         <label cngxLabel>E-Mail</label>
         <input cngxInput [formField]="emailField" placeholder="max@example.com" />
-        <span cngxHint>Inspect: autocomplete="email", spellcheck="false"</span>
+        <span cngxHint>autocomplete="email", spellcheck="false" (inferred from field name "email")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -47,7 +47,7 @@ import { CngxInput, CngxPasswordToggle, CngxCharCount } from '@cngx/forms/input'
       <cngx-form-field [field]="passwordField">
         <label cngxLabel>Password</label>
         <input cngxInput [formField]="passwordField" type="password" placeholder="At least 8 characters" />
-        <span cngxHint>Inspect: autocomplete="current-password"</span>
+        <span cngxHint>autocomplete="current-password" (inferred from field name "password")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -121,7 +121,7 @@ import { CngxInput, CngxPasswordToggle, CngxCharCount } from '@cngx/forms/input'
   `,
 })
 export class InputDemoComponent {
-  protected readonly _s0 = '<code>CngxInput</code> auto-infers <code>autocomplete</code> and <code>spellcheck</code> from the field name. Inspect the inputs in DevTools to see <code>autocomplete="email"</code> and <code>spellcheck="false"</code>.';
+  protected readonly _s0 = '<code>CngxInput</code> auto-infers <code>autocomplete</code> and <code>spellcheck</code> from the field name. A field named <code>email</code> gets <code>autocomplete="email"</code> and <code>spellcheck="false"</code>. A field named <code>password</code> gets <code>autocomplete="current-password"</code>. Override via <code>provideFormField(withAutocompleteMappings({...}), withNoSpellcheck(...))</code>. The inferred values are shown below each input.';
   protected readonly _s1 = '<code>CngxPasswordToggle</code> toggles <code>type="password"</code> to <code>type="text"</code>. Expose via <code>#pwd="cngxPasswordToggle"</code> and bind <code>pwd.visible()</code> / <code>pwd.toggle()</code>.';
   protected readonly _s2 = '<code>CngxCharCount</code> shows a live counter. Supports <code>[max]</code> input and custom templates.';
   protected readonly _srcHtml0 = `<div class="demo-form">
@@ -129,7 +129,7 @@ export class InputDemoComponent {
       <cngx-form-field [field]="emailField">
         <label cngxLabel>E-Mail</label>
         <input cngxInput [formField]="emailField" placeholder="max@example.com" />
-        <span cngxHint>Inspect: autocomplete="email", spellcheck="false"</span>
+        <span cngxHint>autocomplete="email", spellcheck="false" (inferred from field name "email")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>
@@ -137,7 +137,7 @@ export class InputDemoComponent {
       <cngx-form-field [field]="passwordField">
         <label cngxLabel>Password</label>
         <input cngxInput [formField]="passwordField" type="password" placeholder="At least 8 characters" />
-        <span cngxHint>Inspect: autocomplete="current-password"</span>
+        <span cngxHint>autocomplete="current-password" (inferred from field name "password")</span>
         <cngx-field-errors />
       </cngx-form-field>
     </div>

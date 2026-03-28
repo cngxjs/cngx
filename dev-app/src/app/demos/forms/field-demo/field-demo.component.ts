@@ -68,17 +68,17 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
         
   <div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="manualEmailField">
         <label cngxLabel>E-Mail</label>
-        <input cngxInput [formField]="emailField" placeholder="max@example.com" />
+        <input cngxInput [formField]="manualEmailField" placeholder="max@example.com" />
         <div cngxError class="demo-errors">
-          @for (err of emailField().errors(); track err.kind) {
+          @for (err of manualEmailField().errors(); track err.kind) {
             <span>{{ err.message ?? err.kind }}</span>
           }
         </div>
       </cngx-form-field>
     </div>
-    <button class="chip" (click)="emailField().markAsTouched()">Touch email</button>
+    <button class="chip" (click)="manualEmailField().markAsTouched()">Touch email</button>
   </div>
       </app-example-card>
       <app-example-card title="Disabled Field with Reasons"
@@ -117,9 +117,9 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
         
   <div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="ariaEmailField">
         <label cngxLabel>Inspect this input</label>
-        <input cngxInput [formField]="emailField" placeholder="Open DevTools, inspect me"
+        <input cngxInput [formField]="ariaEmailField" placeholder="Open DevTools, inspect me"
           style="border: 2px dashed var(--cngx-border,#aaa)" />
         <span cngxHint>Check aria-describedby, aria-required, aria-invalid</span>
         <cngx-field-errors />
@@ -251,6 +251,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.passwordField().markAsTouched();
   }
 
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
+
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
   private readonly disabledSchema = schema<{ password: string; confirmPassword: string }>(root => {
@@ -295,17 +313,17 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
   protected readonly reactiveField = adaptFormControl(this.reactiveControl, 'reactiveEmail');`;
   protected readonly _srcHtml1 = `<div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="manualEmailField">
         <label cngxLabel>E-Mail</label>
-        <input cngxInput [formField]="emailField" placeholder="max@example.com" />
+        <input cngxInput [formField]="manualEmailField" placeholder="max@example.com" />
         <div cngxError class="demo-errors">
-          @for (err of emailField().errors(); track err.kind) {
+          @for (err of manualEmailField().errors(); track err.kind) {
             <span>{{ err.message ?? err.kind }}</span>
           }
         </div>
       </cngx-form-field>
     </div>
-    <button class="chip" (click)="emailField().markAsTouched()">Touch email</button>
+    <button class="chip" (click)="manualEmailField().markAsTouched()">Touch email</button>
   </div>`;
   protected readonly _srcTs1 = `import { form, schema, required, email, minLength, maxLength, disabled, submit, FormField } from '@angular/forms/signals';
 import { CngxFormField, CngxLabel, CngxHint, CngxError, CngxFieldErrors, CngxFormErrors, focusFirstError, adaptFormControl } from '@cngx/forms/field';
@@ -330,6 +348,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.emailField().markAsTouched();
     this.passwordField().markAsTouched();
   }
+
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
 
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
@@ -420,6 +456,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.passwordField().markAsTouched();
   }
 
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
+
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
   private readonly disabledSchema = schema<{ password: string; confirmPassword: string }>(root => {
@@ -465,9 +519,9 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
   protected readonly _srcCss2 = `.demo-disabled-reason { font-size: 0.75rem; color: var(--cngx-field-hint-color, #888); font-style: italic; }`;
   protected readonly _srcHtml3 = `<div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="ariaEmailField">
         <label cngxLabel>Inspect this input</label>
-        <input cngxInput [formField]="emailField" placeholder="Open DevTools, inspect me"
+        <input cngxInput [formField]="ariaEmailField" placeholder="Open DevTools, inspect me"
           style="border: 2px dashed var(--cngx-border,#aaa)" />
         <span cngxHint>Check aria-describedby, aria-required, aria-invalid</span>
         <cngx-field-errors />
@@ -508,6 +562,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.emailField().markAsTouched();
     this.passwordField().markAsTouched();
   }
+
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
 
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
@@ -605,6 +677,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.passwordField().markAsTouched();
   }
 
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
+
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
   private readonly disabledSchema = schema<{ password: string; confirmPassword: string }>(root => {
@@ -685,6 +775,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.passwordField().markAsTouched();
   }
 
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
+
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
   private readonly disabledSchema = schema<{ password: string; confirmPassword: string }>(root => {
@@ -745,6 +853,24 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
     this.emailField().markAsTouched();
     this.passwordField().markAsTouched();
   }
+
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
 
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });

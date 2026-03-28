@@ -49,6 +49,24 @@ export const STORY: DemoSpec = {
     this.passwordField().markAsTouched();
   }
 
+  // ── Manual error form (Section 2) ───────────────────────
+  private readonly manualModel = signal({ email: '' });
+  private readonly manualSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly manualForm = form(this.manualModel, this.manualSchema);
+  protected readonly manualEmailField = this.manualForm.email;
+
+  // ── ARIA inspection form (Section 4) ───────────────────
+  private readonly ariaModel = signal({ email: '' });
+  private readonly ariaSchema = schema<{ email: string }>(root => {
+    required(root.email);
+    email(root.email);
+  });
+  protected readonly ariaForm = form(this.ariaModel, this.ariaSchema);
+  protected readonly ariaEmailField = this.ariaForm.email;
+
   // ── Disabled-reasons form (Section 3) ────────────────────
   private readonly disabledModel = signal({ password: '', confirmPassword: '' });
   private readonly disabledSchema = schema<{ password: string; confirmPassword: string }>(root => {
@@ -132,17 +150,17 @@ export const STORY: DemoSpec = {
       template: `
   <div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="manualEmailField">
         <label cngxLabel>E-Mail</label>
-        <input cngxInput [formField]="emailField" placeholder="max@example.com" />
+        <input cngxInput [formField]="manualEmailField" placeholder="max@example.com" />
         <div cngxError class="demo-errors">
-          @for (err of emailField().errors(); track err.kind) {
+          @for (err of manualEmailField().errors(); track err.kind) {
             <span>{{ err.message ?? err.kind }}</span>
           }
         </div>
       </cngx-form-field>
     </div>
-    <button class="chip" (click)="emailField().markAsTouched()">Touch email</button>
+    <button class="chip" (click)="manualEmailField().markAsTouched()">Touch email</button>
   </div>`,
       css: `.demo-errors { font-size: 0.75rem; color: var(--cngx-field-error-color, #d32f2f); display: flex; flex-direction: column; gap: 2px; }`,
     },
@@ -184,9 +202,9 @@ export const STORY: DemoSpec = {
       template: `
   <div class="demo-form">
     <div class="demo-field">
-      <cngx-form-field [field]="emailField">
+      <cngx-form-field [field]="ariaEmailField">
         <label cngxLabel>Inspect this input</label>
-        <input cngxInput [formField]="emailField" placeholder="Open DevTools, inspect me"
+        <input cngxInput [formField]="ariaEmailField" placeholder="Open DevTools, inspect me"
           style="border: 2px dashed var(--cngx-border,#aaa)" />
         <span cngxHint>Check aria-describedby, aria-required, aria-invalid</span>
         <cngx-field-errors />

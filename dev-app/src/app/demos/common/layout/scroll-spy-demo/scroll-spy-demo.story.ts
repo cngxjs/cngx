@@ -15,6 +15,11 @@ export const STORY: DemoSpec = {
   ],
   setup: `
   protected readonly sectionIds = ['spy-intro', 'spy-features', 'spy-pricing', 'spy-faq'];
+
+  protected scrollTo(event: Event, id: string): void {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
   `,
   sections: [
     {
@@ -27,7 +32,8 @@ export const STORY: DemoSpec = {
     <nav [cngxScrollSpy]="sectionIds" [root]="'.spy-container'" [threshold]="0.1" #spy="cngxScrollSpy"
          style="position:sticky;top:0;display:flex;flex-direction:column;gap:4px;min-width:100px;padding-top:8px">
       @for (id of sectionIds; track id) {
-        <a [href]="'#' + id"
+        <a href="javascript:void(0)"
+           (click)="scrollTo($event, id)"
            class="chip"
            [class.chip--active]="spy.activeId() === id"
            style="text-decoration:none;font-size:0.8125rem;text-transform:capitalize">

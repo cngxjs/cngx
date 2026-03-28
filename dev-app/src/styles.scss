@@ -20,6 +20,8 @@
 @use '../../projects/common/card/src/card-skeleton' as cngx-card-skeleton;
 @use '../../projects/ui/empty-state/src/empty-state-theme' as empty-state;
 @use '../../projects/ui/empty-state/src/empty-state' as cngx-empty-state;
+@use '../../projects/forms/input/src/file-drop' as cngx-file-drop;
+@use '../../projects/forms/input/src/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
 // Material theme — light, untouched (demo components rely on this)
@@ -58,9 +60,12 @@ html {
   @include panel.theme($theme);
   @include card.theme($theme);
   @include empty-state.theme($theme);
+  @include file-drop.theme($theme);
 }
 
 @include tooltip-indicator.touch-only();
+@include cngx-file-drop.styles();
+@include panel.styles();
 
 [data-theme='dark'] {
   @include mat.all-component-colors($dark-theme);
@@ -76,6 +81,7 @@ html {
   @include panel.theme($dark-theme);
   @include card.theme($dark-theme);
   @include empty-state.theme($dark-theme);
+  @include file-drop.theme($dark-theme);
 }
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
