@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { resolveAsyncView, type AsyncView } from './resolve-view';
 
 describe('resolveAsyncView', () => {
-  function expectView(status: AsyncStatus, firstLoad: boolean, empty: boolean, expected: AsyncView): void {
+  function expectView(
+    status: AsyncStatus,
+    firstLoad: boolean,
+    empty: boolean,
+    expected: AsyncView,
+  ): void {
     expect(resolveAsyncView(status, firstLoad, empty)).toBe(expected);
   }
 

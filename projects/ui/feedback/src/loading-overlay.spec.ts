@@ -7,10 +7,12 @@ import { CngxLoadingOverlay } from './loading-overlay';
 
 // ── Mock async state helper ────────────────────────────────────────────
 
-function createMockAsyncState(overrides: {
-  isBusy?: boolean;
-  isFirstLoad?: boolean;
-} = {}): CngxAsyncState<unknown> {
+function createMockAsyncState(
+  overrides: {
+    isBusy?: boolean;
+    isFirstLoad?: boolean;
+  } = {},
+): CngxAsyncState<unknown> {
   return {
     status: signal<AsyncStatus>('idle'),
     data: signal(undefined),
@@ -156,7 +158,9 @@ describe('CngxLoadingOverlay', () => {
     vi.advanceTimersByTime(100);
     fixture.detectChanges();
 
-    const spinnerWrapper = el.querySelector('.cngx-loading-overlay__spinner-wrapper') as HTMLElement;
+    const spinnerWrapper = el.querySelector(
+      '.cngx-loading-overlay__spinner-wrapper',
+    ) as HTMLElement;
     expect(spinnerWrapper).not.toBeNull();
     expect(spinnerWrapper.getAttribute('role')).toBe('status');
   });
@@ -171,7 +175,9 @@ describe('CngxLoadingOverlay', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    const spinnerWrapper = el.querySelector('.cngx-loading-overlay__spinner-wrapper') as HTMLElement;
+    const spinnerWrapper = el.querySelector(
+      '.cngx-loading-overlay__spinner-wrapper',
+    ) as HTMLElement;
     expect(spinnerWrapper).not.toBeNull();
     expect(spinnerWrapper.getAttribute('tabindex')).toBe('-1');
   });

@@ -67,9 +67,7 @@ describe('createAsyncState', () => {
 
   it('superseded execution is discarded', async () => {
     let resolveFirst!: (v: string) => void;
-    const firstPromise = state.execute(
-      () => new Promise<string>((r) => (resolveFirst = r)),
-    );
+    const firstPromise = state.execute(() => new Promise<string>((r) => (resolveFirst = r)));
 
     const secondPromise = state.execute(() => Promise.resolve('second'));
 

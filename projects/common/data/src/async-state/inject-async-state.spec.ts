@@ -8,7 +8,11 @@ import { injectAsyncState, type ReactiveAsyncState } from './inject-async-state'
 // Helpers
 // ---------------------------------------------------------------------------
 
-function deferred<T>(): { promise: Promise<T>; resolve: (v: T) => void; reject: (e: unknown) => void } {
+function deferred<T>(): {
+  promise: Promise<T>;
+  resolve: (v: T) => void;
+  reject: (e: unknown) => void;
+} {
   let resolve!: (v: T) => void;
   let reject!: (e: unknown) => void;
   const promise = new Promise<T>((res, rej) => {
@@ -25,7 +29,11 @@ function deferred<T>(): { promise: Promise<T>; resolve: (v: T) => void; reject: 
 @Component({ template: '' })
 class Host {
   readonly filter = signal('initial');
-  private readonly pending = signal<{ promise: Promise<string>; resolve: (v: string) => void; reject: (e: unknown) => void } | null>(null);
+  private readonly pending = signal<{
+    promise: Promise<string>;
+    resolve: (v: string) => void;
+    reject: (e: unknown) => void;
+  } | null>(null);
 
   /** Expose the deferred so the test can resolve/reject at will. */
   get current() {

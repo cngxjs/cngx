@@ -8,9 +8,7 @@ import { CngxAsync } from './async.directive';
 
 @Component({
   template: `
-    <div
-      *cngxAsync="state; let data; skeleton: skelTpl; empty: emptyTpl; error: errTpl"
-    >
+    <div *cngxAsync="state; let data; skeleton: skelTpl; empty: emptyTpl; error: errTpl">
       {{ data }}
     </div>
 

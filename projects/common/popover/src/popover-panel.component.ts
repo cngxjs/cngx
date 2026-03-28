@@ -91,7 +91,11 @@ import { CngxPopover } from './popover.directive';
       @if (closeTpl(); as tpl) {
         <ng-container *ngTemplateOutlet="tpl.templateRef" />
       } @else {
-        <cngx-close-button label="Close" class="cngx-popover-panel__close" (click)="popover.hide()" />
+        <cngx-close-button
+          label="Close"
+          class="cngx-popover-panel__close"
+          (click)="popover.hide()"
+        />
       }
     }
 
@@ -174,7 +178,9 @@ export class CngxPopoverPanel {
   readonly empty = input(false);
 
   /** @internal Resolved loading — state takes precedence over boolean input. */
-  protected readonly effectiveLoading = computed(() => this.state()?.isFirstLoad() ?? this.loading());
+  protected readonly effectiveLoading = computed(
+    () => this.state()?.isFirstLoad() ?? this.loading(),
+  );
 
   /** @internal Resolved error — state takes precedence over direct input. */
   protected readonly effectiveError = computed(() => this.state()?.error() ?? this.error());

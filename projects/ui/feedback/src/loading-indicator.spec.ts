@@ -5,7 +5,13 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { CngxLoadingIndicator, type LoadingIndicatorVariant } from './loading-indicator';
 
 @Component({
-  template: `<cngx-loading-indicator [loading]="loading()" [variant]="variant()" [delay]="delay()" [minDuration]="minDuration()" [label]="label()" />`,
+  template: `<cngx-loading-indicator
+    [loading]="loading()"
+    [variant]="variant()"
+    [delay]="delay()"
+    [minDuration]="minDuration()"
+    [label]="label()"
+  />`,
   imports: [CngxLoadingIndicator],
 })
 class TestHost {
