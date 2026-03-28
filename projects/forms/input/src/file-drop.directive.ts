@@ -47,6 +47,7 @@ export interface FileRejection {
   standalone: true,
   exportAs: 'cngxFileDrop',
   host: {
+    class: 'cngx-file-drop',
     '(dragenter)': 'handleDragEnter($event)',
     '(dragover)': 'handleDragOver($event)',
     '(dragleave)': 'handleDragLeave($event)',

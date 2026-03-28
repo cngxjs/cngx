@@ -87,18 +87,6 @@ import { CngxPopover } from './popover.directive';
       <div class="cngx-popover-panel__arrow"></div>
     }
 
-    @if (showClose()) {
-      @if (closeTpl(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl.templateRef" />
-      } @else {
-        <cngx-close-button
-          label="Close"
-          class="cngx-popover-panel__close"
-          (click)="popover.hide()"
-        />
-      }
-    }
-
     @if (effectiveLoading()) {
       @if (loadingTpl(); as tpl) {
         <div class="cngx-popover-panel__loading">
@@ -118,9 +106,22 @@ import { CngxPopover } from './popover.directive';
         </div>
       }
     } @else {
-      @if (hasHeader()) {
-        <div class="cngx-popover-panel__header" [id]="headerId">
-          <ng-content select="[cngxPopoverHeader]" />
+      @if (hasHeader() || showClose()) {
+        <div class="cngx-popover-panel__header-row">
+          <div class="cngx-popover-panel__header" [id]="headerId">
+            <ng-content select="[cngxPopoverHeader]" />
+          </div>
+          @if (showClose()) {
+            @if (closeTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            } @else {
+              <cngx-close-button
+                label="Close"
+                class="cngx-popover-panel__close"
+                (click)="popover.hide()"
+              />
+            }
+          }
         </div>
       }
       <div class="cngx-popover-panel__body" [id]="bodyId">

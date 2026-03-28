@@ -1,0 +1,41 @@
+// ─── CngxFileDrop structural styles ──────────────────────────────────
+//
+//   @use '@cngx/forms/input/file-drop' as file-drop;
+//   @include file-drop.styles();
+
+@mixin styles() {
+  .cngx-file-drop {
+    display: block;
+    border: var(--cngx-file-drop-border-width, 2px) dashed var(--cngx-file-drop-border-color, #ccc);
+    border-radius: var(--cngx-file-drop-radius, 8px);
+    padding: var(--cngx-file-drop-padding, 32px);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color var(--cngx-file-drop-transition, 200ms ease),
+      background var(--cngx-file-drop-transition, 200ms ease);
+  }
+
+  .cngx-file-drop--dragging {
+    border-color: var(--cngx-file-drop-active-border, currentColor);
+    border-style: solid;
+    background: var(--cngx-file-drop-active-bg, rgba(0, 0, 0, 0.03));
+  }
+
+  .cngx-file-drop--has-files {
+    border-color: var(--cngx-file-drop-success-border, #4caf50);
+    border-style: solid;
+  }
+
+  .cngx-file-drop--uploading {
+    opacity: var(--cngx-file-drop-uploading-opacity, 0.6);
+    pointer-events: none;
+    cursor: wait;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cngx-file-drop {
+      transition: none;
+    }
+  }
+}

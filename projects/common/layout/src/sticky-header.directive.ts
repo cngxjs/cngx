@@ -13,7 +13,7 @@ import {
 /**
  * Communicates when a sticky-positioned element becomes stuck.
  *
- * This does NOT apply `position: sticky` — CSS handles that.
+ * Applies `position: sticky; top: 0` on the host automatically.
  * The directive adds a sentinel element before the host and uses
  * `IntersectionObserver` to detect when the sentinel scrolls out,
  * meaning the header is now stuck. Toggles a CSS class for shadow,
@@ -40,6 +40,7 @@ import {
   exportAs: 'cngxStickyHeader',
   standalone: true,
   host: {
+    style: 'position: sticky; top: 0; z-index: var(--cngx-sticky-z-index, 1)',
     '[class.cngx-sticky--active]': 'isSticky()',
   },
 })

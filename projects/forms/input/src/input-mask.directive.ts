@@ -420,7 +420,9 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
   host: {
     '(beforeinput)': 'handleBeforeInput($event)',
     '(keydown)': 'handleKeyDown($event)',
+    '(mousedown)': 'focusedViaClick = true',
     '(focus)': 'handleFocus()',
+    '(mouseup)': 'handleMouseUp()',
     '(blur)': 'handleBlurCva()',
     '(paste)': 'handlePaste($event)',
     '[attr.aria-placeholder]': 'ariaPlaceholder()',
@@ -724,8 +726,15 @@ export class CngxInputMask implements ControlValueAccessor {
   }
 
   /** @internal */
+  /** @internal */
+  protected focusedViaClick = false;
+
   protected handleFocus(): void {
     if (!this.resolvedGuide()) {
+      return;
+    }
+    // If focus came from a click, let handleMouseUp position the cursor instead
+    if (this.focusedViaClick) {
       return;
     }
     const el = this.el.nativeElement;
@@ -733,10 +742,36 @@ export class CngxInputMask implements ControlValueAccessor {
     const masked = this.maskedValueCore();
     const prefixLen = this.prefix().length;
     const emptyPos = firstEmptySlot(tokens, masked, this.resolvedPlaceholder());
-    // Use requestAnimationFrame to position cursor after browser focus handling
     requestAnimationFrame(() => {
       el.setSelectionRange(emptyPos + prefixLen, emptyPos + prefixLen);
     });
+  }
+
+  /** @internal Snap cursor to nearest valid slot on click. */
+  protected handleMouseUp(): void {
+    this.focusedViaClick = false;
+    const el = this.el.nativeElement;
+    const tokens = this.tokens();
+    const prefixLen = this.prefix().length;
+    const masked = this.maskedValueCore();
+    const placeholder = this.resolvedPlaceholder();
+    const clickPos = Math.max(0, (el.selectionStart ?? 0) - prefixLen);
+
+    // Find the first empty slot at or after the click position.
+    // If the click is past all filled slots, snap to the first empty slot.
+    const firstEmpty = firstEmptySlot(tokens, masked, placeholder);
+    const snapped = Math.min(clickPos, firstEmpty);
+
+    // Skip over literal positions — snap to the nearest input slot
+    let pos = snapped;
+    while (pos < tokens.length && tokens[pos].kind === 'literal') {
+      pos++;
+    }
+    if (pos > firstEmpty) {
+      pos = firstEmpty;
+    }
+
+    el.setSelectionRange(pos + prefixLen, pos + prefixLen);
   }
 
   // ── Mask manipulation ───────────────────────────────────────────────
