@@ -11,7 +11,7 @@ export type DialogState = 'closed' | 'opening' | 'open' | 'closing';
  */
 export interface DialogRef<T = unknown> {
   /** Current lifecycle state of the dialog. */
-  readonly state: Signal<DialogState>;
+  readonly lifecycle: Signal<DialogState>;
 
   /**
    * The typed result of the dialog.

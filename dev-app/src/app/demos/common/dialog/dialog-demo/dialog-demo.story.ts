@@ -78,7 +78,7 @@ export const STORY: DemoSpec = {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ declDlg.state() }}</span>
+    <span class="status-badge">state: {{ declDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ declDlg.result() ?? 'undefined' }}</span>
   </div>`,
     },
@@ -109,7 +109,7 @@ export const STORY: DemoSpec = {
     {{ progMessage() }}
   </div>
   <div class="status-row" style="margin-top: 8px">
-    <span class="status-badge">state: {{ progDialog.state() }}</span>
+    <span class="status-badge">state: {{ progDialog.lifecycle() }}</span>
     <span class="status-badge">result: {{ progDialog.result() ?? 'undefined' }}</span>
   </div>`,
     },
@@ -182,7 +182,7 @@ export const STORY: DemoSpec = {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ tmplDlg.state() }}</span>
+    <span class="status-badge">state: {{ tmplDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ tmplDlg.result() | json }}</span>
   </div>`,
     },
@@ -245,8 +245,8 @@ export const STORY: DemoSpec = {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">outer: {{ outerDlg.state() }}</span>
-    <span class="status-badge">inner: {{ confirmReset.state() }}</span>
+    <span class="status-badge">outer: {{ outerDlg.lifecycle() }}</span>
+    <span class="status-badge">inner: {{ confirmReset.lifecycle() }}</span>
     <span class="status-badge">reset confirmed: {{ confirmReset.result() ?? '-' }}</span>
   </div>`,
     },
@@ -270,7 +270,7 @@ export const STORY: DemoSpec = {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ panelDlg.state() }}</span>
+    <span class="status-badge">state: {{ panelDlg.lifecycle() }}</span>
     <span class="status-badge">modal: false</span>
   </div>`,
     },
@@ -386,7 +386,7 @@ export const STORY: DemoSpec = {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ sheetDlg.state() }}</span>
+    <span class="status-badge">state: {{ sheetDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ sheetDlg.result() ?? '-' }}</span>
   </div>`,
     },

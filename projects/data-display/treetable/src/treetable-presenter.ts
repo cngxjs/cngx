@@ -11,6 +11,7 @@ import {
   untracked,
 } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import type { FlatNode, Node, TreetableOptions } from './models';
 import {
   capitalise,
@@ -128,6 +129,12 @@ export class CngxTreetablePresenter<T = unknown> {
    */
   readonly trackBy = input<(node: FlatNode<T>) => unknown>((node) => node.id);
 
+  /**
+   * Bind an async state — drives `aria-busy`, `isLoading`, and `error` from a single source.
+   * When set, the treetable shows skeleton/error/empty states based on the async lifecycle.
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
   /** Emitted when the user clicks a row or activates it via keyboard. */
   readonly nodeClicked = output<FlatNode<T>>();
 
@@ -183,8 +190,20 @@ export class CngxTreetablePresenter<T = unknown> {
     this.flatNodes().filter((n) => isNodeVisible(n, this.expandedIds())),
   );
 
-  /** `true` when there are no visible nodes to render. */
-  readonly isEmpty = computed(() => this.visibleNodes().length === 0);
+  /** `true` when there are no visible nodes to render (or state reports empty). */
+  readonly isEmpty = computed(() => this.state()?.isEmpty() ?? this.visibleNodes().length === 0);
+
+  /** `true` during initial data load (first load from async state). */
+  readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? false);
+
+  /** `true` when the table is refreshing data (not first load). */
+  readonly isRefreshing = computed(() => this.state()?.isRefreshing() ?? false);
+
+  /** `true` when loading or refreshing. */
+  readonly isBusy = computed(() => this.state()?.isBusy() ?? false);
+
+  /** Error from the async state, or `null`. */
+  readonly error = computed(() => this.state()?.error() ?? null);
 
   /** Column keys derived from the first node's primitive-valued properties, or from `options.customColumnOrder`. */
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));

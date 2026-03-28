@@ -147,7 +147,7 @@ open(): void {
 | Data token | `MAT_DIALOG_DATA` | `CNGX_DIALOG_DATA` |
 | Ref token (inside dialog) | `MatDialogRef` (class injection) | `DIALOG_REF` (injection token) |
 | Result type | `afterClosed(): Observable<T>` | `afterClosed(): Observable<T \| 'dismissed'>` + `result()` Signal |
-| State signal | none | `state()`: `DialogState` |
+| Lifecycle signal | none | `lifecycle()`: `DialogState` |
 | Native element | CDK overlay `<div>` | Native `<dialog>` element |
 | Dismiss vs close | both via `close()` | `close(value)` vs `dismiss()` -- typed distinction |
 
@@ -225,7 +225,7 @@ Implements `DialogRef<T>`. Provided as `DIALOG_REF` for child injection.
 
 | Signal | Type | Description |
 |-|-|-|
-| `state` | `DialogState` | Current lifecycle state: `'closed'`, `'opening'`, `'open'`, `'closing'` |
+| `lifecycle` | `DialogState` | Current lifecycle state: `'closed'`, `'opening'`, `'open'`, `'closing'` |
 | `result` | `T \| 'dismissed' \| undefined` | `undefined` before close, `'dismissed'` on dismiss, `T` on close with value |
 | `id` | `string` | Unique dialog instance ID (`cngx-dialog-0`, `cngx-dialog-1`, ...) |
 
@@ -302,7 +302,7 @@ Observable convenience methods for migration compatibility.
 
 | Property | Type | Description |
 |-|-|-|
-| `state` | `Signal<DialogState>` | Current lifecycle state |
+| `lifecycle` | `Signal<DialogState>` | Current lifecycle state |
 | `result` | `Signal<T \| 'dismissed' \| undefined>` | Typed result signal |
 | `id` | `Signal<string>` | Unique dialog ID |
 | `componentRef` | `ComponentRef<unknown> \| null` | Reference to the content component instance |
@@ -593,7 +593,7 @@ class MyDialog {
 
 - `result()` is a Signal -- read it reactively without subscribing
 - Dismiss and close are distinct. `'dismissed'` is an explicit value in the result union, not `undefined`
-- `state()` Signal gives full lifecycle visibility (`opening`, `closing` states for animation)
+- `lifecycle()` Signal gives full lifecycle visibility (`opening`, `closing` states for animation)
 - Declarative mode (`<dialog cngxDialog>`) requires zero service setup
 - No CDK overlay -- uses native `<dialog>` for backdrop, focus trap, and top-layer stacking
 - `[error]` input with `aria-invalid` and `cngx-dialog--error` class for form error states

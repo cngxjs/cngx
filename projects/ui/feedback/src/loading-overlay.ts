@@ -159,7 +159,7 @@ export class CngxLoadingOverlay {
   });
 
   /** @internal — debounced visibility via shared timer factory. */
-  readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
+  protected readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
 
   // ── Focus management ────────────────────────────────────────────────
 
