@@ -41,6 +41,7 @@
       "@cngx/ui/overlay": ["projects/ui/overlay/public-api.ts"],
       "@cngx/ui/material": ["projects/ui/material/public-api.ts"],
       "@cngx/ui/empty-state": ["projects/ui/empty-state/public-api.ts"],
+      "@cngx/ui/feedback": ["projects/ui/feedback/public-api.ts"],
       "@cngx/utils": ["projects/utils/src/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/src/public-api.ts"],

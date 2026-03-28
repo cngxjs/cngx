@@ -18,6 +18,6 @@
       "@cngx/common/card": ["dist/common/types/cngx-common-card.d.ts"]
     }
   },
-  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts"],
+  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

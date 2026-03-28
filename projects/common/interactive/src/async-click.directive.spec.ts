@@ -194,7 +194,7 @@ describe('CngxAsyncClick', () => {
     d.resolve();
     await d.promise;
     flush(fixture);
-    expect(btn.classList.contains('cngx-async--succeeded')).toBe(true);
+    expect(btn.classList.contains('cngx-async--success')).toBe(true);
   });
 
   it('should work with Observable actions', async () => {

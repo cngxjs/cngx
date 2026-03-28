@@ -2,8 +2,10 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   contentChild,
   input,
+  viewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -13,6 +15,7 @@ import {
   CngxSucceeded,
   type AsyncAction,
 } from '@cngx/common/interactive';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 /** Visual variant for the action button — maps to a CSS class. */
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
@@ -85,7 +88,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       [failedAnnouncement]="failedAnnouncement() ?? failedLabel() ?? 'Action failed'"
       [class]="'cngx-action-button cngx-action-button--' + variant()"
     >
-      @switch (btn.status()) {
+      @switch (effectiveStatus()) {
         @case ('pending') {
           @if (pendingTpl(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
@@ -95,7 +98,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
             <ng-container *ngTemplateOutlet="idle" />
           }
         }
-        @case ('succeeded') {
+        @case ('success') {
           @if (succeededTpl(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl.templateRef" />
           } @else if (succeededLabel()) {
@@ -104,10 +107,10 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
             <ng-container *ngTemplateOutlet="idle" />
           }
         }
-        @case ('failed') {
+        @case ('error') {
           @if (failedTpl(); as tpl) {
             <ng-container
-              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: btn.error() }"
+              *ngTemplateOutlet="tpl.templateRef; context: { $implicit: effectiveError() }"
             />
           } @else if (failedLabel()) {
             {{ failedLabel() }}
@@ -168,6 +171,43 @@ export class CngxActionButton {
 
   /** Fallback text after failure (when no `cngxFailed` template is projected). */
   readonly failedLabel = input<string | undefined>(undefined);
+
+  /**
+   * Bind an async state to derive visual status from, as alternative to `[action]`.
+   * When set, the button's status display follows `state.status()`.
+   */
+  readonly asyncState = input<CngxAsyncState<unknown> | undefined>(undefined, { alias: 'state' });
+
+  /** @internal — inner CngxAsyncClick directive instance. */
+  private readonly asyncClick = viewChild.required(CngxAsyncClick);
+
+  /**
+   * @internal — effective status: reads from external `[state]` if bound,
+   * otherwise from the inner `CngxAsyncClick` directive.
+   */
+  protected readonly effectiveStatus = computed(() => {
+    const ext = this.asyncState();
+    if (ext) {
+      const status = ext.status();
+      if (status === 'pending') {
+        return 'pending' as const;
+      }
+      if (status === 'success') {
+        return 'success' as const;
+      }
+      if (status === 'error') {
+        return 'error' as const;
+      }
+      return 'idle' as const;
+    }
+    return this.asyncClick().status();
+  });
+
+  /** @internal — effective error value from external state or inner directive. */
+  protected readonly effectiveError = computed(() => {
+    const ext = this.asyncState();
+    return ext ? ext.error() : this.asyncClick().error();
+  });
 
   /** @internal */
   protected readonly pendingTpl = contentChild(CngxPending);

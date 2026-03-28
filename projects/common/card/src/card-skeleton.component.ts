@@ -40,10 +40,7 @@ import {
     }
     <div class="cngx-card-skeleton__title"></div>
     @for (_ of lineArray(); track $index; let last = $last) {
-      <div
-        class="cngx-card-skeleton__line"
-        [style.width]="last ? '60%' : '100%'"
-      ></div>
+      <div class="cngx-card-skeleton__line" [style.width]="last ? '60%' : '100%'"></div>
     }
   `,
 })

@@ -1,0 +1,273 @@
+@use '@angular/material' as mat;
+
+// ─── cngx feedback theming ─────────────────────────────────────
+//
+// Include in your global theme stylesheet:
+//
+//   @use '@angular/material' as mat;
+//   @use '@cngx/ui/feedback/feedback-theme' as feedback;
+//
+//   $theme: mat.define-theme((...));
+//
+//   html {
+//     @include mat.all-component-themes($theme);
+//     @include feedback.theme($theme);
+//   }
+
+// ─── Loading Indicator ─────────────────────────────────────────
+
+@mixin loading-indicator-base() {
+  --cngx-loading-indicator-color: currentColor;
+  --cngx-loading-indicator-track: rgba(0, 0, 0, 0.1);
+  --cngx-loading-indicator-size: 24px;
+  --cngx-loading-bar-height: 3px;
+  --cngx-loading-bar-radius: 0;
+}
+
+@mixin loading-indicator-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-loading-indicator-color: var(--mat-sys-primary);
+    --cngx-loading-indicator-track: var(--mat-sys-surface-container-highest);
+  } @else {
+    --cngx-loading-indicator-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-loading-indicator-track: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+  }
+}
+
+// ─── Loading Overlay ───────────────────────────────────────────
+
+@mixin loading-overlay-base() {
+  --cngx-loading-overlay-backdrop-bg: rgba(255, 255, 255, 0.5);
+  --cngx-loading-overlay-backdrop-opacity: 1;
+  --cngx-loading-overlay-z-index: 10;
+}
+
+@mixin loading-overlay-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-loading-overlay-backdrop-bg: color-mix(in srgb, var(--mat-sys-surface) 80%, transparent);
+  } @else {
+    --cngx-loading-overlay-backdrop-bg: #{rgba(mat.get-theme-color($theme, background, card), 0.8)};
+  }
+}
+
+// ─── Progress ──────────────────────────────────────────────────
+
+@mixin progress-base() {
+  --cngx-progress-color: currentColor;
+  --cngx-progress-track-color: rgba(0, 0, 0, 0.1);
+  --cngx-progress-height: 4px;
+  --cngx-progress-border-radius: 2px;
+  --cngx-progress-label-size: 0.75rem;
+  --cngx-progress-label-color: currentColor;
+  --cngx-progress-label-gap: 8px;
+  --cngx-progress-circle-size: 48px;
+  --cngx-progress-circle-label-size: 0.625rem;
+}
+
+@mixin progress-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-progress-color: var(--mat-sys-primary);
+    --cngx-progress-track-color: var(--mat-sys-surface-container-highest);
+    --cngx-progress-label-color: var(--mat-sys-on-surface-variant);
+  } @else {
+    --cngx-progress-color: #{mat.get-theme-color($theme, primary)};
+    --cngx-progress-track-color: #{rgba(mat.get-theme-color($theme, foreground, divider), 0.12)};
+  }
+}
+
+// ─── Alert ─────────────────────────────────────────────────────
+
+@mixin alert-base() {
+  --cngx-alert-gap: 12px;
+  --cngx-alert-padding: 12px 16px;
+  --cngx-alert-border-radius: 8px;
+  --cngx-alert-icon-size: 20px;
+  --cngx-alert-title-weight: 600;
+  --cngx-alert-title-gap: 4px;
+  --cngx-alert-actions-gap: 8px;
+  --cngx-alert-dismiss-padding: 4px;
+  --cngx-alert-dismiss-opacity: 0.5;
+  --cngx-alert-dismiss-hover-opacity: 1;
+  --cngx-alert-dismiss-radius: 4px;
+  --cngx-alert-dismiss-icon-size: 16px;
+
+  // Severity defaults (standalone, non-Material)
+  --cngx-alert-bg: #f8fafc;
+  --cngx-alert-info-bg: #eff6ff;
+  --cngx-alert-info-border: #bfdbfe;
+  --cngx-alert-info-icon: #3b82f6;
+  --cngx-alert-success-bg: #f0fdf4;
+  --cngx-alert-success-border: #bbf7d0;
+  --cngx-alert-success-icon: #22c55e;
+  --cngx-alert-warning-bg: #fffbeb;
+  --cngx-alert-warning-border: #fde68a;
+  --cngx-alert-warning-icon: #f59e0b;
+  --cngx-alert-error-bg: #fef2f2;
+  --cngx-alert-error-border: #fecaca;
+  --cngx-alert-error-icon: #ef4444;
+}
+
+@mixin alert-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-alert-bg: var(--mat-sys-surface-container-low);
+
+    --cngx-alert-info-bg: color-mix(in srgb, var(--mat-sys-primary) 8%, var(--mat-sys-surface));
+    --cngx-alert-info-border: color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
+    --cngx-alert-info-icon: var(--mat-sys-primary);
+
+    --cngx-alert-success-bg: color-mix(in srgb, var(--mat-sys-tertiary) 8%, var(--mat-sys-surface));
+    --cngx-alert-success-border: color-mix(in srgb, var(--mat-sys-tertiary) 30%, transparent);
+    --cngx-alert-success-icon: var(--mat-sys-tertiary);
+
+    --cngx-alert-warning-bg: color-mix(
+      in srgb,
+      var(--mat-sys-secondary) 8%,
+      var(--mat-sys-surface)
+    );
+    --cngx-alert-warning-border: color-mix(in srgb, var(--mat-sys-secondary) 30%, transparent);
+    --cngx-alert-warning-icon: var(--mat-sys-secondary);
+
+    --cngx-alert-error-bg: color-mix(in srgb, var(--mat-sys-error) 8%, var(--mat-sys-surface));
+    --cngx-alert-error-border: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
+    --cngx-alert-error-icon: var(--mat-sys-error);
+  } @else {
+    --cngx-alert-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-alert-info-icon: #{mat.get-theme-color($theme, primary)};
+    --cngx-alert-error-icon: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+// ─── Toast ─────────────────────────────────────────────────────
+
+@mixin toast-base() {
+  --cngx-toast-z-index: 9999;
+  --cngx-toast-gap: 8px;
+  --cngx-toast-outlet-padding: 16px;
+  --cngx-toast-max-width: 420px;
+  --cngx-toast-padding: 12px 16px;
+  --cngx-toast-inner-gap: 10px;
+  --cngx-toast-border-radius: 8px;
+  --cngx-toast-bg: #fff;
+  --cngx-toast-color: #1e293b;
+  --cngx-toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --cngx-toast-accent-width: 3px;
+  --cngx-toast-icon-size: 20px;
+  --cngx-toast-font-size: 0.875rem;
+  --cngx-toast-line-height: 1.5;
+  --cngx-toast-count-opacity: 0.6;
+  --cngx-toast-count-gap: 4px;
+  --cngx-toast-action-padding: 4px 0;
+  --cngx-toast-action-weight: 600;
+  --cngx-toast-action-size: 0.8125rem;
+  --cngx-toast-dismiss-padding: 4px;
+  --cngx-toast-dismiss-opacity: 0.5;
+  --cngx-toast-dismiss-hover-opacity: 1;
+  --cngx-toast-dismiss-radius: 4px;
+  --cngx-toast-dismiss-icon-size: 16px;
+
+  // Severity accent defaults
+  --cngx-toast-info-accent: #3b82f6;
+  --cngx-toast-success-accent: #22c55e;
+  --cngx-toast-warning-accent: #f59e0b;
+  --cngx-toast-error-accent: #ef4444;
+}
+
+@mixin toast-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-toast-bg: var(--mat-sys-surface-container-highest);
+    --cngx-toast-color: var(--mat-sys-on-surface);
+    --cngx-toast-shadow: var(--mat-sys-level3, 0 4px 12px rgba(0, 0, 0, 0.15));
+
+    --cngx-toast-info-accent: var(--mat-sys-primary);
+    --cngx-toast-success-accent: var(--mat-sys-tertiary);
+    --cngx-toast-warning-accent: var(--mat-sys-secondary);
+    --cngx-toast-error-accent: var(--mat-sys-error);
+  } @else {
+    --cngx-toast-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-toast-color: #{mat.get-theme-color($theme, foreground, text)};
+    --cngx-toast-info-accent: #{mat.get-theme-color($theme, primary)};
+    --cngx-toast-error-accent: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
+// ─── Close / Dismiss Button Density ────────────────────────────
+//
+// Shared density presets for all dismiss/close buttons across
+// alert, toast, and popover. Three levels:
+//
+//   default (0)  — 32px touch target, 16px icon
+//   compact (-1) — 28px touch target, 14px icon
+//   dense (-2)   — 24px touch target, 12px icon
+//
+// Usage:
+//   @include feedback.density(-1);
+
+@mixin density($level: 0) {
+  $sizes: (
+    0: (
+      target: 32px,
+      icon: 16px,
+      padding: 8px,
+    ),
+    -1: (
+        target: 28px,
+        icon: 14px,
+        padding: 7px,
+      ),
+    -2: (
+        target: 24px,
+        icon: 12px,
+        padding: 6px,
+      ),
+  );
+
+  $preset: map-get($sizes, $level);
+
+  // Alert dismiss
+  :where(.cngx-alert) {
+    --cngx-alert-dismiss-padding: #{map-get($preset, padding)};
+    --cngx-alert-dismiss-icon-size: #{map-get($preset, icon)};
+  }
+
+  // Toast dismiss
+  :where(.cngx-toast-outlet) {
+    --cngx-toast-dismiss-padding: #{map-get($preset, padding)};
+    --cngx-toast-dismiss-icon-size: #{map-get($preset, icon)};
+  }
+
+  // Close button atom (once CngxCloseButton exists)
+  :where(.cngx-close-button) {
+    --cngx-close-button-size: #{map-get($preset, target)};
+    --cngx-close-button-icon-size: #{map-get($preset, icon)};
+    --cngx-close-button-padding: #{map-get($preset, padding)};
+  }
+}
+
+// ─── Public entrypoint ─────────────────────────────────────────
+
+@mixin theme($theme) {
+  :where(.cngx-loading-indicator) {
+    @include loading-indicator-base();
+    @include loading-indicator-color($theme);
+  }
+
+  :where(.cngx-loading-overlay) {
+    @include loading-overlay-base();
+    @include loading-overlay-color($theme);
+  }
+
+  :where(.cngx-progress) {
+    @include progress-base();
+    @include progress-color($theme);
+  }
+
+  :where(.cngx-alert) {
+    @include alert-base();
+    @include alert-color($theme);
+  }
+
+  :where(.cngx-toast-outlet) {
+    @include toast-base();
+    @include toast-color($theme);
+  }
+}

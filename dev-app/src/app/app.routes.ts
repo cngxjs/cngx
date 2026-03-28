@@ -343,6 +343,36 @@ export const routes: Routes = [
           import('./demos/ui/empty-state-demo/empty-state-demo.component').then((m) => m.EmptyStateDemoComponent),
       },
       {
+        path: 'feedback/alert',
+        loadComponent: () =>
+          import('./demos/ui/feedback/alert-demo/alert-demo.component').then((m) => m.AlertDemoComponent),
+      },
+      {
+        path: 'feedback/async-container',
+        loadComponent: () =>
+          import('./demos/ui/feedback/async-container-demo/async-container-demo.component').then((m) => m.AsyncContainerDemoComponent),
+      },
+      {
+        path: 'feedback/loading-indicator',
+        loadComponent: () =>
+          import('./demos/ui/feedback/loading-indicator-demo/loading-indicator-demo.component').then((m) => m.LoadingIndicatorDemoComponent),
+      },
+      {
+        path: 'feedback/loading-overlay',
+        loadComponent: () =>
+          import('./demos/ui/feedback/loading-overlay-demo/loading-overlay-demo.component').then((m) => m.LoadingOverlayDemoComponent),
+      },
+      {
+        path: 'feedback/progress',
+        loadComponent: () =>
+          import('./demos/ui/feedback/progress-demo/progress-demo.component').then((m) => m.ProgressDemoComponent),
+      },
+      {
+        path: 'feedback/toast',
+        loadComponent: () =>
+          import('./demos/ui/feedback/toast-demo/toast-demo.component').then((m) => m.ToastDemoComponent),
+      },
+      {
         path: 'mat-paginator',
         loadComponent: () =>
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),

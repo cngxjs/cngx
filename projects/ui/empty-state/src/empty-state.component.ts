@@ -1,5 +1,11 @@
-import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
-import { nextUid } from '@cngx/core/utils';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
+import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
 
 /**
  * Empty-state display atom for grids, tables, lists, and dashboards.
@@ -35,6 +41,7 @@ import { nextUid } from '@cngx/core/utils';
     'aria-live': 'polite',
     '[attr.aria-labelledby]': 'titleId',
     '[attr.aria-describedby]': 'description() ? descriptionId : null',
+    '[attr.hidden]': 'shouldHide() || null',
   },
   template: `
     <div class="cngx-empty-state__icon-slot">
@@ -77,6 +84,19 @@ export class CngxEmptyState {
 
   /** Supporting detail — clarifies context and suggests next steps. */
   readonly description = input<string | undefined>(undefined);
+
+  /** Bind an async state — auto-hides when data is not empty. */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** @internal — hidden when state is bound and data is not empty or still loading. */
+  protected readonly shouldHide = computed(() => {
+    const s = this.state();
+    if (!s) {
+      return false;
+    }
+    // Hide during loading (skeleton handles that phase) and when data is present
+    return s.isLoading() || !s.isEmpty();
+  });
 
   /** @internal */
   protected readonly titleId = `${this.uid}-title`;

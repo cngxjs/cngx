@@ -12,6 +12,22 @@ export {
   type CngxSmartDataSourceOptions,
 } from './src/smart-data-source';
 
+// Async state
+export {
+  createManualState,
+  type ManualAsyncState,
+  createAsyncState,
+  type MutableAsyncState,
+  injectAsyncState,
+  type ReactiveAsyncState,
+  type InjectAsyncStateOptions,
+  resolveAsyncView,
+  type AsyncView,
+} from './src/async-state';
+
+// Async structural directive
+export { CngxAsync, type CngxAsyncContext } from './src/async.directive';
+
 // Display atoms
 export { CngxMetric } from './src/metric.component';
 export { CngxTrend } from './src/trend.component';
