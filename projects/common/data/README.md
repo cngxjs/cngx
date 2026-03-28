@@ -3,6 +3,51 @@
 Signal-based state machine for async operations. One typed source drives
 skeleton, loading bar, empty state, error, toast, and ARIA — automatically.
 
+## This Is UX State, Not Data State
+
+`CngxAsyncState` is **not** a data store. It does not replace NgRx,
+SignalStore, Akita, or any state management library. It answers a
+different question:
+
+| | Data State (SignalStore, NgRx) | UX State (CngxAsyncState) |
+|-|-|-|
+| Question | "What is the data right now?" | "What should the user see right now?" |
+| Owns | Entities, collections, selections | Status, progress, error, timestamps |
+| Drives | Business logic, computed selectors | Skeleton, loading bar, toast, ARIA |
+| Scope | App-wide or feature-wide | Per-operation (one GET, one POST) |
+| Lifecycle | Lives as long as the store | Lives as long as the operation |
+
+A SignalStore holds your `Resident[]` collection and knows which
+residents are selected. A `CngxAsyncState<Resident[]>` knows whether
+that collection is currently loading, refreshing, empty, or failed —
+and tells every UI component about it.
+
+They compose naturally:
+
+```typescript
+// SignalStore owns the data
+readonly store = inject(ResidentStore);
+
+// CngxAsyncState owns the operation lifecycle
+readonly loadState = injectAsyncState(() =>
+  this.api.getAll(this.store.filter())
+);
+
+// Store updates from state
+constructor() {
+  effect(() => {
+    const data = this.loadState.data();
+    if (data) {
+      this.store.setResidents(data);
+    }
+  });
+}
+```
+
+The store is the truth for data. The async state is the truth for
+what the user should see. Both are signals. Both compose. Neither
+replaces the other.
+
 ## The Problem
 
 ```typescript
@@ -32,7 +77,7 @@ async load() {
 
 ```typescript
 // With cngx: one source, everything derived
-readonly residents = injectAtapAsyncState(() =>
+readonly residents = injectAsyncState(() =>
   this.http.get<Resident[]>('/api/residents', {
     params: { filter: this.filter() },
   })
@@ -48,7 +93,7 @@ readonly residents = injectAtapAsyncState(() =>
 
 | Factory | Use Case | Injection Context |
 |-|-|-|
-| `injectAtapAsyncState(fn)` | Reactive query (GET) — auto-reloads on signal change | Required |
+| `injectAsyncState(fn)` | Reactive query (GET) — auto-reloads on signal change | Required |
 | `createAtapAsyncState()` | Mutation (POST/PUT/DELETE) — explicit `execute()` | Required |
 | `createManualState()` | Full manual control — Web Workers, computations | Not needed |
 | `fromResource(ref)` | Bridge for Angular `resource()` | Required |
@@ -58,7 +103,7 @@ All return `CngxAtapAsyncState<T>` — the same interface every UI component acc
 
 ---
 
-## 1. injectAtapAsyncState — Reactive Query
+## 1. injectAsyncState — Reactive Query
 
 Auto-loads when signal dependencies change. First load is `loading`,
 subsequent loads are `refreshing` (old data stays visible).
@@ -69,7 +114,7 @@ subsequent loads are `refreshing` (old data stays visible).
 private readonly http = inject(HttpClient);
 private readonly filterText = signal('');
 
-readonly residents = injectAtapAsyncState(() =>
+readonly residents = injectAsyncState(() =>
   this.http.get<Resident[]>('/api/residents', {
     params: { q: this.filterText() },  // tracked — re-queries on change
   })
@@ -79,7 +124,7 @@ readonly residents = injectAtapAsyncState(() =>
 ### With debounce
 
 ```typescript
-readonly results = injectAtapAsyncState(
+readonly results = injectAsyncState(
   () => this.http.get<Item[]>('/api/search', {
     params: { q: this.searchTerm() },
   }),
@@ -611,7 +656,7 @@ export class ResidentList {
   private readonly filterText = signal('');
 
   // Query — auto-reloads when filter changes
-  readonly residents = injectAtapAsyncState(() =>
+  readonly residents = injectAsyncState(() =>
     this.api.getAll(this.filterText())
   );
 

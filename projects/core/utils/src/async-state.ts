@@ -4,18 +4,18 @@ import type { Signal } from '@angular/core';
 export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 
 /**
- * Typed state machine interface for any asynchronous operation.
+ * UX state machine interface for any asynchronous operation.
+ *
+ * This is **UX state**, not data state. It answers "What should the user
+ * see right now?" — not "What is the data?" It drives skeleton, loading bar,
+ * toast, empty state, and ARIA communication. It does not replace SignalStore,
+ * NgRx, or any data store — it composes with them.
  *
  * Every derived value is a `computed()` from a single source (`status`).
  * The system cannot become inconsistent.
  *
  * All UI feedback components accept `CngxAsyncState<unknown>` as input —
  * typed on the interface, not on a concrete implementation.
- *
- * Three factories create instances:
- * - `injectAsyncState()` — reactive query (auto-loads when signals change)
- * - `createAsyncState()` — manual mutation (explicit `execute()`)
- * - `createManualState()` — fully manual (no HTTP)
  *
  * @category async
  */
