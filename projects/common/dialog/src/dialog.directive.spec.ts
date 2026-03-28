@@ -104,7 +104,7 @@ describe('CngxDialog', () => {
   describe('initial state', () => {
     it('starts in closed state', () => {
       const { fixture } = setup(FullDialogHost);
-      expect(fixture.componentInstance.dialog().state()).toBe('closed');
+      expect(fixture.componentInstance.dialog().lifecycle()).toBe('closed');
     });
 
     it('result is undefined initially', () => {
@@ -124,7 +124,7 @@ describe('CngxDialog', () => {
       const dialog = fixture.componentInstance.dialog();
 
       dialog.open();
-      expect(dialog.state()).toBe('opening');
+      expect(dialog.lifecycle()).toBe('opening');
       expect(dialogEl.showModal).toHaveBeenCalled();
 
       // Simulate afterNextRender — flush effects
@@ -179,7 +179,7 @@ describe('CngxDialog', () => {
       dialog.close(42 as unknown as never);
 
       // No transition → skips closing, goes straight to closed
-      expect(dialog.state()).toBe('closed');
+      expect(dialog.lifecycle()).toBe('closed');
       expect(dialog.result()).toBe(42);
     });
   });
@@ -192,7 +192,7 @@ describe('CngxDialog', () => {
       dialog.open();
       dialog.dismiss();
 
-      expect(dialog.state()).toBe('closed');
+      expect(dialog.lifecycle()).toBe('closed');
       expect(dialog.result()).toBe('dismissed');
     });
   });
@@ -221,7 +221,7 @@ describe('CngxDialog', () => {
       fixture.detectChanges();
 
       expect(cancelEvent.defaultPrevented).toBe(true);
-      expect(dialog.state()).not.toBe('closed');
+      expect(dialog.lifecycle()).not.toBe('closed');
     });
   });
 
@@ -229,7 +229,7 @@ describe('CngxDialog', () => {
     it('dismisses when click is outside dialog rect', () => {
       const { fixture, dialogEl } = setup(FullDialogHost);
       const dialog = openFully(fixture, dialogEl);
-      expect(dialog.state()).toBe('open');
+      expect(dialog.lifecycle()).toBe('open');
 
       // Mock getBoundingClientRect to simulate a dialog at (100, 100) to (400, 300)
       vi.spyOn(dialogEl, 'getBoundingClientRect').mockReturnValue({
@@ -272,7 +272,7 @@ describe('CngxDialog', () => {
       dialogEl.dispatchEvent(click);
       fixture.detectChanges();
 
-      expect(dialog.state()).not.toBe('closed');
+      expect(dialog.lifecycle()).not.toBe('closed');
     });
   });
 
@@ -365,7 +365,7 @@ describe('CngxDialogClose', () => {
     fixture.detectChanges();
 
     expect(dialog.result()).toBe(true);
-    expect(dialog.state()).toBe('closed');
+    expect(dialog.lifecycle()).toBe('closed');
   });
 
   it('dismisses when no value is provided', () => {

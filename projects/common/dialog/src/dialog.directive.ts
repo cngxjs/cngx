@@ -13,6 +13,7 @@ import {
   signal,
 } from '@angular/core';
 
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
 
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
@@ -75,7 +76,7 @@ function releaseScrollLock(html: HTMLElement): void {
  * </dialog>
  * <button (click)="dlg.open()">Delete</button>
  *
- * @if (dlg.state() === 'closed' && dlg.result() === true) {
+ * @if (dlg.lifecycle() === 'closed' && dlg.result() === true) {
  *   <p>Item deleted.</p>
  * }
  * ```
@@ -118,8 +119,9 @@ function releaseScrollLock(html: HTMLElement): void {
     '[attr.aria-modal]': 'ariaModal()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
-    '[class.cngx-dialog--error]': 'error()',
-    '[attr.aria-invalid]': 'error() || null',
+    '[class.cngx-dialog--pending]': 'isPending()',
+    '[attr.aria-busy]': 'isPending() || null',
+    '[class.cngx-dialog--error]': 'effectiveError()',
     '[style.--cngx-dialog-backdrop-opacity]': 'backdropOpacity()',
     '(cancel)': 'handleCancel($event)',
     '(click)': 'handleClick($event)',
@@ -191,11 +193,22 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   readonly focusFallback = input<HTMLElement | undefined>(undefined);
 
   /**
-   * Whether the dialog is in an error state.
+   * Bind an async state — drives pending (aria-busy, prevents close) and
+   * error from a single source. When set, takes precedence over the
+   * `[error]` boolean input.
    *
-   * When `true`, applies the `cngx-dialog--error` CSS class on the host and
-   * sets `aria-invalid="true"`. Use this to communicate form submission
-   * failures or other error conditions to screen readers.
+   * When `state.status()` is `'pending'`, the dialog prevents close/dismiss
+   * and applies `aria-busy`. When `state.status()` is `'error'`, the dialog
+   * applies `cngx-dialog--error` and announces the error via the SR live region.
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /**
+   * Whether the dialog is in an error state. Fallback when `[state]` is not set.
+   *
+   * When `true`, applies the `cngx-dialog--error` CSS class on the host.
+   * Use this to communicate form submission failures or other error
+   * conditions visually.
    *
    * Pair with `cngx-form-errors` (`role="alert"`) inside the dialog for
    * WCAG-compliant error announcements.
@@ -205,7 +218,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   readonly error = input(false);
 
   // ── State ─────────────────────────────────────────────────────────
-  private readonly stateSignal = signal<DialogState>('closed');
+  private readonly lifecycleSignal = signal<DialogState>('closed');
   private readonly resultSignal = signal<T | 'dismissed' | undefined>(undefined);
   private readonly idSignal = signal(nextUid('cngx-dialog'));
   private readonly triggerElement = signal<HTMLElement | null>(null);
@@ -215,7 +228,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    *
    * Possible values: `'closed'`, `'opening'`, `'open'`, `'closing'`.
    */
-  readonly state = this.stateSignal.asReadonly();
+  readonly lifecycle = this.lifecycleSignal.asReadonly();
 
   /**
    * The typed result of the dialog.
@@ -229,13 +242,23 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /** Unique auto-generated ID for this dialog instance. Used for ARIA and stack tracking. */
   readonly id = this.idSignal.asReadonly();
 
+  // ── Async state derived ──────────────────────────────────────────
+  /** `true` when the async state is pending (mutation in flight). */
+  readonly isPending = computed(() => this.state()?.isPending() ?? false);
+
+  /** Resolved error — async state takes precedence over boolean input. */
+  protected readonly effectiveError = computed(() => {
+    const s = this.state();
+    return s ? !!s.error() : this.error();
+  });
+
   // ── Computed host bindings (protected for Angular compiler) ───────
-  protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
-  protected readonly isOpen = computed(() => this.stateSignal() === 'open');
-  protected readonly isClosing = computed(() => this.stateSignal() === 'closing');
+  protected readonly isOpening = computed(() => this.lifecycleSignal() === 'opening');
+  protected readonly isOpen = computed(() => this.lifecycleSignal() === 'open');
+  protected readonly isClosing = computed(() => this.lifecycleSignal() === 'closing');
 
   protected readonly ariaModal = computed(() =>
-    this.modal() && this.stateSignal() !== 'closed' ? 'true' : null,
+    this.modal() && this.lifecycleSignal() !== 'closed' ? 'true' : null,
   );
 
   protected readonly ariaLabelledBy = computed(() => this.titleDirective()?.id() ?? null);
@@ -254,7 +277,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     // Announce title when state transitions to 'open'
     effect(() => {
-      if (this.stateSignal() === 'open') {
+      if (this.lifecycleSignal() === 'open') {
         const titleText = this.titleDirective()?.textContent() ?? '';
         if (titleText && this.liveRegion) {
           this.liveRegion.textContent = titleText;
@@ -268,9 +291,17 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       }
     });
 
+    // Announce async error via live region
+    effect(() => {
+      if (this.effectiveError() && this.liveRegion) {
+        const errMsg = this.state()?.error();
+        this.liveRegion.textContent = typeof errMsg === 'string' ? errMsg : 'An error occurred';
+      }
+    });
+
     // Cleanup on destroy
     this.destroyRef.onDestroy(() => {
-      if (this.stateSignal() !== 'closed') {
+      if (this.lifecycleSignal() !== 'closed') {
         this.finalize();
       }
     });
@@ -288,7 +319,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    * No-op if the dialog is already open or in a transition state.
    */
   open(): void {
-    if (this.stateSignal() !== 'closed') {
+    if (this.lifecycleSignal() !== 'closed') {
       return;
     }
 
@@ -301,7 +332,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.triggerElement.set(this.doc.activeElement as HTMLElement | null);
 
     // Transition to opening
-    this.stateSignal.set('opening');
+    this.lifecycleSignal.set('opening');
 
     // Open native dialog
     if (this.modal()) {
@@ -315,10 +346,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     // Transition to open after browser paints the opening class
     requestAnimationFrame(() => {
-      if (this.stateSignal() !== 'opening') {
+      if (this.lifecycleSignal() !== 'opening') {
         return;
       }
-      this.stateSignal.set('open');
+      this.lifecycleSignal.set('open');
       this.moveFocus();
     });
   }
@@ -332,7 +363,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    * @param value - The typed result to deliver to consumers.
    */
   close(value: T): void {
-    if (this.stateSignal() !== 'open' && this.stateSignal() !== 'opening') {
+    if (this.lifecycleSignal() !== 'open' && this.lifecycleSignal() !== 'opening') {
+      return;
+    }
+    if (this.isPending()) {
       return;
     }
     this.resultSignal.set(value);
@@ -347,7 +381,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    * directly. No-op if the dialog is not in the `'open'` or `'opening'` state.
    */
   dismiss(): void {
-    if (this.stateSignal() !== 'open' && this.stateSignal() !== 'opening') {
+    if (this.lifecycleSignal() !== 'open' && this.lifecycleSignal() !== 'opening') {
+      return;
+    }
+    if (this.isPending()) {
       return;
     }
     this.resultSignal.set('dismissed');
@@ -367,7 +404,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     if (!this.modal() || !this.closeOnBackdropClick()) {
       return;
     }
-    if (this.stateSignal() !== 'open') {
+    if (this.lifecycleSignal() !== 'open') {
       return;
     }
 
@@ -391,7 +428,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
   private startClosing(): void {
     if (hasTransition(this.dialogElement)) {
-      this.stateSignal.set('closing');
+      this.lifecycleSignal.set('closing');
       onTransitionDone(this.dialogElement, () => this.finalize());
     } else {
       this.finalize();
@@ -410,7 +447,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       this.dialogStack.pop(this.idSignal());
     }
 
-    this.stateSignal.set('closed');
+    this.lifecycleSignal.set('closed');
     this.returnFocus();
   }
 

@@ -49,7 +49,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ declDlg.state() }}</span>
+    <span class="status-badge">state: {{ declDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ declDlg.result() ?? 'undefined' }}</span>
   </div>
       </app-example-card>
@@ -75,7 +75,7 @@ import { JsonPipe } from '@angular/common';
     {{ progMessage() }}
   </div>
   <div class="status-row" style="margin-top: 8px">
-    <span class="status-badge">state: {{ progDialog.state() }}</span>
+    <span class="status-badge">state: {{ progDialog.lifecycle() }}</span>
     <span class="status-badge">result: {{ progDialog.result() ?? 'undefined' }}</span>
   </div>
       </app-example-card>
@@ -136,7 +136,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ tmplDlg.state() }}</span>
+    <span class="status-badge">state: {{ tmplDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ tmplDlg.result() | json }}</span>
   </div>
       </app-example-card>
@@ -189,8 +189,8 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">outer: {{ outerDlg.state() }}</span>
-    <span class="status-badge">inner: {{ confirmReset.state() }}</span>
+    <span class="status-badge">outer: {{ outerDlg.lifecycle() }}</span>
+    <span class="status-badge">inner: {{ confirmReset.lifecycle() }}</span>
     <span class="status-badge">reset confirmed: {{ confirmReset.result() ?? '-' }}</span>
   </div>
       </app-example-card>
@@ -209,7 +209,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ panelDlg.state() }}</span>
+    <span class="status-badge">state: {{ panelDlg.lifecycle() }}</span>
     <span class="status-badge">modal: false</span>
   </div>
       </app-example-card>
@@ -301,7 +301,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ sheetDlg.state() }}</span>
+    <span class="status-badge">state: {{ sheetDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ sheetDlg.result() ?? '-' }}</span>
   </div>
       </app-example-card>
@@ -331,7 +331,7 @@ export class DialogDemoComponent {
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ declDlg.state() }}</span>
+    <span class="status-badge">state: {{ declDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ declDlg.result() ?? 'undefined' }}</span>
   </div>`;
   protected readonly _srcTs0 = `import { viewChild } from '@angular/core';
@@ -382,7 +382,7 @@ import { JsonPipe } from '@angular/common';
     {{ progMessage() }}
   </div>
   <div class="status-row" style="margin-top: 8px">
-    <span class="status-badge">state: {{ progDialog.state() }}</span>
+    <span class="status-badge">state: {{ progDialog.lifecycle() }}</span>
     <span class="status-badge">result: {{ progDialog.result() ?? 'undefined' }}</span>
   </div>`;
   protected readonly _srcTs1 = `import { viewChild } from '@angular/core';
@@ -493,7 +493,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ tmplDlg.state() }}</span>
+    <span class="status-badge">state: {{ tmplDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ tmplDlg.result() | json }}</span>
   </div>`;
   protected readonly _srcTs3 = `import { viewChild } from '@angular/core';
@@ -596,8 +596,8 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">outer: {{ outerDlg.state() }}</span>
-    <span class="status-badge">inner: {{ confirmReset.state() }}</span>
+    <span class="status-badge">outer: {{ outerDlg.lifecycle() }}</span>
+    <span class="status-badge">inner: {{ confirmReset.lifecycle() }}</span>
     <span class="status-badge">reset confirmed: {{ confirmReset.result() ?? '-' }}</span>
   </div>`;
   protected readonly _srcTs5 = `import { viewChild } from '@angular/core';
@@ -641,7 +641,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ panelDlg.state() }}</span>
+    <span class="status-badge">state: {{ panelDlg.lifecycle() }}</span>
     <span class="status-badge">modal: false</span>
   </div>`;
   protected readonly _srcTs6 = `import { viewChild } from '@angular/core';
@@ -815,7 +815,7 @@ import { JsonPipe } from '@angular/common';
   </dialog>
 
   <div class="status-row" style="margin-top: 12px">
-    <span class="status-badge">state: {{ sheetDlg.state() }}</span>
+    <span class="status-badge">state: {{ sheetDlg.lifecycle() }}</span>
     <span class="status-badge">result: {{ sheetDlg.result() ?? '-' }}</span>
   </div>`;
   protected readonly _srcTs9 = `import { viewChild } from '@angular/core';

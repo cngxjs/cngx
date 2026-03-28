@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
     "import { CngxInfiniteScroll } from '@cngx/common/layout';",
   ],
   setup: `
-  protected readonly items = signal(Array.from({ length: 20 }, (_, i) => \`Item \${i + 1}\`));
+  protected readonly items = signal(Array.from({ length: 5 }, (_, i) => \`Item \${i + 1}\`));
   protected readonly loading = signal(false);
   protected readonly hasMore = computed(() => this.items().length < 100);
 
@@ -27,7 +27,7 @@ export const STORY: DemoSpec = {
       const next = Array.from({ length: 10 }, (_, i) => \`Item \${current.length + i + 1}\`);
       this.items.set([...current, ...next]);
       this.loading.set(false);
-    }, 500);
+    }, 800);
   }
   `,
   sections: [
@@ -45,13 +45,13 @@ export const STORY: DemoSpec = {
       <span class="status-badge">Loading...</span>
     }
   </div>
-  <div style="max-height:400px;overflow-y:auto;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
+  <div class="scroll-root" style="max-height:300px;overflow-y:auto;border:1px solid var(--cngx-border,#e0e0e0);border-radius:8px">
     @for (item of items(); track item) {
       <div style="padding:12px 16px;border-bottom:1px solid var(--cngx-border,#e0e0e0)">
         {{ item }}
       </div>
     }
-    <div cngxInfiniteScroll [enabled]="hasMore()" (scrolled)="loadMore()"
+    <div cngxInfiniteScroll [enabled]="hasMore()" [loading]="loading()" [root]="'.scroll-root'" (loadMore)="loadMore()"
       style="padding:16px;text-align:center;color:var(--text-muted,#999)">
       @if (loading()) {
         Loading more...

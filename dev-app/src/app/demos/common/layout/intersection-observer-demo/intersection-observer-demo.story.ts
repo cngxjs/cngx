@@ -9,11 +9,13 @@ export const STORY: DemoSpec = {
   sections: [
     {
       title: 'CngxIntersectionObserver — Scroll Sentinel',
-      subtitle: '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> becomes <code>true</code> as soon as any part of the element enters the viewport. <code>(entered)</code> and <code>(left)</code> fire on edge transitions. Set <code>[root]</code> to a CSS selector to observe within a scroll container instead of the viewport.',
+      subtitle: '<code>[cngxIntersectionObserver]</code> wraps the IntersectionObserver API. <code>isIntersecting()</code> is <code>true</code> when any part of the element is visible. <code>intersectionRatio()</code> is a float from <code>0.0</code> (invisible) to <code>1.0</code> (fully visible). <code>(entered)</code> fires when the element goes from invisible to visible, <code>(left)</code> fires the opposite. Set <code>[root]</code> to observe within a scroll container instead of the viewport.',
       imports: ['CngxIntersectionObserver', 'DecimalPipe'],
       setup: `
   protected enterCount = signal(0);
   protected leaveCount = signal(0);
+  // 21 thresholds: 0, 0.05, 0.10, ..., 1.0 — ratio updates live as you scroll
+  protected readonly thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
   `,
       template: `
   <div
@@ -35,6 +37,7 @@ export const STORY: DemoSpec = {
       #io="cngxIntersectionObserver"
       [root]="'.io-scroll-root'"
       [rootMargin]="'0px'"
+      [threshold]="thresholds"
       (entered)="enterCount.update(n => n + 1)"
       (left)="leaveCount.update(n => n + 1)"
       style="

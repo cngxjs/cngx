@@ -66,7 +66,7 @@ export class CngxToastOn {
     if (!this.toast) {
       throw new Error(
         '[cngxToastOn] CngxToaster not found. ' +
-        'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
+          'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
       );
     }
     this.toastService = this.toast;

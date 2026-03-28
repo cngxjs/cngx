@@ -1,6 +1,6 @@
 import { DestroyRef, effect, inject, untracked } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
-import { firstValueFrom, isObservable, type Observable } from 'rxjs';
+import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
 
@@ -55,46 +55,73 @@ export function injectAsyncState<T>(
   const state: ManualAsyncState<T> = createManualState<T>();
   const debounceMs = options?.debounce ?? 50;
 
+  let activeSubscription: Subscription | undefined;
   let abortController: AbortController | undefined;
   let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
-  destroyRef.onDestroy(() => {
+  function cancelInFlight(): void {
+    activeSubscription?.unsubscribe();
+    activeSubscription = undefined;
     abortController?.abort();
     abortController = undefined;
+  }
+
+  destroyRef.onDestroy(() => {
+    cancelInFlight();
     if (debounceTimer !== undefined) {
       clearTimeout(debounceTimer);
       debounceTimer = undefined;
     }
   });
 
-  async function executeQuery(computation: () => Promise<T> | Observable<T>): Promise<void> {
-    // Cancel any in-flight request
-    abortController?.abort();
-    const controller = new AbortController();
-    abortController = controller;
+  function executeQuery(computation: () => Promise<T> | Observable<T>): void {
+    cancelInFlight();
 
     // First load → 'loading', subsequent → 'refreshing'
     const status = untracked(state.isFirstLoad) ? 'loading' : 'refreshing';
     state.set(status);
 
-    try {
-      const result$ = computation();
-      const result = isObservable(result$) ? await firstValueFrom(result$) : await result$;
+    const result$ = computation();
 
-      if (controller.signal.aborted) {
-        return;
-      }
+    if (isObservable(result$)) {
+      // Observable path — subscribe, cancel via unsubscribe
+      let hasEmitted = false;
+      activeSubscription = result$.subscribe({
+        next: (value) => {
+          hasEmitted = true;
+          state.setSuccess(value);
+        },
+        error: (err: unknown) => state.setError(err),
+        complete: () => {
+          if (!hasEmitted) {
+            // Observable completed without emitting — treat as empty success
+            state.setSuccess(undefined as T);
+          }
+        },
+      });
+    } else {
+      // Promise path — cancel via AbortController
+      const controller = new AbortController();
+      abortController = controller;
 
-      state.setSuccess(result);
-    } catch (err: unknown) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      state.setError(err);
-    } finally {
-      if (abortController === controller) {
-        abortController = undefined;
-      }
+      result$
+        .then(
+          (value) => {
+            if (!controller.signal.aborted) {
+              state.setSuccess(value);
+            }
+          },
+          (err: unknown) => {
+            if (!controller.signal.aborted) {
+              state.setError(err);
+            }
+          },
+        )
+        .finally(() => {
+          if (abortController === controller) {
+            abortController = undefined;
+          }
+        });
     }
   }
 

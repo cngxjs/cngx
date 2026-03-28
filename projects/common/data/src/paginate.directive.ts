@@ -1,4 +1,5 @@
 import { computed, Directive, input, output, signal } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Atom directive that tracks pagination state (current page index and page size).
@@ -36,6 +37,16 @@ export class CngxPaginate {
    */
   readonly total = input<number>(0);
 
+  /**
+   * Bind an async state — disables navigation while the data source is busy.
+   * When set, `isBusy` derives from `state.isBusy()`. Navigation methods
+   * (`setPage`, `next`, `previous`, etc.) are no-ops while busy.
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** `true` when the bound async state is busy (loading/refreshing). */
+  readonly isBusy = computed(() => this.state()?.isBusy() ?? false);
+
   private readonly pageIndexState = signal(0);
   private readonly pageSizeState = signal(10);
 
@@ -71,6 +82,9 @@ export class CngxPaginate {
    * Emits `pageChange`.
    */
   setPage(index: number): void {
+    if (this.isBusy()) {
+      return;
+    }
     const clamped = Math.max(0, Math.min(index, this.totalPages() - 1));
     this.pageIndexState.set(clamped);
     this.pageChange.emit(clamped);
@@ -81,6 +95,9 @@ export class CngxPaginate {
    * Emits `pageSizeChange` and, when `resetPage` is `true`, `pageChange`.
    */
   setPageSize(size: number, resetPage = true): void {
+    if (this.isBusy()) {
+      return;
+    }
     this.pageSizeState.set(size);
     this.pageSizeChange.emit(size);
     if (resetPage) {

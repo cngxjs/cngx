@@ -1,0 +1,49 @@
+@use '@angular/material' as mat;
+
+// ─── CngxFileDrop theming ────────────────────────────────────────────
+//
+//   @use '@cngx/forms/input/file-drop-theme' as file-drop;
+//   html { @include file-drop.theme($theme); }
+
+@mixin base() {
+  --cngx-file-drop-border-width: 2px;
+  --cngx-file-drop-border-color: rgba(0, 0, 0, 0.2);
+  --cngx-file-drop-radius: 8px;
+  --cngx-file-drop-padding: 32px;
+  --cngx-file-drop-transition: 200ms ease;
+  --cngx-file-drop-uploading-opacity: 0.6;
+}
+
+@mixin color($theme) {
+  $primary: mat.get-theme-color($theme, primary);
+  $error: mat.get-theme-color($theme, error);
+  $surface: mat.get-theme-color($theme, surface);
+  $on-surface: mat.get-theme-color($theme, on-surface);
+  $outline: mat.get-theme-color($theme, outline);
+
+  --cngx-file-drop-border-color: #{$outline};
+  --cngx-file-drop-active-border: #{$primary};
+  --cngx-file-drop-active-bg: #{rgba($primary, 0.05)};
+  --cngx-file-drop-success-border: #{mat.get-theme-color($theme, tertiary)};
+}
+
+@mixin theme($theme) {
+  :where(.cngx-file-drop) {
+    @include base();
+    @include color($theme);
+  }
+}
+
+@mixin density($level) {
+  @if $level == -1 or $level == 'compact' {
+    :where(.cngx-file-drop) {
+      --cngx-file-drop-padding: 16px;
+    }
+  }
+  @if $level == -2 or $level == 'dense' {
+    :where(.cngx-file-drop) {
+      --cngx-file-drop-padding: 12px;
+      --cngx-file-drop-radius: 6px;
+    }
+  }
+}

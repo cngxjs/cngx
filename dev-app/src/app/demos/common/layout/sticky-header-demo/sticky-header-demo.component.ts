@@ -18,7 +18,7 @@ import { CngxStickyHeader } from '@cngx/common/layout';
   template: `
     <app-doc-shell title="Sticky Header"
       description="Detects when a sticky-positioned element becomes stuck. Toggles a CSS class for shadow or style changes."
-      overview="<p><code>[cngxStickyHeader]</code> does NOT apply <code>position: sticky</code> — CSS handles that. It inserts a sentinel element and uses <code>IntersectionObserver</code> to detect when the header is stuck, toggling the <code>cngx-sticky--active</code> CSS class.</p>"
+      overview="<p><code>[cngxStickyHeader]</code> applies <code>position: sticky; top: 0</code> on the host and inserts an invisible sentinel element to detect when the header becomes stuck. Toggles the <code>cngx-sticky--active</code> CSS class and exposes <code>isSticky()</code> signal. Override z-index via <code>--cngx-sticky-z-index</code>.</p>"
       [apiComponents]="['CngxStickyHeader']">
       <app-example-card title="Sticky Header with Shadow"
         [subtitle]="_s0"
@@ -30,8 +30,7 @@ import { CngxStickyHeader } from '@cngx/common/layout';
       <p style="margin:0 0 8px;color:var(--cngx-text-secondary,#666);font-size:0.875rem">Scroll down to see the sticky header activate.</p>
     </div>
     <header cngxStickyHeader #sh="cngxStickyHeader"
-            style="position:sticky;top:0;padding:12px 16px;background:var(--card-bg,#fff);
-                   z-index:1;transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
+            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
             [style.box-shadow]="sh.isSticky() ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'">
       <strong>{{ sh.isSticky() ? 'Stuck!' : 'Header' }}</strong>
     </header>
@@ -58,8 +57,7 @@ export class StickyHeaderDemoComponent {
       <p style="margin:0 0 8px;color:var(--cngx-text-secondary,#666);font-size:0.875rem">Scroll down to see the sticky header activate.</p>
     </div>
     <header cngxStickyHeader #sh="cngxStickyHeader"
-            style="position:sticky;top:0;padding:12px 16px;background:var(--card-bg,#fff);
-                   z-index:1;transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
+            style="padding:12px 16px;background:var(--card-bg,#fff);transition:box-shadow 200ms ease;border-bottom:1px solid var(--cngx-border,#eee)"
             [style.box-shadow]="sh.isSticky() ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'">
       <strong>{{ sh.isSticky() ? 'Stuck!' : 'Header' }}</strong>
     </header>

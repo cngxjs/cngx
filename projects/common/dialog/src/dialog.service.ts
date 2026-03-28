@@ -63,8 +63,8 @@ export class CngxDialogRef<T = unknown> {
    *
    * Possible values: `'closed'`, `'opening'`, `'open'`, `'closing'`.
    */
-  get state() {
-    return this.inner.state;
+  get lifecycle() {
+    return this.inner.lifecycle;
   }
 
   /**
@@ -108,7 +108,7 @@ export class CngxDialogRef<T = unknown> {
    * Compatible with `MatDialogRef.afterClosed()` usage patterns.
    */
   afterClosed(): Observable<T | 'dismissed'> {
-    return toObservable(this.inner.state, { injector: this.injector }).pipe(
+    return toObservable(this.inner.lifecycle, { injector: this.injector }).pipe(
       filter((s): s is 'closed' => s === 'closed'),
       take(1),
       map(() => this.inner.result() as T | 'dismissed'),
@@ -123,7 +123,7 @@ export class CngxDialogRef<T = unknown> {
    * element after animation completes).
    */
   afterOpened(): Observable<void> {
-    return toObservable(this.inner.state, { injector: this.injector }).pipe(
+    return toObservable(this.inner.lifecycle, { injector: this.injector }).pipe(
       filter((s): s is 'open' => s === 'open'),
       take(1),
       map(() => undefined),
@@ -274,7 +274,7 @@ export class CngxDialogOpener {
     effect(
       () => {
         if (
-          innerDialog.state() === 'closed' &&
+          innerDialog.lifecycle() === 'closed' &&
           outletRef.hostView &&
           !outletRef.hostView.destroyed
         ) {

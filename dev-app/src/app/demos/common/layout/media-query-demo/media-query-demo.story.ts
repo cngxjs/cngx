@@ -5,15 +5,17 @@ export const STORY: DemoSpec = {
   navLabel: 'MediaQuery',
   navCategory: 'layout',
   description:
-    'Reactive media query directive. Exposes a matches signal that updates live when the viewport or preference changes.',
+    'Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic.',
   apiComponents: ['CngxMediaQuery'],
   moduleImports: ["import { CngxMediaQuery } from '@cngx/common';"],
   sections: [
     {
       title: 'CngxMediaQuery — Viewport Breakpoints',
       subtitle:
-        '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> with automatic cleanup. ' +
-        'Resize your browser to see the signals update in real time.',
+        '<code>[cngxMediaQuery]</code> wraps <code>window.matchMedia()</code> as a reactive signal with automatic cleanup. ' +
+        'Use this when component logic (not just CSS) needs to respond to viewport or preference changes — e.g. switching between a chart and a table on mobile, ' +
+        'or loading different data on narrow screens. For pure styling, CSS <code>@media</code> or <code>@container</code> queries are preferred. ' +
+        'Resize your browser to see the signals update live.',
       imports: ['CngxMediaQuery'],
       template: `
   <div cngxMediaQuery="(min-width: 768px)" #tablet="cngxMediaQuery"></div>

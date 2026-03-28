@@ -7,6 +7,7 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 
 import { CngxCardGridEmpty } from './card-grid-empty.directive';
@@ -64,6 +65,7 @@ import type { EmptyReason } from './card.types';
   host: {
     class: 'cngx-card-grid',
     '[attr.role]': 'semanticList() ? "list" : null',
+    '[attr.aria-busy]': 'isLoading() || null',
     '[style.--cngx-card-grid-min]': 'minWidth()',
     '[style.--cngx-card-grid-gap]': 'density() === "default" ? gap() : null',
     '[class.cngx-card-grid--compact]': 'density() === "compact"',
@@ -99,8 +101,22 @@ export class CngxCardGrid {
   /** Reason why items are empty — selects the matching `cngxCardGridEmpty` template. */
   readonly emptyReason = input<EmptyReason | undefined>(undefined);
 
+  /**
+   * Bind an async state — drives loading and empty from a single source.
+   * When set, `isLoading` derives from `state.isFirstLoad()` and
+   * `empty` derives from `state.isEmpty()` (overrides `[items]`).
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** `true` during initial data load (skeleton phase). */
+  readonly isLoading = computed(() => this.state()?.isFirstLoad() ?? false);
+
   /** Whether the grid should show an empty state. */
   readonly empty = computed(() => {
+    const s = this.state();
+    if (s) {
+      return s.isEmpty();
+    }
     const i = this.items();
     return i?.length === 0;
   });

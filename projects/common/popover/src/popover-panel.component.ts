@@ -12,6 +12,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_POPOVER_PANEL_CONFIG } from './popover-panel.config';
@@ -79,43 +80,48 @@ import { CngxPopover } from './popover.directive';
     '[class]': 'hostClass()',
     '[attr.aria-labelledby]': 'headerId',
     '[attr.aria-describedby]': 'ariaDescribedBy()',
-    '[attr.aria-busy]': 'loading() || null',
+    '[attr.aria-busy]': 'effectiveLoading() || null',
   },
   template: `
     @if (showArrow()) {
       <div class="cngx-popover-panel__arrow"></div>
     }
 
-    @if (showClose()) {
-      @if (closeTpl(); as tpl) {
-        <ng-container *ngTemplateOutlet="tpl.templateRef" />
-      } @else {
-        <cngx-close-button label="Close" class="cngx-popover-panel__close" (click)="popover.hide()" />
-      }
-    }
-
-    @if (loading()) {
+    @if (effectiveLoading()) {
       @if (loadingTpl(); as tpl) {
         <div class="cngx-popover-panel__loading">
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </div>
       }
-    } @else if (error()) {
+    } @else if (effectiveError(); as err) {
       @if (errorTpl(); as tpl) {
         <div class="cngx-popover-panel__error">
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: error() }" />
+          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: err }" />
         </div>
       }
-    } @else if (empty()) {
+    } @else if (effectiveEmpty()) {
       @if (emptyTpl(); as tpl) {
         <div class="cngx-popover-panel__empty">
           <ng-container *ngTemplateOutlet="tpl.templateRef" />
         </div>
       }
     } @else {
-      @if (hasHeader()) {
-        <div class="cngx-popover-panel__header" [id]="headerId">
-          <ng-content select="[cngxPopoverHeader]" />
+      @if (hasHeader() || showClose()) {
+        <div class="cngx-popover-panel__header-row">
+          <div class="cngx-popover-panel__header" [id]="headerId">
+            <ng-content select="[cngxPopoverHeader]" />
+          </div>
+          @if (showClose()) {
+            @if (closeTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            } @else {
+              <cngx-close-button
+                label="Close"
+                class="cngx-popover-panel__close"
+                (click)="popover.hide()"
+              />
+            }
+          }
         </div>
       }
       <div class="cngx-popover-panel__body" [id]="bodyId">
@@ -157,14 +163,31 @@ export class CngxPopoverPanel {
   /** Resolved showArrow — input takes precedence over config. */
   readonly showArrow = computed(() => this.showArrowInput() ?? this.config.showArrow ?? false);
 
-  /** Whether the panel content is in a loading state. */
+  /**
+   * Bind an async state — drives loading, error, and empty slots from a single source.
+   * When set, takes precedence over individual `[loading]`, `[error]`, `[empty]` inputs.
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** Whether the panel content is in a loading state. Fallback when `[state]` is not set. */
   readonly loading = input(false);
 
-  /** Error value when content loading failed. Truthy = show error template. */
+  /** Error value when content loading failed. Fallback when `[state]` is not set. */
   readonly error = input<unknown>(undefined);
 
-  /** Whether the panel content is empty. */
+  /** Whether the panel content is empty. Fallback when `[state]` is not set. */
   readonly empty = input(false);
+
+  /** @internal Resolved loading — state takes precedence over boolean input. */
+  protected readonly effectiveLoading = computed(
+    () => this.state()?.isFirstLoad() ?? this.loading(),
+  );
+
+  /** @internal Resolved error — state takes precedence over direct input. */
+  protected readonly effectiveError = computed(() => this.state()?.error() ?? this.error());
+
+  /** @internal Resolved empty — state takes precedence over boolean input. */
+  protected readonly effectiveEmpty = computed(() => this.state()?.isEmpty() ?? this.empty());
 
   /** Whether the header slot has projected content. */
   readonly hasHeader = input(true);
@@ -187,7 +210,7 @@ export class CngxPopoverPanel {
 
   /** Only point to body when default content is showing (not loading/error/empty). */
   protected readonly ariaDescribedBy = computed(() =>
-    this.loading() || this.error() || this.empty() ? null : this.bodyId,
+    this.effectiveLoading() || this.effectiveError() || this.effectiveEmpty() ? null : this.bodyId,
   );
 
   // ── Computed ──────────────────────────────────────────────────────

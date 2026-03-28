@@ -24,7 +24,8 @@ import { createVisibilityTimer } from './visibility-timer';
  * Renders a centered spinner over a semi-transparent backdrop.
  * Manages focus save/restore across the inert lifecycle.
  *
- * Uses `display: contents` on the host — no extra DOM wrapper for layout.
+ * Uses `display: grid` with a shared grid cell — backdrop and content
+ * overlap naturally without `position: absolute` or `display: contents`.
  *
  * @usageNotes
  *
@@ -42,6 +43,13 @@ import { createVisibilityTimer } from './visibility-timer';
  * </cngx-loading-overlay>
  * ```
  *
+ * ### First load only (refresh uses the container's built-in bar)
+ * ```html
+ * <cngx-loading-overlay [state]="query" [firstLoadOnly]="true">
+ *   <cngx-async-container [state]="query">...</cngx-async-container>
+ * </cngx-loading-overlay>
+ * ```
+ *
  * @category feedback
  */
 @Component({
@@ -51,7 +59,6 @@ import { createVisibilityTimer } from './visibility-timer';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    style: 'display: contents',
     class: 'cngx-loading-overlay',
   },
   template: `
@@ -78,13 +85,17 @@ import { createVisibilityTimer } from './visibility-timer';
     }
   `,
   styles: `
+    .cngx-loading-overlay {
+      display: grid;
+      grid-template: 1fr / 1fr;
+    }
+
     .cngx-loading-overlay__content {
-      position: relative;
+      grid-area: 1 / 1;
     }
 
     .cngx-loading-overlay__backdrop {
-      position: absolute;
-      inset: 0;
+      grid-area: 1 / 1;
       z-index: var(--cngx-loading-overlay-z-index, 10);
       display: flex;
       align-items: center;
@@ -131,11 +142,24 @@ export class CngxLoadingOverlay {
   /** Minimum display time in ms once visible. Falls back to global config, then 500ms. */
   readonly minDuration = input<number>(this.config?.loadingMinDuration ?? 500);
 
+  /**
+   * When `true`, the overlay only activates during the first load (`isFirstLoad()`),
+   * not during refreshes. Use the async container's built-in refresh bar for
+   * subsequent loads to avoid content jumps under the backdrop.
+   */
+  readonly firstLoadOnly = input<boolean>(false);
+
   /** @internal */
-  protected readonly isActive = computed(() => this.state()?.isBusy() ?? this.loading());
+  protected readonly isActive = computed(() => {
+    const s = this.state();
+    if (s) {
+      return this.firstLoadOnly() ? s.isFirstLoad() : s.isBusy();
+    }
+    return this.loading();
+  });
 
   /** @internal — debounced visibility via shared timer factory. */
-  readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
+  protected readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
 
   // ── Focus management ────────────────────────────────────────────────
 

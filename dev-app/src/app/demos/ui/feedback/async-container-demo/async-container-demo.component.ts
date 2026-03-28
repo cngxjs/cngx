@@ -241,7 +241,7 @@ import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from
     <button (click)="composed.reset()" class="chip">Reset</button>
   </div>
 
-  <cngx-loading-overlay [loading]="composed.isRefreshing()" label="Refreshing data">
+  <cngx-loading-overlay [state]="composed" [firstLoadOnly]="true" label="Loading data">
     <cngx-async-container [state]="composed" ariaLabel="Composed demo"
       toastSuccess="Data loaded" toastError="Load failed">
 
@@ -274,7 +274,7 @@ export class AsyncContainerDemoComponent {
   protected readonly _s2 = 'Auto-loads when signal dependencies change. Type in the filter — the query re-fires after 50ms debounce. Watch the status transitions: <code>loading → success</code> on first load, <code>refreshing → success</code> on filter change (old data stays visible).';
   protected readonly _s3 = 'For POST/PUT/DELETE. Uses <code>execute(fn)</code> which sets status to <code>pending</code>. 70% chance of success, 30% error.';
   protected readonly _s4 = 'Four templates, built-in refresh bar, integrated toast on success/error. Uses <code>createManualState</code> for demo control.';
-  protected readonly _s5 = 'Stack atoms freely. Loading overlay wraps the container; toasts fire via the container\'s built-in inputs. Each atom does one thing.';
+  protected readonly _s5 = 'Stack atoms freely. <code>[firstLoadOnly]</code> restricts the overlay to the initial load — refresh uses the container\'s built-in bar instead, avoiding content jumps under the backdrop.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:8px;margin-bottom:16px">
     <button (click)="loadSimple()" class="chip">Load</button>
     <button (click)="emptySimple()" class="chip">Empty</button>
@@ -880,7 +880,7 @@ import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from
     <button (click)="composed.reset()" class="chip">Reset</button>
   </div>
 
-  <cngx-loading-overlay [loading]="composed.isRefreshing()" label="Refreshing data">
+  <cngx-loading-overlay [state]="composed" [firstLoadOnly]="true" label="Loading data">
     <cngx-async-container [state]="composed" ariaLabel="Composed demo"
       toastSuccess="Data loaded" toastError="Load failed">
 

@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  inject,
-  input,
-} from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input } from '@angular/core';
 
 import type { AlertSeverity } from '../alert';
 import { CngxToaster, type ToastRef } from './toast.service';
@@ -82,7 +75,7 @@ export class CngxToast {
     if (!this.toaster) {
       throw new Error(
         '[cngx-toast] CngxToaster not found. ' +
-        'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
+          'Add withToasts() to provideFeedback() or call provideToasts() in your providers.',
       );
     }
 

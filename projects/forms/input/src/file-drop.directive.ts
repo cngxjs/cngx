@@ -1,4 +1,5 @@
 import {
+  computed,
   DestroyRef,
   Directive,
   ElementRef,
@@ -8,6 +9,7 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Describes a file that was rejected during drop/browse validation.
@@ -45,12 +47,15 @@ export interface FileRejection {
   standalone: true,
   exportAs: 'cngxFileDrop',
   host: {
+    class: 'cngx-file-drop',
     '(dragenter)': 'handleDragEnter($event)',
     '(dragover)': 'handleDragOver($event)',
     '(dragleave)': 'handleDragLeave($event)',
     '(drop)': 'handleDrop($event)',
     '[class.cngx-file-drop--dragging]': 'dragging()',
     '[class.cngx-file-drop--has-files]': 'files().length > 0',
+    '[class.cngx-file-drop--uploading]': 'uploading()',
+    '[attr.aria-busy]': 'uploading() || null',
     '[attr.aria-dropeffect]': '"copy"',
   },
 })
@@ -66,6 +71,22 @@ export class CngxFileDrop {
 
   /** Allow multiple files. */
   readonly multiple = input<boolean>(false);
+
+  /**
+   * Bind an upload async state — shows busy/error/progress during upload.
+   * When set, `uploading` derives from `state.isBusy()` and `uploadProgress`
+   * from `state.progress()`. Drop/browse is disabled while uploading.
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /** `true` when the upload state is busy. */
+  readonly uploading = computed(() => this.state()?.isBusy() ?? false);
+
+  /** Upload progress 0–100, or `undefined`. */
+  readonly uploadProgress = computed(() => this.state()?.progress());
+
+  /** Upload error, or `undefined`. */
+  readonly uploadError = computed(() => this.state()?.error());
 
   // ── Internal state ──────────────────────────────────────────────────
 
@@ -103,8 +124,11 @@ export class CngxFileDrop {
 
   // ── Public methods ──────────────────────────────────────────────────
 
-  /** Opens the native file picker programmatically. */
+  /** Opens the native file picker programmatically. No-op while uploading. */
   browse(): void {
+    if (this.uploading()) {
+      return;
+    }
     this.fileInput ??= this.createFileInput();
     this.fileInput.click();
   }
@@ -151,6 +175,10 @@ export class CngxFileDrop {
     event.stopPropagation();
     this.dragCounter = 0;
     this.draggingState.set(false);
+
+    if (this.uploading()) {
+      return;
+    }
 
     const droppedFiles = event.dataTransfer?.files;
     if (droppedFiles) {

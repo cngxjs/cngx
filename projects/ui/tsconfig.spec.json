@@ -11,6 +11,8 @@
     "src/**/*.spec.ts",
     "layout/src/**/*.spec.ts",
     "overlay/src/**/*.spec.ts",
-    "empty-state/src/**/*.spec.ts"
+    "empty-state/src/**/*.spec.ts",
+    "feedback/src/**/*.spec.ts",
+    "material/src/**/*.spec.ts"
   ]
 }
