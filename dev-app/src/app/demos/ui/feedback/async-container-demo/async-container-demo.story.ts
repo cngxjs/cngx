@@ -299,7 +299,7 @@ export const STORY: DemoSpec = {
     },
     {
       title: 'Composition — Overlay + Container + Toast',
-      subtitle: 'Stack atoms freely. Loading overlay wraps the container; toasts fire via the container\'s built-in inputs. Each atom does one thing.',
+      subtitle: 'Stack atoms freely. <code>[firstLoadOnly]</code> restricts the overlay to the initial load — refresh uses the container\'s built-in bar instead, avoiding content jumps under the backdrop.',
       imports: ['CngxAsyncContainer', 'CngxAsyncSkeletonTpl', 'CngxAsyncContentTpl', 'CngxLoadingOverlay'],
       template: `
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
@@ -309,7 +309,7 @@ export const STORY: DemoSpec = {
     <button (click)="composed.reset()" class="chip">Reset</button>
   </div>
 
-  <cngx-loading-overlay [loading]="composed.isRefreshing()" label="Refreshing data">
+  <cngx-loading-overlay [state]="composed" [firstLoadOnly]="true" label="Loading data">
     <cngx-async-container [state]="composed" ariaLabel="Composed demo"
       toastSuccess="Data loaded" toastError="Load failed">
 
