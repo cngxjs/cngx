@@ -298,3 +298,253 @@ dedup — same event with different context detail is still the same event.
 | `--cngx-toast-description-font-size` | `0.8125rem` | Description font size |
 | `--cngx-toast-description-line-height` | `1.4` | Description line height |
 | `--cngx-toast-description-max-lines` | `3` | Line-clamp for description |
+
+### CngxAlert — Inline Alert Atom (`@cngx/ui/feedback`)
+
+Inline alert with enter/exit animations, state-driven visibility, auto-dismiss
+with pause-on-hover/focus (WCAG 2.2.1), optional auto-collapse, and action buttons.
+
+Three visibility modes:
+- **Static** (no `[state]` or `[when]`): always visible
+- **State-driven** (`[state]`): auto-shows on error/success/loading, auto-hides on idle
+- **Boolean-driven** (`[when]`): visible when true, hidden when false
+
+```html
+<!-- Static -->
+<cngx-alert severity="warning" title="Unsaved changes" [closable]="true">
+  Your changes will be lost if you leave.
+  <button cngxAlertAction (click)="save()">Save now</button>
+</cngx-alert>
+
+<!-- State-driven -->
+<cngx-alert [state]="saveState" severity="error" title="Save failed" [closable]="true">
+  {{ saveState.error() }}
+</cngx-alert>
+
+<!-- Boolean-driven -->
+<cngx-alert [when]="showTip()" severity="info" title="Tip">
+  Press Ctrl+S to save.
+</cngx-alert>
+
+<!-- Collapsible (collapses body after delay, expands on hover/focus) -->
+<cngx-alert [state]="state" severity="error" title="Errors"
+  [collapsible]="true" [collapseDelay]="3000">
+  Detailed error description...
+</cngx-alert>
+```
+
+**Inputs:**
+
+| Input | Type | Default | Description |
+|-|-|-|-|
+| `severity` | `AlertSeverity` | `'info'` | Visual style + ARIA role |
+| `title` | `string` | -- | Bold title above content |
+| `closable` | `boolean` | `false` | Show dismiss button |
+| `dismissible` | `boolean` | `false` | Deprecated alias for `closable` |
+| `state` | `CngxAsyncState<unknown>` | -- | State-driven visibility |
+| `when` | `boolean` | -- | Boolean visibility trigger |
+| `autoDismissDelay` | `number` | `5000` | Auto-dismiss delay for success state (ms) |
+| `collapsible` | `boolean` | `false` | Enable auto-collapse |
+| `collapseDelay` | `number` | `autoDismissDelay` | Delay before collapse (ms) |
+
+**Slot directives:** `CngxAlertAction` (restricts to `button, a`), `CngxAlertIcon` (custom icon)
+
+**ARIA:** `role="alert"` (error/warning), `role="status"` (info/success), `aria-busy` (loading),
+`aria-expanded` (collapsible), `aria-atomic="false"` when `CngxAlertAction` is present.
+
+**Animation:** CSS keyframes with `prefers-reduced-motion` support. Enter: `ease-out 200ms`.
+Exit: `ease-in 150ms`. Icon pulse on enter (one-shot, 300ms).
+
+**Collapse:** `grid-template-rows: 1fr/0fr` transition. Hover/focus expands, leave restarts timer.
+
+**CSS Custom Properties:**
+
+| Variable | Default | Description |
+|-|-|-|
+| `--cngx-alert-gap` | `12px` | Gap between icon, body, dismiss |
+| `--cngx-alert-padding` | `12px 16px` | Alert padding |
+| `--cngx-alert-border-radius` | `8px` | Corner radius |
+| `--cngx-alert-icon-size` | `20px` | Default icon size |
+| `--cngx-alert-title-weight` | `600` | Title font weight |
+| `--cngx-alert-enter-duration` | `200ms` | Enter animation duration |
+| `--cngx-alert-exit-duration` | `150ms` | Exit animation duration |
+| `--cngx-alert-collapse-duration` | `200ms` | Collapse transition duration |
+| `--cngx-alert-{severity}-bg` | per severity | Background color |
+| `--cngx-alert-{severity}-border` | per severity | Border color |
+| `--cngx-alert-{severity}-icon` | per severity | Icon color |
+
+### CngxAlertStack + CngxAlerter — Scoped Alert System (`@cngx/ui/feedback`)
+
+Scoped inline alert stacking with programmatic service. Each `CngxAlertStack` provides
+its own `CngxAlerter` via `viewProviders` — nested stacks (e.g. in dialogs) are fully
+isolated.
+
+```html
+<!-- In a dialog -->
+<dialog cngxDialog [submitAction]="save">
+  <header cngxDialogTitle>Edit User</header>
+  <cngx-alert-stack scope="user-form" [maxVisible]="5" />
+  <form>...</form>
+</dialog>
+```
+
+```typescript
+// In a child component inside the dialog
+private readonly alerter = inject(CngxAlerter);
+
+handleErrors(errors: string[]) {
+  this.alerter.dismissAll();
+  errors.forEach(e => this.alerter.show({ message: e, severity: 'error' }));
+}
+```
+
+For root-level injection (outside a stack), add `withAlerts()` to `provideFeedback()`.
+
+**CngxAlertStack inputs:**
+
+| Input | Type | Default | Description |
+|-|-|-|-|
+| `scope` | `string` | -- | Scope filter for alerts |
+| `maxVisible` | `number` | `5` | Max visible before overflow collapse |
+| `position` | `'top' \| 'bottom'` | `'top'` | Where new alerts insert |
+| `reserveSpace` | `boolean` | `false` | Reserve min-height to prevent layout shift |
+| `autoScroll` | `boolean` | `true` | Scroll stack into view on new alert |
+
+**CngxAlerter API:**
+
+| Method | Returns | Description |
+|-|-|-|
+| `show(config)` | `AlertRef` | Show an alert |
+| `dismiss(id)` | `void` | Dismiss by id |
+| `dismissAll(scope?)` | `void` | Dismiss all (optionally filtered by scope) |
+
+**AlertConfig:** `message` (required), `severity`, `title`, `persistent` (default `true`),
+`duration`, `dismissible` (default `true`), `scope`.
+
+**Dedup:** `message + severity + scope` within `alertDedupWindow` (default 1s).
+
+**ARIA:** `role="log"` + `aria-live="polite"` on container. `aria-expanded` + `aria-controls`
+on overflow button.
+
+#### CngxAlertOn — State Bridge
+
+```html
+<button [cngxAsyncClick]="save"
+  [cngxAlertOn]="saveState"
+  alertError="Save failed"
+  [alertErrorDetail]="true">
+  Save
+</button>
+```
+
+**Inputs:** `cngxAlertOn` (required `CngxAsyncState`), `alertSuccess`, `alertError`,
+`alertErrorDetail` (boolean), `alertScope`.
+
+### CngxBanner + CngxBannerOutlet — Global Banner System (`@cngx/ui/feedback`)
+
+System-level banners for session timeout, maintenance, offline status. Sticky top,
+always persistent (no auto-dismiss), dedup by required `id`.
+
+```html
+<!-- Once in app shell, above layout -->
+<cngx-banner-outlet />
+<div class="layout">...</div>
+```
+
+```typescript
+private readonly banner = inject(CngxBanner);
+
+this.banner.show({
+  message: 'Session expires in 5 minutes',
+  id: 'auth:session-timeout',
+  severity: 'warning',
+  action: {
+    label: 'Extend',
+    handler: () => this.extendSession(), // returns Promise<void>
+  },
+});
+
+// Update in-place (same id)
+this.banner.update('auth:session-timeout', {
+  message: 'Session expires in 2 minutes',
+  severity: 'error',
+});
+
+// Dismiss when condition resolves
+this.banner.dismiss('auth:session-timeout');
+```
+
+Requires `provideFeedback(withBanners())`.
+
+**CngxBanner API:**
+
+| Method | Returns | Description |
+|-|-|-|
+| `show(config)` | `BannerRef` | Show or update (if id exists) |
+| `update(id, patch)` | `void` | Patch an existing banner |
+| `dismiss(id)` | `void` | Dismiss by id |
+| `dismissAll()` | `void` | Dismiss all banners |
+| `executeAction(id)` | `Promise<void>` | Execute the banner's action handler with async lifecycle |
+
+**BannerConfig:** `message` (required), `id` (required), `severity`, `dismissible`
+(default `true`), `action` (`{ label, handler: () => void | Promise<void> }`).
+
+**Async actions:** When `action.handler` returns a `Promise`, the button shows `aria-busy`,
+disables during execution. Success: banner dismissed. Error: banner stays open.
+
+**ID uniqueness:** Caller's responsibility. Recommended prefix convention:
+`'auth:session-timeout'`, `'billing:payment-failed'`.
+
+**ARIA:** `role="alert"` (error/warning), `role="status"` (info/success).
+`aria-live="assertive"` for error only, `polite` for others.
+
+**First-render:** Banners present at initial render skip enter animation (no layout jump).
+
+**Layout:** `position: sticky; top: 0; z-index: 900` (below Material dialogs at 1000).
+`:empty` hides the outlet completely (`display: none`).
+
+#### CngxBannerTrigger — Declarative Banner
+
+```html
+<cngx-banner-trigger
+  [when]="isOffline()"
+  message="You are offline."
+  id="net:offline"
+  severity="error" />
+```
+
+Renders nothing. Shows banner when `[when]` is true, dismisses when false.
+Dismissed on component destroy.
+
+**Inputs:** `when` (required), `message` (required), `id` (required), `severity`,
+`dismissible`, `actionLabel`, `actionHandler`.
+
+#### CngxBannerOn — State Bridge
+
+```html
+<div [cngxBannerOn]="connectionState"
+  bannerId="net:offline"
+  bannerError="Connection lost">
+</div>
+```
+
+Shows banner on `error` transition, auto-dismisses on `success`/`idle`.
+
+**Inputs:** `cngxBannerOn` (required `CngxAsyncState`), `bannerId` (required),
+`bannerError`, `bannerSeverity` (default `'error'`), `bannerErrorDetail` (boolean).
+
+#### Banner CSS Custom Properties
+
+| Variable | Default | Description |
+|-|-|-|
+| `--cngx-banner-z-index` | `900` | Stacking order |
+| `--cngx-banner-gap` | `12px` | Gap between elements |
+| `--cngx-banner-padding` | `10px 16px` | Banner padding |
+| `--cngx-banner-font-size` | `0.9375rem` | Message font size |
+| `--cngx-banner-action-min-size` | `44px` | Min touch target for action button |
+| `--cngx-banner-pending-opacity` | `0.85` | Opacity during async action |
+| `--cngx-banner-{severity}-bg` | per severity | Background |
+| `--cngx-banner-{severity}-border` | per severity | Border |
+| `--cngx-banner-{severity}-icon` | per severity | Icon color |
+
+**Material theme:** Included in `@use '@cngx/ui/feedback/feedback-theme'` — `theme($theme)` covers alert, alert-stack, banner, toast, loading, and progress.

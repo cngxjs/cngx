@@ -5,7 +5,13 @@
 export { CngxLoadingIndicator, type LoadingIndicatorVariant } from './src/loading-indicator';
 export { CngxLoadingOverlay } from './src/loading-overlay';
 export { CngxProgress, type ProgressVariant } from './src/progress';
-export { CngxAlert, CngxAlertIcon, type AlertSeverity } from './src/alert';
+export {
+  CngxAlert,
+  CngxAlertIcon,
+  CngxAlertAction,
+  type AlertSeverity,
+  type AlertVisibilityPhase,
+} from './src/alert/alert';
 export {
   CNGX_FEEDBACK_CONFIG,
   type FeedbackConfig,
@@ -16,7 +22,26 @@ export {
   withLoadingDefaults,
   withCloseIcon,
   withToasts,
+  withAlerts,
+  withBanners,
 } from './src/feedback-config';
+export {
+  CngxAlerter,
+  type AlertConfig,
+  type AlertRef,
+  type AlertState,
+} from './src/alert/alerter.service';
+export { CngxAlertStack } from './src/alert/alert-stack';
+export { CngxAlertOn } from './src/alert/alert-on.directive';
+export {
+  CngxBanner,
+  type BannerConfig,
+  type BannerRef,
+  type BannerState,
+} from './src/banner/banner.service';
+export { CngxBannerOutlet } from './src/banner/banner-outlet';
+export { CngxBannerOn } from './src/banner/banner-on.directive';
+export { CngxBannerTrigger } from './src/banner/banner-trigger';
 export {
   CngxToaster,
   provideToasts,

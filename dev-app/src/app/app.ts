@@ -9,14 +9,14 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router, NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { CngxToastOutlet } from '@cngx/ui/feedback';
+import { CngxToastOutlet, CngxBannerOutlet } from '@cngx/ui/feedback';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CngxToastOutlet],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CngxToastOutlet, CngxBannerOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,7 +8,9 @@ import {
 
 import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
 
-import type { AlertSeverity } from './alert';
+import type { AlertSeverity } from './alert/alert';
+import { CngxAlerter } from './alert/alerter.service';
+import { CngxBanner } from './banner/banner.service';
 import { CngxToaster } from './toast/toast.service';
 
 /**
@@ -38,6 +40,15 @@ export interface FeedbackConfig {
 
   /** Dedup window for identical toasts in ms. */
   toastDedupWindow?: number;
+
+  /** Default auto-dismiss duration for scoped alerts in ms. `undefined` = persistent. */
+  alertDefaultDuration?: number;
+
+  /** Dedup window for identical alerts in ms. */
+  alertDedupWindow?: number;
+
+  /** Default max visible alerts per stack. */
+  alertMaxVisible?: number;
 }
 
 /**
@@ -205,5 +216,69 @@ export function withToasts(opts?: {
       toastDedupWindow: opts?.dedupWindow,
     }),
     _providers: [CngxToaster],
+  };
+}
+
+/**
+ * Enable the scoped alert system within `provideFeedback()`.
+ *
+ * Provides `CngxAlerter` at the environment level for root-level injection.
+ * Without this feature, `CngxAlerter` is only available via `CngxAlertStack`'s
+ * `viewProviders` (scoped injection).
+ *
+ * The token is opaque — always use `provideFeedback()` with feature functions,
+ * never construct the config object manually.
+ *
+ * @param opts Optional alert defaults.
+ *
+ * @example
+ * ```ts
+ * provideFeedback(
+ *   withToasts(),
+ *   withAlerts(),
+ * )
+ * ```
+ */
+export function withAlerts(opts?: {
+  /** Default auto-dismiss duration in ms. `undefined` = persistent. */
+  defaultDuration?: number;
+  /** Dedup window in ms. */
+  dedupWindow?: number;
+  /** Default max visible alerts per stack. */
+  maxVisible?: number;
+}): FeedbackFeature {
+  return {
+    _apply: (c) => ({
+      ...c,
+      alertDefaultDuration: opts?.defaultDuration,
+      alertDedupWindow: opts?.dedupWindow ?? c.alertDedupWindow,
+      alertMaxVisible: opts?.maxVisible ?? c.alertMaxVisible,
+    }),
+    _providers: [CngxAlerter],
+  };
+}
+
+/**
+ * Enable the global banner system within `provideFeedback()`.
+ *
+ * Provides `CngxBanner` at the environment level.
+ * Without this feature, `CngxBannerOutlet` will throw a `NullInjectorError`.
+ *
+ * Banners are always persistent — no `duration`. Dismiss programmatically
+ * via `banner.dismiss(id)` when the condition resolves.
+ *
+ * @example
+ * ```ts
+ * provideFeedback(
+ *   withToasts(),
+ *   withAlerts(),
+ *   withBanners(),
+ * )
+ * ```
+ */
+export function withBanners(): FeedbackFeature {
+  return {
+    _apply: (c) => c,
+    _providers: [CngxBanner],
   };
 }

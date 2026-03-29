@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, effect, inject, input } from '@angular/core';
 
-import type { AlertSeverity } from '../alert';
+import type { AlertSeverity } from '../alert/alert';
 import { CngxToaster, type ToastRef } from './toast.service';
 
 /**

@@ -348,9 +348,19 @@ export const routes: Routes = [
           import('./demos/ui/feedback/alert-demo/alert-demo.component').then((m) => m.AlertDemoComponent),
       },
       {
+        path: 'feedback/alert-stack',
+        loadComponent: () =>
+          import('./demos/ui/feedback/alert-stack-demo/alert-stack-demo.component').then((m) => m.AlertStackDemoComponent),
+      },
+      {
         path: 'feedback/async-container',
         loadComponent: () =>
           import('./demos/ui/feedback/async-container-demo/async-container-demo.component').then((m) => m.AsyncContainerDemoComponent),
+      },
+      {
+        path: 'feedback/banner',
+        loadComponent: () =>
+          import('./demos/ui/feedback/banner-demo/banner-demo.component').then((m) => m.BannerDemoComponent),
       },
       {
         path: 'feedback/loading-indicator',
