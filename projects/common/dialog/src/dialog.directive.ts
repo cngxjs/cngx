@@ -13,8 +13,9 @@ import {
   signal,
 } from '@angular/core';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { hasTransition, nextUid, onTransitionDone } from '@cngx/core/utils';
+import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 import { DIALOG_REF, type DialogRef, type DialogState } from './dialog-ref';
 import { CngxDialogStack } from './dialog-stack';
@@ -195,7 +196,7 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /**
    * Bind an async state — drives pending (aria-busy, prevents close) and
    * error from a single source. When set, takes precedence over the
-   * `[error]` boolean input.
+   * `[error]` boolean input and `[submitAction]`.
    *
    * When `state.status()` is `'pending'`, the dialog prevents close/dismiss
    * and applies `aria-busy`. When `state.status()` is `'error'`, the dialog
@@ -204,7 +205,25 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
-   * Whether the dialog is in an error state. Fallback when `[state]` is not set.
+   * Async action to execute when `close(value)` is called.
+   *
+   * Receives the close value as parameter. On success, the dialog auto-closes.
+   * On error, the dialog stays open with `cngx-dialog--error` and the error
+   * is announced to screen readers.
+   *
+   * When set, `close(value)` no longer closes immediately — it enters a
+   * `submitting` phase (`isPending() = true`, `aria-busy`, close blocked).
+   *
+   * The submit lifecycle is exposed via `submitState: CngxAsyncState<unknown>`.
+   * Ignored when `[state]` input is also set (external state takes precedence).
+   */
+  readonly submitAction = input<((value: T) => Promise<unknown> | Observable<unknown>) | undefined>(
+    undefined,
+  );
+
+  /**
+   * Whether the dialog is in an error state. Fallback when neither `[state]`
+   * nor `[submitAction]` is set.
    *
    * When `true`, applies the `cngx-dialog--error` CSS class on the host.
    * Use this to communicate form submission failures or other error
@@ -242,14 +261,53 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /** Unique auto-generated ID for this dialog instance. Used for ARIA and stack tracking. */
   readonly id = this.idSignal.asReadonly();
 
-  // ── Async state derived ──────────────────────────────────────────
-  /** `true` when the async state is pending (mutation in flight). */
-  readonly isPending = computed(() => this.state()?.isPending() ?? false);
+  // ── Submit state ────────────────────────────────────────────────
+  private readonly submitStatusState = signal<AsyncStatus>('idle');
+  private readonly submitErrorState = signal<unknown>(undefined);
 
-  /** Resolved error — async state takes precedence over boolean input. */
+  /**
+   * Async state of the submit channel.
+   *
+   * Populated when `[submitAction]` is set. Tracks `idle` -> `pending` ->
+   * `success`/`error`. When `submitAction` is not set, remains at `'idle'`.
+   *
+   * Bind to any state consumer: `<cngx-alert [state]="dlg.submitState" />`.
+   */
+  readonly submitState: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
+    status: this.submitStatusState.asReadonly(),
+    data: computed(() => undefined),
+    error: this.submitErrorState.asReadonly(),
+  });
+
+  // ── Async state derived ──────────────────────────────────────────
+  /**
+   * `true` when any async operation is pending. Blocks close/dismiss and sets `aria-busy`.
+   *
+   * External `[state]` short-circuits — when set, `submitAction` is ignored by the
+   * `close()` guard (`action && !this.state()`), so `submitStatusState` stays `'idle'`.
+   */
+  readonly isPending = computed(() => {
+    const ext = this.state();
+    if (ext) {
+      return ext.isPending();
+    }
+    return this.submitStatusState() === 'pending';
+  });
+
+  /**
+   * Resolved error — external `[state]` takes precedence over submit state,
+   * which takes precedence over the boolean `[error]` input.
+   */
   protected readonly effectiveError = computed(() => {
-    const s = this.state();
-    return s ? !!s.error() : this.error();
+    const ext = this.state();
+    if (ext) {
+      return !!ext.error();
+    }
+    // Use !== undefined to catch falsy error values (0, '', false)
+    if (this.submitErrorState() !== undefined) {
+      return true;
+    }
+    return this.error();
   });
 
   // ── Computed host bindings (protected for Angular compiler) ───────
@@ -291,10 +349,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       }
     });
 
-    // Announce async error via live region
+    // Announce async error via live region (external state or submit state)
     effect(() => {
       if (this.effectiveError() && this.liveRegion) {
-        const errMsg = this.state()?.error();
+        const errMsg = this.state()?.error() ?? this.submitErrorState();
         this.liveRegion.textContent = typeof errMsg === 'string' ? errMsg : 'An error occurred';
       }
     });
@@ -325,8 +383,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
 
     const dialog = this.dialogElement;
 
-    // Reset result from previous cycle
+    // Reset result and submit state from previous cycle
     this.resultSignal.set(undefined);
+    this.submitStatusState.set('idle');
+    this.submitErrorState.set(undefined);
 
     // Store trigger element for focus return
     this.triggerElement.set(this.doc.activeElement as HTMLElement | null);
@@ -357,8 +417,14 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /**
    * Close the dialog with a typed result.
    *
-   * Sets `result` to `value`, then initiates the closing transition.
-   * No-op if the dialog is not in the `'open'` or `'opening'` state.
+   * When `[submitAction]` is set and `[state]` is not set, executes the action
+   * with `value` before closing. The dialog enters a submitting phase
+   * (`isPending() = true`) — on success it auto-closes, on error it stays open.
+   *
+   * When `[submitAction]` is not set (or `[state]` overrides), closes immediately.
+   *
+   * No-op if the dialog is not in the `'open'` or `'opening'` state, or if
+   * already pending.
    *
    * @param value - The typed result to deliver to consumers.
    */
@@ -369,8 +435,15 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     if (this.isPending()) {
       return;
     }
-    this.resultSignal.set(value);
-    this.startClosing();
+
+    const action = this.submitAction();
+    // External [state] takes full precedence — submitAction is ignored
+    if (action && !this.state()) {
+      void this.executeSubmit(action, value);
+    } else {
+      this.resultSignal.set(value);
+      this.startClosing();
+    }
   }
 
   /**
@@ -389,6 +462,33 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     }
     this.resultSignal.set('dismissed');
     this.startClosing();
+  }
+
+  // ── Submit execution ─────────────────────────────────────────────
+
+  private async executeSubmit(
+    action: (value: T) => Promise<unknown> | Observable<unknown>,
+    value: T,
+  ): Promise<void> {
+    this.submitStatusState.set('pending');
+    this.submitErrorState.set(undefined);
+
+    try {
+      const result$ = action(value);
+      const promise = isObservable(result$)
+        ? firstValueFrom(result$, { defaultValue: undefined })
+        : result$;
+      await promise;
+
+      // Submit succeeded — auto-close
+      this.submitStatusState.set('success');
+      this.resultSignal.set(value);
+      this.startClosing();
+    } catch (err: unknown) {
+      // Submit failed — stay open, show error
+      this.submitStatusState.set('error');
+      this.submitErrorState.set(err);
+    }
   }
 
   // ── Event handlers (protected for host bindings) ──────────────────

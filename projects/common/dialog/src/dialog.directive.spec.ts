@@ -1,6 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { of, type Observable } from 'rxjs';
 
 import { CngxDialog } from './dialog.directive';
 import { CngxDialogTitle } from './dialog-title.directive';
@@ -351,6 +352,163 @@ describe('CngxDialog', () => {
       fixture.destroy();
       expect(dialogEl.close).toHaveBeenCalled();
     });
+  });
+});
+
+describe('CngxDialog submitAction', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  @Component({
+    template: `
+      <dialog cngxDialog [submitAction]="action()" #dlg="cngxDialog">
+        <h2 cngxDialogTitle>Submit</h2>
+        <button id="save" (click)="dlg.close(42)">Save</button>
+        <button id="cancel" cngxDialogClose>Cancel</button>
+      </dialog>
+    `,
+    imports: [CngxDialog, CngxDialogTitle, CngxDialogClose],
+  })
+  class SubmitDialogHost {
+    readonly dialog = viewChild.required(CngxDialog);
+    readonly action = signal<((v: unknown) => Promise<unknown>) | undefined>(undefined);
+  }
+
+  it('submitState is idle initially', () => {
+    const { fixture } = setup(SubmitDialogHost);
+    const dialog = fixture.componentInstance.dialog();
+    expect(dialog.submitState.status()).toBe('idle');
+  });
+
+  it('executes submitAction on close and auto-closes on success', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockResolvedValue('ok');
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    // Should be pending
+    expect(dialog.submitState.status()).toBe('pending');
+    expect(dialog.isPending()).toBe(true);
+
+    // Resolve the promise
+    await vi.runAllTimersAsync();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(submitFn).toHaveBeenCalledWith(42);
+    expect(dialog.submitState.status()).toBe('success');
+    expect(dialog.lifecycle()).toBe('closed');
+    expect(dialog.result()).toBe(42);
+  });
+
+  it('stays open on submit error', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockRejectedValue(new Error('fail'));
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    await vi.runAllTimersAsync();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(dialog.submitState.status()).toBe('error');
+    expect(dialog.submitState.error()).toBeInstanceOf(Error);
+    expect(dialog.lifecycle()).toBe('open');
+    expect(dialogEl.classList.contains('cngx-dialog--error')).toBe(true);
+  });
+
+  it('blocks close/dismiss while submit is pending', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    let resolveFn!: () => void;
+    const submitFn = vi.fn().mockReturnValue(new Promise<void>((r) => (resolveFn = r)));
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dialog.isPending()).toBe(true);
+
+    // Try to dismiss while pending — should be blocked
+    dialog.dismiss();
+    expect(dialog.lifecycle()).not.toBe('closed');
+
+    // Try to close again while pending — should be blocked
+    dialog.close(99 as never);
+    expect(submitFn).toHaveBeenCalledTimes(1);
+
+    // Resolve
+    resolveFn();
+    await vi.runAllTimersAsync();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(dialog.lifecycle()).toBe('closed');
+    expect(dialog.result()).toBe(42);
+  });
+
+  it('resets submit state on re-open', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockRejectedValue(new Error('fail'));
+    fixture.componentInstance.action.set(submitFn);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    await vi.runAllTimersAsync();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dialog.submitState.status()).toBe('error');
+
+    // Dismiss to close after error
+    dialog.dismiss();
+    fixture.detectChanges();
+
+    // Re-open — submit state should reset
+    dialog.open();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(dialog.submitState.status()).toBe('idle');
+    expect(dialog.submitState.error()).toBeUndefined();
+  });
+
+  it('works with Observable-returning action', async () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    const submitFn = vi.fn().mockReturnValue(of('done') as Observable<unknown>);
+    fixture.componentInstance.action.set(submitFn as unknown as (v: unknown) => Promise<unknown>);
+    fixture.detectChanges();
+
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    await vi.runAllTimersAsync();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(dialog.submitState.status()).toBe('success');
+    expect(dialog.lifecycle()).toBe('closed');
+  });
+
+  it('closes immediately when no submitAction is set', () => {
+    const { fixture, dialogEl } = setup(SubmitDialogHost);
+    // action is undefined by default
+    const dialog = openFully(fixture, dialogEl);
+
+    dialog.close(42 as never);
+    expect(dialog.lifecycle()).toBe('closed');
+    expect(dialog.result()).toBe(42);
   });
 });
 

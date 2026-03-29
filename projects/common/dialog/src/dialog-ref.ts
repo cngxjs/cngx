@@ -1,4 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 /** Lifecycle states of a dialog. */
 export type DialogState = 'closed' | 'opening' | 'open' | 'closing';
@@ -24,6 +25,17 @@ export interface DialogRef<T = unknown> {
 
   /** Unique ID of this dialog instance. */
   readonly id: Signal<string>;
+
+  /**
+   * Async state of the submit channel.
+   *
+   * Populated when `[submitAction]` is set — tracks the submit lifecycle
+   * (`idle` -> `pending` -> `success`/`error`). When `submitAction` is not set,
+   * this is a static idle state.
+   *
+   * Bind to any state consumer: `<cngx-alert [state]="dlg.submitState" />`.
+   */
+  readonly submitState: CngxAsyncState<unknown>;
 
   /** Close the dialog with a typed result value. */
   close(value: T): void;
