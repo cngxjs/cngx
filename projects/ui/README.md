@@ -252,3 +252,49 @@ via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed
 ```
 
 **Material theme:** `@use '@cngx/ui/sidenav/sidenav-theme'` — includes nav-link theme automatically
+
+### CngxToaster — Toast API (`@cngx/ui/feedback`)
+
+Programmatic toast service. Not `providedIn: 'root'` — provide via
+`provideFeedback(withToasts())` or `provideToasts()`.
+
+#### ToastConfig
+
+```typescript
+this.toaster.show({
+  message: 'Saved',                    // Required — sole text when title not set
+  title: 'Save successful',            // Optional — bold primary text
+  description: 'Profile updated.',     // Optional — secondary text below title
+  severity: 'success',                 // 'info' | 'success' | 'warning' | 'error'
+  duration: 5000,                      // ms or 'persistent'
+  action: { label: 'Undo', handler: () => this.undo() },
+  dismissible: true,                   // default: true
+  content: MyCustomToastBody,          // Optional — component as toast body
+  contentInputs: { error: err },       // Inputs for the content component
+});
+```
+
+**Layout rules:**
+- `message` only (no `title`): single-line text (backwards-compatible)
+- `title` + `description`/`message`: two-line layout (title bold, description muted)
+- `title` + `content`: title above custom component
+- `content` only: custom component fills the body
+
+**A11y:** Avoid focusable elements (`<a>`, `<button>`) inside `content` components
+— they are unreachable inside a `role="status"` live region.
+
+**Dedup:** Toasts with same `message + severity + title` within `dedupWindow` (default
+1000ms) are merged (count incremented). `description` is intentionally excluded from
+dedup — same event with different context detail is still the same event.
+
+#### Toast CSS Custom Properties
+
+| Property | Default | Description |
+|-|-|-|
+| `--cngx-toast-title-font-weight` | `600` | Title font weight |
+| `--cngx-toast-title-color` | inherit | Title text color |
+| `--cngx-toast-title-font-size` | `--cngx-toast-font-size` | Title font size |
+| `--cngx-toast-description-color` | `#64748b` | Description text color (muted) |
+| `--cngx-toast-description-font-size` | `0.8125rem` | Description font size |
+| `--cngx-toast-description-line-height` | `1.4` | Description line height |
+| `--cngx-toast-description-max-lines` | `3` | Line-clamp for description |

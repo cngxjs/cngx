@@ -14,8 +14,10 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxAsyncClick } from '@cngx/common/interactive';",
     "import { CngxActionButton, CngxPending, CngxSucceeded, CngxFailed } from '@cngx/ui';",
+    "import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';",
     "import { MatButtonModule } from '@angular/material/button';",
     "import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';",
+    "import { SampleToastBody } from '../../../ui/feedback/toast-demo/sample-toast-body';",
   ],
   setup: `
   // Fake API call that succeeds after 1.5s
@@ -30,6 +32,24 @@ export const STORY: DemoSpec = {
   protected readonly submitAction = () => new Promise<void>((resolve, reject) =>
     setTimeout(() => Math.random() > 0.4 ? resolve() : reject(new Error('Random failure')), 1200),
   );
+
+  // Fake API call that fails with validation errors
+  protected readonly validateAction = () => new Promise<void>((_, reject) =>
+    setTimeout(() => reject(new Error('Validation failed')), 1000),
+  );
+
+  // Programmatic toast with custom component body
+  private readonly toaster = inject(CngxToaster);
+
+  protected showCustomToast(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
   `,
   sections: [
     {
@@ -158,6 +178,66 @@ export const STORY: DemoSpec = {
         </cngx-action-button>
       </div>
     </div>
+  </div>`,
+    },
+    {
+      title: 'State Producer + Toast (title + description)',
+      subtitle:
+        '<code>CngxAsyncClick</code> exposes <code>state: CngxAsyncState</code>. ' +
+        'Bind to <code>[cngxToastOn]</code> for automatic toasts. ' +
+        '<code>CngxActionButton</code> has toast inputs built in.',
+      imports: ['CngxAsyncClick', 'CngxActionButton', 'CngxToastOn'],
+      template: `
+  <div style="display:flex;flex-direction:column;gap:24px">
+    <div>
+      <p class="demo-label">CngxAsyncClick + CngxToastOn (separate elements)</p>
+      <div class="button-row">
+        <button [cngxAsyncClick]="saveAction" #save3="cngxAsyncClick" class="chip">
+          @if (save3.pending()) { Saving... } @else { Save }
+        </button>
+        <ng-container
+          [cngxToastOn]="save3.state"
+          toastSuccess="Saved"
+          toastError="Save failed" />
+      </div>
+      <div class="status-row" style="margin-top:8px">
+        <span class="status-badge">state.status: {{ save3.state.status() }}</span>
+      </div>
+    </div>
+
+    <div>
+      <p class="demo-label">CngxActionButton with built-in toast inputs</p>
+      <div class="button-row" style="gap:12px">
+        <cngx-action-button [action]="saveAction"
+          toastSuccess="Profile saved"
+          toastError="Save failed"
+          pendingLabel="Saving..."
+          succeededLabel="Saved!"
+          class="chip">
+          Save Profile
+        </cngx-action-button>
+
+        <cngx-action-button [action]="deleteAction"
+          toastError="Delete failed"
+          [toastErrorDetail]="true"
+          pendingLabel="Deleting..."
+          failedLabel="Failed"
+          class="chip">
+          Delete (always fails)
+        </cngx-action-button>
+      </div>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Programmatic Toast with Custom Component',
+      subtitle:
+        'Use <code>toaster.show()</code> with <code>title</code>, <code>description</code>, or a custom <code>content</code> component.',
+      template: `
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showCustomToast()" class="chip">
+      Show Validation Errors (custom component body)
+    </button>
   </div>`,
     },
   ],

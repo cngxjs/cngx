@@ -1,6 +1,7 @@
 import {
   DestroyRef,
   type EnvironmentProviders,
+  type Type,
   inject,
   Injectable,
   makeEnvironmentProviders,
@@ -13,8 +14,23 @@ import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
 
 /** Configuration for a single toast. */
 export interface ToastConfig {
-  /** Toast message text. */
+  /** Toast message text. Used as sole text when `title` is not set. */
   message: string;
+
+  /**
+   * Bold primary text — renders above `description` or `message`.
+   * When set, the toast switches to a two-line layout (title + description).
+   * When not set, `message` renders as a single line (backwards-compatible).
+   */
+  title?: string;
+
+  /**
+   * Secondary description text — renders below `title`.
+   * Falls back to `message` when `title` is set but `description` is not.
+   * Ignored when `title` is not set.
+   */
+  description?: string;
+
   /** Visual severity — determines icon, color, and ARIA role. */
   severity?: AlertSeverity;
   /** Auto-dismiss duration in ms, or `'persistent'` for manual dismiss only. */
@@ -23,6 +39,19 @@ export interface ToastConfig {
   action?: { label: string; handler: () => void };
   /** Show dismiss button. */
   dismissible?: boolean;
+
+  /**
+   * Custom component rendered as the toast body (Stufe 2).
+   * Replaces the default `message`/`description` text.
+   * `title` is still rendered above the component if set.
+   *
+   * A11y: avoid focusable elements (`<a>`, `<button>`, `<input>`) inside
+   * the component — they are unreachable inside a `role="status"` live region.
+   */
+  content?: Type<unknown>;
+
+  /** Inputs passed to the `content` component via `NgComponentOutlet`. */
+  contentInputs?: Record<string, unknown>;
 }
 
 /** Handle to a displayed toast — allows programmatic dismiss. */
@@ -37,7 +66,9 @@ export interface ToastRef {
 export interface ToastState {
   readonly id: number;
   readonly config: Required<Pick<ToastConfig, 'message' | 'severity' | 'dismissible'>> &
-    Pick<ToastConfig, 'action'> & { duration: number | 'persistent' };
+    Pick<ToastConfig, 'action' | 'title' | 'description' | 'content' | 'contentInputs'> & {
+      duration: number | 'persistent';
+    };
   readonly createdAt: number;
   /** Timestamp when the current timer started (created or last resumed). */
   readonly timerStartedAt: number;
@@ -93,12 +124,14 @@ export class CngxToaster {
       config.duration ?? (severity === 'error' ? ('persistent' as const) : this.defaultDuration());
     const dismissible = config.dismissible ?? true;
 
-    // Dedup check
+    // Dedup check — title is included, description is intentionally excluded
+    // (same event with different context detail is still the same event)
     const now = Date.now();
     const existing = this.toasts().find(
       (t) =>
         t.config.message === config.message &&
         t.config.severity === severity &&
+        (t.config.title ?? '') === (config.title ?? '') &&
         now - t.createdAt < this.dedupWindow(),
     );
 
@@ -122,7 +155,17 @@ export class CngxToaster {
     const dismissed$ = new Subject<void>();
     const state: ToastState = {
       id,
-      config: { message: config.message, severity, duration, dismissible, action: config.action },
+      config: {
+        message: config.message,
+        severity,
+        duration,
+        dismissible,
+        action: config.action,
+        title: config.title,
+        description: config.description,
+        content: config.content,
+        contentInputs: config.contentInputs,
+      },
       createdAt: now,
       timerStartedAt: now,
       count: 1,
