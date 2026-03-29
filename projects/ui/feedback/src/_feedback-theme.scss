@@ -190,6 +190,100 @@
   }
 }
 
+// ─── Alert Stack ───────────────────────────────────────────────
+
+@mixin alert-stack-base() {
+  --cngx-alert-stack-gap: 8px;
+  --cngx-alert-stack-message-size: 0.875rem;
+  --cngx-alert-stack-message-line-height: 1.5;
+  --cngx-alert-stack-reserve-height: 56px;
+  --cngx-alert-stack-overflow-padding: 8px 16px;
+  --cngx-alert-stack-overflow-size: 0.8125rem;
+  --cngx-alert-stack-overflow-color: #64748b;
+  --cngx-alert-stack-overflow-border: #cbd5e1;
+}
+
+@mixin alert-stack-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-alert-stack-overflow-color: var(--mat-sys-on-surface-variant);
+    --cngx-alert-stack-overflow-border: var(--mat-sys-outline-variant);
+  } @else {
+    --cngx-alert-stack-overflow-color: #{mat.get-theme-color($theme, foreground, secondary-text)};
+  }
+}
+
+// ─── Banner ────────────────────────────────────────────────────
+
+@mixin banner-base() {
+  --cngx-banner-z-index: 900;
+  --cngx-banner-gap: 12px;
+  --cngx-banner-padding: 10px 16px;
+  --cngx-banner-bg: #f8fafc;
+  --cngx-banner-color: inherit;
+  --cngx-banner-icon-size: 20px;
+  --cngx-banner-font-size: 0.9375rem;
+  --cngx-banner-line-height: 1.5;
+  --cngx-banner-error-font-size: 0.875rem;
+  --cngx-banner-action-radius: 4px;
+  --cngx-banner-action-padding: 6px 12px;
+  --cngx-banner-action-font-size: 0.875rem;
+  --cngx-banner-action-font-weight: 600;
+  --cngx-banner-action-min-size: 44px;
+  --cngx-banner-pending-opacity: 0.85;
+
+  // Severity defaults (standalone, non-Material)
+  --cngx-banner-info-bg: #eff6ff;
+  --cngx-banner-info-border: #bfdbfe;
+  --cngx-banner-info-icon: #3b82f6;
+  --cngx-banner-success-bg: #f0fdf4;
+  --cngx-banner-success-border: #bbf7d0;
+  --cngx-banner-success-icon: #22c55e;
+  --cngx-banner-warning-bg: #fffbeb;
+  --cngx-banner-warning-border: #fde68a;
+  --cngx-banner-warning-icon: #f59e0b;
+  --cngx-banner-error-bg: #fef2f2;
+  --cngx-banner-error-border: #fecaca;
+  --cngx-banner-error-icon: #ef4444;
+  --cngx-banner-error-color: #ef4444;
+}
+
+@mixin banner-color($theme) {
+  @if mat.get-theme-version($theme) == 1 {
+    --cngx-banner-bg: var(--mat-sys-surface-container-low);
+    --cngx-banner-color: var(--mat-sys-on-surface);
+
+    --cngx-banner-info-bg: color-mix(in srgb, var(--mat-sys-primary) 8%, var(--mat-sys-surface));
+    --cngx-banner-info-border: color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
+    --cngx-banner-info-icon: var(--mat-sys-primary);
+
+    --cngx-banner-success-bg: color-mix(
+      in srgb,
+      var(--mat-sys-tertiary) 8%,
+      var(--mat-sys-surface)
+    );
+    --cngx-banner-success-border: color-mix(in srgb, var(--mat-sys-tertiary) 30%, transparent);
+    --cngx-banner-success-icon: var(--mat-sys-tertiary);
+
+    --cngx-banner-warning-bg: color-mix(
+      in srgb,
+      var(--mat-sys-secondary) 8%,
+      var(--mat-sys-surface)
+    );
+    --cngx-banner-warning-border: color-mix(in srgb, var(--mat-sys-secondary) 30%, transparent);
+    --cngx-banner-warning-icon: var(--mat-sys-secondary);
+
+    --cngx-banner-error-bg: color-mix(in srgb, var(--mat-sys-error) 8%, var(--mat-sys-surface));
+    --cngx-banner-error-border: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
+    --cngx-banner-error-icon: var(--mat-sys-error);
+    --cngx-banner-error-color: var(--mat-sys-error);
+  } @else {
+    --cngx-banner-bg: #{mat.get-theme-color($theme, background, card)};
+    --cngx-banner-info-icon: #{mat.get-theme-color($theme, primary)};
+    --cngx-banner-error-icon: #{mat.get-theme-color($theme, warn)};
+    --cngx-banner-error-color: #{mat.get-theme-color($theme, warn)};
+  }
+}
+
 // ─── Close / Dismiss Button Density ────────────────────────────
 //
 // Shared density presets for all dismiss/close buttons across
@@ -269,5 +363,15 @@
   :where(.cngx-toast-outlet) {
     @include toast-base();
     @include toast-color($theme);
+  }
+
+  :where(.cngx-alert-stack) {
+    @include alert-stack-base();
+    @include alert-stack-color($theme);
+  }
+
+  :where(.cngx-banner-outlet) {
+    @include banner-base();
+    @include banner-color($theme);
   }
 }

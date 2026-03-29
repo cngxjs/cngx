@@ -2,7 +2,7 @@ import { type ApplicationConfig, provideBrowserGlobalErrorListeners, provideZone
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideTreetable, withHighlightOnHover } from '@cngx/data-display/treetable';
-import { provideFeedback, withToasts } from '@cngx/ui/feedback';
+import { provideFeedback, withToasts, withAlerts, withBanners } from '@cngx/ui/feedback';
 import { provideFormField, withErrorMessages, withConstraintHints, withRequiredMarker } from '@cngx/forms/field';
 
 import { routes } from './app.routes';
@@ -14,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideRouter(routes, withHashLocation()),
     provideTreetable(withHighlightOnHover()),
-    provideFeedback(withToasts()),
+    provideFeedback(withToasts(), withAlerts(), withBanners()),
     provideFormField(
       withErrorMessages({
         required: () => 'This field is required.',
