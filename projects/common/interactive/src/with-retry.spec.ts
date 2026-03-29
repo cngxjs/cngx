@@ -57,7 +57,7 @@ describe('withRetry', () => {
     state.reset();
     expect(state.attempt()).toBe(0);
     expect(state.exhausted()).toBe(false);
-    expect(state.lastError()).toBeNull();
+    expect(state.lastError()).toBeUndefined();
   });
 
   it('uses exponential backoff by default', async () => {

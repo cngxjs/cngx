@@ -7,3 +7,7 @@ export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './src/keyboard.ut
 export { hasTransition, onTransitionDone } from './src/transition.util';
 export { nextUid } from './src/uid.util';
 export { type AsyncStatus, type CngxAsyncState } from './src/async-state';
+export {
+  buildAsyncStateView,
+  type AsyncStateViewSources,
+} from './src/build-async-state-view';

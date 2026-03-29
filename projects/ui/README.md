@@ -100,15 +100,29 @@ need `@if`/`@for` boilerplate.
 
 Action button molecule with built-in async status communication. Composes
 `CngxAsyncClick` internally, adding template projection for pending/succeeded/failed
-states and an `aria-live` region for screen reader announcements.
+states, an `aria-live` region for screen reader announcements, optional toast
+integration, and a `state` property for downstream feedback consumers.
 
 ```html
+<!-- Minimal -->
+<cngx-action-button [action]="save">Save</cngx-action-button>
+
+<!-- With template slots -->
 <cngx-action-button [action]="save">
   Save
   <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
   <ng-template cngxSucceeded>Saved!</ng-template>
   <ng-template cngxFailed let-err>{{ err }} -- retry?</ng-template>
 </cngx-action-button>
+
+<!-- With toast feedback -->
+<cngx-action-button [action]="save" toastSuccess="Saved" toastError="Save failed">
+  Save
+</cngx-action-button>
+
+<!-- Downstream state binding -->
+<cngx-action-button [action]="save" #btn="cngxActionButton">Save</cngx-action-button>
+<cngx-alert [state]="btn.state" severity="error" title="Details" />
 ```
 
 **Inputs:**
@@ -125,6 +139,21 @@ states and an `aria-live` region for screen reader announcements.
 | `failedLabel` | `string` | -- | Fallback text after failure (when no `cngxFailed` template) |
 | `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |
 | `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to `failedLabel`) |
+| `externalState` | `CngxAsyncState<unknown>` | -- | External state override for visual status |
+| `toastSuccess` | `string` | -- | Toast message on success (requires `CngxToaster`) |
+| `toastError` | `string` | -- | Toast message on error (requires `CngxToaster`) |
+| `toastErrorDetail` | `boolean` | `false` | Append error message to error toast |
+| `toastSuccessDuration` | `number` | `3000` | Success toast duration in ms |
+| `toastErrorDuration` | `number \| 'persistent'` | `'persistent'` | Error toast duration |
+
+**State producer:** `readonly state: CngxAsyncState<unknown>` -- the effective
+lifecycle state (internal or external). Bind to any `[state]` consumer.
+
+**Toast integration:** When `toastSuccess` or `toastError` inputs are set and
+`CngxToaster` is provided (via `provideFeedback(withToasts())` or `provideToasts()`),
+toasts fire automatically on status transitions. If `CngxToaster` is not provided,
+toast inputs are silently ignored. Do not combine with `[cngxToastOn]` on the same
+element -- a dev-mode warning is emitted if both are active.
 
 **Template directives:** `cngxPending`, `cngxSucceeded`, `cngxFailed` (project `<ng-template>` for each state)
 
@@ -223,3 +252,49 @@ via the CSS `grid-template-rows: 0fr/1fr` trick (no `@angular/animations` needed
 ```
 
 **Material theme:** `@use '@cngx/ui/sidenav/sidenav-theme'` — includes nav-link theme automatically
+
+### CngxToaster — Toast API (`@cngx/ui/feedback`)
+
+Programmatic toast service. Not `providedIn: 'root'` — provide via
+`provideFeedback(withToasts())` or `provideToasts()`.
+
+#### ToastConfig
+
+```typescript
+this.toaster.show({
+  message: 'Saved',                    // Required — sole text when title not set
+  title: 'Save successful',            // Optional — bold primary text
+  description: 'Profile updated.',     // Optional — secondary text below title
+  severity: 'success',                 // 'info' | 'success' | 'warning' | 'error'
+  duration: 5000,                      // ms or 'persistent'
+  action: { label: 'Undo', handler: () => this.undo() },
+  dismissible: true,                   // default: true
+  content: MyCustomToastBody,          // Optional — component as toast body
+  contentInputs: { error: err },       // Inputs for the content component
+});
+```
+
+**Layout rules:**
+- `message` only (no `title`): single-line text (backwards-compatible)
+- `title` + `description`/`message`: two-line layout (title bold, description muted)
+- `title` + `content`: title above custom component
+- `content` only: custom component fills the body
+
+**A11y:** Avoid focusable elements (`<a>`, `<button>`) inside `content` components
+— they are unreachable inside a `role="status"` live region.
+
+**Dedup:** Toasts with same `message + severity + title` within `dedupWindow` (default
+1000ms) are merged (count incremented). `description` is intentionally excluded from
+dedup — same event with different context detail is still the same event.
+
+#### Toast CSS Custom Properties
+
+| Property | Default | Description |
+|-|-|-|
+| `--cngx-toast-title-font-weight` | `600` | Title font weight |
+| `--cngx-toast-title-color` | inherit | Title text color |
+| `--cngx-toast-title-font-size` | `--cngx-toast-font-size` | Title font size |
+| `--cngx-toast-description-color` | `#64748b` | Description text color (muted) |
+| `--cngx-toast-description-font-size` | `0.8125rem` | Description font size |
+| `--cngx-toast-description-line-height` | `1.4` | Description line height |
+| `--cngx-toast-description-max-lines` | `3` | Line-clamp for description |

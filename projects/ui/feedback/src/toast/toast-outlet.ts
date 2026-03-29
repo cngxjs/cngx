@@ -106,12 +106,29 @@ export type ToastPosition =
           }
         </div>
         <div class="cngx-toast__body">
-          <span class="cngx-toast__message">
-            {{ toast.config.message }}
-            @if (toast.count > 1) {
-              <span class="cngx-toast__count">(x{{ toast.count }})</span>
+          @if (toast.config.title) {
+            <span class="cngx-toast__title">{{ toast.config.title }}</span>
+            @if (toast.config.content) {
+              <ng-container
+                *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
+              />
+            } @else {
+              <span class="cngx-toast__description">
+                {{ toast.config.description ?? toast.config.message }}
+              </span>
             }
-          </span>
+          } @else if (toast.config.content) {
+            <ng-container
+              *ngComponentOutlet="toast.config.content; inputs: toast.config.contentInputs"
+            />
+          } @else {
+            <span class="cngx-toast__message">
+              {{ toast.config.message }}
+            </span>
+          }
+          @if (toast.count > 1) {
+            <span class="cngx-toast__count">(x{{ toast.count }})</span>
+          }
           @if (toast.config.action; as action) {
             <button type="button" class="cngx-toast__action" (click)="action.handler()">
               {{ action.label }}
@@ -229,9 +246,28 @@ export type ToastPosition =
       line-height: var(--cngx-toast-line-height, 1.5);
     }
 
+    .cngx-toast__title {
+      display: block;
+      font-weight: var(--cngx-toast-title-font-weight, 600);
+      font-size: var(--cngx-toast-title-font-size, var(--cngx-toast-font-size, 0.875rem));
+      color: var(--cngx-toast-title-color, inherit);
+      line-height: var(--cngx-toast-line-height, 1.5);
+    }
+
+    .cngx-toast__description {
+      display: -webkit-box;
+      -webkit-line-clamp: var(--cngx-toast-description-max-lines, 3);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: var(--cngx-toast-description-font-size, 0.8125rem);
+      color: var(--cngx-toast-description-color, #64748b);
+      line-height: var(--cngx-toast-description-line-height, 1.4);
+      margin-top: 2px;
+    }
+
     .cngx-toast__count {
       opacity: var(--cngx-toast-count-opacity, 0.6);
-      margin-left: var(--cngx-toast-count-gap, 4px);
+      font-size: var(--cngx-toast-description-font-size, 0.8125rem);
     }
 
     .cngx-toast__action {

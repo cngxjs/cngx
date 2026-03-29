@@ -101,7 +101,9 @@ export class CngxToastOn {
             this.toastErrorDetail() && err != null
               ? err instanceof Error
                 ? err.message
-                : `${err as string}`
+                : typeof err === 'string'
+                  ? err
+                  : undefined
               : undefined;
           this.toastService.show({
             message: detail ? `${msg}: ${detail}` : msg,

@@ -6,6 +6,7 @@ import { ExampleCardComponent } from '../../../../shared/example-card.component'
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
 
 @Component({
   selector: 'app-toast-demo',
@@ -36,10 +37,31 @@ import { createManualState } from '@cngx/common/data';
     <button (click)="clearAll()" class="chip">Clear All</button>
   </div>
       </app-example-card>
-      <app-example-card title="Declarative (<cngx-toast>)"
+      <app-example-card title="Title + Description"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showTitleSuccess()" class="chip">Success with Title</button>
+    <button (click)="showTitleError()" class="chip">Error with Title + Description</button>
+    <button (click)="showTitleWithAction()" class="chip">Warning + Action</button>
+  </div>
+      </app-example-card>
+      <app-example-card title="Custom Component Body"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showCustomComponent()" class="chip">Validation Errors (title + component)</button>
+    <button (click)="showCustomNoTitle()" class="chip">Build Report (component only)</button>
+  </div>
+      </app-example-card>
+      <app-example-card title="Declarative (<cngx-toast>)"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
         
   <div style="display:flex;gap:8px">
     <button (click)="triggerSave()" class="chip">Save Item</button>
@@ -50,9 +72,9 @@ import { createManualState } from '@cngx/common/data';
   <cngx-toast severity="warning" message="Item deleted — this cannot be undone" [when]="showDeleted()" [duration]="8000" />
       </app-example-card>
       <app-example-card title="State Bridge ([cngxToastOn])"
-        [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
+        [subtitle]="_s4"
+        [sourceHtml]="_srcHtml4"
+        [sourceTs]="_srcTs4">
         
   <div style="display:flex;gap:8px;margin-bottom:12px">
     <button (click)="simulateSave()"
@@ -78,8 +100,10 @@ import { createManualState } from '@cngx/common/data';
 })
 export class ToastDemoComponent {
   protected readonly _s0 = 'Inject <code>CngxToaster</code> and call <code>.show()</code>. Four severity levels, dedup, action buttons.';
-  protected readonly _s1 = 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing — pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.';
-  protected readonly _s2 = 'Bind a <code>CngxAsyncState</code> — fires toast automatically on <code>success</code> or <code>error</code> transitions.';
+  protected readonly _s1 = 'Use <code>title</code> and <code>description</code> on <code>ToastConfig</code> for structured two-line toasts. Description is line-clamped to 3 lines.';
+  protected readonly _s2 = 'Pass a <code>content</code> component to <code>ToastConfig</code> for rich toast bodies. Rendered via <code>NgComponentOutlet</code>.';
+  protected readonly _s3 = 'Place <code>&lt;cngx-toast&gt;</code> in your template. It renders nothing — pushes into the global outlet when <code>[when]</code> becomes <code>true</code>.';
+  protected readonly _s4 = 'Bind a <code>CngxAsyncState</code> — fires toast automatically on <code>success</code> or <code>error</code> transitions.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-wrap:wrap;gap:8px">
     <button (click)="showSuccess()" class="chip">Success</button>
     <button (click)="showError()" class="chip">Error (persistent)</button>
@@ -91,6 +115,7 @@ export class ToastDemoComponent {
   </div>`;
   protected readonly _srcTs0 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
 
 
   private readonly toaster = inject(CngxToaster);
@@ -117,6 +142,56 @@ import { createManualState } from '@cngx/common/data';
       message: 'Item deleted',
       severity: 'info',
       action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
     });
   }
 
@@ -156,15 +231,261 @@ import { createManualState } from '@cngx/common/data';
     this.saveState.set('pending');
     setTimeout(() => this.saveState.setError('Network timeout'), 1500);
   }`;
-  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px">
+  protected readonly _srcHtml1 = `<div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showTitleSuccess()" class="chip">Success with Title</button>
+    <button (click)="showTitleError()" class="chip">Error with Title + Description</button>
+    <button (click)="showTitleWithAction()" class="chip">Warning + Action</button>
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
+import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
+
+
+  private readonly toaster = inject(CngxToaster);
+
+  // ── Programmatic demos ──
+  protected showSuccess(): void {
+    this.toaster.show({ message: 'Item saved successfully', severity: 'success' });
+  }
+
+  protected showError(): void {
+    this.toaster.show({ message: 'Failed to save item', severity: 'error' });
+  }
+
+  protected showInfo(): void {
+    this.toaster.show({ message: 'New version available', severity: 'info' });
+  }
+
+  protected showWarning(): void {
+    this.toaster.show({ message: 'Disk space running low', severity: 'warning' });
+  }
+
+  protected showWithAction(): void {
+    this.toaster.show({
+      message: 'Item deleted',
+      severity: 'info',
+      action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
+    });
+  }
+
+  protected showDuplicates(): void {
+    for (let i = 0; i < 5; i++) {
+      this.toaster.show({ message: 'Batch operation complete', severity: 'success' });
+    }
+  }
+
+  protected clearAll(): void {
+    this.toaster.dismissAll();
+  }
+
+  // ── Declarative <cngx-toast> demos ──
+  protected readonly showSaved = signal(false);
+  protected readonly showDeleted = signal(false);
+
+  protected triggerSave(): void {
+    this.showSaved.set(true);
+    setTimeout(() => this.showSaved.set(false), 100);
+  }
+
+  protected triggerDelete(): void {
+    this.showDeleted.set(true);
+    setTimeout(() => this.showDeleted.set(false), 100);
+  }
+
+  // ── Declarative [cngxToastOn] demo ──
+  protected readonly saveState = createManualState<string>();
+
+  protected simulateSave(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setSuccess('done'), 1500);
+  }
+
+  protected simulateError(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setError('Network timeout'), 1500);
+  }`;
+  protected readonly _srcHtml2 = `<div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showCustomComponent()" class="chip">Validation Errors (title + component)</button>
+    <button (click)="showCustomNoTitle()" class="chip">Build Report (component only)</button>
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
+import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
+
+
+  private readonly toaster = inject(CngxToaster);
+
+  // ── Programmatic demos ──
+  protected showSuccess(): void {
+    this.toaster.show({ message: 'Item saved successfully', severity: 'success' });
+  }
+
+  protected showError(): void {
+    this.toaster.show({ message: 'Failed to save item', severity: 'error' });
+  }
+
+  protected showInfo(): void {
+    this.toaster.show({ message: 'New version available', severity: 'info' });
+  }
+
+  protected showWarning(): void {
+    this.toaster.show({ message: 'Disk space running low', severity: 'warning' });
+  }
+
+  protected showWithAction(): void {
+    this.toaster.show({
+      message: 'Item deleted',
+      severity: 'info',
+      action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
+    });
+  }
+
+  protected showDuplicates(): void {
+    for (let i = 0; i < 5; i++) {
+      this.toaster.show({ message: 'Batch operation complete', severity: 'success' });
+    }
+  }
+
+  protected clearAll(): void {
+    this.toaster.dismissAll();
+  }
+
+  // ── Declarative <cngx-toast> demos ──
+  protected readonly showSaved = signal(false);
+  protected readonly showDeleted = signal(false);
+
+  protected triggerSave(): void {
+    this.showSaved.set(true);
+    setTimeout(() => this.showSaved.set(false), 100);
+  }
+
+  protected triggerDelete(): void {
+    this.showDeleted.set(true);
+    setTimeout(() => this.showDeleted.set(false), 100);
+  }
+
+  // ── Declarative [cngxToastOn] demo ──
+  protected readonly saveState = createManualState<string>();
+
+  protected simulateSave(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setSuccess('done'), 1500);
+  }
+
+  protected simulateError(): void {
+    this.saveState.set('pending');
+    setTimeout(() => this.saveState.setError('Network timeout'), 1500);
+  }`;
+  protected readonly _srcHtml3 = `<div style="display:flex;gap:8px">
     <button (click)="triggerSave()" class="chip">Save Item</button>
     <button (click)="triggerDelete()" class="chip">Delete Item</button>
   </div>
 
   <cngx-toast severity="success" message="Item saved" [when]="showSaved()" />
   <cngx-toast severity="warning" message="Item deleted — this cannot be undone" [when]="showDeleted()" [duration]="8000" />`;
-  protected readonly _srcTs1 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
+  protected readonly _srcTs3 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
 
 
   private readonly toaster = inject(CngxToaster);
@@ -191,6 +512,56 @@ import { createManualState } from '@cngx/common/data';
       message: 'Item deleted',
       severity: 'info',
       action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
     });
   }
 
@@ -230,7 +601,7 @@ import { createManualState } from '@cngx/common/data';
     this.saveState.set('pending');
     setTimeout(() => this.saveState.setError('Network timeout'), 1500);
   }`;
-  protected readonly _srcHtml2 = `<div style="display:flex;gap:8px;margin-bottom:12px">
+  protected readonly _srcHtml4 = `<div style="display:flex;gap:8px;margin-bottom:12px">
     <button (click)="simulateSave()"
       [cngxToastOn]="saveState" toastSuccess="Saved successfully" toastError="Save failed" [toastErrorDetail]="true"
       class="chip">
@@ -248,8 +619,9 @@ import { createManualState } from '@cngx/common/data';
       <span class="event-value">{{ saveState.status() }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
+  protected readonly _srcTs4 = `import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
+import { SampleToastBody } from './sample-toast-body';
 
 
   private readonly toaster = inject(CngxToaster);
@@ -276,6 +648,56 @@ import { createManualState } from '@cngx/common/data';
       message: 'Item deleted',
       severity: 'info',
       action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
     });
   }
 
@@ -340,6 +762,56 @@ import { createManualState } from '@cngx/common/data';
       message: 'Item deleted',
       severity: 'info',
       action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
     });
   }
 

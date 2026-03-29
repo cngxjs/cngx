@@ -9,6 +9,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxToaster, CngxToast, CngxToastOn } from '@cngx/ui/feedback';",
     "import { createManualState } from '@cngx/common/data';",
+    "import { SampleToastBody } from './sample-toast-body';",
   ],
   setup: `
   private readonly toaster = inject(CngxToaster);
@@ -35,6 +36,56 @@ export const STORY: DemoSpec = {
       message: 'Item deleted',
       severity: 'info',
       action: { label: 'Undo', handler: () => this.toaster.show({ message: 'Undo successful', severity: 'success' }) },
+    });
+  }
+
+  // ── Title + Description demos ──
+  protected showTitleSuccess(): void {
+    this.toaster.show({
+      message: 'Profile updated',
+      title: 'Saved',
+      description: 'Your profile changes have been saved successfully.',
+      severity: 'success',
+      duration: 5000,
+    });
+  }
+
+  protected showTitleError(): void {
+    this.toaster.show({
+      message: 'Save failed',
+      title: 'Server Error',
+      description: 'The server responded with 503 Service Unavailable. Please try again in a few minutes.',
+      severity: 'error',
+    });
+  }
+
+  protected showTitleWithAction(): void {
+    this.toaster.show({
+      message: 'Connection lost',
+      title: 'Offline',
+      description: 'Changes saved locally. They will sync when you reconnect.',
+      severity: 'warning',
+      action: { label: 'Retry now', handler: () => this.toaster.show({ message: 'Reconnecting...', severity: 'info' }) },
+    });
+  }
+
+  // ── Custom Component (Stufe 2) demo ──
+  protected showCustomComponent(): void {
+    this.toaster.show({
+      message: 'Validation failed',
+      title: '3 Errors',
+      severity: 'error',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Name is required', 'Email is invalid', 'ZIP must be 5 digits'] },
+    });
+  }
+
+  protected showCustomNoTitle(): void {
+    this.toaster.show({
+      message: 'Details',
+      severity: 'info',
+      content: SampleToastBody,
+      contentInputs: { fields: ['Build #1234 completed', 'Tests: 754 passed, 0 failed', 'Coverage: 92%'] },
     });
   }
 
@@ -88,6 +139,25 @@ export const STORY: DemoSpec = {
     <button (click)="showWithAction()" class="chip">With Undo Action</button>
     <button (click)="showDuplicates()" class="chip">5x Dedup</button>
     <button (click)="clearAll()" class="chip">Clear All</button>
+  </div>`,
+    },
+    {
+      title: 'Title + Description',
+      subtitle: 'Use <code>title</code> and <code>description</code> on <code>ToastConfig</code> for structured two-line toasts. Description is line-clamped to 3 lines.',
+      template: `
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showTitleSuccess()" class="chip">Success with Title</button>
+    <button (click)="showTitleError()" class="chip">Error with Title + Description</button>
+    <button (click)="showTitleWithAction()" class="chip">Warning + Action</button>
+  </div>`,
+    },
+    {
+      title: 'Custom Component Body',
+      subtitle: 'Pass a <code>content</code> component to <code>ToastConfig</code> for rich toast bodies. Rendered via <code>NgComponentOutlet</code>.',
+      template: `
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <button (click)="showCustomComponent()" class="chip">Validation Errors (title + component)</button>
+    <button (click)="showCustomNoTitle()" class="chip">Build Report (component only)</button>
   </div>`,
     },
     {

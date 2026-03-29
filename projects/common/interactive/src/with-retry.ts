@@ -1,4 +1,5 @@
-import { signal, type Signal } from '@angular/core';
+import { computed, signal, type Signal } from '@angular/core';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, timer } from 'rxjs';
 
 import type { AsyncAction } from './async-click.directive';
@@ -25,15 +26,24 @@ export interface RetryState {
   readonly exhausted: Signal<boolean>;
   /** The last error from a failed attempt. */
   readonly lastError: Signal<unknown>;
-  /** Manually trigger a retry (resets exhausted state). */
+  /**
+   * Full `CngxAsyncState` view of the retry lifecycle.
+   *
+   * Bind to any `[state]` consumer to connect the feedback system.
+   * `retrying` (delay between retries) maps to `'pending'` — the feedback
+   * system sees "still working" during retry delays.
+   */
+  readonly state: CngxAsyncState<unknown>;
+  /** Manually reset — clears exhausted state, resets attempt counter. */
   reset(): void;
 }
 
 /**
  * Wraps an `AsyncAction` with automatic retry logic.
  *
- * Returns a tuple: `[action, state]` where `action` is a new `AsyncAction`
- * that retries on failure, and `state` exposes attempt/retry signals for UI feedback.
+ * Returns a tuple: `[action, retryState]` where `action` is a new `AsyncAction`
+ * that retries on failure, and `retryState` exposes attempt/retry signals and
+ * a `state: CngxAsyncState` for feedback system integration.
  *
  * Composes naturally with `CngxAsyncClick` and `CngxActionButton`:
  *
@@ -43,9 +53,10 @@ export interface RetryState {
  *   { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
  * );
  *
- * // Use with CngxAsyncClick
+ * // Use with CngxAsyncClick + toast
  * <button [cngxAsyncClick]="saveWithRetry">Save</button>
- * <span>Attempt {{ retryState.attempt() }} / {{ retryState.maxAttempts() }}</span>
+ * <ng-container [cngxToastOn]="retryState.state"
+ *   toastSuccess="Saved" toastError="All retries failed" />
  * ```
  *
  * @category interactive
@@ -58,25 +69,49 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
   const attemptState = signal(0);
   const retryingState = signal(false);
   const exhaustedState = signal(false);
-  const lastErrorState = signal<unknown>(null);
+  const succeededState = signal(false);
+  const lastErrorState = signal<unknown>(undefined);
 
-  const state: RetryState = {
+  const statusComputed = computed<AsyncStatus>(() => {
+    if (attemptState() === 0) {
+      return 'idle';
+    }
+    if (exhaustedState()) {
+      return 'error';
+    }
+    if (succeededState()) {
+      return 'success';
+    }
+    return 'pending';
+  });
+
+  const asyncState = buildAsyncStateView<unknown>({
+    status: statusComputed,
+    data: computed(() => undefined),
+    error: lastErrorState.asReadonly(),
+  });
+
+  const retryState: RetryState = {
     attempt: attemptState.asReadonly(),
-    maxAttempts: signal(maxAttempts).asReadonly(),
+    maxAttempts: computed(() => maxAttempts),
     retrying: retryingState.asReadonly(),
     exhausted: exhaustedState.asReadonly(),
     lastError: lastErrorState.asReadonly(),
+    state: asyncState,
     reset() {
       attemptState.set(0);
       retryingState.set(false);
       exhaustedState.set(false);
-      lastErrorState.set(null);
+      succeededState.set(false);
+      lastErrorState.set(undefined);
     },
   };
 
   const retryableAction: AsyncAction = async () => {
     attemptState.set(0);
+    retryingState.set(false);
     exhaustedState.set(false);
+    succeededState.set(false);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       attemptState.set(attempt);
@@ -90,6 +125,7 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
         }
         // Success — clear retry state
         retryingState.set(false);
+        succeededState.set(true);
         return;
       } catch (err: unknown) {
         lastErrorState.set(err);
@@ -111,5 +147,5 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
     }
   };
 
-  return [retryableAction, state];
+  return [retryableAction, retryState];
 }

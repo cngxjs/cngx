@@ -23,7 +23,7 @@ export { CngxSearch } from './src/search.directive';
 export { CngxSpeak } from './src/speak.directive';
 export { CngxSwipeDismiss, type SwipeDirection } from './src/swipe-dismiss.directive';
 export { CngxAsyncClick, type AsyncAction } from './src/async-click.directive';
-export { type AsyncStatus } from '@cngx/core/utils';
+export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 export { CngxPending, CngxSucceeded, CngxFailed } from './src/async-status-templates';
 export { CngxPressable } from './src/pressable.directive';
 export { CngxLongPress } from './src/long-press.directive';

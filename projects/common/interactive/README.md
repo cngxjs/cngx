@@ -36,16 +36,44 @@ feedback after a configurable duration.
 | `succeeded` | `boolean` | `true` for `feedbackDuration` ms after success |
 | `failed` | `boolean` | `true` for `feedbackDuration` ms after failure |
 | `error` | `unknown` | Error value from a failed action (cleared on reset) |
-| `status` | `AsyncStatus` | Discriminated lifecycle status: `'idle'`, `'pending'`, `'succeeded'`, `'failed'` |
+| `status` | `AsyncStatus` | Discriminated lifecycle status: `'idle'`, `'pending'`, `'success'`, `'error'` |
 | `announcement` | `string` | Screen reader announcement for the current state |
+| `state` | `CngxAsyncState<unknown>` | Full async state view — bind to any `[state]` consumer |
+
+### State Producer
+
+`CngxAsyncClick` exposes a `state: CngxAsyncState<unknown>` property that plugs
+directly into the cngx feedback system. Any component that accepts `[state]` can
+be wired to it:
+
+```html
+<button [cngxAsyncClick]="save" #btn="cngxAsyncClick">Save</button>
+
+<!-- Wire to toast -->
+<div [cngxToastOn]="btn.state" toastSuccess="Saved" toastError="Failed"></div>
+
+<!-- Wire to alert -->
+<cngx-alert [state]="btn.state" severity="error" title="Save failed" />
+```
+
+Because `CngxAsyncClick` is a mutation trigger (not a data query), several
+state fields have fixed values:
+
+| Field | Value | Reason |
+|-|-|-|
+| `data` | always `undefined` | Mutations don't produce visible data |
+| `isFirstLoad` | always `false` | Mutations never show skeleton |
+| `isEmpty` | always `true` | No data payload |
+| `progress` | always `undefined` | No progress tracking |
+| `lastUpdated` | set on success | Persists across feedback resets |
 
 ### CSS Classes
 
 | Class | When |
 |-|-|
 | `cngx-async--pending` | Action is executing |
-| `cngx-async--succeeded` | Success feedback window |
-| `cngx-async--failed` | Error feedback window |
+| `cngx-async--success` | Success feedback window |
+| `cngx-async--error` | Error feedback window |
 
 ### ARIA
 
@@ -68,7 +96,7 @@ feedback after a configurable duration.
 
 ```typescript
 type AsyncAction = () => Promise<unknown> | Observable<unknown>;
-type AsyncStatus = 'idle' | 'pending' | 'succeeded' | 'failed';
+type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 ```
 
 ---
@@ -202,6 +230,112 @@ No ARIA attributes set by the directive. Consumer should add `aria-keyshortcuts`
 - `self` scope only fires when the host element (or a descendant) has focus.
 - `preventDefault()` is called on matching events.
 - Combo string is memoised — re-parsed only when the input changes.
+
+---
+
+## withRetry
+
+Wraps an `AsyncAction` with automatic retry logic. Returns `[action, retryState]`.
+The wrapped action retries on failure with configurable delay and backoff.
+
+```typescript
+const [saveWithRetry, retryState] = withRetry(
+  () => this.http.post('/api/save', data),
+  { maxAttempts: 3, delay: 1000, backoff: 'exponential' }
+);
+```
+
+```html
+<button [cngxAsyncClick]="saveWithRetry" #btn="cngxAsyncClick">
+  @if (retryState.retrying()) {
+    Retry {{ retryState.attempt() }}/{{ retryState.maxAttempts() }}...
+  } @else {
+    Save
+  }
+</button>
+
+<!-- Bind retry state to toast -->
+<ng-container [cngxToastOn]="retryState.state"
+  toastSuccess="Saved" toastError="All retries failed" />
+```
+
+### RetryConfig
+
+| Option | Type | Default | Description |
+|-|-|-|-|
+| `maxAttempts` | `number` | `3` | Maximum attempts (including first) |
+| `delay` | `number` | `1000` | Base delay in ms between retries |
+| `backoff` | `'linear' \| 'exponential'` | `'exponential'` | Delay growth strategy |
+
+### RetryState
+
+| Signal | Type | Description |
+|-|-|-|
+| `attempt` | `number` | Current attempt (1-based, `0` before first) |
+| `maxAttempts` | `number` | Total attempts allowed |
+| `retrying` | `boolean` | `true` during delay between retries |
+| `exhausted` | `boolean` | `true` when all attempts failed |
+| `lastError` | `unknown` | Error from last failed attempt |
+| `state` | `CngxAsyncState<unknown>` | Full async state view for feedback system |
+
+### State Mapping
+
+| Phase | AsyncStatus |
+|-|-|
+| Before first call | `'idle'` |
+| Attempt running | `'pending'` |
+| Delay between retries | `'pending'` (retrying phase included) |
+| Success | `'success'` |
+| All attempts exhausted | `'error'` |
+
+`reset()` clears all state back to `'idle'`.
+
+---
+
+## optimistic
+
+Creates an optimistic update function for a signal. Sets the value immediately,
+then confirms via an async action. On failure, rolls back to the last confirmed value.
+
+```typescript
+readonly name = signal('Alice');
+readonly [updateName, nameState] = optimistic(
+  this.name,
+  (value) => this.http.put('/api/name', { name: value })
+);
+```
+
+```html
+<input [value]="name()" (change)="updateName($event.target.value)" />
+
+<!-- Bind optimistic state to toast -->
+<ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
+@if (nameState.rolledBack()) { <span>Reverted</span> }
+```
+
+### OptimisticState
+
+| Signal | Type | Description |
+|-|-|-|
+| `rolledBack` | `boolean` | Whether a rollback occurred |
+| `error` | `unknown` | Error from last failed action |
+| `state` | `CngxAsyncState<unknown>` | Full async state view for feedback system |
+
+### State Mapping
+
+| Phase | AsyncStatus |
+|-|-|
+| Before first call | `'idle'` |
+| Observable in flight | `'pending'` |
+| Server confirmed | `'success'` |
+| Rollback | `'error'` |
+
+### Notes
+
+- Rapid successive calls cancel the previous in-flight Observable. Rollback always
+  returns to the last server-confirmed value, not a stale optimistic value.
+- No `DestroyRef` cleanup — the subscription is unmanaged. If the component is
+  destroyed mid-flight, the subscription completes silently.
 
 ---
 

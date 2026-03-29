@@ -68,6 +68,54 @@ No `@angular/material` dependency. No CDK overlay. Pure native `<dialog>`.
 <button (click)="formDlg.open()">Edit</button>
 ```
 
+### Async form dialog (submitAction)
+
+Use `[submitAction]` for dialogs that need to run an async operation before
+closing. The dialog stays open if the action fails, auto-closes on success.
+
+```html
+<dialog cngxDialog [submitAction]="saveProfile" #formDlg="cngxDialog">
+  <h2 cngxDialogTitle>Edit profile</h2>
+  <form (ngSubmit)="formDlg.close(profileForm.value)">
+    <input [(ngModel)]="name" name="name" />
+    <button type="submit" [disabled]="formDlg.isPending()">
+      @if (formDlg.isPending()) { Saving... } @else { Save }
+    </button>
+    <button type="button" cngxDialogClose [disabled]="formDlg.isPending()">Cancel</button>
+  </form>
+</dialog>
+
+<button (click)="formDlg.open()">Edit</button>
+```
+
+```typescript
+// In component
+readonly saveProfile = (data: ProfileForm) => this.http.put('/api/profile', data);
+```
+
+The submit lifecycle:
+
+1. User clicks Save -> `close(formData)` is called
+2. Dialog executes `submitAction(formData)` -> enters `pending` state
+3. `isPending() = true` -> `aria-busy`, close/dismiss blocked
+4. **Success**: dialog auto-closes with the form value as result
+5. **Error**: dialog stays open, `cngx-dialog--error` CSS class, error announced to SR
+
+### Binding submit state to downstream consumers
+
+The dialog exposes `submitState: CngxAsyncState<unknown>` for downstream feedback:
+
+```html
+<dialog cngxDialog [submitAction]="saveProfile" #dlg="cngxDialog">
+  <h2 cngxDialogTitle>Edit profile</h2>
+  <!-- form content -->
+</dialog>
+
+<!-- Outside: bind submit state to toast or alert -->
+<ng-container [cngxToastOn]="dlg.submitState"
+  toastSuccess="Profile saved" toastError="Save failed" />
+```
+
 ### Reading the result reactively
 
 ```typescript
@@ -220,6 +268,9 @@ Implements `DialogRef<T>`. Provided as `DIALOG_REF` for child injection.
 | `closeOnEscape` | `boolean` | `true` | Whether Escape dismisses the dialog (modal only) |
 | `autoFocus` | `'first-focusable' \| 'none' \| string` | `'first-focusable'` | Focus strategy on open. CSS selector string focuses matching element |
 | `focusFallback` | `HTMLElement \| undefined` | `undefined` | Fallback focus target when the trigger element is no longer in the DOM |
+| `state` | `CngxAsyncState<unknown> \| undefined` | `undefined` | External async state override. Takes precedence over `submitAction` and `error` |
+| `submitAction` | `(value: T) => Promise \| Observable` | `undefined` | Async action executed on `close(value)`. On success: auto-close. On error: stay open |
+| `error` | `boolean` | `false` | Manual error state fallback (when neither `state` nor `submitAction` is set) |
 
 ### Signals
 
@@ -228,6 +279,8 @@ Implements `DialogRef<T>`. Provided as `DIALOG_REF` for child injection.
 | `lifecycle` | `DialogState` | Current lifecycle state: `'closed'`, `'opening'`, `'open'`, `'closing'` |
 | `result` | `T \| 'dismissed' \| undefined` | `undefined` before close, `'dismissed'` on dismiss, `T` on close with value |
 | `id` | `string` | Unique dialog instance ID (`cngx-dialog-0`, `cngx-dialog-1`, ...) |
+| `isPending` | `boolean` | `true` during external `state.isPending()` or internal submit. Blocks close, sets `aria-busy` |
+| `submitState` | `CngxAsyncState<unknown>` | Internal submit lifecycle. `idle` when no `submitAction` or before first submit |
 
 ### Methods
 
@@ -237,6 +290,29 @@ Implements `DialogRef<T>`. Provided as `DIALOG_REF` for child injection.
 | `close` | `close(value: T): void` | Close with a typed result. No-op if not `'open'` or `'opening'` |
 | `dismiss` | `dismiss(): void` | Dismiss without result. Sets result to `'dismissed'` |
 
+### Submit State Mapping
+
+When `[submitAction]` is set:
+
+| Phase | AsyncStatus | Description |
+|-|-|-|
+| Before first submit | `'idle'` | Dialog open, no submit attempted |
+| `close(value)` called | `'pending'` | Action executing, close blocked, aria-busy |
+| Action resolved | `'success'` | Dialog auto-closes |
+| Action rejected | `'error'` | Dialog stays open, cngx-dialog--error |
+| Dialog re-opened | `'idle'` | Submit state reset |
+
+### Priority
+
+When both `[state]` and `[submitAction]` are set, `[state]` takes full precedence.
+`submitAction` is ignored and `close()` behaves as if no `submitAction` were set.
+
+| Configuration | `isPending` source | `effectiveError` source |
+|-|-|-|
+| `[state]` set | `state.isPending()` | `state.error()` |
+| `[submitAction]` set (no `[state]`) | internal submitState | internal submitError |
+| Neither set | `false` | `[error]` boolean input |
+
 ### CSS Classes
 
 | Class | When |
@@ -245,6 +321,8 @@ Implements `DialogRef<T>`. Provided as `DIALOG_REF` for child injection.
 | `cngx-dialog--open` | Fully open |
 | `cngx-dialog--closing` | Transitioning from open to closed |
 | `cngx-dialog--modal` | Opened as modal |
+| `cngx-dialog--pending` | Async operation in flight (submit or external state) |
+| `cngx-dialog--error` | Error state (submit error, external state error, or `[error]` input) |
 
 ### ARIA
 

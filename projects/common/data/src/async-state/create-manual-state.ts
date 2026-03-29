@@ -1,5 +1,5 @@
 import { computed, signal } from '@angular/core';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
 /**
  * Writable extension of `CngxAsyncState` for manual control.
@@ -55,53 +55,17 @@ export function createManualState<T>(): ManualAsyncState<T> {
   const lastUpdatedState = signal<Date | undefined>(undefined);
   const hadSuccess = signal(false);
 
-  const status = statusState.asReadonly();
-  const data = dataState.asReadonly();
-  const error = errorState.asReadonly();
-  const progress = progressState.asReadonly();
-  const lastUpdated = lastUpdatedState.asReadonly();
-
-  const isLoading = computed(() => {
-    const s = statusState();
-    return s === 'loading' || s === 'pending' || s === 'refreshing';
-  });
-
-  const isPending = computed(() => statusState() === 'pending');
-  const isRefreshing = computed(() => statusState() === 'refreshing');
-  const isBusy = isLoading;
-  const isFirstLoad = computed(() => !hadSuccess());
-
-  const isEmpty = computed(() => {
-    const d = dataState();
-    if (d == null) {
-      return true;
-    }
-    if (Array.isArray(d)) {
-      return d.length === 0;
-    }
-    return false;
-  });
-
-  const hasData = computed(() => !isEmpty());
-  const isSettled = computed(() => {
-    const s = statusState();
-    return s === 'success' || s === 'error';
+  const view = buildAsyncStateView<T>({
+    status: statusState.asReadonly(),
+    data: dataState.asReadonly(),
+    error: errorState.asReadonly(),
+    progress: progressState.asReadonly(),
+    isFirstLoad: computed(() => !hadSuccess()),
+    lastUpdated: lastUpdatedState.asReadonly(),
   });
 
   return {
-    status,
-    data,
-    error,
-    progress,
-    isLoading,
-    isPending,
-    isRefreshing,
-    isBusy,
-    isFirstLoad,
-    isEmpty,
-    hasData,
-    isSettled,
-    lastUpdated,
+    ...view,
 
     set(newStatus: AsyncStatus): void {
       statusState.set(newStatus);

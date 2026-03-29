@@ -1,12 +1,21 @@
-import { signal, type WritableSignal, type Signal } from '@angular/core';
-import { type Observable, take } from 'rxjs';
+import { computed, signal, type WritableSignal, type Signal } from '@angular/core';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import { type Observable, type Subscription, take } from 'rxjs';
 
 /** State exposed by the optimistic action. */
 export interface OptimisticState {
   /** Whether a rollback occurred on the last invocation. */
   readonly rolledBack: Signal<boolean>;
-  /** The error from the last failed action (null if successful). */
+  /** The error from the last failed action (`undefined` if successful). */
   readonly error: Signal<unknown>;
+  /**
+   * Full `CngxAsyncState` view of the optimistic lifecycle.
+   *
+   * Bind to any `[state]` consumer to connect the feedback system.
+   * Status is `'pending'` while the confirming Observable is in flight,
+   * `'success'` on confirmation, `'error'` on rollback.
+   */
+  readonly state: CngxAsyncState<unknown>;
 }
 
 /**
@@ -27,7 +36,8 @@ export interface OptimisticState {
  *
  * // In template:
  * <input [value]="name()" (change)="updateName($event.target.value)" />
- * @if (nameState.rolledBack()) { <span>Update failed — reverted</span> }
+ * <ng-container [cngxToastOn]="nameState.state" toastError="Update failed" />
+ * @if (nameState.rolledBack()) { <span>Reverted</span> }
  * ```
  *
  * **Note:** The internal subscription is unmanaged — there is no `DestroyRef` available
@@ -46,30 +56,54 @@ export function optimistic<T>(
   action: (value: T) => Observable<T>,
 ): [(newValue: T) => void, OptimisticState] {
   const rolledBackState = signal(false);
-  const errorState = signal<unknown>(null);
+  const errorState = signal<unknown>(undefined);
+  const statusState = signal<AsyncStatus>('idle');
+
+  const asyncState = buildAsyncStateView<unknown>({
+    status: statusState.asReadonly(),
+    data: computed(() => undefined),
+    error: errorState.asReadonly(),
+  });
 
   const state: OptimisticState = {
     rolledBack: rolledBackState.asReadonly(),
     error: errorState.asReadonly(),
+    state: asyncState,
   };
 
+  // Track the previous confirmed value (before any optimistic update) and active subscription.
+  // This ensures rollback always returns to the last server-confirmed state, even under
+  // rapid concurrent calls.
+  let confirmedValue = current();
+  let activeSub: Subscription | undefined;
+
   const apply = (newValue: T): void => {
-    const previous = current();
+    // Cancel any in-flight subscription — prevents stale closure rollback
+    activeSub?.unsubscribe();
+
     rolledBackState.set(false);
-    errorState.set(null);
+    errorState.set(undefined);
+    statusState.set('pending');
 
     // Set optimistically — UI updates immediately
     current.set(newValue);
 
-    action(newValue)
+    activeSub = action(newValue)
       .pipe(take(1))
       .subscribe({
-        next: (confirmed) => current.set(confirmed),
+        next: (confirmed) => {
+          confirmedValue = confirmed;
+          current.set(confirmed);
+          statusState.set('success');
+          activeSub = undefined;
+        },
         error: (err: unknown) => {
-          // Rollback to previous value
-          current.set(previous);
+          // Rollback to last confirmed value (not the stale optimistic one)
+          current.set(confirmedValue);
           rolledBackState.set(true);
           errorState.set(err);
+          statusState.set('error');
+          activeSub = undefined;
         },
       });
   };
