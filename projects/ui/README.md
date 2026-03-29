@@ -100,15 +100,29 @@ need `@if`/`@for` boilerplate.
 
 Action button molecule with built-in async status communication. Composes
 `CngxAsyncClick` internally, adding template projection for pending/succeeded/failed
-states and an `aria-live` region for screen reader announcements.
+states, an `aria-live` region for screen reader announcements, optional toast
+integration, and a `state` property for downstream feedback consumers.
 
 ```html
+<!-- Minimal -->
+<cngx-action-button [action]="save">Save</cngx-action-button>
+
+<!-- With template slots -->
 <cngx-action-button [action]="save">
   Save
   <ng-template cngxPending><mat-spinner diameter="18" /> Saving...</ng-template>
   <ng-template cngxSucceeded>Saved!</ng-template>
   <ng-template cngxFailed let-err>{{ err }} -- retry?</ng-template>
 </cngx-action-button>
+
+<!-- With toast feedback -->
+<cngx-action-button [action]="save" toastSuccess="Saved" toastError="Save failed">
+  Save
+</cngx-action-button>
+
+<!-- Downstream state binding -->
+<cngx-action-button [action]="save" #btn="cngxActionButton">Save</cngx-action-button>
+<cngx-alert [state]="btn.state" severity="error" title="Details" />
 ```
 
 **Inputs:**
@@ -125,6 +139,21 @@ states and an `aria-live` region for screen reader announcements.
 | `failedLabel` | `string` | -- | Fallback text after failure (when no `cngxFailed` template) |
 | `succeededAnnouncement` | `string` | -- | SR announcement on success (falls back to `succeededLabel`) |
 | `failedAnnouncement` | `string` | -- | SR announcement on failure (falls back to `failedLabel`) |
+| `externalState` | `CngxAsyncState<unknown>` | -- | External state override for visual status |
+| `toastSuccess` | `string` | -- | Toast message on success (requires `CngxToaster`) |
+| `toastError` | `string` | -- | Toast message on error (requires `CngxToaster`) |
+| `toastErrorDetail` | `boolean` | `false` | Append error message to error toast |
+| `toastSuccessDuration` | `number` | `3000` | Success toast duration in ms |
+| `toastErrorDuration` | `number \| 'persistent'` | `'persistent'` | Error toast duration |
+
+**State producer:** `readonly state: CngxAsyncState<unknown>` -- the effective
+lifecycle state (internal or external). Bind to any `[state]` consumer.
+
+**Toast integration:** When `toastSuccess` or `toastError` inputs are set and
+`CngxToaster` is provided (via `provideFeedback(withToasts())` or `provideToasts()`),
+toasts fire automatically on status transitions. If `CngxToaster` is not provided,
+toast inputs are silently ignored. Do not combine with `[cngxToastOn]` on the same
+element -- a dev-mode warning is emitted if both are active.
 
 **Template directives:** `cngxPending`, `cngxSucceeded`, `cngxFailed` (project `<ng-template>` for each state)
 

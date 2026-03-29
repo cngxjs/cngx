@@ -8,7 +8,7 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
-import type { AsyncStatus } from '@cngx/core/utils';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, type Observable } from 'rxjs';
 
 /** Action function that returns a Promise or Observable. */
@@ -89,7 +89,8 @@ export class CngxAsyncClick {
   private readonly pendingState = signal(false);
   private readonly succeededState = signal(false);
   private readonly failedState = signal(false);
-  private readonly errorState = signal<unknown>(null);
+  private readonly errorState = signal<unknown>(undefined);
+  private readonly lastUpdatedState = signal<Date | undefined>(undefined);
   private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly supportsDisabled: boolean;
   private destroyed = false;
@@ -146,6 +147,19 @@ export class CngxAsyncClick {
     return '';
   });
 
+  /**
+   * Full `CngxAsyncState` view of this directive's lifecycle.
+   *
+   * Bind to any state consumer (`[state]="btn.state"`) to connect the
+   * feedback system — toasts, alerts, skeletons, async containers.
+   */
+  readonly state: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
+    status: this.status,
+    data: computed(() => undefined),
+    error: this.error,
+    lastUpdated: this.lastUpdatedState.asReadonly(),
+  });
+
   /** @internal */
   protected readonly shouldDisable = computed(() =>
     this.pendingState() && this.supportsDisabled ? '' : null,
@@ -175,6 +189,7 @@ export class CngxAsyncClick {
       }
       this.pendingState.set(false);
       this.succeededState.set(true);
+      this.lastUpdatedState.set(new Date());
       this.scheduleFeedbackReset();
     } catch (err: unknown) {
       if (this.destroyed) {
@@ -196,7 +211,7 @@ export class CngxAsyncClick {
     this.feedbackTimer = setTimeout(() => {
       this.succeededState.set(false);
       this.failedState.set(false);
-      this.errorState.set(null);
+      this.errorState.set(undefined);
       this.feedbackTimer = null;
     }, this.feedbackDuration());
   }
@@ -208,6 +223,6 @@ export class CngxAsyncClick {
     }
     this.succeededState.set(false);
     this.failedState.set(false);
-    this.errorState.set(null);
+    this.errorState.set(undefined);
   }
 }

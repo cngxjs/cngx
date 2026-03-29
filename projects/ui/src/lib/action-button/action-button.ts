@@ -4,7 +4,10 @@ import {
   Component,
   computed,
   contentChild,
+  effect,
+  inject,
   input,
+  signal,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -15,7 +18,8 @@ import {
   CngxSucceeded,
   type AsyncAction,
 } from '@cngx/common/interactive';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
 
 /** Visual variant for the action button — maps to a CSS class. */
 export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
@@ -58,9 +62,11 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  * </cngx-action-button>
  * ```
  *
- * ### With variant
+ * ### With toast feedback
  * ```html
- * <cngx-action-button [action]="delete" variant="ghost">Delete</cngx-action-button>
+ * <cngx-action-button [action]="save" toastSuccess="Saved" toastError="Save failed">
+ *   Save
+ * </cngx-action-button>
  * ```
  *
  * @category components
@@ -135,13 +141,16 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
       padding: 0;
       margin: -1px;
       overflow: hidden;
-      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
       white-space: nowrap;
       border: 0;
     }
   `,
 })
 export class CngxActionButton {
+  private readonly toaster = inject(CngxToaster, { optional: true });
+  private readonly externalToastOn = inject(CngxToastOn, { self: true, optional: true });
+
   /** The async action to execute on click. */
   readonly action = input.required<AsyncAction>();
 
@@ -173,20 +182,41 @@ export class CngxActionButton {
   readonly failedLabel = input<string | undefined>(undefined);
 
   /**
-   * Bind an async state to derive visual status from, as alternative to `[action]`.
-   * When set, the button's status display follows `state.status()`.
+   * Bind an external async state to derive visual status from.
+   * When set, the button's status display follows `externalState.status()`.
    */
-  readonly asyncState = input<CngxAsyncState<unknown> | undefined>(undefined, { alias: 'state' });
-
-  /** @internal — inner CngxAsyncClick directive instance. */
-  private readonly asyncClick = viewChild.required(CngxAsyncClick);
+  readonly externalState = input<CngxAsyncState<unknown> | undefined>(undefined);
 
   /**
-   * @internal — effective status: reads from external `[state]` if bound,
+   * Toast message on success. Requires `CngxToaster` (via `provideFeedback(withToasts())`
+   * or `provideToasts()`). Silently ignored when toaster is not provided.
+   *
+   * `toastSuccessDuration` should be >= `feedbackDuration` to avoid rapid re-fire
+   * on repeated clicks that floods the SR announcement queue.
+   */
+  readonly toastSuccess = input<string | undefined>(undefined);
+
+  /** Toast message on error. */
+  readonly toastError = input<string | undefined>(undefined);
+
+  /** Include the error detail message in the error toast body. */
+  readonly toastErrorDetail = input<boolean>(false);
+
+  /** Duration for success toasts in ms. */
+  readonly toastSuccessDuration = input<number>(3000);
+
+  /** Duration for error toasts — `'persistent'` means manual dismiss only. */
+  readonly toastErrorDuration = input<number | 'persistent'>('persistent');
+
+  /** @internal — inner CngxAsyncClick directive instance. Non-required to allow safe pre-view-init reads. */
+  private readonly asyncClick = viewChild(CngxAsyncClick);
+
+  /**
+   * @internal — effective status: reads from external `[externalState]` if bound,
    * otherwise from the inner `CngxAsyncClick` directive.
    */
   protected readonly effectiveStatus = computed(() => {
-    const ext = this.asyncState();
+    const ext = this.externalState();
     if (ext) {
       const status = ext.status();
       if (status === 'pending') {
@@ -200,13 +230,39 @@ export class CngxActionButton {
       }
       return 'idle' as const;
     }
-    return this.asyncClick().status();
+    // viewChild is guaranteed resolved when the template reads this computed.
+    // Guard protects consumers reading `state` before view init.
+    const click = this.asyncClick();
+    return click ? click.status() : ('idle' as const);
   });
 
   /** @internal — effective error value from external state or inner directive. */
   protected readonly effectiveError = computed(() => {
-    const ext = this.asyncState();
-    return ext ? ext.error() : this.asyncClick().error();
+    const ext = this.externalState();
+    if (ext) {
+      return ext.error();
+    }
+    const click = this.asyncClick();
+    return click ? click.error() : undefined;
+  });
+
+  // ── Produced state ──────────────────────────────────────────────────
+
+  private readonly lastUpdatedState = signal<Date | undefined>(undefined);
+
+  /**
+   * Full `CngxAsyncState` view of this button's effective lifecycle.
+   *
+   * Reflects the external state when `[externalState]` is bound,
+   * otherwise the inner `CngxAsyncClick` directive's state.
+   *
+   * Bind to any state consumer: `<cngx-alert [state]="btn.state" />`.
+   */
+  readonly state: CngxAsyncState<unknown> = buildAsyncStateView<unknown>({
+    status: this.effectiveStatus,
+    data: computed(() => undefined),
+    error: this.effectiveError,
+    lastUpdated: this.lastUpdatedState.asReadonly(),
   });
 
   /** @internal */
@@ -215,4 +271,63 @@ export class CngxActionButton {
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   /** @internal */
   protected readonly failedTpl = contentChild(CngxFailed);
+
+  constructor() {
+    // ── Toast + lastUpdated effect ────────────────────────────────────
+    // Double-toast guard: warn once if consumer also placed [cngxToastOn] on this element
+    if (
+      typeof ngDevMode !== 'undefined' &&
+      ngDevMode &&
+      this.externalToastOn &&
+      (this.toastSuccess() || this.toastError())
+    ) {
+      console.warn(
+        'CngxActionButton: [toastSuccess]/[toastError] inputs and [cngxToastOn] ' +
+          'on the same element will fire duplicate toasts. Use one or the other.',
+      );
+    }
+
+    let previousStatus: AsyncStatus = 'idle';
+
+    effect(() => {
+      const status = this.effectiveStatus();
+
+      if (status === previousStatus) {
+        return;
+      }
+      previousStatus = status;
+
+      if (status === 'success') {
+        this.lastUpdatedState.set(new Date());
+        const msg = this.toastSuccess();
+        if (msg && this.toaster) {
+          this.toaster.show({
+            message: msg,
+            severity: 'success',
+            duration: this.toastSuccessDuration(),
+          });
+        }
+      }
+
+      if (status === 'error') {
+        const msg = this.toastError();
+        if (msg && this.toaster) {
+          const err = this.effectiveError();
+          const detail =
+            this.toastErrorDetail() && err != null
+              ? err instanceof Error
+                ? err.message
+                : typeof err === 'string'
+                  ? err
+                  : undefined
+              : undefined;
+          this.toaster.show({
+            message: detail ? `${msg}: ${detail}` : msg,
+            severity: 'error',
+            duration: this.toastErrorDuration(),
+          });
+        }
+      }
+    });
+  }
 }
