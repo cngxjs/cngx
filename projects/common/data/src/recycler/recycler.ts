@@ -138,45 +138,82 @@ export interface RecyclerConfig {
  * @category recycler
  */
 export interface CngxRecycler {
-  // ── Visible window (with overscan) ────────────────────
+  /** Start index (inclusive) of the rendered range, including overscan. */
   readonly start: Signal<number>;
+  /** End index (exclusive) of the rendered range, including overscan. */
   readonly end: Signal<number>;
 
-  // ── Layout stabilization ──────────────────────────────
+  /** Spacer height before rendered items (px). Always 0 in grid mode. */
   readonly offsetBefore: Signal<number>;
+  /** Spacer height after rendered items (px). Always 0 in grid mode. */
   readonly offsetAfter: Signal<number>;
+  /** Total scrollable height of all items (px). */
   readonly totalSize: Signal<number>;
 
-  // ── Grid mode (Phase 3 — always 0 in Phase 1) ────────
+  /** Placeholder count before rendered items. Only non-zero in grid mode. */
   readonly placeholdersBefore: Signal<number>;
+  /** Placeholder count after rendered items. Only non-zero in grid mode. */
   readonly placeholdersAfter: Signal<number>;
 
-  // ── Async state ───────────────────────────────────────
+  /** `true` during first load (`state.isFirstLoad()`). `false` without `state`. */
   readonly isLoading: Signal<boolean>;
+  /** `true` during refresh (`state.isRefreshing()`). Data remains visible. */
   readonly isRefreshing: Signal<boolean>;
+  /** `true` when `totalCount === 0` and not busy. */
   readonly isEmpty: Signal<boolean>;
+  /** How many skeleton items fit in the viewport: `ceil(clientHeight / estimateSize)`. */
   readonly skeletonSlots: Signal<number>;
+  /** `isLoading` AND `skeletonDelay` elapsed. Prevents skeleton flicker on fast loads. */
   readonly showSkeleton: Signal<boolean>;
 
-  // ── Visibility (without overscan) ─────────────────────
+  /** First actually visible index (without overscan). For UI display. */
   readonly firstVisible: Signal<number>;
+  /** Last actually visible index (without overscan). For UI display. */
   readonly lastVisible: Signal<number>;
+  /** Count of actually visible items (without overscan). */
   readonly visibleCount: Signal<number>;
 
-  // ── Scroll stability (Phase 2 — no-op in Phase 1) ────
+  /**
+   * Locks scroll position relative to an item. When items are inserted above
+   * the anchored item, `scrollTop` is corrected to maintain visual position.
+   */
   anchorTo(index: number): void;
+  /** Releases the scroll anchor set by {@link anchorTo}. */
   releaseAnchor(): void;
 
-  // ── Focus preservation (Phase 2 — null in Phase 1) ────
+  /**
+   * Reports the index of the item that had focus when it left the rendered range.
+   * `null` when no focus was lost. Consumer can use this to restore focus.
+   */
   readonly lostFocus: Signal<{ index: number } | null>;
 
-  // ── SR communication ──────────────────────────────────
+  /** SR announcement text for state transitions (load, filter, empty, error). */
   readonly announcement: Signal<string>;
 
-  // ── A11y ──────────────────────────────────────────────
+  /** `serverTotal` when set, otherwise `totalCount`. Bind to `aria-setsize`. */
   readonly ariaSetSize: Signal<number>;
 
-  // ── Deep-link scroll ─────────────────────────────────
+  /**
+   * The range of item indices that must be available for rendering.
+   * Use in an effect to trigger page loads for windowed/sparse data sources.
+   *
+   * Unlike `firstVisible`/`lastVisible` (which exclude overscan), this includes
+   * overscan items — all indices in this range may be rendered.
+   *
+   * @example
+   * ```typescript
+   * effect(() => {
+   *   const { start, end } = recycler.neededRange();
+   *   const startPage = Math.floor(start / PAGE_SIZE);
+   *   const endPage = Math.floor(end / PAGE_SIZE);
+   *   for (let p = startPage; p <= endPage; p++) {
+   *     if (!pageCache.has(p)) { loadPage(p); }
+   *   }
+   * });
+   * ```
+   */
+  readonly neededRange: Signal<{ start: number; end: number }>;
+
   /**
    * Target index that `scrollToIndex()` is waiting for.
    * Non-null when the target index exceeds `totalCount` — consumer
@@ -185,23 +222,45 @@ export interface CngxRecycler {
    */
   readonly pendingTarget: Signal<number | null>;
 
-  // ── Convenience ───────────────────────────────────────
   /**
    * Creates a `computed()` slicing items to the visible range.
    * **Call once in a field initializer** — each call creates a new computed node.
    * Do NOT call in templates or methods.
    */
   sliced<T>(items: Signal<T[]>): Signal<T[]>;
+
+  /**
+   * Reports a measured item height to the internal SizeCache.
+   * No-op in grid mode (uniform row height assumed).
+   * Prefer {@link CngxMeasure} directive over calling this directly.
+   */
   measure(index: number, element: HTMLElement): void;
+
+  /**
+   * Scrolls to a specific item index. When `index >= totalCount`, stores
+   * the target in {@link pendingTarget} for resolution when data arrives.
+   */
   scrollToIndex(index: number, behavior?: ScrollBehavior): void;
+
+  /** Scrolls to top. Convenience for sort/filter changes. */
   reset(): void;
 }
 
 // ── Delayed flag (inline createVisibilityTimer equivalent) ──
 
-// Inline equivalent of createVisibilityTimer from @cngx/ui/feedback (Level 4, not importable).
-// The flag.set() calls inside the effect are timer-driven side effects, not derived state —
-// same pattern accepted in createVisibilityTimer for CngxLoadingOverlay.
+/**
+ * Inline equivalent of `createVisibilityTimer` from `@cngx/ui/feedback` (Level 4, not importable).
+ *
+ * Uses `setTimeout` inside an effect — this is a timer-driven side effect, not derived state.
+ * Same pattern accepted in `createVisibilityTimer` for `CngxLoadingOverlay`.
+ * Safe in zoneless: the `setTimeout` callback only writes a signal, which schedules
+ * Angular's own change detection — no Zone.js dependency.
+ *
+ * @param source Boolean signal to delay. When `true`, starts the timer.
+ * @param delayMs Delay in milliseconds before the flag becomes `true`.
+ * @returns A readonly signal that becomes `true` after `delayMs` when `source` is `true`.
+ * @internal
+ */
 function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boolean> {
   if (delayMs <= 0) {
     return source;
@@ -326,9 +385,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
 
   // ── Grid placeholders ──
   const placeholdersBefore = computed(() => (isGrid ? start() : 0));
-  const placeholdersAfter = computed(() =>
-    isGrid ? Math.max(0, config.totalCount() - end()) : 0,
-  );
+  const placeholdersAfter = computed(() => (isGrid ? Math.max(0, config.totalCount() - end()) : 0));
 
   // ── Visibility without overscan ──
   // start/end include overscan. firstVisible/lastVisible strip it back
@@ -448,7 +505,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // ── A11y ──
   const ariaSetSize = computed(() => config.serverTotal?.() ?? config.totalCount());
 
-  // ── Scroll-Anchoring (Phase 2) ──
+  // Scroll-Anchoring
   const anchorState = signal<{ index: number; offsetFromTop: number } | null>(null);
 
   function computeItemTop(targetIndex: number, cols?: number): number {
@@ -526,6 +583,9 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return null;
   });
 
+  // ── Needed range (for page-based loading) ──
+  const neededRange = computed(() => ({ start: start(), end: end() }));
+
   // ── Deep-link scrollToIndex (Phase 3) ──
   const pendingScrollTarget = signal<{ index: number; behavior: ScrollBehavior } | null>(null);
   const pendingTarget = computed(() => pendingScrollTarget()?.index ?? null);
@@ -586,6 +646,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     lostFocus,
 
     pendingTarget,
+    neededRange,
 
     announcement: announcementState.asReadonly(),
 

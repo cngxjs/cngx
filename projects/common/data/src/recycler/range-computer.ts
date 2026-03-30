@@ -2,7 +2,11 @@
 
 /**
  * Result of a range computation for virtual scrolling.
- * All values are in pixels except `start` and `end` which are indices.
+ *
+ * `start`/`end` are item indices. `offsetBefore`/`offsetAfter`/`totalSize` are pixels.
+ * In grid mode, offsets are row-based (rows = ceil(totalCount / columns)).
+ *
+ * @category recycler
  */
 export interface RangeResult {
   /** Start index (inclusive) of the visible range. */
@@ -36,6 +40,8 @@ const EMPTY_RANGE: RangeResult = {
  * @param totalCount Total number of items.
  * @param estimateSize Fixed item height in px, or a function returning height per index.
  * @param overscan Number of extra items to render above/below the viewport.
+ * @param columns Column count for grid mode (default 1). When > 1, range is row-aligned.
+ *   Variable `estimateSize` ignores columns (grid + variable heights not supported).
  * @returns The computed range with spacer offsets.
  */
 export function computeRange(

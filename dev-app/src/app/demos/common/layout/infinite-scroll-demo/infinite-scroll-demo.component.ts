@@ -18,7 +18,7 @@ import { CngxInfiniteScroll } from '@cngx/common/layout';
   template: `
     <app-doc-shell title="Infinite Scroll"
       description="Intersection-based infinite scroll directive that triggers a callback when a sentinel element enters the viewport."
-      overview="<p><code>CngxInfiniteScroll</code> uses <code>IntersectionObserver</code> to detect when a sentinel element becomes visible. Bind a loading function to the <code>scrolled</code> output. Disable via <code>[enabled]</code> when there are no more items to load.</p>"
+      overview="<p><code>CngxInfiniteScroll</code> uses <code>IntersectionObserver</code> to detect when a sentinel element becomes visible. Bind a loading function to the <code>scrolled</code> output. Disable via <code>[enabled]</code> when there are no more items to load.</p><p><strong>For large lists (1000+ items):</strong> Combine with <code>injectRecycler()</code> for DOM recycling — items outside the viewport are removed from the DOM while the sentinel keeps loading. See the <a href=&quot;#/common/data/recycler&quot;>Recycler demo</a>.</p>"
       [apiComponents]="['CngxInfiniteScroll']">
       <app-example-card title="Scrollable List"
         [subtitle]="_s0"

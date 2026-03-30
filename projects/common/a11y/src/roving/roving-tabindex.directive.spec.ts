@@ -142,7 +142,12 @@ describe('CngxRovingTabindex', () => {
 
 @Component({
   template: `
-    <div cngxRovingTabindex orientation="vertical" [virtualCount]="virtualCount()" #rv="cngxRovingTabindex">
+    <div
+      cngxRovingTabindex
+      orientation="vertical"
+      [virtualCount]="virtualCount()"
+      #rv="cngxRovingTabindex"
+    >
       @for (item of renderedItems(); track item.index) {
         <button cngxRovingItem [attr.data-cngx-recycle-index]="item.index">
           Item {{ item.index }}
@@ -154,9 +159,7 @@ describe('CngxRovingTabindex', () => {
 })
 class VirtualTestHost {
   readonly virtualCount = signal(100);
-  readonly renderedItems = signal(
-    Array.from({ length: 10 }, (_, i) => ({ index: i })),
-  );
+  readonly renderedItems = signal(Array.from({ length: 10 }, (_, i) => ({ index: i })));
 }
 
 describe('CngxRovingTabindex — virtual mode', () => {

@@ -292,8 +292,15 @@ describe('injectRecycler', () => {
       const el = document.createElement('div');
       Object.defineProperty(el, 'getBoundingClientRect', {
         value: () => ({
-          height: 200, width: 100, top: 0, left: 0, bottom: 200, right: 100,
-          x: 0, y: 0, toJSON: () => {},
+          height: 200,
+          width: 100,
+          top: 0,
+          left: 0,
+          bottom: 200,
+          right: 100,
+          x: 0,
+          y: 0,
+          toJSON: () => {},
         }),
       });
       // Should not throw and should not affect range computation
@@ -307,9 +314,7 @@ describe('injectRecycler', () => {
         estimateSize: 100,
         layout: 'grid',
       });
-      expect(errorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('requires explicit `columns`'),
-      );
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('requires explicit `columns`'));
       // Still functional — degrades to single-column list
       expect(recycler.start()).toBe(0);
       errorSpy.mockRestore();

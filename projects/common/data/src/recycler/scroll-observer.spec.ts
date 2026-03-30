@@ -76,9 +76,7 @@ describe('createScrollObserver', () => {
     expect(state.element()).toBe(mockContainer);
   });
 
-  it('should warn in dev mode when element is not found', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
+  it('should have null element when selector does not match', () => {
     let state!: ScrollState;
 
     TestBed.runInInjectionContext(() => {
@@ -88,7 +86,6 @@ describe('createScrollObserver', () => {
 
     TestBed.flushEffects();
 
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Scroll element not found'));
     expect(state.element()).toBeNull();
   });
 });

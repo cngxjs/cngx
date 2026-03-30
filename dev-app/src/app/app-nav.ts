@@ -30,6 +30,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'mat-table', path: 'common/data/mat-table' },
       { label: 'Metric', path: 'common/data/metric' },
       { label: 'Paginate (List)', path: 'common/data/paginate-list' },
+      { label: 'Recycler', path: 'common/data/recycler' },
       { label: 'SmartDataSource', path: 'common/data/smart-data-source' },
       { label: 'Trend', path: 'common/data/trend' },
       { label: 'Dialog', path: 'common/dialog/dialog' },

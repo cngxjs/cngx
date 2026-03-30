@@ -2,13 +2,14 @@
 
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   type DestroyRef,
   type ElementRef,
   type Signal,
   effect,
   inject,
-  isDevMode,
   signal,
+  untracked,
 } from '@angular/core';
 
 /**
@@ -43,24 +44,16 @@ export function createScrollObserver(
   const clientHeightState = signal(0);
   const elementState = signal<HTMLElement | null>(null);
 
-  effect((onCleanup) => {
-    const el = resolveElement(elementRef, doc);
-    if (!el) {
-      if (isDevMode()) {
-        console.warn(
-          `[CngxRecycler] Scroll element not found: ${typeof elementRef === 'string' ? elementRef : '(ElementRef)'}. ` +
-            `Recycler will not function until the element is available.`,
-        );
-      }
-      return;
-    }
+  // Retry trigger — incremented by afterNextRender to re-run the effect
+  // when the element wasn't found on the first attempt (routed components,
+  // content projection, lazy rendering).
+  const retryTick = signal(0);
 
+  function attachListeners(el: HTMLElement, onCleanup: (fn: () => void) => void): void {
     elementState.set(el);
-    // Initial read
     scrollTopState.set(el.scrollTop);
     clientHeightState.set(el.clientHeight);
 
-    // Scroll listener with rAF batching
     let rafId: number | null = null;
 
     const handleScroll = () => {
@@ -69,7 +62,6 @@ export function createScrollObserver(
       }
       rafId = requestAnimationFrame(() => {
         rafId = null;
-        // Both writes in the same synchronous callback — Angular coalesces
         scrollTopState.set(el.scrollTop);
         clientHeightState.set(el.clientHeight);
       });
@@ -77,7 +69,6 @@ export function createScrollObserver(
 
     el.addEventListener('scroll', handleScroll, { passive: true });
 
-    // ResizeObserver for clientHeight changes (browser resize, mobile keyboard, font scaling)
     const resizeObserver = new ResizeObserver(() => {
       clientHeightState.set(el.clientHeight);
     });
@@ -91,7 +82,30 @@ export function createScrollObserver(
       resizeObserver.disconnect();
       elementState.set(null);
     });
+  }
+
+  effect((onCleanup) => {
+    retryTick(); // tracked — effect re-runs when retryTick changes
+    const el = resolveElement(elementRef, doc);
+    if (!el) {
+      return;
+    }
+    attachListeners(el, onCleanup);
   });
+
+  // If the element wasn't found on the first effect run (before DOM is ready),
+  // retry after the next render cycle. afterNextRender fires once per call —
+  // the effect will re-run via retryTick and either find the element or stay dormant.
+  if (typeof elementRef === 'string') {
+    afterNextRender(() => {
+      // untracked: afterNextRender may run in the same microtask as the effect.
+      // Reading elementState() without untracked could create an unintended dependency
+      // in whatever reactive context is active.
+      if (untracked(() => elementState()) == null) {
+        retryTick.update((v) => v + 1);
+      }
+    });
+  }
 
   // Additional cleanup via DestroyRef as safety net
   destroyRef.onDestroy(() => {

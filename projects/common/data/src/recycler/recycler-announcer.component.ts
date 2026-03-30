@@ -21,7 +21,9 @@ import type { CngxRecycler } from './recycler';
 @Component({
   selector: 'cngx-recycler-announcer',
   standalone: true,
-  template: `<span aria-live="polite" aria-atomic="true" class="cngx-sr-only">{{ recycler().announcement() }}</span>`,
+  template: `<span aria-live="polite" aria-atomic="true" class="cngx-sr-only">{{
+    recycler().announcement()
+  }}</span>`,
   host: { style: 'display: contents' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -170,7 +170,7 @@ export class CngxLoadingOverlay {
   private readonly spinnerEl = viewChild<ElementRef<HTMLElement>>('spinnerEl');
 
   constructor() {
-    // Phase 1: save focus when loading starts (immediate, before delay)
+    // Save focus when loading starts (immediate, before delay)
     effect(() => {
       const active = this.isActive();
       if (active) {
@@ -182,7 +182,7 @@ export class CngxLoadingOverlay {
       }
     });
 
-    // Phase 2: move focus to spinner when overlay becomes visible (after delay)
+    // Move focus to spinner when overlay becomes visible (after delay)
     effect(() => {
       const vis = this.visible();
       if (vis) {
@@ -195,7 +195,7 @@ export class CngxLoadingOverlay {
       }
     });
 
-    // Phase 3: restore focus when loading ends
+    // Restore focus when loading ends
     effect(() => {
       const active = this.isActive();
       if (!active) {

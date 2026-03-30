@@ -1,0 +1,312 @@
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'Recycler — DOM Recycling',
+  navLabel: 'Recycler',
+  navCategory: 'data',
+  description:
+    'Signal-based virtualizer for long lists. Items outside the viewport are removed ' +
+    'from the DOM. Consumer renders with @for and two spacer containers.',
+  apiComponents: [
+    'CngxRecycler',
+    'CngxMeasure',
+    'CngxVirtualItem',
+    'CngxRecyclerAnnouncer',
+  ],
+  moduleImports: [
+    "import { injectRecycler, CngxMeasure, CngxVirtualItem, CngxRecyclerAnnouncer } from '@cngx/common/data';",
+    "import { CngxInfiniteScroll } from '@cngx/common/layout';",
+  ],
+  setup: `
+  protected readonly allItems = signal(
+    Array.from({ length: 5000 }, (_, i) => ({
+      id: i,
+      name: 'Item ' + (i + 1),
+      description: 'Description for item ' + (i + 1),
+    })),
+  );
+
+  protected readonly recycler = injectRecycler({
+    scrollElement: '.recycler-scroll',
+    totalCount: () => this.allItems().length,
+    estimateSize: 48,
+    overscan: 10,
+  });
+
+  protected readonly visibleItems = this.recycler.sliced(this.allItems);
+
+  protected readonly targetIndex = signal(0);
+
+  protected handleScrollTo(): void {
+    this.recycler.scrollToIndex(this.targetIndex());
+  }
+  `,
+  sections: [
+    {
+      title: 'Basic List — Fixed Item Height',
+      subtitle:
+        '<code>injectRecycler()</code> returns computed signals for the visible range. ' +
+        'The consumer renders with <code>@for</code> and two padding spacers. ' +
+        '5000 items, only ~20 in the DOM at any time.',
+      imports: ['CngxVirtualItem', 'CngxRecyclerAnnouncer'],
+      template: `
+  <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
+  <div class="recycler-scroll" role="list" aria-label="Demo items"
+       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+    <div [style.paddingTop.px]="recycler.offsetBefore()"
+         [style.paddingBottom.px]="recycler.offsetAfter()">
+      @for (item of visibleItems(); track item.id; let i = $index) {
+        <div role="listitem"
+             [cngxVirtualItem]="recycler"
+             [cngxVirtualItemIndex]="recycler.start() + i"
+             style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+          <strong>{{ item.name }}</strong>&nbsp;&mdash;&nbsp;{{ item.description }}
+        </div>
+      }
+    </div>
+  </div>
+  <div class="status-row" style="margin-top:8px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+    <span class="status-badge">
+      Showing {{ recycler.firstVisible() + 1 }}&ndash;{{ recycler.lastVisible() + 1 }}
+      of {{ recycler.ariaSetSize() }}
+    </span>
+    <span class="status-badge">
+      DOM nodes: {{ recycler.end() - recycler.start() }}
+    </span>
+    <label style="display:flex;align-items:center;gap:4px">
+      Go to:
+      <input type="number" [value]="targetIndex()" (input)="targetIndex.set(+$any($event.target).value)"
+             min="0" [max]="recycler.ariaSetSize() - 1"
+             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+    </label>
+    <button type="button" (click)="handleScrollTo()"
+            style="padding:4px 12px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+      Scroll
+    </button>
+    @if (recycler.pendingTarget() != null) {
+      <span aria-live="polite" style="color:var(--cngx-text-muted,#666)">
+        Waiting for item {{ recycler.pendingTarget()! + 1 }}...
+      </span>
+    }
+  </div>`,
+    },
+    {
+      title: 'Variable Heights — CngxMeasure',
+      subtitle:
+        'For items with varying heights, add <code>[cngxMeasure]</code> to each item. ' +
+        'The recycler accumulates measured heights for accurate scroll position calculation.',
+      imports: ['CngxMeasure'],
+      setup: `
+  protected readonly variableItems = signal(
+    Array.from({ length: 2000 }, (_, i) => ({
+      id: i,
+      name: 'Item ' + (i + 1),
+      content: Array.from({ length: 1 + (i % 5) }, (__, j) => 'Line ' + (j + 1)).join(' | '),
+    })),
+  );
+
+  protected readonly varRecycler = injectRecycler({
+    scrollElement: '.recycler-var-scroll',
+    totalCount: () => this.variableItems().length,
+    estimateSize: 48,
+    overscan: 5,
+  });
+
+  protected readonly varVisible = this.varRecycler.sliced(this.variableItems);
+      `,
+      template: `
+  <div class="recycler-var-scroll"
+       style="height:400px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+    <div [style.paddingTop.px]="varRecycler.offsetBefore()"
+         [style.paddingBottom.px]="varRecycler.offsetAfter()">
+      @for (item of varVisible(); track item.id; let i = $index) {
+        <div [cngxMeasure]="varRecycler" [cngxMeasureIndex]="varRecycler.start() + i"
+             style="padding:12px 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+          <strong>{{ item.name }}</strong>
+          <p style="margin:4px 0;color:var(--cngx-text-muted,#666)">{{ item.content }}</p>
+        </div>
+      }
+    </div>
+  </div>`,
+    },
+    {
+      title: 'ScrollToIndex + Deep-Link',
+      subtitle:
+        '<code>scrollToIndex()</code> scrolls to any item by index. When the index exceeds ' +
+        '<code>totalCount</code> (data not loaded yet), <code>pendingTarget</code> stores it ' +
+        'and resolves automatically when <code>totalCount</code> grows past the target.',
+      setup: `
+  protected readonly scrollItems = signal(
+    Array.from({ length: 2000 }, (_, i) => ({
+      id: i,
+      name: 'Entry ' + (i + 1),
+    })),
+  );
+
+  protected readonly scrollRecycler = injectRecycler({
+    scrollElement: '.recycler-scroll-demo',
+    totalCount: () => this.scrollItems().length,
+    estimateSize: 40,
+    overscan: 5,
+  });
+
+  protected readonly scrollVisible = this.scrollRecycler.sliced(this.scrollItems);
+  protected readonly scrollTarget = signal(0);
+
+  protected handleScrollDemo(): void {
+    this.scrollRecycler.scrollToIndex(this.scrollTarget());
+  }
+      `,
+      template: `
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <label style="display:flex;align-items:center;gap:4px">
+      Go to index:
+      <input type="number" [value]="scrollTarget()" (input)="scrollTarget.set(+$any($event.target).value)"
+             min="0" [max]="scrollRecycler.ariaSetSize() - 1"
+             style="width:80px;padding:4px 8px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px">
+    </label>
+    <button type="button" (click)="handleScrollDemo()"
+            style="padding:6px 16px;border:1px solid var(--cngx-border-color,#ccc);border-radius:4px;cursor:pointer">
+      Scroll
+    </button>
+    <span class="status-badge">
+      Visible: {{ scrollRecycler.firstVisible() + 1 }}&ndash;{{ scrollRecycler.lastVisible() + 1 }}
+    </span>
+    @if (scrollRecycler.pendingTarget() != null) {
+      <span aria-live="polite" style="color:var(--cngx-text-muted,#666)">
+        Waiting for item {{ scrollRecycler.pendingTarget()! + 1 }}...
+      </span>
+    }
+  </div>
+  <div class="recycler-scroll-demo"
+       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+    <div [style.paddingTop.px]="scrollRecycler.offsetBefore()"
+         [style.paddingBottom.px]="scrollRecycler.offsetAfter()">
+      @for (item of scrollVisible(); track item.id) {
+        <div style="height:40px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+          {{ item.name }}
+        </div>
+      }
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Infinite Scroll + Recycler',
+      subtitle:
+        'Combine <code>CngxInfiniteScroll</code> with the recycler for large HTTP-loaded lists. ' +
+        'The sentinel sits outside the spacer container. Items append to the array — ' +
+        'scrolling back up never re-fetches because already-loaded items stay in memory.',
+      imports: ['CngxInfiniteScroll'],
+      setup: `
+  protected readonly infiniteItems = signal<string[]>([]);
+  protected readonly infiniteLoading = signal(false);
+  protected readonly infiniteHasMore = computed(() => this.infiniteItems().length < 500);
+  private infinitePage = 0;
+
+  protected readonly infRecycler = injectRecycler({
+    scrollElement: '.inf-scroll',
+    totalCount: () => this.infiniteItems().length,
+    estimateSize: 48,
+    overscan: 5,
+  });
+
+  protected readonly infVisible = this.infRecycler.sliced(this.infiniteItems);
+
+  protected handleLoadMore(): void {
+    if (this.infiniteLoading() || !this.infiniteHasMore()) { return; }
+    this.infiniteLoading.set(true);
+    setTimeout(() => {
+      const start = this.infinitePage * 50;
+      const page = Array.from({ length: 50 }, (_, i) => 'Item ' + (start + i + 1));
+      this.infiniteItems.update(prev => [...prev, ...page]);
+      this.infiniteLoading.set(false);
+      this.infinitePage++;
+    }, 300);
+  }
+      `,
+      template: `
+  <div class="status-row" style="margin-bottom:8px">
+    <span class="status-badge">Loaded: {{ infiniteItems().length }}</span>
+    <span class="status-badge">
+      Visible: {{ infRecycler.firstVisible() + 1 }}&ndash;{{ infRecycler.lastVisible() + 1 }}
+    </span>
+    <span class="status-badge">DOM: {{ infRecycler.end() - infRecycler.start() }}</span>
+    @if (infiniteLoading()) {
+      <span class="status-badge">Loading...</span>
+    }
+  </div>
+  <div class="inf-scroll"
+       style="height:300px;overflow-y:auto;border:1px solid var(--cngx-border-color,#e0e0e0);border-radius:8px">
+    <div [style.paddingTop.px]="infRecycler.offsetBefore()"
+         [style.paddingBottom.px]="infRecycler.offsetAfter()">
+      @for (item of infVisible(); track item) {
+        <div style="height:48px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--cngx-border-color,#e0e0e0)">
+          {{ item }}
+        </div>
+      }
+    </div>
+    <div cngxInfiniteScroll
+         [enabled]="infiniteHasMore()"
+         [loading]="infiniteLoading()"
+         [root]="'.inf-scroll'"
+         (loadMore)="handleLoadMore()"
+         style="padding:8px;text-align:center;color:var(--cngx-text-muted,#999)">
+      @if (infiniteLoading()) {
+        Loading more...
+      } @else if (!infiniteHasMore()) {
+        All 500 items loaded.
+      }
+    </div>
+  </div>`,
+    },
+    {
+      title: 'With CngxAsyncState — Skeleton First Load',
+      subtitle:
+        'The recycler derives <code>isLoading</code>, <code>showSkeleton</code>, and <code>isEmpty</code> from ' +
+        'a <code>CngxAsyncState</code> source — same pattern as <code>CngxCardGrid</code> and <code>CngxTreetable</code>. ' +
+        'Skeleton slots fill the viewport height automatically.',
+      template: `
+  <pre class="code-block"><code>// With CngxAsyncState integration
+readonly state = injectAsyncState(() => this.api.getAll());
+
+readonly recycler = injectRecycler({{ '{' }}
+  scrollElement: '.scroll',
+  totalCount: () => (this.state.data() ?? []).length,
+  estimateSize: 64,
+  state: this.state,         // drives isLoading, isRefreshing, isEmpty
+  skeletonDelay: 300,        // fast loads never show skeleton
+{{ '}' }});
+
+readonly visible = this.recycler.sliced(
+  computed(() => this.state.data() ?? [])
+);
+
+// Template:
+// &#64;if (recycler.showSkeleton()) {{ '{' }}
+//   &#64;for (_ of skeletonRange(recycler.skeletonSlots()); track $index) {{ '{' }}
+//     &lt;div class="skeleton-item" aria-hidden="true"&gt;&lt;/div&gt;
+//   {{ '}' }}
+// {{ '}' }} &#64;else {{ '{' }}
+//   &#64;for (item of visible(); track item.id) {{ '{' }} ... {{ '}' }}
+// {{ '}' }}</code></pre>`,
+    },
+    {
+      title: 'Content Visibility (CSS-only)',
+      subtitle:
+        'Zero-JS optimization via <code>content-visibility: auto</code>. The browser skips rendering ' +
+        'of off-screen items. Complementary to the recycler — can be used standalone or together. ' +
+        'Import the SCSS mixin from <code>@cngx/common/data</code>.',
+      template: `
+  <pre class="code-block"><code>// SCSS mixin
+&#64;use '&#64;cngx/common/data/recycler/content-visibility' as cv;
+
+.item {{ '{' }}
+  &#64;include cv.cngx-content-visibility(48px);
+{{ '}' }}
+
+// Generates:
+// content-visibility: auto;
+// contain-intrinsic-size: auto 48px;</code></pre>`,
+    },
+  ],
+};

@@ -116,6 +116,8 @@ export class CngxRovingTabindex {
    * Total item count for virtual mode. When set, `activeIndex` ranges from 0 to
    * `virtualCount - 1` and items are matched by `data-cngx-recycle-index` attribute.
    * When not set, standard `contentChildren`-based navigation is used.
+   *
+   * @category a11y
    */
   readonly virtualCount = input<number | undefined>(undefined);
 
@@ -134,6 +136,8 @@ export class CngxRovingTabindex {
    * Index of the item that should receive focus but is not currently in the DOM.
    * Non-null when virtual navigation targets an out-of-range item.
    * Used by `connectRecyclerToRoving()` to scroll the item into view and focus it.
+   *
+   * @category a11y
    */
   readonly pendingFocus = this.pendingFocusState.asReadonly();
 
@@ -172,6 +176,8 @@ export class CngxRovingTabindex {
   /**
    * Clears the pending focus target. Called by `connectRecyclerToRoving()`
    * after the item has been scrolled into view and focused.
+   *
+   * @category a11y
    */
   clearPendingFocus(): void {
     this.pendingFocusState.set(null);
@@ -180,110 +186,52 @@ export class CngxRovingTabindex {
   /**
    * Handles arrow-key, Home, and End navigation within the group.
    * Prevents default scrolling on arrow keys.
+   *
+   * Unified handler — delegates to virtual or contentChildren navigation
+   * based on whether `virtualCount` is set.
    */
   protected handleKeyDown(event: KeyboardEvent): void {
     const vc = this.virtualCount();
-    if (vc != null) {
-      this.handleVirtualKeyDown(event, vc);
-      return;
-    }
-
-    const items = this.enabledItems();
-    if (items.length === 0) {
-      return;
-    }
-
     const allItems = this.items();
-    const currentActive = this.activeIndex();
-    let nextIndex: number | null = null;
+    const isVirtual = vc != null;
+    const total = isVirtual ? vc : allItems.length;
 
-    switch (event.key) {
-      case 'ArrowRight':
-        if (this.isHorizontal()) {
-          nextIndex = this.findNext(currentActive, allItems, 1);
-        }
-        break;
-      case 'ArrowLeft':
-        if (this.isHorizontal()) {
-          nextIndex = this.findNext(currentActive, allItems, -1);
-        }
-        break;
-      case 'ArrowDown':
-        if (this.isVertical()) {
-          nextIndex = this.findNext(currentActive, allItems, 1);
-        }
-        break;
-      case 'ArrowUp':
-        if (this.isVertical()) {
-          nextIndex = this.findNext(currentActive, allItems, -1);
-        }
-        break;
-      case 'Home':
-        nextIndex = this.findFirst(allItems);
-        break;
-      case 'End':
-        nextIndex = this.findLast(allItems);
-        break;
-      default:
-        return;
-    }
-
-    if (nextIndex !== null && nextIndex !== currentActive) {
-      event.preventDefault();
-      this.activeIndex.set(nextIndex);
-      allItems[nextIndex].focus();
-    } else if (nextIndex === currentActive) {
-      event.preventDefault();
-    }
-  }
-
-  /**
-   * Virtual mode key handler. Uses `virtualCount` for bounds instead of contentChildren.
-   * Focuses by querying `data-cngx-recycle-index`. If not found, sets `pendingFocus`.
-   */
-  private handleVirtualKeyDown(event: KeyboardEvent, total: number): void {
     if (total === 0) {
       return;
     }
-
-    const currentActive = this.activeIndex();
-    let nextIndex: number | null = null;
-
-    switch (event.key) {
-      case 'ArrowRight':
-        if (this.isHorizontal()) {
-          nextIndex = this.findNextVirtual(currentActive, total, 1);
-        }
-        break;
-      case 'ArrowLeft':
-        if (this.isHorizontal()) {
-          nextIndex = this.findNextVirtual(currentActive, total, -1);
-        }
-        break;
-      case 'ArrowDown':
-        if (this.isVertical()) {
-          nextIndex = this.findNextVirtual(currentActive, total, 1);
-        }
-        break;
-      case 'ArrowUp':
-        if (this.isVertical()) {
-          nextIndex = this.findNextVirtual(currentActive, total, -1);
-        }
-        break;
-      case 'Home':
-        nextIndex = 0;
-        break;
-      case 'End':
-        nextIndex = total - 1;
-        break;
-      default:
-        return;
+    if (!isVirtual && this.enabledItems().length === 0) {
+      return;
     }
 
+    const currentActive = this.activeIndex();
+    const navigate = (direction: 1 | -1): number | null =>
+      isVirtual
+        ? this.findNextVirtual(currentActive, total, direction)
+        : this.findNext(currentActive, allItems, direction);
+
+    const keyMap: Record<string, () => number | null> = {
+      ArrowRight: () => (this.isHorizontal() ? navigate(1) : null),
+      ArrowLeft: () => (this.isHorizontal() ? navigate(-1) : null),
+      ArrowDown: () => (this.isVertical() ? navigate(1) : null),
+      ArrowUp: () => (this.isVertical() ? navigate(-1) : null),
+      Home: () => (isVirtual ? 0 : this.findFirst(allItems)),
+      End: () => (isVirtual ? total - 1 : this.findLast(allItems)),
+    };
+
+    const handler = keyMap[event.key];
+    if (!handler) {
+      return;
+    }
+
+    const nextIndex = handler();
     if (nextIndex !== null && nextIndex !== currentActive) {
       event.preventDefault();
       this.activeIndex.set(nextIndex);
-      this.focusVirtualItem(nextIndex);
+      if (isVirtual) {
+        this.focusVirtualItem(nextIndex);
+      } else {
+        allItems[nextIndex].focus();
+      }
     } else if (nextIndex === currentActive) {
       event.preventDefault();
     }
@@ -377,7 +325,11 @@ export class CngxRovingTabindex {
   }
 
   private findLast(items: readonly CngxRovingItem[]): number | null {
-    const idx = [...items].reverse().findIndex((item) => !item.disabled());
-    return idx >= 0 ? items.length - 1 - idx : null;
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (!items[i].disabled()) {
+        return i;
+      }
+    }
+    return null;
   }
 }

@@ -40,10 +40,7 @@ import type { CngxRecycler } from './recycler';
  *
  * @category recycler
  */
-export function connectRecyclerToRoving(
-  recycler: CngxRecycler,
-  roving: CngxRovingTabindex,
-): void {
+export function connectRecyclerToRoving(recycler: CngxRecycler, roving: CngxRovingTabindex): void {
   const hostEl = inject(ElementRef).nativeElement as HTMLElement;
 
   // Debounce scrollToIndex via rAF to avoid scroll jitter on rapid keypresses.
@@ -76,7 +73,9 @@ export function connectRecyclerToRoving(
 
   // When the recycler's range changes and the pending target is within range,
   // wait for the DOM to update (rAF), then query and focus the element.
-  effect(() => {
+  let focusRafId: number | null = null;
+
+  effect((onCleanup) => {
     const s = recycler.start();
     const e = recycler.end();
     const target = untracked(() => roving.pendingFocus());
@@ -86,7 +85,8 @@ export function connectRecyclerToRoving(
 
     // Target is within rendered range — DOM will be updated after CD.
     // Use rAF to wait for Angular's rendering pass to complete.
-    requestAnimationFrame(() => {
+    focusRafId = requestAnimationFrame(() => {
+      focusRafId = null;
       // Re-read pendingFocus in case it changed during the frame (rapid keypresses).
       const currentTarget = roving.pendingFocus();
       if (currentTarget == null) {
@@ -96,6 +96,13 @@ export function connectRecyclerToRoving(
       if (el instanceof HTMLElement) {
         el.focus();
         roving.clearPendingFocus();
+      }
+    });
+
+    onCleanup(() => {
+      if (focusRafId != null) {
+        cancelAnimationFrame(focusRafId);
+        focusRafId = null;
       }
     });
   });
