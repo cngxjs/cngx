@@ -4,17 +4,14 @@ import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTruncate } from './truncate.directive';
 
-// Mock ResizeObserver
-vi.stubGlobal(
-  'ResizeObserver',
-  vi.fn((_callback: ResizeObserverCallback) => {
-    return {
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    };
-  }),
-);
+// Mock ResizeObserver (must be constructible with `new`)
+class ResizeObserverMock {
+  constructor(_callback: ResizeObserverCallback) {}
+  observe(_target?: Element): void {}
+  unobserve(_target?: Element): void {}
+  disconnect(): void {}
+}
+vi.stubGlobal('ResizeObserver', ResizeObserverMock);
 
 @Component({
   template: `
