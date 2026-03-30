@@ -59,13 +59,7 @@ export class CngxFilter<T = unknown> {
     const controlled = this.predicateInput();
     const map = this.predicatesState();
 
-    const fns: ((value: T) => boolean)[] = [];
-    if (controlled) {
-      fns.push(controlled);
-    }
-    for (const fn of map.values()) {
-      fns.push(fn);
-    }
+    const fns = [...(controlled ? [controlled] : []), ...map.values()];
 
     if (fns.length === 0) {
       return null;

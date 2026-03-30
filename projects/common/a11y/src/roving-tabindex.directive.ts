@@ -116,10 +116,12 @@ export class CngxRovingTabindex {
       // Clamp to valid range — prevents out-of-bounds when items are added/removed.
       const clamped = Math.max(0, Math.min(active, items.length - 1));
 
-      for (let i = 0; i < items.length; i++) {
-        const el = items[i].elementRef.nativeElement as HTMLElement;
-        el.setAttribute('tabindex', i === clamped ? '0' : '-1');
-      }
+      items.forEach((item, i) =>
+        (item.elementRef.nativeElement as HTMLElement).setAttribute(
+          'tabindex',
+          i === clamped ? '0' : '-1',
+        ),
+      );
     });
   }
 
@@ -227,20 +229,12 @@ export class CngxRovingTabindex {
   }
 
   private findFirst(items: readonly CngxRovingItem[]): number | null {
-    for (let i = 0; i < items.length; i++) {
-      if (!items[i].disabled()) {
-        return i;
-      }
-    }
-    return null;
+    const idx = items.findIndex((item) => !item.disabled());
+    return idx >= 0 ? idx : null;
   }
 
   private findLast(items: readonly CngxRovingItem[]): number | null {
-    for (let i = items.length - 1; i >= 0; i--) {
-      if (!items[i].disabled()) {
-        return i;
-      }
-    }
-    return null;
+    const idx = [...items].reverse().findIndex((item) => !item.disabled());
+    return idx >= 0 ? items.length - 1 - idx : null;
   }
 }

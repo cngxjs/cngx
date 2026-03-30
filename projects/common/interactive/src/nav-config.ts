@@ -68,19 +68,13 @@ export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFI
  * ```
  */
 export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
-  let config: CngxNavConfig = {};
-  const extraProviders: Provider[] = [];
-  for (const f of features) {
-    config = f.apply(config);
-    if (f.providers) {
-      extraProviders.push(...f.providers);
-    }
-  }
-  const providers: Provider[] = [{ provide: CNGX_NAV_CONFIG, useValue: config }, ...extraProviders];
-  if (config.singleAccordion) {
-    providers.push(CngxNavGroupRegistry);
-  }
-  return providers;
+  const config = features.reduce<CngxNavConfig>((c, f) => f.apply(c), {});
+  const extraProviders = features.flatMap((f) => f.providers ?? []);
+  return [
+    { provide: CNGX_NAV_CONFIG, useValue: config },
+    ...extraProviders,
+    ...(config.singleAccordion ? [CngxNavGroupRegistry] : []),
+  ];
 }
 
 /** Enable single-accordion mode (only one nav group open at a time). */

@@ -209,14 +209,11 @@ export class CngxTreetablePresenter<T = unknown> {
   readonly columns = computed(() => extractColumns(this.tree(), this.options()));
 
   /** All column keys including the leading `_expand` column and optional `_select` column. */
-  readonly allColumns = computed(() => {
-    const cols: string[] = [];
-    if (this.showCheckboxes() && this.selectionMode() !== 'none') {
-      cols.push('_select');
-    }
-    cols.push('_expand');
-    return [...cols, ...this.columns()];
-  });
+  readonly allColumns = computed(() => [
+    ...(this.showCheckboxes() && this.selectionMode() !== 'none' ? ['_select'] : []),
+    '_expand',
+    ...this.columns(),
+  ]);
 
   /** Merged options: application-wide config overridden by instance `options`. */
   readonly resolvedOptions = computed<TreetableOptions<T>>(() => ({

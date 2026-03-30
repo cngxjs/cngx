@@ -15,30 +15,30 @@ export function flattenTree<T>(
   nodeId?: (node: T, path: readonly number[]) => string,
 ): FlatNode<T>[] {
   const roots = Array.isArray(input) ? input : [input];
-  const result: FlatNode<T>[] = [];
   const resolveId = nodeId ?? ((_node: T, path: readonly number[]) => path.join('-'));
 
-  function process(
+  const process = (
     node: Node<T>,
     depth: number,
     parentIds: readonly string[],
     path: readonly number[],
-  ): void {
+  ): FlatNode<T>[] => {
     const id = resolveId(node.value, path);
-    result.push({
+    const self: FlatNode<T> = {
       id,
       value: node.value,
       depth,
       hasChildren: (node.children?.length ?? 0) > 0,
       parentIds,
-    });
-    node.children?.forEach((child, i) =>
-      process(child, depth + 1, [...parentIds, id], [...path, i]),
-    );
-  }
+    };
+    const children =
+      node.children?.flatMap((child, i) =>
+        process(child, depth + 1, [...parentIds, id], [...path, i]),
+      ) ?? [];
+    return [self, ...children];
+  };
 
-  roots.forEach((root, i) => process(root, 0, [], [i]));
-  return result;
+  return roots.flatMap((root, i) => process(root, 0, [], [i]));
 }
 
 /**

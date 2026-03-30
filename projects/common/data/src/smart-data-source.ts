@@ -119,36 +119,25 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     this.error = computed(() => s?.error());
 
     this.filtered = computed(() => {
-      let items = data();
-
-      // Filter via CngxFilter (predicate function).
-      // Cast required: CngxFilter is injected as CngxFilter<unknown> via optional DI.
-      // Consumer must ensure the filter's predicate type aligns with T.
       const predicate = this.filter?.predicate();
-      if (predicate) {
-        items = items.filter((v) => (predicate as (v: T) => boolean)(v));
-      }
-
-      // Search via CngxSearch (full-text, default or custom)
       const term = this.search?.term();
-      if (term) {
-        const searchFn =
-          this.options?.searchFn ??
-          ((item: T, t: string) => {
-            const lower = t.toLowerCase();
-            return Object.values(item as Record<string, unknown>).some((v) => {
-              if (v === null || v === undefined || typeof v === 'object') {
-                return false;
-              }
-              return String(v as string | number | boolean | bigint)
-                .toLowerCase()
-                .includes(lower);
-            });
-          });
-        items = items.filter((item) => searchFn(item, term));
-      }
+      const searchFn =
+        this.options?.searchFn ??
+        ((item: T, t: string) => {
+          const lower = t.toLowerCase();
+          return Object.values(item as Record<string, unknown>).some((v) =>
+            v === null || v === undefined || typeof v === 'object'
+              ? false
+              : String(v as string | number | boolean | bigint)
+                  .toLowerCase()
+                  .includes(lower),
+          );
+        });
 
-      return items;
+      // Pipeline: raw → filter → search. Cast required: CngxFilter injected as unknown.
+      return data()
+        .filter((v) => !predicate || (predicate as (v: T) => boolean)(v))
+        .filter((item) => !term || searchFn(item, term));
     });
 
     this.filteredCount = computed(() => this.filtered().length);
@@ -162,44 +151,33 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     });
 
     this.processed = computed(() => {
-      let items = this.filtered();
-
-      // Sort via CngxSort — respects the full multi-sort stack in priority order
       const sorts = this.sort?.sorts() ?? [];
-      if (sorts.length > 0) {
-        const sortFn =
-          this.options?.sortFn ??
-          ((a: T, b: T, field: string, dir: 'asc' | 'desc') => {
-            const av = (a as Record<string, unknown>)[field];
-            const bv = (b as Record<string, unknown>)[field];
-            const toStr = (v: unknown): string =>
-              v === null || v === undefined || typeof v === 'object'
-                ? ''
-                : String(v as string | number | boolean | bigint);
-            const cmp = toStr(av).localeCompare(toStr(bv), undefined, {
-              numeric: true,
-              sensitivity: 'base',
-            });
-            return dir === 'asc' ? cmp : -cmp;
-          });
-        items = [...items].sort((a, b) => {
-          for (const { active, direction } of sorts) {
-            const cmp = sortFn(a, b, active, direction);
-            if (cmp !== 0) {
-              return cmp;
-            }
-          }
-          return 0;
+      const sortFn =
+        this.options?.sortFn ??
+        ((a: T, b: T, field: string, dir: 'asc' | 'desc') => {
+          const toStr = (v: unknown): string =>
+            v === null || v === undefined || typeof v === 'object'
+              ? ''
+              : String(v as string | number | boolean | bigint);
+          const av = toStr((a as Record<string, unknown>)[field]);
+          const bv = toStr((b as Record<string, unknown>)[field]);
+          const cmp = av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' });
+          return dir === 'asc' ? cmp : -cmp;
         });
-      }
 
-      // Paginate via CngxPaginate — slice after sort
-      if (this.paginate) {
-        const [start, end] = this.paginate.range();
-        items = items.slice(start, end);
-      }
+      // Pipeline: filtered → sort → paginate
+      const sorted =
+        sorts.length > 0
+          ? [...this.filtered()].sort((a, b) =>
+              sorts.reduce(
+                (cmp, { active, direction }) => cmp || sortFn(a, b, active, direction),
+                0,
+              ),
+            )
+          : this.filtered();
 
-      return items;
+      const range = this.paginate?.range();
+      return range ? sorted.slice(range[0], range[1]) : sorted;
     });
   }
 

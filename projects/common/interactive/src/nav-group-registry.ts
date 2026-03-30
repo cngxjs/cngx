@@ -38,10 +38,10 @@ export class CngxNavGroupRegistry {
 
   /** Closes all groups except the specified one. */
   closeOthers(except: NavGroupRef): void {
-    for (const group of this.groups) {
+    this.groups.forEach((group) => {
       if (group !== except && group.disclosure.opened()) {
         group.disclosure.close();
       }
-    }
+    });
   }
 }

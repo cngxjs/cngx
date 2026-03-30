@@ -45,26 +45,14 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
-  if (event.key.toLowerCase() !== combo.key) {
-    return false;
-  }
-  if (combo.shift && !event.shiftKey) {
-    return false;
-  }
-  if (combo.alt && !event.altKey) {
-    return false;
-  }
-  if (combo.mod) {
-    if (isMac ? !event.metaKey : !event.ctrlKey) {
-      return false;
-    }
-  } else {
-    if (combo.ctrl && !event.ctrlKey) {
-      return false;
-    }
-    if (combo.meta && !event.metaKey) {
-      return false;
-    }
-  }
-  return true;
+  return (
+    event.key.toLowerCase() === combo.key &&
+    (!combo.shift || event.shiftKey) &&
+    (!combo.alt || event.altKey) &&
+    (combo.mod
+      ? isMac
+        ? event.metaKey
+        : event.ctrlKey
+      : (!combo.ctrl || event.ctrlKey) && (!combo.meta || event.metaKey))
+  );
 }

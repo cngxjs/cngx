@@ -373,45 +373,30 @@ export class CngxNumericInput implements ControlValueAccessor {
 
   // ── Helpers ─────────────────────────────────────────────────────────
 
-  private increment(multiplier: number): void {
+  private adjustValue(direction: 1 | -1, multiplier: number): void {
     const current = this.valueState() ?? 0;
-    const stepped = current + this.resolvedStep() * multiplier;
-    const rounded = this.roundToDecimals(stepped);
-    const clamped = this.clamp(rounded);
+    const stepped = current + direction * this.resolvedStep() * multiplier;
+    const clamped = this.clamp(this.roundToDecimals(stepped));
     this.updateValue(clamped);
-    // Show raw value since we're focused
     const { decimal } = this.separators();
-    const raw = decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
-    this.el.nativeElement.value = raw;
+    this.el.nativeElement.value =
+      decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
     this.el.nativeElement.select();
+  }
+
+  private increment(multiplier: number): void {
+    this.adjustValue(1, multiplier);
   }
 
   private decrement(multiplier: number): void {
-    const current = this.valueState() ?? 0;
-    const stepped = current - this.resolvedStep() * multiplier;
-    const rounded = this.roundToDecimals(stepped);
-    const clamped = this.clamp(rounded);
-    this.updateValue(clamped);
-    const { decimal } = this.separators();
-    const raw = decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
-    this.el.nativeElement.value = raw;
-    this.el.nativeElement.select();
+    this.adjustValue(-1, multiplier);
   }
 
   private clamp(value: number): number {
+    const floor = !this.allowNegative() ? Math.max(0, value) : value;
     const minVal = this.min();
     const maxVal = this.max();
-    let result = value;
-    if (!this.allowNegative() && result < 0) {
-      result = 0;
-    }
-    if (minVal != null && result < minVal) {
-      result = minVal;
-    }
-    if (maxVal != null && result > maxVal) {
-      result = maxVal;
-    }
-    return result;
+    return Math.min(maxVal ?? Infinity, Math.max(minVal ?? -Infinity, floor));
   }
 
   private roundToDecimals(value: number): number {

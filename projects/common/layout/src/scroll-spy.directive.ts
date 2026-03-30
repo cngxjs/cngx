@@ -107,23 +107,17 @@ export class CngxScrollSpy {
     // Fine-grained thresholds (0..1 in 0.1 steps) for accurate ratio tracking.
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          this.ratios.set(entry.target.id, entry.intersectionRatio);
-        }
+        entries.forEach((entry) => this.ratios.set(entry.target.id, entry.intersectionRatio));
 
-        let bestId: string | null = null;
-        let bestRatio = 0;
+        const best = Array.from(this.ratios).reduce<{ id: string | null; ratio: number }>(
+          (acc, [id, ratio]) =>
+            ratio >= thresholdValue && ratio > acc.ratio ? { id, ratio } : acc,
+          { id: null, ratio: 0 },
+        );
 
-        for (const [id, ratio] of this.ratios) {
-          if (ratio >= thresholdValue && ratio > bestRatio) {
-            bestRatio = ratio;
-            bestId = id;
-          }
-        }
-
-        if (bestId !== this.activeIdState()) {
-          this.activeIdState.set(bestId);
-          this.activeIdChange.emit(bestId);
+        if (best.id !== this.activeIdState()) {
+          this.activeIdState.set(best.id);
+          this.activeIdChange.emit(best.id);
         }
       },
       {
@@ -133,9 +127,7 @@ export class CngxScrollSpy {
       },
     );
 
-    for (const el of elements) {
-      observer.observe(el);
-    }
+    elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
   }
