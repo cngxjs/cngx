@@ -6,13 +6,21 @@ import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { PlaygroundComponent } from '../../../shared/playground.component';
 import { Playground } from '../../../shared/playground';
-import { CngxTreetable, CngxEmptyTpl, CngxHeaderTpl, CngxCellTpl } from '@cngx/data-display/treetable';
+import {
+  CngxTreetable,
+  CngxEmptyTpl,
+  CngxHeaderTpl,
+  CngxCellTpl,
+  filterTree,
+  sortTree,
+  nodeMatchesSearch,
+} from '@cngx/data-display/treetable';
 import { CngxMaterialTreetable } from '@cngx/data-display/mat-treetable';
 import { CngxSearch } from '@cngx/common/interactive';
 import { CngxSort, CngxSortHeader, CngxPaginate } from '@cngx/common/data';
 import { CngxMatPaginator } from '@cngx/ui/material';
 import { ORG_TREE, type Employee } from '../../../fixtures';
-import { filterTree, sortTree, nodeMatchesSearch } from '@cngx/data-display/treetable';
+
 import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
 @Component({
@@ -35,361 +43,452 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     CngxMatPaginator,
   ],
   template: `
-    <app-doc-shell title="Treetable"
-      [apiComponents]="['CngxTreetablePresenter', 'CngxTreetable', 'CngxMaterialTreetable']">
+    <app-doc-shell
+      title="Treetable"
+      [apiComponents]="['CngxTreetablePresenter', 'CngxTreetable', 'CngxMaterialTreetable']"
+    >
       <app-playground [playground]="pg">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      [selectionMode]="$any(selectionMode.value())"
-      [showCheckboxes]="showCheckboxes.value()"
-      [options]="{ highlightRowOnHover: highlightRowOnHover.value(), capitaliseHeader: capitaliseHeader.value() }"
-      (nodeClicked)="lastClickedCdk.set($event)"
-    />
-  </div>
-  @if (lastClickedCdk(); as node) {
-    <div class="output-badge">
-      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
-    </div>
-  }
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            [selectionMode]="$any(selectionMode.value())"
+            [showCheckboxes]="showCheckboxes.value()"
+            [options]="{
+              highlightRowOnHover: highlightRowOnHover.value(),
+              capitaliseHeader: capitaliseHeader.value(),
+            }"
+            (nodeClicked)="lastClickedCdk.set($event)"
+          />
+        </div>
+        @if (lastClickedCdk(); as node) {
+          <div class="output-badge">
+            Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+          </div>
+        }
       </app-playground>
-      <app-example-card title="CDK Treetable"
+      <app-example-card
+        title="CDK Treetable"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
-        [sourceTs]="_srcTs1">
-        
-  <div class="table-wrap">
-    <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
-  </div>
-  @if (lastClickedCdk(); as node) {
-    <div class="output-badge">
-      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
-      (depth {{ node.depth }})
-    </div>
-  }
+        [sourceTs]="_srcTs1"
+      >
+        <div class="table-wrap">
+          <cngx-treetable [tree]="tree()" (nodeClicked)="lastClickedCdk.set($event)" />
+        </div>
+        @if (lastClickedCdk(); as node) {
+          <div class="output-badge">
+            Last clicked: <strong>{{ node.value.name }}</strong> &mdash;
+            {{ node.value.role }} (depth {{ node.depth }})
+          </div>
+        }
       </app-example-card>
-      <app-example-card title="Material Treetable"
+      <app-example-card
+        title="Material Treetable"
         [subtitle]="_s2"
         [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
-        
-  <div class="table-wrap">
-    <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
-  </div>
-  @if (lastClickedMat(); as node) {
-    <div class="output-badge">
-      Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
-    </div>
-  }
+        [sourceTs]="_srcTs2"
+      >
+        <div class="table-wrap">
+          <cngx-mat-treetable [tree]="tree()" (nodeClicked)="lastClickedMat.set($event)" />
+        </div>
+        @if (lastClickedMat(); as node) {
+          <div class="output-badge">
+            Last clicked: <strong>{{ node.value.name }}</strong> &mdash; {{ node.value.role }}
+          </div>
+        }
       </app-example-card>
-      <app-example-card title="CDK — Single Selection (click-to-select)"
+      <app-example-card
+        title="CDK — Single Selection (click-to-select)"
         [subtitle]="_s3"
         [sourceHtml]="_srcHtml3"
-        [sourceTs]="_srcTs3">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      selectionMode="single"
-      (selectionChanged)="singleSelected.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
-  </div>
+        [sourceTs]="_srcTs3"
+      >
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            selectionMode="single"
+            (selectionChanged)="singleSelected.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          selectionChanged: <strong>{{ singleSelected()[0] || '—' }}</strong>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Multi Selection (click-to-select)"
+      <app-example-card
+        title="CDK — Multi Selection (click-to-select)"
         [subtitle]="_s4"
         [sourceHtml]="_srcHtml4"
-        [sourceTs]="_srcTs4">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      selectionMode="multi"
-      (selectionChanged)="multiSelected.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    selectionChanged ({{ multiSelected().length }}):
-    <strong>{{ multiSelected().join(', ') || '—' }}</strong>
-  </div>
+        [sourceTs]="_srcTs4"
+      >
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            selectionMode="multi"
+            (selectionChanged)="multiSelected.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          selectionChanged ({{ multiSelected().length }}):
+          <strong>{{ multiSelected().join(', ') || '—' }}</strong>
+        </div>
       </app-example-card>
-      <app-example-card title="Material — Single Selection + Checkbox"
+      <app-example-card
+        title="Material — Single Selection + Checkbox"
         [subtitle]="_s5"
         [sourceHtml]="_srcHtml5"
-        [sourceTs]="_srcTs5">
-        
-  <div class="table-wrap">
-    <cngx-mat-treetable
-      [tree]="tree()"
-      selectionMode="single"
-      [showCheckboxes]="true"
-      (selectionChanged)="singleCheckboxSelected.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
-  </div>
+        [sourceTs]="_srcTs5"
+      >
+        <div class="table-wrap">
+          <cngx-mat-treetable
+            [tree]="tree()"
+            selectionMode="single"
+            [showCheckboxes]="true"
+            (selectionChanged)="singleCheckboxSelected.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          selectionChanged: <strong>{{ singleCheckboxSelected()[0] || '—' }}</strong>
+        </div>
       </app-example-card>
-      <app-example-card title="Material — Multi Selection + Checkboxes"
+      <app-example-card
+        title="Material — Multi Selection + Checkboxes"
         [subtitle]="_s6"
         [sourceHtml]="_srcHtml6"
-        [sourceTs]="_srcTs6">
-        
-  <div class="table-wrap">
-    <cngx-mat-treetable
-      [tree]="tree()"
-      selectionMode="multi"
-      [showCheckboxes]="true"
-      (selectionChanged)="multiCheckboxSelected.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    selectionChanged ({{ multiCheckboxSelected().length }}):
-    <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
-  </div>
+        [sourceTs]="_srcTs6"
+      >
+        <div class="table-wrap">
+          <cngx-mat-treetable
+            [tree]="tree()"
+            selectionMode="multi"
+            [showCheckboxes]="true"
+            (selectionChanged)="multiCheckboxSelected.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          selectionChanged ({{ multiCheckboxSelected().length }}):
+          <strong>{{ multiCheckboxSelected().join(', ') || '—' }}</strong>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Controlled Selection (Two-Way Binding)"
+      <app-example-card
+        title="CDK — Controlled Selection (Two-Way Binding)"
         [subtitle]="_s7"
         [sourceHtml]="_srcHtml7"
-        [sourceTs]="_srcTs7">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      selectionMode="multi"
-      [showCheckboxes]="true"
-      [selectedIds]="controlledIds()"
-      (selectedIdsChange)="controlledIds.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    selectedIds ({{ controlledIds().size }}): <strong>{{ controlledIdsLabel() }}</strong>
-  </div>
-  <div class="button-row">
-    <button type="button" (click)="selectLevel1()">Select all L1</button>
-    <button type="button" (click)="clearSelection()">Clear</button>
-  </div>
+        [sourceTs]="_srcTs7"
+      >
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            selectionMode="multi"
+            [showCheckboxes]="true"
+            [selectedIds]="controlledIds()"
+            (selectedIdsChange)="controlledIds.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          selectedIds ({{ controlledIds().size }}): <strong>{{ controlledIdsLabel() }}</strong>
+        </div>
+        <div class="button-row">
+          <button type="button" (click)="selectLevel1()">Select all L1</button>
+          <button type="button" (click)="clearSelection()">Clear</button>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Controlled Expand (Two-Way Binding)"
+      <app-example-card
+        title="CDK — Controlled Expand (Two-Way Binding)"
         [subtitle]="_s8"
         [sourceHtml]="_srcHtml8"
-        [sourceTs]="_srcTs8">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      [expandedIds]="controlledExpandedIds()"
-      (expandedIdsChange)="controlledExpandedIds.set($event)"
-    />
-  </div>
-  <div class="output-badge">
-    expandedIds ({{ controlledExpandedIds().size }}): <strong>{{ expandedIdsLabel() }}</strong>
-  </div>
-  <div class="button-row">
-    <button type="button" (click)="expandAll()">Expand all</button>
-    <button type="button" (click)="collapseAll()">Collapse all</button>
-  </div>
+        [sourceTs]="_srcTs8"
+      >
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            [expandedIds]="controlledExpandedIds()"
+            (expandedIdsChange)="controlledExpandedIds.set($event)"
+          />
+        </div>
+        <div class="output-badge">
+          expandedIds ({{ controlledExpandedIds().size }}):
+          <strong>{{ expandedIdsLabel() }}</strong>
+        </div>
+        <div class="button-row">
+          <button type="button" (click)="expandAll()">Expand all</button>
+          <button type="button" (click)="collapseAll()">Collapse all</button>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Expand &amp; Collapse Outputs"
+      <app-example-card
+        title="CDK — Expand &amp; Collapse Outputs"
         [subtitle]="_s9"
         [sourceHtml]="_srcHtml9"
-        [sourceTs]="_srcTs9">
-        
-  <div class="table-wrap">
-    <cngx-treetable
-      [tree]="tree()"
-      (nodeExpanded)="lastExpanded.set($event)"
-      (nodeCollapsed)="lastCollapsed.set($event)"
-    />
-  </div>
-  <div class="status-row">
-    <span class="status-badge">
-      nodeExpanded: <strong>{{ lastExpanded()?.value?.name ?? '—' }}</strong>
-    </span>
-    <span class="status-badge">
-      nodeCollapsed: <strong>{{ lastCollapsed()?.value?.name ?? '—' }}</strong>
-    </span>
-  </div>
+        [sourceTs]="_srcTs9"
+      >
+        <div class="table-wrap">
+          <cngx-treetable
+            [tree]="tree()"
+            (nodeExpanded)="lastExpanded.set($event)"
+            (nodeCollapsed)="lastCollapsed.set($event)"
+          />
+        </div>
+        <div class="status-row">
+          <span class="status-badge">
+            nodeExpanded: <strong>{{ lastExpanded()?.value?.name ?? '—' }}</strong>
+          </span>
+          <span class="status-badge">
+            nodeCollapsed: <strong>{{ lastCollapsed()?.value?.name ?? '—' }}</strong>
+          </span>
+        </div>
       </app-example-card>
-      <app-example-card title="Search — filterTree + nodeMatchesSearch"
+      <app-example-card
+        title="Search — filterTree + nodeMatchesSearch"
         [subtitle]="_s10"
         [sourceHtml]="_srcHtml10"
-        [sourceTs]="_srcTs10">
-        
-  <div class="search-row">
-    <input
-      cngxSearch
-      [debounceMs]="200"
-      (searchChange)="searchTerm.set($event)"
-      placeholder="Search employees…"
-      class="search-input"
-    />
-    @if (searchTerm()) {
-      <span class="term-badge">{{ searchTerm() }}</span>
-    }
-  </div>
-  <div class="table-wrap">
-    <cngx-treetable [tree]="searchFilteredTree()">
-      <ng-template cngxEmpty>
-        <div class="empty-state">No results for &quot;{{ searchTerm() }}&quot;.</div>
-      </ng-template>
-    </cngx-treetable>
-  </div>
+        [sourceTs]="_srcTs10"
+      >
+        <div class="search-row">
+          <input
+            cngxSearch
+            [debounceMs]="200"
+            (searchChange)="searchTerm.set($event)"
+            placeholder="Search employees…"
+            class="search-input"
+          />
+          @if (searchTerm()) {
+            <span class="term-badge">{{ searchTerm() }}</span>
+          }
+        </div>
+        <div class="table-wrap">
+          <cngx-treetable [tree]="searchFilteredTree()">
+            <ng-template cngxEmpty>
+              <div class="empty-state">No results for &quot;{{ searchTerm() }}&quot;.</div>
+            </ng-template>
+          </cngx-treetable>
+        </div>
       </app-example-card>
-      <app-example-card title="Sort — sortTree + CngxSort + CngxSortHeader"
+      <app-example-card
+        title="Sort — sortTree + CngxSort + CngxSortHeader"
         [subtitle]="_s11"
         [sourceHtml]="_srcHtml11"
-        [sourceTs]="_srcTs11">
-        
-  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
-    <div class="table-wrap">
-      <cngx-treetable [tree]="sortedTree()">
-        <ng-template [cngxHeader]="'name'">
-          <button cngxSortHeader="name" [cngxSortRef]="sort" #nH="cngxSortHeader" class="sort-btn">
-            Name @if (nH.isActive()) {<span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-        <ng-template [cngxHeader]="'role'">
-          <button cngxSortHeader="role" [cngxSortRef]="sort" #rH="cngxSortHeader" class="sort-btn">
-            Role @if (rH.isActive()) {<span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-        <ng-template [cngxHeader]="'location'">
-          <button cngxSortHeader="location" [cngxSortRef]="sort" #lH="cngxSortHeader" class="sort-btn">
-            Location @if (lH.isActive()) {<span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-      </cngx-treetable>
-    </div>
-  </div>
-  @if (activeSortState(); as s) {
-    <div class="output-badge">
-      sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
-    </div>
-  }
+        [sourceTs]="_srcTs11"
+      >
+        <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+          <div class="table-wrap">
+            <cngx-treetable [tree]="sortedTree()">
+              <ng-template [cngxHeader]="'name'">
+                <button
+                  cngxSortHeader="name"
+                  [cngxSortRef]="sort"
+                  #nH="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Name
+                  @if (nH.isActive()) {
+                    <span class="sort-arrow">{{ nH.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+              <ng-template [cngxHeader]="'role'">
+                <button
+                  cngxSortHeader="role"
+                  [cngxSortRef]="sort"
+                  #rH="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Role
+                  @if (rH.isActive()) {
+                    <span class="sort-arrow">{{ rH.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+              <ng-template [cngxHeader]="'location'">
+                <button
+                  cngxSortHeader="location"
+                  [cngxSortRef]="sort"
+                  #lH="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Location
+                  @if (lH.isActive()) {
+                    <span class="sort-arrow">{{ lH.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+            </cngx-treetable>
+          </div>
+        </div>
+        @if (activeSortState(); as s) {
+          <div class="output-badge">
+            sortChange: <strong>{{ s.active }}</strong> &mdash; {{ s.direction }}
+          </div>
+        }
       </app-example-card>
-      <app-example-card title="Combined — Sort + Search"
+      <app-example-card
+        title="Combined — Sort + Search"
         [subtitle]="_s12"
         [sourceHtml]="_srcHtml12"
-        [sourceTs]="_srcTs12">
-        
-  <div class="search-row">
-    <input
-      cngxSearch
-      [debounceMs]="200"
-      (searchChange)="combinedSearchTerm.set($event)"
-      placeholder="Search…"
-      class="search-input"
-    />
-  </div>
-  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
-    <div class="table-wrap">
-      <cngx-treetable [tree]="combinedTree()">
-        <ng-template [cngxHeader]="'name'">
-          <button cngxSortHeader="name" [cngxSortRef]="combinedSort" #cn="cngxSortHeader" class="sort-btn">
-            Name @if (cn.isActive()) {<span class="sort-arrow">{{ cn.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-        <ng-template [cngxHeader]="'role'">
-          <button cngxSortHeader="role" [cngxSortRef]="combinedSort" #cr="cngxSortHeader" class="sort-btn">
-            Role @if (cr.isActive()) {<span class="sort-arrow">{{ cr.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-        <ng-template [cngxHeader]="'location'">
-          <button cngxSortHeader="location" [cngxSortRef]="combinedSort" #cl="cngxSortHeader" class="sort-btn">
-            Location @if (cl.isActive()) {<span class="sort-arrow">{{ cl.isAsc() ? '↑' : '↓' }}</span>}
-          </button>
-        </ng-template>
-        <ng-template cngxEmpty>
-          <div class="empty-state">No results for &quot;{{ combinedSearchTerm() }}&quot;.</div>
-        </ng-template>
-      </cngx-treetable>
-    </div>
-  </div>
+        [sourceTs]="_srcTs12"
+      >
+        <div class="search-row">
+          <input
+            cngxSearch
+            [debounceMs]="200"
+            (searchChange)="combinedSearchTerm.set($event)"
+            placeholder="Search…"
+            class="search-input"
+          />
+        </div>
+        <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+          <div class="table-wrap">
+            <cngx-treetable [tree]="combinedTree()">
+              <ng-template [cngxHeader]="'name'">
+                <button
+                  cngxSortHeader="name"
+                  [cngxSortRef]="combinedSort"
+                  #cn="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Name
+                  @if (cn.isActive()) {
+                    <span class="sort-arrow">{{ cn.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+              <ng-template [cngxHeader]="'role'">
+                <button
+                  cngxSortHeader="role"
+                  [cngxSortRef]="combinedSort"
+                  #cr="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Role
+                  @if (cr.isActive()) {
+                    <span class="sort-arrow">{{ cr.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+              <ng-template [cngxHeader]="'location'">
+                <button
+                  cngxSortHeader="location"
+                  [cngxSortRef]="combinedSort"
+                  #cl="cngxSortHeader"
+                  class="sort-btn"
+                >
+                  Location
+                  @if (cl.isActive()) {
+                    <span class="sort-arrow">{{ cl.isAsc() ? '↑' : '↓' }}</span>
+                  }
+                </button>
+              </ng-template>
+              <ng-template cngxEmpty>
+                <div class="empty-state">
+                  No results for &quot;{{ combinedSearchTerm() }}&quot;.
+                </div>
+              </ng-template>
+            </cngx-treetable>
+          </div>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Custom Cell &amp; Header Templates"
+      <app-example-card
+        title="CDK — Custom Cell &amp; Header Templates"
         [subtitle]="_s13"
         [sourceHtml]="_srcHtml13"
-        [sourceTs]="_srcTs13">
-        
-  <div class="table-wrap">
-    <cngx-treetable [tree]="tree()">
-      <ng-template [cngxHeader]="'name'">
-        <span class="custom-header">&#9733; Employee</span>
-      </ng-template>
-      <ng-template [cngxCell]="'name'" let-node let-value="value">
-        <span [style.font-weight]="node.depth === 0 ? '700' : '400'">{{ value }}</span>
-      </ng-template>
-      <ng-template [cngxCell]="'location'" let-value="value">
-        <span class="location-chip">{{ value }}</span>
-      </ng-template>
-    </cngx-treetable>
-  </div>
+        [sourceTs]="_srcTs13"
+      >
+        <div class="table-wrap">
+          <cngx-treetable [tree]="tree()">
+            <ng-template [cngxHeader]="'name'">
+              <span class="custom-header">&#9733; Employee</span>
+            </ng-template>
+            <ng-template [cngxCell]="'name'" let-node let-value="value">
+              <span [style.font-weight]="node.depth === 0 ? '700' : '400'">{{ value }}</span>
+            </ng-template>
+            <ng-template [cngxCell]="'location'" let-value="value">
+              <span class="location-chip">{{ value }}</span>
+            </ng-template>
+          </cngx-treetable>
+        </div>
       </app-example-card>
-      <app-example-card title="CDK — Custom Empty State"
+      <app-example-card
+        title="CDK — Custom Empty State"
         [subtitle]="_s14"
         [sourceHtml]="_srcHtml14"
-        [sourceTs]="_srcTs14">
-        
-  <div class="table-wrap">
-    <cngx-treetable [tree]="[]">
-      <ng-template cngxEmpty>
-        <div class="empty-state">
-          <span class="empty-icon">&#128196;</span>
-          <p>No employees found.</p>
+        [sourceTs]="_srcTs14"
+      >
+        <div class="table-wrap">
+          <cngx-treetable [tree]="[]">
+            <ng-template cngxEmpty>
+              <div class="empty-state">
+                <span class="empty-icon">&#128196;</span>
+                <p>No employees found.</p>
+              </div>
+            </ng-template>
+          </cngx-treetable>
         </div>
-      </ng-template>
-    </cngx-treetable>
-  </div>
       </app-example-card>
-      <app-example-card title="Pagination — Paginated Root Nodes"
+      <app-example-card
+        title="Pagination — Paginated Root Nodes"
         [subtitle]="_s15"
         [sourceHtml]="_srcHtml15"
-        [sourceTs]="_srcTs15">
-        
-  <div cngxPaginate #pager="cngxPaginate"
-       [total]="deptTotal"
-       [cngxPageIndex]="deptPageIndex()"
-       [cngxPageSize]="deptPageSize()"
-       (pageChange)="deptPageIndex.set($event)"
-       (pageSizeChange)="deptPageSize.set($event)"
-       style="display:contents">
-    <div class="table-wrap">
-      <cngx-treetable [tree]="deptPage()">
-        <ng-template cngxEmpty>
-          <div class="empty-state">No departments on this page.</div>
-        </ng-template>
-      </cngx-treetable>
-    </div>
-    <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />
-    <div class="status-row">
-      <span class="status-badge">department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span>
-    </div>
-  </div>
+        [sourceTs]="_srcTs15"
+      >
+        <div
+          cngxPaginate
+          #pager="cngxPaginate"
+          [total]="deptTotal"
+          [cngxPageIndex]="deptPageIndex()"
+          [cngxPageSize]="deptPageSize()"
+          (pageChange)="deptPageIndex.set($event)"
+          (pageSizeChange)="deptPageSize.set($event)"
+          style="display:contents"
+        >
+          <div class="table-wrap">
+            <cngx-treetable [tree]="deptPage()">
+              <ng-template cngxEmpty>
+                <div class="empty-state">No departments on this page.</div>
+              </ng-template>
+            </cngx-treetable>
+          </div>
+          <cngx-mat-paginator [cngxPaginateRef]="pager" [pageSizeOptions]="[1, 2, 3]" />
+          <div class="status-row">
+            <span class="status-badge"
+              >department {{ pager.pageIndex() + 1 }} of {{ pager.totalPages() }}</span
+            >
+          </div>
+        </div>
       </app-example-card>
     </app-doc-shell>
   `,
 })
 export class TreetableDemoComponent {
-  protected readonly _s0 = 'CDK <code>&lt;cngx-treetable&gt;</code> with all presenter inputs wired. Toggle controls to explore selection modes, checkboxes, hover highlight.';
-  protected readonly _s1 = 'Headless — uses <code>CdkTable</code>, no Material dependency. Columns auto-detected from first node. Pass <code>[tree]</code> as a single root node or an array of roots.';
-  protected readonly _s2 = 'Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant. Theme via <code>mat-treetable-theme.scss</code>.';
-  protected readonly _s3 = '<code>selectionMode="single"</code> — clicking a row selects it. Emit via <code>(selectionChanged)</code>.';
-  protected readonly _s4 = '<code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via <code>(selectionChanged)</code>.';
-  protected readonly _s5 = '<code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code> — no header checkbox in single mode.';
-  protected readonly _s6 = '<code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code> — header checkbox selects / deselects all visible rows, including indeterminate state.';
-  protected readonly _s7 = '<code>[selectedIds]="controlledIds()"</code> + <code>(selectedIdsChange)="controlledIds.set($event)"</code> — external state drives selection. Pre-seeded with two IDs.';
-  protected readonly _s8 = '<code>[expandedIds]="controlledExpandedIds()"</code> + <code>(expandedIdsChange)="controlledExpandedIds.set($event)"</code> — external state drives expand/collapse. Pre-seeded with root only.';
-  protected readonly _s9 = '<code>(nodeExpanded)</code> and <code>(nodeCollapsed)</code> fire on each toggle — useful for lazy-loading children or analytics.';
-  protected readonly _s10 = '<code>filterTree</code> prunes whole branches; <code>nodeMatchesSearch</code> does case-insensitive full-text matching across all primitive fields. Consumer feeds the result into <code>[tree]</code>.';
-  protected readonly _s11 = '<code>[cngxSort]</code> holds sort state. <code>[cngxSortHeader]</code> wires a click target to it via the explicit <code>[cngxSortRef]</code> binding — no ancestor injection. <code>sortTree</code> reorders each tree level independently.';
-  protected readonly _s12 = 'Search and sort compose via a single <code>computed()</code>: filter first, then sort. No coordination between the two directives — just signal reads.';
-  protected readonly _s13 = '<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (<code>FlatNode</code>), <code>let-value="value"</code> (raw primitive).';
-  protected readonly _s14 = '<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.';
-  protected readonly _s15 = '<code>CngxPaginate</code> works with treetables by paginating at the root-node level. Slice <code>ORG_TREE.children</code> with <code>pager.range()</code> and pass the result as <code>[tree]</code>. Each "page" shows one department subtree with its full branch intact. This pattern works regardless of Material — swap <code>&lt;cngx-mat-paginator&gt;</code> for any custom nav.';
+  protected readonly _s0 =
+    'CDK <code>&lt;cngx-treetable&gt;</code> with all presenter inputs wired. Toggle controls to explore selection modes, checkboxes, hover highlight.';
+  protected readonly _s1 =
+    'Headless — uses <code>CdkTable</code>, no Material dependency. Columns auto-detected from first node. Pass <code>[tree]</code> as a single root node or an array of roots.';
+  protected readonly _s2 =
+    'Uses <code>MatTable</code> — full Angular Material styling. Same API as the CDK variant. Theme via <code>mat-treetable-theme.scss</code>.';
+  protected readonly _s3 =
+    '<code>selectionMode="single"</code> — clicking a row selects it. Emit via <code>(selectionChanged)</code>.';
+  protected readonly _s4 =
+    '<code>selectionMode="multi"</code> — multiple rows selectable by clicking. Output via <code>(selectionChanged)</code>.';
+  protected readonly _s5 =
+    '<code>selectionMode="single"</code> + <code>[showCheckboxes]="true"</code> — no header checkbox in single mode.';
+  protected readonly _s6 =
+    '<code>selectionMode="multi"</code> + <code>[showCheckboxes]="true"</code> — header checkbox selects / deselects all visible rows, including indeterminate state.';
+  protected readonly _s7 =
+    '<code>[selectedIds]="controlledIds()"</code> + <code>(selectedIdsChange)="controlledIds.set($event)"</code> — external state drives selection. Pre-seeded with two IDs.';
+  protected readonly _s8 =
+    '<code>[expandedIds]="controlledExpandedIds()"</code> + <code>(expandedIdsChange)="controlledExpandedIds.set($event)"</code> — external state drives expand/collapse. Pre-seeded with root only.';
+  protected readonly _s9 =
+    '<code>(nodeExpanded)</code> and <code>(nodeCollapsed)</code> fire on each toggle — useful for lazy-loading children or analytics.';
+  protected readonly _s10 =
+    '<code>filterTree</code> prunes whole branches; <code>nodeMatchesSearch</code> does case-insensitive full-text matching across all primitive fields. Consumer feeds the result into <code>[tree]</code>.';
+  protected readonly _s11 =
+    '<code>[cngxSort]</code> holds sort state. <code>[cngxSortHeader]</code> wires a click target to it via the explicit <code>[cngxSortRef]</code> binding — no ancestor injection. <code>sortTree</code> reorders each tree level independently.';
+  protected readonly _s12 =
+    'Search and sort compose via a single <code>computed()</code>: filter first, then sort. No coordination between the two directives — just signal reads.';
+  protected readonly _s13 =
+    '<code>[cngxCell]</code> replaces a column cell, <code>[cngxHeader]</code> replaces its header. Context: <code>let-node</code> (<code>FlatNode</code>), <code>let-value="value"</code> (raw primitive).';
+  protected readonly _s14 =
+    '<code>cngxEmpty</code> — rendered when the tree has no visible rows. Pass an empty array to trigger it.';
+  protected readonly _s15 =
+    '<code>CngxPaginate</code> works with treetables by paginating at the root-node level. Slice <code>ORG_TREE.children</code> with <code>pager.range()</code> and pass the result as <code>[tree]</code>. Each "page" shows one department subtree with its full branch intact. This pattern works regardless of Material — swap <code>&lt;cngx-mat-paginator&gt;</code> for any custom nav.';
   protected readonly _srcHtml0 = `<div class="table-wrap">
     <cngx-treetable
       [tree]="tree()"
@@ -463,7 +562,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -473,7 +572,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -551,7 +650,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -561,7 +660,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -638,7 +737,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -648,7 +747,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -727,7 +826,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -737,7 +836,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -817,7 +916,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -827,7 +926,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -907,7 +1006,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -917,7 +1016,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -998,7 +1097,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1008,7 +1107,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1093,7 +1192,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1103,7 +1202,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1186,7 +1285,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1196,7 +1295,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1280,7 +1379,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1290,7 +1389,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1378,7 +1477,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1388,7 +1487,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1483,7 +1582,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1493,7 +1592,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1595,7 +1694,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1605,7 +1704,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1687,7 +1786,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1697,7 +1796,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1776,7 +1875,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1786,7 +1885,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1874,7 +1973,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1884,7 +1983,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<SortEntry | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1908,13 +2007,22 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   );`;
   readonly selectionMode = Playground.select(
     'Selection Mode',
-    [{ label: 'none', value: 'none' }, { label: 'single', value: 'single' }, { label: 'multi', value: 'multi' }],
+    [
+      { label: 'none', value: 'none' },
+      { label: 'single', value: 'single' },
+      { label: 'multi', value: 'multi' },
+    ],
     'none',
   );
   readonly showCheckboxes = Playground.bool('Show Checkboxes', false);
   readonly highlightRowOnHover = Playground.bool('Highlight Row On Hover', true);
   readonly capitaliseHeader = Playground.bool('Capitalise Header', true);
-  readonly pg = new Playground([this.selectionMode, this.showCheckboxes, this.highlightRowOnHover, this.capitaliseHeader]);
+  readonly pg = new Playground([
+    this.selectionMode,
+    this.showCheckboxes,
+    this.highlightRowOnHover,
+    this.capitaliseHeader,
+  ]);
 
   protected readonly tree = signal<Node<Employee>>(ORG_TREE);
   protected readonly lastClickedCdk = signal<FlatNode<Employee> | null>(null);
@@ -1970,7 +2078,9 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly activeSortState = signal<
+    { active: string; direction: 'asc' | 'desc' } | null | undefined
+  >(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1980,7 +2090,9 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly combinedSortState = signal<
+    { active: string; direction: 'asc' | 'desc' } | null | undefined
+  >(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1990,17 +2102,15 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
     return nodes;
   });
-  
 
   private readonly _deptRoots: Node<Employee>[] = ORG_TREE.children ?? [];
   protected readonly deptPageIndex = signal(0);
-  protected readonly deptPageSize  = signal(1);
-  protected readonly deptTotal     = this._deptRoots.length;
-  protected readonly deptPage      = computed(() =>
+  protected readonly deptPageSize = signal(1);
+  protected readonly deptTotal = this._deptRoots.length;
+  protected readonly deptPage = computed(() =>
     this._deptRoots.slice(
       this.deptPageIndex() * this.deptPageSize(),
       (this.deptPageIndex() + 1) * this.deptPageSize(),
     ),
   );
-      
 }

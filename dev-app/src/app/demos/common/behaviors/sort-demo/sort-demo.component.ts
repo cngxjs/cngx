@@ -346,7 +346,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -372,7 +372,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -396,7 +396,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -464,7 +464,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -490,7 +490,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -514,7 +514,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -603,7 +603,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -629,7 +629,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -653,7 +653,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -697,7 +697,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -723,7 +723,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -747,7 +747,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -823,7 +823,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -849,7 +849,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -873,7 +873,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -917,7 +917,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -943,7 +943,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -967,7 +967,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -987,7 +987,7 @@ import { type DJProduct } from '../../../../fixtures';
   );`;
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sort1State = signal<SortEntry | null | undefined>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -1013,7 +1013,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null | undefined): void {
+  protected onSort2Change(s: SortEntry | null | undefined): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -1037,7 +1037,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
+  protected readonly sortState = signal<SortEntry | null | undefined>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
