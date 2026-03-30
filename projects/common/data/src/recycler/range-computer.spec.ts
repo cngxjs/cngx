@@ -129,6 +129,76 @@ describe('computeRange', () => {
     });
   });
 
+  describe('grid mode (columns > 1)', () => {
+    const rowHeight = 100;
+    const columns = 4;
+    const overscan = 5;
+    const totalCount = 100; // 25 rows
+
+    it('should compute row-aligned range at scrollTop=0', () => {
+      const result = computeRange(0, 500, totalCount, rowHeight, overscan, columns);
+      // 5 visible rows (500/100), overscanRows = ceil(5/4) = 2
+      // startRow = max(0, 0-2) = 0, endRow = min(25, 5+2) = 7
+      expect(result.start).toBe(0);
+      expect(result.end).toBe(28); // 7 rows * 4 columns
+      expect(result.offsetBefore).toBe(0);
+      expect(result.totalSize).toBe(25 * rowHeight);
+    });
+
+    it('should snap start and end to row boundaries', () => {
+      // scrollTop=250 → rawStartRow = floor(250/100) = 2, rawEndRow = ceil(750/100) = 8
+      const result = computeRange(250, 500, totalCount, rowHeight, overscan, columns);
+      // startRow = max(0, 2-2) = 0, endRow = min(25, 8+2) = 10
+      expect(result.start % columns).toBe(0);
+      // end may not be a multiple if clamped to totalCount, but here 10*4=40 < 100
+      expect(result.end % columns).toBe(0);
+    });
+
+    it('should apply overscan after row alignment', () => {
+      // scrollTop=500 → rawStartRow=5, rawEndRow=10
+      const result = computeRange(500, 500, totalCount, rowHeight, overscan, columns);
+      // overscanRows = 2
+      // startRow = 5-2 = 3, endRow = 10+2 = 12
+      expect(result.start).toBe(12); // row 3 * 4
+      expect(result.end).toBe(48); // row 12 * 4
+    });
+
+    it('should clamp end to totalCount for partial last row', () => {
+      // 13 items = 4 rows (last row has 1 item), near bottom
+      const result = computeRange(300, 500, 13, rowHeight, 0, columns);
+      expect(result.end).toBe(13); // not rounded up to 16
+    });
+
+    it('should compute correct totalSize based on rows', () => {
+      const result = computeRange(0, 500, totalCount, rowHeight, overscan, columns);
+      expect(result.totalSize).toBe(Math.ceil(totalCount / columns) * rowHeight);
+    });
+
+    it('should compute correct offsetBefore and offsetAfter', () => {
+      const result = computeRange(500, 500, totalCount, rowHeight, overscan, columns);
+      // startRow = 3, offsetBefore = 3 * 100 = 300
+      expect(result.offsetBefore).toBe(3 * rowHeight);
+      // endRow = 12, totalRows = 25, offsetAfter = (25-12) * 100 = 1300
+      expect(result.offsetAfter).toBe((25 - 12) * rowHeight);
+    });
+
+    it('should handle small grid that fits entirely in viewport', () => {
+      const result = computeRange(0, 500, 8, rowHeight, overscan, columns);
+      // 2 rows fit in 500px, all visible
+      expect(result.start).toBe(0);
+      expect(result.end).toBe(8);
+      expect(result.offsetBefore).toBe(0);
+      expect(result.offsetAfter).toBe(0);
+    });
+
+    it('should ignore columns for variable estimateSize', () => {
+      const varSize = (i: number) => (i < 10 ? 100 : 50);
+      const result = computeRange(0, 500, 50, varSize, 5, columns);
+      // Should behave like list mode — start not necessarily row-aligned
+      expect(result.start).toBe(0);
+    });
+  });
+
   describe('totalCount changes', () => {
     it('should handle totalCount increase (infinite scroll)', () => {
       const r1 = computeRange(0, 500, 50, 48, 5);

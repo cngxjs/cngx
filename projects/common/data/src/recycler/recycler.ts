@@ -10,6 +10,7 @@ import {
   inject,
   isDevMode,
   signal,
+  untracked,
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { createTransitionTracker } from '@cngx/core/utils';
@@ -175,6 +176,15 @@ export interface CngxRecycler {
   // ── A11y ──────────────────────────────────────────────
   readonly ariaSetSize: Signal<number>;
 
+  // ── Deep-link scroll ─────────────────────────────────
+  /**
+   * Target index that `scrollToIndex()` is waiting for.
+   * Non-null when the target index exceeds `totalCount` — consumer
+   * can show a "Scrolling to item..." indicator or trigger page loads.
+   * Clears automatically when `totalCount` grows past the target.
+   */
+  readonly pendingTarget: Signal<number | null>;
+
   // ── Convenience ───────────────────────────────────────
   /**
    * Creates a `computed()` slicing items to the visible range.
@@ -249,21 +259,29 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);
   const i18n = inject(CNGX_RECYCLER_I18N);
   const overscan = config.overscan ?? 5;
+  const isGrid = (config.layout ?? 'list') === 'grid';
 
-  // Phase 1: warn about known limitations
-  if (config.layout === 'grid' && isDevMode()) {
-    console.warn(
-      '[CngxRecycler] layout: "grid" is not yet supported (Phase 3). Falling back to "list".',
+  // Grid mode: require explicit columns
+  if (isGrid && config.columns == null && isDevMode()) {
+    console.error(
+      '[CngxRecycler] layout: "grid" requires explicit `columns`. Falling back to columns=1.',
     );
   }
+
+  // Reactive columns — reactive only if the function reads a Signal internally
+  const columns = computed(() => {
+    if (!isGrid || config.columns == null) {
+      return 1;
+    }
+    return typeof config.columns === 'function' ? config.columns() : config.columns;
+  });
 
   if (typeof config.estimateSize === 'function' && isDevMode()) {
     const count = config.totalCount();
     if (count > 10_000) {
       console.warn(
         `[CngxRecycler] estimateSize as a function with ${count} items has O(n) ` +
-          `per-frame cost. Consider using a fixed estimateSize for large datasets ` +
-          `or wait for Phase 2 SizeCache.`,
+          `per-frame cost. Consider using a fixed estimateSize for large datasets.`,
       );
     }
   }
@@ -283,36 +301,53 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   };
 
   // ── Range computation ──
-  const range = computed(() =>
-    computeRange(
+  // Grid mode uses raw estimateSize (uniform row height, no SizeCache).
+  // List mode uses resolveSize (SizeCache-backed).
+  const range = computed(() => {
+    const cols = columns();
+    const size = isGrid ? config.estimateSize : resolveSize;
+    return computeRange(
       scrollState.scrollTop(),
       scrollState.clientHeight(),
       config.totalCount(),
-      resolveSize,
+      size,
       overscan,
-    ),
-  );
+      cols,
+    );
+  });
 
   const start = computed(() => range().start);
   const end = computed(() => range().end);
-  const offsetBefore = computed(() => range().offsetBefore);
-  const offsetAfter = computed(() => range().offsetAfter);
+
+  // Grid mode: pixel spacers are 0 (placeholders used instead)
+  const offsetBefore = computed(() => (isGrid ? 0 : range().offsetBefore));
+  const offsetAfter = computed(() => (isGrid ? 0 : range().offsetAfter));
   const totalSize = computed(() => range().totalSize);
 
-  // ── Grid mode stubs (Phase 3) ──
-  const zero = signal(0).asReadonly();
+  // ── Grid placeholders ──
+  const placeholdersBefore = computed(() => (isGrid ? start() : 0));
+  const placeholdersAfter = computed(() =>
+    isGrid ? Math.max(0, config.totalCount() - end()) : 0,
+  );
 
   // ── Visibility without overscan ──
   // start/end include overscan. firstVisible/lastVisible strip it back
   // to reflect the items actually in the viewport.
+  // In grid mode, overscan is in rows (ceil(overscan/columns) * columns items).
+  const effectiveOverscan = computed(() => {
+    const cols = columns();
+    if (cols <= 1) {
+      return overscan;
+    }
+    return Math.ceil(overscan / cols) * cols;
+  });
+
   const firstVisible = computed(() => {
     const total = config.totalCount();
     if (total === 0) {
       return 0;
     }
-    // When totalCount is small enough that all items fit, start is 0
-    // and overscan doesn't extend beyond the list — use start directly.
-    return Math.min(start() + overscan, total - 1);
+    return Math.min(start() + effectiveOverscan(), total - 1);
   });
 
   const lastVisible = computed(() => {
@@ -320,7 +355,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (total === 0) {
       return 0;
     }
-    return Math.min(Math.max(0, end() - overscan - 1), total - 1);
+    return Math.min(Math.max(0, end() - effectiveOverscan() - 1), total - 1);
   });
 
   const visibleCount = computed(() => {
@@ -343,15 +378,15 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return config.totalCount() === 0;
   });
 
-  const resolvedEstimateSize =
-    typeof config.estimateSize === 'number' ? config.estimateSize : config.estimateSize(0);
-
   const skeletonSlots = computed(() => {
     const ch = scrollState.clientHeight();
     if (ch <= 0) {
       return 0;
     }
-    return Math.ceil(ch / resolvedEstimateSize);
+    // Resolve estimateSize reactively — function variant may read signals internally
+    const itemHeight =
+      typeof config.estimateSize === 'number' ? config.estimateSize : config.estimateSize(0);
+    return Math.ceil(ch / itemHeight);
   });
 
   const showSkeleton = createDelayedFlag(isLoading, config.skeletonDelay ?? 0);
@@ -368,7 +403,9 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       const current = tracker.current();
       const previous = tracker.previous();
       const total = config.totalCount();
-      const prevTotal = previousTotal();
+      // untracked: previousTotal is bookkeeping, not a dependency —
+      // the effect should fire on status/totalCount changes, not on its own writes.
+      const prevTotal = untracked(() => previousTotal());
 
       // Transition-only — never announce on initial idle
       if (previous === current) {
@@ -388,13 +425,14 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         announcementState.set(i18n.empty());
       }
 
-      previousTotal.set(total);
+      untracked(() => previousTotal.set(total));
     });
   } else {
     // Without async state, track totalCount changes for infinite scroll announcements
     effect(() => {
       const total = config.totalCount();
-      const prevTotal = previousTotal();
+      // untracked: previousTotal is bookkeeping, not a dependency
+      const prevTotal = untracked(() => previousTotal());
       const diff = total - prevTotal;
 
       if (prevTotal > 0 && diff > 0) {
@@ -403,7 +441,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         announcementState.set(i18n.empty());
       }
 
-      previousTotal.set(total);
+      untracked(() => previousTotal.set(total));
     });
   }
 
@@ -413,7 +451,12 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // ── Scroll-Anchoring (Phase 2) ──
   const anchorState = signal<{ index: number; offsetFromTop: number } | null>(null);
 
-  function computeItemTop(targetIndex: number): number {
+  function computeItemTop(targetIndex: number, cols?: number): number {
+    // Grid mode: row-based offset (uniform row height)
+    if (isGrid && typeof config.estimateSize === 'number') {
+      const c = cols ?? columns();
+      return Math.floor(targetIndex / c) * config.estimateSize;
+    }
     let top = 0;
     for (let i = 0; i < targetIndex; i++) {
       top += sizeCache.resolve(i, config.estimateSize);
@@ -430,11 +473,12 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     }
     sizeCache.version(); // re-run when sizes change
     config.totalCount(); // re-run when items change
+    const cols = columns(); // re-run when columns change (responsive grid)
     const el = scrollState.element();
     if (!el) {
       return;
     }
-    const currentItemTop = computeItemTop(anchor.index);
+    const currentItemTop = computeItemTop(anchor.index, cols);
     const targetScrollTop = currentItemTop - anchor.offsetFromTop;
     if (Math.abs(el.scrollTop - targetScrollTop) > 1) {
       el.scrollTop = targetScrollTop;
@@ -482,6 +526,30 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return null;
   });
 
+  // ── Deep-link scrollToIndex (Phase 3) ──
+  const pendingScrollTarget = signal<{ index: number; behavior: ScrollBehavior } | null>(null);
+  const pendingTarget = computed(() => pendingScrollTarget()?.index ?? null);
+
+  // Watch totalCount — when it grows past the pending target, execute the scroll.
+  // Uses untracked() for pendingScrollTarget reads/writes to avoid write-inside-read loops.
+  // Only totalCount is a tracked dependency.
+  effect(() => {
+    const total = config.totalCount(); // tracked dependency
+    const target = untracked(() => pendingScrollTarget()); // NOT tracked
+    if (!target || target.index >= total) {
+      return;
+    }
+    // Target now reachable — execute scroll
+    untracked(() => {
+      pendingScrollTarget.set(null);
+      const el = scrollState.element();
+      if (el) {
+        const top = computeItemTop(target.index);
+        el.scrollTo({ top, behavior: target.behavior });
+      }
+    });
+  });
+
   return {
     start,
     end,
@@ -489,8 +557,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     offsetAfter,
     totalSize,
 
-    placeholdersBefore: zero,
-    placeholdersAfter: zero,
+    placeholdersBefore,
+    placeholdersAfter,
 
     isLoading,
     isRefreshing,
@@ -517,6 +585,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
 
     lostFocus,
 
+    pendingTarget,
+
     announcement: announcementState.asReadonly(),
 
     ariaSetSize,
@@ -526,6 +596,10 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     },
 
     measure(index: number, element: HTMLElement): void {
+      // Grid mode assumes uniform row height — SizeCache writes would break row-based range.
+      if (isGrid) {
+        return;
+      }
       const height = element.getBoundingClientRect().height;
       if (height > 0) {
         sizeCache.set(index, height);
@@ -533,12 +607,18 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     },
 
     scrollToIndex(index: number, behavior: ScrollBehavior = 'auto'): void {
-      const el = scrollState.element();
-      if (!el) {
+      const total = config.totalCount();
+      if (index >= total) {
+        // Deep-link: target not loaded yet — store for later resolution
+        pendingScrollTarget.set({ index, behavior });
         return;
       }
-      const targetScrollTop = computeItemTop(index);
-      el.scrollTo({ top: targetScrollTop, behavior });
+      // Clear any pending target
+      pendingScrollTarget.set(null);
+      const el = scrollState.element();
+      if (el) {
+        el.scrollTo({ top: computeItemTop(index), behavior });
+      }
     },
 
     reset(): void {

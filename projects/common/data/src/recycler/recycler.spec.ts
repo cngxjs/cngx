@@ -54,6 +54,7 @@ describe('injectRecycler', () => {
       writable: true,
       configurable: true,
     });
+    mockContainer.scrollTo = vi.fn();
     document.body.appendChild(mockContainer);
 
     TestBed.configureTestingModule({
@@ -232,13 +233,166 @@ describe('injectRecycler', () => {
     });
   });
 
-  describe('Phase 2+ stubs', () => {
-    it('should have placeholders always at 0', () => {
+  describe('grid mode', () => {
+    it('should compute row-aligned range', () => {
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: 4,
+      });
+      // start/end should be multiples of 4 (row-aligned)
+      expect(recycler.start() % 4).toBe(0);
+    });
+
+    it('should return pixel offsets as 0 in grid mode', () => {
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: 4,
+      });
+      expect(recycler.offsetBefore()).toBe(0);
+      expect(recycler.offsetAfter()).toBe(0);
+    });
+
+    it('should compute placeholdersBefore from start index', () => {
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: 4,
+      });
+      expect(recycler.placeholdersBefore()).toBe(recycler.start());
+    });
+
+    it('should compute placeholdersAfter from end index', () => {
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: 4,
+      });
+      expect(recycler.placeholdersAfter()).toBe(100 - recycler.end());
+    });
+
+    it('should have placeholders at 0 in list mode', () => {
       const recycler = createRecycler();
       expect(recycler.placeholdersBefore()).toBe(0);
       expect(recycler.placeholdersAfter()).toBe(0);
     });
 
+    it('should make measure() a no-op in grid mode', () => {
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: 4,
+      });
+      const el = document.createElement('div');
+      Object.defineProperty(el, 'getBoundingClientRect', {
+        value: () => ({
+          height: 200, width: 100, top: 0, left: 0, bottom: 200, right: 100,
+          x: 0, y: 0, toJSON: () => {},
+        }),
+      });
+      // Should not throw and should not affect range computation
+      expect(() => recycler.measure(0, el)).not.toThrow();
+    });
+
+    it('should fallback to columns=1 with console.error when columns not set', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+      });
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('requires explicit `columns`'),
+      );
+      // Still functional — degrades to single-column list
+      expect(recycler.start()).toBe(0);
+      errorSpy.mockRestore();
+    });
+
+    it('should support columns as a function', () => {
+      const cols = signal(4);
+      const recycler = createRecycler({
+        totalCount: () => 100,
+        estimateSize: 100,
+        layout: 'grid',
+        columns: () => cols(),
+      });
+      const startBefore = recycler.start();
+      expect(startBefore % 4).toBe(0);
+    });
+  });
+
+  describe('deep-link scrollToIndex', () => {
+    it('should store pending target when index >= totalCount', () => {
+      const totalCount = signal(50);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => totalCount(),
+          estimateSize: 48,
+        });
+      });
+      TestBed.flushEffects();
+
+      recycler.scrollToIndex(100);
+      expect(recycler.pendingTarget()).toBe(100);
+    });
+
+    it('should clear pending target when totalCount grows past it', () => {
+      const totalCount = signal(50);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => totalCount(),
+          estimateSize: 48,
+        });
+      });
+      TestBed.flushEffects();
+
+      recycler.scrollToIndex(80);
+      expect(recycler.pendingTarget()).toBe(80);
+
+      totalCount.set(200);
+      TestBed.flushEffects();
+      expect(recycler.pendingTarget()).toBeNull();
+    });
+
+    it('should not store pending target when index < totalCount', () => {
+      const recycler = createRecycler();
+      recycler.scrollToIndex(5);
+      expect(recycler.pendingTarget()).toBeNull();
+    });
+
+    it('should clear pending target on direct scrollToIndex', () => {
+      const totalCount = signal(50);
+      let recycler!: CngxRecycler;
+      TestBed.runInInjectionContext(() => {
+        recycler = injectRecycler({
+          scrollElement: mockContainer,
+          totalCount: () => totalCount(),
+          estimateSize: 48,
+        });
+      });
+      TestBed.flushEffects();
+
+      recycler.scrollToIndex(100);
+      expect(recycler.pendingTarget()).toBe(100);
+
+      // Now scroll to a reachable index — clears pending
+      recycler.scrollToIndex(10);
+      expect(recycler.pendingTarget()).toBeNull();
+    });
+  });
+
+  describe('focus preservation', () => {
     it('should have lostFocus always at null', () => {
       const recycler = createRecycler();
       expect(recycler.lostFocus()).toBeNull();

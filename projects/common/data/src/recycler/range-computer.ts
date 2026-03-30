@@ -44,15 +44,17 @@ export function computeRange(
   totalCount: number,
   estimateSize: number | ((index: number) => number),
   overscan: number,
+  columns = 1,
 ): RangeResult {
   if (totalCount <= 0 || clientHeight <= 0) {
     return EMPTY_RANGE;
   }
 
   if (typeof estimateSize === 'number') {
-    return computeFixedRange(scrollTop, clientHeight, totalCount, estimateSize, overscan);
+    return computeFixedRange(scrollTop, clientHeight, totalCount, estimateSize, overscan, columns);
   }
 
+  // Variable heights — grid mode not supported, columns ignored
   return computeVariableRange(scrollTop, clientHeight, totalCount, estimateSize, overscan);
 }
 
@@ -62,7 +64,12 @@ function computeFixedRange(
   totalCount: number,
   itemSize: number,
   overscan: number,
+  columns: number,
 ): RangeResult {
+  if (columns > 1) {
+    return computeGridRange(scrollTop, clientHeight, totalCount, itemSize, overscan, columns);
+  }
+
   const totalSize = totalCount * itemSize;
 
   const rawStart = Math.floor(scrollTop / itemSize);
@@ -76,6 +83,45 @@ function computeFixedRange(
     end,
     offsetBefore: start * itemSize,
     offsetAfter: Math.max(0, (totalCount - end) * itemSize),
+    totalSize,
+  };
+}
+
+/**
+ * Grid-mode range computation. Row-aligned before overscan.
+ *
+ * Order: raw visible rows → overscan rows → clamp → convert to item indices.
+ * This ensures full rows are always rendered.
+ */
+function computeGridRange(
+  scrollTop: number,
+  clientHeight: number,
+  totalCount: number,
+  rowHeight: number,
+  overscan: number,
+  columns: number,
+): RangeResult {
+  const totalRows = Math.ceil(totalCount / columns);
+  const totalSize = totalRows * rowHeight;
+
+  // Step 1+2: raw visible rows (inherently row-aligned)
+  const rawStartRow = Math.floor(scrollTop / rowHeight);
+  const rawEndRow = Math.ceil((scrollTop + clientHeight) / rowHeight);
+
+  // Step 3: apply overscan in rows (convert item overscan to row overscan)
+  const overscanRows = Math.ceil(overscan / columns);
+  const startRow = Math.max(0, rawStartRow - overscanRows);
+  const endRow = Math.min(totalRows, rawEndRow + overscanRows);
+
+  // Step 4: convert to item indices, clamp end to totalCount
+  const start = startRow * columns;
+  const end = Math.min(endRow * columns, totalCount);
+
+  return {
+    start,
+    end,
+    offsetBefore: startRow * rowHeight,
+    offsetAfter: Math.max(0, (totalRows - endRow) * rowHeight),
     totalSize,
   };
 }
