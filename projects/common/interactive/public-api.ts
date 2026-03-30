@@ -1,10 +1,14 @@
 /**
  * @module @cngx/common/interactive
  */
-export { CngxClickOutside } from './src/click-outside.directive';
-export { CngxDisclosure } from './src/disclosure.directive';
-export { CngxHoverable } from './src/hoverable.directive';
-export { CngxNavBadge, type NavBadgeVariant } from './src/nav-badge.directive';
+export { CngxAsyncClick, type AsyncAction } from './src/async-click/async-click.directive';
+export { CngxPending, CngxSucceeded, CngxFailed } from './src/async-click/async-status-templates';
+export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+export { CngxCopyText } from './src/copy/copy-text.directive';
+export { CngxCopyBlock } from './src/copy/copy-block';
+export { CngxRipple } from './src/ripple/ripple.directive';
+export { CngxPressable } from './src/ripple/pressable.directive';
+export { CngxPressRipple } from './src/ripple/press-ripple.directive';
 export {
   CNGX_NAV_CONFIG,
   provideNavConfig,
@@ -14,26 +18,22 @@ export {
   withNavAnimation,
   type CngxNavConfig,
   type NavConfigFeature,
-} from './src/nav-config';
-export { CngxNavGroup } from './src/nav-group.directive';
-export { CngxNavGroupRegistry } from './src/nav-group-registry';
-export { CngxNavLabel } from './src/nav-label.directive';
-export { CngxNavLink } from './src/nav-link.directive';
-export { CngxSearch } from './src/search.directive';
-export { CngxSpeak } from './src/speak.directive';
-export { CngxSwipeDismiss, type SwipeDirection } from './src/swipe-dismiss.directive';
-export { CngxAsyncClick, type AsyncAction } from './src/async-click.directive';
-export { type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-export { CngxPending, CngxSucceeded, CngxFailed } from './src/async-status-templates';
-export { CngxPressable } from './src/pressable.directive';
-export { CngxLongPress } from './src/long-press.directive';
-export { CngxKeyboardShortcut } from './src/keyboard-shortcut.directive';
-export { CngxRipple } from './src/ripple.directive';
-export { CngxCopyText } from './src/copy-text.directive';
-export { withRetry, type RetryConfig, type RetryState } from './src/with-retry';
-export { optimistic, type OptimisticState } from './src/optimistic';
-export { CngxBeforeUnload } from './src/before-unload.directive';
-export { canDeactivateWhenClean } from './src/can-deactivate';
-export { CngxPressRipple } from './src/press-ripple.directive';
-export { CngxCopyBlock } from './src/copy-block';
-export { CngxCloseButton, CNGX_CLOSE_ICON } from './src/close-button';
+} from './src/nav/nav-config';
+export { CngxNavGroup } from './src/nav/nav-group.directive';
+export { CngxNavGroupRegistry } from './src/nav/nav-group-registry';
+export { CngxNavLabel } from './src/nav/nav-label.directive';
+export { CngxNavLink } from './src/nav/nav-link.directive';
+export { CngxNavBadge, type NavBadgeVariant } from './src/nav/nav-badge.directive';
+export { CngxDisclosure } from './src/nav/disclosure.directive';
+export { withRetry, type RetryConfig, type RetryState } from './src/retry/with-retry';
+export { optimistic, type OptimisticState } from './src/optimistic/optimistic';
+export { CngxLongPress } from './src/gestures/long-press.directive';
+export { CngxSwipeDismiss, type SwipeDirection } from './src/gestures/swipe-dismiss.directive';
+export { CngxKeyboardShortcut } from './src/keyboard/keyboard-shortcut.directive';
+export { CngxSearch } from './src/keyboard/search.directive';
+export { CngxClickOutside } from './src/keyboard/click-outside.directive';
+export { CngxBeforeUnload } from './src/guard/before-unload.directive';
+export { canDeactivateWhenClean } from './src/guard/can-deactivate';
+export { CngxCloseButton, CNGX_CLOSE_ICON } from './src/close-button/close-button';
+export { CngxHoverable } from './src/hoverable/hoverable.directive';
+export { CngxSpeak } from './src/speak/speak.directive';

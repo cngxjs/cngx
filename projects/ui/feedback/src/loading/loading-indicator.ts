@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_FEEDBACK_CONFIG } from './feedback-config';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { createVisibilityTimer } from './visibility-timer';
 
 /** Visual variant for the loading indicator. */

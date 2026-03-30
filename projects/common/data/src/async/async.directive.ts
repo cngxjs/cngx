@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { resolveAsyncView, type AsyncView } from './async-state/resolve-view';
+import { resolveAsyncView, type AsyncView } from '../async-state/resolve-view';
 
 /**
  * Template context for the `*cngxAsync` content template.

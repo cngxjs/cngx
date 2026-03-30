@@ -2,7 +2,7 @@ import { computed, signal, type Signal } from '@angular/core';
 import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 import { firstValueFrom, isObservable, timer } from 'rxjs';
 
-import type { AsyncAction } from './async-click.directive';
+import type { AsyncAction } from '../async-click/async-click.directive';
 
 /** Configuration for `withRetry()`. */
 export interface RetryConfig {

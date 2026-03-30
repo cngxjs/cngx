@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-import { CNGX_FEEDBACK_CONFIG } from './feedback-config';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxLoadingIndicator } from './loading-indicator';
 import { createVisibilityTimer } from './visibility-timer';
 

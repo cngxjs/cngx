@@ -8,10 +8,10 @@ import {
 
 import { CNGX_CLOSE_ICON } from '@cngx/common/interactive';
 
-import type { AlertSeverity } from './alert/alert';
-import { CngxAlerter } from './alert/alerter.service';
-import { CngxBanner } from './banner/banner.service';
-import { CngxToaster } from './toast/toast.service';
+import type { AlertSeverity } from '../alert/alert';
+import { CngxAlerter } from '../alert/alerter.service';
+import { CngxBanner } from '../banner/banner.service';
+import { CngxToaster } from '../toast/toast.service';
 
 /**
  * Global configuration for all feedback components.

@@ -1,7 +1,7 @@
 import { DestroyRef, Directive, inject, input } from '@angular/core';
 import { CngxSwipeDismiss } from '@cngx/common/interactive';
 
-import { DIALOG_REF } from './dialog-ref';
+import { DIALOG_REF } from '../dialog/dialog-ref';
 
 /**
  * Bottom sheet molecule — a `CngxDialog` positioned at the viewport bottom

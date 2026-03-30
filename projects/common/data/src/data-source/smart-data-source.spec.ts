@@ -2,9 +2,9 @@ import { Component, type Injector, runInInjectionContext, signal } from '@angula
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createManualState } from './async-state/create-manual-state';
-import { CngxFilter } from './filter.directive';
-import { CngxSort } from './sort.directive';
+import { createManualState } from '../async-state/create-manual-state';
+import { CngxFilter } from '../filter/filter.directive';
+import { CngxSort } from '../sort/sort.directive';
 import { CngxSmartDataSource, injectSmartDataSource } from './smart-data-source';
 
 interface Item {

@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { ManualAsyncState } from './async-state/create-manual-state';
-import { createManualState } from './async-state/create-manual-state';
+import type { ManualAsyncState } from '../async-state/create-manual-state';
+import { createManualState } from '../async-state/create-manual-state';
 import { CngxAsync } from './async.directive';
 
 @Component({

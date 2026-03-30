@@ -3,9 +3,9 @@ import { computed, inject, Injector, type Signal } from '@angular/core';
 import { toObservable } from '@angular/core/rxjs-interop';
 import type { CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
-import { CngxPaginate } from './paginate.directive';
-import { CngxFilter } from './filter.directive';
-import { CngxSort } from './sort.directive';
+import { CngxPaginate } from '../paginate/paginate.directive';
+import { CngxFilter } from '../filter/filter.directive';
+import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
 
 /** Optional customisation for {@link CngxSmartDataSource}. */

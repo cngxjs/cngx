@@ -15,7 +15,7 @@ import {
 import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
 import { createTransitionTracker, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
-import { CngxLoadingIndicator } from '../loading-indicator';
+import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
 
 // ── Template marker directives ──────────────────────────────────────

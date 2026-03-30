@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, ViewEncapsulation } from '@angular/core';
 
-import type { AlertSeverity } from './alert/alert';
+import type { AlertSeverity } from '../alert/alert';
 
 /**
  * @internal — shared default SVG icon for alert severity.
