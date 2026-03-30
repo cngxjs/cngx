@@ -76,16 +76,18 @@ Collapsible navigation accordion group.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxNavGroup | — | — | Presence enables nav group (no value required) |
-| depth | number | 0 | Nesting depth for indentation |
-| cngxDisclosureOpened | boolean \| undefined | undefined | Controlled opened state (CngxDisclosure) |
-| controls | string | undefined | ID of the controlled content element (CngxDisclosure) |
+| depth | `number` | `0` | Nesting depth for indentation |
+| cngxDisclosureOpened | `boolean \| undefined` | `undefined` | Controlled opened state (CngxDisclosure) |
+| controls | `string` | `undefined` | ID of the controlled content element (CngxDisclosure) |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| openedChange | boolean | Emitted when opened state changes (CngxDisclosure) |
+| openedChange | `boolean` | Emitted when opened state changes (CngxDisclosure) |
 
 #### Signals
 
@@ -97,15 +99,17 @@ Navigation link atom.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxNavLink | — | — | Presence enables nav link (no value required) |
-| active | boolean | false | Whether this link is the currently active route |
-| scrollOnActive | boolean | true | Whether to scroll link into view when active |
-| depth | number | 0 | Nesting depth for indentation |
-| ariaCurrent | string | 'page' | ARIA current value when active: 'page', 'step', 'location', 'true' |
+| active | `boolean` | `false` | Whether this link is the currently active route |
+| scrollOnActive | `boolean` | `true` | Whether to scroll link into view when active |
+| depth | `number` | `0` | Nesting depth for indentation |
+| ariaCurrent | `string` | `'page'` | ARIA current value when active: `'page'`, `'step'`, `'location'`, `'true'` |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
@@ -119,13 +123,15 @@ Non-interactive section header for navigation groups.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxNavLabel | — | — | Presence enables nav label (no value required) |
-| heading | boolean | false | Whether to apply `role="heading"` (opt-in) |
-| level | number | 3 | Heading level (2–6) when heading is true |
+| heading | `boolean` | `false` | Whether to apply `role="heading"` (opt-in) |
+| level | `number` | `3` | Heading level (2-6) when heading is true |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
@@ -139,14 +145,16 @@ Inline badge for navigation items.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxNavBadge | — | — | Presence enables nav badge (no value required) |
-| value | string \| number \| null \| undefined | undefined | Badge value. Hidden when empty string, null, undefined, or 0 |
-| variant | 'count' \| 'dot' \| 'status' | 'count' | Visual variant: 'count' (number), 'dot' (presence), 'status' (text) |
-| ariaLabel | string \| undefined | undefined | Accessible label. When set, removes aria-hidden and announces to SR |
+| value | `string \| number \| null \| undefined` | `undefined` | Badge value. Hidden when empty string, null, undefined, or 0 |
+| variant | `'count' \| 'dot' \| 'status'` | `'count'` | Visual variant: `'count'` (number), `'dot'` (presence), `'status'` (text) |
+| ariaLabel | `string \| undefined` | `undefined` | Accessible label. When set, removes aria-hidden and announces to SR |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
@@ -160,15 +168,17 @@ Generic expand/collapse (disclosure) behavior.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxDisclosure | — | — | Presence enables disclosure (no value required) |
-| cngxDisclosureOpened | boolean \| undefined | undefined | Controlled opened state. When bound, takes precedence |
-| controls | string \| undefined | undefined | ID of the controlled content element |
+| cngxDisclosureOpened | `boolean \| undefined` | `undefined` | Controlled opened state. When bound, takes precedence |
+| controls | `string \| undefined` | `undefined` | ID of the controlled content element |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| openedChange | boolean | Emitted when opened state changes |
+| openedChange | `boolean` | Emitted when opened state changes |
 
 #### Methods
 

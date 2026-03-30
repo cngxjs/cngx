@@ -56,15 +56,17 @@ Declarative keyboard shortcut handler.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxKeyboardShortcut | string | required | Shortcut combo string, e.g. 'mod+s', 'ctrl+shift+k', 'escape' |
-| shortcutScope | 'global' \| 'self' | 'global' | 'global' listens on document; 'self' listens only on host |
-| enabled | boolean | true | Whether the shortcut is active |
+| cngxKeyboardShortcut | `string` | required | Shortcut combo string, e.g. `'mod+s'`, `'ctrl+shift+k'`, `'escape'` |
+| shortcutScope | `'global' \| 'self'` | `'global'` | `'global'` listens on document; `'self'` listens only on host |
+| enabled | `boolean` | `true` | Whether the shortcut is active |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| shortcutTriggered | KeyboardEvent | Emitted when the shortcut fires |
+| shortcutTriggered | `KeyboardEvent` | Emitted when the shortcut fires |
 
 #### Signals
 
@@ -80,13 +82,15 @@ Directive for `<input>` elements with debounced search term tracking.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| debounceMs | number | 300 | Debounce delay in milliseconds |
+| debounceMs | `number` | `300` | Debounce delay in milliseconds |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| searchChange | string | Emitted after each debounced input event |
+| searchChange | `string` | Emitted after each debounced input event |
 
 #### Signals
 
@@ -103,14 +107,16 @@ Emits when the user interacts outside the host element.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| eventType | 'pointerdown' \| 'click' \| 'mousedown' \| 'touchstart' | 'pointerdown' | DOM event type to listen for |
-| enabled | boolean | true | When false, the directive is disabled and no events are emitted |
+| eventType | `'pointerdown' \| 'click' \| 'mousedown' \| 'touchstart'` | `'pointerdown'` | DOM event type to listen for |
+| enabled | `boolean` | `true` | When false, the directive is disabled and no events are emitted |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| clickOutside | PointerEvent \| MouseEvent \| TouchEvent | Emitted when user interacts outside |
+| clickOutside | `PointerEvent \| MouseEvent \| TouchEvent` | Emitted when user interacts outside |
 
 #### Signals
 

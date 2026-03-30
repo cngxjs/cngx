@@ -36,15 +36,17 @@ Directive that copies text on click. Use on a button or clickable element.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxCopyText | string | required | The text to copy to the clipboard |
-| resetDelay | number | 2000 | Duration in ms to keep `copied` true after a successful copy |
+| cngxCopyText | `string` | required | The text to copy to the clipboard |
+| resetDelay | `number` | `2000` | Duration in ms to keep `copied` true after a successful copy |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| didCopy | string | Emitted after successful copy with the copied text |
-| copyFailed | unknown | Emitted when a copy attempt fails |
+| didCopy | `string` | Emitted after successful copy with the copied text |
+| copyFailed | `unknown` | Emitted when a copy attempt fails |
 
 #### Signals
 
@@ -58,14 +60,16 @@ Component that renders a text/code block with a built-in copy button.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| value | string | required | The text value to copy to clipboard |
-| buttonLabel | string | 'Copy' | Label for the copy button |
-| copiedLabel | string | 'Copied!' | Label shown after successful copy |
-| srAnnouncement | string | 'Copied to clipboard' | Screen reader announcement on copy |
+| value | `string` | required | The text value to copy to clipboard |
+| buttonLabel | `string` | `'Copy'` | Label for the copy button |
+| copiedLabel | `string` | `'Copied!'` | Label shown after successful copy |
+| srAnnouncement | `string` | `'Copied to clipboard'` | Screen reader announcement on copy |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

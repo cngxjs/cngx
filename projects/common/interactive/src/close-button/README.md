@@ -39,11 +39,13 @@ A configurable close/dismiss button atom used across cngx feedback components.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| label | string | required | Accessible label for the button (e.g., "Close dialog", "Dismiss notification") |
+| label | `string` | required | Accessible label for the button (e.g., "Close dialog", "Dismiss notification") |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

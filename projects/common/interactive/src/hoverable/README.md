@@ -39,11 +39,13 @@ Directive that tracks hover state via mouseenter/mouseleave events.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxHoverable | — | — | Presence enables hover tracking (no value required) |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

@@ -42,11 +42,13 @@ Directive that prevents accidental page navigation via browser `beforeunload` ev
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxBeforeUnload | boolean | required | When true, shows browser confirmation dialog on page close |
+| cngxBeforeUnload | `boolean` | required | When true, shows browser confirmation dialog on page close |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

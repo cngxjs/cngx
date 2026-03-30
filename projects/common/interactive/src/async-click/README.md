@@ -39,15 +39,17 @@ export class SaveButtonComponent {
 
 ### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxAsyncClick | AsyncAction | required | The async action function to execute on click (returns Promise or Observable) |
-| feedbackDuration | number | 2000 | Duration in ms to display success/error state before resetting |
-| enabled | boolean | true | When false, clicks are ignored (does not set disabled attribute) |
-| succeededAnnouncement | string | 'Action succeeded' | Label announced to screen readers on success |
-| failedAnnouncement | string | 'Action failed' | Label announced to screen readers on failure |
+| cngxAsyncClick | `AsyncAction` | required | The async action function to execute on click (returns Promise or Observable) |
+| feedbackDuration | `number` | `2000` | Duration in ms to display success/error state before resetting |
+| enabled | `boolean` | `true` | When false, clicks are ignored (does not set disabled attribute) |
+| succeededAnnouncement | `string` | `'Action succeeded'` | Label announced to screen readers on success |
+| failedAnnouncement | `string` | `'Action failed'` | Label announced to screen readers on failure |
 
 ### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

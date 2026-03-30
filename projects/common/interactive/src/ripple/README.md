@@ -47,14 +47,16 @@ Touch/click ripple feedback without Material dependency.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxRipple | — | — | Presence enables ripple (no value required) |
-| rippleColor | string | 'currentColor' | Ripple color — passed as --cngx-ripple-color |
-| rippleCentered | boolean | false | Whether ripple originates from center (icon buttons) |
-| rippleDisabled | boolean | false | Disable ripple effect |
+| rippleColor | `string` | `'currentColor'` | Ripple color -- passed as `--cngx-ripple-color` |
+| rippleCentered | `boolean` | `false` | Whether ripple originates from center (icon buttons) |
+| rippleDisabled | `boolean` | `false` | Disable ripple effect |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
@@ -77,12 +79,14 @@ Instant press feedback via CSS class on pointerdown.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxPressable | — | — | Presence enables press feedback (no value required) |
-| pressableReleaseDelay | number | 80 | Minimum time (ms) the pressed class stays active — prevents flash on quick taps |
+| pressableReleaseDelay | `number` | `80` | Minimum time (ms) the pressed class stays active -- prevents flash on quick taps |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
@@ -100,15 +104,17 @@ Molecule combining CngxPressable and CngxRipple as hostDirectives.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxPressRipple | — | — | Presence enables both press and ripple |
-| pressableReleaseDelay | number | 80 | From CngxPressable |
-| rippleColor | string | 'currentColor' | From CngxRipple |
-| rippleCentered | boolean | false | From CngxRipple |
-| rippleDisabled | boolean | false | From CngxRipple |
+| pressableReleaseDelay | `number` | `80` | From CngxPressable |
+| rippleColor | `string` | `'currentColor'` | From CngxRipple |
+| rippleCentered | `boolean` | `false` | From CngxRipple |
+| rippleDisabled | `boolean` | `false` | From CngxRipple |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 

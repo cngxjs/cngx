@@ -48,16 +48,18 @@ Detects long-press gestures via Pointer Events.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
 | cngxLongPress | — | — | Presence enables long-press detection (no value required) |
-| threshold | number | 500 | Time in ms the pointer must be held to trigger |
-| enabled | boolean | true | Whether the directive is active |
-| moveThreshold | number | 10 | Maximum pointer movement in px before gesture is cancelled |
+| threshold | `number` | `500` | Time in ms the pointer must be held to trigger |
+| enabled | `boolean` | `true` | Whether the directive is active |
+| moveThreshold | `number` | `10` | Maximum pointer movement in px before gesture is cancelled |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| longPressed | PointerEvent | Emitted when a long-press gesture completes |
+| longPressed | `PointerEvent` | Emitted when a long-press gesture completes |
 
 #### Signals
 
@@ -69,15 +71,17 @@ Detects directional swipe gestures via Pointer Events.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxSwipeDismiss | SwipeDirection | required | Direction of swipe: 'left' \| 'right' \| 'up' \| 'down' |
-| threshold | number | 50 | Minimum distance in px to register as a completed swipe |
-| enabled | boolean | true | Whether the directive is active |
+| cngxSwipeDismiss | `SwipeDirection` | required | Direction of swipe: `'left' \| 'right' \| 'up' \| 'down'` |
+| threshold | `number` | `50` | Minimum distance in px to register as a completed swipe |
+| enabled | `boolean` | `true` | Whether the directive is active |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
-| swiped | void | Emitted when a swipe gesture completes past the threshold |
+| swiped | `void` | Emitted when a swipe gesture completes past the threshold |
 
 #### Signals
 

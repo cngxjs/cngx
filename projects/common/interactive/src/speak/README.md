@@ -42,16 +42,18 @@ Headless text-to-speech directive.
 
 #### Inputs
 
+| Input | Type | Default | Description |
 |-|-|-|-|
-| cngxSpeak | string | required | Text to speak. When `enabled` is true, triggers speech on every non-empty value change |
-| rate | number | 1 | Speech rate (0.1–10, default 1) |
-| pitch | number | 1 | Speech pitch (0–2, default 1) |
-| volume | number | 1 | Speech volume (0–1, default 1) |
-| lang | string | '' | BCP 47 language tag (e.g. 'de-DE'). Empty uses browser default |
-| enabled | boolean | true | Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()` |
+| cngxSpeak | `string` | required | Text to speak. When `enabled` is true, triggers speech on every non-empty value change |
+| rate | `number` | `1` | Speech rate (0.1-10, default 1) |
+| pitch | `number` | `1` | Speech pitch (0-2, default 1) |
+| volume | `number` | `1` | Speech volume (0-1, default 1) |
+| lang | `string` | `''` | BCP 47 language tag (e.g. `'de-DE'`). Empty uses browser default |
+| enabled | `boolean` | `true` | Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()` |
 
 #### Outputs
 
+| Output | Emits | Description |
 |-|-|-|
 | — | — | — |
 
