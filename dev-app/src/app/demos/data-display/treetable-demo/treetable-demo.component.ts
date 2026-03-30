@@ -463,7 +463,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -473,7 +473,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -551,7 +551,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -561,7 +561,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -638,7 +638,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -648,7 +648,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -727,7 +727,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -737,7 +737,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -817,7 +817,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -827,7 +827,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -907,7 +907,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -917,7 +917,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -998,7 +998,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1008,7 +1008,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1093,7 +1093,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1103,7 +1103,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1186,7 +1186,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1196,7 +1196,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1280,7 +1280,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1290,7 +1290,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1378,7 +1378,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1388,7 +1388,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1483,7 +1483,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1493,7 +1493,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1595,7 +1595,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1605,7 +1605,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1687,7 +1687,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1697,7 +1697,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1776,7 +1776,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1786,7 +1786,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1874,7 +1874,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1884,7 +1884,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
@@ -1970,7 +1970,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
   });
 
   // ── Sort ──────────────────────────────────────────────────────────────────
-  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly activeSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly sortedTree = computed((): Node<Employee>[] => {
     const state = this.activeSortState();
@@ -1980,7 +1980,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
 
   // ── Combined sort + search ────────────────────────────────────────────────
   protected readonly combinedSearchTerm = signal('');
-  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly combinedSortState = signal<{ active: string; direction: 'asc' | 'desc' } | null | undefined>(null);
 
   protected readonly combinedTree = computed((): Node<Employee>[] => {
     let nodes: Node<Employee>[] = [ORG_TREE];
