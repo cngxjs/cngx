@@ -100,6 +100,11 @@ export const routes: Routes = [
           import('./demos/common/data/paginate-list-demo/paginate-list.component').then((m) => m.PaginateListDemoComponent),
       },
       {
+        path: 'data/recycler',
+        loadComponent: () =>
+          import('./demos/common/data/recycler-demo/recycler-demo.component').then((m) => m.RecyclerDemoComponent),
+      },
+      {
         path: 'data/smart-data-source',
         loadComponent: () =>
           import('./demos/common/data/smart-data-source-demo/smart-data-source-demo.component').then((m) => m.SmartDataSourceDemoComponent),

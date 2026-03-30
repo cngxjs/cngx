@@ -59,7 +59,7 @@ import type { EmptyReason } from './card.types';
   hostDirectives: [
     {
       directive: CngxRovingTabindex,
-      inputs: ['orientation', 'loop', 'activeIndex'],
+      inputs: ['orientation', 'loop', 'activeIndex', 'virtualCount'],
     },
   ],
   host: {

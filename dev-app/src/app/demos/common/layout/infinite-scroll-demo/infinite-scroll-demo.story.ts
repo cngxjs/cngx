@@ -10,7 +10,10 @@ export const STORY: DemoSpec = {
   overview:
     '<p><code>CngxInfiniteScroll</code> uses <code>IntersectionObserver</code> to detect when a sentinel element ' +
     'becomes visible. Bind a loading function to the <code>scrolled</code> output. ' +
-    'Disable via <code>[enabled]</code> when there are no more items to load.</p>',
+    'Disable via <code>[enabled]</code> when there are no more items to load.</p>' +
+    '<p><strong>For large lists (1000+ items):</strong> Combine with <code>injectRecycler()</code> for DOM recycling — ' +
+    'items outside the viewport are removed from the DOM while the sentinel keeps loading. ' +
+    'See the <a href="#/common/data/recycler">Recycler demo</a>.</p>',
   moduleImports: [
     "import { CngxInfiniteScroll } from '@cngx/common/layout';",
   ],
