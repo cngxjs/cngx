@@ -1,5 +1,5 @@
 import { Directive, effect, inject, input } from '@angular/core';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import { createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxBanner } from './banner.service';
 
@@ -51,16 +51,16 @@ export class CngxBannerOn {
     }
     const banner = this.bannerService;
 
-    let previousStatus: AsyncStatus = 'idle';
+    const tracker = createTransitionTracker(() => this.state().status());
 
     effect(() => {
       const s = this.state();
-      const status = s.status();
+      const status = tracker.current();
+      const previous = tracker.previous();
 
-      if (status === previousStatus) {
+      if (status === previous) {
         return;
       }
-      previousStatus = status;
 
       if (status === 'error') {
         const msg = this.bannerError();

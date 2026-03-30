@@ -190,7 +190,7 @@ open(): void {
 ### Comparison with MatDialog
 
 | Concern | MatDialog | CngxDialogOpener |
-|-|-|
+|-|-|-|
 | Provider | `provideDialog()` from `@angular/cdk/dialog` | `provideDialog()` from `@cngx/common/dialog` |
 | Data token | `MAT_DIALOG_DATA` | `CNGX_DIALOG_DATA` |
 | Ref token (inside dialog) | `MatDialogRef` (class injection) | `DIALOG_REF` (injection token) |

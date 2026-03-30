@@ -11,8 +11,8 @@ import {
 
 import { CngxCloseButton } from '@cngx/common/interactive';
 
-import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
-import { CngxSeverityIcon } from '../severity-icon';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { CngxSeverityIcon } from '../config/severity-icon';
 import { CngxAlerter, type AlertState } from './alerter.service';
 
 /**

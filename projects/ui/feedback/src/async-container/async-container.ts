@@ -13,10 +13,9 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
-import type { AsyncStatus } from '@cngx/core/utils';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 
-import { CngxLoadingIndicator } from '../loading-indicator';
+import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
 
 // ── Template marker directives ──────────────────────────────────────
@@ -234,7 +233,7 @@ export class CngxAsyncContainer<T> {
   protected readonly announcement = signal<string>('');
 
   constructor() {
-    let previousStatus = 'idle';
+    let previousStatus: AsyncStatus = 'idle';
 
     effect(() => {
       const s = this.state();

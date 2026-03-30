@@ -62,7 +62,7 @@ export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   const isPending = computed(() => false); // resource() has no mutation concept
   const isRefreshing = computed(() => status() === 'refreshing');
   const isBusy = computed(() => ref.isLoading());
-  const isFirstLoad = computed(() => !hadSuccess() && isBusy());
+  const isFirstLoad = computed(() => !hadSuccess() && (isBusy() || status() === 'idle'));
   const isEmpty = computed(() => {
     const d = data();
     return d == null || (Array.isArray(d) && d.length === 0);

@@ -9,7 +9,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxToaster, type ToastState } from './toast.service';
 
 /** Position for the toast stack. */

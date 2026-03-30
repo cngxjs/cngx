@@ -24,12 +24,23 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
  * // usage
  * const ref = overlayService.open(MyComponent, { hasBackdrop: true });
  * ref.afterClosed$.subscribe(result => console.log(result));
+ *
+ * @category overlay
  */
 @Injectable()
 export class CngxOverlay {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);
 
+  /**
+   * Opens `component` in a CDK overlay panel and returns a typed ref.
+   *
+   * Defaults to a centered, backdropped panel. Merge `config` to override
+   * position strategy, scroll strategy, or any other CDK `OverlayConfig` option.
+   *
+   * @param component Component class to attach as a portal.
+   * @param config CDK overlay configuration overrides.
+   */
   open<C, R = unknown>(component: Type<C>, config: CngxOverlayConfig = {}): CngxOverlayRef<R> {
     const overlayConfig = new OverlayConfig({
       hasBackdrop: true,

@@ -16,6 +16,8 @@ import { CngxSidenavLayout } from './sidenav-layout';
  *   </cngx-sidenav-content>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category layout
  */
 @Component({
   selector: 'cngx-sidenav-content',

@@ -113,24 +113,18 @@ export class CngxFormErrors {
       return [];
     }
 
-    const items: FormErrorItem[] = [];
-    for (const fieldAccessor of this.fields()) {
+    return this.fields().flatMap((fieldAccessor) => {
       const state = fieldAccessor();
       if (!state.invalid()) {
-        continue;
+        return [];
       }
-      const errors = state.errors();
-      for (const err of errors) {
-        const fn = this.errorMap[err.kind];
-        items.push({
-          fieldName: state.name(),
-          message: fn ? fn(err) : (err.message ?? err.kind),
-          kind: err.kind,
-          focus: () => state.focusBoundControl(),
-        });
-      }
-    }
-    return items;
+      return state.errors().map((err) => ({
+        fieldName: state.name(),
+        message: (this.errorMap[err.kind] ?? (() => err.message ?? err.kind))(err),
+        kind: err.kind,
+        focus: () => state.focusBoundControl(),
+      }));
+    });
   });
 
   /** @internal */

@@ -36,12 +36,14 @@ describe('resolveAsyncView', () => {
       expectView('success', true, false, 'content');
     });
 
-    it('refreshing -> content', () => {
-      expectView('refreshing', true, false, 'content');
+    it('refreshing -> skeleton (no content yet)', () => {
+      expectView('refreshing', true, false, 'skeleton');
+      expectView('refreshing', true, true, 'skeleton');
     });
 
-    it('pending -> content', () => {
-      expectView('pending', true, false, 'content');
+    it('pending -> skeleton (no content yet)', () => {
+      expectView('pending', true, false, 'skeleton');
+      expectView('pending', true, true, 'skeleton');
     });
   });
 

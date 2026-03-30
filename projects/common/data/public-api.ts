@@ -1,16 +1,16 @@
 /**
  * @module @cngx/common/data
  */
-export { CngxSort, type SortEntry } from './src/sort.directive';
-export { CngxSortHeader } from './src/sort-header.directive';
-export { CngxFilter } from './src/filter.directive';
-export { CngxPaginate } from './src/paginate.directive';
-export { CngxDataSource, injectDataSource } from './src/data-source';
+export { CngxSort, type SortEntry } from './src/sort/sort.directive';
+export { CngxSortHeader } from './src/sort/sort-header.directive';
+export { CngxFilter } from './src/filter/filter.directive';
+export { CngxPaginate } from './src/paginate/paginate.directive';
+export { CngxDataSource, injectDataSource } from './src/data-source/data-source';
 export {
   CngxSmartDataSource,
   injectSmartDataSource,
   type CngxSmartDataSourceOptions,
-} from './src/smart-data-source';
+} from './src/data-source/smart-data-source';
 
 // Async state
 export {
@@ -26,8 +26,8 @@ export {
 } from './src/async-state';
 
 // Async structural directive
-export { CngxAsync, type CngxAsyncContext } from './src/async.directive';
+export { CngxAsync, type CngxAsyncContext } from './src/async/async.directive';
 
 // Display atoms
-export { CngxMetric } from './src/metric.component';
-export { CngxTrend } from './src/trend.component';
+export { CngxMetric } from './src/display/metric.component';
+export { CngxTrend } from './src/display/trend.component';

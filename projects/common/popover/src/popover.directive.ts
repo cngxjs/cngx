@@ -21,22 +21,19 @@ import type { PopoverMode, PopoverPlacement, PopoverState } from './popover.type
 /** Module-level registry of open popovers (insertion-ordered). */
 const openPopovers = new Set<CngxPopover>();
 
-/** Single document-level Escape listener shared by all popover instances. */
-let escapeListenerInstalled = false;
+/** Tracks which Documents already have the global Escape listener. */
+const escapeListenerDocs = new WeakSet<Document>();
 function installGlobalEscapeListener(doc: Document): void {
-  if (escapeListenerInstalled) {
+  if (escapeListenerDocs.has(doc)) {
     return;
   }
-  escapeListenerInstalled = true;
+  escapeListenerDocs.add(doc);
   doc.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key !== 'Escape' || openPopovers.size === 0) {
       return;
     }
     // Route to the most recently opened (last in Set iteration order)
-    let last: CngxPopover | undefined;
-    for (const p of openPopovers) {
-      last = p;
-    }
+    const last = [...openPopovers].at(-1);
     if (last?.closeOnEscape()) {
       e.stopPropagation();
       last.hide();
@@ -44,14 +41,15 @@ function installGlobalEscapeListener(doc: Document): void {
   });
 }
 
-/** Warns once when the Popover API is missing. */
-let popoverApiWarned = false;
+/** Tracks which Documents have already warned about missing Popover API. */
+const popoverApiWarnedDocs = new WeakSet<Document>();
 function warnMissingPopoverApi(el: HTMLElement): void {
-  if (popoverApiWarned || !isDevMode()) {
+  const doc = el.ownerDocument;
+  if (popoverApiWarnedDocs.has(doc) || !isDevMode()) {
     return;
   }
   if (typeof el.showPopover !== 'function') {
-    popoverApiWarned = true;
+    popoverApiWarnedDocs.add(doc);
     console.warn(
       'CngxPopover: The native Popover API is not supported in this browser. ' +
         'Install @oddbird/popover-polyfill and import it in your polyfills:\n\n' +

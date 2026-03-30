@@ -4,7 +4,11 @@ import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import { createManualState, type ManualAsyncState } from './create-manual-state';
 
-/** Configuration options for `injectAsyncState`. */
+/**
+ * Configuration options for `injectAsyncState`.
+ *
+ * @category async
+ */
 export interface InjectAsyncStateOptions {
   /**
    * Debounce time in ms for signal dependency changes.

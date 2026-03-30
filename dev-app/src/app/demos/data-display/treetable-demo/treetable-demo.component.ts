@@ -244,7 +244,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
         [sourceHtml]="_srcHtml11"
         [sourceTs]="_srcTs11">
         
-  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="sortedTree()">
         <ng-template [cngxHeader]="'name'">
@@ -285,7 +285,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       class="search-input"
     />
   </div>
-  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="combinedTree()">
         <ng-template [cngxHeader]="'name'">
@@ -1398,7 +1398,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
     if (sort) nodes = sortTree(nodes, sort.active, sort.direction);
     return nodes;
   });`;
-  protected readonly _srcHtml11 = `<div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+  protected readonly _srcHtml11 = `<div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="sortedTree()">
         <ng-template [cngxHeader]="'name'">
@@ -1512,7 +1512,7 @@ import type { FlatNode, Node } from '@cngx/data-display/treetable';
       class="search-input"
     />
   </div>
-  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="combinedTree()">
         <ng-template [cngxHeader]="'name'">

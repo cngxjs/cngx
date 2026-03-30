@@ -19,8 +19,8 @@ import type { CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxCloseButton } from '@cngx/common/interactive';
 
-import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
-import { CngxSeverityIcon } from '../severity-icon';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
+import { CngxSeverityIcon } from '../config/severity-icon';
 
 // ── Types ───────────────────────────────────────────────────────
 
@@ -33,47 +33,59 @@ export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting'
 // ── PausableTimer ───────────────────────────────────────────────
 
 /** @internal — timer with pause/resume support for hover/focus interactions. */
-class PausableTimer {
-  private id: ReturnType<typeof setTimeout> | undefined;
-  private remaining = 0;
-  private startedAt = 0;
-  private onComplete: (() => void) | undefined;
+interface PausableTimer {
+  start(duration: number, onComplete: () => void): void;
+  pause(): void;
+  resume(): void;
+  clear(): void;
+}
 
-  start(duration: number, onComplete: () => void): void {
-    this.clear();
-    this.onComplete = onComplete;
-    this.remaining = duration;
-    this.resume();
-  }
+function createPausableTimer(): PausableTimer {
+  let id: ReturnType<typeof setTimeout> | undefined;
+  let remaining = 0;
+  let startedAt = 0;
+  let onComplete: (() => void) | undefined;
 
-  pause(): void {
-    if (this.id !== undefined) {
-      clearTimeout(this.id);
-      this.id = undefined;
-      this.remaining = Math.max(0, this.remaining - (Date.now() - this.startedAt));
+  const clear = (): void => {
+    if (id !== undefined) {
+      clearTimeout(id);
+      id = undefined;
     }
-  }
+    remaining = 0;
+    onComplete = undefined;
+  };
 
-  resume(): void {
-    if (this.remaining > 0 && this.id === undefined && this.onComplete) {
-      this.startedAt = Date.now();
-      const cb = this.onComplete;
-      this.id = setTimeout(() => {
-        this.id = undefined;
-        this.remaining = 0;
+  const resume = (): void => {
+    if (remaining > 0 && id === undefined && onComplete) {
+      startedAt = Date.now();
+      const cb = onComplete;
+      id = setTimeout(() => {
+        id = undefined;
+        remaining = 0;
         cb();
-      }, this.remaining);
+      }, remaining);
     }
-  }
+  };
 
-  clear(): void {
-    if (this.id !== undefined) {
-      clearTimeout(this.id);
-      this.id = undefined;
+  const pause = (): void => {
+    if (id !== undefined) {
+      clearTimeout(id);
+      id = undefined;
+      remaining = Math.max(0, remaining - (Date.now() - startedAt));
     }
-    this.remaining = 0;
-    this.onComplete = undefined;
-  }
+  };
+
+  return {
+    start: (duration, cb) => {
+      clear();
+      onComplete = cb;
+      remaining = duration;
+      resume();
+    },
+    pause,
+    resume,
+    clear,
+  };
 }
 
 // ── Slot Directives ─────────────────────────────────────────────
@@ -425,8 +437,8 @@ export class CngxAlert {
 
   // ── Timers ──────────────────────────────────────────────────
 
-  private readonly autoDismissTimer = new PausableTimer();
-  private readonly collapseTimer = new PausableTimer();
+  private readonly autoDismissTimer = createPausableTimer();
+  private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
 
   // ── Computed ────────────────────────────────────────────────

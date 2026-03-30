@@ -324,7 +324,7 @@ export const STORY: DemoSpec = {
         '<code>[cngxSort]</code> holds sort state. <code>[cngxSortHeader]</code> wires a click target to it via the explicit <code>[cngxSortRef]</code> binding — no ancestor injection. <code>sortTree</code> reorders each tree level independently.',
       imports: ['CngxTreetable', 'CngxHeaderTpl', 'CngxSort', 'CngxSortHeader'],
       template: `
-  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event)">
+  <div cngxSort #sort="cngxSort" (sortChange)="activeSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="sortedTree()">
         <ng-template [cngxHeader]="'name'">
@@ -366,7 +366,7 @@ export const STORY: DemoSpec = {
       class="search-input"
     />
   </div>
-  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event)">
+  <div cngxSort #combinedSort="cngxSort" (sortChange)="combinedSortState.set($event ?? null)">
     <div class="table-wrap">
       <cngx-treetable [tree]="combinedTree()">
         <ng-template [cngxHeader]="'name'">

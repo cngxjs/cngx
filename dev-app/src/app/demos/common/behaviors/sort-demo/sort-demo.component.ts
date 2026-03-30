@@ -32,7 +32,7 @@ import { type DJProduct } from '../../../../fixtures';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
+  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -80,7 +80,7 @@ import { type DJProduct } from '../../../../fixtures';
   <div cngxSort #sort2="cngxSort"
     [cngxSortActive]="ctrl2Active()"
     [cngxSortDirection]="ctrl2Dir()"
-    (sortChange)="onSort2Change($event)"
+    (sortChange)="onSort2Change($event ?? null)"
   >
     <div class="table-wrap">
       <table class="demo-table">
@@ -215,7 +215,7 @@ protected readonly rows = computed(() =&gt; &#123;
         [sourceHtml]="_srcHtml4"
         [sourceTs]="_srcTs4">
         
-  <div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event)">
+  <div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -286,7 +286,7 @@ protected readonly rows = toSignal(
 );
 
 // Template:
-// &lt;div cngxSort (sortChange)="sortState.set($event)"&gt;</code></pre>
+// &lt;div cngxSort (sortChange)="sortState.set($event ?? null)"&gt;</code></pre>
       </app-example-card>
     </app-doc-shell>
   `,
@@ -298,7 +298,7 @@ export class SortDemoComponent {
   protected readonly _s3 = 'Use <code>(sortsChange)</code> instead of <code>(sortChange)</code> to receive the full sort stack. Apply it with a priority loop in your <code>computed()</code>.';
   protected readonly _s4 = '<code>(sortChange)</code> updates a signal → <code>toObservable()</code> → <code>switchMap</code> calls the API with <code>sortBy</code> + <code>order</code> params. <code>switchMap</code> automatically cancels any in-flight request when the sort changes.';
   protected readonly _s5 = '<code>(sortChange)</code> emits <code>&#123; active, direction &#125;</code> or <code>null</code> (sort cleared). Map directly to query params — no extra transform needed.';
-  protected readonly _srcHtml0 = `<div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
+  protected readonly _srcHtml0 = `<div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -346,7 +346,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -372,7 +372,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -396,7 +396,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -417,7 +417,7 @@ import { type DJProduct } from '../../../../fixtures';
   protected readonly _srcHtml1 = `<div cngxSort #sort2="cngxSort"
     [cngxSortActive]="ctrl2Active()"
     [cngxSortDirection]="ctrl2Dir()"
-    (sortChange)="onSort2Change($event)"
+    (sortChange)="onSort2Change($event ?? null)"
   >
     <div class="table-wrap">
       <table class="demo-table">
@@ -464,7 +464,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -490,7 +490,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -514,7 +514,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -603,7 +603,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -629,7 +629,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -653,7 +653,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -697,7 +697,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -723,7 +723,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -747,7 +747,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -765,7 +765,7 @@ import { type DJProduct } from '../../../../fixtures';
     ),
     { initialValue: [] as DJProduct[] },
   );`;
-  protected readonly _srcHtml4 = `<div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event)">
+  protected readonly _srcHtml4 = `<div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -823,7 +823,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -849,7 +849,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -873,7 +873,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -907,7 +907,7 @@ protected readonly rows = toSignal(
 );
 
 // Template:
-// &lt;div cngxSort (sortChange)="sortState.set($event)"&gt;</code></pre>`;
+// &lt;div cngxSort (sortChange)="sortState.set($event ?? null)"&gt;</code></pre>`;
   protected readonly _srcTs5 = `import { PEOPLE, type Person } from '../../../../fixtures';
 import { type SortEntry } from '@cngx/common';
 import { HttpClient } from '@angular/common/http';
@@ -917,7 +917,7 @@ import { type DJProduct } from '../../../../fixtures';
 
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -943,7 +943,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -967,7 +967,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -987,7 +987,7 @@ import { type DJProduct } from '../../../../fixtures';
   );`;
 
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -1013,7 +1013,7 @@ import { type DJProduct } from '../../../../fixtures';
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -1037,7 +1037,7 @@ import { type DJProduct } from '../../../../fixtures';
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(

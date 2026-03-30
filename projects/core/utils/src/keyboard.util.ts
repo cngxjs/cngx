@@ -1,4 +1,8 @@
-/** Parsed keyboard combo. */
+/**
+ * Parsed keyboard combo.
+ *
+ * @category utils
+ */
 export interface KeyCombo {
   readonly key: string;
   readonly ctrl: boolean;
@@ -14,6 +18,8 @@ export interface KeyCombo {
  *
  * The `mod` modifier resolves to `meta` on macOS and `ctrl` elsewhere.
  * Modifier names are case-insensitive.
+ *
+ * @category utils
  *
  * @example
  * ```typescript
@@ -43,28 +49,17 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
+ * @category utils
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
-  if (event.key.toLowerCase() !== combo.key) {
-    return false;
-  }
-  if (combo.shift && !event.shiftKey) {
-    return false;
-  }
-  if (combo.alt && !event.altKey) {
-    return false;
-  }
-  if (combo.mod) {
-    if (isMac ? !event.metaKey : !event.ctrlKey) {
-      return false;
-    }
-  } else {
-    if (combo.ctrl && !event.ctrlKey) {
-      return false;
-    }
-    if (combo.meta && !event.metaKey) {
-      return false;
-    }
-  }
-  return true;
+  return (
+    event.key.toLowerCase() === combo.key &&
+    (!combo.shift || event.shiftKey) &&
+    (!combo.alt || event.altKey) &&
+    (combo.mod
+      ? isMac
+        ? event.metaKey
+        : event.ctrlKey
+      : (!combo.ctrl || event.ctrlKey) && (!combo.meta || event.metaKey))
+  );
 }

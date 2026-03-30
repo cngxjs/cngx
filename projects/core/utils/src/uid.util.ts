@@ -5,6 +5,8 @@ let counter = 0;
  *
  * Each call returns a monotonically increasing ID: `prefix-0`, `prefix-1`, etc.
  * Used internally for ARIA `id` attributes on dialogs, popovers, and tooltips.
+ *
+ * @category utils
  */
 export function nextUid(prefix: string): string {
   return `${prefix}-${counter++}`;

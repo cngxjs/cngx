@@ -2,7 +2,7 @@ import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { type Observable, Subject } from 'rxjs';
 
 import type { AlertSeverity } from './alert';
-import { CNGX_FEEDBACK_CONFIG } from '../feedback-config';
+import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 
 /** Configuration for a programmatic alert. */
 export interface AlertConfig {

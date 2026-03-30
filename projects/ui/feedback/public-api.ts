@@ -2,9 +2,9 @@
  * @module @cngx/ui/feedback
  */
 
-export { CngxLoadingIndicator, type LoadingIndicatorVariant } from './src/loading-indicator';
-export { CngxLoadingOverlay } from './src/loading-overlay';
-export { CngxProgress, type ProgressVariant } from './src/progress';
+export { CngxLoadingIndicator, type LoadingIndicatorVariant } from './src/loading/loading-indicator';
+export { CngxLoadingOverlay } from './src/loading/loading-overlay';
+export { CngxProgress, type ProgressVariant } from './src/loading/progress';
 export {
   CngxAlert,
   CngxAlertIcon,
@@ -24,7 +24,7 @@ export {
   withToasts,
   withAlerts,
   withBanners,
-} from './src/feedback-config';
+} from './src/config/feedback-config';
 export {
   CngxAlerter,
   type AlertConfig,
