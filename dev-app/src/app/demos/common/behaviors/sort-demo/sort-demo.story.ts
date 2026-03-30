@@ -15,7 +15,7 @@ export const STORY: DemoSpec = {
   ],
   setup: `
   // Table 1 — uncontrolled
-  protected readonly sort1State = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sort1State = signal<SortEntry | null>(null);
   protected readonly sort1Rows = computed((): Person[] => {
     const s = this.sort1State();
     if (!s) return PEOPLE;
@@ -41,7 +41,7 @@ export const STORY: DemoSpec = {
     });
   });
 
-  protected onSort2Change(s: { active: string; direction: 'asc' | 'desc' } | null): void {
+  protected onSort2Change(s: SortEntry | null): void {
     if (s) { this.ctrl2Active.set(s.active); this.ctrl2Dir.set(s.direction); }
   }
 
@@ -65,7 +65,7 @@ export const STORY: DemoSpec = {
   // ── Backend sort ───────────────────────────────────────────────────────
   private readonly http = inject(HttpClient);
 
-  protected readonly sortState = signal<{ active: string; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly sortState = signal<SortEntry | null>(null);
   protected readonly apiLoading = signal(false);
 
   protected readonly apiProducts = toSignal(
@@ -90,7 +90,7 @@ export const STORY: DemoSpec = {
       subtitle: '<code>[cngxSort]</code> is a stateful atom holding the active column and direction. <code>[cngxSortHeader]</code> binds to it via the explicit <code>[cngxSortRef]</code> input — no ancestor injection. Clicking toggles asc → desc → off.',
       imports: ['CngxSort', 'CngxSortHeader'],
       template: `
-  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event)">
+  <div cngxSort #sort="cngxSort" (sortChange)="sort1State.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -137,7 +137,7 @@ export const STORY: DemoSpec = {
   <div cngxSort #sort2="cngxSort"
     [cngxSortActive]="ctrl2Active()"
     [cngxSortDirection]="ctrl2Dir()"
-    (sortChange)="onSort2Change($event)"
+    (sortChange)="onSort2Change($event ?? null)"
   >
     <div class="table-wrap">
       <table class="demo-table">
@@ -271,7 +271,7 @@ protected readonly rows = computed(() =&gt; &#123;
       subtitle: '<code>(sortChange)</code> updates a signal → <code>toObservable()</code> → <code>switchMap</code> calls the API with <code>sortBy</code> + <code>order</code> params. <code>switchMap</code> automatically cancels any in-flight request when the sort changes.',
       imports: ['CngxSort', 'CngxSortHeader', 'CurrencyPipe'],
       template: `
-  <div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event)">
+  <div cngxSort #sort4="cngxSort" (sortChange)="sortState.set($event ?? null)">
     <div class="table-wrap">
       <table class="demo-table">
         <thead>
@@ -341,7 +341,7 @@ protected readonly rows = toSignal(
 );
 
 // Template:
-// &lt;div cngxSort (sortChange)="sortState.set($event)"&gt;</code></pre>`,
+// &lt;div cngxSort (sortChange)="sortState.set($event ?? null)"&gt;</code></pre>`,
     },
   ],
 };
