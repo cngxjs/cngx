@@ -31,3 +31,13 @@ export { CngxAsync, type CngxAsyncContext } from './src/async/async.directive';
 // Display atoms
 export { CngxMetric } from './src/display/metric.component';
 export { CngxTrend } from './src/display/trend.component';
+
+// Recycler
+export {
+  injectRecycler,
+  provideRecyclerI18n,
+  CNGX_RECYCLER_I18N,
+  type RecyclerConfig,
+  type CngxRecycler,
+  type RecyclerI18n,
+} from './src/recycler/recycler';
