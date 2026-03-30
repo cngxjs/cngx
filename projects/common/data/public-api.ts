@@ -41,3 +41,4 @@ export {
   type CngxRecycler,
   type RecyclerI18n,
 } from './src/recycler/recycler';
+export { CngxMeasure } from './src/recycler/measure.directive';

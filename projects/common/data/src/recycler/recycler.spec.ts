@@ -11,12 +11,14 @@ class MockResizeObserver {
   disconnect(): void {}
 }
 
-function createMockState(overrides?: Partial<{
-  status: WritableSignal<AsyncStatus>;
-  isFirstLoad: WritableSignal<boolean>;
-  isBusy: WritableSignal<boolean>;
-  isRefreshing: WritableSignal<boolean>;
-}>): CngxAsyncState<unknown> {
+function createMockState(
+  overrides?: Partial<{
+    status: WritableSignal<AsyncStatus>;
+    isFirstLoad: WritableSignal<boolean>;
+    isBusy: WritableSignal<boolean>;
+    isRefreshing: WritableSignal<boolean>;
+  }>,
+): CngxAsyncState<unknown> {
   return {
     status: overrides?.status ?? signal<AsyncStatus>('loading'),
     data: signal(undefined),
@@ -42,8 +44,16 @@ describe('injectRecycler', () => {
 
     mockContainer = document.createElement('div');
     mockContainer.id = 'recycler-test';
-    Object.defineProperty(mockContainer, 'scrollTop', { value: 0, writable: true, configurable: true });
-    Object.defineProperty(mockContainer, 'clientHeight', { value: 500, writable: true, configurable: true });
+    Object.defineProperty(mockContainer, 'scrollTop', {
+      value: 0,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(mockContainer, 'clientHeight', {
+      value: 500,
+      writable: true,
+      configurable: true,
+    });
     document.body.appendChild(mockContainer);
 
     TestBed.configureTestingModule({
@@ -234,25 +244,40 @@ describe('injectRecycler', () => {
       expect(recycler.lostFocus()).toBeNull();
     });
 
-    it('should warn on anchorTo in dev mode', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    it('should accept anchorTo without error', () => {
       const recycler = createRecycler();
-      recycler.anchorTo(5);
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('anchorTo'));
+      expect(() => recycler.anchorTo(5)).not.toThrow();
+      expect(() => recycler.releaseAnchor()).not.toThrow();
     });
 
-    it('should warn on measure in dev mode', () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    it('should accept measure without error', () => {
       const recycler = createRecycler();
-      recycler.measure(0, document.createElement('div'));
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('measure'));
+      const el = document.createElement('div');
+      Object.defineProperty(el, 'getBoundingClientRect', {
+        value: () => ({
+          height: 64,
+          width: 100,
+          top: 0,
+          left: 0,
+          bottom: 64,
+          right: 100,
+          x: 0,
+          y: 0,
+          toJSON: () => {},
+        }),
+      });
+      expect(() => recycler.measure(0, el)).not.toThrow();
     });
   });
 
   describe('reset', () => {
     it('should set scrollTop to 0', () => {
       const recycler = createRecycler();
-      Object.defineProperty(mockContainer, 'scrollTop', { value: 500, writable: true, configurable: true });
+      Object.defineProperty(mockContainer, 'scrollTop', {
+        value: 500,
+        writable: true,
+        configurable: true,
+      });
       recycler.reset();
       expect(mockContainer.scrollTop).toBe(0);
     });

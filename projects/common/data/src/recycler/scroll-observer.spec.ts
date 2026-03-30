@@ -18,8 +18,16 @@ describe('createScrollObserver', () => {
 
     mockContainer = document.createElement('div');
     mockContainer.classList.add('test-scroll');
-    Object.defineProperty(mockContainer, 'scrollTop', { value: 0, writable: true, configurable: true });
-    Object.defineProperty(mockContainer, 'clientHeight', { value: 500, writable: true, configurable: true });
+    Object.defineProperty(mockContainer, 'scrollTop', {
+      value: 0,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(mockContainer, 'clientHeight', {
+      value: 500,
+      writable: true,
+      configurable: true,
+    });
     document.body.appendChild(mockContainer);
 
     TestBed.configureTestingModule({
@@ -80,9 +88,7 @@ describe('createScrollObserver', () => {
 
     TestBed.flushEffects();
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Scroll element not found'),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Scroll element not found'));
     expect(state.element()).toBeNull();
   });
 });

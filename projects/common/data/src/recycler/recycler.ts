@@ -16,6 +16,7 @@ import { createTransitionTracker } from '@cngx/core/utils';
 
 import { computeRange } from './range-computer';
 import { createScrollObserver } from './scroll-observer';
+import { createSizeCache } from './size-cache';
 
 // ── I18n Token ──────────────────────────────────────────────
 
@@ -42,17 +43,14 @@ export interface RecyclerI18n {
  *
  * @category recycler
  */
-export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>(
-  'CngxRecyclerI18n',
-  {
-    factory: (): RecyclerI18n => ({
-      loaded: (n, t) => `${n} more items loaded. ${t} total.`,
-      filtered: (c) => `${c} results found.`,
-      empty: () => 'No results.',
-      error: () => 'Error loading data.',
-    }),
-  },
-);
+export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecyclerI18n', {
+  factory: (): RecyclerI18n => ({
+    loaded: (n, t) => `${n} more items loaded. ${t} total.`,
+    filtered: (c) => `${c} results found.`,
+    empty: () => 'No results.',
+    error: () => 'Error loading data.',
+  }),
+});
 
 /**
  * Provider function for custom recycler i18n texts.
@@ -264,8 +262,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (count > 10_000) {
       console.warn(
         `[CngxRecycler] estimateSize as a function with ${count} items has O(n) ` +
-        `per-frame cost. Consider using a fixed estimateSize for large datasets ` +
-        `or wait for Phase 2 SizeCache.`,
+          `per-frame cost. Consider using a fixed estimateSize for large datasets ` +
+          `or wait for Phase 2 SizeCache.`,
       );
     }
   }
@@ -273,13 +271,24 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // ── Scroll observer (lazy DOM resolution inside effect) ──
   const scrollState = createScrollObserver(config.scrollElement, destroyRef);
 
+  // ── Size cache (Phase 2) — measured heights override estimateSize ──
+  const sizeCache = createSizeCache();
+
+  // Resolve size for an index: measured value from cache, or estimateSize fallback.
+  // Reading sizeCache.version() creates a reactive dependency so that range
+  // recomputes when measurements change.
+  const resolveSize = (index: number): number => {
+    sizeCache.version(); // track dependency
+    return sizeCache.resolve(index, config.estimateSize);
+  };
+
   // ── Range computation ──
   const range = computed(() =>
     computeRange(
       scrollState.scrollTop(),
       scrollState.clientHeight(),
       config.totalCount(),
-      config.estimateSize,
+      resolveSize,
       overscan,
     ),
   );
@@ -334,9 +343,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return config.totalCount() === 0;
   });
 
-  const resolvedEstimateSize = typeof config.estimateSize === 'number'
-    ? config.estimateSize
-    : config.estimateSize(0);
+  const resolvedEstimateSize =
+    typeof config.estimateSize === 'number' ? config.estimateSize : config.estimateSize(0);
 
   const skeletonSlots = computed(() => {
     const ch = scrollState.clientHeight();
@@ -402,8 +410,77 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   // ── A11y ──
   const ariaSetSize = computed(() => config.serverTotal?.() ?? config.totalCount());
 
-  // ── Focus preservation stub (Phase 2) ──
-  const lostFocusSignal = signal<{ index: number } | null>(null).asReadonly();
+  // ── Scroll-Anchoring (Phase 2) ──
+  const anchorState = signal<{ index: number; offsetFromTop: number } | null>(null);
+
+  function computeItemTop(targetIndex: number): number {
+    let top = 0;
+    for (let i = 0; i < targetIndex; i++) {
+      top += sizeCache.resolve(i, config.estimateSize);
+    }
+    return top;
+  }
+
+  // Anchor correction effect: when items shift above the anchored item,
+  // correct scrollTop to keep it at the same visual position.
+  effect(() => {
+    const anchor = anchorState();
+    if (!anchor) {
+      return;
+    }
+    sizeCache.version(); // re-run when sizes change
+    config.totalCount(); // re-run when items change
+    const el = scrollState.element();
+    if (!el) {
+      return;
+    }
+    const currentItemTop = computeItemTop(anchor.index);
+    const targetScrollTop = currentItemTop - anchor.offsetFromTop;
+    if (Math.abs(el.scrollTop - targetScrollTop) > 1) {
+      el.scrollTop = targetScrollTop;
+    }
+  });
+
+  // ── Focus-Preservation (Phase 2) ──
+  // Tracks which item has focus inside the scroll container.
+  // Uses `data-cngx-recycle-index` attribute on items (set by CngxMeasure or consumer).
+  // When a focused item leaves the visible range, `lostFocus` reports its index.
+  const focusedIndex = signal<number | null>(null);
+
+  effect((onCleanup) => {
+    const el = scrollState.element();
+    if (!el) {
+      return;
+    }
+    const handleFocusIn = (e: FocusEvent): void => {
+      const target = (e.target as HTMLElement).closest('[data-cngx-recycle-index]');
+      if (target) {
+        focusedIndex.set(Number(target.getAttribute('data-cngx-recycle-index')));
+      }
+    };
+    const handleFocusOut = (): void => {
+      focusedIndex.set(null);
+    };
+    el.addEventListener('focusin', handleFocusIn);
+    el.addEventListener('focusout', handleFocusOut);
+    onCleanup(() => {
+      el.removeEventListener('focusin', handleFocusIn);
+      el.removeEventListener('focusout', handleFocusOut);
+    });
+  });
+
+  const lostFocus = computed(() => {
+    const fi = focusedIndex();
+    if (fi == null) {
+      return null;
+    }
+    const s = start();
+    const e = end();
+    if (fi < s || fi >= e) {
+      return { index: fi };
+    }
+    return null;
+  });
 
   return {
     start,
@@ -425,19 +502,20 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     lastVisible,
     visibleCount,
 
-    anchorTo(_index: number): void {
-      if (isDevMode()) {
-        console.warn('[CngxRecycler] anchorTo() is not yet implemented (Phase 2).');
+    anchorTo(index: number): void {
+      const el = scrollState.element();
+      if (!el) {
+        return;
       }
+      const itemTop = computeItemTop(index);
+      anchorState.set({ index, offsetFromTop: itemTop - el.scrollTop });
     },
 
     releaseAnchor(): void {
-      if (isDevMode()) {
-        console.warn('[CngxRecycler] releaseAnchor() is not yet implemented (Phase 2).');
-      }
+      anchorState.set(null);
     },
 
-    lostFocus: lostFocusSignal,
+    lostFocus,
 
     announcement: announcementState.asReadonly(),
 
@@ -447,9 +525,10 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       return computed(() => items().slice(start(), end()));
     },
 
-    measure(_index: number, _element: HTMLElement): void {
-      if (isDevMode()) {
-        console.warn('[CngxRecycler] measure() is not yet implemented (Phase 2).');
+    measure(index: number, element: HTMLElement): void {
+      const height = element.getBoundingClientRect().height;
+      if (height > 0) {
+        sizeCache.set(index, height);
       }
     },
 
@@ -458,18 +537,7 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
       if (!el) {
         return;
       }
-      let targetScrollTop: number;
-      if (typeof config.estimateSize === 'number') {
-        targetScrollTop = index * config.estimateSize;
-      } else {
-        // Accumulate estimated heights up to the target index (best-effort).
-        // Phase 2 SizeCache will use measured heights for accuracy.
-        targetScrollTop = 0;
-        for (let i = 0; i < index; i++) {
-          targetScrollTop += config.estimateSize(i);
-        }
-      }
-
+      const targetScrollTop = computeItemTop(index);
       el.scrollTo({ top: targetScrollTop, behavior });
     },
 

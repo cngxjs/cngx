@@ -49,7 +49,7 @@ export function createScrollObserver(
       if (isDevMode()) {
         console.warn(
           `[CngxRecycler] Scroll element not found: ${typeof elementRef === 'string' ? elementRef : '(ElementRef)'}. ` +
-          `Recycler will not function until the element is available.`,
+            `Recycler will not function until the element is available.`,
         );
       }
       return;
@@ -105,10 +105,7 @@ export function createScrollObserver(
   };
 }
 
-function resolveElement(
-  ref: ElementRef | HTMLElement | string,
-  doc: Document,
-): HTMLElement | null {
+function resolveElement(ref: ElementRef | HTMLElement | string, doc: Document): HTMLElement | null {
   if (typeof ref === 'string') {
     return doc.querySelector<HTMLElement>(ref);
   }
