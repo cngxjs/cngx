@@ -50,8 +50,12 @@ export class CngxPaginate {
   private readonly pageIndexState = signal(0);
   private readonly pageSizeState = signal(10);
 
-  /** Current page index (0-based). Controlled input takes precedence. */
-  readonly pageIndex = computed(() => this.pageIndexInput() ?? this.pageIndexState());
+  /** Current page index (0-based). Controlled input takes precedence. Auto-clamped to totalPages. */
+  readonly pageIndex = computed(() => {
+    const raw = this.pageIndexInput() ?? this.pageIndexState();
+    const max = this.totalPages() - 1;
+    return Math.min(raw, max);
+  });
   /** Current page size. Controlled input takes precedence. */
   readonly pageSize = computed(() => this.pageSizeInput() ?? this.pageSizeState());
 

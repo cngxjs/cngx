@@ -51,16 +51,23 @@ export class CngxCopyText {
   readonly resetDelay = input<number>(2000);
 
   private readonly copiedState = signal(false);
+  private readonly failedState = signal(false);
   private resetTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** `true` for `resetDelay` ms after a successful copy. */
   readonly copied: Signal<boolean> = this.copiedState.asReadonly();
+
+  /** `true` when the last copy attempt failed (permission denied, etc.). Resets on next attempt. */
+  readonly failed: Signal<boolean> = this.failedState.asReadonly();
 
   /** Whether the Clipboard API is available in this environment. */
   readonly supported = typeof navigator !== 'undefined' && !!navigator.clipboard;
 
   /** Emitted after a successful copy with the copied text. */
   readonly didCopy = output<string>();
+
+  /** Emitted when a copy attempt fails. */
+  readonly copyFailed = output<unknown>();
 
   constructor() {
     this.destroyRef.onDestroy(() => {
@@ -76,6 +83,8 @@ export class CngxCopyText {
     if (!value) {
       return;
     }
+
+    this.failedState.set(false);
 
     try {
       if (this.supported) {
@@ -94,8 +103,9 @@ export class CngxCopyText {
         this.copiedState.set(false);
         this.resetTimer = null;
       }, this.resetDelay());
-    } catch {
-      // Clipboard write failed (permission denied) — silently ignore
+    } catch (err: unknown) {
+      this.failedState.set(true);
+      this.copyFailed.emit(err);
     }
   }
 

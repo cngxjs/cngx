@@ -121,7 +121,9 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
     this.filtered = computed(() => {
       let items = data();
 
-      // Filter via CngxFilter (predicate function)
+      // Filter via CngxFilter (predicate function).
+      // Cast required: CngxFilter is injected as CngxFilter<unknown> via optional DI.
+      // Consumer must ensure the filter's predicate type aligns with T.
       const predicate = this.filter?.predicate();
       if (predicate) {
         items = items.filter((v) => (predicate as (v: T) => boolean)(v));
