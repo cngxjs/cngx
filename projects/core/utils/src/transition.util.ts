@@ -2,6 +2,7 @@
  * Checks whether an element has any CSS transition applied.
  *
  * @returns `true` if at least one `transition-duration` value is greater than 0.
+ * @category utils
  */
 export function hasTransition(el: HTMLElement): boolean {
   const duration = getComputedStyle(el).transitionDuration;
@@ -14,6 +15,7 @@ export function hasTransition(el: HTMLElement): boolean {
  * Automatically falls back to a timeout if `transitionend` never fires.
  *
  * @returns A cleanup function that removes the listener and clears the fallback timer.
+ * @category utils
  */
 export function onTransitionDone(el: HTMLElement, onDone: () => void): () => void {
   const style = getComputedStyle(el);

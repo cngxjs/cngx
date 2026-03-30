@@ -17,6 +17,8 @@ import { DIALOG_REF } from './dialog-ref';
  *   …
  * </dialog>
  * ```
+ *
+ * @category dialog
  */
 @Directive({
   selector: '[cngxDialogTitle]',
@@ -49,7 +51,6 @@ export class CngxDialogTitle {
   );
 
   constructor() {
-    // Use parent dialog's ID as prefix if available
     if (this.dialogRef) {
       this.id.set(`${this.dialogRef.id()}-title`);
     }

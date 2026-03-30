@@ -44,6 +44,8 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <a href="/security">Security</a>
  * </div>
  * ```
+ *
+ * @category nav
  */
 @Directive({
   selector: '[cngxDisclosure]',

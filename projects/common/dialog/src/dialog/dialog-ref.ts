@@ -1,7 +1,11 @@
 import { InjectionToken, type Signal } from '@angular/core';
 import type { CngxAsyncState } from '@cngx/core/utils';
 
-/** Lifecycle states of a dialog. */
+/**
+ * Lifecycle states of a `CngxDialog`.
+ *
+ * @category dialog
+ */
 export type DialogState = 'closed' | 'opening' | 'open' | 'closing';
 
 /**
@@ -9,6 +13,8 @@ export type DialogState = 'closed' | 'opening' | 'open' | 'closing';
  *
  * - **Outside** (parent template): access via `exportAs` — `#dlg="cngxDialog"`
  * - **Inside** (dialog content): access via DI — `inject(DIALOG_REF)`
+ *
+ * @category dialog
  */
 export interface DialogRef<T = unknown> {
   /** Current lifecycle state of the dialog. */

@@ -96,24 +96,20 @@ export class CngxRovingTabindex {
   /** All `CngxRovingItem` children discovered via `contentChildren`. */
   private readonly items = contentChildren(CngxRovingItem);
 
-  /**
-   * Guards against setting tabindex before the DOM is ready.
-   * `afterNextRender` fires once; after that, the effect runs freely.
-   */
+  /** Guards against setting `tabindex` before the DOM is ready. */
   private readonly initialized = signal(false);
 
   constructor() {
     afterNextRender(() => this.initialized.set(true));
 
-    // Synchronise tabindex attributes whenever items or activeIndex change.
-    // Active item gets tabindex="0", all others get tabindex="-1".
+    // Sync tabindex on every items/activeIndex change: active = "0", others = "-1".
     effect(() => {
       if (!this.initialized()) {
         return;
       }
       const items = this.items();
       const active = this.activeIndex();
-      // Clamp to valid range — prevents out-of-bounds when items are added/removed.
+      // Clamp to valid range when items are added or removed.
       const clamped = Math.max(0, Math.min(active, items.length - 1));
 
       items.forEach((item, i) =>
@@ -126,9 +122,8 @@ export class CngxRovingTabindex {
   }
 
   /**
-   * Handles arrow-key, Home, and End navigation.
-   * Prevents default to stop the page from scrolling on arrow keys.
-   * @internal — bound via `host: { '(keydown)': ... }`.
+   * Handles arrow-key, Home, and End navigation within the group.
+   * Prevents default scrolling on arrow keys.
    */
   protected handleKeyDown(event: KeyboardEvent): void {
     const items = this.enabledItems();

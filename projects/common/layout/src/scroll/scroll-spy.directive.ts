@@ -49,20 +49,18 @@ export class CngxScrollSpy {
   readonly activeId = this.activeIdState.asReadonly();
 
   private readonly doc = inject(DOCUMENT);
-  /** Running map of section ID → last observed intersection ratio. */
+  /** Last observed intersection ratio keyed by section ID. */
   private readonly ratios = new Map<string, number>();
   private readonly initialized = signal(false);
   private activeCleanup: (() => void) | undefined;
 
   constructor() {
-    // Wait for DOM to be ready before querying section elements.
     afterNextRender(() => {
       this.initialized.set(true);
     });
 
-    // Create/re-create observer when inputs change (after init).
+    // Recreate the observer whenever inputs change (deferred until DOM is ready).
     effect((onCleanup) => {
-      // Track all inputs so the effect re-runs when they change
       this.sections();
       this.threshold();
       this.root();
@@ -82,10 +80,7 @@ export class CngxScrollSpy {
     });
   }
 
-  /**
-   * Creates an IntersectionObserver for the current sections.
-   * Returns a cleanup function that disconnects the observer.
-   */
+  /** Builds an `IntersectionObserver` for the current section IDs. Returns a disconnect callback. */
   private setupObserver(): (() => void) | undefined {
     const ids = this.sections();
     const thresholdValue = this.threshold();
@@ -104,7 +99,7 @@ export class CngxScrollSpy {
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
 
-    // Fine-grained thresholds (0..1 in 0.1 steps) for accurate ratio tracking.
+    // Fine-grained thresholds give accurate per-step ratio tracking.
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => this.ratios.set(entry.target.id, entry.intersectionRatio));

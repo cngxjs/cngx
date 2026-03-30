@@ -49,15 +49,11 @@ export class CngxFocusRestore {
   private readonly storedElement = signal<HTMLElement | null>(null);
 
   constructor() {
-    // Capture whatever has focus right now — this is the element we'll
-    // return to when the host is removed from the DOM.
     const activeEl = this.doc.activeElement;
     if (activeEl instanceof HTMLElement) {
       this.storedElement.set(activeEl);
     }
 
-    // On destroy, walk the fallback chain and restore focus.
-    // Without this, focus falls to <body> and SR users lose their place.
     inject(DestroyRef).onDestroy(() => {
       if (!this.restoreOnDestroy()) {
         return;
@@ -94,7 +90,7 @@ export class CngxFocusRestore {
    */
   private resolveTarget(): HTMLElement | null {
     const stored = this.storedElement();
-    // Skip body — it means "nothing was focused", not "focus body"
+    // Skip body — it signals "nothing meaningful was focused", not a real restore target.
     if (
       stored &&
       stored !== this.doc.body &&

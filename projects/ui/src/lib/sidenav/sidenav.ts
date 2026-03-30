@@ -50,6 +50,8 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  *   </cngx-sidenav-content>
  * </cngx-sidenav-layout>
  * ```
+ *
+ * @category layout
  */
 @Component({
   selector: 'cngx-sidenav',

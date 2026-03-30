@@ -18,6 +18,8 @@ import { Directive, input } from '@angular/core';
  * ```html
  * <span cngxNavLabel [heading]="true" [level]="3">Settings</span>
  * ```
+ *
+ * @category nav
  */
 @Directive({
   selector: '[cngxNavLabel]',

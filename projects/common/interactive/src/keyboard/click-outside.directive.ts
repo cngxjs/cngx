@@ -27,6 +27,8 @@ import { fromEvent, switchMap } from 'rxjs';
  * ```html
  * <div cngxClickOutside [eventType]="'click'" (clickOutside)="dismiss()">…</div>
  * ```
+ *
+ * @category interactive
  */
 @Directive({
   selector: '[cngxClickOutside]',

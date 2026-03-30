@@ -1,4 +1,11 @@
-/** Coerces a value to a boolean. */
+/**
+ * Coerces a value to a boolean.
+ *
+ * Strings are truthy unless they equal `'false'`.
+ * All other falsy values return `false`.
+ *
+ * @category utils
+ */
 export function coerceBooleanProperty(value: unknown): boolean {
   if (value == null) {
     return false;
@@ -13,14 +20,18 @@ export function coerceBooleanProperty(value: unknown): boolean {
   return Boolean(value);
 }
 
-/** Coerces a value to a number. */
+/**
+ * Coerces a value to a number.
+ *
+ * Returns `fallback` when the value is null, undefined, NaN, or non-numeric.
+ *
+ * @category utils
+ */
 export function coerceNumberProperty(value: unknown, fallback = 0): number {
-  // Handle null/undefined
   if (value == null) {
     return fallback;
   }
 
-  // If already a number, return it
   if (typeof value === 'number') {
     return Number.isNaN(value) ? fallback : value;
   }

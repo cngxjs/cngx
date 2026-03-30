@@ -61,9 +61,8 @@ export class CngxStickyHeader {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // Sentinel + observer are created together after first render.
-    // The sentinel is a 1px invisible element inserted before the host.
-    // When it scrolls out of view, the header must be stuck.
+    // A 1px invisible sentinel is inserted before the host.
+    // When the sentinel scrolls out of view, the header is stuck.
     afterNextRender(() => {
       const host = this.el.nativeElement as HTMLElement;
       const sentinel = this.doc.createElement('div');
@@ -75,7 +74,6 @@ export class CngxStickyHeader {
       sentinel.setAttribute('aria-hidden', 'true');
       host.parentElement?.insertBefore(sentinel, host);
 
-      // Sentinel not intersecting = header is stuck (scrolled past its natural position).
       const observer = new IntersectionObserver(
         (entries) => {
           const isSticky = !entries[0].isIntersecting;

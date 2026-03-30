@@ -14,6 +14,8 @@ import { Directive, input } from '@angular/core';
  * requires imperative `announce()` calls), this directive decorates your own
  * element declaratively — the content you render IS the announcement.
  *
+ * @category a11y
+ *
  * @usageNotes
  *
  * ### Status message

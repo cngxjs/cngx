@@ -10,8 +10,8 @@ import {
 
 /**
  * Minimal write interface for async state operators.
- * Any `ManualAsyncState<T>` satisfies this — operators don't need
- * the full read-side signals.
+ *
+ * Any `ManualAsyncState<T>` satisfies this — operators only need the write side.
  */
 interface AsyncStateSink<T> {
   set(status: 'loading' | 'refreshing' | 'pending'): void;

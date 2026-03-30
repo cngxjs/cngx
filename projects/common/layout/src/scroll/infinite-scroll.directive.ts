@@ -55,7 +55,7 @@ import {
  * </div>
  * ```
  *
- * @category directives
+ * @category layout
  */
 @Directive({
   selector: '[cngxInfiniteScroll]',
@@ -103,7 +103,6 @@ export class CngxInfiniteScroll {
     }
 
     effect((onCleanup) => {
-      // Read all reactive inputs so the effect re-runs when any change
       const enabled = this.enabled();
       const root = this.root();
       const rootMargin = this.rootMargin();
@@ -114,7 +113,6 @@ export class CngxInfiniteScroll {
         return;
       }
 
-      // Snapshot loading as a closure-captured ref to the signal read
       const isLoading = () => this.loading();
       const resolvedRoot = root ? this.doc.querySelector(root) : null;
 

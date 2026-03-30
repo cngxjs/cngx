@@ -8,7 +8,11 @@ import { CngxFilter } from '../filter/filter.directive';
 import { CngxSort } from '../sort/sort.directive';
 import { CngxSearch } from '@cngx/common/interactive';
 
-/** Optional customisation for {@link CngxSmartDataSource}. */
+/**
+ * Optional customization for {@link CngxSmartDataSource}.
+ *
+ * @category data-source
+ */
 export interface CngxSmartDataSourceOptions<T> {
   /**
    * Custom full-text search function. Receives an item and the current search
@@ -49,6 +53,7 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * ```
  *
  * @typeParam T - The row item type.
+ * @category data-source
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -192,12 +197,12 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
 /**
  * Factory function for {@link CngxSmartDataSource}.
- * Must be called within an injection context (constructor or field initializer).
  *
+ * Must be called within an injection context (constructor or field initializer).
  * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>` for
  * full UX state integration (loading, error, refresh, empty).
  *
- * @example
+ * @usageNotes
  * ```typescript
  * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
@@ -206,6 +211,8 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
+ *
+ * @category data-source
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

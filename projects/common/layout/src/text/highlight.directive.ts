@@ -66,10 +66,8 @@ export class CngxHighlight {
       this.initialized.set(true);
     });
 
-    // Re-highlight whenever term, caseSensitive, or initialized changes.
-    // DOM manipulation in effect() is a legitimate side effect (same pattern
-    // as Angular's own Renderer2 usage). The matchCount signal is set outside
-    // the reactive graph — it is not read by this effect, so no re-trigger loop.
+    // DOM manipulation is a legitimate effect side effect here.
+    // matchCountState is written outside the reactive graph to avoid a re-trigger loop.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();
@@ -86,7 +84,6 @@ export class CngxHighlight {
   private applyHighlight(term: string, caseSensitive: boolean): void {
     const host = this.el.nativeElement as HTMLElement;
 
-    // Save original structure on first run
     if (this.originalNodes === null) {
       this.originalNodes = Array.from(host.childNodes).map((n) => n.cloneNode(true));
     } else {
@@ -102,7 +99,7 @@ export class CngxHighlight {
     const walker = this.doc.createTreeWalker(host, NodeFilter.SHOW_TEXT);
     const textNodes: Text[] = [];
 
-    // Collect all text nodes first (avoid modifying DOM during walk)
+    // Collect nodes before modifying the DOM during the walk.
     let node: Text | null;
     while ((node = walker.nextNode() as Text | null)) {
       textNodes.push(node);
@@ -126,12 +123,10 @@ export class CngxHighlight {
         const matchStart = match.index;
         const matchEnd = matchStart + match[0].length;
 
-        // Text before match
         if (matchStart > lastIndex) {
           fragment.appendChild(this.doc.createTextNode(text.slice(lastIndex, matchStart)));
         }
 
-        // Matched text wrapped in <mark>
         const mark = this.doc.createElement('mark');
         mark.textContent = text.slice(matchStart, matchEnd);
         fragment.appendChild(mark);
@@ -139,7 +134,6 @@ export class CngxHighlight {
         lastIndex = matchEnd;
       }
 
-      // Text after last match
       if (lastIndex < text.length) {
         fragment.appendChild(this.doc.createTextNode(text.slice(lastIndex)));
       }

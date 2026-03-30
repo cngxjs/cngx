@@ -10,7 +10,12 @@ import { CngxDialog } from './dialog.directive';
 
 /**
  * Internal container component for programmatically opened dialogs.
- * Not exported from the public API — used only by `CngxDialogOpener`.
+ *
+ * Not part of the public API — instantiated exclusively by `CngxDialogOpener`.
+ * Renders the native `<dialog>` shell and exposes a `<ng-container>` outlet
+ * where the content component or template is inserted.
+ *
+ * @internal
  */
 @Component({
   selector: 'cngx-dialog-outlet',

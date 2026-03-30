@@ -43,7 +43,7 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  * </div>
  * ```
  *
- * @category directives
+ * @category layout
  */
 @Directive({
   selector: '[cngxSkeleton]',
@@ -66,8 +66,6 @@ export class CngxSkeleton {
   /** Repeat count — exposed via the `indices()` signal for `@for` rendering. */
   readonly count = input<number>(1);
 
-  // ── Reduced motion detection (inline, no cross-entry-point dependency) ──
-
   private readonly prefersReducedMotion: Signal<boolean>;
 
   constructor() {
@@ -84,8 +82,6 @@ export class CngxSkeleton {
 
     this.prefersReducedMotion = pref.asReadonly();
   }
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** Whether the skeleton is in loading state. Mirrors the `cngxSkeleton` input. */
   readonly loading = computed(() => this.skeleton());

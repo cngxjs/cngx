@@ -32,6 +32,8 @@ import { DIALOG_REF } from '../dialog/dialog-ref';
  *   <p>Content positioned at the bottom.</p>
  * </dialog>
  * ```
+ *
+ * @category dialog
  */
 @Directive({
   selector: 'dialog[cngxBottomSheet]',

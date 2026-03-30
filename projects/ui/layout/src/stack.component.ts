@@ -25,6 +25,8 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  *   <div>Item 1</div>
  *   <div>Item 2</div>
  * </cngx-stack>
+ *
+ * @category layout
  */
 @Component({
   selector: 'cngx-stack',
@@ -45,14 +47,19 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
   },
 })
 export class CngxStack {
+  /** Flex direction of the stack. */
   readonly direction = input<StackDirection>('column');
+  /** Named spacing token between stack items. Resolves via `--cngx-gap-*` CSS custom properties. */
   readonly gap = input<StackGap>('md');
+  /** Cross-axis alignment of stack items. */
   readonly align = input<StackAlign>('stretch');
 
+  /** @internal */
   protected readonly alignItems = computed(() => {
     const alignValue = this.align();
     return alignValue === 'stretch' ? 'stretch' : `flex-${alignValue}`;
   });
 
+  /** @internal */
   protected readonly gapValue = computed(() => GAP_DEFAULTS[this.gap()]);
 }

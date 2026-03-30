@@ -19,6 +19,8 @@ import { DIALOG_REF } from './dialog-ref';
  *   <button [cngxDialogClose]="true">Confirm</button>
  * </dialog>
  * ```
+ *
+ * @category dialog
  */
 @Directive({
   selector: '[cngxDialogClose]',

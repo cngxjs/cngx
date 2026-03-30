@@ -22,6 +22,8 @@ import { type CngxSort } from './sort.directive';
  *   </button>
  * </div>
  * ```
+ *
+ * @category sort
  */
 @Directive({
   selector: '[cngxSortHeader]',

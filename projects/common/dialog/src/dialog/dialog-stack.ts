@@ -7,6 +7,8 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * When multiple modal dialogs are stacked, only the topmost shows
  * its `::backdrop`. Each `CngxDialog` reads `isTopmost` from this service
  * to control `--cngx-dialog-backdrop-opacity`.
+ *
+ * @category dialog
  */
 @Injectable({ providedIn: 'root' })
 export class CngxDialogStack {
@@ -36,13 +38,15 @@ export class CngxDialogStack {
  * one stack. Call `provideDialogStack()` in a component's `providers` array to
  * create an isolated stack scope (e.g., for a sub-application or dialog group).
  *
- * @example
+ * @usageNotes
  * ```typescript
  * @Component({
  *   providers: [provideDialogStack()],
  * })
  * export class NestedDialogHost { }
  * ```
+ *
+ * @category dialog
  */
 export function provideDialogStack(): Provider {
   return CngxDialogStack;

@@ -59,10 +59,8 @@ export class CngxAutofocus {
   private initialized = false;
 
   constructor() {
-    // Clean up pending timers on destroy to avoid writing to detached elements.
     inject(DestroyRef).onDestroy(() => this.clearPending());
 
-    // Initial focus after first render — this is the only path for initial focus.
     afterNextRender(() => {
       if (this.when()) {
         this.scheduleFocus();
@@ -70,9 +68,9 @@ export class CngxAutofocus {
       this.initialized = true;
     });
 
-    // Re-focus when `when` transitions from false to true (after init).
-    // Skips the first run via the `initialized` guard to avoid double-focusing.
-    let previousWhen = true; // matches default — no false→true on first run
+    // Re-focus on false→true transitions only; `previousWhen` starts as `true`
+    // so the initial effect run does not double-trigger alongside afterNextRender.
+    let previousWhen = true;
     effect(() => {
       const current = this.when();
       if (this.initialized && current && !previousWhen) {

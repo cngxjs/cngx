@@ -22,9 +22,10 @@ import { CngxDialogStack } from './dialog-stack';
 import { CngxDialogTitle } from './dialog-title.directive';
 import { CngxDialogDescription } from './dialog-description.directive';
 
-/** Shared ref-count for scroll lock on the same document. */
+/** Ref-count map for scroll lock — one lock per document root, shared across stacked modals. */
 const lockCounts = new WeakMap<HTMLElement, number>();
 
+/** Acquire a scroll lock on the document root, preserving prior overflow styles. */
 function acquireScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count === 0) {
@@ -36,6 +37,7 @@ function acquireScrollLock(html: HTMLElement): void {
   lockCounts.set(html, count + 1);
 }
 
+/** Release a scroll lock. Restores prior overflow styles when the count reaches zero. */
 function releaseScrollLock(html: HTMLElement): void {
   const count = lockCounts.get(html) ?? 0;
   if (count <= 1) {
@@ -106,6 +108,8 @@ function releaseScrollLock(html: HTMLElement): void {
  *   <input id="name-input" />
  * </dialog>
  * ```
+ *
+ * @category dialog
  */
 @Directive({
   selector: 'dialog[cngxDialog]',

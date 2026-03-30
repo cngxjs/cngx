@@ -7,6 +7,8 @@ import type { CngxDrawer } from './drawer.directive';
  * Adds a CSS class when the drawer is open so the consumer can offset
  * the content via CSS transitions or transforms.
  *
+ * @category layout
+ *
  * @usageNotes
  *
  * ```html

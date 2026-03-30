@@ -38,8 +38,8 @@ export function canDeactivateWhenClean(
     // inject() is valid here — Angular calls the guard in an injection context
     const win = inject(DOCUMENT).defaultView;
     if (!win) {
-      return true;
-    } // SSR — allow navigation
+      return true; // SSR — allow navigation
+    }
     return win.confirm(message);
   };
 }

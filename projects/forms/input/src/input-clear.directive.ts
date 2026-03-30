@@ -56,6 +56,7 @@ export class CngxInputClear {
     this.cleared.emit();
   }
 
+  /** Lazily attaches the input event listener the first time the target is interacted with. */
   private ensureListener(): void {
     if (this.initialized) {
       return;

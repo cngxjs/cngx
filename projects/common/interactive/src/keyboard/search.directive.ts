@@ -13,15 +13,20 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent, map, switchMap, timer } from 'rxjs';
 
 /**
- * Directive for `<input>` elements that tracks a debounced search term.
+ * Debounced search term tracker for `<input>` elements.
  *
- * RxJS is used here legitimately: DOM event stream converted to a Signal at
- * the API boundary. The raw Observable is never exposed.
+ * Converts the DOM `input` event stream into a debounced Signal. The raw
+ * Observable is never exposed — signal at the API boundary.
  *
+ * @usageNotes
+ *
+ * ### Basic usage
  * ```html
  * <input cngxSearch #search="cngxSearch" placeholder="Search..." />
  * <button (click)="search.clear()">Clear</button>
  * ```
+ *
+ * @category interactive
  */
 @Directive({
   selector: 'input[cngxSearch]',

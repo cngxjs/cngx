@@ -20,6 +20,8 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  *
  * // With CngxMatPaginator:
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
+ *
+ * @category paginate
  */
 @Directive({
   selector: '[cngxPaginate]',

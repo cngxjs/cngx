@@ -61,10 +61,8 @@ export class CngxTruncate {
   private observer: ResizeObserver | null = null;
   private rafHandle: number | null = null;
 
-  // ── Host style bindings ───────────────────────────────────────────
-  // When collapsed, applies the CSS required for -webkit-line-clamp:
-  // display: -webkit-box, -webkit-box-orient: vertical, overflow: hidden.
-  // When expanded, all styles are removed (null = no binding).
+  // When collapsed, applies the CSS properties required for -webkit-line-clamp.
+  // When expanded, bindings are removed (null = no attribute written).
   /** @internal */
   protected clampValue = () => (this.expanded() ? null : String(this.lines()));
   /** @internal */
@@ -83,8 +81,7 @@ export class CngxTruncate {
       this.observer.observe(this.el.nativeElement as HTMLElement);
     });
 
-    // Re-check when expanded or lines change (content height changes).
-    // Uses RAF to measure after styles are applied.
+    // Re-check after expanded/lines change; RAF ensures styles are applied first.
     effect(() => {
       this.expanded(); // track
       this.lines(); // track
@@ -92,7 +89,6 @@ export class CngxTruncate {
       this.rafHandle = requestAnimationFrame(() => this.checkClamped());
     });
 
-    // Clean up observer and pending RAF on destroy.
     destroyRef.onDestroy(() => {
       this.observer?.disconnect();
       this.cancelRaf();

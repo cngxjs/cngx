@@ -58,6 +58,8 @@ export interface MockFieldOptions<T = unknown> {
  * // Pass `accessor` to [field] input
  * // Mutate ref.touched.set(true) to simulate interaction
  * ```
+ *
+ * @category testing
  */
 export function createMockField<T = string>(
   opts: MockFieldOptions<T> = {},
@@ -100,6 +102,8 @@ export function createMockField<T = string>(
 
 /**
  * Creates a mock `ValidationError.WithFieldTree` for testing.
+ *
+ * @category testing
  */
 export function mockValidationError(
   kind: string,

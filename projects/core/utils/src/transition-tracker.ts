@@ -6,6 +6,8 @@ import type { AsyncStatus } from './async-state';
  *
  * Replaces the imperative `let previousStatus` pattern inside `effect()` calls
  * with a fully reactive, `linkedSignal`-based approach.
+ *
+ * @category async
  */
 export interface StatusTransition {
   /** The current status value. */

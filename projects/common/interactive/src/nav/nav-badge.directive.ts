@@ -30,6 +30,8 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * ```html
  * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
  * ```
+ *
+ * @category nav
  */
 @Directive({
   selector: '[cngxNavBadge]',

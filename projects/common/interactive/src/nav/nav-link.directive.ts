@@ -39,6 +39,8 @@ import {
  * <a cngxNavLink [depth]="1">Nested</a>
  * <a cngxNavLink [depth]="2">Deep nested</a>
  * ```
+ *
+ * @category nav
  */
 @Directive({
   selector: 'a[cngxNavLink], button[cngxNavLink]',
@@ -55,9 +57,11 @@ import {
 })
 export class CngxNavLink {
   /**
-   * Whether the host `<a>` lacks an `href` and needs `tabindex="0"` + `role="link"`
-   * for focusability. Checked after render so Angular bindings like `[href]` are applied.
-   * @internal
+   * `true` when the host `<a>` lacks an `href` attribute and needs `tabindex="0"`
+   * + `role="link"` for keyboard focusability.
+   *
+   * Evaluated after the first render so Angular bindings such as `[href]` are
+   * already resolved before the check runs.
    */
   readonly needsFocusFix = signal(false);
 

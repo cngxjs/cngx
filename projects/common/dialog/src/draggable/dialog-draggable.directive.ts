@@ -35,6 +35,8 @@ import {
  *   transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
  * }
  * ```
+ *
+ * @category dialog
  */
 @Directive({
   selector: '[cngxDialogDraggable]',
@@ -115,6 +117,7 @@ export class CngxDialogDraggable {
   private boundPointerDown: ((e: PointerEvent) => void) | null = null;
   private boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
 
+  /** Attach pointer and keyboard listeners to `el`, cleaning up the previous handle first. */
   private setupHandle(el: HTMLElement): void {
     // Clean up previous handle
     if (this.currentHandle && this.boundPointerDown) {
@@ -256,6 +259,7 @@ export class CngxDialogDraggable {
     }
   }
 
+  /** Snap `x`/`y` to the nearest `gridSize` increment. Pass-through when grid is disabled. */
   private snap(x: number, y: number): { x: number; y: number } {
     const grid = this.gridSize();
     if (grid <= 0) {
