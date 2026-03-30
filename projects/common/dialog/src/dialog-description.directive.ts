@@ -1,8 +1,7 @@
 import { Directive, inject, signal } from '@angular/core';
+import { nextUid } from '@cngx/core/utils';
 
 import { DIALOG_REF } from './dialog-ref';
-
-let nextDescId = 0;
 
 /**
  * Marks an element as the dialog's description for ARIA.
@@ -36,7 +35,7 @@ export class CngxDialogDescription {
    * Used by `CngxDialog` for `aria-describedby`. When a parent `CngxDialog`
    * is present, the ID is derived from the dialog's ID (e.g. `cngx-dialog-0-desc`).
    */
-  readonly id = signal(`cngx-dialog-desc-${nextDescId++}`);
+  readonly id = signal(nextUid('cngx-dialog-desc'));
 
   constructor() {
     if (this.dialogRef) {

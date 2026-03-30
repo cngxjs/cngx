@@ -1,5 +1,5 @@
 import { Directive, effect, inject, input } from '@angular/core';
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import { createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxToaster } from './toast.service';
 
@@ -71,16 +71,16 @@ export class CngxToastOn {
     }
     this.toastService = this.toast;
 
-    let previousStatus: AsyncStatus = 'idle';
+    const tracker = createTransitionTracker(() => this.state().status());
 
     effect(() => {
       const s = this.state();
-      const status = s.status();
+      const status = tracker.current();
+      const previous = tracker.previous();
 
-      if (status === previousStatus) {
+      if (status === previous) {
         return;
       }
-      previousStatus = status;
 
       if (status === 'success') {
         const msg = this.toastSuccess();

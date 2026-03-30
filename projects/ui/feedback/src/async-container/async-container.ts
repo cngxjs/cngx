@@ -13,8 +13,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { type AsyncView, resolveAsyncView } from '@cngx/common/data';
-import type { AsyncStatus } from '@cngx/core/utils';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import { createTransitionTracker, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
 
 import { CngxLoadingIndicator } from '../loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
@@ -234,18 +233,15 @@ export class CngxAsyncContainer<T> {
   protected readonly announcement = signal<string>('');
 
   constructor() {
-    let previousStatus = 'idle';
+    const tracker = createTransitionTracker(() => this.state().status());
 
     effect(() => {
-      const s = this.state();
-      const status = s.status();
+      const status = tracker.current();
+      const prev = tracker.previous();
 
-      if (status === previousStatus) {
+      if (status === prev) {
         return;
       }
-      const prev = previousStatus;
-      previousStatus = status;
-
       if (status === 'pending' || prev === 'pending') {
         return;
       }

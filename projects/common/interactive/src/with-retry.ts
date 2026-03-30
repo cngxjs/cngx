@@ -107,13 +107,20 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
     },
   };
 
+  // Generation counter cancels any in-flight retry loop on re-invocation.
+  let generation = 0;
+
   const retryableAction: AsyncAction = async () => {
+    const thisGeneration = ++generation;
     attemptState.set(0);
     retryingState.set(false);
     exhaustedState.set(false);
     succeededState.set(false);
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      if (generation !== thisGeneration) {
+        return;
+      }
       attemptState.set(attempt);
 
       try {
@@ -123,11 +130,17 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
         } else {
           await result$;
         }
+        if (generation !== thisGeneration) {
+          return;
+        }
         // Success — clear retry state
         retryingState.set(false);
         succeededState.set(true);
         return;
       } catch (err: unknown) {
+        if (generation !== thisGeneration) {
+          return;
+        }
         lastErrorState.set(err);
 
         if (attempt >= maxAttempts) {
@@ -142,6 +155,9 @@ export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncActi
         const delayMs =
           backoff === 'exponential' ? baseDelay * Math.pow(2, attempt - 1) : baseDelay * attempt;
         await firstValueFrom(timer(delayMs), { defaultValue: undefined });
+        if (generation !== thisGeneration) {
+          return;
+        }
         retryingState.set(false);
       }
     }

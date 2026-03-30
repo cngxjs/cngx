@@ -64,8 +64,8 @@ export class CngxSort {
   /** `true` when at least one sort is active. */
   readonly isActive = computed(() => this.sorts().length > 0);
 
-  /** Emitted when the primary sort state changes. */
-  readonly sortChange = output<SortEntry>();
+  /** Emitted when the primary sort state changes. Emits `undefined` on clear. */
+  readonly sortChange = output<SortEntry | undefined>();
   /**
    * Emitted whenever the sort stack changes (including removals and full clears).
    * Always reflects the full `sorts` array at the time of emission.
@@ -98,9 +98,7 @@ export class CngxSort {
       }
       this.sortsState.set(next);
       this.sortsChange.emit(next);
-      if (next[0]) {
-        this.sortChange.emit(next[0]);
-      }
+      this.sortChange.emit(next[0]);
     } else {
       const current = this.sortsState();
       const dir: 'asc' | 'desc' =
@@ -112,13 +110,10 @@ export class CngxSort {
     }
   }
 
-  /**
-   * Clears all active sorts. Emits `sortsChange` with an empty array.
-   * Does not emit `sortChange` — consumers watching only primary sort
-   * should also listen to `sortsChange` or check `isActive()`.
-   */
+  /** Clears all active sorts. Emits both `sortChange(undefined)` and `sortsChange([])`. */
   clear(): void {
     this.sortsState.set([]);
+    this.sortChange.emit(undefined);
     this.sortsChange.emit([]);
   }
 }

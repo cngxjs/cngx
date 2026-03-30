@@ -11,3 +11,4 @@ export {
   buildAsyncStateView,
   type AsyncStateViewSources,
 } from './src/build-async-state-view';
+export { createTransitionTracker, type StatusTransition } from './src/transition-tracker';

@@ -12,6 +12,8 @@ export type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'c
  * |-------------|-----------|-------|---------------|
  * | idle        | true      | *     | none          |
  * | loading     | true      | *     | skeleton      |
+ * | refreshing  | true      | *     | skeleton      |
+ * | pending     | true      | *     | skeleton      |
  * | error       | true      | *     | error         |
  * | success     | *         | true  | empty         |
  * | error       | false     | *     | content+error |
@@ -27,6 +29,8 @@ export function resolveAsyncView(
       case 'idle':
         return 'none';
       case 'loading':
+      case 'refreshing':
+      case 'pending':
         return 'skeleton';
       case 'error':
         return 'error';

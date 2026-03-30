@@ -70,6 +70,15 @@ describe('CngxSort', () => {
     spy.destroy();
   });
 
+  it('emits sortChange(undefined) on clear()', () => {
+    const spy = spyOnOutput(ctx.directive.sortChange);
+    ctx.directive.setSort('name');
+    ctx.directive.clear();
+    expect(spy.callCount()).toBe(2);
+    expect(spy.values()[1]).toBeUndefined();
+    spy.destroy();
+  });
+
   it('emits sortsChange with empty array on clear()', () => {
     const spy = spyOnOutput(ctx.directive.sortsChange);
     ctx.directive.setSort('name');
@@ -120,13 +129,14 @@ describe('CngxSort', () => {
       spy.destroy();
     });
 
-    it('does not emit sortChange when the last field is removed', () => {
+    it('emits sortChange(undefined) when the last field is removed', () => {
       ctx.directive.setSort('name');
       const spy = spyOnOutput(ctx.directive.sortChange);
       ctx.directive.setSort('name', true);
       ctx.directive.setSort('name', true);
-      expect(spy.callCount()).toBe(1);
+      expect(spy.callCount()).toBe(2);
       expect(spy.values()[0]).toEqual({ active: 'name', direction: 'desc' });
+      expect(spy.values()[1]).toBeUndefined();
       spy.destroy();
     });
   });

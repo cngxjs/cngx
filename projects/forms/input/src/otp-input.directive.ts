@@ -158,54 +158,54 @@ export class CngxOtpInput {
 
   /** @internal — called by CngxOtpSlot */
   handleSlotInput(index: number, char: string): void {
-    const vals = [...this.valuesState()];
-    // Ensure array is long enough
-    while (vals.length <= index) {
-      vals.push('');
-    }
-    vals[index] = char;
+    const len = this.length();
+    const prev = this.valuesState();
+    const vals = Array.from({ length: Math.max(len, index + 1) }, (_, i) =>
+      i === index ? char : (prev[i] ?? ''),
+    );
     this.valuesState.set(vals);
     this.valueChange.emit(vals.join(''));
 
     // Auto-advance
-    if (char && index < this.length() - 1) {
+    if (char && index < len - 1) {
       this.focusAt(index + 1);
     }
 
     // Check completion
-    if (vals.length === this.length() && vals.every((v) => v.length > 0)) {
+    if (vals.length === len && vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));
     }
   }
 
   /** @internal — called by CngxOtpSlot on paste */
   pasteFrom(startIndex: number, text: string): void {
-    const vals = [...this.valuesState()];
-    while (vals.length < this.length()) {
-      vals.push('');
-    }
-
+    const len = this.length();
+    const prev = this.valuesState();
+    // Build slot index map once — O(n) instead of O(n^2) find per iteration
     const allSlots = this.slots();
-    let charIdx = 0;
-    for (let i = startIndex; i < this.length() && charIdx < text.length; i++) {
-      const ch = text[charIdx++];
-      vals[i] = ch;
-      const slot = allSlots.find((s) => s.index() === i);
-      if (slot) {
-        slot.el.nativeElement.value = ch;
+    const slotByIndex = new Map(allSlots.map((s) => [s.index(), s]));
+
+    const vals = Array.from({ length: len }, (_, i) => {
+      const charOffset = i - startIndex;
+      if (charOffset >= 0 && charOffset < text.length) {
+        const ch = text[charOffset];
+        const slot = slotByIndex.get(i);
+        if (slot) {
+          slot.el.nativeElement.value = ch;
+        }
+        return ch;
       }
-    }
+      return prev[i] ?? '';
+    });
 
     this.valuesState.set(vals);
     this.valueChange.emit(vals.join(''));
 
     // Focus the next empty slot or the last filled one
     const nextEmpty = vals.findIndex((v, i) => i >= startIndex && !v);
-    this.focusAt(
-      nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, this.length() - 1),
-    );
+    this.focusAt(nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, len - 1));
 
-    if (vals.length === this.length() && vals.every((v) => v.length > 0)) {
+    if (vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));
     }
   }

@@ -57,29 +57,23 @@ export class CngxHighlight {
   private readonly doc = inject(DOCUMENT);
   /** Snapshot of original child nodes — restored before each re-highlight. */
   private originalNodes: Node[] | null = null;
-  private initialized = false;
+  private readonly initialized = signal(false);
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.restore());
 
-    // Wait for DOM to be ready before capturing original nodes.
     afterNextRender(() => {
-      this.initialized = true;
-      // Apply initial highlight if term is already set.
-      const term = this.term();
-      if (term) {
-        this.applyHighlight(term, this.caseSensitive());
-      }
+      this.initialized.set(true);
     });
 
-    // Re-highlight whenever term or caseSensitive changes (after init).
+    // Re-highlight whenever term, caseSensitive, or initialized changes.
     // DOM manipulation in effect() is a legitimate side effect (same pattern
     // as Angular's own Renderer2 usage). The matchCount signal is set outside
     // the reactive graph — it is not read by this effect, so no re-trigger loop.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();
-      if (this.initialized) {
+      if (this.initialized()) {
         this.applyHighlight(term, caseSensitive);
       }
     });

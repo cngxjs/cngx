@@ -480,11 +480,21 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
         : result$;
       await promise;
 
+      // Guard against post-destroy signal writes
+      if (this.lifecycleSignal() === 'closed') {
+        return;
+      }
+
       // Submit succeeded — auto-close
       this.submitStatusState.set('success');
       this.resultSignal.set(value);
       this.startClosing();
     } catch (err: unknown) {
+      // Guard against post-destroy signal writes
+      if (this.lifecycleSignal() === 'closed') {
+        return;
+      }
+
       // Submit failed — stay open, show error
       this.submitStatusState.set('error');
       this.submitErrorState.set(err);

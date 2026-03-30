@@ -1,8 +1,7 @@
 import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
+import { nextUid } from '@cngx/core/utils';
 
 import { DIALOG_REF } from './dialog-ref';
-
-let nextTitleId = 0;
 
 /**
  * Marks an element as the dialog's title for ARIA labelling.
@@ -37,7 +36,7 @@ export class CngxDialogTitle {
    * Used by `CngxDialog` for `aria-labelledby`. When a parent `CngxDialog`
    * is present, the ID is derived from the dialog's ID (e.g. `cngx-dialog-0-title`).
    */
-  readonly id = signal(`cngx-dialog-title-${nextTitleId++}`);
+  readonly id = signal(nextUid('cngx-dialog-title'));
 
   /**
    * Text content of the title element.

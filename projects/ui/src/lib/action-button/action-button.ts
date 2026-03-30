@@ -18,7 +18,11 @@ import {
   CngxSucceeded,
   type AsyncAction,
 } from '@cngx/common/interactive';
-import { buildAsyncStateView, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  buildAsyncStateView,
+  createTransitionTracker,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 import { CngxToastOn, CngxToaster } from '@cngx/ui/feedback';
 
 /** Visual variant for the action button — maps to a CSS class. */
@@ -287,15 +291,15 @@ export class CngxActionButton {
       );
     }
 
-    let previousStatus: AsyncStatus = 'idle';
+    const tracker = createTransitionTracker(() => this.effectiveStatus());
 
     effect(() => {
-      const status = this.effectiveStatus();
+      const status = tracker.current();
+      const previous = tracker.previous();
 
-      if (status === previousStatus) {
+      if (status === previous) {
         return;
       }
-      previousStatus = status;
 
       if (status === 'success') {
         this.lastUpdatedState.set(new Date());

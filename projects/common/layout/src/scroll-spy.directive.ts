@@ -51,16 +51,16 @@ export class CngxScrollSpy {
   private readonly doc = inject(DOCUMENT);
   /** Running map of section ID → last observed intersection ratio. */
   private readonly ratios = new Map<string, number>();
-  private initialized = false;
+  private readonly initialized = signal(false);
+  private activeCleanup: (() => void) | undefined;
 
   constructor() {
     // Wait for DOM to be ready before querying section elements.
     afterNextRender(() => {
-      this.initialized = true;
-      this.setupObserver();
+      this.initialized.set(true);
     });
 
-    // Re-create observer when inputs change (after init).
+    // Create/re-create observer when inputs change (after init).
     effect((onCleanup) => {
       // Track all inputs so the effect re-runs when they change
       this.sections();
@@ -68,14 +68,17 @@ export class CngxScrollSpy {
       this.root();
       this.rootMargin();
 
-      if (!this.initialized) {
+      if (!this.initialized()) {
         return;
       }
 
-      const cleanup = this.setupObserver();
-      if (cleanup) {
-        onCleanup(cleanup);
-      }
+      this.activeCleanup?.();
+      this.activeCleanup = this.setupObserver();
+
+      onCleanup(() => {
+        this.activeCleanup?.();
+        this.activeCleanup = undefined;
+      });
     });
   }
 
