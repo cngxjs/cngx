@@ -42,3 +42,6 @@ export {
   type RecyclerI18n,
 } from './src/recycler/recycler';
 export { CngxMeasure } from './src/recycler/measure.directive';
+export { CngxVirtualItem } from './src/recycler/virtual-item.directive';
+export { CngxRecyclerAnnouncer } from './src/recycler/recycler-announcer.component';
+export { connectRecyclerToRoving } from './src/recycler/connect-recycler-roving';

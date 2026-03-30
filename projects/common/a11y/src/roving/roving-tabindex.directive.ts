@@ -55,6 +55,14 @@ export class CngxRovingItem {
  * Works for toolbars, tab lists, card grids, menu bars, and any composite
  * widget where only one item should be in the tab order at a time.
  *
+ * ### Virtual mode
+ *
+ * When `virtualCount` is set, `activeIndex` ranges from 0 to `virtualCount - 1`
+ * instead of being bounded by `contentChildren.length`. Items are matched by
+ * `data-cngx-recycle-index` attribute. When the target item is not in the DOM
+ * (out of rendered range), `pendingFocus` is set so a wiring function like
+ * `connectRecyclerToRoving()` can scroll it into view.
+ *
  * @usageNotes
  *
  * ### Horizontal toolbar
@@ -75,6 +83,17 @@ export class CngxRovingItem {
  * </ul>
  * ```
  *
+ * ### Virtual scroll integration
+ * ```html
+ * <div cngxRovingTabindex orientation="vertical" [virtualCount]="recycler.ariaSetSize()">
+ *   @for (item of visibleItems(); track item.id; let i = $index) {
+ *     <div cngxRovingItem [cngxVirtualItem]="recycler" [cngxVirtualItemIndex]="recycler.start() + i">
+ *       {{ item.name }}
+ *     </div>
+ *   }
+ * </div>
+ * ```
+ *
  * @category a11y
  */
 @Directive({
@@ -93,11 +112,30 @@ export class CngxRovingTabindex {
   /** Index of the currently active (focusable) item. Supports two-way `[(activeIndex)]` binding. */
   readonly activeIndex = model<number>(0);
 
+  /**
+   * Total item count for virtual mode. When set, `activeIndex` ranges from 0 to
+   * `virtualCount - 1` and items are matched by `data-cngx-recycle-index` attribute.
+   * When not set, standard `contentChildren`-based navigation is used.
+   */
+  readonly virtualCount = input<number | undefined>(undefined);
+
   /** All `CngxRovingItem` children discovered via `contentChildren`. */
   private readonly items = contentChildren(CngxRovingItem);
 
   /** Guards against setting `tabindex` before the DOM is ready. */
   private readonly initialized = signal(false);
+
+  /** Host element for `data-cngx-recycle-index` queries in virtual mode. */
+  private readonly hostEl = inject(ElementRef<HTMLElement>);
+
+  private readonly pendingFocusState = signal<number | null>(null);
+
+  /**
+   * Index of the item that should receive focus but is not currently in the DOM.
+   * Non-null when virtual navigation targets an out-of-range item.
+   * Used by `connectRecyclerToRoving()` to scroll the item into view and focus it.
+   */
+  readonly pendingFocus = this.pendingFocusState.asReadonly();
 
   constructor() {
     afterNextRender(() => this.initialized.set(true));
@@ -109,16 +147,34 @@ export class CngxRovingTabindex {
       }
       const items = this.items();
       const active = this.activeIndex();
-      // Clamp to valid range when items are added or removed.
-      const clamped = Math.max(0, Math.min(active, items.length - 1));
+      const vc = this.virtualCount();
 
-      items.forEach((item, i) =>
-        (item.elementRef.nativeElement as HTMLElement).setAttribute(
-          'tabindex',
-          i === clamped ? '0' : '-1',
-        ),
-      );
+      if (vc != null) {
+        // Virtual mode: match by data-cngx-recycle-index attribute
+        items.forEach((item) => {
+          const el = item.elementRef.nativeElement as HTMLElement;
+          const idx = el.getAttribute('data-cngx-recycle-index');
+          el.setAttribute('tabindex', idx != null && Number(idx) === active ? '0' : '-1');
+        });
+      } else {
+        // Standard mode: match by array index
+        const clamped = Math.max(0, Math.min(active, items.length - 1));
+        items.forEach((item, i) =>
+          (item.elementRef.nativeElement as HTMLElement).setAttribute(
+            'tabindex',
+            i === clamped ? '0' : '-1',
+          ),
+        );
+      }
     });
+  }
+
+  /**
+   * Clears the pending focus target. Called by `connectRecyclerToRoving()`
+   * after the item has been scrolled into view and focused.
+   */
+  clearPendingFocus(): void {
+    this.pendingFocusState.set(null);
   }
 
   /**
@@ -126,6 +182,12 @@ export class CngxRovingTabindex {
    * Prevents default scrolling on arrow keys.
    */
   protected handleKeyDown(event: KeyboardEvent): void {
+    const vc = this.virtualCount();
+    if (vc != null) {
+      this.handleVirtualKeyDown(event, vc);
+      return;
+    }
+
     const items = this.enabledItems();
     if (items.length === 0) {
       return;
@@ -173,6 +235,92 @@ export class CngxRovingTabindex {
     } else if (nextIndex === currentActive) {
       event.preventDefault();
     }
+  }
+
+  /**
+   * Virtual mode key handler. Uses `virtualCount` for bounds instead of contentChildren.
+   * Focuses by querying `data-cngx-recycle-index`. If not found, sets `pendingFocus`.
+   */
+  private handleVirtualKeyDown(event: KeyboardEvent, total: number): void {
+    if (total === 0) {
+      return;
+    }
+
+    const currentActive = this.activeIndex();
+    let nextIndex: number | null = null;
+
+    switch (event.key) {
+      case 'ArrowRight':
+        if (this.isHorizontal()) {
+          nextIndex = this.findNextVirtual(currentActive, total, 1);
+        }
+        break;
+      case 'ArrowLeft':
+        if (this.isHorizontal()) {
+          nextIndex = this.findNextVirtual(currentActive, total, -1);
+        }
+        break;
+      case 'ArrowDown':
+        if (this.isVertical()) {
+          nextIndex = this.findNextVirtual(currentActive, total, 1);
+        }
+        break;
+      case 'ArrowUp':
+        if (this.isVertical()) {
+          nextIndex = this.findNextVirtual(currentActive, total, -1);
+        }
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = total - 1;
+        break;
+      default:
+        return;
+    }
+
+    if (nextIndex !== null && nextIndex !== currentActive) {
+      event.preventDefault();
+      this.activeIndex.set(nextIndex);
+      this.focusVirtualItem(nextIndex);
+    } else if (nextIndex === currentActive) {
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Attempts to focus a virtual item by querying `data-cngx-recycle-index`.
+   * If the element is not in the DOM, sets `pendingFocus` for external resolution.
+   */
+  private focusVirtualItem(index: number): void {
+    const el = (this.hostEl.nativeElement as HTMLElement).querySelector(
+      `[data-cngx-recycle-index="${index}"]`,
+    );
+    if (el instanceof HTMLElement) {
+      el.focus();
+      this.pendingFocusState.set(null);
+    } else {
+      this.pendingFocusState.set(index);
+    }
+  }
+
+  /**
+   * Finds the next index in virtual mode. No disabled-item skipping — can't check
+   * disabled state of items not in the DOM.
+   */
+  private findNextVirtual(current: number, total: number, direction: 1 | -1): number | null {
+    if (total === 0) {
+      return null;
+    }
+    const idx = current + direction;
+    if (this.loop()) {
+      return ((idx % total) + total) % total;
+    }
+    if (idx < 0 || idx >= total) {
+      return null;
+    }
+    return idx;
   }
 
   private enabledItems(): readonly CngxRovingItem[] {
