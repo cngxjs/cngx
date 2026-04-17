@@ -155,6 +155,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/keyboard-shortcut-demo/keyboard-shortcut-demo.component').then((m) => m.KeyboardShortcutDemoComponent),
       },
       {
+        path: 'interactive/listbox',
+        loadComponent: () =>
+          import('./demos/common/interactive/listbox-demo/listbox-demo.component').then((m) => m.ListboxDemoComponent),
+      },
+      {
         path: 'interactive/long-press',
         loadComponent: () =>
           import('./demos/common/interactive/long-press-demo/long-press-demo.component').then((m) => m.LongPressDemoComponent),

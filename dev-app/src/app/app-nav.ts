@@ -41,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'CopyText', path: 'common/interactive/copy-text' },
       { label: 'Disclosure', path: 'common/interactive/disclosure' },
       { label: 'KeyboardShortcut', path: 'common/interactive/keyboard-shortcut' },
+      { label: 'Listbox', path: 'common/interactive/listbox' },
       { label: 'LongPress', path: 'common/interactive/long-press' },
       { label: 'Nav', path: 'common/interactive/nav' },
       { label: 'Option', path: 'common/interactive/option' },
