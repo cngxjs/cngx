@@ -109,5 +109,13 @@ export class CngxListboxTrigger {
         }
         return;
     }
+
+    if (key.length === 1 && /\S/.exec(key) !== null) {
+      // Forward printable characters to active-descendant typeahead so the
+      // select trigger behaves like a native <select>: first letter jumps
+      // to the next matching option while focus stays on the trigger.
+      event.preventDefault();
+      ad.typeaheadChar(key);
+    }
   }
 }

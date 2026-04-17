@@ -39,6 +39,41 @@ test.describe('CngxSelect demo', () => {
     ).toHaveText('red');
   });
 
+  test('keyboard typeahead: first-letter jump updates highlight repeatedly', async ({
+    page,
+  }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Standalone');
+    const trigger = section.locator('cngx-select button').first();
+    await trigger.focus();
+    await trigger.click();
+
+    const listbox = section.locator('[cngxListbox]');
+    // Wait 350ms between keys so each letter starts a fresh typeahead buffer
+    // (300ms debounce + margin) — exercises the "only works once" regression.
+    await page.keyboard.press('g');
+    await expect(listbox).toHaveAttribute('aria-activedescendant', /cngx-option-\d+/);
+    const afterG = await listbox.getAttribute('aria-activedescendant');
+    expect(await page.locator(`#${afterG}`).textContent()).toContain('Grün');
+
+    await page.waitForTimeout(350);
+    await page.keyboard.press('b');
+    const afterB = await listbox.getAttribute('aria-activedescendant');
+    expect(afterB).not.toBe(afterG);
+    expect(await page.locator(`#${afterB}`).textContent()).toContain('Blau');
+
+    await page.waitForTimeout(350);
+    await page.keyboard.press('r');
+    const afterR = await listbox.getAttribute('aria-activedescendant');
+    expect(await page.locator(`#${afterR}`).textContent()).toContain('Rot');
+
+    await page.keyboard.press('Enter');
+    await expect(
+      section.locator('.event-row', { hasText: 'Value' }).locator('.event-value'),
+    ).toHaveText('red');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('Reactive Forms: initial value shows + select updates FormControl', async ({
     page,
   }) => {
