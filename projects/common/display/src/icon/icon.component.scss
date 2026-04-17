@@ -1,0 +1,23 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+  font-size: var(--cngx-icon-size, 1.25em);
+  color: var(--cngx-icon-color, currentColor);
+  flex: 0 0 auto;
+}
+
+:host(.cngx-icon--xs) { --cngx-icon-size: 0.75em; }
+:host(.cngx-icon--sm) { --cngx-icon-size: 1em; }
+:host(.cngx-icon--md) { --cngx-icon-size: 1.25em; }
+:host(.cngx-icon--lg) { --cngx-icon-size: 1.5em; }
+:host(.cngx-icon--xl) { --cngx-icon-size: 2em; }
+
+:host > ::ng-deep svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  display: block;
+}

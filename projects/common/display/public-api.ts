@@ -6,4 +6,4 @@
  * without reacting to user input. For interactive atoms (ripple, async-click,
  * nav badges) see `@cngx/common/interactive`.
  */
-export {};
+export { CngxIcon } from './src/icon/icon.component';
