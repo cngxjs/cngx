@@ -6,7 +6,7 @@ import {
   effect,
   inject,
   input,
-  output,
+  model,
   signal,
 } from '@angular/core';
 
@@ -19,12 +19,14 @@ import { CngxOption } from './option.directive';
  * Composite listbox primitive built on top of `CngxActiveDescendant`.
  *
  * Reads options from content children, exposes single- or multi-value
- * selection state, and emits `valueChange` / `selectedValuesChange` on
- * mutations. Supports both controlled (`[value]` / `[selectedValues]`) and
- * uncontrolled usage — when both forms are bound, the controlled input wins.
+ * selection state via two-way `[(value)]` / `[(selectedValues)]` bindings, and
+ * drives `aria-selected` / `aria-multiselectable` reactively.
  *
- * The listbox does not own overlay/popover logic — pair with
- * `CngxListboxTrigger` for dropdown-style use cases.
+ * `value` and `selectedValues` are `model()` signals — `[value]`,
+ * `(valueChange)`, and `[(value)]` bindings all work identically. Forms
+ * integration (`<cngx-form-field>`) is bolted on via the sibling
+ * `CngxListboxFieldBridge` directive from `@cngx/forms/field` — this atom
+ * stays Forms-agnostic.
  *
  * ### Material / CDK equivalent
  *
@@ -34,10 +36,11 @@ import { CngxOption } from './option.directive';
  * ### Why better than Material
  *
  * 1. Single source of truth for ARIA: every attribute is a `computed()`.
- * 2. Selection is built on the same `CngxActiveDescendant` used by menus and
+ * 2. Selection shares the same `CngxActiveDescendant` used by menus and
  *    comboboxes — one mental model for all typeahead widgets.
  * 3. `isAllSelected` and `selectedLabels` are derived signals, not manual
  *    callbacks.
+ * 4. Forms integration is decoupled: the listbox never imports `@angular/forms`.
  *
  * @category interactive
  */
@@ -61,11 +64,11 @@ export class CngxListbox {
   /** Accessible label for the listbox region. */
   readonly label = input.required<string>();
 
-  /** Controlled single-value input. When set, overrides internal selection. */
-  readonly value = input<unknown>(undefined);
+  /** Two-way single-value binding. */
+  readonly value = model<unknown>(undefined);
 
-  /** Controlled multi-value input. When set, overrides internal selection. */
-  readonly selectedValues = input<unknown[] | undefined>(undefined);
+  /** Two-way multi-value binding. */
+  readonly selectedValues = model<unknown[]>([]);
 
   /** Whether multiple options can be selected. */
   readonly multiple = input<boolean>(false);
@@ -81,12 +84,6 @@ export class CngxListbox {
    */
   readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
 
-  /** Emits when the single-value selection changes. */
-  readonly valueChange = output<unknown>();
-
-  /** Emits when the multi-value selection changes. */
-  readonly selectedValuesChange = output<unknown[]>();
-
   /**
    * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
    * (e.g. `CngxListboxTrigger`) can drive navigation without ancestor injection.
@@ -95,9 +92,6 @@ export class CngxListbox {
 
   /** Options collected via content projection. */
   readonly options = contentChildren(CngxOption, { descendants: true });
-
-  /** Internal selection state. Controlled inputs take precedence in `selected()`. */
-  private readonly selectedState = signal<unknown[]>([]);
 
   /** Whether content-children have been initialised (guards effects from running early). */
   private readonly initialized = signal(false);
@@ -121,20 +115,13 @@ export class CngxListbox {
     this.ad.activated.subscribe((value) => this.handleActivation(value));
   }
 
-  /** Effective selection: controlled inputs win over internal state. */
+  /** Current selection as an array (single-mode → `[value]` or `[]`, multi-mode → `selectedValues`). */
   readonly selected = computed<unknown[]>(() => {
     if (this.multiple()) {
-      const controlled = this.selectedValues();
-      if (controlled) {
-        return [...controlled];
-      }
-    } else {
-      const controlled = this.value();
-      if (controlled !== undefined) {
-        return [controlled];
-      }
+      return [...this.selectedValues()];
     }
-    return this.selectedState();
+    const v = this.value();
+    return v === undefined || v === null ? [] : [v];
   });
 
   /** Labels of currently selected options, in selection order. */
@@ -210,18 +197,20 @@ export class CngxListbox {
       if (this.isSelected(value)) {
         return;
       }
-      const next = [...this.selectedState(), value];
-      this.commit(next);
+      this.selectedValues.set([...this.selectedValues(), value]);
     } else {
-      this.commit([value]);
+      this.value.set(value);
     }
   }
 
   /** Remove `value` from the selection. No-op if not selected. */
   deselect(value: unknown): void {
     const eq = this.compareWith();
-    const next = this.selectedState().filter((v) => !eq(v, value));
-    this.commit(next);
+    if (this.multiple()) {
+      this.selectedValues.set(this.selectedValues().filter((v) => !eq(v, value)));
+    } else if (eq(this.value(), value)) {
+      this.value.set(undefined);
+    }
   }
 
   /** Flip selection state for `value`. */
@@ -235,7 +224,11 @@ export class CngxListbox {
 
   /** Clear all selections. */
   clear(): void {
-    this.commit([]);
+    if (this.multiple()) {
+      this.selectedValues.set([]);
+    } else {
+      this.value.set(undefined);
+    }
   }
 
   /**
@@ -249,7 +242,7 @@ export class CngxListbox {
     const values = this.options()
       .filter((o) => !o.disabled())
       .map((o) => o.value());
-    this.commit(values);
+    this.selectedValues.set(values);
   }
 
   /** Returns the resolved label for a value, or `null` if no such option. */
@@ -268,15 +261,6 @@ export class CngxListbox {
   private hasOption(value: unknown): boolean {
     const eq = this.compareWith();
     return this.options().some((o) => eq(o.value(), value));
-  }
-
-  private commit(next: unknown[]): void {
-    this.selectedState.set(next);
-    if (this.multiple()) {
-      this.selectedValuesChange.emit(next);
-    } else {
-      this.valueChange.emit(next[0] ?? null);
-    }
   }
 
   private handleActivation(value: unknown): void {

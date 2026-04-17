@@ -7,6 +7,7 @@ export { CngxError } from './error.directive';
 export { CngxRequired, type CngxRequiredContext } from './required.component';
 export { focusFirstError } from './focus-first-error';
 export { adaptFormControl } from './form-control-adapter';
+export { CngxListboxFieldBridge } from './listbox-field-bridge.directive';
 export {
   CngxFormErrors,
   type FormErrorItem,

@@ -38,7 +38,7 @@ class ListboxHost {
   readonly label = signal('Fruit selection');
   readonly multiple = signal(false);
   readonly valueIn = signal<string | undefined>(undefined);
-  readonly selectedIn = signal<string[] | undefined>(undefined);
+  readonly selectedIn = signal<string[]>([]);
   readonly fruits = signal<Fruit[]>([
     { value: 'a', label: 'Apple' },
     { value: 'b', label: 'Banana' },

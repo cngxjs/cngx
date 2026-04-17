@@ -367,6 +367,11 @@ export const routes: Routes = [
           import('./demos/forms/input-demo/input-demo.component').then((m) => m.InputDemoComponent),
       },
       {
+        path: 'listbox-forms',
+        loadComponent: () =>
+          import('./demos/forms/listbox-forms-demo/listbox-forms-demo.component').then((m) => m.ListboxFormsDemoComponent),
+      },
+      {
         path: 'mask',
         loadComponent: () =>
           import('./demos/forms/mask-demo/mask-demo.component').then((m) => m.MaskDemoComponent),

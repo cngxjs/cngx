@@ -13,6 +13,8 @@
       "@cngx/core": ["dist/core/types/cngx-core.d.ts"],
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
+      "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
+      "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],
       "@cngx/forms/field": ["projects/forms/field/src/index.ts"]
     }
   },
