@@ -8,7 +8,7 @@
     "start": "ng serve dev-app",
     "prebuild": "npm run docs:json",
     "build": "ng build dev-app",
-    "build:libs": "ng build utils && ng build core && ng build forms && ng build common && ng build ui && ng build data-display",
+    "build:libs": "ng build utils && ng build core && ng build common && ng build forms && ng build data-display && ng build ui",
     "build:utils": "ng build utils",
     "build:core": "ng build core",
     "build:forms": "ng build forms",
