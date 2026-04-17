@@ -5,11 +5,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
-import { CngxFormField } from '@cngx/forms/field';
+import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
 
 import { CngxSelect, type CngxSelectOption } from './select.component';
-import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -56,30 +55,10 @@ const OPTIONS: CngxSelectOption<string>[] = [
   `,
   imports: [CngxSelect],
 })
-class SingleHost {
+class StandaloneHost {
   readonly options = OPTIONS;
   readonly value = signal<string | undefined>(undefined);
   readonly placeholder = 'Bitte wählen';
-}
-
-@Component({
-  template: `
-    <cngx-select
-      [label]="'Beläge'"
-      [options]="options"
-      [multiple]="true"
-      [(selectedValues)]="selected"
-    />
-  `,
-  imports: [CngxSelect],
-})
-class MultiHost {
-  readonly options: CngxSelectOption<string>[] = [
-    { value: 'a', label: 'A' },
-    { value: 'b', label: 'B' },
-    { value: 'c', label: 'C' },
-  ];
-  readonly selected = signal<string[]>([]);
 }
 
 @Component({
@@ -104,20 +83,19 @@ function flush(fixture: { detectChanges: () => void }): void {
   fixture.detectChanges();
 }
 
-describe('CngxSelect — single select', () => {
+describe('CngxSelect — standalone', () => {
   beforeEach(() => {
     polyfillPopover();
-    TestBed.configureTestingModule({ imports: [SingleHost] });
+    TestBed.configureTestingModule({ imports: [StandaloneHost] });
   });
 
   function setup(): {
-    fixture: ReturnType<typeof TestBed.createComponent<SingleHost>>;
-    select: CngxSelect<string>;
+    fixture: ReturnType<typeof TestBed.createComponent<StandaloneHost>>;
     triggerBtn: HTMLButtonElement;
     listbox: CngxListbox;
     popover: CngxPopover;
   } {
-    const fixture = TestBed.createComponent(SingleHost);
+    const fixture = TestBed.createComponent(StandaloneHost);
     fixture.detectChanges();
     flush(fixture);
     const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
@@ -125,7 +103,6 @@ describe('CngxSelect — single select', () => {
     const popoverDe = fixture.debugElement.query(By.directive(CngxPopover));
     return {
       fixture,
-      select: selectDe.componentInstance as CngxSelect<string>,
       triggerBtn: selectDe.nativeElement.querySelector('button') as HTMLButtonElement,
       listbox: listboxDe.injector.get(CngxListbox),
       popover: popoverDe.injector.get(CngxPopover),
@@ -185,50 +162,6 @@ describe('CngxSelect — single select', () => {
   });
 });
 
-describe('CngxSelect — multi select', () => {
-  beforeEach(() => {
-    polyfillPopover();
-    TestBed.configureTestingModule({ imports: [MultiHost] });
-  });
-
-  function setup(): {
-    fixture: ReturnType<typeof TestBed.createComponent<MultiHost>>;
-    triggerBtn: HTMLButtonElement;
-    popover: CngxPopover;
-  } {
-    const fixture = TestBed.createComponent(MultiHost);
-    fixture.detectChanges();
-    flush(fixture);
-    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
-    const popoverDe = fixture.debugElement.query(By.directive(CngxPopover));
-    return {
-      fixture,
-      triggerBtn: selectDe.nativeElement.querySelector('button') as HTMLButtonElement,
-      popover: popoverDe.injector.get(CngxPopover),
-    };
-  }
-
-  it('trigger label joins selected labels', () => {
-    const { fixture, triggerBtn } = setup();
-    fixture.componentInstance.selected.set(['a', 'c']);
-    flush(fixture);
-    expect(triggerBtn.textContent?.trim()).toContain('A, C');
-  });
-
-  it('clicking options in multi-mode keeps popover open and appends', () => {
-    const { fixture, triggerBtn, popover } = setup();
-    triggerBtn.click();
-    flush(fixture);
-    const firstOption = fixture.debugElement.nativeElement.querySelector(
-      '[cngxOption]:nth-of-type(1)',
-    ) as HTMLElement;
-    firstOption.click();
-    flush(fixture);
-    expect(fixture.componentInstance.selected()).toEqual(['a']);
-    expect(popover.isVisible()).toBe(true);
-  });
-});
-
 describe('CngxSelect — form-field integration', () => {
   beforeEach(() => {
     polyfillPopover();
@@ -262,9 +195,7 @@ describe('CngxSelect — form-field integration', () => {
   });
 
   it('syncs initial field value into the select', () => {
-    const { fixture } = setup();
-    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
-    const select = selectDe.componentInstance as CngxSelect<string>;
+    const { select } = setup();
     expect(select.value()).toBe('red');
   });
 

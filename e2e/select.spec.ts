@@ -7,11 +7,9 @@ function card(page: Page, title: string): Locator {
 }
 
 test.describe('CngxSelect demo', () => {
-  test('standalone single-select: click option updates value + closes popover', async ({
-    page,
-  }) => {
+  test('standalone: click option updates value + closes popover', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Standalone — single-select');
+    const section = card(page, 'Standalone');
     const trigger = section.locator('cngx-select button').first();
     await trigger.click();
     await section.locator('[cngxOption]').nth(1).click();
@@ -21,27 +19,9 @@ test.describe('CngxSelect demo', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
-  test('standalone multi-select: clicks accumulate and popover stays open', async ({
-    page,
-  }) => {
+  test('Signal Forms: required validation + cngx id', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Standalone — multi-select');
-    const trigger = section.locator('cngx-select button').first();
-    await trigger.click();
-    await section.locator('[cngxOption]').nth(0).click();
-    await section.locator('[cngxOption]').nth(2).click();
-    await expect(
-      section.locator('.event-row', { hasText: 'Selected' }).locator('.event-value'),
-    ).toContainText('cheese');
-    await expect(
-      section.locator('.event-row', { hasText: 'Selected' }).locator('.event-value'),
-    ).toContainText('mushroom');
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
-  });
-
-  test('Signal Forms single: required validation + cngx id', async ({ page }) => {
-    await page.goto(ROUTE);
-    const section = card(page, 'Signal Forms — single select (required)');
+    const section = card(page, 'Signal Forms');
     const select = section.locator('cngx-select').first();
     await expect(select).toHaveAttribute('id', /cngx-.+-input/);
     await expect(
@@ -63,7 +43,7 @@ test.describe('CngxSelect demo', () => {
     page,
   }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Reactive Forms — adapted via adaptFormControl');
+    const section = card(page, 'Reactive Forms');
     const trigger = section.locator('cngx-select button').first();
     await expect(trigger).toContainText('Grün');
 

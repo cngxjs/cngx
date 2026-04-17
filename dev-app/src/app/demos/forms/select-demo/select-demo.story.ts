@@ -5,16 +5,19 @@ export const STORY: DemoSpec = {
   navLabel: 'Select',
   navCategory: 'field',
   description:
-    'CngxSelect — native cngx dropdown composite. Standalone or inside cngx-form-field, with zero bridge boilerplate.',
+    'CngxSelect — native-feeling single-select dropdown. Standalone or inside cngx-form-field, with zero bridge boilerplate.',
   apiComponents: ['CngxSelect'],
   overview:
-    '<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code>, <code>CngxPopover</code>, and ' +
-    '<code>CngxListbox</code> into a dropdown. Supports single and multi-select via <code>[(value)]</code> / ' +
-    '<code>[(selectedValues)]</code>, plus <code>[compareWith]</code> for custom equality.</p>' +
-    '<p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly — drop it into <code>&lt;cngx-form-field&gt;</code> ' +
-    'and both value-flow and ARIA wiring work out of the box, no bridge directive required.</p>',
+    '<p><code>&lt;cngx-select&gt;</code> is a focused single-select dropdown built on ' +
+    '<code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code>. ' +
+    'Behaves like a native <code>&lt;select&gt;</code>: click-to-open, click-to-pick, ' +
+    'Arrow / Home / End / Escape / typeahead from the keyboard, auto-flip on overflow.</p>' +
+    '<p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly — drop it into ' +
+    '<code>&lt;cngx-form-field&gt;</code> and both value-flow and ARIA wiring just work.</p>' +
+    '<p>For multi-select use <code>CngxMultiSelect</code>; for filter-as-you-type use ' +
+    '<code>CngxCombobox</code>.</p>',
   moduleImports: [
-    "import { form, schema, required, minLength, submit } from '@angular/forms/signals';",
+    "import { form, schema, required, submit } from '@angular/forms/signals';",
     "import { FormControl, Validators } from '@angular/forms';",
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
@@ -29,31 +32,15 @@ export const STORY: DemoSpec = {
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
   // ── Standalone ───────────────────────────────────────────
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
 
-  // ── Signal Forms single ──────────────────────────────────
+  // ── Signal Forms ─────────────────────────────────────────
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
 
   // ── Reactive Forms ───────────────────────────────────────
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
@@ -63,13 +50,10 @@ export const STORY: DemoSpec = {
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
-  }
   `,
   sections: [
     {
-      title: 'Standalone — single-select',
+      title: 'Standalone',
       subtitle:
         'No form-field. Two-way bound via <code>[(value)]</code> directly.',
       imports: ['CngxSelect'],
@@ -88,27 +72,7 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: 'Standalone — multi-select',
-      subtitle:
-        'Multi-mode keeps the popover open between clicks and joins labels on the trigger.',
-      imports: ['CngxSelect'],
-      template: `
-  <cngx-select
-    [label]="'Beläge'"
-    [options]="toppings"
-    [multiple]="true"
-    [(selectedValues)]="standaloneMulti"
-    placeholder="Beläge wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Selected</span>
-      <span class="event-value">{{ standaloneMulti().join(', ') || '—' }}</span>
-    </div>
-  </div>`,
-    },
-    {
-      title: 'Signal Forms — single select (required)',
+      title: 'Signal Forms (required)',
       subtitle:
         'Just drop <code>&lt;cngx-select&gt;</code> inside <code>&lt;cngx-form-field&gt;</code>. ID, ARIA, and errors flow automatically.',
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],
@@ -137,29 +101,7 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: 'Signal Forms — multi select (min 2)',
-      subtitle:
-        'Multi-mode validated with <code>minLength</code>.',
-      imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],
-      template: `
-  <cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
-    <cngx-select [label]="'Beläge'" [options]="toppings" [multiple]="true" placeholder="Beläge wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Field value</span>
-      <span class="event-value">{{ multiForm.toppings().value().join(', ') || '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Valid</span>
-      <span class="event-value">{{ multiForm.toppings().valid() ? 'yes' : 'no' }}</span>
-    </div>
-  </div>`,
-    },
-    {
-      title: 'Reactive Forms — adapted via adaptFormControl',
+      title: 'Reactive Forms (adaptFormControl)',
       subtitle:
         'Same component, <code>[field]</code> receives the adapter output. Value, touched, and validators flow through.',
       imports: ['CngxFormField', 'CngxLabel', 'CngxFieldErrors', 'CngxSelect'],

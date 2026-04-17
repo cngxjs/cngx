@@ -40,26 +40,35 @@ type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
 
 /**
- * Dropdown composite built from `CngxListboxTrigger` + `CngxPopover` +
- * `CngxListbox`. Provides `CNGX_FORM_FIELD_CONTROL` directly — drop it into
- * `<cngx-form-field>` without attaching any bridge directive.
+ * Native-feeling single-select dropdown.
  *
- * Supports single (`[(value)]`) and multi (`[multiple]=true`, `[(value)]` as
- * array) selection. Equality controlled by `[compareWith]`.
+ * Behaves like a `<select>`: click the trigger to open, click an option to
+ * select and close, keyboard model identical to the OS dropdown (arrow keys,
+ * Home / End, Enter, Space, Escape, typeahead). Position auto-flips when
+ * there is no room below the trigger.
+ *
+ * For multi-select use `CngxMultiSelect`; for filter-as-you-type use
+ * `CngxCombobox`; for free-text-plus-suggestions use `CngxAutocomplete`.
+ *
+ * ### Form-field integration
+ *
+ * Provides `CNGX_FORM_FIELD_CONTROL` directly — drop it inside
+ * `<cngx-form-field>` with no bridge directive.
  *
  * ### Material / CDK equivalent
  *
- * - `mat-select` (Material composite)
- * - `cdk-listbox` + manual popover wiring (CDK primitives)
+ * - `mat-select` (single-select mode)
+ * - `cdk-listbox` + manual popover wiring
  *
  * ### Why better than Material
  *
  * 1. Declarative ARIA — every attribute is `computed()`.
- * 2. Unified keyboard model with `CngxMenu` and combobox via `CngxActiveDescendant`.
+ * 2. Unified keyboard model with `CngxMenu` and `CngxCombobox` via `CngxActiveDescendant`.
  * 3. Two-way bindable via `model()` — `[(value)]` works without CVA.
- * 4. Form-field integration is built-in — no sibling bridge directive needed.
+ * 4. Form-field integration is built-in.
+ * 5. Position auto-flips via native CSS `position-try-fallbacks`.
  *
- * @example Standalone (no form-field)
+ * @example Standalone
  * ```html
  * <cngx-select
  *   [label]="'Priority'"
@@ -74,15 +83,6 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
  * <cngx-form-field [field]="f.priority">
  *   <label cngxLabel>Priority</label>
  *   <cngx-select [label]="'Priority'" [options]="priorities" />
- *   <cngx-field-errors />
- * </cngx-form-field>
- * ```
- *
- * @example Inside `<cngx-form-field>` (Reactive Forms via `adaptFormControl`)
- * ```html
- * <cngx-form-field [field]="priorityField">
- *   <label cngxLabel>Priority</label>
- *   <cngx-select [label]="'Priority'" [options]="priorities" [(value)]="rfValue()" />
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
@@ -110,7 +110,7 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       [haspopup]="'listbox'"
       [cngxListboxTrigger]="lb"
       [popover]="pop"
-      [closeOnSelect]="!multiple()"
+      [closeOnSelect]="true"
       [disabled]="disabled()"
       [attr.aria-labelledby]="labelledBy()"
       [attr.aria-invalid]="ariaInvalid()"
@@ -126,17 +126,15 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
     <div
       cngxPopover
       #pop="cngxPopover"
-      placement="bottom-start"
+      placement="bottom"
       class="cngx-select__panel"
     >
       <div
         cngxListbox
         #lb="cngxListbox"
         [label]="label()"
-        [multiple]="multiple()"
         [compareWith]="listboxCompareWith()"
         [(value)]="value"
-        [(selectedValues)]="selectedValues"
       >
         @for (opt of options(); track opt.value) {
           <div cngxOption [value]="opt.value" [disabled]="!!opt.disabled">
@@ -193,7 +191,13 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       box-shadow: var(--cngx-select-panel-shadow, 0 4px 12px rgba(0, 0, 0, 0.12));
       padding: var(--cngx-select-panel-padding, 0.25rem);
       margin: 0;
-      min-width: var(--cngx-select-panel-min-width, 10rem);
+      /* Match trigger width by default; grow up to viewport. */
+      min-width: anchor-size(width);
+      /* Auto-flip to the opposite side when there is no room below. */
+      position-try-fallbacks:
+        flip-block,
+        flip-inline,
+        flip-block flip-inline;
     }
   `,
 })
@@ -208,35 +212,24 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Options to render inside the dropdown. */
   readonly options = input.required<readonly CngxSelectOption<T>[]>();
 
-  /** Whether multi-select is enabled. Defaults to `false`. */
-  readonly multiple = input<boolean>(false);
-
-  /** Placeholder shown on the trigger when the selection is empty. */
+  /** Placeholder shown on the trigger when no value is selected. */
   readonly placeholder = input<string>('');
 
-  /** Whether the trigger is disabled. Also reflects presenter.disabled() if inside a form-field. */
+  /** Whether the trigger is disabled. Also reflects `presenter.disabled()` inside a form-field. */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
-  /** Equality function used to match selected values to options. Defaults to `Object.is`. */
+  /** Equality function used to match the selected value to an option. Defaults to `Object.is`. */
   readonly compareWith = input<CompareFn<T>>(defaultCompare as CompareFn<T>);
 
-  /** @internal — listbox wants the unknown-typed equality fn. */
-  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
-    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
-  );
-
-  /** Two-way single-value binding (used when `multiple=false`). */
+  /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
-
-  /** Two-way multi-value binding (used when `multiple=true`). */
-  readonly selectedValues = model<T[]>([]);
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
   /** @internal — listbox ViewChild used for value-sync effects. */
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
 
-  /** @internal — popover ViewChild used to hide after click-select in single mode. */
+  /** @internal — popover ViewChild used to hide after click-select. */
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
   // ── CngxFormFieldControl ───────────────────────────────────────────
@@ -253,9 +246,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly focused = this.focusedState.asReadonly();
 
   readonly empty = computed<boolean>(() => {
-    if (this.multiple()) {
-      return this.selectedValues().length === 0;
-    }
     const v = this.value();
     return v === undefined || v === null;
   });
@@ -279,43 +269,33 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.errorState() ? (this.presenter?.errorId() ?? null) : null,
   );
 
+  /** @internal — listbox expects the wider-typed equality fn. */
+  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
+    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
+  );
+
   // ── Trigger label ──────────────────────────────────────────────────
 
   /** Human-readable text displayed on the trigger. */
   protected readonly triggerLabel = computed<string>(() => {
-    const opts = this.options();
-    const eq = this.compareWith();
     const fallback = this.placeholder() || this.label();
-    if (this.multiple()) {
-      const sel = this.selectedValues();
-      if (sel.length === 0) {
-        return fallback;
-      }
-      const labels = sel
-        .map((v) => opts.find((o) => eq(o.value, v))?.label ?? '')
-        .filter((l) => l.length > 0);
-      return labels.length > 0 ? labels.join(', ') : fallback;
-    }
     const v = this.value();
     if (v === undefined || v === null) {
       return fallback;
     }
-    return opts.find((o) => eq(o.value, v))?.label ?? fallback;
+    const eq = this.compareWith();
+    return this.options().find((o) => eq(o.value, v))?.label ?? fallback;
   });
 
   constructor() {
-    // Bridge AD activations into popover-close for single-select mode. The
-    // listbox-trigger already closes on keyboard Enter/Space, but mouse clicks
-    // on options go through AD.activated without touching the trigger — so we
-    // hook in here to preserve the "click-to-select-and-close" UX that
-    // mat-select / native <select> users expect.
+    // Bridge AD activations into popover-close. The listbox-trigger already
+    // closes on keyboard Enter/Space, but mouse clicks on options go through
+    // AD.activated without touching the trigger — we hook here to preserve
+    // the "click-to-select-and-close" UX that native <select> users expect.
     effect((onCleanup) => {
       const lb = this.listboxRef();
       const pop = this.popoverRef();
       if (!lb || !pop) {
-        return;
-      }
-      if (this.multiple()) {
         return;
       }
       const sub = lb.ad.activated.subscribe(() => {
@@ -328,9 +308,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       onCleanup(() => sub.unsubscribe());
     });
 
-    // Field → Select sync: when inside a cngx-form-field, mirror the bound
-    // field value into our model signals. Guarded with equality checks so an
-    // inverse sync doesn't bounce back.
+    // Field → Select sync: mirror bound field value into our model signal.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -339,42 +317,23 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       const fieldRef: CngxFieldRef = presenter.fieldState();
       const fieldValue: unknown = fieldRef.value();
       const eq = this.compareWith() as CompareFn<unknown>;
-      if (this.multiple()) {
-        const current = untracked(() => this.selectedValues()) as unknown as unknown[];
-        const next = Array.isArray(fieldValue) ? [...(fieldValue as unknown[])] : [];
-        if (!arrayEq(current, next, eq)) {
-          this.selectedValues.set(next as T[]);
-        }
-      } else {
-        const current: unknown = untracked(() => this.value());
-        if (!eq(current, fieldValue)) {
-          this.value.set(fieldValue as T | undefined);
-        }
+      const current: unknown = untracked(() => this.value());
+      if (!eq(current, fieldValue)) {
+        this.value.set(fieldValue as T | undefined);
       }
     });
 
-    // Select → Field sync: when the user selects an option, push the new
-    // value into the bound field's writable value signal.
+    // Select → Field sync: push selection back into bound field.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
         return;
       }
       const fieldRef = presenter.fieldState();
-      const selectValue: unknown = this.multiple()
-        ? [...this.selectedValues()]
-        : this.value();
+      const selectValue: unknown = this.value();
       const current: unknown = untracked(() => fieldRef.value());
       const eq = this.compareWith() as CompareFn<unknown>;
       if (eq(current, selectValue)) {
-        return;
-      }
-      if (
-        this.multiple() &&
-        Array.isArray(current) &&
-        Array.isArray(selectValue) &&
-        arrayEq(current as readonly unknown[], selectValue as readonly unknown[], eq)
-      ) {
         return;
       }
       writeFieldValue(fieldRef, selectValue);
@@ -393,22 +352,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.focusedState.set(false);
     this.presenter?.fieldState().markAsTouched();
   }
-}
-
-function arrayEq(
-  a: readonly unknown[],
-  b: readonly unknown[],
-  eq: CompareFn<unknown>,
-): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (!eq(a[i], b[i])) {
-      return false;
-    }
-  }
-  return true;
 }
 
 /**

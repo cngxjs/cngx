@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
-import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -25,10 +25,10 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
   ],
   template: `
     <app-doc-shell title="Select"
-      description="CngxSelect — native cngx dropdown composite. Standalone or inside cngx-form-field, with zero bridge boilerplate."
-      overview="<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code>, <code>CngxPopover</code>, and <code>CngxListbox</code> into a dropdown. Supports single and multi-select via <code>[(value)]</code> / <code>[(selectedValues)]</code>, plus <code>[compareWith]</code> for custom equality.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly — drop it into <code>&lt;cngx-form-field&gt;</code> and both value-flow and ARIA wiring work out of the box, no bridge directive required.</p>"
+      description="CngxSelect — native-feeling single-select dropdown. Standalone or inside cngx-form-field, with zero bridge boilerplate."
+      overview="<p><code>&lt;cngx-select&gt;</code> is a focused single-select dropdown built on <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code>. Behaves like a native <code>&lt;select&gt;</code>: click-to-open, click-to-pick, Arrow / Home / End / Escape / typeahead from the keyboard, auto-flip on overflow.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly — drop it into <code>&lt;cngx-form-field&gt;</code> and both value-flow and ARIA wiring just work.</p><p>For multi-select use <code>CngxMultiSelect</code>; for filter-as-you-type use <code>CngxCombobox</code>.</p>"
       [apiComponents]="['CngxSelect']">
-      <app-example-card title="Standalone — single-select"
+      <app-example-card title="Standalone"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
@@ -46,29 +46,10 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Standalone — multi-select"
+      <app-example-card title="Signal Forms (required)"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
-        
-  <cngx-select
-    [label]="'Beläge'"
-    [options]="toppings"
-    [multiple]="true"
-    [(selectedValues)]="standaloneMulti"
-    placeholder="Beläge wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Selected</span>
-      <span class="event-value">{{ standaloneMulti().join(', ') || '—' }}</span>
-    </div>
-  </div>
-      </app-example-card>
-      <app-example-card title="Signal Forms — single select (required)"
-        [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -93,31 +74,10 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Signal Forms — multi select (min 2)"
-        [subtitle]="_s3"
-        [sourceHtml]="_srcHtml3"
-        [sourceTs]="_srcTs3">
-        
-  <cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
-    <cngx-select [label]="'Beläge'" [options]="toppings" [multiple]="true" placeholder="Beläge wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Field value</span>
-      <span class="event-value">{{ multiForm.toppings().value().join(', ') || '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Valid</span>
-      <span class="event-value">{{ multiForm.toppings().valid() ? 'yes' : 'no' }}</span>
-    </div>
-  </div>
-      </app-example-card>
-      <app-example-card title="Reactive Forms — adapted via adaptFormControl"
-        [subtitle]="_s4"
-        [sourceHtml]="_srcHtml4"
-        [sourceTs]="_srcTs4">
+      <app-example-card title="Reactive Forms (adaptFormControl)"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -140,10 +100,8 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
 })
 export class SelectDemoComponent {
   protected readonly _s0 = 'No form-field. Two-way bound via <code>[(value)]</code> directly.';
-  protected readonly _s1 = 'Multi-mode keeps the popover open between clicks and joins labels on the trigger.';
-  protected readonly _s2 = 'Just drop <code>&lt;cngx-select&gt;</code> inside <code>&lt;cngx-form-field&gt;</code>. ID, ARIA, and errors flow automatically.';
-  protected readonly _s3 = 'Multi-mode validated with <code>minLength</code>.';
-  protected readonly _s4 = 'Same component, <code>[field]</code> receives the adapter output. Value, touched, and validators flow through.';
+  protected readonly _s1 = 'Just drop <code>&lt;cngx-select&gt;</code> inside <code>&lt;cngx-form-field&gt;</code>. ID, ARIA, and errors flow automatically.';
+  protected readonly _s2 = 'Same component, <code>[field]</code> receives the adapter output. Value, touched, and validators flow through.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -156,7 +114,7 @@ export class SelectDemoComponent {
       <span class="event-value">{{ standaloneValue() || '—' }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+  protected readonly _srcTs0 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -171,31 +129,15 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
   // ── Standalone ───────────────────────────────────────────
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
 
-  // ── Signal Forms single ──────────────────────────────────
+  // ── Signal Forms ─────────────────────────────────────────
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
 
   // ── Reactive Forms ───────────────────────────────────────
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
@@ -204,76 +146,8 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
   }`;
-  protected readonly _srcHtml1 = `<cngx-select
-    [label]="'Beläge'"
-    [options]="toppings"
-    [multiple]="true"
-    [(selectedValues)]="standaloneMulti"
-    placeholder="Beläge wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Selected</span>
-      <span class="event-value">{{ standaloneMulti().join(', ') || '—' }}</span>
-    </div>
-  </div>`;
-  protected readonly _srcTs1 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
-import { DestroyRef } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
-
-
-  protected readonly colors: CngxSelectOption<string>[] = [
-    { value: 'red', label: 'Rot' },
-    { value: 'green', label: 'Grün' },
-    { value: 'blue', label: 'Blau' },
-    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
-  ];
-
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
-
-  // ── Signal Forms single ──────────────────────────────────
-  private readonly singleModel = signal<{ color: string }>({ color: '' });
-  private readonly singleSchema = schema<{ color: string }>((root) => {
-    required(root.color);
-  });
-  protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
-
-  // ── Reactive Forms ───────────────────────────────────────
-  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
-  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
-  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
-
-  protected handleSingleSubmit(): void {
-    submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
-  }`;
-  protected readonly _srcHtml2 = `<cngx-form-field [field]="singleForm.color">
+  protected readonly _srcHtml1 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -295,7 +169,7 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
       <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
     </div>
   </div>`;
-  protected readonly _srcTs2 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+  protected readonly _srcTs1 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -310,31 +184,15 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
   // ── Standalone ───────────────────────────────────────────
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
 
-  // ── Signal Forms single ──────────────────────────────────
+  // ── Signal Forms ─────────────────────────────────────────
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
 
   // ── Reactive Forms ───────────────────────────────────────
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
@@ -343,78 +201,8 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
   }`;
-  protected readonly _srcHtml3 = `<cngx-form-field [field]="multiForm.toppings">
-    <label cngxLabel>Beläge (mind. 2)</label>
-    <cngx-select [label]="'Beläge'" [options]="toppings" [multiple]="true" placeholder="Beläge wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Field value</span>
-      <span class="event-value">{{ multiForm.toppings().value().join(', ') || '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Valid</span>
-      <span class="event-value">{{ multiForm.toppings().valid() ? 'yes' : 'no' }}</span>
-    </div>
-  </div>`;
-  protected readonly _srcTs3 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
-import { DestroyRef } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
-
-
-  protected readonly colors: CngxSelectOption<string>[] = [
-    { value: 'red', label: 'Rot' },
-    { value: 'green', label: 'Grün' },
-    { value: 'blue', label: 'Blau' },
-    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
-  ];
-
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
-
-  // ── Signal Forms single ──────────────────────────────────
-  private readonly singleModel = signal<{ color: string }>({ color: '' });
-  private readonly singleSchema = schema<{ color: string }>((root) => {
-    required(root.color);
-  });
-  protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
-
-  // ── Reactive Forms ───────────────────────────────────────
-  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
-  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
-  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
-
-  protected handleSingleSubmit(): void {
-    submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
-  }`;
-  protected readonly _srcHtml4 = `<cngx-form-field [field]="rfField">
+  protected readonly _srcHtml2 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -429,7 +217,7 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
       <span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs4 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+  protected readonly _srcTs2 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -444,31 +232,15 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
   // ── Standalone ───────────────────────────────────────────
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
 
-  // ── Signal Forms single ──────────────────────────────────
+  // ── Signal Forms ─────────────────────────────────────────
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
 
   // ── Reactive Forms ───────────────────────────────────────
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
@@ -477,9 +249,6 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
   }`;
 
   protected readonly colors: CngxSelectOption<string>[] = [
@@ -489,31 +258,15 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  protected readonly toppings: CngxSelectOption<string>[] = [
-    { value: 'cheese', label: 'Käse' },
-    { value: 'pepperoni', label: 'Pepperoni' },
-    { value: 'mushroom', label: 'Champignons' },
-    { value: 'olive', label: 'Oliven' },
-    { value: 'onion', label: 'Zwiebel' },
-  ];
-
   // ── Standalone ───────────────────────────────────────────
   protected readonly standaloneValue = signal<string | undefined>(undefined);
-  protected readonly standaloneMulti = signal<string[]>([]);
 
-  // ── Signal Forms single ──────────────────────────────────
+  // ── Signal Forms ─────────────────────────────────────────
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
-
-  // ── Signal Forms multi ───────────────────────────────────
-  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
-  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
-    minLength(root.toppings, 2);
-  });
-  protected readonly multiForm = form(this.multiModel, this.multiSchema);
 
   // ── Reactive Forms ───────────────────────────────────────
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
@@ -522,9 +275,6 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
-  }
-  protected handleMultiSubmit(): void {
-    submit(this.multiForm, async () => []);
   }
   
 }
