@@ -6,6 +6,11 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
 /**
  * Inline badge for navigation items — shows counts, dots, or status indicators.
  *
+ * For generic in-place counter/dot indicators on arbitrary hosts (buttons,
+ * avatars, icons), prefer `CngxBadge` from `@cngx/common/display`. `CngxNavBadge`
+ * stays specialised for sidebar/link usage where the badge *is* the host span
+ * and style is applied directly to it rather than to an injected child.
+ *
  * Applies `aria-hidden="true"` by default because badges typically duplicate
  * information already conveyed by the link text. When the badge conveys
  * unique information (e.g., unread count), provide `[ariaLabel]` to make

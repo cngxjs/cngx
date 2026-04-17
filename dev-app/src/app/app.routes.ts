@@ -15,6 +15,11 @@ export const routes: Routes = [
     path: 'common',
     children: [
       {
+        path: 'a11y/active-descendant',
+        loadComponent: () =>
+          import('./demos/common/a11y/active-descendant-demo/active-descendant-demo.component').then((m) => m.ActiveDescendantDemoComponent),
+      },
+      {
         path: 'a11y/aria-expanded',
         loadComponent: () =>
           import('./demos/common/a11y/aria-expanded-demo/aria-expanded-demo.component').then((m) => m.AriaExpandedDemoComponent),
@@ -120,6 +125,26 @@ export const routes: Routes = [
           import('./demos/common/dialog/dialog-demo/dialog-demo.component').then((m) => m.DialogDemoComponent),
       },
       {
+        path: 'display/avatar',
+        loadComponent: () =>
+          import('./demos/common/display/avatar-demo/avatar-demo.component').then((m) => m.AvatarDemoComponent),
+      },
+      {
+        path: 'display/badge',
+        loadComponent: () =>
+          import('./demos/common/display/badge-demo/badge-demo.component').then((m) => m.BadgeDemoComponent),
+      },
+      {
+        path: 'display/divider',
+        loadComponent: () =>
+          import('./demos/common/display/divider-demo/divider-demo.component').then((m) => m.DividerDemoComponent),
+      },
+      {
+        path: 'display/icon',
+        loadComponent: () =>
+          import('./demos/common/display/icon-demo/icon-demo.component').then((m) => m.IconDemoComponent),
+      },
+      {
         path: 'interactive/async-click',
         loadComponent: () =>
           import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),
@@ -150,14 +175,49 @@ export const routes: Routes = [
           import('./demos/common/interactive/keyboard-shortcut-demo/keyboard-shortcut-demo.component').then((m) => m.KeyboardShortcutDemoComponent),
       },
       {
+        path: 'interactive/listbox',
+        loadComponent: () =>
+          import('./demos/common/interactive/listbox-demo/listbox-demo.component').then((m) => m.ListboxDemoComponent),
+      },
+      {
+        path: 'interactive/listbox-search',
+        loadComponent: () =>
+          import('./demos/common/interactive/listbox-search-demo/listbox-search-demo.component').then((m) => m.ListboxSearchDemoComponent),
+      },
+      {
+        path: 'interactive/listbox-trigger',
+        loadComponent: () =>
+          import('./demos/common/interactive/listbox-trigger-demo/listbox-trigger-demo.component').then((m) => m.ListboxTriggerDemoComponent),
+      },
+      {
         path: 'interactive/long-press',
         loadComponent: () =>
           import('./demos/common/interactive/long-press-demo/long-press-demo.component').then((m) => m.LongPressDemoComponent),
       },
       {
+        path: 'interactive/menu',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-demo/menu-demo.component').then((m) => m.MenuDemoComponent),
+      },
+      {
+        path: 'interactive/menu-checkable',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-checkable-demo/menu-checkable-demo.component').then((m) => m.MenuCheckableDemoComponent),
+      },
+      {
+        path: 'interactive/menu-trigger',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-trigger-demo/menu-trigger-demo.component').then((m) => m.MenuTriggerDemoComponent),
+      },
+      {
         path: 'interactive/nav',
         loadComponent: () =>
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
+      },
+      {
+        path: 'interactive/option',
+        loadComponent: () =>
+          import('./demos/common/interactive/option-demo/option-demo.component').then((m) => m.OptionDemoComponent),
       },
       {
         path: 'interactive/press-ripple',
@@ -269,7 +329,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/common/popover/tooltip-demo/tooltip-demo.component').then((m) => m.TooltipDemoComponent),
       },
-      { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
+      { path: '', redirectTo: 'a11y/active-descendant', pathMatch: 'full' },
     ],
   },
   {
