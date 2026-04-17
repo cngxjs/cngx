@@ -5,11 +5,13 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge } from '@cngx/forms/field';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge, CngxBindField } from '@cngx/forms/field';
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 
 @Component({
   selector: 'app-listbox-forms-demo',
@@ -24,12 +26,16 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
     CngxListbox,
     CngxOption,
     CngxListboxFieldBridge,
+    CngxBindField,
+    MatSelect,
+    MatOption,
+    ReactiveFormsModule,
   ],
   template: `
     <app-doc-shell title="Listbox Forms"
-      description="CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge. Works with Signal Forms natively and with Reactive Forms via adaptFormControl."
-      overview="<p>The listbox atom in <code>@cngx/common/interactive</code> stays Forms-agnostic. A sibling directive <code>[cngxListboxFieldBridge]</code> in <code>@cngx/forms/field</code> provides <code>CNGX_FORM_FIELD_CONTROL</code>, syncs the listbox value with the bound field, and projects ARIA.</p><p>Pattern is identical to <code>CngxMatInputBridge</code> for <code>matInput</code> — one system, no CVA.</p>"
-      [apiComponents]="['CngxListboxFieldBridge', 'CngxListbox', 'CngxOption', 'CngxFormField']">
+      description="CngxListbox integrated into <cngx-form-field> via CngxListboxFieldBridge, plus the universal CngxBindField bridge for any other control (mat-select, native inputs, custom controls)."
+      overview="<p>The listbox atom in <code>@cngx/common/interactive</code> stays Forms-agnostic. A sibling directive <code>[cngxListboxFieldBridge]</code> in <code>@cngx/forms/field</code> provides <code>CNGX_FORM_FIELD_CONTROL</code>, syncs the listbox value with the bound field, and projects ARIA.</p><p><code>[cngxBindField]</code> is the universal counterpart for any control that already has its own value flow — Material (<code>mat-select</code>, <code>mat-chip-grid</code>, …), native HTML (<code>&lt;select&gt;</code>, <code>&lt;input&gt;</code>), or custom <code>FormValueControl&lt;T&gt;</code> / CVA components. It derives all form-field state purely from the field via the presenter.</p>"
+      [apiComponents]="['CngxListboxFieldBridge', 'CngxBindField', 'CngxListbox', 'CngxOption', 'CngxFormField']">
       <app-example-card title="Signal Forms — single select"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -96,10 +102,46 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Reactive Forms — adapted via adaptFormControl"
+      <app-example-card title="Material mat-select via CngxBindField"
         [subtitle]="_s2"
         [sourceHtml]="_srcHtml2"
         [sourceTs]="_srcTs2">
+        
+  <cngx-form-field [field]="matSelectField">
+    <label cngxLabel>Größe</label>
+    <mat-select cngxBindField
+                [formControl]="matSelectControl"
+                placeholder="Bitte wählen"
+                style="min-width:200px;display:inline-block">
+      <mat-option value="s">Small</mat-option>
+      <mat-option value="m">Medium</mat-option>
+      <mat-option value="l">Large</mat-option>
+      <mat-option value="xl">X-Large</mat-option>
+    </mat-select>
+    <cngx-field-errors />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">mat-select value</span>
+      <span class="event-value">{{ matSelectValue() || '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Valid</span>
+      <span class="event-value">{{ matSelectControl.valid ? 'yes' : 'no' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Touched</span>
+      <span class="event-value">{{ matSelectControl.touched ? 'yes' : 'no' }}</span>
+    </div>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="handleMatSelectSubmit()">Touch</button>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Reactive Forms — adapted via adaptFormControl"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -130,7 +172,8 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
 export class ListboxFormsDemoComponent {
   protected readonly _s0 = 'Two-way binding via <code>[(value)]="singleForm.color().value"</code>. Required validation shown when touched.';
   protected readonly _s1 = 'Multi-select mit <code>minLength</code> validator. Selection pushed into field array.';
-  protected readonly _s2 = 'Same template, <code>[field]</code> receives the adapter output. Listbox and bridge are unchanged.';
+  protected readonly _s2 = 'Universal bridge pattern: <code>[cngxBindField]</code> on any Material / native / custom control. All form-field state (ID, empty, focused, disabled, errorState) derives from the bound field via the presenter — no control-specific bridge needed.';
+  protected readonly _s3 = 'Same template, <code>[field]</code> receives the adapter output. Listbox and bridge are unchanged.';
   protected readonly _srcHtml0 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <div cngxListbox
@@ -161,11 +204,13 @@ export class ListboxFormsDemoComponent {
     </div>
   </div>`;
   protected readonly _srcTs0 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge } from '@cngx/forms/field';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge, CngxBindField } from '@cngx/forms/field';
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 
 
   // ── Signal Forms single ──────────────────────────────────
@@ -188,11 +233,19 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
   protected readonly rfTouched = signal(false);
 
+  // ── mat-select via CngxBindField ─────────────────────────
+  protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
+  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }
   protected handleMultiSubmit(): void {
     submit(this.multiForm, async () => []);
+  }
+  protected handleMatSelectSubmit(): void {
+    this.matSelectControl.markAsTouched();
   }`;
   protected readonly _srcHtml1 = `<cngx-form-field [field]="multiForm.toppings">
     <label cngxLabel>Beläge (mind. 2)</label>
@@ -220,11 +273,13 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
     </div>
   </div>`;
   protected readonly _srcTs1 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge } from '@cngx/forms/field';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge, CngxBindField } from '@cngx/forms/field';
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 
 
   // ── Signal Forms single ──────────────────────────────────
@@ -247,13 +302,95 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
   protected readonly rfTouched = signal(false);
 
+  // ── mat-select via CngxBindField ─────────────────────────
+  protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
+  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }
   protected handleMultiSubmit(): void {
     submit(this.multiForm, async () => []);
+  }
+  protected handleMatSelectSubmit(): void {
+    this.matSelectControl.markAsTouched();
   }`;
-  protected readonly _srcHtml2 = `<cngx-form-field [field]="rfField">
+  protected readonly _srcHtml2 = `<cngx-form-field [field]="matSelectField">
+    <label cngxLabel>Größe</label>
+    <mat-select cngxBindField
+                [formControl]="matSelectControl"
+                placeholder="Bitte wählen"
+                style="min-width:200px;display:inline-block">
+      <mat-option value="s">Small</mat-option>
+      <mat-option value="m">Medium</mat-option>
+      <mat-option value="l">Large</mat-option>
+      <mat-option value="xl">X-Large</mat-option>
+    </mat-select>
+    <cngx-field-errors />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">mat-select value</span>
+      <span class="event-value">{{ matSelectValue() || '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Valid</span>
+      <span class="event-value">{{ matSelectControl.valid ? 'yes' : 'no' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Touched</span>
+      <span class="event-value">{{ matSelectControl.touched ? 'yes' : 'no' }}</span>
+    </div>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="handleMatSelectSubmit()">Touch</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs2 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge, CngxBindField } from '@cngx/forms/field';
+import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
+
+
+  // ── Signal Forms single ──────────────────────────────────
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // ── Signal Forms multi ───────────────────────────────────
+  private readonly multiModel = signal<{ toppings: string[] }>({ toppings: [] });
+  private readonly multiSchema = schema<{ toppings: string[] }>((root) => {
+    minLength(root.toppings, 2);
+  });
+  protected readonly multiForm = form(this.multiModel, this.multiSchema);
+
+  // ── Reactive Forms single ────────────────────────────────
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+  protected readonly rfTouched = signal(false);
+
+  // ── mat-select via CngxBindField ─────────────────────────
+  protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
+  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+  protected handleMultiSubmit(): void {
+    submit(this.multiForm, async () => []);
+  }
+  protected handleMatSelectSubmit(): void {
+    this.matSelectControl.markAsTouched();
+  }`;
+  protected readonly _srcHtml3 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <div cngxListbox
          cngxListboxFieldBridge
@@ -275,12 +412,14 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
       <span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs2 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
-import { FormControl, Validators } from '@angular/forms';
+  protected readonly _srcTs3 = `import { form, schema, required, minLength, submit } from '@angular/forms/signals';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge } from '@cngx/forms/field';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl, CngxListboxFieldBridge, CngxBindField } from '@cngx/forms/field';
 import { CngxListbox, CngxOption } from '@cngx/common/interactive';
+import { MatSelect } from '@angular/material/select';
+import { MatOption } from '@angular/material/core';
 
 
   // ── Signal Forms single ──────────────────────────────────
@@ -303,11 +442,19 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
   protected readonly rfTouched = signal(false);
 
+  // ── mat-select via CngxBindField ─────────────────────────
+  protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
+  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }
   protected handleMultiSubmit(): void {
     submit(this.multiForm, async () => []);
+  }
+  protected handleMatSelectSubmit(): void {
+    this.matSelectControl.markAsTouched();
   }`;
 
   // ── Signal Forms single ──────────────────────────────────
@@ -330,11 +477,19 @@ import { CngxListbox, CngxOption } from '@cngx/common/interactive';
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
   protected readonly rfTouched = signal(false);
 
+  // ── mat-select via CngxBindField ─────────────────────────
+  protected readonly matSelectControl = new FormControl<string>('', { validators: [Validators.required], nonNullable: true });
+  protected readonly matSelectField = adaptFormControl(this.matSelectControl, 'size', inject(DestroyRef));
+  protected readonly matSelectValue = toSignal(this.matSelectControl.valueChanges, { initialValue: this.matSelectControl.value });
+
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
   }
   protected handleMultiSubmit(): void {
     submit(this.multiForm, async () => []);
+  }
+  protected handleMatSelectSubmit(): void {
+    this.matSelectControl.markAsTouched();
   }
   
 }
