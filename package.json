@@ -38,7 +38,8 @@
     "publish:patch": "node scripts/publish.mjs --bump patch",
     "publish:minor": "node scripts/publish.mjs --bump minor",
     "publish:major": "node scripts/publish.mjs --bump major",
-    "publish:dry": "node scripts/publish.mjs --dry-run --bump patch"
+    "publish:dry": "node scripts/publish.mjs --dry-run --bump patch",
+    "e2e": "ng e2e"
   },
   "private": true,
   "packageManager": "npm@10.9.0",
@@ -67,6 +68,7 @@
     "@angular/compiler-cli": "^21.2.4",
     "@compodoc/compodoc": "^1.2.1",
     "@floating-ui/dom": "^1.7.6",
+    "@playwright/test": "1.59.1",
     "@types/node": "^22.19.15",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
@@ -75,6 +77,7 @@
     "http-server": "^14.1.1",
     "jsdom": "^28.0.0",
     "ng-packagr": "^21.2.0",
+    "playwright-ng-schematics": "^21.0.9",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.56.1",
