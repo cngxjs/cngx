@@ -87,7 +87,11 @@ export class CngxListbox {
   /** Emits when the multi-value selection changes. */
   readonly selectedValuesChange = output<unknown[]>();
 
-  private readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
+  /**
+   * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
+   * (e.g. `CngxListboxTrigger`) can drive navigation without ancestor injection.
+   */
+  readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
   /** Options collected via content projection. */
   readonly options = contentChildren(CngxOption, { descendants: true });

@@ -44,3 +44,4 @@ export {
   CngxListboxSearch,
   type ListboxMatchFn,
 } from './src/listbox/listbox-search.directive';
+export { CngxListboxTrigger } from './src/listbox/listbox-trigger.directive';

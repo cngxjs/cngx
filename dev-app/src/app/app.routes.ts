@@ -185,6 +185,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/listbox-search-demo/listbox-search-demo.component').then((m) => m.ListboxSearchDemoComponent),
       },
       {
+        path: 'interactive/listbox-trigger',
+        loadComponent: () =>
+          import('./demos/common/interactive/listbox-trigger-demo/listbox-trigger-demo.component').then((m) => m.ListboxTriggerDemoComponent),
+      },
+      {
         path: 'interactive/long-press',
         loadComponent: () =>
           import('./demos/common/interactive/long-press-demo/long-press-demo.component').then((m) => m.LongPressDemoComponent),
