@@ -66,9 +66,32 @@ export function adaptFormControl(
     control.valueChanges.subscribe(syncState);
   }
 
+  // Writable value proxy: allows bridges (e.g. `CngxListboxFieldBridge`) to
+  // push the control's value via `fieldRef.value.set(x)`. We don't just hand
+  // out the raw `valueSignal` because the standard RxJS subscription above
+  // already mirrors RF state into it — calling `.set()` here must also push
+  // into the `FormControl`, not only the internal signal.
+  const writableValue = Object.assign(
+    () => valueSignal(),
+    {
+      set(next: unknown): void {
+        if (Object.is(control.value, next)) {
+          return;
+        }
+        valueSignal.set(next);
+        control.setValue(next);
+        control.markAsDirty();
+      },
+      update(updater: (current: unknown) => unknown): void {
+        writableValue.set(updater(valueSignal()));
+      },
+      asReadonly: () => valueSignal.asReadonly(),
+    },
+  );
+
   const ref: CngxFieldRef = {
     name: nameSignal.asReadonly(),
-    value: valueSignal.asReadonly(),
+    value: writableValue as unknown as Signal<unknown>,
     errors: errorsSignal.asReadonly() as Signal<never[]>,
     touched: touchedSignal.asReadonly(),
     dirty: dirtySignal.asReadonly(),
