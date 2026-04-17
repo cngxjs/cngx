@@ -57,3 +57,8 @@ vitest.config.*.timestamp*
 .compodoc/
 /screenshots
 CNGX_LLM_REFERENCE.md
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
