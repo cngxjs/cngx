@@ -36,6 +36,7 @@
       "@cngx/forms/validators": ["projects/forms/validators/public-api.ts"],
       "@cngx/forms/field": ["projects/forms/field/public-api.ts"],
       "@cngx/forms/input": ["projects/forms/input/public-api.ts"],
+      "@cngx/forms/select": ["projects/forms/select/public-api.ts"],
       "@cngx/ui": ["projects/ui/src/public-api.ts"],
       "@cngx/ui/layout": ["projects/ui/layout/public-api.ts"],
       "@cngx/ui/overlay": ["projects/ui/overlay/public-api.ts"],

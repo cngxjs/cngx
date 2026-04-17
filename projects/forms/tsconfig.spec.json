@@ -12,6 +12,7 @@
     "validators/src/**/*.spec.ts",
     "controls/src/**/*.spec.ts",
     "field/src/**/*.spec.ts",
-    "input/src/**/*.spec.ts"
+    "input/src/**/*.spec.ts",
+    "select/src/**/*.spec.ts"
   ]
 }
