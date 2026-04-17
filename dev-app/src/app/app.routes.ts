@@ -205,6 +205,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/menu-checkable-demo/menu-checkable-demo.component').then((m) => m.MenuCheckableDemoComponent),
       },
       {
+        path: 'interactive/menu-trigger',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-trigger-demo/menu-trigger-demo.component').then((m) => m.MenuTriggerDemoComponent),
+      },
+      {
         path: 'interactive/nav',
         loadComponent: () =>
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),

@@ -1,8 +1,18 @@
 import { computed, Directive, input } from '@angular/core';
 
-import type { CngxPopover } from '@cngx/common/popover';
-
 import type { CngxListbox } from './listbox.directive';
+
+/**
+ * Minimum popover contract this trigger expects. Matches `CngxPopover` from
+ * `@cngx/common/popover`, but declared structurally here to avoid an
+ * entry-point circular dependency (popover already imports from interactive
+ * for `CngxCloseButton`).
+ */
+interface PopoverController {
+  readonly isVisible: () => boolean;
+  show(): void;
+  hide(): void;
+}
 
 /**
  * Trigger atom for listbox dropdowns.
@@ -37,7 +47,7 @@ export class CngxListboxTrigger {
   /** Listbox controlled by this trigger. */
   readonly listbox = input.required<CngxListbox>({ alias: 'cngxListboxTrigger' });
   /** Popover that wraps the listbox panel. */
-  readonly popover = input.required<CngxPopover>();
+  readonly popover = input.required<PopoverController>();
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
   /** Whether focusing the trigger auto-opens the popover. */
