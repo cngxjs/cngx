@@ -195,6 +195,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/long-press-demo/long-press-demo.component').then((m) => m.LongPressDemoComponent),
       },
       {
+        path: 'interactive/menu',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-demo/menu-demo.component').then((m) => m.MenuDemoComponent),
+      },
+      {
         path: 'interactive/nav',
         loadComponent: () =>
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
