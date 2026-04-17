@@ -9,7 +9,8 @@ import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
 
 import { CngxSelect, type CngxSelectChange } from './select.component';
-import type { CngxSelectOption, CngxSelectOptionsInput } from './shared/option.model';
+import { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
+import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './shared/option.model';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -39,7 +40,7 @@ function polyfillPopover(): void {
   }
 }
 
-const OPTIONS: CngxSelectOption<string>[] = [
+const OPTIONS: CngxSelectOptionDef<string>[] = [
   { value: 'red', label: 'Rot' },
   { value: 'green', label: 'Grün' },
   { value: 'blue', label: 'Blau', disabled: true },
@@ -126,6 +127,7 @@ class GroupedHost {
   readonly grouped = GROUPED_OPTIONS;
   readonly value = signal<string | undefined>(undefined);
 }
+
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
@@ -291,6 +293,27 @@ describe('CngxSelect — grouped options', () => {
     const options = fixture.debugElement.queryAll(By.directive(CngxListbox))[0];
     const listbox = options.injector.get(CngxListbox);
     expect(listbox.options().length).toBe(4);
+  });
+});
+
+describe('inject helpers', () => {
+  it('injectSelectConfig returns a fully populated resolved config', () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const config = injectSelectConfig();
+      expect(config.panelWidth).toBeDefined();
+      expect(config.typeaheadDebounceInterval).toBeTypeOf('number');
+      expect(config.announcer.format).toBeTypeOf('function');
+    });
+  });
+
+  it('injectSelectAnnouncer returns the root-scoped service', () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const announcer = injectSelectAnnouncer();
+      expect(announcer).toBeDefined();
+      expect(typeof announcer.announce).toBe('function');
+    });
   });
 });
 

@@ -9,7 +9,9 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 @Component({
   selector: 'app-select-demo',
@@ -19,6 +21,13 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ExampleCardComponent,
     DocShellComponent,
     CngxSelect,
+    CngxSelectOption,
+    CngxSelectOptgroup,
+    CngxSelectDivider,
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
     CngxSelectOptionLabel,
     CngxSelectEmpty,
     CngxFormField,
@@ -47,10 +56,71 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     <div class="event-row"><span class="event-label">Last panel event</span><span class="event-value">{{ openedLog() }}</span></div>
   </div>
       </app-example-card>
-      <app-example-card title="Optgroups"
+      <app-example-card title="⚠ BLOCKER — declarative composition inside <cngx-select>"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
+        
+  <cngx-select
+    [label]="'Declarative (broken)'"
+    [(value)]="declarativeValue"
+    placeholder="Open me — panel will be empty…"
+  >
+    <cngx-optgroup label="Warm">
+      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'orange'">Orange</cngx-option>
+    </cngx-optgroup>
+    <cngx-select-divider />
+    <cngx-optgroup label="Cold">
+      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'teal'">Türkis</cngx-option>
+    </cngx-optgroup>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#c62828">AD doesn't see projected options — no selection flow.</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Assemble it yourself — atoms + element components"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <button type="button"
+          class="chip"
+          [cngxPopoverTrigger]="myPop"
+          [haspopup]="'listbox'"
+          [cngxListboxTrigger]="myLb"
+          [popover]="myPop"
+          (click)="myPop.toggle()">
+    {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+  </button>
+  <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
+    <div cngxListbox
+         #myLb="cngxListbox"
+         [label]="'Farbe'"
+         [(value)]="assembledValue"
+         style="display:flex;flex-direction:column;min-inline-size:10rem">
+      <cngx-optgroup label="Warm">
+        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'orange'">Orange</cngx-option>
+      </cngx-optgroup>
+      <cngx-select-divider />
+      <cngx-optgroup label="Cold">
+        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'teal'">Türkis</cngx-option>
+      </cngx-optgroup>
+    </div>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#2e7d32">Works — consumer owns the listbox, AD sees projected options.</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Optgroups"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
         
   <cngx-select
     [label]="'Priorität'"
@@ -63,9 +133,9 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   </div>
       </app-example-card>
       <app-example-card title="Clearable"
-        [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
+        [subtitle]="_s4"
+        [sourceHtml]="_srcHtml4"
+        [sourceTs]="_srcTs4">
         
   <cngx-select
     [label]="'Farbe'"
@@ -78,9 +148,9 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   </div>
       </app-example-card>
       <app-example-card title="Rich option rendering"
-        [subtitle]="_s3"
-        [sourceHtml]="_srcHtml3"
-        [sourceTs]="_srcTs3">
+        [subtitle]="_s5"
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5">
         
   <cngx-select
     [label]="'Gewerk'"
@@ -98,9 +168,9 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   </div>
       </app-example-card>
       <app-example-card title="Loading + empty templates"
-        [subtitle]="_s4"
-        [sourceHtml]="_srcHtml4"
-        [sourceTs]="_srcTs4">
+        [subtitle]="_s6"
+        [sourceHtml]="_srcHtml6"
+        [sourceTs]="_srcTs6">
         
   <cngx-select
     [label]="'Async'"
@@ -120,9 +190,9 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   </div>
       </app-example-card>
       <app-example-card title="Signal Forms (required)"
-        [subtitle]="_s5"
-        [sourceHtml]="_srcHtml5"
-        [sourceTs]="_srcTs5">
+        [subtitle]="_s7"
+        [sourceHtml]="_srcHtml7"
+        [sourceTs]="_srcTs7">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -139,9 +209,9 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   </div>
       </app-example-card>
       <app-example-card title="Reactive Forms (adaptFormControl)"
-        [subtitle]="_s6"
-        [sourceHtml]="_srcHtml6"
-        [sourceTs]="_srcTs6">
+        [subtitle]="_s8"
+        [sourceHtml]="_srcHtml8"
+        [sourceTs]="_srcTs8">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -158,12 +228,14 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
 })
 export class SelectDemoComponent {
   protected readonly _s0 = 'Two-way bound via <code>[(value)]</code> — no form-field required.';
-  protected readonly _s1 = 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.';
-  protected readonly _s2 = '<code>[clearable]="true"</code> adds a ✕ button when a value is selected.';
-  protected readonly _s3 = 'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.';
-  protected readonly _s4 = 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.';
-  protected readonly _s5 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
-  protected readonly _s6 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
+  protected readonly _s1 = '<strong>Does not work yet.</strong> Projected <code>&lt;cngx-option&gt;</code> / <code>&lt;cngx-optgroup&gt;</code> children are invisible to the inner listbox\'s <code>CngxActiveDescendant</code> because Angular content-projection scoping puts them in <code>cngx-select</code>\'s injector tree, not the listbox\'s. Panel opens empty / clicks don\'t register. Tracked for the Combobox architectural pass.';
+  protected readonly _s2 = 'Element components <code>&lt;cngx-option&gt;</code>, <code>&lt;cngx-optgroup&gt;</code>, <code>&lt;cngx-select-divider&gt;</code> <strong>do work</strong> when you compose the listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + <code>CngxListboxTrigger</code> + <code>CngxListbox</code>). The options sit inside the listbox\'s own content-children scope, so AD registration succeeds.';
+  protected readonly _s3 = 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.';
+  protected readonly _s4 = '<code>[clearable]="true"</code> adds a ✕ button when a value is selected.';
+  protected readonly _s5 = 'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.';
+  protected readonly _s6 = 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.';
+  protected readonly _s7 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
+  protected readonly _s8 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -180,10 +252,12 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -201,17 +275,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -243,23 +319,35 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     this.loading.update(v => !v);
   }`;
   protected readonly _srcHtml1 = `<cngx-select
-    [label]="'Priorität'"
-    [options]="priorities"
-    [(value)]="groupedValue"
-    placeholder="Priorität wählen…"
-  />
+    [label]="'Declarative (broken)'"
+    [(value)]="declarativeValue"
+    placeholder="Open me — panel will be empty…"
+  >
+    <cngx-optgroup label="Warm">
+      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'orange'">Orange</cngx-option>
+    </cngx-optgroup>
+    <cngx-select-divider />
+    <cngx-optgroup label="Cold">
+      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'teal'">Türkis</cngx-option>
+    </cngx-optgroup>
+  </cngx-select>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#c62828">AD doesn't see projected options — no selection flow.</span></div>
   </div>`;
   protected readonly _srcTs1 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -277,17 +365,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -318,24 +408,47 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml2 = `<cngx-select
-    [label]="'Farbe'"
-    [options]="colors"
-    [(value)]="clearableValue"
-    [clearable]="true"
-  />
+  protected readonly _srcHtml2 = `<button type="button"
+          class="chip"
+          [cngxPopoverTrigger]="myPop"
+          [haspopup]="'listbox'"
+          [cngxListboxTrigger]="myLb"
+          [popover]="myPop"
+          (click)="myPop.toggle()">
+    {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+  </button>
+  <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
+    <div cngxListbox
+         #myLb="cngxListbox"
+         [label]="'Farbe'"
+         [(value)]="assembledValue"
+         style="display:flex;flex-direction:column;min-inline-size:10rem">
+      <cngx-optgroup label="Warm">
+        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'orange'">Orange</cngx-option>
+      </cngx-optgroup>
+      <cngx-select-divider />
+      <cngx-optgroup label="Cold">
+        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'teal'">Türkis</cngx-option>
+      </cngx-optgroup>
+    </div>
+  </div>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ clearableValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#2e7d32">Works — consumer owns the listbox, AD sees projected options.</span></div>
   </div>`;
   protected readonly _srcTs2 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -353,17 +466,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -395,28 +510,25 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     this.loading.update(v => !v);
   }`;
   protected readonly _srcHtml3 = `<cngx-select
-    [label]="'Gewerk'"
-    [options]="richOptions"
-    [(value)]="richValue"
-    placeholder="Gewerk wählen…"
-  >
-    <ng-template cngxSelectOptionLabel let-opt>
-      <span>{{ opt.meta?.icon }}</span>
-      <strong>{{ opt.label }}</strong>
-    </ng-template>
-  </cngx-select>
+    [label]="'Priorität'"
+    [options]="priorities"
+    [(value)]="groupedValue"
+    placeholder="Priorität wählen…"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs3 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -434,17 +546,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -476,6 +590,171 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     this.loading.update(v => !v);
   }`;
   protected readonly _srcHtml4 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="clearableValue"
+    [clearable]="true"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ clearableValue() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs4 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml5 = `<cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span>{{ opt.meta?.icon }}</span>
+      <strong>{{ opt.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs5 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml6 = `<cngx-select
     [label]="'Async'"
     [options]="loadingOptions"
     [(value)]="loadingValue"
@@ -491,15 +770,17 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
       <button type="button" class="chip" (click)="toggleLoading()">Toggle loading</button>
     </div>
   </div>`;
-  protected readonly _srcTs4 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs6 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -517,17 +798,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -558,7 +841,7 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml5 = `<cngx-form-field [field]="singleForm.color">
+  protected readonly _srcHtml7 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -571,15 +854,17 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
       <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
     </div>
   </div>`;
-  protected readonly _srcTs5 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs7 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -597,17 +882,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -638,7 +925,7 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml6 = `<cngx-form-field [field]="rfField">
+  protected readonly _srcHtml8 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -647,15 +934,17 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
     <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
   </div>`;
-  protected readonly _srcTs6 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs8 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -673,17 +962,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -715,7 +1006,7 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     this.loading.update(v => !v);
   }`;
 
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -733,17 +1024,19 @@ import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOpti
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);

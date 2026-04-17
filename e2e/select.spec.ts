@@ -74,6 +74,18 @@ test.describe('CngxSelect demo', () => {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('click-outside closes the panel', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Standalone');
+    const trigger = section.locator('cngx-select button').first();
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+
+    // Click far outside — on the page body above the fold
+    await page.locator('body').click({ position: { x: 20, y: 20 } });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
   test('Reactive Forms: initial value shows + select updates FormControl', async ({
     page,
   }) => {

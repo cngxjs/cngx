@@ -1,9 +1,14 @@
 /**
- * Option descriptor for the Select family.
+ * Data-level option descriptor for the Select family. Pass an array of these
+ * to `[options]` for the data-driven composition mode.
+ *
+ * Element-level composition uses the `<cngx-option>` component (class name
+ * `CngxSelectOption`) — the two are independent; consumers pick one per
+ * instance.
  *
  * @category interactive
  */
-export interface CngxSelectOption<T = unknown> {
+export interface CngxSelectOptionDef<T = unknown> {
   readonly value: T;
   readonly label: string;
   readonly disabled?: boolean;
@@ -15,37 +20,39 @@ export interface CngxSelectOption<T = unknown> {
 }
 
 /**
- * Optgroup descriptor for the Select family. Groups render a non-focusable
- * header and nested options.
+ * Data-level optgroup descriptor for the Select family.
  *
  * @category interactive
  */
-export interface CngxSelectOptionGroup<T = unknown> {
+export interface CngxSelectOptionGroupDef<T = unknown> {
   readonly label: string;
   readonly disabled?: boolean;
-  readonly children: readonly CngxSelectOption<T>[];
+  readonly children: readonly CngxSelectOptionDef<T>[];
 }
 
 /**
  * Union of flat options and grouped options. Accepted by every select-family
- * component's `[options]` input.
+ * component's `[options]` input in data-driven mode.
  *
  * @category interactive
  */
-export type CngxSelectOptionsInput<T = unknown> = readonly (CngxSelectOption<T> | CngxSelectOptionGroup<T>)[];
+export type CngxSelectOptionsInput<T = unknown> = readonly (
+  | CngxSelectOptionDef<T>
+  | CngxSelectOptionGroupDef<T>
+)[];
 
 /**
  * Type guard discriminating a group from a flat option.
  *
  * @category interactive
  */
-export function isCngxSelectOptionGroup<T>(
-  item: CngxSelectOption<T> | CngxSelectOptionGroup<T>,
-): item is CngxSelectOptionGroup<T> {
+export function isCngxSelectOptionGroupDef<T>(
+  item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
+): item is CngxSelectOptionGroupDef<T> {
   return (
     item != null &&
     typeof (item as { children?: unknown }).children !== 'undefined' &&
-    Array.isArray((item as CngxSelectOptionGroup<T>).children)
+    Array.isArray((item as CngxSelectOptionGroupDef<T>).children)
   );
 }
 
@@ -57,10 +64,10 @@ export function isCngxSelectOptionGroup<T>(
  */
 export function flattenSelectOptions<T>(
   input: CngxSelectOptionsInput<T>,
-): CngxSelectOption<T>[] {
-  const flat: CngxSelectOption<T>[] = [];
+): CngxSelectOptionDef<T>[] {
+  const flat: CngxSelectOptionDef<T>[] = [];
   for (const item of input) {
-    if (isCngxSelectOptionGroup(item)) {
+    if (isCngxSelectOptionGroupDef(item)) {
       for (const child of item.children) {
         flat.push(child);
       }

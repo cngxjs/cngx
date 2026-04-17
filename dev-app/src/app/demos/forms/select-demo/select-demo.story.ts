@@ -36,10 +36,12 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
+    "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
   ],
   setup: `
-  protected readonly colors: CngxSelectOption<string>[] = [
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
     { value: 'green', label: 'Grün' },
     { value: 'blue', label: 'Blau' },
@@ -57,17 +59,19 @@ export const STORY: DemoSpec = {
     ]},
   ];
 
-  protected readonly richOptions: CngxSelectOption<string>[] = [
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
     { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
     { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
     { value: 'db', label: 'Database', meta: { icon: '💾' } },
     { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
   ];
 
-  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
 
   // Standalone single
   protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
   protected readonly groupedValue = signal<string | undefined>(undefined);
   protected readonly clearableValue = signal<string | undefined>('red');
   protected readonly richValue = signal<string | undefined>(undefined);
@@ -115,6 +119,85 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Last panel event</span><span class="event-value">{{ openedLog() }}</span></div>
+  </div>`,
+    },
+    {
+      title: '⚠ BLOCKER — declarative composition inside <cngx-select>',
+      subtitle:
+        '<strong>Does not work yet.</strong> Projected <code>&lt;cngx-option&gt;</code> / ' +
+        '<code>&lt;cngx-optgroup&gt;</code> children are invisible to the inner listbox\'s ' +
+        '<code>CngxActiveDescendant</code> because Angular content-projection scoping puts ' +
+        'them in <code>cngx-select</code>\'s injector tree, not the listbox\'s. Panel opens ' +
+        'empty / clicks don\'t register. Tracked for the Combobox architectural pass.',
+      imports: ['CngxSelect', 'CngxSelectOption', 'CngxSelectOptgroup', 'CngxSelectDivider'],
+      template: `
+  <cngx-select
+    [label]="'Declarative (broken)'"
+    [(value)]="declarativeValue"
+    placeholder="Open me — panel will be empty…"
+  >
+    <cngx-optgroup label="Warm">
+      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'orange'">Orange</cngx-option>
+    </cngx-optgroup>
+    <cngx-select-divider />
+    <cngx-optgroup label="Cold">
+      <cngx-option [value]="'blue'">Blau</cngx-option>
+      <cngx-option [value]="'teal'">Türkis</cngx-option>
+    </cngx-optgroup>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ declarativeValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#c62828">AD doesn't see projected options — no selection flow.</span></div>
+  </div>`,
+    },
+    {
+      title: 'Assemble it yourself — atoms + element components',
+      subtitle:
+        'Element components <code>&lt;cngx-option&gt;</code>, <code>&lt;cngx-optgroup&gt;</code>, ' +
+        '<code>&lt;cngx-select-divider&gt;</code> <strong>do work</strong> when you compose the ' +
+        'listbox yourself using the Level-2 atoms (<code>CngxPopover</code> + ' +
+        '<code>CngxListboxTrigger</code> + <code>CngxListbox</code>). The options sit inside the ' +
+        'listbox\'s own content-children scope, so AD registration succeeds.',
+      imports: [
+        'CngxSelectOption',
+        'CngxSelectOptgroup',
+        'CngxSelectDivider',
+        'CngxListbox',
+        'CngxListboxTrigger',
+        'CngxPopover',
+        'CngxPopoverTrigger',
+      ],
+      template: `
+  <button type="button"
+          class="chip"
+          [cngxPopoverTrigger]="myPop"
+          [haspopup]="'listbox'"
+          [cngxListboxTrigger]="myLb"
+          [popover]="myPop"
+          (click)="myPop.toggle()">
+    {{ assembledValue() ?? 'Farbe wählen…' }} ▾
+  </button>
+  <div cngxPopover #myPop="cngxPopover" placement="bottom" style="padding:0.25rem">
+    <div cngxListbox
+         #myLb="cngxListbox"
+         [label]="'Farbe'"
+         [(value)]="assembledValue"
+         style="display:flex;flex-direction:column;min-inline-size:10rem">
+      <cngx-optgroup label="Warm">
+        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'orange'">Orange</cngx-option>
+      </cngx-optgroup>
+      <cngx-select-divider />
+      <cngx-optgroup label="Cold">
+        <cngx-option [value]="'blue'">Blau</cngx-option>
+        <cngx-option [value]="'teal'">Türkis</cngx-option>
+      </cngx-optgroup>
+    </div>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ assembledValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Status</span><span class="event-value" style="color:#2e7d32">Works — consumer owns the listbox, AD sees projected options.</span></div>
   </div>`,
     },
     {

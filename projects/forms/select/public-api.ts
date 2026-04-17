@@ -6,12 +6,25 @@ export {
   CngxSelect,
   type CngxSelectChange,
 } from './src/select.component';
+
+// ── Data-driven option model ──────────────────────────────────────────
 export {
-  type CngxSelectOption,
-  type CngxSelectOptionGroup,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
-  isCngxSelectOptionGroup,
+  isCngxSelectOptionGroupDef,
+  flattenSelectOptions,
 } from './src/shared/option.model';
+
+// ── Declarative element components ────────────────────────────────────
+// Intended for consumer-assembled listbox templates (the "compose yourself"
+// path). NOT usable as direct children of `<cngx-select>` — see
+// `.internal/architektur/select-family-architecture.md` for the reasoning.
+export { CngxSelectOption } from './src/declarative/option.component';
+export { CngxSelectOptgroup } from './src/declarative/optgroup.component';
+export { CngxSelectDivider } from './src/declarative/divider.component';
+
+// ── Config system ─────────────────────────────────────────────────────
 export {
   CNGX_SELECT_CONFIG,
   type CngxSelectConfig,
@@ -31,11 +44,21 @@ export {
   withOpenOn,
   withAnnouncer,
 } from './src/shared/config';
+
+// ── Announcer ─────────────────────────────────────────────────────────
 export { CngxSelectAnnouncer } from './src/shared/announcer';
+
+// ── Inject helpers ────────────────────────────────────────────────────
+export {
+  injectSelectConfig,
+  injectSelectAnnouncer,
+} from './src/shared/inject-helpers';
+
+// ── Template-slot directives ──────────────────────────────────────────
 export {
   CngxSelectCheck,
   CngxSelectCaret,
-  CngxSelectOptgroup,
+  CngxSelectOptgroupTemplate,
   CngxSelectPlaceholder,
   CngxSelectEmpty,
   CngxSelectLoading,

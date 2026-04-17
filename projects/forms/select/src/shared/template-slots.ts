@@ -1,6 +1,6 @@
 import { Directive, TemplateRef, inject } from '@angular/core';
 
-import type { CngxSelectOption, CngxSelectOptionGroup } from './option.model';
+import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.model';
 
 /**
  * Context for the selection-indicator (checkmark) template.
@@ -8,8 +8,8 @@ import type { CngxSelectOption, CngxSelectOptionGroup } from './option.model';
  * @category interactive
  */
 export interface CngxSelectCheckContext<T = unknown> {
-  readonly $implicit: CngxSelectOption<T>;
-  readonly option: CngxSelectOption<T>;
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
   readonly selected: boolean;
 }
 
@@ -29,8 +29,8 @@ export interface CngxSelectCaretContext {
  * @category interactive
  */
 export interface CngxSelectOptgroupContext<T = unknown> {
-  readonly $implicit: CngxSelectOptionGroup<T>;
-  readonly group: CngxSelectOptionGroup<T>;
+  readonly $implicit: CngxSelectOptionGroupDef<T>;
+  readonly group: CngxSelectOptionGroupDef<T>;
 }
 
 /**
@@ -63,8 +63,8 @@ export type CngxSelectLoadingContext = Record<string, never>;
  * @category interactive
  */
 export interface CngxSelectTriggerLabelContext<T = unknown> {
-  readonly $implicit: CngxSelectOption<T> | null;
-  readonly selected: CngxSelectOption<T> | null;
+  readonly $implicit: CngxSelectOptionDef<T> | null;
+  readonly selected: CngxSelectOptionDef<T> | null;
 }
 
 /**
@@ -73,8 +73,8 @@ export interface CngxSelectTriggerLabelContext<T = unknown> {
  * @category interactive
  */
 export interface CngxSelectOptionLabelContext<T = unknown> {
-  readonly $implicit: CngxSelectOption<T>;
-  readonly option: CngxSelectOption<T>;
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
   readonly selected: boolean;
   readonly highlighted: boolean;
 }
@@ -126,9 +126,9 @@ export class CngxSelectCaret {
 @Directive({
   selector: 'ng-template[cngxSelectOptgroup]',
   standalone: true,
-  exportAs: 'cngxSelectOptgroup',
+  exportAs: 'cngxSelectOptgroupTemplate',
 })
-export class CngxSelectOptgroup<T = unknown> {
+export class CngxSelectOptgroupTemplate<T = unknown> {
   readonly templateRef = inject<TemplateRef<CngxSelectOptgroupContext<T>>>(TemplateRef);
 }
 

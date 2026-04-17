@@ -51,7 +51,14 @@ import { CngxOption } from './option.directive';
   hostDirectives: [
     {
       directive: CngxActiveDescendant,
-      inputs: ['orientation', 'loop', 'typeahead', 'autoHighlightFirst', 'virtualCount'],
+      inputs: [
+        'items',
+        'orientation',
+        'loop',
+        'typeahead',
+        'autoHighlightFirst',
+        'virtualCount',
+      ],
     },
   ],
   host: {
@@ -90,8 +97,20 @@ export class CngxListbox {
    */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
+  /**
+   * Optional explicit option list. When set, takes precedence over content
+   * projection. Useful for composites that project options via `<ng-content>`
+   * and query them one layer up (e.g. `CngxSelect`'s declarative mode).
+   */
+  readonly explicitOptions = input<readonly CngxOption[] | undefined>(undefined);
+
   /** Options collected via content projection. */
-  readonly options = contentChildren(CngxOption, { descendants: true });
+  private readonly contentOptions = contentChildren(CngxOption, { descendants: true });
+
+  /** Effective option list: explicit input wins, otherwise content-projection. */
+  readonly options = computed<readonly CngxOption[]>(
+    () => this.explicitOptions() ?? this.contentOptions(),
+  );
 
   /** Whether content-children have been initialised (guards effects from running early). */
   private readonly initialized = signal(false);

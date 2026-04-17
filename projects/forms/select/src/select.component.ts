@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 
 import {
+  CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
   CngxOption,
@@ -33,9 +34,9 @@ import { CngxSelectAnnouncer } from './shared/announcer';
 import { type CngxSelectAnnouncerConfig } from './shared/config';
 import {
   flattenSelectOptions,
-  isCngxSelectOptionGroup,
-  type CngxSelectOption,
-  type CngxSelectOptionGroup,
+  isCngxSelectOptionGroupDef,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from './shared/option.model';
 import { resolveSelectConfig } from './shared/resolve-config';
@@ -44,7 +45,7 @@ import {
   CngxSelectCheck,
   CngxSelectEmpty,
   CngxSelectLoading,
-  CngxSelectOptgroup,
+  CngxSelectOptgroupTemplate,
   CngxSelectOptionLabel,
   CngxSelectPlaceholder,
   CngxSelectTriggerLabel,
@@ -62,7 +63,7 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
   readonly value: T | undefined;
-  readonly option: CngxSelectOption<T> | null;
+  readonly option: CngxSelectOptionDef<T> | null;
 }
 
 /**
@@ -81,6 +82,7 @@ export interface CngxSelectChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxClickOutside,
     CngxListbox,
     CngxListboxTrigger,
     CngxOption,
@@ -96,6 +98,12 @@ export interface CngxSelectChange<T = unknown> {
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
   template: `
+    <div
+      class="cngx-select__root"
+      cngxClickOutside
+      [enabled]="panelOpen()"
+      (clickOutside)="handleClickOutside()"
+    >
     <button
       #triggerBtn
       type="button"
@@ -277,6 +285,7 @@ export interface CngxSelectChange<T = unknown> {
         }
       </div>
     </div>
+    </div>
   `,
   styles: `
     :host {
@@ -284,6 +293,9 @@ export interface CngxSelectChange<T = unknown> {
       position: relative;
       font: inherit;
       min-width: var(--cngx-select-min-width, 10rem);
+    }
+    .cngx-select__root {
+      display: contents;
     }
     .cngx-select__trigger {
       display: inline-flex;
@@ -370,6 +382,13 @@ export interface CngxSelectChange<T = unknown> {
       cursor: pointer;
       border-radius: var(--cngx-select-option-radius, 0.125rem);
     }
+    /* CngxSelect owns its selected-indicator visual. Suppress any inherited
+       ::after checkmark (e.g. from demo / global stylesheets) so consumers
+       don't end up with a double-check. */
+    .cngx-select__option::after,
+    .cngx-select__option::before {
+      content: none;
+    }
     .cngx-select__option[aria-disabled='true'] {
       opacity: 0.5;
       cursor: not-allowed;
@@ -400,8 +419,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Accessible label for the listbox region. Also used as the trigger's fallback a11y name when no form-field is around. */
   readonly label = input<string>('');
 
-  /** Options (flat or grouped). */
-  readonly options = input.required<CngxSelectOptionsInput<T>>();
+  /**
+   * Options in data-driven mode (flat or grouped).
+   *
+   * Optional: leave unset and project `<cngx-option>` / `<cngx-optgroup>` /
+   * `<cngx-select-divider>` children for declarative composition.
+   */
+  readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
 
   /** Placeholder shown on the trigger when no value is selected. */
   readonly placeholder = input<string>('');
@@ -475,7 +499,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly closed = output<void>();
 
   /** Fires with the selected option (null for clear) — sibling to `selectionChange`. */
-  readonly optionSelected = output<CngxSelectOption<T> | null>();
+  readonly optionSelected = output<CngxSelectOptionDef<T> | null>();
 
   // ── Content templates ──────────────────────────────────────────────
 
@@ -484,7 +508,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly caretTpl = contentChild<CngxSelectCaret>(CngxSelectCaret);
   /** @internal */
-  protected readonly optgroupTpl = contentChild<CngxSelectOptgroup<T>>(CngxSelectOptgroup);
+  protected readonly optgroupTpl = contentChild<CngxSelectOptgroupTemplate<T>>(
+    CngxSelectOptgroupTemplate,
+  );
   /** @internal */
   protected readonly placeholderTpl = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   /** @internal */
@@ -506,13 +532,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
+
   // ── Public Signals (mat-select parity) ─────────────────────────────
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
   /** Currently selected option, resolved against `options`. `null` when empty. */
-  readonly selected = computed<CngxSelectOption<T> | null>(() => this.selectedOption());
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
 
   /** Human-readable label displayed on the trigger (resolves custom trigger template first). */
   readonly triggerValue = computed<string>(() => this.triggerText());
@@ -643,12 +670,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal — flattened option list for matcher / trigger-label lookups. */
-  protected readonly flatOptions = computed<CngxSelectOption<T>[]>(() =>
+  protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(() =>
     flattenSelectOptions(this.options()),
   );
 
   /** @internal */
-  protected readonly selectedOption = computed<CngxSelectOption<T> | null>(() => {
+  protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
     const v = this.value();
     if (v === undefined || v === null) {
       return null;
@@ -676,12 +703,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // ── Template helpers ───────────────────────────────────────────────
 
   protected isGroup(
-    item: CngxSelectOption<T> | CngxSelectOptionGroup<T>,
-  ): item is CngxSelectOptionGroup<T> {
-    return isCngxSelectOptionGroup(item);
+    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
+  ): item is CngxSelectOptionGroupDef<T> {
+    return isCngxSelectOptionGroupDef(item);
   }
 
-  protected isSelected(opt: CngxSelectOption<T>): boolean {
+  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
     const v = this.value();
     if (v === undefined || v === null) {
       return false;
@@ -800,6 +827,16 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.toggle();
   }
 
+  /** @internal — closes the panel on outside click (config-driven). */
+  protected handleClickOutside(): void {
+    const mode = this.config.dismissOn;
+    if (mode === 'outside' || mode === 'both') {
+      if (this.popoverRef()?.isVisible()) {
+        this.close();
+      }
+    }
+  }
+
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
@@ -891,7 +928,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  private maybeAnnounce(option: CngxSelectOption<T> | null): void {
+  private maybeAnnounce(option: CngxSelectOptionDef<T> | null): void {
     const announcerConfig = this.config.announcer;
     const perInstance = this.announceChanges();
     const enabled = perInstance ?? announcerConfig.enabled ?? true;
