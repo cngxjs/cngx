@@ -40,3 +40,7 @@ export { CngxSpeak } from './src/speak/speak.directive';
 export { CngxOption } from './src/listbox/option.directive';
 export { CngxOptionGroup } from './src/listbox/option-group.directive';
 export { CngxListbox } from './src/listbox/listbox.directive';
+export {
+  CngxListboxSearch,
+  type ListboxMatchFn,
+} from './src/listbox/listbox-search.directive';

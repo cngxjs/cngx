@@ -12,6 +12,7 @@ import {
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
+import type { CngxListboxSearch } from './listbox-search.directive';
 import { CngxOption } from './option.directive';
 
 /**
@@ -71,6 +72,14 @@ export class CngxListbox {
 
   /** Equality function for matching values. Defaults to `Object.is`. */
   readonly compareWith = input<(a: unknown, b: unknown) => boolean>(Object.is);
+
+  /**
+   * Optional explicit reference to a `CngxListboxSearch` whose term drives
+   * `filteredOptions`. Consumers wire this up with a template reference:
+   * `[cngxSearchRef]="search"` and `#search="cngxListboxSearch"`. No ancestor
+   * injection — orthogonal composition, like `CngxSortHeader` + `CngxSortRef`.
+   */
+  readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
 
   /** Emits when the single-value selection changes. */
   readonly valueChange = output<unknown>();
@@ -156,6 +165,33 @@ export class CngxListbox {
 
   /** Whether the listbox has no options at all. */
   readonly isEmpty = computed<boolean>(() => this.options().length === 0);
+
+  /** Current search term (empty when no `cngxSearchRef` is bound). */
+  readonly searchTerm = computed<string>(() => this.cngxSearchRef()?.term() ?? '');
+
+  /** Options filtered by `searchTerm` through the search matcher. */
+  readonly filteredOptions = computed(() => {
+    const term = this.searchTerm();
+    const search = this.cngxSearchRef();
+    if (term === '' || !search) {
+      return this.options();
+    }
+    const matchFn = search.matchFn();
+    return this.options().filter((opt) =>
+      matchFn(
+        {
+          id: opt.id,
+          value: opt.value(),
+          label: opt.resolvedLabel(),
+          disabled: opt.disabled(),
+        },
+        term,
+      ),
+    );
+  });
+
+  /** Whether the current search term matches at least one option. */
+  readonly hasSearchResults = computed<boolean>(() => this.filteredOptions().length > 0);
 
   /**
    * Select the given value. In single mode, replaces the current selection.

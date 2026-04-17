@@ -46,6 +46,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Disclosure', path: 'common/interactive/disclosure' },
       { label: 'KeyboardShortcut', path: 'common/interactive/keyboard-shortcut' },
       { label: 'Listbox', path: 'common/interactive/listbox' },
+      { label: 'ListboxSearch', path: 'common/interactive/listbox-search' },
       { label: 'LongPress', path: 'common/interactive/long-press' },
       { label: 'Nav', path: 'common/interactive/nav' },
       { label: 'Option', path: 'common/interactive/option' },
