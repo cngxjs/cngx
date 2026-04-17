@@ -47,3 +47,6 @@ export {
 export { CngxListboxTrigger } from './src/listbox/listbox-trigger.directive';
 export { CngxMenu } from './src/menu/menu.directive';
 export { CngxMenuItem } from './src/menu/menu-item.directive';
+export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
+export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
+export { CngxMenuGroup } from './src/menu/menu-group.directive';
