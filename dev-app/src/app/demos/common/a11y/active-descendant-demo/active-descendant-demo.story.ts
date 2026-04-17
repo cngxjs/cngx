@@ -38,24 +38,24 @@ export const STORY: DemoSpec = {
         'Focus stays on the container. Arrow keys, Home/End, Enter/Space and typeahead all navigate via <code>aria-activedescendant</code>. Disabled items are skipped.',
       imports: ['CngxActiveDescendant'],
       template: `
-  <div cngxActiveDescendant
+  <div class="cngx-ad-listbox"
+       style="max-width:260px"
+       cngxActiveDescendant
        role="listbox"
        aria-label="Fruits"
        tabindex="0"
        [items]="fruits()"
        [autoHighlightFirst]="true"
        (activated)="lastActivated.set($any($event))"
-       #ad="cngxActiveDescendant"
-       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
+       #ad="cngxActiveDescendant">
     @for (fruit of fruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
            [attr.aria-selected]="ad.activeId() === fruit.id"
            [attr.aria-disabled]="fruit.disabled || null"
-           [style.background]="ad.activeId() === fruit.id ? 'rgba(74, 140, 255, 0.18)' : null"
-           [style.opacity]="fruit.disabled ? '0.5' : null"
-           [style.cursor]="fruit.disabled ? 'not-allowed' : 'default'"
-           style="padding:6px 10px;border-radius:4px;user-select:none">
+           [class.cngx-option--highlighted]="ad.activeId() === fruit.id"
+           [class.cngx-option--disabled]="fruit.disabled"
+           class="cngx-ad-option">
         {{ fruit.label }}
       </div>
     }
@@ -109,19 +109,20 @@ export const STORY: DemoSpec = {
         'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).',
       imports: ['CngxActiveDescendant'],
       template: `
-  <div cngxActiveDescendant
+  <div class="cngx-ad-listbox"
+       style="max-width:260px"
+       cngxActiveDescendant
        role="listbox"
        aria-label="Fruit typeahead"
        tabindex="0"
        [items]="typeaheadFruits()"
        [typeaheadDebounce]="500"
-       #adT="cngxActiveDescendant"
-       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
+       #adT="cngxActiveDescendant">
     @for (fruit of typeaheadFruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
-           [style.background]="adT.activeIndex() === $index ? 'rgba(74, 140, 255, 0.18)' : null"
-           style="padding:6px 10px;border-radius:4px;user-select:none">
+           [class.cngx-option--highlighted]="adT.activeIndex() === $index"
+           class="cngx-ad-option">
         {{ fruit.label }}
       </div>
     }

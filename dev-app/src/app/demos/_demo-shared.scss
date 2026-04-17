@@ -595,3 +595,181 @@ cngx-speak-button.speak-btn-dark {
     font-size: 0.85em;
   }
 }
+
+// ── Demo-only base styles for Schicht-3 directive atoms ─────────────────────
+// These directives ship as pure behavior/ARIA. Production consumers supply
+// their own visual layer (or adopt future `@cngx/ui` component wrappers).
+// The rules below give the dev-app demos something to show. Library code
+// must never depend on them.
+
+.cngx-ad-listbox,
+[cngxListbox],
+[cngxMenu] {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  max-width: 260px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #d0d5dd);
+  border-radius: 8px;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring, #4a8cff);
+    outline-offset: 2px;
+  }
+}
+
+[cngxMenu] {
+  list-style: none;
+  margin: 0;
+}
+
+.cngx-ad-option,
+[cngxOption],
+[cngxMenuItem],
+[cngxMenuItemCheckbox],
+[cngxMenuItemRadio] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 120ms ease;
+}
+
+[cngxOption] {
+  cursor: default;
+}
+
+.cngx-option--highlighted,
+.cngx-menu-item--highlighted {
+  background: rgba(74, 140, 255, 0.18);
+}
+
+.cngx-option--selected {
+  font-weight: 600;
+  background: rgba(74, 140, 255, 0.28);
+
+  &::after {
+    content: '\2713';
+    margin-left: auto;
+    color: #4a8cff;
+  }
+}
+
+.cngx-option--disabled,
+.cngx-menu-item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[cngxMenuItemCheckbox]::before,
+[cngxMenuItemRadio]::before {
+  content: '';
+  width: 1em;
+  display: inline-block;
+  text-align: center;
+  color: #4a8cff;
+}
+
+[cngxMenuItemCheckbox].cngx-menu-item--checked::before {
+  content: '\2713';
+}
+
+[cngxMenuItemRadio].cngx-menu-item--checked::before {
+  content: '\2022';
+}
+
+[cngxOptionGroup],
+[cngxMenuGroup] {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &::before {
+    content: attr(aria-label);
+    padding: 8px 10px 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted, #6b7280);
+  }
+}
+
+input[cngxListboxSearch] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border-color, #d0d5dd);
+  border-radius: 8px;
+
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring, #4a8cff);
+    outline-offset: 2px;
+  }
+}
+
+cngx-divider,
+[cngxDivider] {
+  display: block;
+  border: none;
+  background-color: var(--divider-color, #d0d5dd);
+  height: 1px;
+  margin: 0.5em 0;
+  flex: 0 0 auto;
+
+  &.cngx-divider--vertical {
+    width: 1px;
+    height: auto;
+    align-self: stretch;
+    margin: 0 0.5em;
+  }
+
+  &.cngx-divider--inset {
+    margin-inline-start: 1.5em;
+  }
+}
+
+.cngx-badge-indicator {
+  position: absolute;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  pointer-events: none;
+  background: #4a8cff;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.cngx-badge-indicator--error { background: #ef4444; }
+.cngx-badge-indicator--warning { background: #f59e0b; color: #111; }
+.cngx-badge-indicator--neutral { background: #9aa3ac; }
+.cngx-badge-indicator--dot {
+  min-width: 10px;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+}
+.cngx-badge-indicator--above-end { top: -6px; right: -6px; }
+.cngx-badge-indicator--above-start { top: -6px; left: -6px; }
+.cngx-badge-indicator--below-end { bottom: -6px; right: -6px; }
+.cngx-badge-indicator--below-start { bottom: -6px; left: -6px; }
+.cngx-badge-indicator--inline {
+  position: relative;
+  display: inline-block;
+  margin-inline-start: 6px;
+}
