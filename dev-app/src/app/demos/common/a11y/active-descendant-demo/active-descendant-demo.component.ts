@@ -26,22 +26,24 @@ import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a1
         [sourceTs]="_srcTs0"
         [sourceCss]="_srcCss0">
         
-  <div class="ad-listbox"
-       cngxActiveDescendant
+  <div cngxActiveDescendant
        role="listbox"
        aria-label="Fruits"
        tabindex="0"
        [items]="fruits()"
        [autoHighlightFirst]="true"
        (activated)="lastActivated.set($any($event))"
-       #ad="cngxActiveDescendant">
+       #ad="cngxActiveDescendant"
+       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
     @for (fruit of fruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
            [attr.aria-selected]="ad.activeId() === fruit.id"
            [attr.aria-disabled]="fruit.disabled || null"
-           [class.ad-option--active]="ad.activeId() === fruit.id"
-           [class.ad-option--disabled]="fruit.disabled">
+           [style.background]="ad.activeId() === fruit.id ? 'rgba(74, 140, 255, 0.18)' : null"
+           [style.opacity]="fruit.disabled ? '0.5' : null"
+           [style.cursor]="fruit.disabled ? 'not-allowed' : 'default'"
+           style="padding:6px 10px;border-radius:4px;user-select:none">
         {{ fruit.label }}
       </div>
     }
@@ -66,24 +68,35 @@ import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a1
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <div class="ad-listbox"
-       cngxActiveDescendant
+  <div cngxActiveDescendant
        role="listbox"
        aria-label="Fruit typeahead"
        tabindex="0"
        [items]="typeaheadFruits()"
        [typeaheadDebounce]="500"
-       #adT="cngxActiveDescendant">
+       #adT="cngxActiveDescendant"
+       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
     @for (fruit of typeaheadFruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
-           [class.ad-option--active]="adT.activeIndex() === $index">
+           [style.background]="adT.activeIndex() === $index ? 'rgba(74, 140, 255, 0.18)' : null"
+           style="padding:6px 10px;border-radius:4px;user-select:none">
         {{ fruit.label }}
       </div>
     }
   </div>
-  <p style="margin-top:8px;font-size:0.875rem;color:var(--cngx-text-muted,#6b7280)">
-    Try typing <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
+  <div class="event-grid" style="margin-top:8px">
+    <div class="event-row">
+      <span class="event-label">Active id</span>
+      <span class="event-value">{{ adT.activeId() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Active value</span>
+      <span class="event-value">{{ adT.activeValue() ?? '—' }}</span>
+    </div>
+  </div>
+  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
+    Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
   </p>
       </app-example-card>
     </app-doc-shell>
@@ -92,22 +105,24 @@ import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a1
 export class ActiveDescendantDemoComponent {
   protected readonly _s0 = 'Focus stays on the container. Arrow keys, Home/End, Enter/Space and typeahead all navigate via <code>aria-activedescendant</code>. Disabled items are skipped.';
   protected readonly _s1 = 'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).';
-  protected readonly _srcHtml0 = `<div class="ad-listbox"
-       cngxActiveDescendant
+  protected readonly _srcHtml0 = `<div cngxActiveDescendant
        role="listbox"
        aria-label="Fruits"
        tabindex="0"
        [items]="fruits()"
        [autoHighlightFirst]="true"
        (activated)="lastActivated.set($any($event))"
-       #ad="cngxActiveDescendant">
+       #ad="cngxActiveDescendant"
+       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
     @for (fruit of fruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
            [attr.aria-selected]="ad.activeId() === fruit.id"
            [attr.aria-disabled]="fruit.disabled || null"
-           [class.ad-option--active]="ad.activeId() === fruit.id"
-           [class.ad-option--disabled]="fruit.disabled">
+           [style.background]="ad.activeId() === fruit.id ? 'rgba(74, 140, 255, 0.18)' : null"
+           [style.opacity]="fruit.disabled ? '0.5' : null"
+           [style.cursor]="fruit.disabled ? 'not-allowed' : 'default'"
+           style="padding:6px 10px;border-radius:4px;user-select:none">
         {{ fruit.label }}
       </div>
     }
@@ -169,24 +184,35 @@ export class ActiveDescendantDemoComponent {
   opacity: 0.5;
   cursor: not-allowed;
 }`;
-  protected readonly _srcHtml1 = `<div class="ad-listbox"
-       cngxActiveDescendant
+  protected readonly _srcHtml1 = `<div cngxActiveDescendant
        role="listbox"
        aria-label="Fruit typeahead"
        tabindex="0"
        [items]="typeaheadFruits()"
        [typeaheadDebounce]="500"
-       #adT="cngxActiveDescendant">
+       #adT="cngxActiveDescendant"
+       style="display:flex;flex-direction:column;gap:2px;max-width:260px;padding:4px;border:1px solid #d0d5dd;border-radius:8px;background:#ffffff;outline:none">
     @for (fruit of typeaheadFruits(); track fruit.id) {
       <div role="option"
            [id]="fruit.id"
-           [class.ad-option--active]="adT.activeIndex() === $index">
+           [style.background]="adT.activeIndex() === $index ? 'rgba(74, 140, 255, 0.18)' : null"
+           style="padding:6px 10px;border-radius:4px;user-select:none">
         {{ fruit.label }}
       </div>
     }
   </div>
-  <p style="margin-top:8px;font-size:0.875rem;color:var(--cngx-text-muted,#6b7280)">
-    Try typing <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
+  <div class="event-grid" style="margin-top:8px">
+    <div class="event-row">
+      <span class="event-label">Active id</span>
+      <span class="event-value">{{ adT.activeId() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Active value</span>
+      <span class="event-value">{{ adT.activeValue() ?? '—' }}</span>
+    </div>
+  </div>
+  <p style="margin-top:8px;font-size:0.875rem;color:#6b7280">
+    Click the listbox to focus it, then type <kbd>c</kbd><kbd>h</kbd> quickly to land on Cherry, or <kbd>e</kbd> to land on Elderberry.
   </p>`;
   protected readonly _srcTs1 = `import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
 
