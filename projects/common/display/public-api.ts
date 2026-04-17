@@ -7,3 +7,4 @@
  * nav badges) see `@cngx/common/interactive`.
  */
 export { CngxIcon } from './src/icon/icon.component';
+export { CngxDivider } from './src/divider/divider.directive';

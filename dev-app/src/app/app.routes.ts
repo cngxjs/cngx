@@ -125,6 +125,11 @@ export const routes: Routes = [
           import('./demos/common/dialog/dialog-demo/dialog-demo.component').then((m) => m.DialogDemoComponent),
       },
       {
+        path: 'display/divider',
+        loadComponent: () =>
+          import('./demos/common/display/divider-demo/divider-demo.component').then((m) => m.DividerDemoComponent),
+      },
+      {
         path: 'display/icon',
         loadComponent: () =>
           import('./demos/common/display/icon-demo/icon-demo.component').then((m) => m.IconDemoComponent),
