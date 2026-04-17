@@ -8,7 +8,8 @@ import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
 
-import { CngxSelect, type CngxSelectOption } from './select.component';
+import { CngxSelect, type CngxSelectChange } from './select.component';
+import type { CngxSelectOption, CngxSelectOptionsInput } from './shared/option.model';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -44,6 +45,23 @@ const OPTIONS: CngxSelectOption<string>[] = [
   { value: 'blue', label: 'Blau', disabled: true },
 ];
 
+const GROUPED_OPTIONS: CngxSelectOptionsInput<string> = [
+  {
+    label: 'Warm',
+    children: [
+      { value: 'red', label: 'Rot' },
+      { value: 'orange', label: 'Orange' },
+    ],
+  },
+  {
+    label: 'Cold',
+    children: [
+      { value: 'blue', label: 'Blau' },
+      { value: 'teal', label: 'Türkis' },
+    ],
+  },
+];
+
 @Component({
   template: `
     <cngx-select
@@ -51,6 +69,8 @@ const OPTIONS: CngxSelectOption<string>[] = [
       [options]="options"
       [(value)]="value"
       [placeholder]="placeholder"
+      (selectionChange)="lastChange.set($event)"
+      (openedChange)="openedLog.set($event)"
     />
   `,
   imports: [CngxSelect],
@@ -59,6 +79,8 @@ class StandaloneHost {
   readonly options = OPTIONS;
   readonly value = signal<string | undefined>(undefined);
   readonly placeholder = 'Bitte wählen';
+  readonly lastChange = signal<CngxSelectChange<string> | null>(null);
+  readonly openedLog = signal<boolean | null>(null);
 }
 
 @Component({
@@ -76,6 +98,35 @@ class FormFieldHost {
   readonly ref: MockFieldRef<string> = this._mock.ref;
 }
 
+@Component({
+  template: `
+    <cngx-select
+      [label]="'Color'"
+      [options]="options"
+      aria-label="Choose color"
+      [required]="true"
+      [clearable]="true"
+      [(value)]="value"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class StandaloneA11yHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+}
+
+@Component({
+  template: `
+    <cngx-select [label]="'G'" [options]="grouped" [(value)]="value" />
+  `,
+  imports: [CngxSelect],
+})
+class GroupedHost {
+  readonly grouped = GROUPED_OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
   fixture.detectChanges();
@@ -91,6 +142,7 @@ describe('CngxSelect — standalone', () => {
 
   function setup(): {
     fixture: ReturnType<typeof TestBed.createComponent<StandaloneHost>>;
+    select: CngxSelect<string>;
     triggerBtn: HTMLButtonElement;
     listbox: CngxListbox;
     popover: CngxPopover;
@@ -103,13 +155,14 @@ describe('CngxSelect — standalone', () => {
     const popoverDe = fixture.debugElement.query(By.directive(CngxPopover));
     return {
       fixture,
-      triggerBtn: selectDe.nativeElement.querySelector('button') as HTMLButtonElement,
+      select: selectDe.componentInstance as CngxSelect<string>,
+      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
       listbox: listboxDe.injector.get(CngxListbox),
       popover: popoverDe.injector.get(CngxPopover),
     };
   }
 
-  it('renders the trigger with placeholder when no value selected', () => {
+  it('renders the trigger with placeholder when no value is selected', () => {
     const { triggerBtn } = setup();
     expect(triggerBtn.textContent?.trim()).toContain('Bitte wählen');
     expect(triggerBtn.getAttribute('aria-haspopup')).toBe('listbox');
@@ -128,15 +181,16 @@ describe('CngxSelect — standalone', () => {
     expect(triggerBtn.textContent?.trim()).toContain('Rot');
   });
 
-  it('clicking the trigger opens the popover', () => {
+  it('clicking the trigger toggles the popover and emits openedChange', () => {
     const { fixture, triggerBtn, popover } = setup();
     triggerBtn.click();
     flush(fixture);
     expect(popover.isVisible()).toBe(true);
     expect(triggerBtn.getAttribute('aria-expanded')).toBe('true');
+    expect(fixture.componentInstance.openedLog()).toBe(true);
   });
 
-  it('clicking an option updates [(value)] and closes the popover', () => {
+  it('selecting an option closes the popover and emits selectionChange', () => {
     const { fixture, triggerBtn, popover } = setup();
     triggerBtn.click();
     flush(fixture);
@@ -147,9 +201,12 @@ describe('CngxSelect — standalone', () => {
     flush(fixture);
     expect(fixture.componentInstance.value()).toBe('green');
     expect(popover.isVisible()).toBe(false);
+    const change = fixture.componentInstance.lastChange();
+    expect(change?.value).toBe('green');
+    expect(change?.option?.label).toBe('Grün');
   });
 
-  it('clicking a disabled option does not update [(value)]', () => {
+  it('clicking a disabled option does not update value', () => {
     const { fixture, triggerBtn } = setup();
     triggerBtn.click();
     flush(fixture);
@@ -159,6 +216,81 @@ describe('CngxSelect — standalone', () => {
     thirdOption.click();
     flush(fixture);
     expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('open() / close() / toggle() / focus() public methods work', () => {
+    const { select, popover } = setup();
+    select.open();
+    expect(popover.isVisible()).toBe(true);
+    select.close();
+    expect(popover.isVisible()).toBe(false);
+    select.toggle();
+    expect(popover.isVisible()).toBe(true);
+    select.focus();
+    // no throw is enough for jsdom
+  });
+
+  it('exposes panelOpen / selected / triggerValue / empty / focused as signals', () => {
+    const { fixture, select } = setup();
+    expect(select.panelOpen()).toBe(false);
+    expect(select.selected()).toBeNull();
+    expect(select.empty()).toBe(true);
+    fixture.componentInstance.value.set('red');
+    flush(fixture);
+    expect(select.selected()?.label).toBe('Rot');
+    expect(select.triggerValue()).toBe('Rot');
+    expect(select.empty()).toBe(false);
+  });
+});
+
+describe('CngxSelect — standalone a11y', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StandaloneA11yHost] });
+  });
+
+  it('honours [aria-label] and [required] when no form-field is present', () => {
+    const fixture = TestBed.createComponent(StandaloneA11yHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.debugElement.nativeElement.querySelector(
+      'button.cngx-select__trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Choose color');
+    expect(trigger.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('renders a clear button when [clearable]="true" and clearing resets value', () => {
+    const fixture = TestBed.createComponent(StandaloneA11yHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const clear = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__clear',
+    ) as HTMLButtonElement;
+    expect(clear).toBeTruthy();
+    clear.click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+});
+
+describe('CngxSelect — grouped options', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [GroupedHost] });
+  });
+
+  it('renders optgroup headers and nested options', () => {
+    const fixture = TestBed.createComponent(GroupedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const groupHeaders = fixture.debugElement.nativeElement.querySelectorAll(
+      '.cngx-select__group-header',
+    );
+    expect(groupHeaders.length).toBe(2);
+    const options = fixture.debugElement.queryAll(By.directive(CngxListbox))[0];
+    const listbox = options.injector.get(CngxListbox);
+    expect(listbox.options().length).toBe(4);
   });
 });
 
@@ -181,7 +313,7 @@ describe('CngxSelect — form-field integration', () => {
     return {
       fixture,
       select: selectDe.componentInstance as CngxSelect<string>,
-      triggerBtn: selectDe.nativeElement.querySelector('button') as HTMLButtonElement,
+      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
       ref: fixture.componentInstance.ref,
     };
   }

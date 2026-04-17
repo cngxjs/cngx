@@ -1,11 +1,15 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   effect,
+  ElementRef,
   inject,
   input,
   model,
+  output,
   signal,
   untracked,
   viewChild,
@@ -25,67 +29,49 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-/**
- * Option descriptor for `CngxSelect`.
- *
- * @category interactive
- */
-export interface CngxSelectOption<T = unknown> {
-  readonly value: T;
-  readonly label: string;
-  readonly disabled?: boolean;
-}
+import { CngxSelectAnnouncer } from './shared/announcer';
+import { type CngxSelectAnnouncerConfig } from './shared/config';
+import {
+  flattenSelectOptions,
+  isCngxSelectOptionGroup,
+  type CngxSelectOption,
+  type CngxSelectOptionGroup,
+  type CngxSelectOptionsInput,
+} from './shared/option.model';
+import { resolveSelectConfig } from './shared/resolve-config';
+import {
+  CngxSelectCaret,
+  CngxSelectCheck,
+  CngxSelectEmpty,
+  CngxSelectLoading,
+  CngxSelectOptgroup,
+  CngxSelectOptionLabel,
+  CngxSelectPlaceholder,
+  CngxSelectTriggerLabel,
+} from './shared/template-slots';
 
 type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
 
 /**
- * Native-feeling single-select dropdown.
+ * Change event emitted by {@link CngxSelect.selectionChange} and related
+ * outputs when the user (not programmatic writes) picks a value.
  *
- * Behaves like a `<select>`: click the trigger to open, click an option to
- * select and close, keyboard model identical to the OS dropdown (arrow keys,
- * Home / End, Enter, Space, Escape, typeahead). Position auto-flips when
- * there is no room below the trigger.
+ * @category interactive
+ */
+export interface CngxSelectChange<T = unknown> {
+  readonly source: CngxSelect<T>;
+  readonly value: T | undefined;
+  readonly option: CngxSelectOption<T> | null;
+}
+
+/**
+ * Native-feeling single-select dropdown. Behaves like `<select>`, exceeds
+ * `mat-select` on a11y, and composes on top of the Level-2 atoms
+ * `CngxListbox` + `CngxListboxTrigger` + `CngxPopover`.
  *
- * For multi-select use `CngxMultiSelect`; for filter-as-you-type use
- * `CngxCombobox`; for free-text-plus-suggestions use `CngxAutocomplete`.
- *
- * ### Form-field integration
- *
- * Provides `CNGX_FORM_FIELD_CONTROL` directly — drop it inside
- * `<cngx-form-field>` with no bridge directive.
- *
- * ### Material / CDK equivalent
- *
- * - `mat-select` (single-select mode)
- * - `cdk-listbox` + manual popover wiring
- *
- * ### Why better than Material
- *
- * 1. Declarative ARIA — every attribute is `computed()`.
- * 2. Unified keyboard model with `CngxMenu` and `CngxCombobox` via `CngxActiveDescendant`.
- * 3. Two-way bindable via `model()` — `[(value)]` works without CVA.
- * 4. Form-field integration is built-in.
- * 5. Position auto-flips via native CSS `position-try-fallbacks`.
- *
- * @example Standalone
- * ```html
- * <cngx-select
- *   [label]="'Priority'"
- *   [options]="priorities"
- *   [(value)]="selected"
- *   placeholder="Choose one…"
- * />
- * ```
- *
- * @example Inside `<cngx-form-field>` (Signal Forms)
- * ```html
- * <cngx-form-field [field]="f.priority">
- *   <label cngxLabel>Priority</label>
- *   <cngx-select [label]="'Priority'" [options]="priorities" />
- *   <cngx-field-errors />
- * </cngx-form-field>
- * ```
+ * Full API summary — all inputs, outputs, methods, template slots, and config
+ * hooks — lives in compodoc / `.internal/architektur/select-family-architecture.md`.
  *
  * @category interactive
  */
@@ -94,16 +80,24 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
   exportAs: 'cngxSelect',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxListbox, CngxListboxTrigger, CngxOption, CngxPopover, CngxPopoverTrigger],
+  imports: [
+    CngxListbox,
+    CngxListboxTrigger,
+    CngxOption,
+    CngxPopover,
+    CngxPopoverTrigger,
+    NgTemplateOutlet,
+  ],
   providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSelect }],
   host: {
-    '[id]': 'id()',
+    '[id]': 'resolvedId()',
     '[attr.aria-describedby]': 'describedBy()',
     '[attr.aria-errormessage]': 'ariaErrorMessage()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
   template: `
     <button
+      #triggerBtn
       type="button"
       class="cngx-select__trigger"
       [cngxPopoverTrigger]="pop"
@@ -112,34 +106,174 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       [popover]="pop"
       [closeOnSelect]="true"
       [disabled]="disabled()"
-      [attr.aria-labelledby]="labelledBy()"
+      [attr.tabindex]="effectiveTabIndex()"
+      [attr.aria-label]="resolvedAriaLabel()"
+      [attr.aria-labelledby]="resolvedAriaLabelledBy()"
       [attr.aria-invalid]="ariaInvalid()"
-      [attr.aria-required]="ariaRequired()"
+      [attr.aria-required]="resolvedAriaRequired()"
       [attr.aria-busy]="ariaBusy()"
-      (click)="pop.toggle()"
+      (click)="handleTriggerClick()"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
+      (keydown)="handleTriggerKeydown($event)"
     >
-      <span class="cngx-select__label">{{ triggerLabel() }}</span>
-      <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
+      <span class="cngx-select__label">
+        @if (hasTriggerLabelTemplate() && !isEmpty()) {
+          <ng-container
+            *ngTemplateOutlet="
+              triggerLabelTpl()!.templateRef;
+              context: { $implicit: selectedOption(), selected: selectedOption() }
+            "
+          />
+        } @else if (isEmpty()) {
+          @if (placeholderTpl(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                tpl.templateRef;
+                context: { $implicit: placeholder(), placeholder: placeholder() }
+              "
+            />
+          } @else {
+            {{ placeholder() || label() }}
+          }
+        } @else {
+          {{ triggerText() }}
+        }
+      </span>
+      @if (clearable() && !isEmpty() && !disabled()) {
+        <button
+          type="button"
+          class="cngx-select__clear"
+          [attr.aria-label]="clearButtonAriaLabel()"
+          (click)="handleClearClick($event)"
+        >
+          ✕
+        </button>
+      }
+      @if (resolvedShowCaret()) {
+        @if (caretTpl(); as tpl) {
+          <ng-container
+            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: panelOpen(), open: panelOpen() }"
+          />
+        } @else {
+          <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
+        }
+      }
     </button>
     <div
       cngxPopover
       #pop="cngxPopover"
       placement="bottom"
       class="cngx-select__panel"
+      [class]="panelClassList()"
+      [style.--cngx-select-panel-min-width]="panelWidthCss()"
     >
       <div
         cngxListbox
         #lb="cngxListbox"
-        [label]="label()"
+        [label]="resolvedListboxLabel()"
         [compareWith]="listboxCompareWith()"
         [(value)]="value"
       >
-        @for (opt of options(); track opt.value) {
-          <div cngxOption [value]="opt.value" [disabled]="!!opt.disabled">
-            {{ opt.label }}
-          </div>
+        @if (loading()) {
+          @if (loadingTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            <div class="cngx-select__loading" role="status">Lädt…</div>
+          }
+        } @else if (flatOptions().length === 0) {
+          @if (emptyTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          } @else {
+            <div class="cngx-select__empty">Keine Optionen</div>
+          }
+        } @else {
+          @for (item of options(); track $index) {
+            @if (isGroup(item)) {
+              <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
+                @if (optgroupTpl(); as tpl) {
+                  <ng-container
+                    *ngTemplateOutlet="tpl.templateRef; context: { $implicit: item, group: item }"
+                  />
+                } @else {
+                  <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
+                }
+                @for (opt of item.children; track opt.value) {
+                  <div
+                    cngxOption
+                    [value]="opt.value"
+                    [disabled]="!!opt.disabled || !!item.disabled"
+                    class="cngx-select__option"
+                    [class.cngx-select__option--selected]="isSelected(opt)"
+                  >
+                    @if (resolvedShowSelectionIndicator()) {
+                      @if (checkTpl(); as tpl) {
+                        <ng-container
+                          *ngTemplateOutlet="
+                            tpl.templateRef;
+                            context: { $implicit: opt, option: opt, selected: isSelected(opt) }
+                          "
+                        />
+                      } @else if (isSelected(opt)) {
+                        <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
+                      }
+                    }
+                    @if (optionLabelTpl(); as tpl) {
+                      <ng-container
+                        *ngTemplateOutlet="
+                          tpl.templateRef;
+                          context: {
+                            $implicit: opt,
+                            option: opt,
+                            selected: isSelected(opt),
+                            highlighted: false
+                          }
+                        "
+                      />
+                    } @else {
+                      {{ opt.label }}
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div
+                cngxOption
+                [value]="item.value"
+                [disabled]="!!item.disabled"
+                class="cngx-select__option"
+                [class.cngx-select__option--selected]="isSelected(item)"
+              >
+                @if (resolvedShowSelectionIndicator()) {
+                  @if (checkTpl(); as tpl) {
+                    <ng-container
+                      *ngTemplateOutlet="
+                        tpl.templateRef;
+                        context: { $implicit: item, option: item, selected: isSelected(item) }
+                      "
+                    />
+                  } @else if (isSelected(item)) {
+                    <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
+                  }
+                }
+                @if (optionLabelTpl(); as tpl) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      tpl.templateRef;
+                      context: {
+                        $implicit: item,
+                        option: item,
+                        selected: isSelected(item),
+                        highlighted: false
+                      }
+                    "
+                  />
+                } @else {
+                  {{ item.label }}
+                }
+              </div>
+            }
+          }
         }
       </div>
     </div>
@@ -149,12 +283,13 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       display: inline-block;
       position: relative;
       font: inherit;
+      min-width: var(--cngx-select-min-width, 10rem);
     }
     .cngx-select__trigger {
       display: inline-flex;
       align-items: center;
       gap: var(--cngx-select-gap, 0.5rem);
-      min-width: var(--cngx-select-min-width, 10rem);
+      width: 100%;
       padding: var(--cngx-select-padding, 0.5rem 0.75rem);
       border: var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4));
       border-radius: var(--cngx-select-radius, 0.25rem);
@@ -164,7 +299,6 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       cursor: pointer;
       text-align: start;
       justify-content: space-between;
-      width: 100%;
     }
     .cngx-select__trigger:focus-visible {
       outline: var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
@@ -179,10 +313,31 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
     }
     .cngx-select__caret {
       flex: 0 0 auto;
       opacity: 0.7;
+    }
+    .cngx-select__clear {
+      flex: 0 0 auto;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      padding: 0 0.25rem;
+      font: inherit;
+      opacity: 0.6;
+    }
+    .cngx-select__clear:hover {
+      opacity: 1;
+    }
+    .cngx-select__clear:focus-visible {
+      outline: 2px solid var(--cngx-focus-ring, #1976d2);
+      border-radius: 0.125rem;
     }
     .cngx-select__panel {
       border: var(--cngx-select-panel-border, 1px solid var(--cngx-border, #c4c4c4));
@@ -191,50 +346,180 @@ const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
       box-shadow: var(--cngx-select-panel-shadow, 0 4px 12px rgba(0, 0, 0, 0.12));
       padding: var(--cngx-select-panel-padding, 0.25rem);
       margin: 0;
-      /* Match trigger width by default; grow up to viewport. */
-      min-width: anchor-size(width);
-      /* Auto-flip to the opposite side when there is no room below. */
+      min-width: var(--cngx-select-panel-min-width, anchor-size(width));
+      max-height: var(--cngx-select-panel-max-height, 16rem);
+      overflow-y: auto;
       position-try-fallbacks:
         flip-block,
         flip-inline,
         flip-block flip-inline;
     }
+    .cngx-select__group-header {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cngx-select__option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
+      cursor: pointer;
+      border-radius: var(--cngx-select-option-radius, 0.125rem);
+    }
+    .cngx-select__option[aria-disabled='true'] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .cngx-select__option.cngx-option--highlighted {
+      background: var(--cngx-select-option-highlight-bg, rgba(25, 118, 210, 0.1));
+    }
+    .cngx-select__check {
+      color: var(--cngx-select-check-color, var(--cngx-focus-ring, #1976d2));
+      font-weight: 700;
+    }
+    .cngx-select__loading,
+    .cngx-select__empty {
+      padding: 0.5rem 0.75rem;
+      font-style: italic;
+      opacity: 0.7;
+    }
   `,
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly announcer = inject(CngxSelectAnnouncer);
+  private readonly config = resolveSelectConfig();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
-  /** Accessible label for the listbox region (also used for the trigger button fallback). */
-  readonly label = input.required<string>();
+  /** Accessible label for the listbox region. Also used as the trigger's fallback a11y name when no form-field is around. */
+  readonly label = input<string>('');
 
-  /** Options to render inside the dropdown. */
-  readonly options = input.required<readonly CngxSelectOption<T>[]>();
+  /** Options (flat or grouped). */
+  readonly options = input.required<CngxSelectOptionsInput<T>>();
 
   /** Placeholder shown on the trigger when no value is selected. */
   readonly placeholder = input<string>('');
 
-  /** Whether the trigger is disabled. Also reflects `presenter.disabled()` inside a form-field. */
+  /** Disabled state. Merges with `presenter.disabled()` if inside a form-field. */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+
+  /** Required state (standalone). Merges with `presenter.required()` if inside a form-field. */
+  readonly requiredInput = input<boolean>(false, { alias: 'required' });
 
   /** Equality function used to match the selected value to an option. Defaults to `Object.is`. */
   readonly compareWith = input<CompareFn<T>>(defaultCompare as CompareFn<T>);
 
+  /** Custom id. Defaults to the presenter-generated ID inside form-field, else auto. */
+  readonly idInput = input<string | null>(null, { alias: 'id' });
+
+  /** Explicit `aria-label` on the trigger. Takes precedence over the form-field label when set. */
+  readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  /** Explicit `aria-labelledby` on the trigger. Takes precedence over the form-field label when set. */
+  readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+
+  /** Trigger tab index. Defaults to `0`. */
+  readonly tabIndex = input<number>(0);
+
+  /** Classes applied to the panel root. Merged with the library default. */
+  readonly panelClass = input<string | readonly string[] | null>(null);
+
+  /** Panel width strategy — overrides `withPanelWidth()` from config. */
+  readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+
+  /** Typeahead debounce override — defaults to config. */
+  readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
+
+  /** Hide the default checkmark indicator on this instance. */
+  readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+
+  /** Hide the default dropdown caret glyph on this instance. */
+  readonly hideCaret = input<boolean>(!this.config.showCaret);
+
+  /** Render a clear-button when a value is selected. */
+  readonly clearable = input<boolean>(false);
+
+  /** A11y label for the clear button. */
+  readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
+
+  /** Display a loading state inside the panel. */
+  readonly loading = input<boolean>(false);
+
+  /** Per-instance announcer override. */
+  readonly announceChanges = input<boolean | undefined>(undefined);
+
+  /** Per-instance formatter override for the announcer message. */
+  readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
 
+  // ── Outputs ────────────────────────────────────────────────────────
+
+  /** Fires when the user selects an option (not on programmatic writes). */
+  readonly selectionChange = output<CngxSelectChange<T>>();
+
+  /** Fires whenever the panel open state changes. */
+  readonly openedChange = output<boolean>();
+
+  /** Fires on panel open. */
+  readonly opened = output<void>();
+
+  /** Fires on panel close. */
+  readonly closed = output<void>();
+
+  /** Fires with the selected option (null for clear) — sibling to `selectionChange`. */
+  readonly optionSelected = output<CngxSelectOption<T> | null>();
+
+  // ── Content templates ──────────────────────────────────────────────
+
+  /** @internal */
+  protected readonly checkTpl = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
+  /** @internal */
+  protected readonly caretTpl = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  /** @internal */
+  protected readonly optgroupTpl = contentChild<CngxSelectOptgroup<T>>(CngxSelectOptgroup);
+  /** @internal */
+  protected readonly placeholderTpl = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
+  /** @internal */
+  protected readonly emptyTpl = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
+  /** @internal */
+  protected readonly loadingTpl = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  /** @internal */
+  protected readonly triggerLabelTpl = contentChild<CngxSelectTriggerLabel<T>>(
+    CngxSelectTriggerLabel,
+  );
+  /** @internal */
+  protected readonly optionLabelTpl = contentChild<CngxSelectOptionLabel<T>>(
+    CngxSelectOptionLabel,
+  );
+
   // ── ViewChildren ───────────────────────────────────────────────────
 
-  /** @internal — listbox ViewChild used for value-sync effects. */
+  private readonly triggerBtn = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
-
-  /** @internal — popover ViewChild used to hide after click-select. */
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
-  // ── CngxFormFieldControl ───────────────────────────────────────────
+  // ── Public Signals (mat-select parity) ─────────────────────────────
 
-  readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
+  /** Whether the panel is currently open. */
+  readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
+
+  /** Currently selected option, resolved against `options`. `null` when empty. */
+  readonly selected = computed<CngxSelectOption<T> | null>(() => this.selectedOption());
+
+  /** Human-readable label displayed on the trigger (resolves custom trigger template first). */
+  readonly triggerValue = computed<string>(() => this.triggerText());
+
+  // ── CngxFormFieldControl implementation ────────────────────────────
+
+  readonly id = computed<string>(() => this.resolvedId() ?? '');
 
   readonly disabled = computed<boolean>(
     () => this.disabledInput() || (this.presenter?.disabled() ?? false),
@@ -245,21 +530,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
 
-  readonly empty = computed<boolean>(() => {
-    const v = this.value();
-    return v === undefined || v === null;
-  });
+  readonly empty = computed<boolean>(() => this.isEmpty());
 
-  // ── Host ARIA projection ───────────────────────────────────────────
+  // ── Internal: ARIA projection ──────────────────────────────────────
 
   /** @internal */
   protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
   /** @internal */
-  protected readonly labelledBy = computed(() => this.presenter?.labelId() ?? null);
-  /** @internal */
   protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
-  /** @internal */
-  protected readonly ariaRequired = computed(() => (this.presenter?.required() ? true : null));
   /** @internal */
   protected readonly ariaBusy = computed(() => (this.presenter?.pending() ? true : null));
   /** @internal */
@@ -269,37 +547,174 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.errorState() ? (this.presenter?.errorId() ?? null) : null,
   );
 
-  /** @internal — listbox expects the wider-typed equality fn. */
+  /** @internal */
+  protected readonly resolvedId = computed<string>(() => {
+    const override = this.idInput();
+    if (override) {
+      return override;
+    }
+    return this.presenter?.inputId() ?? '';
+  });
+
+  /** @internal */
+  protected readonly resolvedAriaLabel = computed<string | null>(() => {
+    const explicit = this.ariaLabel();
+    if (explicit) {
+      return explicit;
+    }
+    if (this.resolvedAriaLabelledBy()) {
+      return null;
+    }
+    return this.label() || null;
+  });
+
+  /** @internal */
+  protected readonly resolvedAriaLabelledBy = computed<string | null>(
+    () => this.ariaLabelledBy() ?? this.presenter?.labelId() ?? null,
+  );
+
+  /** @internal */
+  protected readonly resolvedAriaRequired = computed<boolean | null>(() =>
+    this.requiredInput() || this.presenter?.required() ? true : null,
+  );
+
+  /** @internal */
+  protected readonly effectiveTabIndex = computed<number | null>(() =>
+    this.disabled() ? -1 : this.tabIndex(),
+  );
+
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator = computed<boolean>(
+    () => !this.hideSelectionIndicator(),
+  );
+
+  /** @internal */
+  protected readonly resolvedShowCaret = computed<boolean>(() => !this.hideCaret());
+
+  /** @internal */
+  protected readonly resolvedListboxLabel = computed<string>(() => {
+    const label = this.label();
+    if (label.length > 0) {
+      return label;
+    }
+    const aria = this.ariaLabel();
+    if (aria && aria.length > 0) {
+      return aria;
+    }
+    const placeholder = this.placeholder();
+    if (placeholder.length > 0) {
+      return placeholder;
+    }
+    return 'Options';
+  });
+
+  /** @internal */
+  protected readonly panelClassList = computed<string | readonly string[] | null>(() => {
+    const global = this.config.panelClass;
+    const local = this.panelClass();
+    if (!global && !local) {
+      return null;
+    }
+    if (!global) {
+      return local;
+    }
+    if (!local) {
+      return global;
+    }
+    const globalArr: readonly string[] = Array.isArray(global)
+      ? (global as readonly string[])
+      : [global as string];
+    const localArr: readonly string[] = Array.isArray(local)
+      ? (local as readonly string[])
+      : [local as string];
+    return [...globalArr, ...localArr];
+  });
+
+  /** @internal */
+  protected readonly panelWidthCss = computed<string | null>(() => {
+    const w = this.panelWidth();
+    if (w === null) {
+      return 'auto';
+    }
+    if (w === 'trigger') {
+      return 'anchor-size(width)';
+    }
+    return `${w}px`;
+  });
+
+  /** @internal — flattened option list for matcher / trigger-label lookups. */
+  protected readonly flatOptions = computed<CngxSelectOption<T>[]>(() =>
+    flattenSelectOptions(this.options()),
+  );
+
+  /** @internal */
+  protected readonly selectedOption = computed<CngxSelectOption<T> | null>(() => {
+    const v = this.value();
+    if (v === undefined || v === null) {
+      return null;
+    }
+    const eq = this.compareWith();
+    return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
+  });
+
+  /** @internal */
+  protected readonly triggerText = computed<string>(() => {
+    const fallback = this.placeholder() || this.label();
+    return this.selectedOption()?.label ?? fallback;
+  });
+
+  /** @internal */
+  protected readonly hasTriggerLabelTemplate = computed<boolean>(
+    () => this.triggerLabelTpl() != null,
+  );
+
+  /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Trigger label ──────────────────────────────────────────────────
+  // ── Template helpers ───────────────────────────────────────────────
 
-  /** Human-readable text displayed on the trigger. */
-  protected readonly triggerLabel = computed<string>(() => {
-    const fallback = this.placeholder() || this.label();
+  protected isGroup(
+    item: CngxSelectOption<T> | CngxSelectOptionGroup<T>,
+  ): item is CngxSelectOptionGroup<T> {
+    return isCngxSelectOptionGroup(item);
+  }
+
+  protected isSelected(opt: CngxSelectOption<T>): boolean {
     const v = this.value();
     if (v === undefined || v === null) {
-      return fallback;
+      return false;
     }
-    const eq = this.compareWith();
-    return this.options().find((o) => eq(o.value, v))?.label ?? fallback;
-  });
+    return this.compareWith()(opt.value, v);
+  }
+
+  protected isEmpty(): boolean {
+    const v = this.value();
+    return v === undefined || v === null;
+  }
 
   constructor() {
-    // Bridge AD activations into popover-close. The listbox-trigger already
-    // closes on keyboard Enter/Space, but mouse clicks on options go through
-    // AD.activated without touching the trigger — we hook here to preserve
-    // the "click-to-select-and-close" UX that native <select> users expect.
+    // Bridge AD activations into popover-close and selectionChange output.
     effect((onCleanup) => {
       const lb = this.listboxRef();
       const pop = this.popoverRef();
       if (!lb || !pop) {
         return;
       }
-      const sub = lb.ad.activated.subscribe(() => {
+      const sub = lb.ad.activated.subscribe((raw: unknown) => {
         untracked(() => {
+          const value = raw as T;
+          const eq = this.compareWith();
+          const opt =
+            this.flatOptions().find((o) => eq(o.value, value)) ?? null;
+          this.selectionChange.emit({
+            source: this,
+            value,
+            option: opt,
+          });
+          this.optionSelected.emit(opt);
+          this.maybeAnnounce(opt);
           if (pop.isVisible()) {
             pop.hide();
           }
@@ -308,7 +723,23 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       onCleanup(() => sub.unsubscribe());
     });
 
-    // Field → Select sync: mirror bound field value into our model signal.
+    // Panel open/close lifecycle events.
+    effect(() => {
+      const open = this.panelOpen();
+      untracked(() => {
+        this.openedChange.emit(open);
+        if (open) {
+          this.opened.emit();
+        } else {
+          this.closed.emit();
+          if (this.config.restoreFocus) {
+            queueMicrotask(() => this.triggerBtn()?.nativeElement.focus());
+          }
+        }
+      });
+    });
+
+    // Field → Select: mirror bound field value into our model signal.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -323,7 +754,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     });
 
-    // Select → Field sync: push selection back into bound field.
+    // Select → Field: push selection back into bound field.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -340,11 +771,56 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Focus handling ─────────────────────────────────────────────────
+  // ── Public API (mat-select parity) ─────────────────────────────────
+
+  /** Open the panel. */
+  open(): void {
+    this.popoverRef()?.show();
+  }
+
+  /** Close the panel. */
+  close(): void {
+    this.popoverRef()?.hide();
+  }
+
+  /** Toggle the panel. */
+  toggle(): void {
+    this.popoverRef()?.toggle();
+  }
+
+  /** Focus the trigger button. */
+  focus(options?: FocusOptions): void {
+    this.triggerBtn()?.nativeElement.focus(options);
+  }
+
+  // ── Event handlers ─────────────────────────────────────────────────
+
+  /** @internal */
+  protected handleTriggerClick(): void {
+    this.toggle();
+  }
+
+  /** @internal */
+  protected handleClearClick(event: Event): void {
+    event.stopPropagation();
+    const eq = this.compareWith();
+    const current = this.value();
+    if (current === undefined || current === null) {
+      return;
+    }
+    this.value.set(undefined);
+    this.selectionChange.emit({ source: this, value: undefined, option: null });
+    this.optionSelected.emit(null);
+    this.maybeAnnounce(null);
+    void eq;
+  }
 
   /** @internal */
   protected handleFocus(): void {
     this.focusedState.set(true);
+    if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
+      this.open();
+    }
   }
 
   /** @internal */
@@ -352,14 +828,96 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.focusedState.set(false);
     this.presenter?.fieldState().markAsTouched();
   }
+
+  /** @internal */
+  protected handleTriggerKeydown(event: KeyboardEvent): void {
+    // Typeahead-while-closed parity with native <select>.
+    if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
+      const key = event.key;
+      if (key.length === 1 && /\S/.exec(key)) {
+        event.preventDefault();
+        const eq = this.compareWith();
+        const flat = this.flatOptions();
+        const start =
+          flat.findIndex((o) => {
+            const v = this.value();
+            return v !== undefined && v !== null && eq(o.value, v);
+          }) + 1;
+        const lower = key.toLowerCase();
+        for (let i = 0; i < flat.length; i++) {
+          const idx = (start + i) % flat.length;
+          const candidate = flat[idx];
+          if (candidate.disabled) {
+            continue;
+          }
+          if (candidate.label.toLowerCase().startsWith(lower)) {
+            this.value.set(candidate.value);
+            this.selectionChange.emit({
+              source: this,
+              value: candidate.value,
+              option: candidate,
+            });
+            this.optionSelected.emit(candidate);
+            this.maybeAnnounce(candidate);
+            return;
+          }
+        }
+      }
+    }
+
+    // PageUp / PageDown — open and jump ±10.
+    if (event.key === 'PageDown' || event.key === 'PageUp') {
+      event.preventDefault();
+      const lb = this.listboxRef();
+      const pop = this.popoverRef();
+      if (!pop || !lb) {
+        return;
+      }
+      if (!pop.isVisible()) {
+        pop.show();
+      }
+      const step = event.key === 'PageDown' ? 10 : -10;
+      const ad = lb.ad;
+      const total = lb.options().length;
+      const currentLabel = ad.activeId();
+      const currentIdx = lb
+        .options()
+        .findIndex((o) => o.id === currentLabel);
+      const target = Math.max(
+        0,
+        Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step),
+      );
+      ad.highlightByIndex(target);
+    }
+  }
+
+  private maybeAnnounce(option: CngxSelectOption<T> | null): void {
+    const announcerConfig = this.config.announcer;
+    const perInstance = this.announceChanges();
+    const enabled = perInstance ?? announcerConfig.enabled ?? true;
+    if (!enabled) {
+      return;
+    }
+    const format = this.announceTemplate() ?? announcerConfig.format;
+    const label = this.label();
+    const ariaLabel = this.ariaLabel();
+    let fieldLabel = 'Auswahl';
+    if (label.length > 0) {
+      fieldLabel = label;
+    } else if (ariaLabel && ariaLabel.length > 0) {
+      fieldLabel = ariaLabel;
+    }
+    const message = format({
+      selectedLabel: option?.label ?? null,
+      fieldLabel,
+      multi: false,
+    });
+    this.announcer.announce(message, announcerConfig.politeness);
+    // Suppress "unused" — host ref is kept for future extensions.
+    void this.host;
+  }
 }
 
-/**
- * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Both the mock-field helper (tests) and the real Signal Forms `FieldState`
- * satisfy this at runtime; `CngxFieldRef` hides the writability for API
- * stability, so we branch by capability check.
- */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signalLike = fieldRef.value as unknown;
   if (

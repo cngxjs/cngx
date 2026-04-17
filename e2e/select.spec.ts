@@ -56,13 +56,13 @@ test.describe('CngxSelect demo', () => {
     const afterG = await listbox.getAttribute('aria-activedescendant');
     expect(await page.locator(`#${afterG}`).textContent()).toContain('Grün');
 
-    await page.waitForTimeout(350);
+    await page.waitForTimeout(500);
     await page.keyboard.press('b');
     const afterB = await listbox.getAttribute('aria-activedescendant');
     expect(afterB).not.toBe(afterG);
     expect(await page.locator(`#${afterB}`).textContent()).toContain('Blau');
 
-    await page.waitForTimeout(350);
+    await page.waitForTimeout(500);
     await page.keyboard.press('r');
     const afterR = await listbox.getAttribute('aria-activedescendant');
     expect(await page.locator(`#${afterR}`).textContent()).toContain('Rot');

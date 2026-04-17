@@ -9,7 +9,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 @Component({
   selector: 'app-select-demo',
@@ -19,15 +19,17 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     ExampleCardComponent,
     DocShellComponent,
     CngxSelect,
+    CngxSelectOptionLabel,
+    CngxSelectEmpty,
     CngxFormField,
     CngxLabel,
     CngxFieldErrors,
   ],
   template: `
     <app-doc-shell title="Select"
-      description="CngxSelect — native-feeling single-select dropdown. Standalone or inside cngx-form-field, with zero bridge boilerplate."
-      overview="<p><code>&lt;cngx-select&gt;</code> is a focused single-select dropdown built on <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code>. Behaves like a native <code>&lt;select&gt;</code>: click-to-open, click-to-pick, Arrow / Home / End / Escape / typeahead from the keyboard, auto-flip on overflow.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly — drop it into <code>&lt;cngx-form-field&gt;</code> and both value-flow and ARIA wiring just work.</p><p>For multi-select use <code>CngxMultiSelect</code>; for filter-as-you-type use <code>CngxCombobox</code>.</p>"
-      [apiComponents]="['CngxSelect']">
+      description="CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity."
+      overview="<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code> into a native-feeling dropdown. Single-select only — for multi use <code>CngxMultiSelect</code>.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly, full <code>mat-select</code> parity (<code>open</code>/<code>close</code>/<code>toggle</code>/<code>focus</code>, <code>panelOpen</code>/<code>selected</code>/<code>triggerValue</code> signals, <code>selectionChange</code>/<code>openedChange</code>/<code>opened</code>/<code>closed</code> outputs, <code>[panelWidth]</code>, <code>[panelClass]</code>, <code>[tabIndex]</code>, <code>[aria-label]</code>, <code>[compareWith]</code>, <code>[required]</code>).</p><p>Template overrides per-instance: <code>*cngxSelectCheck</code>, <code>*cngxSelectCaret</code>, <code>*cngxSelectOptgroup</code>, <code>*cngxSelectPlaceholder</code>, <code>*cngxSelectEmpty</code>, <code>*cngxSelectLoading</code>, <code>*cngxSelectTriggerLabel</code>, <code>*cngxSelectOptionLabel</code>. Globally via <code>provideSelectConfig(withSelectionIndicator(false), withPanelWidth('trigger'), ...)</code>.</p><p>Live-region announcements on every selection change (configurable).</p>"
+      [apiComponents]="['CngxSelect', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'provideSelectConfig']">
       <app-example-card title="Standalone"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -38,18 +40,89 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     [options]="colors"
     [(value)]="standaloneValue"
     placeholder="Farbe wählen…"
+    (openedChange)="handleOpened($event)"
   />
   <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Last panel event</span><span class="event-value">{{ openedLog() }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Optgroups"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <cngx-select
+    [label]="'Priorität'"
+    [options]="priorities"
+    [(value)]="groupedValue"
+    placeholder="Priorität wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Clearable"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="clearableValue"
+    [clearable]="true"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ clearableValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Rich option rendering"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
+        
+  <cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span>{{ opt.meta?.icon }}</span>
+      <strong>{{ opt.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Loading + empty templates"
+        [subtitle]="_s4"
+        [sourceHtml]="_srcHtml4"
+        [sourceTs]="_srcTs4">
+        
+  <cngx-select
+    [label]="'Async'"
+    [options]="loadingOptions"
+    [(value)]="loadingValue"
+    [loading]="loading()"
+    placeholder="Nichts geladen…"
+  >
+    <ng-template cngxSelectEmpty>
+      <span style="opacity:.7">Keine Einträge vorhanden — bitte Filter anpassen.</span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
-      <span class="event-label">Value</span>
-      <span class="event-value">{{ standaloneValue() || '—' }}</span>
+      <button type="button" class="chip" (click)="toggleLoading()">Toggle loading</button>
     </div>
   </div>
       </app-example-card>
       <app-example-card title="Signal Forms (required)"
-        [subtitle]="_s1"
-        [sourceHtml]="_srcHtml1"
-        [sourceTs]="_srcTs1">
+        [subtitle]="_s5"
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -57,27 +130,18 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     <cngx-field-errors />
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Field value</span>
-      <span class="event-value">{{ singleForm.color().value() || '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Valid</span>
-      <span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Touched</span>
-      <span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span>
-    </div>
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ singleForm.color().value() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Valid</span><span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row"><span class="event-label">Touched</span><span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span></div>
     <div class="event-row" style="margin-top:8px">
       <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
     </div>
   </div>
       </app-example-card>
       <app-example-card title="Reactive Forms (adaptFormControl)"
-        [subtitle]="_s2"
-        [sourceHtml]="_srcHtml2"
-        [sourceTs]="_srcTs2">
+        [subtitle]="_s6"
+        [sourceHtml]="_srcHtml6"
+        [sourceTs]="_srcTs6">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -85,41 +149,38 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     <cngx-field-errors />
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">RF control value</span>
-      <span class="event-value">{{ rfValue() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">RF control dirty</span>
-      <span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span>
-    </div>
+    <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
+    <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
   </div>
       </app-example-card>
     </app-doc-shell>
   `,
 })
 export class SelectDemoComponent {
-  protected readonly _s0 = 'No form-field. Two-way bound via <code>[(value)]</code> directly.';
-  protected readonly _s1 = 'Just drop <code>&lt;cngx-select&gt;</code> inside <code>&lt;cngx-form-field&gt;</code>. ID, ARIA, and errors flow automatically.';
-  protected readonly _s2 = 'Same component, <code>[field]</code> receives the adapter output. Value, touched, and validators flow through.';
+  protected readonly _s0 = 'Two-way bound via <code>[(value)]</code> — no form-field required.';
+  protected readonly _s1 = 'Grouped options: pass an array mixing <code>CngxSelectOption</code> and <code>CngxSelectOptionGroup</code>.';
+  protected readonly _s2 = '<code>[clearable]="true"</code> adds a ✕ button when a value is selected.';
+  protected readonly _s3 = 'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.';
+  protected readonly _s4 = 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.';
+  protected readonly _s5 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
+  protected readonly _s6 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
     [(value)]="standaloneValue"
     placeholder="Farbe wählen…"
+    (openedChange)="handleOpened($event)"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Value</span>
-      <span class="event-value">{{ standaloneValue() || '—' }}</span>
-    </div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Last panel event</span><span class="event-value">{{ openedLog() }}</span></div>
   </div>`;
   protected readonly _srcTs0 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 
   protected readonly colors: CngxSelectOption<string>[] = [
@@ -129,52 +190,73 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
 
-  // ── Signal Forms ─────────────────────────────────────────
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
 
-  // ── Reactive Forms ───────────────────────────────────────
+  // Reactive Forms
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
   protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml1 = `<cngx-form-field [field]="singleForm.color">
-    <label cngxLabel>Lieblingsfarbe</label>
-    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
+  protected readonly _srcHtml1 = `<cngx-select
+    [label]="'Priorität'"
+    [options]="priorities"
+    [(value)]="groupedValue"
+    placeholder="Priorität wählen…"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Field value</span>
-      <span class="event-value">{{ singleForm.color().value() || '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Valid</span>
-      <span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Touched</span>
-      <span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span>
-    </div>
-    <div class="event-row" style="margin-top:8px">
-      <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
-    </div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs1 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 
   protected readonly colors: CngxSelectOption<string>[] = [
@@ -184,45 +266,73 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
 
-  // ── Signal Forms ─────────────────────────────────────────
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
 
-  // ── Reactive Forms ───────────────────────────────────────
+  // Reactive Forms
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
   protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml2 = `<cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
-    <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
+  protected readonly _srcHtml2 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="clearableValue"
+    [clearable]="true"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">RF control value</span>
-      <span class="event-value">{{ rfValue() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">RF control dirty</span>
-      <span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span>
-    </div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ clearableValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs2 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 
   protected readonly colors: CngxSelectOption<string>[] = [
@@ -232,23 +342,377 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
 
-  // ── Signal Forms ─────────────────────────────────────────
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
 
-  // ── Reactive Forms ───────────────────────────────────────
+  // Reactive Forms
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
   protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml3 = `<cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span>{{ opt.meta?.icon }}</span>
+      <strong>{{ opt.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs3 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+
+
+  protected readonly colors: CngxSelectOption<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml4 = `<cngx-select
+    [label]="'Async'"
+    [options]="loadingOptions"
+    [(value)]="loadingValue"
+    [loading]="loading()"
+    placeholder="Nichts geladen…"
+  >
+    <ng-template cngxSelectEmpty>
+      <span style="opacity:.7">Keine Einträge vorhanden — bitte Filter anpassen.</span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <button type="button" class="chip" (click)="toggleLoading()">Toggle loading</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs4 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+
+
+  protected readonly colors: CngxSelectOption<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml5 = `<cngx-form-field [field]="singleForm.color">
+    <label cngxLabel>Lieblingsfarbe</label>
+    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
+    <cngx-field-errors />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ singleForm.color().value() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Valid</span><span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row"><span class="event-label">Touched</span><span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs5 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+
+
+  protected readonly colors: CngxSelectOption<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml6 = `<cngx-form-field [field]="rfField">
+    <label cngxLabel>Farbe (RF)</label>
+    <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+    <cngx-field-errors />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
+    <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
+  </div>`;
+  protected readonly _srcTs6 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOptionLabel, CngxSelectEmpty, type CngxSelectOption, type CngxSelectOptionsInput } from '@cngx/forms/select';
+
+
+  protected readonly colors: CngxSelectOption<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
   }`;
 
   protected readonly colors: CngxSelectOption<string>[] = [
@@ -258,23 +722,57 @@ import { CngxSelect, type CngxSelectOption } from '@cngx/forms/select';
     { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
   ];
 
-  // ── Standalone ───────────────────────────────────────────
-  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
 
-  // ── Signal Forms ─────────────────────────────────────────
+  protected readonly richOptions: CngxSelectOption<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOption<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
     required(root.color);
   });
   protected readonly singleForm = form(this.singleModel, this.singleSchema);
 
-  // ── Reactive Forms ───────────────────────────────────────
+  // Reactive Forms
   protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
   protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
   protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
 
   protected handleSingleSubmit(): void {
     submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
   }
   
 }
