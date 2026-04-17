@@ -6,7 +6,8 @@ import { Directive, input } from '@angular/core';
  * Renders `role="separator"` + `aria-orientation` — required for assistive
  * technologies to announce the divider correctly. Visual style is driven by
  * CSS custom properties (`--cngx-divider-color`, `--cngx-divider-thickness`,
- * `--cngx-divider-inset`).
+ * `--cngx-divider-inset`). Consumers apply their own styles through
+ * `.cngx-divider` or override the variables.
  *
  * @category display
  */

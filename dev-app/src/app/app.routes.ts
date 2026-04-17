@@ -130,6 +130,11 @@ export const routes: Routes = [
           import('./demos/common/display/avatar-demo/avatar-demo.component').then((m) => m.AvatarDemoComponent),
       },
       {
+        path: 'display/badge',
+        loadComponent: () =>
+          import('./demos/common/display/badge-demo/badge-demo.component').then((m) => m.BadgeDemoComponent),
+      },
+      {
         path: 'display/divider',
         loadComponent: () =>
           import('./demos/common/display/divider-demo/divider-demo.component').then((m) => m.DividerDemoComponent),

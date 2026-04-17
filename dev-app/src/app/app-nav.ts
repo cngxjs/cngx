@@ -36,6 +36,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Trend', path: 'common/data/trend' },
       { label: 'Dialog', path: 'common/dialog/dialog' },
       { label: 'Avatar', path: 'common/display/avatar' },
+      { label: 'Badge', path: 'common/display/badge' },
       { label: 'Divider', path: 'common/display/divider' },
       { label: 'Icon', path: 'common/display/icon' },
       { label: 'Async Click', path: 'common/interactive/async-click' },

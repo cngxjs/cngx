@@ -9,3 +9,8 @@
 export { CngxIcon } from './src/icon/icon.component';
 export { CngxDivider } from './src/divider/divider.directive';
 export { CngxAvatar } from './src/avatar/avatar.component';
+export {
+  CngxBadge,
+  type CngxBadgeColor,
+  type CngxBadgePosition,
+} from './src/badge/badge.directive';
