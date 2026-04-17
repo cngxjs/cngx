@@ -23,7 +23,7 @@ export const STORY: DemoSpec = {
     '<code>aria-errormessage</code>, <code>aria-busy</code>, error gating) is handled automatically.</p>' +
     '<p>CSS state classes (<code>.cngx-field--error</code>, <code>.cngx-field--touched</code>, ' +
     '<code>.cngx-field--disabled</code>, etc.) are set on the container, label, and input for easy styling.</p>' +
-    '<p>Input directives live in <code>@cngx/forms/input</code>. Material bridge in <code>@cngx/forms/field/material</code>.</p>',
+    '<p>Input directives live in <code>@cngx/forms/input</code>. Material / native / custom controls bridge via <code>[cngxBindField]</code> in <code>@cngx/forms/field</code>.</p>',
   moduleImports: [
     "import { form, schema, required, email, minLength, maxLength, disabled, submit, FormField } from '@angular/forms/signals';",
     "import { CngxFormField, CngxLabel, CngxHint, CngxError, CngxFieldErrors, CngxFormErrors, focusFirstError, adaptFormControl } from '@cngx/forms/field';",

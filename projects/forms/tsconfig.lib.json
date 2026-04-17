@@ -18,6 +18,6 @@
       "@cngx/forms/field": ["projects/forms/field/src/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "field/material/**/*.ts", "input/**/*.ts"],
+  "include": ["src/**/*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

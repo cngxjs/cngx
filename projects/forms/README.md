@@ -11,9 +11,8 @@ smart input directives with autocomplete/spellcheck inference.
 | `@cngx/forms` | VERSION constant | No |
 | `@cngx/forms/controls` | `CngxTypedControl` | No |
 | `@cngx/forms/validators` | `requiredTrue`, `patternMatch` | No |
-| `@cngx/forms/field` | A11y coordination: form-field, label, hint, errors, required | No |
+| `@cngx/forms/field` | A11y coordination: form-field, label, hint, errors, bridges (`CngxBindField`, `CngxListboxFieldBridge`) | Optional (only `matInput`/`mat-select` demos) |
 | `@cngx/forms/input` | Input directives: CngxInput, password toggle, char counter | No |
-| `@cngx/forms/field/material` | Material bridge: `CngxMatInputBridge` + theme SCSS | Yes |
 
 ---
 
@@ -205,7 +204,7 @@ provideFormField(
 
 | Token | Description |
 |-|-|
-| `CNGX_FORM_FIELD_CONTROL` | Provided by `CngxInput` / `CngxMatInputBridge` |
+| `CNGX_FORM_FIELD_CONTROL` | Provided by `CngxInput`, `CngxBindField`, `CngxListboxFieldBridge` |
 | `CNGX_ERROR_MESSAGES` | Error message registry |
 | `CNGX_FORM_FIELD_CONFIG` | Application-wide config |
 
@@ -285,26 +284,42 @@ Supports custom template.
 
 ---
 
-## `@cngx/forms/field/material` -- Material Bridge
+## Bridges in `@cngx/forms/field`
 
-### CngxMatInputBridge (`[cngxFieldBridge]`)
+### `[cngxBindField]` -- Universal Bridge
 
-Adapts `matInput` for use inside `cngx-form-field`.
+Adapts any Material / native HTML / custom control for use inside `cngx-form-field`.
+All form-field state (`id`, `empty`, `focused`, `disabled`, `errorState`) is derived
+purely from the bound field via the presenter -- no control-specific injection.
+Value-flow runs through the control's own bindings.
 
 ```html
 <cngx-form-field [field]="nameField">
   <label cngxLabel>Name</label>
   <mat-form-field appearance="outline">
-    <input matInput cngxFieldBridge [formField]="nameField" />
+    <input matInput cngxBindField [formField]="nameField" />
   </mat-form-field>
+  <cngx-field-errors />
+</cngx-form-field>
+
+<cngx-form-field [field]="colorField">
+  <label cngxLabel>Farbe</label>
+  <mat-select cngxBindField [formControl]="colorControl">
+    <mat-option value="red">Rot</mat-option>
+  </mat-select>
   <cngx-field-errors />
 </cngx-form-field>
 ```
 
-### Material Theme SCSS
+### `CngxListboxFieldBridge`
+
+Specialised bridge for `CngxListbox` that handles multi-select arrays and
+`compareWith` value-sync beyond what `cngxBindField` covers.
+
+### Optional Material Theme
 
 ```scss
-@use '@cngx/forms/field/material/form-field-theme' as form-field;
+@use '@cngx/forms/field/material-theme' as form-field;
 
 html {
   @include mat.all-component-themes($theme);

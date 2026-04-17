@@ -105,7 +105,24 @@ All derived from Signal Forms `FieldState` via `computed()`:
 `hidden`, `readonly`, `submitting`, `errors`, `errorSummary`, `disabledReasons`,
 `showError`, `minLength`, `maxLength`, `min`, `max`, `pattern`, `constraintHints`
 
-## Nested Entry Point
+## Bridging Controls to a Field
 
-`@cngx/forms/field/material` provides `CngxMatInputBridge` and a Material theme SCSS mixin.
-See the parent [README](../README.md) for details.
+- `[cngxBindField]` — universal bridge; place on any Material, native, or custom
+  control. Derives all form-field state from the bound field. Value-flow runs
+  through the control's own bindings (`[control]` or `[formControl]`).
+- `CngxListboxFieldBridge` — specialised bridge for `CngxListbox` that handles
+  multi-select and `compareWith` value-sync.
+
+## Optional Material Theme
+
+`_material-theme.scss` maps Material M3/M2 design tokens to cngx-form-field CSS
+custom properties:
+
+```scss
+@use '@cngx/forms/field/material-theme' as form-field;
+
+html {
+  @include mat.all-component-themes($theme);
+  @include form-field.theme($theme);
+}
+```
