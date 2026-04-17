@@ -13,6 +13,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/common',
     items: [
+      { label: 'ActiveDescendant', path: 'common/a11y/active-descendant' },
       { label: 'AriaExpanded', path: 'common/a11y/aria-expanded' },
       { label: 'Autofocus', path: 'common/a11y/autofocus' },
       { label: 'FocusRestore', path: 'common/a11y/focus-restore' },

@@ -15,6 +15,11 @@ export const routes: Routes = [
     path: 'common',
     children: [
       {
+        path: 'a11y/active-descendant',
+        loadComponent: () =>
+          import('./demos/common/a11y/active-descendant-demo/active-descendant-demo.component').then((m) => m.ActiveDescendantDemoComponent),
+      },
+      {
         path: 'a11y/aria-expanded',
         loadComponent: () =>
           import('./demos/common/a11y/aria-expanded-demo/aria-expanded-demo.component').then((m) => m.AriaExpandedDemoComponent),
@@ -269,7 +274,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/common/popover/tooltip-demo/tooltip-demo.component').then((m) => m.TooltipDemoComponent),
       },
-      { path: '', redirectTo: 'a11y/aria-expanded', pathMatch: 'full' },
+      { path: '', redirectTo: 'a11y/active-descendant', pathMatch: 'full' },
     ],
   },
   {
