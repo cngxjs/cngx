@@ -1,4 +1,4 @@
-import { computed, Directive, inject, signal } from '@angular/core';
+import { afterRenderEffect, computed, Directive, ElementRef, inject, signal } from '@angular/core';
 
 import { CngxFormFieldPresenter } from './form-field-presenter';
 import { CNGX_FORM_FIELD_CONTROL } from './form-field.token';
@@ -67,6 +67,21 @@ import type { CngxFormFieldControl } from './models';
 })
 export class CngxBindField implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    // Material directives (matInput, and others) bind `[id]` to their own
+    // default ID on the same host element. Our `[id]` binding collides with
+    // theirs and the last-writer wins — which in practice is the Material
+    // directive for matInput. Force-sync the native element's id from the
+    // presenter so the `<label for="…">` link stays intact.
+    afterRenderEffect(() => {
+      const next = this.id();
+      if (next && this.el.nativeElement.id !== next) {
+        this.el.nativeElement.id = next;
+      }
+    });
+  }
 
   // ── CngxFormFieldControl ───────────────────────────────────────────
 

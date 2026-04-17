@@ -55,7 +55,7 @@ export const STORY: DemoSpec = {
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }
   `,
   sections: [

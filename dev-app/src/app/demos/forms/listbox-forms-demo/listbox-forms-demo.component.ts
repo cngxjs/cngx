@@ -245,7 +245,7 @@ import { MatOption } from '@angular/material/core';
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml1 = `<cngx-form-field [field]="multiForm.toppings">
     <label cngxLabel>Beläge (mind. 2)</label>
@@ -314,7 +314,7 @@ import { MatOption } from '@angular/material/core';
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml2 = `<cngx-form-field [field]="matSelectField">
     <label cngxLabel>Größe</label>
@@ -388,7 +388,7 @@ import { MatOption } from '@angular/material/core';
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }`;
   protected readonly _srcHtml3 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -454,7 +454,7 @@ import { MatOption } from '@angular/material/core';
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }`;
 
   // ── Signal Forms single ──────────────────────────────────
@@ -489,7 +489,7 @@ import { MatOption } from '@angular/material/core';
     submit(this.multiForm, async () => []);
   }
   protected handleMatSelectSubmit(): void {
-    this.matSelectControl.markAsTouched();
+    this.matSelectField().markAsTouched();
   }
   
 }
