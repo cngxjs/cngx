@@ -44,7 +44,7 @@ export const STORY: DemoSpec = {
        aria-label="Fruits"
        tabindex="0"
        [items]="fruits()"
-       autoHighlightFirst="true"
+       [autoHighlightFirst]="true"
        (activated)="lastActivated.set($any($event))"
        #ad="cngxActiveDescendant">
     @for (fruit of fruits(); track fruit.id) {

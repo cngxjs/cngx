@@ -46,6 +46,10 @@ export const CNGX_AD_ITEM = new InjectionToken<CngxAdItemHandle>('CNGX_AD_ITEM')
 export interface CngxAdItemHandle {
   readonly id: string;
   readonly value: Signal<unknown>;
-  readonly label: Signal<string>;
+  /**
+   * Label accessor. Typically a signal, but may be a plain getter when the
+   * label derives from runtime DOM state (e.g. `textContent` fallback).
+   */
+  readonly label: Signal<string> | (() => string);
   readonly disabled?: Signal<boolean>;
 }

@@ -43,6 +43,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'KeyboardShortcut', path: 'common/interactive/keyboard-shortcut' },
       { label: 'LongPress', path: 'common/interactive/long-press' },
       { label: 'Nav', path: 'common/interactive/nav' },
+      { label: 'Option', path: 'common/interactive/option' },
       { label: 'PressRipple', path: 'common/interactive/press-ripple' },
       { label: 'Pressable', path: 'common/interactive/pressable' },
       { label: 'Retry/Optimistic', path: 'common/interactive/retry' },

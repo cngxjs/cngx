@@ -98,7 +98,7 @@ export class ActiveDescendantDemoComponent {
        aria-label="Fruits"
        tabindex="0"
        [items]="fruits()"
-       autoHighlightFirst="true"
+       [autoHighlightFirst]="true"
        (activated)="lastActivated.set($any($event))"
        #ad="cngxActiveDescendant">
     @for (fruit of fruits(); track fruit.id) {
@@ -216,5 +216,5 @@ export class ActiveDescendantDemoComponent {
     this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
   );
   protected readonly lastActivated = signal<string | null>(null);
-
+  
 }

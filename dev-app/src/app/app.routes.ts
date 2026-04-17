@@ -165,6 +165,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/nav-demo/nav-demo.component').then((m) => m.NavDemoComponent),
       },
       {
+        path: 'interactive/option',
+        loadComponent: () =>
+          import('./demos/common/interactive/option-demo/option-demo.component').then((m) => m.OptionDemoComponent),
+      },
+      {
         path: 'interactive/press-ripple',
         loadComponent: () =>
           import('./demos/common/interactive/press-ripple-demo/press-ripple-demo.component').then((m) => m.PressRippleDemoComponent),
