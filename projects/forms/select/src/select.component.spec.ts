@@ -459,13 +459,13 @@ describe('CngxSelect — async state consumer', () => {
     expect(flatOptions.map((o) => o.value)).toEqual(['red', 'green', 'blue']);
   });
 
-  it('shows skeleton rows when state is loading (first load)', () => {
+  it('shows spinner (default loading variant) when state is loading (first load)', () => {
     const { fixture, host, panel, triggerBtn } = setup();
     host.state.set('loading');
     triggerBtn.click();
     flush(fixture);
-    expect(panel().querySelector('.cngx-select__skeleton')).toBeTruthy();
-    expect(panel().querySelectorAll('.cngx-select__skeleton-row').length).toBeGreaterThan(0);
+    expect(panel().querySelector('.cngx-select__spinner')).toBeTruthy();
+    expect(panel().querySelector('.cngx-select__skeleton')).toBeFalsy();
     expect(panel().querySelector('.cngx-select__option')).toBeFalsy();
   });
 
@@ -476,6 +476,7 @@ describe('CngxSelect — async state consumer', () => {
         <cngx-select
           [label]="'X'"
           [state]="state"
+          [loadingVariant]="'skeleton'"
           [skeletonRowCount]="7"
           [(value)]="value"
         />

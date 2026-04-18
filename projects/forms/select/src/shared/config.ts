@@ -133,7 +133,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   };
 } = {
   panelWidth: 'trigger',
-  loadingVariant: 'skeleton',
+  loadingVariant: 'spinner',
   skeletonRowCount: 3,
   refreshingVariant: 'bar',
   panelClass: '',
@@ -197,7 +197,7 @@ export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelec
 }
 
 /**
- * Visual for the first-load indicator. Defaults to `'skeleton'`.
+ * Visual for the first-load indicator. Defaults to `'spinner'`.
  *
  * @category interactive
  */

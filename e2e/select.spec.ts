@@ -101,17 +101,17 @@ test.describe('CngxSelect demo', () => {
     ).toHaveText('blue');
   });
 
-  test('async state: loading shows skeleton, success shows options', async ({ page }) => {
+  test('async state: loading shows spinner, success shows options', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Async state consumer');
     const trigger = section.locator('cngx-select button').first();
 
     await section.getByRole('button', { name: 'loading' }).click();
     await trigger.click();
-    await expect(section.locator('.cngx-select__skeleton')).toBeVisible();
+    await expect(section.locator('.cngx-select__spinner')).toBeVisible();
 
     await section.getByRole('button', { name: 'success', exact: true }).click();
-    await expect(section.locator('.cngx-select__skeleton')).toHaveCount(0);
+    await expect(section.locator('.cngx-select__spinner')).toHaveCount(0);
     await expect(section.locator('[cngxOption]')).toHaveCount(4);
   });
 

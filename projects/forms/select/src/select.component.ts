@@ -751,7 +751,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly loading = input<boolean>(false);
 
   /**
-   * First-load indicator variant: `'skeleton'` (default), `'spinner'`, `'bar'`, or `'text'`.
+   * First-load indicator variant: `'spinner'` (default), `'skeleton'`, `'bar'`, or `'text'`.
    * Falls back to `CNGX_SELECT_CONFIG.loadingVariant`. A projected
    * `*cngxSelectLoading` template always wins over this input.
    */
