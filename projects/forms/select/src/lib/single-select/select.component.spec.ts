@@ -9,24 +9,24 @@ import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
-import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
+import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxSelect, type CngxSelectChange } from './select.component';
-import { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
-import { CngxSelectAnnouncer } from './shared/announcer';
+import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
+import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_SELECT_CONFIG,
   provideSelectConfig,
   provideSelectConfigAt,
   withPanelWidth,
   withLoadingVariant,
-} from './shared/config';
-import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './shared/option.model';
+} from '../shared/config';
+import type { CngxSelectOptionDef, CngxSelectOptionsInput } from '../shared/option.model';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
-} from './shared/commit-action.types';
+} from '../shared/commit-action.types';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {

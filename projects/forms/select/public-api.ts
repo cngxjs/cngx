@@ -1,28 +1,37 @@
 /**
  * Public API Surface of @cngx/forms/select
+ *
+ * The whole select family (CngxSelect single, planned CngxMultiSelect,
+ * planned CngxCombobox) ships in this one secondary entry. Variants
+ * live in sibling folders under `src/lib/`; `src/lib/shared/` hosts
+ * reused building blocks (commit controller, option helpers,
+ * select-base.css, template slots, config + config features).
+ *
  * @module @cngx/forms/select
  */
+
+// ── Variant components ────────────────────────────────────────────────
 export {
   CngxSelect,
   type CngxSelectChange,
-} from './src/select.component';
+} from './src/lib/single-select/select.component';
 
-// ── Data-driven option model ──────────────────────────────────────────
+// ── Declarative element components ────────────────────────────────────
+// Intended for consumer-assembled listbox templates (the "compose yourself"
+// path). NOT usable as direct children of `<cngx-select>` — see
+// `.internal/architektur/select-family-architecture.md` for the reasoning.
+export { CngxSelectOption } from './src/lib/declarative/option.component';
+export { CngxSelectOptgroup } from './src/lib/declarative/optgroup.component';
+export { CngxSelectDivider } from './src/lib/declarative/divider.component';
+
+// ── Shared data model (option types + helpers) ────────────────────────
 export {
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
   isCngxSelectOptionGroupDef,
   flattenSelectOptions,
-} from './src/shared/option.model';
-
-// ── Declarative element components ────────────────────────────────────
-// Intended for consumer-assembled listbox templates (the "compose yourself"
-// path). NOT usable as direct children of `<cngx-select>` — see
-// `.internal/architektur/select-family-architecture.md` for the reasoning.
-export { CngxSelectOption } from './src/declarative/option.component';
-export { CngxSelectOptgroup } from './src/declarative/optgroup.component';
-export { CngxSelectDivider } from './src/declarative/divider.component';
+} from './src/lib/shared/option.model';
 
 // ── Config system ─────────────────────────────────────────────────────
 export {
@@ -49,23 +58,23 @@ export {
   withSkeletonRowCount,
   withRefreshingVariant,
   withCommitErrorDisplay,
-} from './src/shared/config';
+} from './src/lib/shared/config';
 
 // ── Commit action types ───────────────────────────────────────────────
 export {
   type CngxSelectCommitAction,
   type CngxSelectCommitMode,
   type CngxSelectCommitErrorDisplay,
-} from './src/shared/commit-action.types';
+} from './src/lib/shared/commit-action.types';
 
 // ── Announcer ─────────────────────────────────────────────────────────
-export { CngxSelectAnnouncer } from './src/shared/announcer';
+export { CngxSelectAnnouncer } from './src/lib/shared/announcer';
 
 // ── Inject helpers ────────────────────────────────────────────────────
 export {
   injectSelectConfig,
   injectSelectAnnouncer,
-} from './src/shared/inject-helpers';
+} from './src/lib/shared/inject-helpers';
 
 // ── Template-slot directives ──────────────────────────────────────────
 export {
@@ -91,4 +100,4 @@ export {
   type CngxSelectErrorContext,
   type CngxSelectRefreshingContext,
   type CngxSelectCommitErrorContext,
-} from './src/shared/template-slots';
+} from './src/lib/shared/template-slots';

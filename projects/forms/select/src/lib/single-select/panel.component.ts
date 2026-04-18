@@ -9,7 +9,7 @@ import {
 
 import { CngxOption } from '@cngx/common/interactive';
 
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from './shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../shared/panel-host';
 
 /**
  * Panel body sub-component — renders the dropdown's inner switch: the
@@ -202,7 +202,7 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from './shared/panel
       </div>
     </ng-template>
   `,
-  styleUrls: ['./shared/select-base.css', './panel.component.css'],
+  styleUrls: ['../shared/select-base.css', './panel.component.css'],
 })
 export class CngxSelectPanel<T = unknown> {
   /**

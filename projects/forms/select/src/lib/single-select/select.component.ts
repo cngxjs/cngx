@@ -36,22 +36,22 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-import { CngxSelectAnnouncer } from './shared/announcer';
+import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   createCommitController,
   type CngxCommitController,
-} from './shared/commit-controller';
-import { CNGX_SELECT_PANEL_HOST } from './shared/panel-host';
+} from '../shared/commit-controller';
+import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
   CngxSelectCommitMode,
-} from './shared/commit-action.types';
+} from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
-} from './shared/config';
+} from '../shared/config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -59,8 +59,8 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
-} from './shared/option.model';
-import { resolveSelectConfig } from './shared/resolve-config';
+} from '../shared/option.model';
+import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   CngxSelectCaret,
   CngxSelectCheck,
@@ -73,7 +73,7 @@ import {
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectTriggerLabel,
-} from './shared/template-slots';
+} from '../shared/template-slots';
 
 type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
@@ -245,7 +245,7 @@ export interface CngxSelectChange<T = unknown> {
   //   into the consumer's ejected component at schematic-run time.
   // - select.component.css: CngxSelect-only trigger button + host
   //   layout — the parts a multi-select / combobox will replace.
-  styleUrls: ['./shared/select-base.css', './select.component.css'],
+  styleUrls: ['../shared/select-base.css', './select.component.css'],
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
