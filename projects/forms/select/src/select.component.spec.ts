@@ -572,6 +572,81 @@ describe('CngxSelect — async state consumer', () => {
     expect(panel().querySelectorAll('.cngx-select__option').length).toBe(3);
   });
 
+  it('renders spinner refreshing variant when [refreshingVariant]="spinner"', () => {
+    @Component({
+      selector: 'ref-spinner-host',
+      template: `
+        <cngx-select
+          [label]="'X'"
+          [state]="state"
+          [refreshingVariant]="'spinner'"
+          [(value)]="value"
+        />
+      `,
+      imports: [CngxSelect],
+    })
+    class RefSpinnerHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.resetTestingModule();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [RefSpinnerHost] });
+    const fixture = TestBed.createComponent(RefSpinnerHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.state.setSuccess(OPTIONS);
+    fixture.componentInstance.state.set('refreshing');
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.querySelector('.cngx-select__refreshing-spinner')).toBeTruthy();
+    expect(panel.querySelector('.cngx-select__refreshing')).toBeFalsy();
+    expect(panel.querySelectorAll('.cngx-select__option').length).toBe(3);
+  });
+
+  it('[refreshingVariant]="none" suppresses the indicator entirely', () => {
+    @Component({
+      selector: 'ref-none-host',
+      template: `
+        <cngx-select
+          [label]="'X'"
+          [state]="state"
+          [refreshingVariant]="'none'"
+          [(value)]="value"
+        />
+      `,
+      imports: [CngxSelect],
+    })
+    class RefNoneHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.resetTestingModule();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [RefNoneHost] });
+    const fixture = TestBed.createComponent(RefNoneHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.state.setSuccess(OPTIONS);
+    fixture.componentInstance.state.set('refreshing');
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.querySelector('[class*="cngx-select__refreshing"]')).toBeFalsy();
+    expect(panel.querySelectorAll('.cngx-select__option').length).toBe(3);
+  });
+
   it('renders options + inline error banner when error hits after a success load', () => {
     const { fixture, host, panel, triggerBtn } = setup();
     host.state.setSuccess(OPTIONS);

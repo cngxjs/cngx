@@ -21,6 +21,7 @@ export function resolveSelectConfig(): Required<
     panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
     loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
+    refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

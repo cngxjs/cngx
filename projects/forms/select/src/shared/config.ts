@@ -61,6 +61,15 @@ export interface CngxSelectAnnouncerConfig {
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
+/**
+ * Visual for the subsequent-load ("refreshing") indicator that overlays
+ * the still-visible options. Per-instance `*cngxSelectRefreshing` overrides
+ * wins over every variant. `'none'` suppresses the indicator entirely.
+ *
+ * @category interactive
+ */
+export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
+
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -73,6 +82,8 @@ export interface CngxSelectConfig {
   readonly loadingVariant?: CngxSelectLoadingVariant;
   /** Number of skeleton rows rendered when `loadingVariant === 'skeleton'`. */
   readonly skeletonRowCount?: number;
+  /** Default subsequent-load (refreshing) indicator variant. */
+  readonly refreshingVariant?: CngxSelectRefreshingVariant;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
   /** Typeahead buffer reset window in ms. */
@@ -124,6 +135,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   panelWidth: 'trigger',
   loadingVariant: 'skeleton',
   skeletonRowCount: 3,
+  refreshingVariant: 'bar',
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -201,6 +213,18 @@ export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelec
  */
 export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
   return feature({ skeletonRowCount: count });
+}
+
+/**
+ * Visual for the subsequent-load indicator (refreshing, options stay visible).
+ * Defaults to `'bar'`. Use `'none'` to suppress the indicator entirely.
+ *
+ * @category interactive
+ */
+export function withRefreshingVariant(
+  variant: CngxSelectRefreshingVariant,
+): CngxSelectConfigFeature {
+  return feature({ refreshingVariant: variant });
 }
 
 /**

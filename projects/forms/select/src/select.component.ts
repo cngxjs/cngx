@@ -37,6 +37,7 @@ import { CngxSelectAnnouncer } from './shared/announcer';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
+  type CngxSelectRefreshingVariant,
 } from './shared/config';
 import {
   flattenSelectOptions,
@@ -288,12 +289,39 @@ export interface CngxSelectChange<T = unknown> {
               @if (refreshingTpl(); as tpl) {
                 <ng-container *ngTemplateOutlet="tpl.templateRef" />
               } @else {
-                <div
-                  class="cngx-select__refreshing"
-                  role="status"
-                  aria-live="polite"
-                  aria-label="Aktualisiere"
-                ></div>
+                @switch (refreshingVariant()) {
+                  @case ('none') { <!-- suppressed --> }
+                  @case ('spinner') {
+                    <div
+                      class="cngx-select__refreshing-spinner"
+                      role="status"
+                      aria-live="polite"
+                      aria-label="Aktualisiere"
+                    >
+                      <div aria-hidden="true" class="cngx-select__spinner"></div>
+                    </div>
+                  }
+                  @case ('dots') {
+                    <div
+                      class="cngx-select__refreshing-dots"
+                      role="status"
+                      aria-live="polite"
+                      aria-label="Aktualisiere"
+                    >
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                      <span aria-hidden="true"></span>
+                    </div>
+                  }
+                  @default {
+                    <div
+                      class="cngx-select__refreshing"
+                      role="status"
+                      aria-live="polite"
+                      aria-label="Aktualisiere"
+                    ></div>
+                  }
+                }
               }
             }
             @for (item of effectiveOptions(); track $index) {
@@ -570,6 +598,36 @@ export interface CngxSelectChange<T = unknown> {
     @media (prefers-reduced-motion: reduce) {
       .cngx-select__loading-bar { animation: none; }
     }
+    .cngx-select__refreshing-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--cngx-select-refreshing-spinner-padding, 0.25rem);
+    }
+    .cngx-select__refreshing-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--cngx-select-refreshing-dots-gap, 0.25rem);
+      padding: var(--cngx-select-refreshing-dots-padding, 0.375rem);
+    }
+    .cngx-select__refreshing-dots > span {
+      width: var(--cngx-select-refreshing-dot-size, 0.375rem);
+      height: var(--cngx-select-refreshing-dot-size, 0.375rem);
+      border-radius: 50%;
+      background: var(--cngx-select-refreshing-dot-color, currentColor);
+      opacity: 0.6;
+      animation: cngx-select-refreshing-dot 1.2s ease-in-out infinite;
+    }
+    .cngx-select__refreshing-dots > span:nth-child(2) { animation-delay: 0.15s; }
+    .cngx-select__refreshing-dots > span:nth-child(3) { animation-delay: 0.3s; }
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-select__refreshing-dots > span { animation: none; opacity: 0.8; }
+    }
+    @keyframes cngx-select-refreshing-dot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
     .cngx-select__error {
       display: flex;
       flex-direction: column;
@@ -701,6 +759,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Number of skeleton rows when `loadingVariant === 'skeleton'`. */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+
+  /**
+   * Subsequent-load indicator variant: `'bar'` (default), `'spinner'`,
+   * `'dots'`, or `'none'`. Falls back to `CNGX_SELECT_CONFIG.refreshingVariant`.
+   * A projected `*cngxSelectRefreshing` template always wins over this input.
+   */
+  readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
 
   /**
    * Async-state source for options — when bound, replaces `[options]` during
