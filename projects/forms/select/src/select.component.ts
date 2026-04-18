@@ -193,7 +193,16 @@ export interface CngxSelectChange<T = unknown> {
             @if (loadingTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
-              <div class="cngx-select__loading" role="status">Lädt…</div>
+              <div
+                class="cngx-select__skeleton"
+                role="status"
+                aria-live="polite"
+                aria-label="Lädt"
+              >
+                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
+                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
+                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
+              </div>
             }
           }
           @case ('empty') {
@@ -469,6 +478,33 @@ export interface CngxSelectChange<T = unknown> {
       padding: 0.5rem 0.75rem;
       font-style: italic;
       opacity: 0.7;
+    }
+    .cngx-select__skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: var(--cngx-select-skeleton-gap, 0.25rem);
+      padding: var(--cngx-select-skeleton-padding, 0.25rem);
+    }
+    .cngx-select__skeleton-row {
+      height: var(--cngx-select-skeleton-row-height, 1.75rem);
+      border-radius: var(--cngx-select-skeleton-row-radius, 0.125rem);
+      background: linear-gradient(
+        90deg,
+        var(--cngx-skeleton-bg, rgba(0, 0, 0, 0.08)) 25%,
+        var(--cngx-skeleton-shimmer, rgba(0, 0, 0, 0.12)) 50%,
+        var(--cngx-skeleton-bg, rgba(0, 0, 0, 0.08)) 75%
+      );
+      background-size: 200% 100%;
+      animation: cngx-select-skeleton-shimmer 1.5s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-select__skeleton-row {
+        animation: none;
+      }
+    }
+    @keyframes cngx-select-skeleton-shimmer {
+      from { background-position: 200% 0; }
+      to { background-position: -200% 0; }
     }
     .cngx-select__error {
       display: flex;

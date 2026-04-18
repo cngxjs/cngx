@@ -108,10 +108,10 @@ test.describe('CngxSelect demo', () => {
 
     await section.getByRole('button', { name: 'loading' }).click();
     await trigger.click();
-    await expect(section.locator('.cngx-select__loading')).toBeVisible();
+    await expect(section.locator('.cngx-select__skeleton')).toBeVisible();
 
     await section.getByRole('button', { name: 'success', exact: true }).click();
-    await expect(section.locator('.cngx-select__loading')).toHaveCount(0);
+    await expect(section.locator('.cngx-select__skeleton')).toHaveCount(0);
     await expect(section.locator('[cngxOption]')).toHaveCount(4);
   });
 

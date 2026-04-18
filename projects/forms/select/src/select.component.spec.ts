@@ -459,12 +459,13 @@ describe('CngxSelect — async state consumer', () => {
     expect(flatOptions.map((o) => o.value)).toEqual(['red', 'green', 'blue']);
   });
 
-  it('shows loading template when state is loading (first load)', () => {
+  it('shows skeleton rows when state is loading (first load)', () => {
     const { fixture, host, panel, triggerBtn } = setup();
     host.state.set('loading');
     triggerBtn.click();
     flush(fixture);
-    expect(panel().querySelector('.cngx-select__loading')).toBeTruthy();
+    expect(panel().querySelector('.cngx-select__skeleton')).toBeTruthy();
+    expect(panel().querySelectorAll('.cngx-select__skeleton-row').length).toBeGreaterThan(0);
     expect(panel().querySelector('.cngx-select__option')).toBeFalsy();
   });
 
