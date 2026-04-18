@@ -36,7 +36,7 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -105,6 +105,33 @@ export const STORY: DemoSpec = {
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -386,6 +413,198 @@ export const STORY: DemoSpec = {
         }
       </span>
     </div>
+  </div>`,
+    },
+    {
+      title: 'Loading variants',
+      subtitle:
+        '<code>[loadingVariant]</code> picks one of four built-in first-load visuals: ' +
+        '<code>spinner</code> (default), <code>skeleton</code> (with configurable ' +
+        '<code>[skeletonRowCount]</code>), <code>bar</code>, or <code>text</code>. ' +
+        'Globally configurable via <code>provideSelectConfig(withLoadingVariant(\'skeleton\'), withSkeletonRowCount(5))</code>.',
+      imports: ['CngxSelect'],
+      template: `
+  <cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [loadingVariant]="loadingVariantSel()"
+    [skeletonRowCount]="5"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['spinner','skeleton','bar','text']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="lv" [value]="v" [checked]="loadingVariantSel() === v" (change)="loadingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantLoading()">loading</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Refreshing variants',
+      subtitle:
+        '<code>[refreshingVariant]</code> controls the subsequent-load indicator when options stay visible: ' +
+        '<code>bar</code> (default), <code>spinner</code>, <code>dots</code>, or <code>none</code>. ' +
+        'Triggered by <code>state.status() === \'refreshing\'</code>.',
+      imports: ['CngxSelect'],
+      template: `
+  <cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [refreshingVariant]="refreshingVariantSel()"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['bar','spinner','dots','none']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="rv" [value]="v" [checked]="refreshingVariantSel() === v" (change)="refreshingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantRefreshing()">refreshing</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Template override: custom caret',
+      subtitle:
+        'Project a <code>*cngxSelectCaret</code> template — the default ▾ glyph gets replaced ' +
+        'with any markup you want, with <code>let-open="open"</code> available for rotation state.',
+      imports: ['CngxSelect', 'CngxSelectCaret'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCaret let-open="open">
+      <span
+        aria-hidden="true"
+        [style.display]="'inline-block'"
+        [style.transform]="open ? 'rotate(180deg)' : 'rotate(0deg)'"
+        [style.transition]="'transform 0.15s ease'"
+      >▾</span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Template override: custom check',
+      subtitle:
+        'Project <code>*cngxSelectCheck</code> to replace the ✓ glyph shown on the selected row. ' +
+        'Context: <code>let-option</code>, <code>let-selected="selected"</code>.',
+      imports: ['CngxSelect', 'CngxSelectCheck'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCheck let-option let-selected="selected">
+      @if (selected) {
+        <span style="color:#2e7d32" aria-hidden="true">●</span>
+      }
+    </ng-template>
+  </cngx-select>`,
+    },
+    {
+      title: 'Template override: rich trigger label',
+      subtitle:
+        '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your ' +
+        'own markup — ideal for icons + label combos that mirror the option rendering.',
+      imports: ['CngxSelect', 'CngxSelectTriggerLabel'],
+      template: `
+  <cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectTriggerLabel let-opt>
+      <span>{{ opt?.meta?.icon }}</span>
+      <strong>{{ opt?.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Fixed-width panel (number)',
+      subtitle:
+        '<code>[panelWidth]="400"</code> locks the panel\'s min-inline-size to 400px, independent ' +
+        'of the trigger width. <code>\'trigger\'</code> (default) matches trigger width via CSS ' +
+        '<code>anchor-size()</code>; <code>null</code> lets the panel size to content.',
+      imports: ['CngxSelect'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="fixedWidthValue"
+    placeholder="Farbe wählen…"
+    [panelWidth]="400"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
+  </div>`,
+    },
+    {
+      title: 'Keyboard: PageUp/PageDown on a long list',
+      subtitle:
+        'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a ' +
+        'time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still ' +
+        'works — focus the trigger and press a letter to commit without opening.',
+      imports: ['CngxSelect'],
+      template: `
+  <cngx-select
+    [label]="'Item'"
+    [options]="manyOptions"
+    [(value)]="manyValue"
+    placeholder="Item wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
+  </div>`,
+    },
+    {
+      title: 'Autofocus on mount',
+      subtitle:
+        '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, ' +
+        'later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).',
+      imports: ['CngxSelect'],
+      template: `
+  <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
+    {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
+  </button>
+  @if (autofocusVisible()) {
+    <cngx-select
+      [label]="'Farbe'"
+      [options]="colors"
+      [(value)]="autofocusValue"
+      [autofocus]="true"
+      placeholder="Autofocus…"
+    />
+  }
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
   </div>`,
     },
     {

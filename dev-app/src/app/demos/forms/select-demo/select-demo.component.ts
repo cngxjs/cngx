@@ -9,7 +9,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -33,6 +33,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     CngxSelectOptionLabel,
     CngxSelectEmpty,
     CngxSelectError,
+    CngxSelectCaret,
+    CngxSelectCheck,
+    CngxSelectTriggerLabel,
     CngxFormField,
     CngxLabel,
     CngxFieldErrors,
@@ -259,10 +262,181 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Signal Forms (required)"
+      <app-example-card title="Loading variants"
         [subtitle]="_s9"
         [sourceHtml]="_srcHtml9"
         [sourceTs]="_srcTs9">
+        
+  <cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [loadingVariant]="loadingVariantSel()"
+    [skeletonRowCount]="5"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['spinner','skeleton','bar','text']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="lv" [value]="v" [checked]="loadingVariantSel() === v" (change)="loadingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantLoading()">loading</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Refreshing variants"
+        [subtitle]="_s10"
+        [sourceHtml]="_srcHtml10"
+        [sourceTs]="_srcTs10">
+        
+  <cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [refreshingVariant]="refreshingVariantSel()"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['bar','spinner','dots','none']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="rv" [value]="v" [checked]="refreshingVariantSel() === v" (change)="refreshingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantRefreshing()">refreshing</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Template override: custom caret"
+        [subtitle]="_s11"
+        [sourceHtml]="_srcHtml11"
+        [sourceTs]="_srcTs11">
+        
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCaret let-open="open">
+      <span
+        aria-hidden="true"
+        [style.display]="'inline-block'"
+        [style.transform]="open ? 'rotate(180deg)' : 'rotate(0deg)'"
+        [style.transition]="'transform 0.15s ease'"
+      >▾</span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Template override: custom check"
+        [subtitle]="_s12"
+        [sourceHtml]="_srcHtml12"
+        [sourceTs]="_srcTs12">
+        
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCheck let-option let-selected="selected">
+      @if (selected) {
+        <span style="color:#2e7d32" aria-hidden="true">●</span>
+      }
+    </ng-template>
+  </cngx-select>
+      </app-example-card>
+      <app-example-card title="Template override: rich trigger label"
+        [subtitle]="_s13"
+        [sourceHtml]="_srcHtml13"
+        [sourceTs]="_srcTs13">
+        
+  <cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectTriggerLabel let-opt>
+      <span>{{ opt?.meta?.icon }}</span>
+      <strong>{{ opt?.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Fixed-width panel (number)"
+        [subtitle]="_s14"
+        [sourceHtml]="_srcHtml14"
+        [sourceTs]="_srcTs14">
+        
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="fixedWidthValue"
+    placeholder="Farbe wählen…"
+    [panelWidth]="400"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Keyboard: PageUp/PageDown on a long list"
+        [subtitle]="_s15"
+        [sourceHtml]="_srcHtml15"
+        [sourceTs]="_srcTs15">
+        
+  <cngx-select
+    [label]="'Item'"
+    [options]="manyOptions"
+    [(value)]="manyValue"
+    placeholder="Item wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Autofocus on mount"
+        [subtitle]="_s16"
+        [sourceHtml]="_srcHtml16"
+        [sourceTs]="_srcTs16">
+        
+  <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
+    {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
+  </button>
+  @if (autofocusVisible()) {
+    <cngx-select
+      [label]="'Farbe'"
+      [options]="colors"
+      [(value)]="autofocusValue"
+      [autofocus]="true"
+      placeholder="Autofocus…"
+    />
+  }
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Signal Forms (required)"
+        [subtitle]="_s17"
+        [sourceHtml]="_srcHtml17"
+        [sourceTs]="_srcTs17">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -279,9 +453,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Reactive Forms (adaptFormControl)"
-        [subtitle]="_s10"
-        [sourceHtml]="_srcHtml10"
-        [sourceTs]="_srcTs10">
+        [subtitle]="_s18"
+        [sourceHtml]="_srcHtml18"
+        [sourceTs]="_srcTs18">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -306,8 +480,16 @@ export class SelectDemoComponent {
   protected readonly _s6 = 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.';
   protected readonly _s7 = '<code>[state]</code> drives the panel via <code>CngxAsyncState</code>: loading → skeleton, success → options, empty → empty template, refreshing → top-bar + options, error → retry panel. Replaces <code>[options]</code> while the state has data.';
   protected readonly _s8 = '<code>[commitAction]</code> defers selection until the async write resolves. <code>[commitMode]="optimistic"</code> closes the panel immediately and rolls back on error; <code>[commitMode]="pessimistic"</code> keeps the panel open with a pending spinner on the picked option and shows an inline banner on error.';
-  protected readonly _s9 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
-  protected readonly _s10 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
+  protected readonly _s9 = '<code>[loadingVariant]</code> picks one of four built-in first-load visuals: <code>spinner</code> (default), <code>skeleton</code> (with configurable <code>[skeletonRowCount]</code>), <code>bar</code>, or <code>text</code>. Globally configurable via <code>provideSelectConfig(withLoadingVariant(\'skeleton\'), withSkeletonRowCount(5))</code>.';
+  protected readonly _s10 = '<code>[refreshingVariant]</code> controls the subsequent-load indicator when options stay visible: <code>bar</code> (default), <code>spinner</code>, <code>dots</code>, or <code>none</code>. Triggered by <code>state.status() === \'refreshing\'</code>.';
+  protected readonly _s11 = 'Project a <code>*cngxSelectCaret</code> template — the default ▾ glyph gets replaced with any markup you want, with <code>let-open="open"</code> available for rotation state.';
+  protected readonly _s12 = 'Project <code>*cngxSelectCheck</code> to replace the ✓ glyph shown on the selected row. Context: <code>let-option</code>, <code>let-selected="selected"</code>.';
+  protected readonly _s13 = '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your own markup — ideal for icons + label combos that mirror the option rendering.';
+  protected readonly _s14 = '<code>[panelWidth]="400"</code> locks the panel\'s min-inline-size to 400px, independent of the trigger width. <code>\'trigger\'</code> (default) matches trigger width via CSS <code>anchor-size()</code>; <code>null</code> lets the panel size to content.';
+  protected readonly _s15 = 'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still works — focus the trigger and press a letter to commit without opening.';
+  protected readonly _s16 = '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).';
+  protected readonly _s17 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
+  protected readonly _s18 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -324,7 +506,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -393,6 +575,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -455,7 +664,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -524,6 +733,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -597,7 +833,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -666,6 +902,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -718,7 +981,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -787,6 +1050,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -839,7 +1129,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -908,6 +1198,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -965,7 +1282,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1034,6 +1351,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -1093,7 +1437,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1162,6 +1506,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -1231,7 +1602,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1300,6 +1671,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -1372,7 +1770,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1442,6 +1840,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
 
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
   protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
@@ -1479,7 +1904,1242 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml9 = `<cngx-form-field [field]="singleForm.color">
+  protected readonly _srcHtml9 = `<cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [loadingVariant]="loadingVariantSel()"
+    [skeletonRowCount]="5"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['spinner','skeleton','bar','text']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="lv" [value]="v" [checked]="loadingVariantSel() === v" (change)="loadingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantLoading()">loading</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs9 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml10 = `<cngx-select
+    [label]="'Sprache'"
+    [state]="variantState"
+    [refreshingVariant]="refreshingVariantSel()"
+    [(value)]="variantValue"
+    placeholder="Sprache wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px;gap:8px">
+    <div class="event-row" style="gap:8px">
+      <span class="event-label">Variant</span>
+      @for (v of ['bar','spinner','dots','none']; track v) {
+        <label style="display:inline-flex;align-items:center;gap:4px">
+          <input type="radio" name="rv" [value]="v" [checked]="refreshingVariantSel() === v" (change)="refreshingVariantSel.set($any(v))" /> {{ v }}
+        </label>
+      }
+    </div>
+    <div class="event-row" style="gap:8px">
+      <button type="button" class="chip" (click)="triggerVariantRefreshing()">refreshing</button>
+      <button type="button" class="chip" (click)="triggerVariantSuccess()">success</button>
+    </div>
+  </div>`;
+  protected readonly _srcTs10 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml11 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCaret let-open="open">
+      <span
+        aria-hidden="true"
+        [style.display]="'inline-block'"
+        [style.transform]="open ? 'rotate(180deg)' : 'rotate(0deg)'"
+        [style.transition]="'transform 0.15s ease'"
+      >▾</span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs11 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml12 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+  >
+    <ng-template cngxSelectCheck let-option let-selected="selected">
+      @if (selected) {
+        <span style="color:#2e7d32" aria-hidden="true">●</span>
+      }
+    </ng-template>
+  </cngx-select>`;
+  protected readonly _srcTs12 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml13 = `<cngx-select
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectTriggerLabel let-opt>
+      <span>{{ opt?.meta?.icon }}</span>
+      <strong>{{ opt?.label }}</strong>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs13 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml14 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="fixedWidthValue"
+    placeholder="Farbe wählen…"
+    [panelWidth]="400"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
+  </div>`;
+  protected readonly _srcTs14 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml15 = `<cngx-select
+    [label]="'Item'"
+    [options]="manyOptions"
+    [(value)]="manyValue"
+    placeholder="Item wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
+  </div>`;
+  protected readonly _srcTs15 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml16 = `<button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
+    {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
+  </button>
+  @if (autofocusVisible()) {
+    <cngx-select
+      [label]="'Farbe'"
+      [options]="colors"
+      [(value)]="autofocusValue"
+      [autofocus]="true"
+      placeholder="Autofocus…"
+    />
+  }
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs16 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml17 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -1492,12 +3152,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
     </div>
   </div>`;
-  protected readonly _srcTs9 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs17 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1567,6 +3227,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
 
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
   protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
@@ -1604,7 +3291,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml10 = `<cngx-form-field [field]="rfField">
+  protected readonly _srcHtml18 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -1613,12 +3300,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
     <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
   </div>`;
-  protected readonly _srcTs10 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs18 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1687,6 +3374,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
@@ -1788,6 +3502,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
 
   // Commit action
   protected readonly commitValue = signal<string | undefined>('red');
