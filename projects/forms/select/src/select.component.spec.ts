@@ -7,6 +7,7 @@ import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
@@ -391,5 +392,133 @@ describe('CngxSelect — form-field integration', () => {
     ref.touched.set(true);
     flush(fixture);
     expect(select.errorState()).toBe(true);
+  });
+});
+
+// ── [state] consumer ─────────────────────────────────────────────────
+
+@Component({
+  selector: 'state-consumer-host',
+  template: `
+    <cngx-select
+      [label]="'Farbe'"
+      [state]="state"
+      [retryFn]="retryFn"
+      [(value)]="value"
+      (retry)="retryCount.set(retryCount() + 1)"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class StateConsumerHost {
+  readonly state: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  readonly value = signal<string | undefined>(undefined);
+  readonly retryCount = signal(0);
+  reloadCalls = 0;
+  readonly retryFn = (): void => {
+    this.reloadCalls += 1;
+  };
+}
+
+describe('CngxSelect — async state consumer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StateConsumerHost] });
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<StateConsumerHost>>;
+    select: CngxSelect<string>;
+    host: StateConsumerHost;
+    panel: () => HTMLElement;
+    triggerBtn: HTMLButtonElement;
+  } {
+    const fixture = TestBed.createComponent(StateConsumerHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    return {
+      fixture,
+      select: selectDe.componentInstance as CngxSelect<string>,
+      host: fixture.componentInstance,
+      panel: () => selectDe.nativeElement.querySelector('.cngx-select__panel') as HTMLElement,
+      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
+    };
+  }
+
+  it('reads options from state.data() when state is set', () => {
+    const { fixture, select, host } = setup();
+    host.state.setSuccess(OPTIONS);
+    flush(fixture);
+    const optionList = select.options();
+    // options input is still empty array — the flatOptions must come from state
+    expect(optionList.length).toBe(0);
+    const flatOptions = (select as unknown as { flatOptions: () => CngxSelectOptionDef<string>[] })
+      .flatOptions();
+    expect(flatOptions.map((o) => o.value)).toEqual(['red', 'green', 'blue']);
+  });
+
+  it('shows loading template when state is loading (first load)', () => {
+    const { fixture, host, panel, triggerBtn } = setup();
+    host.state.set('loading');
+    triggerBtn.click();
+    flush(fixture);
+    expect(panel().querySelector('.cngx-select__loading')).toBeTruthy();
+    expect(panel().querySelector('.cngx-select__option')).toBeFalsy();
+  });
+
+  it('shows empty template when state is success with empty data', () => {
+    const { fixture, host, panel, triggerBtn } = setup();
+    host.state.setSuccess([]);
+    triggerBtn.click();
+    flush(fixture);
+    expect(panel().querySelector('.cngx-select__empty')).toBeTruthy();
+  });
+
+  it('shows error panel with retry when state is error (first load)', () => {
+    const { fixture, host, panel, triggerBtn } = setup();
+    host.state.setError(new Error('network'));
+    triggerBtn.click();
+    flush(fixture);
+    const errorEl = panel().querySelector('.cngx-select__error');
+    expect(errorEl).toBeTruthy();
+    const retryBtn = errorEl!.querySelector('button.cngx-select__error-retry') as HTMLButtonElement;
+    retryBtn.click();
+    flush(fixture);
+    expect(host.reloadCalls).toBe(1);
+    expect(host.retryCount()).toBe(1);
+  });
+
+  it('renders options + refresh indicator when state is refreshing', () => {
+    const { fixture, host, panel, triggerBtn } = setup();
+    host.state.setSuccess(OPTIONS);
+    host.state.set('refreshing');
+    triggerBtn.click();
+    flush(fixture);
+    expect(panel().querySelector('.cngx-select__refreshing')).toBeTruthy();
+    expect(panel().querySelectorAll('.cngx-select__option').length).toBe(3);
+  });
+
+  it('falls back to [options] when state is null', () => {
+    // Re-render with a host that has no state binding — ensures static array still works.
+    @Component({
+      selector: 'static-options-host',
+      template: `<cngx-select [options]="options" [(value)]="value" />`,
+      imports: [CngxSelect],
+    })
+    class StaticOptionsHost {
+      readonly options = OPTIONS;
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.resetTestingModule();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StaticOptionsHost] });
+    const fixture = TestBed.createComponent(StaticOptionsHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
+    const lb = listboxDe.injector.get(CngxListbox);
+    expect(lb.options().length).toBe(3);
   });
 });

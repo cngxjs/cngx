@@ -100,4 +100,44 @@ test.describe('CngxSelect demo', () => {
       section.locator('.event-row', { hasText: 'RF control value' }).locator('.event-value'),
     ).toHaveText('blue');
   });
+
+  test('async state: loading shows skeleton, success shows options', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Async state consumer');
+    const trigger = section.locator('cngx-select button').first();
+
+    await section.getByRole('button', { name: 'loading' }).click();
+    await trigger.click();
+    await expect(section.locator('.cngx-select__loading')).toBeVisible();
+
+    await section.getByRole('button', { name: 'success', exact: true }).click();
+    await expect(section.locator('.cngx-select__loading')).toHaveCount(0);
+    await expect(section.locator('[cngxOption]')).toHaveCount(4);
+  });
+
+  test('async state: error panel invokes retry callback', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Async state consumer');
+    const trigger = section.locator('cngx-select button').first();
+
+    await section.getByRole('button', { name: 'error' }).click();
+    await trigger.click();
+    await expect(section.getByText(/Laden fehlgeschlagen/)).toBeVisible();
+
+    await section.getByRole('button', { name: 'Erneut laden' }).click();
+    await expect(
+      section.locator('.event-row', { hasText: 'Reload calls' }).locator('.event-value'),
+    ).toHaveText('1');
+  });
+
+  test('async state: refreshing shows top-bar while options stay visible', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Async state consumer');
+    const trigger = section.locator('cngx-select button').first();
+
+    await section.getByRole('button', { name: 'refreshing' }).click();
+    await trigger.click();
+    await expect(section.locator('.cngx-select__refreshing')).toBeVisible();
+    await expect(section.locator('[cngxOption]')).toHaveCount(4);
+  });
 });

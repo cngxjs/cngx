@@ -15,6 +15,9 @@ import {
   viewChild,
 } from '@angular/core';
 
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
+
 import {
   CngxClickOutside,
   CngxListbox,
@@ -44,10 +47,12 @@ import {
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectEmpty,
+  CngxSelectError,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionLabel,
   CngxSelectPlaceholder,
+  CngxSelectRefreshing,
   CngxSelectTriggerLabel,
 } from './shared/template-slots';
 
@@ -183,20 +188,60 @@ export interface CngxSelectChange<T = unknown> {
         [compareWith]="listboxCompareWith()"
         [(value)]="value"
       >
-        @if (loading()) {
-          @if (loadingTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else {
-            <div class="cngx-select__loading" role="status">Lädt…</div>
+        @switch (activeView()) {
+          @case ('skeleton') {
+            @if (loadingTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            } @else {
+              <div class="cngx-select__loading" role="status">Lädt…</div>
+            }
           }
-        } @else if (flatOptions().length === 0) {
-          @if (emptyTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
-          } @else {
-            <div class="cngx-select__empty">Keine Optionen</div>
+          @case ('empty') {
+            @if (emptyTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            } @else {
+              <div class="cngx-select__empty">Keine Optionen</div>
+            }
           }
-        } @else {
-          @for (item of options(); track $index) {
+          @case ('none') {
+            @if (emptyTpl(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            } @else {
+              <div class="cngx-select__empty">Keine Optionen</div>
+            }
+          }
+          @case ('error') {
+            @if (errorTpl(); as tpl) {
+              <ng-container
+                *ngTemplateOutlet="tpl.templateRef; context: errorContext()"
+              />
+            } @else {
+              <div class="cngx-select__error" role="alert">
+                <span class="cngx-select__error-message">Laden fehlgeschlagen</span>
+                <button
+                  type="button"
+                  class="cngx-select__error-retry"
+                  (click)="handleRetry()"
+                >
+                  Nochmal versuchen
+                </button>
+              </div>
+            }
+          }
+          @default {
+            @if (showRefreshIndicator()) {
+              @if (refreshingTpl(); as tpl) {
+                <ng-container *ngTemplateOutlet="tpl.templateRef" />
+              } @else {
+                <div
+                  class="cngx-select__refreshing"
+                  role="status"
+                  aria-live="polite"
+                  aria-label="Aktualisiere"
+                ></div>
+              }
+            }
+            @for (item of effectiveOptions(); track $index) {
             @if (isGroup(item)) {
               <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
                 @if (optgroupTpl(); as tpl) {
@@ -282,6 +327,7 @@ export interface CngxSelectChange<T = unknown> {
               </div>
             }
           }
+        }
         }
       </div>
     </div>
@@ -406,6 +452,48 @@ export interface CngxSelectChange<T = unknown> {
       font-style: italic;
       opacity: 0.7;
     }
+    .cngx-select__error {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--cngx-select-error-gap, 0.5rem);
+      padding: var(--cngx-select-error-padding, 0.5rem 0.75rem);
+      color: var(--cngx-select-error-color, var(--cngx-error, #b71c1c));
+    }
+    .cngx-select__error-message {
+      font-weight: 500;
+    }
+    .cngx-select__error-retry {
+      appearance: none;
+      border: var(--cngx-select-error-retry-border, 1px solid currentColor);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.125rem;
+      cursor: pointer;
+    }
+    .cngx-select__error-retry:focus-visible {
+      outline: 2px solid var(--cngx-focus-ring, #1976d2);
+      outline-offset: 2px;
+    }
+    .cngx-select__refreshing {
+      height: var(--cngx-select-refreshing-height, 2px);
+      margin: calc(-1 * var(--cngx-select-panel-padding, 0.25rem))
+        calc(-1 * var(--cngx-select-panel-padding, 0.25rem)) 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--cngx-select-refreshing-color, var(--cngx-focus-ring, #1976d2)),
+        transparent
+      );
+      background-size: 200% 100%;
+      animation: cngx-select-refresh 1.1s linear infinite;
+    }
+    @keyframes cngx-select-refresh {
+      from { background-position: 100% 0; }
+      to { background-position: -100% 0; }
+    }
   `,
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
@@ -475,6 +563,22 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Display a loading state inside the panel. */
   readonly loading = input<boolean>(false);
 
+  /**
+   * Async-state source for options — when bound, replaces `[options]` during
+   * loading/error/refreshing states and drives the panel's visual mode.
+   *
+   * `[state]` is the primary source when set. `[options]` remains the
+   * fallback for the static-array case. Both together: `[state]` wins.
+   */
+  readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
+
+  /**
+   * Callback invoked when the user clicks the default retry-button in the
+   * error panel (or calls `retry` on the error template). `(retry)` also
+   * fires in both cases.
+   */
+  readonly retryFn = input<(() => void) | null>(null);
+
   /** Per-instance announcer override. */
   readonly announceChanges = input<boolean | undefined>(undefined);
 
@@ -501,6 +605,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Fires with the selected option (null for clear) — sibling to `selectionChange`. */
   readonly optionSelected = output<CngxSelectOptionDef<T> | null>();
 
+  /**
+   * Fires when the user triggers a retry from the error panel (either the
+   * default retry-button or a custom `[cngxSelectError]` template).
+   */
+  readonly retry = output<void>();
+
   // ── Content templates ──────────────────────────────────────────────
 
   /** @internal */
@@ -525,6 +635,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly optionLabelTpl = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
+  /** @internal */
+  protected readonly errorTpl = contentChild(CngxSelectError);
+  /** @internal */
+  protected readonly refreshingTpl = contentChild(CngxSelectRefreshing);
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -669,10 +783,59 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     return `${w}px`;
   });
 
+  /**
+   * @internal — resolved options source: `state.data()` when `[state]` is
+   * bound and has data, else `[options]`.
+   */
+  protected readonly effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
+    const s = this.state();
+    const fromState = s?.data();
+    if (fromState) {
+      return fromState;
+    }
+    return this.options();
+  });
+
   /** @internal — flattened option list for matcher / trigger-label lookups. */
   protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(() =>
-    flattenSelectOptions(this.options()),
+    flattenSelectOptions(this.effectiveOptions()),
   );
+
+  /**
+   * @internal — resolved view mode for the panel, derived from the bound
+   * state (or a simple `loading()`/`options()` fallback when no state is
+   * bound). Encodes the shared async state machine via `resolveAsyncView`.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const s = this.state();
+    if (s) {
+      return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+    }
+    if (this.loading()) {
+      return 'skeleton';
+    }
+    if (this.effectiveOptions().length === 0) {
+      return 'empty';
+    }
+    return 'content';
+  });
+
+  /** @internal — subtle refreshing indicator (options stay visible). */
+  protected readonly showRefreshIndicator = computed<boolean>(() => {
+    const s = this.state();
+    if (!s) {
+      return false;
+    }
+    const status = s.status();
+    return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
+  });
+
+  /** @internal — error context passed to a `[cngxSelectError]` template. */
+  protected readonly errorContext = computed(() => ({
+    $implicit: this.state()?.error(),
+    error: this.state()?.error(),
+    retry: (): void => this.handleRetry(),
+  }));
 
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
@@ -835,6 +998,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         this.close();
       }
     }
+  }
+
+  /** @internal — runs the retry callback and emits `(retry)`. */
+  protected handleRetry(): void {
+    const fn = this.retryFn();
+    if (fn) {
+      fn();
+    }
+    this.retry.emit();
   }
 
   /** @internal */

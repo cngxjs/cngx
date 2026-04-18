@@ -16,6 +16,7 @@
       "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
       "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],
       "@cngx/common/popover": ["dist/common/types/cngx-common-popover.d.ts"],
+      "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
       "@cngx/forms/field": ["projects/forms/field/src/index.ts"]
     }
   },

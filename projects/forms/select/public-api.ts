@@ -64,6 +64,8 @@ export {
   CngxSelectLoading,
   CngxSelectTriggerLabel,
   CngxSelectOptionLabel,
+  CngxSelectError,
+  CngxSelectRefreshing,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -72,4 +74,6 @@ export {
   type CngxSelectLoadingContext,
   type CngxSelectTriggerLabelContext,
   type CngxSelectOptionLabelContext,
+  type CngxSelectErrorContext,
+  type CngxSelectRefreshingContext,
 } from './src/shared/template-slots';

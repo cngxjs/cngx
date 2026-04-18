@@ -20,6 +20,8 @@ export interface CngxSelectTemplateContexts {
   readonly loading?: unknown;
   readonly triggerLabel?: unknown;
   readonly optionLabel?: unknown;
+  readonly error?: unknown;
+  readonly refreshing?: unknown;
 }
 
 /**
@@ -87,6 +89,8 @@ export interface CngxSelectConfig {
     readonly placeholder?: TemplateRef<CngxSelectTemplateContexts['placeholder']> | null;
     readonly empty?: TemplateRef<CngxSelectTemplateContexts['empty']> | null;
     readonly loading?: TemplateRef<CngxSelectTemplateContexts['loading']> | null;
+    readonly error?: TemplateRef<CngxSelectTemplateContexts['error']> | null;
+    readonly refreshing?: TemplateRef<CngxSelectTemplateContexts['refreshing']> | null;
   };
 }
 
@@ -130,6 +134,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
     placeholder: null,
     empty: null,
     loading: null,
+    error: null,
+    refreshing: null,
   },
 };
 

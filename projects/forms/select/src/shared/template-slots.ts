@@ -80,6 +80,25 @@ export interface CngxSelectOptionLabelContext<T = unknown> {
 }
 
 /**
+ * Context for the error panel template (shown when `state()?.isError()`).
+ *
+ * @category interactive
+ */
+export interface CngxSelectErrorContext {
+  readonly $implicit: unknown;
+  readonly error: unknown;
+  readonly retry: () => void;
+}
+
+/**
+ * Context for the refreshing-indicator template (subtle top-bar shown while
+ * `state()?.isRefreshing()` — options remain visible in the panel).
+ *
+ * @category interactive
+ */
+export type CngxSelectRefreshingContext = Record<string, never>;
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -201,4 +220,46 @@ export class CngxSelectTriggerLabel<T = unknown> {
 })
 export class CngxSelectOptionLabel<T = unknown> {
   readonly templateRef = inject<TemplateRef<CngxSelectOptionLabelContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the panel's error state (shown when the bound
+ * `[state]`'s status is `'error'`). Receives the error value and a `retry`
+ * callback that invokes `[retryFn]` and emits `(retry)`.
+ *
+ * @example
+ * ```html
+ * <cngx-select [state]="colorsState" [retryFn]="reload">
+ *   <ng-template cngxSelectError let-error let-retry="retry">
+ *     <p>Laden fehlgeschlagen: {{ error }}</p>
+ *     <button (click)="retry()">Nochmal versuchen</button>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectError]',
+  standalone: true,
+  exportAs: 'cngxSelectError',
+})
+export class CngxSelectError {
+  readonly templateRef = inject<TemplateRef<CngxSelectErrorContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the panel's refreshing indicator (subtle top-bar
+ * shown while the bound `[state]`'s status is `'refreshing'` — options stay
+ * visible below it).
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectRefreshing]',
+  standalone: true,
+  exportAs: 'cngxSelectRefreshing',
+})
+export class CngxSelectRefreshing {
+  readonly templateRef = inject<TemplateRef<CngxSelectRefreshingContext>>(TemplateRef);
 }
