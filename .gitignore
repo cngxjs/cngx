@@ -62,3 +62,4 @@ CNGX_LLM_REFERENCE.md
 /test-results/
 /playwright-report/
 /playwright/.cache/
+.vscode/
