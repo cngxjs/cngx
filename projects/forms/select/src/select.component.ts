@@ -818,6 +818,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * Auto-focuses the trigger on first render. Complements the native
    * `autofocus` attribute pattern — useful inside dialogs and wizards
    * where the select should receive focus on open.
+   *
+   * **Evaluated once at first render.** Later changes of the bound
+   * expression do not re-trigger focus — matches the native `autofocus`
+   * attribute's one-shot semantic. Use `.focus()` imperatively to focus
+   * the trigger from outside the initialization path.
    */
   readonly autofocus = input<boolean>(false);
 
@@ -1349,7 +1354,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.lastCommittedValue = untracked(() => this.value());
 
     // Honor [autofocus] on first render — outside the reactive graph since
-    // it's a one-shot DOM side effect, not signal-driven.
+    // it's a one-shot DOM side effect, not signal-driven. Signal reads
+    // inside afterNextRender are automatically untracked.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();

@@ -362,7 +362,16 @@ export function provideSelectConfig(
 
 /**
  * Component-scoped config override. Returned providers go into a component's
- * `providers` or `viewProviders`.
+ * `providers` or `viewProviders` via spread syntax — the return type is
+ * `Provider[]`, NOT `EnvironmentProviders`, because `viewProviders` cannot
+ * accept opaque environment providers.
+ *
+ * @example
+ * ```ts
+ * @Component({
+ *   viewProviders: [...provideSelectConfigAt(withPanelWidth(300))],
+ * })
+ * ```
  *
  * @category interactive
  */
