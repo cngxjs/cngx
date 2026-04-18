@@ -140,4 +140,19 @@ test.describe('CngxSelect demo', () => {
     await expect(section.locator('.cngx-select__refreshing')).toBeVisible();
     await expect(section.locator('[cngxOption]')).toHaveCount(4);
   });
+
+  test('typeahead-while-closed commits a value without opening the panel', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Standalone');
+    const trigger = section.locator('cngx-select button').first();
+    await trigger.focus();
+
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await page.keyboard.press('g');
+    // Panel must stay closed AND the value must have changed to the first G match
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(
+      section.locator('.event-row', { hasText: 'Value' }).locator('.event-value'),
+    ).toHaveText('green');
+  });
 });

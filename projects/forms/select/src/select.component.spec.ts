@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Subject, type Observable } from 'rxjs';
 
@@ -14,6 +14,14 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
+import { CngxSelectAnnouncer } from './shared/announcer';
+import {
+  CNGX_SELECT_CONFIG,
+  provideSelectConfig,
+  provideSelectConfigAt,
+  withPanelWidth,
+  withLoadingVariant,
+} from './shared/config';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './shared/option.model';
 import type {
   CngxSelectCommitAction,
@@ -854,5 +862,242 @@ describe('CngxSelect — commit action producer', () => {
       .query(By.directive(CngxSelect))
       .injector.get(CNGX_STATEFUL);
     expect(stateful.state).toBe(select.commitState);
+  });
+});
+
+// ── Announcer + autofocus + config cascade ───────────────────────────
+
+@Component({
+  selector: 'announcer-host',
+  template: `
+    <cngx-select [label]="'Lang'" [options]="options" [(value)]="value" />
+  `,
+  imports: [CngxSelect],
+})
+class AnnouncerHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+@Component({
+  selector: 'announcer-off-host',
+  template: `
+    <cngx-select
+      [label]="'Lang'"
+      [options]="options"
+      [(value)]="value"
+      [announceChanges]="false"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class AnnouncerOffHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect — announcer', () => {
+  beforeEach(() => polyfillPopover());
+
+  it('announces selection changes via the live region', () => {
+    TestBed.configureTestingModule({ imports: [AnnouncerHost] });
+    const announcer = TestBed.inject(CngxSelectAnnouncer);
+    const spy = vi.spyOn(announcer, 'announce');
+    const fixture = TestBed.createComponent(AnnouncerHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const firstOption = fixture.debugElement.nativeElement.querySelector(
+      '[cngxOption]',
+    ) as HTMLElement;
+    firstOption.click();
+    flush(fixture);
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('suppresses announcements when [announceChanges]="false"', () => {
+    TestBed.configureTestingModule({ imports: [AnnouncerOffHost] });
+    const announcer = TestBed.inject(CngxSelectAnnouncer);
+    const spy = vi.spyOn(announcer, 'announce');
+    const fixture = TestBed.createComponent(AnnouncerOffHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const firstOption = fixture.debugElement.nativeElement.querySelector(
+      '[cngxOption]',
+    ) as HTMLElement;
+    firstOption.click();
+    flush(fixture);
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+@Component({
+  selector: 'autofocus-host',
+  template: `
+    <cngx-select [label]="'Lang'" [options]="options" [(value)]="value" [autofocus]="true" />
+  `,
+  imports: [CngxSelect],
+})
+class AutofocusHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect — autofocus', () => {
+  beforeEach(() => polyfillPopover());
+
+  it('[autofocus]="true" focuses the trigger after first render', async () => {
+    TestBed.configureTestingModule({ imports: [AutofocusHost] });
+    const fixture = TestBed.createComponent(AutofocusHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    flush(fixture);
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    expect(document.activeElement).toBe(trigger);
+  });
+});
+
+@Component({
+  selector: 'config-cascade-host',
+  template: `<cngx-select [label]="'X'" [options]="options" [(value)]="value" />`,
+  imports: [CngxSelect],
+})
+class ConfigCascadeHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+@Component({
+  selector: 'config-cascade-input-host',
+  template: `
+    <cngx-select [label]="'X'" [options]="options" [(value)]="value" [panelWidth]="'trigger'" />
+  `,
+  imports: [CngxSelect],
+})
+class ConfigCascadeInputHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>(undefined);
+}
+
+describe('CngxSelect — config cascade (input > component-scope > app-scope > default)', () => {
+  beforeEach(() => polyfillPopover());
+
+  it('app-scope provideSelectConfig sets default panelWidth', () => {
+    TestBed.configureTestingModule({
+      imports: [ConfigCascadeHost],
+      providers: [provideSelectConfig(withPanelWidth(200))],
+    });
+    const fixture = TestBed.createComponent(ConfigCascadeHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('200px');
+  });
+
+  it('per-instance input wins over app-scope config', () => {
+    TestBed.configureTestingModule({
+      imports: [ConfigCascadeInputHost],
+      providers: [provideSelectConfig(withPanelWidth(200))],
+    });
+    const fixture = TestBed.createComponent(ConfigCascadeInputHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('anchor-size(width)');
+  });
+
+  it('component-scope provideSelectConfigAt overrides app-scope', () => {
+    @Component({
+      selector: 'scoped-host',
+      template: `<cngx-select [label]="'X'" [options]="options" [(value)]="value" />`,
+      imports: [CngxSelect],
+      viewProviders: [...provideSelectConfigAt(withPanelWidth(300))],
+    })
+    class ScopedHost {
+      readonly options = OPTIONS;
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.configureTestingModule({
+      imports: [ScopedHost],
+      providers: [provideSelectConfig(withPanelWidth(100))],
+    });
+    const fixture = TestBed.createComponent(ScopedHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.style.getPropertyValue('--cngx-select-panel-min-width')).toBe('300px');
+  });
+
+  it('loadingVariant config applied across instances', () => {
+    @Component({
+      selector: 'lv-host',
+      template: `
+        <cngx-select [label]="'X'" [state]="state" [(value)]="value" />
+      `,
+      imports: [CngxSelect],
+    })
+    class LvHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.configureTestingModule({
+      imports: [LvHost],
+      providers: [provideSelectConfig(withLoadingVariant('bar'))],
+    });
+    const fixture = TestBed.createComponent(LvHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.state.set('loading');
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.querySelector('.cngx-select__loading-bar')).toBeTruthy();
+  });
+
+  it('exposes config via injectSelectConfig()', () => {
+    @Component({
+      selector: 'inject-host',
+      template: ``,
+      imports: [],
+    })
+    class InjectHost {
+      readonly config = injectSelectConfig();
+    }
+    TestBed.configureTestingModule({
+      imports: [InjectHost],
+      providers: [provideSelectConfig(withPanelWidth(250))],
+    });
+    const fixture = TestBed.createComponent(InjectHost);
+    expect(fixture.componentInstance.config.panelWidth).toBe(250);
+  });
+
+  it('raw CNGX_SELECT_CONFIG token is populated by provideSelectConfig', () => {
+    TestBed.configureTestingModule({
+      providers: [provideSelectConfig(withPanelWidth(500))],
+    });
+    const raw = TestBed.inject(CNGX_SELECT_CONFIG);
+    expect(raw.panelWidth).toBe(500);
   });
 });

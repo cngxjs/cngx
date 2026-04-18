@@ -1,5 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -813,6 +814,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Trigger tab index. Defaults to `0`. */
   readonly tabIndex = input<number>(0);
 
+  /**
+   * Auto-focuses the trigger on first render. Complements the native
+   * `autofocus` attribute pattern — useful inside dialogs and wizards
+   * where the select should receive focus on open.
+   */
+  readonly autofocus = input<boolean>(false);
+
   /** Classes applied to the panel root. Merged with the library default. */
   readonly panelClass = input<string | readonly string[] | null>(null);
 
@@ -1340,6 +1348,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // subsequent effect handles all later updates.
     this.lastCommittedValue = untracked(() => this.value());
 
+    // Honor [autofocus] on first render — outside the reactive graph since
+    // it's a one-shot DOM side effect, not signal-driven.
+    afterNextRender(() => {
+      if (this.autofocus()) {
+        this.focus();
+      }
+    });
+
     // Snapshot the "last committed value" for rollback targets. Any write
     // that happens OUTSIDE a commit pending state (initial value,
     // programmatic consumer write, commit success/error) refreshes the
@@ -1630,7 +1646,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    // PageUp / PageDown — open and jump ±10.
+    // PageUp / PageDown — open and jump ±10 (clamped, skipping disabled).
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       const lb = this.listboxRef();
@@ -1641,17 +1657,36 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       if (!pop.isVisible()) {
         pop.show();
       }
-      const step = event.key === 'PageDown' ? 10 : -10;
+      const options = lb.options();
+      const total = options.length;
+      if (total === 0) {
+        return;
+      }
       const ad = lb.ad;
-      const total = lb.options().length;
-      const currentLabel = ad.activeId();
-      const currentIdx = lb
-        .options()
-        .findIndex((o) => o.id === currentLabel);
-      const target = Math.max(
-        0,
-        Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step),
-      );
+      const direction = event.key === 'PageDown' ? 1 : -1;
+      const step = 10 * direction;
+      const currentId = ad.activeId();
+      const currentIdx = options.findIndex((o) => o.id === currentId);
+      let target = Math.max(0, Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step));
+      // Scan toward the boundary in `direction` to find the nearest
+      // non-disabled option. Fall back to scanning the other direction
+      // if the boundary side is fully disabled.
+      while (options[target].disabled() && target > 0 && target < total - 1) {
+        target += direction;
+      }
+      if (options[target].disabled()) {
+        // Boundary row is disabled — scan the opposite direction for any
+        // enabled option within the PageDown/Up window.
+        let probe = target - direction;
+        while (probe >= 0 && probe < total && options[probe].disabled()) {
+          probe -= direction;
+        }
+        if (probe >= 0 && probe < total) {
+          target = probe;
+        } else {
+          return;
+        }
+      }
       ad.highlightByIndex(target);
     }
   }
