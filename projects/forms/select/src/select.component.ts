@@ -229,6 +229,24 @@ export interface CngxSelectChange<T = unknown> {
             }
           }
           @default {
+            @if (showInlineError()) {
+              @if (errorTpl(); as tpl) {
+                <ng-container
+                  *ngTemplateOutlet="tpl.templateRef; context: errorContext()"
+                />
+              } @else {
+                <div class="cngx-select__error cngx-select__error--inline" role="alert">
+                  <span class="cngx-select__error-message">Aktualisieren fehlgeschlagen</span>
+                  <button
+                    type="button"
+                    class="cngx-select__error-retry"
+                    (click)="handleRetry()"
+                  >
+                    Nochmal versuchen
+                  </button>
+                </div>
+              }
+            }
             @if (showRefreshIndicator()) {
               @if (refreshingTpl(); as tpl) {
                 <ng-container *ngTemplateOutlet="tpl.templateRef" />
@@ -459,6 +477,17 @@ export interface CngxSelectChange<T = unknown> {
       gap: var(--cngx-select-error-gap, 0.5rem);
       padding: var(--cngx-select-error-padding, 0.5rem 0.75rem);
       color: var(--cngx-select-error-color, var(--cngx-error, #b71c1c));
+    }
+    .cngx-select__error--inline {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: var(--cngx-select-error-inline-padding, 0.375rem 0.5rem);
+      margin-bottom: 0.25rem;
+      border: 1px solid currentColor;
+      border-radius: var(--cngx-select-error-inline-radius, 0.125rem);
+      font-size: 0.875rem;
     }
     .cngx-select__error-message {
       font-weight: 500;
@@ -829,6 +858,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     const status = s.status();
     return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
   });
+
+  /**
+   * @internal — inline error banner on top of stale options (`'content+error'`
+   * view). Renders the same `[cngxSelectError]` template or the default
+   * error banner, only above the options instead of replacing them.
+   */
+  protected readonly showInlineError = computed<boolean>(
+    () => this.activeView() === 'content+error',
+  );
 
   /** @internal — error context passed to a `[cngxSelectError]` template. */
   protected readonly errorContext = computed(() => ({

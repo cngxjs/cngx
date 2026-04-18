@@ -500,6 +500,24 @@ describe('CngxSelect — async state consumer', () => {
     expect(panel().querySelectorAll('.cngx-select__option').length).toBe(3);
   });
 
+  it('renders options + inline error banner when error hits after a success load', () => {
+    const { fixture, host, panel, triggerBtn } = setup();
+    host.state.setSuccess(OPTIONS);
+    host.state.setError(new Error('stale'));
+    triggerBtn.click();
+    flush(fixture);
+    // Stale options remain visible
+    expect(panel().querySelectorAll('.cngx-select__option').length).toBe(3);
+    // Error banner sits above them
+    const banner = panel().querySelector('.cngx-select__error--inline');
+    expect(banner).toBeTruthy();
+    const retryBtn = banner!.querySelector('button.cngx-select__error-retry') as HTMLButtonElement;
+    retryBtn.click();
+    flush(fixture);
+    expect(host.reloadCalls).toBe(1);
+    expect(host.retryCount()).toBe(1);
+  });
+
   it('falls back to [options] when state is null', () => {
     // Re-render with a host that has no state binding — ensures static array still works.
     @Component({
