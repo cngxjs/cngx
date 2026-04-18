@@ -3,8 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { Subject, type Observable } from 'rxjs';
+
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '../../field/src/testing/mock-field';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -12,6 +15,10 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
 import type { CngxSelectOptionDef, CngxSelectOptionsInput } from './shared/option.model';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitMode,
+} from './shared/commit-action.types';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -686,5 +693,166 @@ describe('CngxSelect — async state consumer', () => {
     const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
     const lb = listboxDe.injector.get(CngxListbox);
     expect(lb.options().length).toBe(3);
+  });
+});
+
+// ── [commitAction] producer ──────────────────────────────────────────
+
+@Component({
+  selector: 'commit-host',
+  template: `
+    <cngx-select
+      [label]="'Color'"
+      [options]="options"
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      [(value)]="value"
+      (commitError)="errors.push($event)"
+      (stateChange)="statuses.push($event)"
+    />
+  `,
+  imports: [CngxSelect],
+})
+class CommitHost {
+  readonly options = OPTIONS;
+  readonly value = signal<string | undefined>('red');
+  readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly errors: unknown[] = [];
+  readonly statuses: string[] = [];
+  pending: Subject<string | undefined> | null = null;
+  commitCallCount = 0;
+  readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    this.commitCallCount += 1;
+    const subject = new Subject<string | undefined>();
+    this.pending = subject;
+    return subject.asObservable() as Observable<string | undefined>;
+    void intended;
+  };
+}
+
+describe('CngxSelect — commit action producer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [CommitHost] });
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<CommitHost>>;
+    select: CngxSelect<string>;
+    host: CommitHost;
+    triggerBtn: HTMLButtonElement;
+    firstOption: () => HTMLElement;
+    secondOption: () => HTMLElement;
+  } {
+    const fixture = TestBed.createComponent(CommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const selectDe = fixture.debugElement.query(By.directive(CngxSelect));
+    return {
+      fixture,
+      select: selectDe.componentInstance as CngxSelect<string>,
+      host: fixture.componentInstance,
+      triggerBtn: selectDe.nativeElement.querySelector(
+        'button.cngx-select__trigger',
+      ) as HTMLButtonElement,
+      firstOption: () =>
+        selectDe.nativeElement.querySelector('[cngxOption]:nth-of-type(1)') as HTMLElement,
+      secondOption: () =>
+        selectDe.nativeElement.querySelector('[cngxOption]:nth-of-type(2)') as HTMLElement,
+    };
+  }
+
+  it('optimistic success: value stays at intended, selectionChange emits on success', () => {
+    const { fixture, host, triggerBtn, secondOption } = setup();
+    let lastChange: CngxSelectChange<string> | null = null;
+    fixture.debugElement.query(By.directive(CngxSelect)).componentInstance
+      .selectionChange.subscribe((c: CngxSelectChange<string>) => (lastChange = c));
+
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+
+    // Pending: value reflects intended optimistically, no selectionChange yet
+    expect(host.value()).toBe('green');
+    expect(lastChange).toBeNull();
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.value()).toBe('green');
+    expect(lastChange!.value).toBe('green');
+    expect(host.statuses[host.statuses.length - 1]).toBe('success');
+  });
+
+  it('optimistic error: value rolls back, commitError emits', () => {
+    const { fixture, host, triggerBtn, secondOption } = setup();
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+
+    expect(host.value()).toBe('green');
+
+    const err = new Error('server down');
+    host.pending!.error(err);
+    flush(fixture);
+
+    expect(host.value()).toBe('red');
+    expect(host.errors).toEqual([err]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('pessimistic success: panel stays open during pending, closes on success', () => {
+    const { fixture, host, select, triggerBtn, secondOption } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+
+    expect(select.panelOpen()).toBe(true);
+    expect(host.value()).toBe('green');
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(select.panelOpen()).toBe(false);
+  });
+
+  it('supersede: a second pick aborts the in-flight commit', () => {
+    const { fixture, host, triggerBtn, firstOption, secondOption } = setup();
+    triggerBtn.click();
+    flush(fixture);
+    secondOption().click();
+    flush(fixture);
+    const firstPending = host.pending!;
+    const firstCount = host.commitCallCount;
+
+    // Second pick while first is pending
+    triggerBtn.click();
+    flush(fixture);
+    firstOption().click();
+    flush(fixture);
+    expect(host.commitCallCount).toBeGreaterThan(firstCount);
+
+    // First pending resolves too late — should be ignored
+    const statusesBefore = [...host.statuses];
+    firstPending.next('green');
+    firstPending.complete();
+    flush(fixture);
+    expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('provides CNGX_STATEFUL that resolves to commitState', () => {
+    const { fixture, select } = setup();
+    const stateful = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .injector.get(CNGX_STATEFUL);
+    expect(stateful.state).toBe(select.commitState);
   });
 });

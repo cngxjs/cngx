@@ -48,7 +48,15 @@ export {
   withLoadingVariant,
   withSkeletonRowCount,
   withRefreshingVariant,
+  withCommitErrorDisplay,
 } from './src/shared/config';
+
+// ── Commit action types ───────────────────────────────────────────────
+export {
+  type CngxSelectCommitAction,
+  type CngxSelectCommitMode,
+  type CngxSelectCommitErrorDisplay,
+} from './src/shared/commit-action.types';
 
 // ── Announcer ─────────────────────────────────────────────────────────
 export { CngxSelectAnnouncer } from './src/shared/announcer';
@@ -71,6 +79,7 @@ export {
   CngxSelectOptionLabel,
   CngxSelectError,
   CngxSelectRefreshing,
+  CngxSelectCommitError,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -81,4 +90,5 @@ export {
   type CngxSelectOptionLabelContext,
   type CngxSelectErrorContext,
   type CngxSelectRefreshingContext,
+  type CngxSelectCommitErrorContext,
 } from './src/shared/template-slots';

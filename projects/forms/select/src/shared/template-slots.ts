@@ -99,6 +99,20 @@ export interface CngxSelectErrorContext {
 export type CngxSelectRefreshingContext = Record<string, never>;
 
 /**
+ * Context for the commit-error template (shown when `[commitAction]`
+ * transitions to error). Receives the error, the option the user was
+ * trying to pick, and a `retry` callback that re-invokes the commit.
+ *
+ * @category interactive
+ */
+export interface CngxSelectCommitErrorContext<T = unknown> {
+  readonly $implicit: unknown;
+  readonly error: unknown;
+  readonly option: CngxSelectOptionDef<T> | null;
+  readonly retry: () => void;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -262,4 +276,30 @@ export class CngxSelectError {
 })
 export class CngxSelectRefreshing {
   readonly templateRef = inject<TemplateRef<CngxSelectRefreshingContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the commit-error surface shown when `[commitAction]`
+ * transitions to error. Context exposes the failing option + a retry
+ * callback that re-invokes the commit with the same intended value.
+ *
+ * @example
+ * ```html
+ * <cngx-select [commitAction]="saveColor" [(value)]="color">
+ *   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
+ *     <p>Speichern fehlgeschlagen: {{ error?.message }}</p>
+ *     <button (click)="retry()">Nochmal versuchen</button>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectCommitError]',
+  standalone: true,
+  exportAs: 'cngxSelectCommitError',
+})
+export class CngxSelectCommitError<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxSelectCommitErrorContext<T>>>(TemplateRef);
 }

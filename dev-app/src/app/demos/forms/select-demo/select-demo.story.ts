@@ -36,7 +36,8 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
     "import { createManualState, type ManualAsyncState } from '@cngx/common/data';",
@@ -104,6 +105,20 @@ export const STORY: DemoSpec = {
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -331,6 +346,45 @@ export const STORY: DemoSpec = {
       <button type="button" class="chip" (click)="asyncSetRefreshing()">refreshing</button>
       <button type="button" class="chip" (click)="asyncSetError()">error</button>
       <button type="button" class="chip" (click)="asyncSetEmpty()">empty</button>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Commit action (async write)',
+      subtitle:
+        '<code>[commitAction]</code> defers selection until the async write resolves. ' +
+        '<code>[commitMode]="optimistic"</code> closes the panel immediately and rolls back on error; ' +
+        '<code>[commitMode]="pessimistic"</code> keeps the panel open with a pending spinner ' +
+        'on the picked option and shows an inline banner on error.',
+      imports: ['CngxSelect', 'CngxSelectError'],
+      template: `
+  <cngx-select
+    [label]="'Farbe (commit)'"
+    [options]="colors"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    [(value)]="commitValue"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ commitValue() ?? '—' }}</span></div>
+    <div class="event-row" style="gap:8px;align-items:center">
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="optimistic" [checked]="commitMode() === 'optimistic'" (change)="commitMode.set('optimistic')" /> optimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="pessimistic" [checked]="commitMode() === 'pessimistic'" (change)="commitMode.set('pessimistic')" /> pessimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="checkbox" [checked]="commitShouldFail()" (change)="commitShouldFail.set($any($event.target).checked)" /> simulate error
+      </label>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Log</span>
+      <span class="event-value" style="font-family:monospace;font-size:0.75rem">
+        @for (line of commitLog(); track line; let i = $index) {
+          <div>{{ line }}</div>
+        }
+      </span>
     </div>
   </div>`,
     },

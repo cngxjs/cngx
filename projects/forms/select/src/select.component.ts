@@ -15,8 +15,13 @@ import {
   viewChild,
 } from '@angular/core';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
-import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
+import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
+import {
+  createManualState,
+  resolveAsyncView,
+  type AsyncView,
+  type ManualAsyncState,
+} from '@cngx/common/data';
 
 import {
   CngxClickOutside,
@@ -35,6 +40,15 @@ import {
 
 import { CngxSelectAnnouncer } from './shared/announcer';
 import {
+  runCommitAction,
+  type CngxCommitHandle,
+} from './shared/commit-action.runtime';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitErrorDisplay,
+  CngxSelectCommitMode,
+} from './shared/commit-action.types';
+import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
@@ -50,6 +64,7 @@ import { resolveSelectConfig } from './shared/resolve-config';
 import {
   CngxSelectCaret,
   CngxSelectCheck,
+  CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
@@ -99,7 +114,16 @@ export interface CngxSelectChange<T = unknown> {
     CngxPopoverTrigger,
     NgTemplateOutlet,
   ],
-  providers: [{ provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSelect }],
+  providers: [
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxSelect },
+    {
+      provide: CNGX_STATEFUL,
+      useFactory: (): { readonly state: CngxAsyncState<unknown> } => {
+        const self = inject(CngxSelect);
+        return { state: self.commitState };
+      },
+    },
+  ],
   host: {
     '[id]': 'resolvedId()',
     '[attr.aria-describedby]': 'describedBy()',
@@ -285,6 +309,24 @@ export interface CngxSelectChange<T = unknown> {
                 </div>
               }
             }
+            @if (showCommitError() && commitErrorDisplay() === 'banner') {
+              @if (commitErrorTpl(); as tpl) {
+                <ng-container
+                  *ngTemplateOutlet="tpl.templateRef; context: commitErrorContext()"
+                />
+              } @else {
+                <div class="cngx-select__commit-error" role="alert">
+                  <span class="cngx-select__error-message">Speichern fehlgeschlagen</span>
+                  <button
+                    type="button"
+                    class="cngx-select__error-retry"
+                    (click)="commitErrorContext().retry()"
+                  >
+                    Nochmal versuchen
+                  </button>
+                </div>
+              }
+            }
             @if (showRefreshIndicator()) {
               @if (refreshingTpl(); as tpl) {
                 <ng-container *ngTemplateOutlet="tpl.templateRef" />
@@ -341,6 +383,7 @@ export interface CngxSelectChange<T = unknown> {
                     [disabled]="!!opt.disabled || !!item.disabled"
                     class="cngx-select__option"
                     [class.cngx-select__option--selected]="isSelected(opt)"
+                    [class.cngx-select__option--pending]="isCommittingOption(opt)"
                   >
                     @if (resolvedShowSelectionIndicator()) {
                       @if (checkTpl(); as tpl) {
@@ -369,6 +412,11 @@ export interface CngxSelectChange<T = unknown> {
                     } @else {
                       {{ opt.label }}
                     }
+                    @if (isCommittingOption(opt)) {
+                      <span aria-hidden="true" class="cngx-select__option-spinner"></span>
+                    } @else if (commitErrorDisplay() === 'inline' && showCommitError() && isSelected(opt)) {
+                      <span aria-hidden="true" class="cngx-select__option-error" role="alert">!</span>
+                    }
                   </div>
                 }
               </div>
@@ -379,6 +427,7 @@ export interface CngxSelectChange<T = unknown> {
                 [disabled]="!!item.disabled"
                 class="cngx-select__option"
                 [class.cngx-select__option--selected]="isSelected(item)"
+                [class.cngx-select__option--pending]="isCommittingOption(item)"
               >
                 @if (resolvedShowSelectionIndicator()) {
                   @if (checkTpl(); as tpl) {
@@ -406,6 +455,11 @@ export interface CngxSelectChange<T = unknown> {
                   />
                 } @else {
                   {{ item.label }}
+                }
+                @if (isCommittingOption(item)) {
+                  <span aria-hidden="true" class="cngx-select__option-spinner"></span>
+                } @else if (commitErrorDisplay() === 'inline' && showCommitError() && isSelected(item)) {
+                  <span aria-hidden="true" class="cngx-select__option-error" role="alert">!</span>
                 }
               </div>
             }
@@ -628,6 +682,39 @@ export interface CngxSelectChange<T = unknown> {
       0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
       40% { transform: scale(1); opacity: 1; }
     }
+    .cngx-select__option--pending {
+      cursor: progress;
+    }
+    .cngx-select__option-spinner {
+      margin-inline-start: auto;
+      width: var(--cngx-select-option-spinner-size, 0.875rem);
+      height: var(--cngx-select-option-spinner-size, 0.875rem);
+      border: 2px solid rgba(0, 0, 0, 0.15);
+      border-top-color: var(--cngx-select-option-spinner-color, var(--cngx-focus-ring, #1976d2));
+      border-radius: 50%;
+      animation: cngx-select-spin 0.8s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-select__option-spinner { animation-duration: 3s; }
+    }
+    .cngx-select__option-error {
+      margin-inline-start: auto;
+      color: var(--cngx-select-option-error-color, var(--cngx-error, #b71c1c));
+      font-weight: 700;
+      font-size: 0.875rem;
+    }
+    .cngx-select__commit-error {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      padding: var(--cngx-select-commit-error-padding, 0.375rem 0.5rem);
+      border: 1px solid currentColor;
+      border-radius: var(--cngx-select-commit-error-radius, 0.125rem);
+      color: var(--cngx-select-error-color, var(--cngx-error, #b71c1c));
+      font-size: 0.875rem;
+    }
     .cngx-select__error {
       display: flex;
       flex-direction: column;
@@ -783,6 +870,32 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly retryFn = input<(() => void) | null>(null);
 
+  /**
+   * Async write handler invoked on user selection. Receives the intended
+   * value and returns a Promise/Observable/sync value resolving to the
+   * committed value (typically same as intended; may be a server-normalised
+   * variant). When bound, selection-change + field-value-write are deferred
+   * until commit success. Supersede semantics: a subsequent pick aborts the
+   * in-flight commit. See `[commitMode]`.
+   */
+  readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
+
+  /**
+   * Commit UX mode: `'optimistic'` (default) closes the panel immediately
+   * and rolls back on error; `'pessimistic'` keeps the panel open with a
+   * pending indicator on the intended option.
+   */
+  readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+
+  /**
+   * Where `commitAction` errors are rendered in the absence of a
+   * `*cngxSelectCommitError` template. Falls back to
+   * `CNGX_SELECT_CONFIG.commitErrorDisplay`.
+   */
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
+    this.config.commitErrorDisplay,
+  );
+
   /** Per-instance announcer override. */
   readonly announceChanges = input<boolean | undefined>(undefined);
 
@@ -815,6 +928,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly retry = output<void>();
 
+  /** Fires with the rejected error when a `commitAction` transitions to error. */
+  readonly commitError = output<unknown>();
+
+  /** Fires on every `commitState` status transition. */
+  readonly stateChange = output<AsyncStatus>();
+
   // ── Content templates ──────────────────────────────────────────────
 
   /** @internal */
@@ -843,6 +962,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly errorTpl = contentChild(CngxSelectError);
   /** @internal */
   protected readonly refreshingTpl = contentChild(CngxSelectRefreshing);
+  /** @internal */
+  protected readonly commitErrorTpl = contentChild<CngxSelectCommitError<T>>(
+    CngxSelectCommitError,
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -1048,6 +1171,74 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
   );
 
+  // ── Commit action state ─────────────────────────────────────────────
+
+  /**
+   * Internal writable slot for the commit lifecycle. Public consumers read
+   * the plain `CngxAsyncState<T | undefined>` view via `commitState`.
+   */
+  private readonly commitStateSlot: ManualAsyncState<T | undefined> =
+    createManualState<T | undefined>();
+
+  /** Read-only view of the commit lifecycle. */
+  readonly commitState: CngxAsyncState<T | undefined> = this.commitStateSlot;
+
+  /** `true` while a commit is in flight. */
+  readonly isCommitting = computed(() => this.commitState.isPending());
+
+  /** Monotonic commit id for supersede checks. */
+  private commitIdCounter = 0;
+  /** Cancel handle for the currently in-flight commit. */
+  private cancelActiveCommit: CngxCommitHandle | null = null;
+
+  /**
+   * Non-signal snapshot of the last value that was not in-flight — either
+   * the initial value, an external programmatic write, or a successful
+   * commit result. Updated by an effect that skips writes happening while
+   * `isCommitting()` is true. Read synchronously by `handleActivation`
+   * before a commit begins to capture the rollback target.
+   */
+  private lastCommittedValue: T | undefined = undefined;
+
+  /** Last intended value — option tracker for inline/banner commit-error UI + pending spinner. */
+  private readonly lastCommitIntendedState = signal<T | undefined>(undefined);
+
+  /** @internal — inline/banner surface for `commitState.isError()`. */
+  protected readonly showCommitError = computed<boolean>(
+    () => this.commitState.status() === 'error' && this.commitErrorDisplay() !== 'none',
+  );
+
+  /** @internal — context passed to a `[cngxSelectCommitError]` template. */
+  protected readonly commitErrorContext = computed(() => {
+    const eq = this.compareWith();
+    const intended = this.lastCommitIntendedState();
+    const option =
+      intended === undefined
+        ? null
+        : (this.flatOptions().find((o) => eq(o.value, intended)) ?? null);
+    return {
+      $implicit: this.commitState.error(),
+      error: this.commitState.error(),
+      option,
+      retry: (): void => this.retryCommit(),
+    };
+  });
+
+  /**
+   * @internal — true for the specific option currently being committed.
+   * Drives the pessimistic-mode per-row spinner.
+   */
+  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
+    if (!this.isCommitting()) {
+      return false;
+    }
+    const intended = this.lastCommitIntendedState();
+    if (intended === undefined) {
+      return false;
+    }
+    return this.compareWith()(opt.value, intended);
+  }
+
   /** @internal — error context passed to a `[cngxSelectError]` template. */
   protected readonly errorContext = computed(() => ({
     $implicit: this.state()?.error(),
@@ -1103,7 +1294,23 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    // Bridge AD activations into popover-close and selectionChange output.
+    // Snapshot the "last committed value" for rollback targets. Any write
+    // that happens OUTSIDE a commit pending state (initial value,
+    // programmatic consumer write, commit success/error) refreshes the
+    // snapshot. Writes DURING a commit (the AD.activated-triggered
+    // optimistic mutation) are skipped so the snapshot keeps pointing at
+    // the pre-pick value until the commit settles.
+    effect(() => {
+      const next = this.value();
+      untracked(() => {
+        if (!this.isCommitting()) {
+          this.lastCommittedValue = next;
+        }
+      });
+    });
+
+    // Bridge AD activations into popover-close, selectionChange output,
+    // and (when bound) the commit flow.
     effect((onCleanup) => {
       const lb = this.listboxRef();
       const pop = this.popoverRef();
@@ -1112,17 +1319,17 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
       const sub = lb.ad.activated.subscribe((raw: unknown) => {
         untracked(() => {
-          const value = raw as T;
-          const eq = this.compareWith();
-          const opt =
-            this.flatOptions().find((o) => eq(o.value, value)) ?? null;
-          this.selectionChange.emit({
-            source: this,
-            value,
-            option: opt,
-          });
-          this.optionSelected.emit(opt);
-          this.maybeAnnounce(opt);
+          const intended = raw as T;
+          const action = this.commitAction();
+          if (action) {
+            // Listbox has already written intended via [(value)] — previous
+            // lives in lastCommittedValue, updated by an effect that skips
+            // in-flight writes (see constructor below).
+            const previous = this.lastCommittedValue;
+            this.beginCommit(intended, previous, action);
+            return;
+          }
+          this.finalizeSelection(intended);
           if (pop.isVisible()) {
             pop.hide();
           }
@@ -1225,6 +1432,93 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       fn();
     }
     this.retry.emit();
+  }
+
+  /**
+   * @internal — emit selectionChange/optionSelected/announcer for a picked
+   * value. Used by the non-commit path and by commit success.
+   */
+  private finalizeSelection(value: T | undefined): void {
+    const eq = this.compareWith();
+    const opt =
+      value === undefined
+        ? null
+        : (this.flatOptions().find((o) => eq(o.value, value)) ?? null);
+    this.selectionChange.emit({ source: this, value, option: opt });
+    this.optionSelected.emit(opt);
+    this.maybeAnnounce(opt);
+  }
+
+  /**
+   * @internal — start a commit: transition commitState to pending, capture
+   * intended/previous, cancel any in-flight commit, and hand off to the
+   * runtime adapter.
+   */
+  private beginCommit(
+    intended: T | undefined,
+    previous: T | undefined,
+    action: CngxSelectCommitAction<T>,
+  ): void {
+    this.cancelActiveCommit?.cancel();
+    const id = ++this.commitIdCounter;
+    this.lastCommitIntendedState.set(intended);
+    this.commitStateSlot.set('pending');
+    this.stateChange.emit('pending');
+
+    const mode = this.commitMode();
+    const pop = this.popoverRef();
+    if (mode === 'optimistic') {
+      // Value was already set to intended via listbox [(value)]. Close panel.
+      if (pop?.isVisible()) {
+        pop.hide();
+      }
+    }
+    // Pessimistic: leave value at intended so the option shows selected, but
+    // keep panel open with pending spinner on the intended option.
+
+    this.cancelActiveCommit = runCommitAction<T>(action, intended, {
+      onSuccess: (committed) => {
+        if (id !== this.commitIdCounter) {
+          return;
+        }
+        this.commitStateSlot.setSuccess(committed);
+        this.stateChange.emit('success');
+        // Ensure value reflects the server-committed result (may differ).
+        if (!Object.is(committed, this.value())) {
+          this.value.set(committed);
+        }
+        if (mode === 'pessimistic' && pop?.isVisible()) {
+          pop.hide();
+        }
+        this.finalizeSelection(committed);
+      },
+      onError: (err) => {
+        if (id !== this.commitIdCounter) {
+          return;
+        }
+        this.commitStateSlot.setError(err);
+        this.stateChange.emit('error');
+        this.commitError.emit(err);
+        // Roll back value to whatever was there before the user's pick.
+        if (!Object.is(this.value(), previous)) {
+          this.value.set(previous);
+        }
+        // Pessimistic keeps panel open so user sees the error inline.
+      },
+    });
+  }
+
+  /**
+   * @internal — re-invoke the last failed commit with the same intended
+   * value. Accessible via the commit-error template's `retry` callback.
+   */
+  private retryCommit(): void {
+    const intended = this.lastCommitIntendedState();
+    const action = this.commitAction();
+    if (!action) {
+      return;
+    }
+    this.beginCommit(intended, this.lastCommittedValue, action);
   }
 
   /** @internal */

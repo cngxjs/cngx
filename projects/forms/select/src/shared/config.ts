@@ -6,6 +6,8 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
+import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
+
 /**
  * Template contexts the select family exposes for override.
  *
@@ -22,6 +24,7 @@ export interface CngxSelectTemplateContexts {
   readonly optionLabel?: unknown;
   readonly error?: unknown;
   readonly refreshing?: unknown;
+  readonly commitError?: unknown;
 }
 
 /**
@@ -84,6 +87,8 @@ export interface CngxSelectConfig {
   readonly skeletonRowCount?: number;
   /** Default subsequent-load (refreshing) indicator variant. */
   readonly refreshingVariant?: CngxSelectRefreshingVariant;
+  /** Default surface for `commitAction` errors: banner, inline, or none. */
+  readonly commitErrorDisplay?: CngxSelectCommitErrorDisplay;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
   /** Typeahead buffer reset window in ms. */
@@ -115,6 +120,7 @@ export interface CngxSelectConfig {
     readonly loading?: TemplateRef<CngxSelectTemplateContexts['loading']> | null;
     readonly error?: TemplateRef<CngxSelectTemplateContexts['error']> | null;
     readonly refreshing?: TemplateRef<CngxSelectTemplateContexts['refreshing']> | null;
+    readonly commitError?: TemplateRef<CngxSelectTemplateContexts['commitError']> | null;
   };
 }
 
@@ -136,6 +142,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   loadingVariant: 'spinner',
   skeletonRowCount: 3,
   refreshingVariant: 'bar',
+  commitErrorDisplay: 'banner',
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -163,6 +170,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     loading: null,
     error: null,
     refreshing: null,
+    commitError: null,
   },
 };
 
@@ -225,6 +233,18 @@ export function withRefreshingVariant(
   variant: CngxSelectRefreshingVariant,
 ): CngxSelectConfigFeature {
   return feature({ refreshingVariant: variant });
+}
+
+/**
+ * Default surface for `[commitAction]` errors when no
+ * `*cngxSelectCommitError` template is projected. Defaults to `'banner'`.
+ *
+ * @category interactive
+ */
+export function withCommitErrorDisplay(
+  display: CngxSelectCommitErrorDisplay,
+): CngxSelectConfigFeature {
+  return feature({ commitErrorDisplay: display });
 }
 
 /**

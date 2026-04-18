@@ -9,7 +9,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -223,10 +224,45 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Signal Forms (required)"
+      <app-example-card title="Commit action (async write)"
         [subtitle]="_s8"
         [sourceHtml]="_srcHtml8"
         [sourceTs]="_srcTs8">
+        
+  <cngx-select
+    [label]="'Farbe (commit)'"
+    [options]="colors"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    [(value)]="commitValue"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ commitValue() ?? '—' }}</span></div>
+    <div class="event-row" style="gap:8px;align-items:center">
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="optimistic" [checked]="commitMode() === 'optimistic'" (change)="commitMode.set('optimistic')" /> optimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="pessimistic" [checked]="commitMode() === 'pessimistic'" (change)="commitMode.set('pessimistic')" /> pessimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="checkbox" [checked]="commitShouldFail()" (change)="commitShouldFail.set($any($event.target).checked)" /> simulate error
+      </label>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Log</span>
+      <span class="event-value" style="font-family:monospace;font-size:0.75rem">
+        @for (line of commitLog(); track line; let i = $index) {
+          <div>{{ line }}</div>
+        }
+      </span>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Signal Forms (required)"
+        [subtitle]="_s9"
+        [sourceHtml]="_srcHtml9"
+        [sourceTs]="_srcTs9">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -243,9 +279,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Reactive Forms (adaptFormControl)"
-        [subtitle]="_s9"
-        [sourceHtml]="_srcHtml9"
-        [sourceTs]="_srcTs9">
+        [subtitle]="_s10"
+        [sourceHtml]="_srcHtml10"
+        [sourceTs]="_srcTs10">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -269,8 +305,9 @@ export class SelectDemoComponent {
   protected readonly _s5 = 'Project a <code>*cngxSelectOptionLabel</code> template to render icons/badges per option.';
   protected readonly _s6 = 'Override panel content via <code>*cngxSelectLoading</code> / <code>*cngxSelectEmpty</code>.';
   protected readonly _s7 = '<code>[state]</code> drives the panel via <code>CngxAsyncState</code>: loading → skeleton, success → options, empty → empty template, refreshing → top-bar + options, error → retry panel. Replaces <code>[options]</code> while the state has data.';
-  protected readonly _s8 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
-  protected readonly _s9 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
+  protected readonly _s8 = '<code>[commitAction]</code> defers selection until the async write resolves. <code>[commitMode]="optimistic"</code> closes the panel immediately and rolls back on error; <code>[commitMode]="pessimistic"</code> keeps the panel open with a pending spinner on the picked option and shows an inline banner on error.';
+  protected readonly _s9 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
+  protected readonly _s10 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -287,7 +324,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -355,6 +393,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -403,7 +455,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -471,6 +524,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -530,7 +597,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -598,6 +666,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -636,7 +718,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -704,6 +787,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -742,7 +839,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -810,6 +908,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -853,7 +965,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -921,6 +1034,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -966,7 +1093,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -1034,6 +1162,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -1089,7 +1231,8 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -1158,6 +1301,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
 
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
@@ -1181,7 +1338,148 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml8 = `<cngx-form-field [field]="singleForm.color">
+  protected readonly _srcHtml8 = `<cngx-select
+    [label]="'Farbe (commit)'"
+    [options]="colors"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    [(value)]="commitValue"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ commitValue() ?? '—' }}</span></div>
+    <div class="event-row" style="gap:8px;align-items:center">
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="optimistic" [checked]="commitMode() === 'optimistic'" (change)="commitMode.set('optimistic')" /> optimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="radio" name="commit-mode" value="pessimistic" [checked]="commitMode() === 'pessimistic'" (change)="commitMode.set('pessimistic')" /> pessimistic
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:4px">
+        <input type="checkbox" [checked]="commitShouldFail()" (change)="commitShouldFail.set($any($event.target).checked)" /> simulate error
+      </label>
+    </div>
+    <div class="event-row">
+      <span class="event-label">Log</span>
+      <span class="event-value" style="font-family:monospace;font-size:0.75rem">
+        @for (line of commitLog(); track line; let i = $index) {
+          <div>{{ line }}</div>
+        }
+      </span>
+    </div>
+  </div>`;
+  protected readonly _srcTs8 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }`;
+  protected readonly _srcHtml9 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -1194,12 +1492,13 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
     </div>
   </div>`;
-  protected readonly _srcTs8 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs9 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -1268,6 +1567,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
 
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
   private readonly singleSchema = schema<{ color: string }>((root) => {
@@ -1291,7 +1604,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected toggleLoading(): void {
     this.loading.update(v => !v);
   }`;
-  protected readonly _srcHtml9 = `<cngx-form-field [field]="rfField">
+  protected readonly _srcHtml10 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
@@ -1300,12 +1613,13 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
     <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
   </div>`;
-  protected readonly _srcTs9 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs10 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
@@ -1373,6 +1687,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
@@ -1460,6 +1788,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   }
   protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
   protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
 
   // Signal Forms
   private readonly singleModel = signal<{ color: string }>({ color: '' });
