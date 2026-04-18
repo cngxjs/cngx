@@ -92,6 +92,25 @@ export class CngxListbox {
   readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
 
   /**
+   * When `true`, the listbox stops auto-writing its own `value` / `selectedValues`
+   * on AD-activation. The consumer (typically a Level-3 composite like
+   * `CngxSelect` running an async `[commitAction]`) fully owns the value
+   * mutation flow and can intercept activations BEFORE any write happens.
+   *
+   * **Why this exists.**
+   * The commit flow needs to snapshot the pre-pick value synchronously when
+   * the user clicks an option — to roll back to it on error. Without this
+   * flag, CngxListbox writes `value` via two-way binding BEFORE the consumer's
+   * own `ad.activated` subscriber runs, and the pre-pick value is already
+   * gone by the time we try to snapshot it. Flipping this flag lets the
+   * consumer be the single writer.
+   *
+   * Default `false` preserves the self-contained listbox behaviour used
+   * everywhere outside the select family.
+   */
+  readonly externalActivation = input<boolean>(false);
+
+  /**
    * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
    * (e.g. `CngxListboxTrigger`) can drive navigation without ancestor injection.
    */
@@ -283,6 +302,14 @@ export class CngxListbox {
   }
 
   private handleActivation(value: unknown): void {
+    // See `externalActivation` — when the consumer opts in, we become
+    // activation-only (AD still fires `activated` on the Subject, but we
+    // don't write our own value). Consumers listen on `ad.activated`
+    // themselves and do the write after they've captured whatever they
+    // need (for example, the pre-pick value as a rollback target).
+    if (this.externalActivation()) {
+      return;
+    }
     if (this.multiple()) {
       this.toggle(value);
     } else {

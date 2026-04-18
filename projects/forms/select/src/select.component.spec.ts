@@ -816,7 +816,7 @@ describe('CngxSelect — commit action producer', () => {
     expect(host.statuses[host.statuses.length - 1]).toBe('error');
   });
 
-  it('pessimistic success: panel stays open during pending, closes on success', () => {
+  it('pessimistic success: panel stays open during pending, value written on success', () => {
     const { fixture, host, select, triggerBtn, secondOption } = setup();
     host.mode.set('pessimistic');
     flush(fixture);
@@ -825,14 +825,20 @@ describe('CngxSelect — commit action producer', () => {
     secondOption().click();
     flush(fixture);
 
+    // Pessimistic semantics: panel stays open, value NOT yet written.
+    // The pending spinner on the intended option conveys the attempt.
     expect(select.panelOpen()).toBe(true);
-    expect(host.value()).toBe('green');
+    expect(host.value()).toBe('red');
+    expect(select.isCommitting()).toBe(true);
 
     host.pending!.next('green');
     host.pending!.complete();
     flush(fixture);
 
+    // After success: value settles, panel closes.
+    expect(host.value()).toBe('green');
     expect(select.panelOpen()).toBe(false);
+    expect(select.isCommitting()).toBe(false);
   });
 
   it('supersede: a second pick aborts the in-flight commit', () => {

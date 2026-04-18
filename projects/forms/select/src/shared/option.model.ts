@@ -77,3 +77,35 @@ export function flattenSelectOptions<T>(
   }
   return flat;
 }
+
+/**
+ * Uniform "is this option disabled?" check that handles both option shapes
+ * transparently.
+ *
+ * **Why this helper exists.**
+ * The select family operates on two distinct option types that share the
+ * same property name but use different shapes:
+ *
+ * - `CngxSelectOptionDef.disabled` — plain `boolean` (data-driven mode)
+ * - `CngxOption.disabled` — `InputSignal<boolean>`, i.e. a callable function
+ *   (element-component mode)
+ *
+ * In places that iterate over a mixed or unknown-variant array (PageUp/Down
+ * navigation, typeahead-while-closed, focus scanning), accessing `.disabled`
+ * directly silently evaluates to `true` for the signal variant (functions
+ * are truthy), which previously flagged a `TS2774` warning in strict mode
+ * and would cause navigation logic to treat every option as disabled at
+ * runtime if the compiler didn't catch it. Centralising the branching here
+ * prevents every future call-site from having to remember the distinction.
+ *
+ * @category interactive
+ */
+export function isOptionDisabled(option: {
+  readonly disabled?: boolean | (() => boolean) | null;
+}): boolean {
+  const d = option.disabled;
+  if (d == null) {
+    return false;
+  }
+  return typeof d === 'function' ? d() : d;
+}

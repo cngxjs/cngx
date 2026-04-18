@@ -12,25 +12,22 @@ import {
   model,
   output,
   signal,
+  type Signal,
   untracked,
   viewChild,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
-import {
-  createManualState,
-  resolveAsyncView,
-  type AsyncView,
-  type ManualAsyncState,
-} from '@cngx/common/data';
+import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
 import {
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
-  CngxOption,
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+
+import { CngxSelectPanel } from './panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -41,9 +38,10 @@ import {
 
 import { CngxSelectAnnouncer } from './shared/announcer';
 import {
-  runCommitAction,
-  type CngxCommitHandle,
-} from './shared/commit-action.runtime';
+  createCommitController,
+  type CngxCommitController,
+} from './shared/commit-controller';
+import { CNGX_SELECT_PANEL_HOST } from './shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -57,6 +55,7 @@ import {
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
+  isOptionDisabled,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
@@ -110,9 +109,9 @@ export interface CngxSelectChange<T = unknown> {
     CngxClickOutside,
     CngxListbox,
     CngxListboxTrigger,
-    CngxOption,
     CngxPopover,
     CngxPopoverTrigger,
+    CngxSelectPanel,
     NgTemplateOutlet,
   ],
   providers: [
@@ -124,6 +123,10 @@ export interface CngxSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
+    // Provide ourselves as the panel-host contract. Panel sub-component
+    // injects this token and reads the surface defined in shared/panel-host.ts
+    // — avoids a cyclic type dependency between this file and panel.component.ts.
+    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelect },
   ],
   host: {
     '[id]': 'resolvedId()',
@@ -217,258 +220,19 @@ export interface CngxSelectChange<T = unknown> {
         #lb="cngxListbox"
         [label]="resolvedListboxLabel()"
         [compareWith]="listboxCompareWith()"
+        [externalActivation]="externalActivation()"
+        [explicitOptions]="panelRef.options()"
+        [items]="panelRef.items()"
         [(value)]="value"
       >
-        @switch (activeView()) {
-          @case ('skeleton') {
-            @if (loadingTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl.templateRef" />
-            } @else {
-              @switch (loadingVariant()) {
-                @case ('spinner') {
-                  <div
-                    class="cngx-select__spinner-wrap"
-                    role="status"
-                    aria-live="polite"
-                    aria-label="Lädt"
-                  >
-                    <div aria-hidden="true" class="cngx-select__spinner"></div>
-                  </div>
-                }
-                @case ('bar') {
-                  <div
-                    class="cngx-select__loading-bar"
-                    role="status"
-                    aria-live="polite"
-                    aria-label="Lädt"
-                  ></div>
-                }
-                @case ('text') {
-                  <div class="cngx-select__loading" role="status" aria-live="polite">Lädt…</div>
-                }
-                @default {
-                  <div
-                    class="cngx-select__skeleton"
-                    role="status"
-                    aria-live="polite"
-                    aria-label="Lädt"
-                  >
-                    @for (i of skeletonIndices(); track i) {
-                      <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
-                    }
-                  </div>
-                }
-              }
-            }
-          }
-          @case ('empty') {
-            @if (emptyTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl.templateRef" />
-            } @else {
-              <div class="cngx-select__empty">Keine Optionen</div>
-            }
-          }
-          @case ('none') {
-            @if (emptyTpl(); as tpl) {
-              <ng-container *ngTemplateOutlet="tpl.templateRef" />
-            } @else {
-              <div class="cngx-select__empty">Keine Optionen</div>
-            }
-          }
-          @case ('error') {
-            @if (errorTpl(); as tpl) {
-              <ng-container
-                *ngTemplateOutlet="tpl.templateRef; context: errorContext()"
-              />
-            } @else {
-              <div class="cngx-select__error" role="alert">
-                <span class="cngx-select__error-message">Laden fehlgeschlagen</span>
-                <button
-                  type="button"
-                  class="cngx-select__error-retry"
-                  (click)="handleRetry()"
-                >
-                  Nochmal versuchen
-                </button>
-              </div>
-            }
-          }
-          @default {
-            @if (showInlineError()) {
-              @if (errorTpl(); as tpl) {
-                <ng-container
-                  *ngTemplateOutlet="tpl.templateRef; context: errorContext()"
-                />
-              } @else {
-                <div class="cngx-select__error cngx-select__error--inline" role="alert">
-                  <span class="cngx-select__error-message">Aktualisieren fehlgeschlagen</span>
-                  <button
-                    type="button"
-                    class="cngx-select__error-retry"
-                    (click)="handleRetry()"
-                  >
-                    Nochmal versuchen
-                  </button>
-                </div>
-              }
-            }
-            @if (showCommitError() && commitErrorDisplay() === 'banner') {
-              @if (commitErrorTpl(); as tpl) {
-                <ng-container
-                  *ngTemplateOutlet="tpl.templateRef; context: commitErrorContext()"
-                />
-              } @else {
-                <div class="cngx-select__commit-error" role="alert">
-                  <span class="cngx-select__error-message">Speichern fehlgeschlagen</span>
-                  <button
-                    type="button"
-                    class="cngx-select__error-retry"
-                    (click)="commitErrorContext().retry()"
-                  >
-                    Nochmal versuchen
-                  </button>
-                </div>
-              }
-            }
-            @if (showRefreshIndicator()) {
-              @if (refreshingTpl(); as tpl) {
-                <ng-container *ngTemplateOutlet="tpl.templateRef" />
-              } @else {
-                @switch (refreshingVariant()) {
-                  @case ('none') { <!-- suppressed --> }
-                  @case ('spinner') {
-                    <div
-                      class="cngx-select__refreshing-spinner"
-                      role="status"
-                      aria-live="polite"
-                      aria-label="Aktualisiere"
-                    >
-                      <div aria-hidden="true" class="cngx-select__spinner"></div>
-                    </div>
-                  }
-                  @case ('dots') {
-                    <div
-                      class="cngx-select__refreshing-dots"
-                      role="status"
-                      aria-live="polite"
-                      aria-label="Aktualisiere"
-                    >
-                      <span aria-hidden="true"></span>
-                      <span aria-hidden="true"></span>
-                      <span aria-hidden="true"></span>
-                    </div>
-                  }
-                  @default {
-                    <div
-                      class="cngx-select__refreshing"
-                      role="status"
-                      aria-live="polite"
-                      aria-label="Aktualisiere"
-                    ></div>
-                  }
-                }
-              }
-            }
-            @for (item of effectiveOptions(); track $index) {
-            @if (isGroup(item)) {
-              <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
-                @if (optgroupTpl(); as tpl) {
-                  <ng-container
-                    *ngTemplateOutlet="tpl.templateRef; context: { $implicit: item, group: item }"
-                  />
-                } @else {
-                  <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
-                }
-                @for (opt of item.children; track opt.value) {
-                  <div
-                    cngxOption
-                    [value]="opt.value"
-                    [disabled]="!!opt.disabled || !!item.disabled"
-                    class="cngx-select__option"
-                    [class.cngx-select__option--selected]="isSelected(opt)"
-                    [class.cngx-select__option--pending]="isCommittingOption(opt)"
-                  >
-                    @if (resolvedShowSelectionIndicator()) {
-                      @if (checkTpl(); as tpl) {
-                        <ng-container
-                          *ngTemplateOutlet="
-                            tpl.templateRef;
-                            context: { $implicit: opt, option: opt, selected: isSelected(opt) }
-                          "
-                        />
-                      } @else if (isSelected(opt)) {
-                        <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
-                      }
-                    }
-                    @if (optionLabelTpl(); as tpl) {
-                      <ng-container
-                        *ngTemplateOutlet="
-                          tpl.templateRef;
-                          context: {
-                            $implicit: opt,
-                            option: opt,
-                            selected: isSelected(opt),
-                            highlighted: false
-                          }
-                        "
-                      />
-                    } @else {
-                      {{ opt.label }}
-                    }
-                    @if (isCommittingOption(opt)) {
-                      <span aria-hidden="true" class="cngx-select__option-spinner"></span>
-                    } @else if (commitErrorDisplay() === 'inline' && showCommitError() && isSelected(opt)) {
-                      <span aria-hidden="true" class="cngx-select__option-error">!</span>
-                    }
-                  </div>
-                }
-              </div>
-            } @else {
-              <div
-                cngxOption
-                [value]="item.value"
-                [disabled]="!!item.disabled"
-                class="cngx-select__option"
-                [class.cngx-select__option--selected]="isSelected(item)"
-                [class.cngx-select__option--pending]="isCommittingOption(item)"
-              >
-                @if (resolvedShowSelectionIndicator()) {
-                  @if (checkTpl(); as tpl) {
-                    <ng-container
-                      *ngTemplateOutlet="
-                        tpl.templateRef;
-                        context: { $implicit: item, option: item, selected: isSelected(item) }
-                      "
-                    />
-                  } @else if (isSelected(item)) {
-                    <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
-                  }
-                }
-                @if (optionLabelTpl(); as tpl) {
-                  <ng-container
-                    *ngTemplateOutlet="
-                      tpl.templateRef;
-                      context: {
-                        $implicit: item,
-                        option: item,
-                        selected: isSelected(item),
-                        highlighted: false
-                      }
-                    "
-                  />
-                } @else {
-                  {{ item.label }}
-                }
-                @if (isCommittingOption(item)) {
-                  <span aria-hidden="true" class="cngx-select__option-spinner"></span>
-                } @else if (commitErrorDisplay() === 'inline' && showCommitError() && isSelected(item)) {
-                  <span aria-hidden="true" class="cngx-select__option-error" role="alert">!</span>
-                }
-              </div>
-            }
-          }
-        }
-        }
+        <!--
+          Panel body — see panel.component.ts + shared/panel-host.ts.
+          Options live in the sub-component's view; content-projection
+          scoping hides them from this listbox's contentChildren, so we
+          forward them via explicitOptions so AD registration + typeahead
+          still work.
+        -->
+        <cngx-select-panel #panelRef="cngxSelectPanel" />
       </div>
     </div>
     </div>
@@ -552,225 +316,9 @@ export interface CngxSelectChange<T = unknown> {
         flip-inline,
         flip-block flip-inline;
     }
-    .cngx-select__group-header {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      opacity: 0.7;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-    .cngx-select__option {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
-      cursor: pointer;
-      border-radius: var(--cngx-select-option-radius, 0.125rem);
-    }
-    /* CngxSelect owns its selected-indicator visual. Suppress any inherited
-       ::after checkmark (e.g. from demo / global stylesheets) so consumers
-       don't end up with a double-check. */
-    .cngx-select__option::after,
-    .cngx-select__option::before {
-      content: none;
-    }
-    .cngx-select__option[aria-disabled='true'] {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    .cngx-select__option.cngx-option--highlighted {
-      background: var(--cngx-select-option-highlight-bg, rgba(25, 118, 210, 0.1));
-    }
-    .cngx-select__check {
-      color: var(--cngx-select-check-color, var(--cngx-focus-ring, #1976d2));
-      font-weight: 700;
-    }
-    .cngx-select__loading,
-    .cngx-select__empty {
-      padding: 0.5rem 0.75rem;
-      font-style: italic;
-      opacity: 0.7;
-    }
-    .cngx-select__skeleton {
-      display: flex;
-      flex-direction: column;
-      gap: var(--cngx-select-skeleton-gap, 0.25rem);
-      padding: var(--cngx-select-skeleton-padding, 0.25rem);
-    }
-    .cngx-select__skeleton-row {
-      height: var(--cngx-select-skeleton-row-height, 1.75rem);
-      border-radius: var(--cngx-select-skeleton-row-radius, 0.125rem);
-      background: linear-gradient(
-        90deg,
-        var(--cngx-skeleton-bg, rgba(0, 0, 0, 0.08)) 25%,
-        var(--cngx-skeleton-shimmer, rgba(0, 0, 0, 0.12)) 50%,
-        var(--cngx-skeleton-bg, rgba(0, 0, 0, 0.08)) 75%
-      );
-      background-size: 200% 100%;
-      animation: cngx-select-skeleton-shimmer 1.5s ease-in-out infinite;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-select__skeleton-row {
-        animation: none;
-      }
-    }
-    @keyframes cngx-select-skeleton-shimmer {
-      from { background-position: 200% 0; }
-      to { background-position: -200% 0; }
-    }
-    .cngx-select__spinner-wrap {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--cngx-select-spinner-padding, 1rem);
-    }
-    .cngx-select__spinner {
-      width: var(--cngx-select-spinner-size, 1.5rem);
-      height: var(--cngx-select-spinner-size, 1.5rem);
-      border: var(--cngx-select-spinner-border, 2px solid rgba(0, 0, 0, 0.15));
-      border-top-color: var(--cngx-select-spinner-color, var(--cngx-focus-ring, #1976d2));
-      border-radius: 50%;
-      animation: cngx-select-spin 0.8s linear infinite;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-select__spinner { animation-duration: 3s; }
-    }
-    @keyframes cngx-select-spin {
-      to { transform: rotate(360deg); }
-    }
-    .cngx-select__loading-bar {
-      height: var(--cngx-select-loading-bar-height, 3px);
-      margin: calc(-1 * var(--cngx-select-panel-padding, 0.25rem))
-        calc(-1 * var(--cngx-select-panel-padding, 0.25rem));
-      background: linear-gradient(
-        90deg,
-        transparent,
-        var(--cngx-select-loading-bar-color, var(--cngx-focus-ring, #1976d2)),
-        transparent
-      );
-      background-size: 200% 100%;
-      animation: cngx-select-refresh 1.1s linear infinite;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-select__loading-bar { animation: none; }
-    }
-    .cngx-select__refreshing-spinner {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--cngx-select-refreshing-spinner-padding, 0.25rem);
-    }
-    .cngx-select__refreshing-dots {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--cngx-select-refreshing-dots-gap, 0.25rem);
-      padding: var(--cngx-select-refreshing-dots-padding, 0.375rem);
-    }
-    .cngx-select__refreshing-dots > span {
-      width: var(--cngx-select-refreshing-dot-size, 0.375rem);
-      height: var(--cngx-select-refreshing-dot-size, 0.375rem);
-      border-radius: 50%;
-      background: var(--cngx-select-refreshing-dot-color, currentColor);
-      opacity: 0.6;
-      animation: cngx-select-refreshing-dot 1.2s ease-in-out infinite;
-    }
-    .cngx-select__refreshing-dots > span:nth-child(2) { animation-delay: 0.15s; }
-    .cngx-select__refreshing-dots > span:nth-child(3) { animation-delay: 0.3s; }
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-select__refreshing-dots > span { animation: none; opacity: 0.8; }
-    }
-    @keyframes cngx-select-refreshing-dot {
-      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-      40% { transform: scale(1); opacity: 1; }
-    }
-    .cngx-select__option--pending {
-      cursor: progress;
-    }
-    .cngx-select__option-spinner {
-      margin-inline-start: auto;
-      width: var(--cngx-select-option-spinner-size, 0.875rem);
-      height: var(--cngx-select-option-spinner-size, 0.875rem);
-      border: 2px solid rgba(0, 0, 0, 0.15);
-      border-top-color: var(--cngx-select-option-spinner-color, var(--cngx-focus-ring, #1976d2));
-      border-radius: 50%;
-      animation: cngx-select-spin 0.8s linear infinite;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .cngx-select__option-spinner { animation-duration: 3s; }
-    }
-    .cngx-select__option-error {
-      margin-inline-start: auto;
-      color: var(--cngx-select-option-error-color, var(--cngx-error, #b71c1c));
-      font-weight: 700;
-      font-size: 0.875rem;
-    }
-    .cngx-select__commit-error {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
-      padding: var(--cngx-select-commit-error-padding, 0.375rem 0.5rem);
-      border: 1px solid currentColor;
-      border-radius: var(--cngx-select-commit-error-radius, 0.125rem);
-      color: var(--cngx-select-error-color, var(--cngx-error, #b71c1c));
-      font-size: 0.875rem;
-    }
-    .cngx-select__error {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--cngx-select-error-gap, 0.5rem);
-      padding: var(--cngx-select-error-padding, 0.5rem 0.75rem);
-      color: var(--cngx-select-error-color, var(--cngx-error, #b71c1c));
-    }
-    .cngx-select__error--inline {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      padding: var(--cngx-select-error-inline-padding, 0.375rem 0.5rem);
-      margin-bottom: 0.25rem;
-      border: 1px solid currentColor;
-      border-radius: var(--cngx-select-error-inline-radius, 0.125rem);
-      font-size: 0.875rem;
-    }
-    .cngx-select__error-message {
-      font-weight: 500;
-    }
-    .cngx-select__error-retry {
-      appearance: none;
-      border: var(--cngx-select-error-retry-border, 1px solid currentColor);
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.125rem;
-      cursor: pointer;
-    }
-    .cngx-select__error-retry:focus-visible {
-      outline: 2px solid var(--cngx-focus-ring, #1976d2);
-      outline-offset: 2px;
-    }
-    .cngx-select__refreshing {
-      height: var(--cngx-select-refreshing-height, 2px);
-      margin: calc(-1 * var(--cngx-select-panel-padding, 0.25rem))
-        calc(-1 * var(--cngx-select-panel-padding, 0.25rem)) 0;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        var(--cngx-select-refreshing-color, var(--cngx-focus-ring, #1976d2)),
-        transparent
-      );
-      background-size: 200% 100%;
-      animation: cngx-select-refresh 1.1s linear infinite;
-    }
-    @keyframes cngx-select-refresh {
-      from { background-position: 100% 0; }
-      to { background-position: -100% 0; }
-    }
+    /* Panel-body styles (option rows, skeletons, spinners, error banners,
+       refresh indicators) live in CngxSelectPanel — Angular's view-
+       encapsulation scopes CSS per-component. */
   `,
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
@@ -1236,34 +784,42 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // ── Commit action state ─────────────────────────────────────────────
 
   /**
-   * Internal writable slot for the commit lifecycle. Public consumers read
-   * the plain `CngxAsyncState<T | undefined>` view via `commitState`.
+   * All commit-lifecycle plumbing lives in a dedicated controller — see
+   * `shared/commit-controller.ts` for the rationale. The component owns
+   * exactly one instance, reads its state for `CNGX_STATEFUL` / template
+   * queries, and delegates `begin` / `cancel` orchestration to it.
+   *
+   * Previously this class held five interdependent private fields
+   * (state slot, id counter, active-handle, last intended, last committed)
+   * plus a skip-on-pending effect. Extracting them removed ~40 lines from
+   * the component body and produced a state machine that CngxMultiSelect
+   * / CngxCombobox can reuse verbatim.
    */
-  private readonly commitStateSlot: ManualAsyncState<T | undefined> =
-    createManualState<T | undefined>();
+  private readonly commitController: CngxCommitController<T> = createCommitController<T>();
 
   /** Read-only view of the commit lifecycle. */
-  readonly commitState: CngxAsyncState<T | undefined> = this.commitStateSlot;
+  readonly commitState: CngxAsyncState<T | undefined> = this.commitController.state;
 
   /** `true` while a commit is in flight. */
-  readonly isCommitting = computed(() => this.commitState.isPending());
-
-  /** Monotonic commit id for supersede checks. */
-  private commitIdCounter = 0;
-  /** Cancel handle for the currently in-flight commit. */
-  private cancelActiveCommit: CngxCommitHandle | null = null;
+  readonly isCommitting: Signal<boolean> = this.commitController.isCommitting;
 
   /**
-   * Non-signal snapshot of the last value that was not in-flight — either
-   * the initial value, an external programmatic write, or a successful
-   * commit result. Updated by an effect that skips writes happening while
-   * `isCommitting()` is true. Read synchronously by `handleActivation`
-   * before a commit begins to capture the rollback target.
+   * Rollback target for a commit in flight — simply `value()` at the
+   * moment of activation. Because the listbox runs in
+   * `[externalActivation]` mode whenever a `commitAction` is bound, the
+   * listbox does NOT write through two-way binding before our
+   * `ad.activated` handler runs, so `value()` is still the pre-pick
+   * value when we read it. No skip-on-pending effect required.
    */
   private lastCommittedValue: T | undefined = undefined;
 
-  /** Last intended value — option tracker for inline/banner commit-error UI + pending spinner. */
-  private readonly lastCommitIntendedState = signal<T | undefined>(undefined);
+  /**
+   * @internal — drives `[externalActivation]` on the inner listbox. When a
+   * commit action is bound we take over value-writing so we can capture
+   * the pre-pick value before it's overwritten. Otherwise the listbox
+   * stays self-contained (its existing default).
+   */
+  protected readonly externalActivation = computed<boolean>(() => this.commitAction() !== null);
 
   /** @internal — inline/banner surface for `commitState.isError()`. */
   protected readonly showCommitError = computed<boolean>(
@@ -1274,7 +830,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly commitErrorContext = computed(
     () => {
       const eq = this.compareWith();
-      const intended = this.lastCommitIntendedState();
+      // Read the intended value from the controller — single source of
+      // truth. Previously this read a component-private signal that had
+      // to be kept in sync with the commit flow manually.
+      const intended = this.commitController.intendedValue();
       const option =
         intended === undefined
           ? null
@@ -1300,7 +859,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     if (!this.isCommitting()) {
       return false;
     }
-    const intended = this.lastCommitIntendedState();
+    const intended = this.commitController.intendedValue();
     if (intended === undefined) {
       return false;
     }
@@ -1384,23 +943,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     });
 
-    // Snapshot the "last committed value" for rollback targets. Any write
-    // that happens OUTSIDE a commit pending state (initial value,
-    // programmatic consumer write, commit success/error) refreshes the
-    // snapshot. Writes DURING a commit (the AD.activated-triggered
-    // optimistic mutation) are skipped so the snapshot keeps pointing at
-    // the pre-pick value until the commit settles.
-    effect(() => {
-      const next = this.value();
-      untracked(() => {
-        if (!this.isCommitting()) {
-          this.lastCommittedValue = next;
-        }
-      });
-    });
-
     // Bridge AD activations into popover-close, selectionChange output,
     // and (when bound) the commit flow.
+    //
+    // AD-order invariant:
+    //   When `externalActivation()` is true (commitAction is bound), the
+    //   inner listbox suppresses its own write on activation, so by the
+    //   time this subscriber runs `this.value()` is still the pre-pick
+    //   value. That's the rollback target — we call `beginCommit` with
+    //   it and then mutate value ourselves inside the commit flow.
+    //
+    //   When `externalActivation()` is false, the listbox wrote the
+    //   intended value before our handler fires (same-tick, same Subject
+    //   emit). We just call `finalizeSelection(intended)`.
     effect((onCleanup) => {
       const lb = this.listboxRef();
       const pop = this.popoverRef();
@@ -1412,10 +967,18 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           const intended = raw as T;
           const action = this.commitAction();
           if (action) {
-            // Listbox has already written intended via [(value)] — previous
-            // lives in lastCommittedValue, updated by an effect that skips
-            // in-flight writes (see constructor below).
-            const previous = this.lastCommittedValue;
+            // Listbox is in externalActivation mode — value() is still
+            // the pre-pick value. Capture it as rollback target, then
+            // let the commit flow mutate value itself on success.
+            const previous = this.value();
+            this.lastCommittedValue = previous;
+            // For optimistic UX we write the intended value immediately
+            // so the trigger shows the picked option. For pessimistic
+            // the value stays at `previous` until commit success; the
+            // pending spinner on the intended row conveys the attempt.
+            if (this.commitMode() === 'optimistic') {
+              this.value.set(intended);
+            }
             this.beginCommit(intended, previous, action);
             return;
           }
@@ -1540,38 +1103,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * @internal — start a commit: transition commitState to pending, capture
-   * intended/previous, cancel any in-flight commit, and hand off to the
-   * runtime adapter.
+   * @internal — start a commit. Delegates lifecycle state to the commit
+   * controller; the component's job here is to route outcomes into its
+   * own DOM + outputs (panel open/close, value.set, selectionChange,
+   * commitError, announcer, stateChange).
+   *
+   * **Why the component still owns these outcomes.**
+   * The controller is intentionally UI-agnostic so it can be reused by
+   * CngxMultiSelect and CngxCombobox. The "what do we do on success"
+   * (close panel, emit selectionChange, re-announce) differs per select
+   * variant, so those stay here.
    */
   private beginCommit(
     intended: T | undefined,
     previous: T | undefined,
     action: CngxSelectCommitAction<T>,
   ): void {
-    this.cancelActiveCommit?.cancel();
-    const id = ++this.commitIdCounter;
-    this.lastCommitIntendedState.set(intended);
-    this.commitStateSlot.set('pending');
     this.stateChange.emit('pending');
 
     const mode = this.commitMode();
     const pop = this.popoverRef();
-    if (mode === 'optimistic') {
+    if (mode === 'optimistic' && pop?.isVisible()) {
       // Value was already set to intended via listbox [(value)]. Close panel.
-      if (pop?.isVisible()) {
-        pop.hide();
-      }
+      pop.hide();
     }
     // Pessimistic: leave value at intended so the option shows selected, but
     // keep panel open with pending spinner on the intended option.
 
-    this.cancelActiveCommit = runCommitAction<T>(action, intended, {
+    this.commitController.begin(action, intended, previous, {
       onSuccess: (committed) => {
-        if (id !== this.commitIdCounter) {
-          return;
-        }
-        this.commitStateSlot.setSuccess(committed);
         this.stateChange.emit('success');
         // Ensure value reflects the server-committed result (may differ).
         if (!Object.is(committed, this.value())) {
@@ -1582,16 +1142,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         }
         this.finalizeSelection(committed);
       },
-      onError: (err) => {
-        if (id !== this.commitIdCounter) {
-          return;
-        }
-        this.commitStateSlot.setError(err);
+      onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
         this.commitError.emit(err);
         // Roll back value to whatever was there before the user's pick.
-        if (!Object.is(this.value(), previous)) {
-          this.value.set(previous);
+        if (!Object.is(this.value(), rollbackTo)) {
+          this.value.set(rollbackTo);
         }
         // Announce the failure to AT so the inline "!" glyph — which is
         // purely visual — doesn't leave screen-reader users without
@@ -1607,7 +1163,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * value. Accessible via the commit-error template's `retry` callback.
    */
   private retryCommit(): void {
-    const intended = this.lastCommitIntendedState();
+    const intended = this.commitController.intendedValue();
     const action = this.commitAction();
     if (!action) {
       return;
@@ -1703,14 +1259,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       // Scan toward the boundary in `direction` to find the nearest
       // non-disabled option. Fall back to scanning the other direction
       // if the boundary side is fully disabled.
-      while (options[target].disabled() && target > 0 && target < total - 1) {
+      while (isOptionDisabled(options[target]) && target > 0 && target < total - 1) {
         target += direction;
       }
-      if (options[target].disabled()) {
+      if (isOptionDisabled(options[target])) {
         // Boundary row is disabled — scan the opposite direction for any
         // enabled option within the PageDown/Up window.
         let probe = target - direction;
-        while (probe >= 0 && probe < total && options[probe].disabled()) {
+        while (probe >= 0 && probe < total && isOptionDisabled(options[probe])) {
           probe -= direction;
         }
         if (probe >= 0 && probe < total) {
