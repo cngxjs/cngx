@@ -1,0 +1,101 @@
+/*
+ * select.component.css — CngxSelect-specific skin.
+ *
+ * This file holds ONLY the trigger-button visual + host layout — the
+ * parts that differ per select-type:
+ *
+ *   - CngxSelect uses a single-line button trigger with caret and
+ *     optional clear icon.
+ *   - CngxMultiSelect (planned) will use a multi-chip trigger.
+ *   - CngxCombobox (planned) will use an `<input>` trigger.
+ *
+ * Everything that's SAME across variants — panel frame, option rows,
+ * skeletons, spinners, error banners, refreshing indicators — lives in
+ * `shared/select-base.css`, referenced via the component's `styleUrls`.
+ *
+ * This is the file the Atomic Decompose schematic ejects into the
+ * consumer's project when they decompose CngxSelect. The shared base
+ * stays linked from the library (or is flattened in, per consumer
+ * choice). Anything you're willing for a consumer to freely rewrite
+ * belongs here; anything the library enforces belongs in the shared
+ * base.
+ */
+
+/* ── Host + root wrapper ──────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  position: relative;
+  font: inherit;
+  min-width: var(--cngx-select-min-width, 10rem);
+}
+
+.cngx-select__root {
+  display: contents;
+}
+
+/* ── Trigger button ───────────────────────────────────────────────── */
+
+.cngx-select__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-gap, 0.5rem);
+  width: 100%;
+  padding: var(--cngx-select-padding, 0.5rem 0.75rem);
+  border: var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4));
+  border-radius: var(--cngx-select-radius, 0.25rem);
+  background: var(--cngx-select-bg, transparent);
+  color: var(--cngx-select-color, inherit);
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+  justify-content: space-between;
+}
+.cngx-select__trigger:focus-visible {
+  outline: var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
+  outline-offset: var(--cngx-select-focus-offset, 2px);
+}
+.cngx-select__trigger[disabled] {
+  opacity: var(--cngx-select-disabled-opacity, 0.5);
+  cursor: not-allowed;
+}
+
+/* ── Trigger label text ───────────────────────────────────────────── */
+
+.cngx-select__label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* ── Caret ────────────────────────────────────────────────────────── */
+
+.cngx-select__caret {
+  flex: 0 0 auto;
+  opacity: 0.7;
+}
+
+/* ── Clear button ─────────────────────────────────────────────────── */
+
+.cngx-select__clear {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font: inherit;
+  opacity: 0.6;
+}
+.cngx-select__clear:hover {
+  opacity: 1;
+}
+.cngx-select__clear:focus-visible {
+  outline: 2px solid var(--cngx-focus-ring, #1976d2);
+  border-radius: 0.125rem;
+}

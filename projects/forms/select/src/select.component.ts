@@ -237,89 +237,15 @@ export interface CngxSelectChange<T = unknown> {
     </div>
     </div>
   `,
-  styles: `
-    :host {
-      display: inline-block;
-      position: relative;
-      font: inherit;
-      min-width: var(--cngx-select-min-width, 10rem);
-    }
-    .cngx-select__root {
-      display: contents;
-    }
-    .cngx-select__trigger {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--cngx-select-gap, 0.5rem);
-      width: 100%;
-      padding: var(--cngx-select-padding, 0.5rem 0.75rem);
-      border: var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4));
-      border-radius: var(--cngx-select-radius, 0.25rem);
-      background: var(--cngx-select-bg, transparent);
-      color: var(--cngx-select-color, inherit);
-      font: inherit;
-      cursor: pointer;
-      text-align: start;
-      justify-content: space-between;
-    }
-    .cngx-select__trigger:focus-visible {
-      outline: var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
-      outline-offset: var(--cngx-select-focus-offset, 2px);
-    }
-    .cngx-select__trigger[disabled] {
-      opacity: var(--cngx-select-disabled-opacity, 0.5);
-      cursor: not-allowed;
-    }
-    .cngx-select__label {
-      flex: 1 1 auto;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-    }
-    .cngx-select__caret {
-      flex: 0 0 auto;
-      opacity: 0.7;
-    }
-    .cngx-select__clear {
-      flex: 0 0 auto;
-      appearance: none;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      cursor: pointer;
-      padding: 0 0.25rem;
-      font: inherit;
-      opacity: 0.6;
-    }
-    .cngx-select__clear:hover {
-      opacity: 1;
-    }
-    .cngx-select__clear:focus-visible {
-      outline: 2px solid var(--cngx-focus-ring, #1976d2);
-      border-radius: 0.125rem;
-    }
-    .cngx-select__panel {
-      border: var(--cngx-select-panel-border, 1px solid var(--cngx-border, #c4c4c4));
-      border-radius: var(--cngx-select-panel-radius, 0.25rem);
-      background: var(--cngx-select-panel-bg, var(--cngx-surface, #fff));
-      box-shadow: var(--cngx-select-panel-shadow, 0 4px 12px rgba(0, 0, 0, 0.12));
-      padding: var(--cngx-select-panel-padding, 0.25rem);
-      margin: 0;
-      min-width: var(--cngx-select-panel-min-width, anchor-size(width));
-      max-height: var(--cngx-select-panel-max-height, 16rem);
-      overflow-y: auto;
-      position-try-fallbacks:
-        flip-block,
-        flip-inline,
-        flip-block flip-inline;
-    }
-    /* Panel-body styles (option rows, skeletons, spinners, error banners,
-       refresh indicators) live in CngxSelectPanel — Angular's view-
-       encapsulation scopes CSS per-component. */
-  `,
+  // Styles split into two files:
+  // - shared/select-base.css: structural rules shared across the whole
+  //   select family (panel frame, option rows, skeletons, spinners,
+  //   shimmer animations, error banners, refreshing indicators). Stays
+  //   linked from the library after Atomic Decompose — or gets flattened
+  //   into the consumer's ejected component at schematic-run time.
+  // - select.component.css: CngxSelect-only trigger button + host
+  //   layout — the parts a multi-select / combobox will replace.
+  styleUrls: ['./shared/select-base.css', './select.component.css'],
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
