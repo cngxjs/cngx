@@ -52,6 +52,15 @@ export interface CngxSelectAnnouncerConfig {
  *
  * @category interactive
  */
+/**
+ * Visual for the first-load ("skeleton") async view — picks one of the
+ * built-in defaults. Per-instance `*cngxSelectLoading` overrides wins over
+ * every variant.
+ *
+ * @category interactive
+ */
+export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
+
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -60,6 +69,10 @@ export interface CngxSelectConfig {
    * - `null`: natural — panel sizes to content.
    */
   readonly panelWidth?: 'trigger' | number | null;
+  /** Default first-load indicator variant. */
+  readonly loadingVariant?: CngxSelectLoadingVariant;
+  /** Number of skeleton rows rendered when `loadingVariant === 'skeleton'`. */
+  readonly skeletonRowCount?: number;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
   /** Typeahead buffer reset window in ms. */
@@ -109,6 +122,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
   };
 } = {
   panelWidth: 'trigger',
+  loadingVariant: 'skeleton',
+  skeletonRowCount: 3,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -167,6 +182,25 @@ function feature(config: Partial<CngxSelectConfig>): CngxSelectConfigFeature {
  */
 export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelectConfigFeature {
   return feature({ panelWidth: width });
+}
+
+/**
+ * Visual for the first-load indicator. Defaults to `'skeleton'`.
+ *
+ * @category interactive
+ */
+export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelectConfigFeature {
+  return feature({ loadingVariant: variant });
+}
+
+/**
+ * Number of skeleton rows rendered when `loadingVariant === 'skeleton'`.
+ * Defaults to `3`.
+ *
+ * @category interactive
+ */
+export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
+  return feature({ skeletonRowCount: count });
 }
 
 /**

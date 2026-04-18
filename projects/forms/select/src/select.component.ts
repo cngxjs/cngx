@@ -34,7 +34,10 @@ import {
 } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from './shared/announcer';
-import { type CngxSelectAnnouncerConfig } from './shared/config';
+import {
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectLoadingVariant,
+} from './shared/config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -193,16 +196,41 @@ export interface CngxSelectChange<T = unknown> {
             @if (loadingTpl(); as tpl) {
               <ng-container *ngTemplateOutlet="tpl.templateRef" />
             } @else {
-              <div
-                class="cngx-select__skeleton"
-                role="status"
-                aria-live="polite"
-                aria-label="Lädt"
-              >
-                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
-                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
-                <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
-              </div>
+              @switch (loadingVariant()) {
+                @case ('spinner') {
+                  <div
+                    class="cngx-select__spinner-wrap"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Lädt"
+                  >
+                    <div aria-hidden="true" class="cngx-select__spinner"></div>
+                  </div>
+                }
+                @case ('bar') {
+                  <div
+                    class="cngx-select__loading-bar"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Lädt"
+                  ></div>
+                }
+                @case ('text') {
+                  <div class="cngx-select__loading" role="status" aria-live="polite">Lädt…</div>
+                }
+                @default {
+                  <div
+                    class="cngx-select__skeleton"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Lädt"
+                  >
+                    @for (i of skeletonIndices(); track i) {
+                      <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
+                    }
+                  </div>
+                }
+              }
             }
           }
           @case ('empty') {
@@ -506,6 +534,42 @@ export interface CngxSelectChange<T = unknown> {
       from { background-position: 200% 0; }
       to { background-position: -200% 0; }
     }
+    .cngx-select__spinner-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--cngx-select-spinner-padding, 1rem);
+    }
+    .cngx-select__spinner {
+      width: var(--cngx-select-spinner-size, 1.5rem);
+      height: var(--cngx-select-spinner-size, 1.5rem);
+      border: var(--cngx-select-spinner-border, 2px solid rgba(0, 0, 0, 0.15));
+      border-top-color: var(--cngx-select-spinner-color, var(--cngx-focus-ring, #1976d2));
+      border-radius: 50%;
+      animation: cngx-select-spin 0.8s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-select__spinner { animation-duration: 3s; }
+    }
+    @keyframes cngx-select-spin {
+      to { transform: rotate(360deg); }
+    }
+    .cngx-select__loading-bar {
+      height: var(--cngx-select-loading-bar-height, 3px);
+      margin: calc(-1 * var(--cngx-select-panel-padding, 0.25rem))
+        calc(-1 * var(--cngx-select-panel-padding, 0.25rem));
+      background: linear-gradient(
+        90deg,
+        transparent,
+        var(--cngx-select-loading-bar-color, var(--cngx-focus-ring, #1976d2)),
+        transparent
+      );
+      background-size: 200% 100%;
+      animation: cngx-select-refresh 1.1s linear infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cngx-select__loading-bar { animation: none; }
+    }
     .cngx-select__error {
       display: flex;
       flex-direction: column;
@@ -627,6 +691,16 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Display a loading state inside the panel. */
   readonly loading = input<boolean>(false);
+
+  /**
+   * First-load indicator variant: `'skeleton'` (default), `'spinner'`, `'bar'`, or `'text'`.
+   * Falls back to `CNGX_SELECT_CONFIG.loadingVariant`. A projected
+   * `*cngxSelectLoading` template always wins over this input.
+   */
+  readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+
+  /** Number of skeleton rows when `loadingVariant === 'skeleton'`. */
+  readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
 
   /**
    * Async-state source for options — when bound, replaces `[options]` during
@@ -902,6 +976,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   protected readonly showInlineError = computed<boolean>(
     () => this.activeView() === 'content+error',
+  );
+
+  /** @internal — `[0, 1, 2, ...]` used to repeat the skeleton-row template. */
+  protected readonly skeletonIndices = computed<number[]>(() =>
+    Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
   );
 
   /** @internal — error context passed to a `[cngxSelectError]` template. */

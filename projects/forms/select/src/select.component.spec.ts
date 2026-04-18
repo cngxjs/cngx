@@ -469,6 +469,77 @@ describe('CngxSelect — async state consumer', () => {
     expect(panel().querySelector('.cngx-select__option')).toBeFalsy();
   });
 
+  it('respects [skeletonRowCount] input', () => {
+    @Component({
+      selector: 'skel-count-host',
+      template: `
+        <cngx-select
+          [label]="'X'"
+          [state]="state"
+          [skeletonRowCount]="7"
+          [(value)]="value"
+        />
+      `,
+      imports: [CngxSelect],
+    })
+    class SkelCountHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.resetTestingModule();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [SkelCountHost] });
+    const fixture = TestBed.createComponent(SkelCountHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.state.set('loading');
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.querySelectorAll('.cngx-select__skeleton-row').length).toBe(7);
+  });
+
+  it('renders spinner variant when [loadingVariant]="spinner"', () => {
+    @Component({
+      selector: 'spinner-host',
+      template: `
+        <cngx-select
+          [label]="'X'"
+          [state]="state"
+          [loadingVariant]="'spinner'"
+          [(value)]="value"
+        />
+      `,
+      imports: [CngxSelect],
+    })
+    class SpinnerHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      readonly value = signal<string | undefined>(undefined);
+    }
+    TestBed.resetTestingModule();
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [SpinnerHost] });
+    const fixture = TestBed.createComponent(SpinnerHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.state.set('loading');
+    const trigger = fixture.debugElement
+      .query(By.directive(CngxSelect))
+      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    trigger.click();
+    flush(fixture);
+    const panel = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__panel',
+    ) as HTMLElement;
+    expect(panel.querySelector('.cngx-select__spinner')).toBeTruthy();
+    expect(panel.querySelector('.cngx-select__skeleton')).toBeFalsy();
+  });
+
   it('shows empty template when state is success with empty data', () => {
     const { fixture, host, panel, triggerBtn } = setup();
     host.state.setSuccess([]);

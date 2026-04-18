@@ -19,6 +19,8 @@ export function resolveSelectConfig(): Required<
   const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
+    loadingVariant: user.loadingVariant ?? CNGX_SELECT_DEFAULTS.loadingVariant,
+    skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

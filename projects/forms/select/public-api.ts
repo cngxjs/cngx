@@ -31,6 +31,7 @@ export {
   type CngxSelectAnnouncerConfig,
   type CngxSelectConfigFeature,
   type CngxSelectTemplateContexts,
+  type CngxSelectLoadingVariant,
   provideSelectConfig,
   provideSelectConfigAt,
   withPanelWidth,
@@ -43,6 +44,8 @@ export {
   withDismissOn,
   withOpenOn,
   withAnnouncer,
+  withLoadingVariant,
+  withSkeletonRowCount,
 } from './src/shared/config';
 
 // ── Announcer ─────────────────────────────────────────────────────────
