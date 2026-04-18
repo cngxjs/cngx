@@ -394,8 +394,11 @@ describe('CngxSelect — form-field integration', () => {
     const selectHost = fixture.debugElement.query(By.directive(CngxSelect))
       .nativeElement as HTMLElement;
     expect(selectHost.id).toBe('cngx-color-input');
-    expect(selectHost.getAttribute('aria-describedby')).toContain('cngx-color-hint');
-    expect(selectHost.getAttribute('aria-describedby')).toContain('cngx-color-error');
+    // aria-describedby belongs on the focusable trigger (AT reads it from
+    // the element that has focus, not from the container).
+    const triggerBtn = selectHost.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    expect(triggerBtn.getAttribute('aria-describedby')).toContain('cngx-color-hint');
+    expect(triggerBtn.getAttribute('aria-describedby')).toContain('cngx-color-error');
   });
 
   it('errorState reflects presenter.showError (touched && invalid)', () => {

@@ -127,8 +127,6 @@ export interface CngxSelectChange<T = unknown> {
   ],
   host: {
     '[id]': 'resolvedId()',
-    '[attr.aria-describedby]': 'describedBy()',
-    '[attr.aria-errormessage]': 'ariaErrorMessage()',
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
   template: `
@@ -151,6 +149,10 @@ export interface CngxSelectChange<T = unknown> {
       [attr.tabindex]="effectiveTabIndex()"
       [attr.aria-label]="resolvedAriaLabel()"
       [attr.aria-labelledby]="resolvedAriaLabelledBy()"
+      [attr.aria-describedby]="describedBy()"
+      [attr.aria-errormessage]="ariaErrorMessage()"
+      [attr.aria-expanded]="panelOpen()"
+      [attr.aria-disabled]="disabled() || null"
       [attr.aria-invalid]="ariaInvalid()"
       [attr.aria-required]="resolvedAriaRequired()"
       [attr.aria-busy]="ariaBusy()"
@@ -416,7 +418,7 @@ export interface CngxSelectChange<T = unknown> {
                     @if (isCommittingOption(opt)) {
                       <span aria-hidden="true" class="cngx-select__option-spinner"></span>
                     } @else if (commitErrorDisplay() === 'inline' && showCommitError() && isSelected(opt)) {
-                      <span aria-hidden="true" class="cngx-select__option-error" role="alert">!</span>
+                      <span aria-hidden="true" class="cngx-select__option-error">!</span>
                     }
                   </div>
                 }
@@ -1163,8 +1165,28 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal — flattened option list for matcher / trigger-label lookups. */
-  protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(() =>
-    flattenSelectOptions(this.effectiveOptions()),
+  protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(
+    () => flattenSelectOptions(this.effectiveOptions()),
+    {
+      // Reference-wise equal when length + every entry is identity-equal.
+      // Prevents downstream computed cascades from re-running on stable
+      // option arrays (e.g. when the source array was re-emitted without
+      // semantic change).
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          if (!Object.is(a[i], b[i])) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   /**
@@ -1571,6 +1593,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         if (!Object.is(this.value(), previous)) {
           this.value.set(previous);
         }
+        // Announce the failure to AT so the inline "!" glyph — which is
+        // purely visual — doesn't leave screen-reader users without
+        // feedback on the rolled-back write.
+        this.announcer.announce(this.commitErrorMessage(err), 'assertive');
         // Pessimistic keeps panel open so user sees the error inline.
       },
     });
@@ -1695,6 +1721,18 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
       ad.highlightByIndex(target);
     }
+  }
+
+  /**
+   * Format a commit-error for live-region announcement. Falls back to
+   * a generic message when the error isn't an `Error` instance.
+   */
+  private commitErrorMessage(err: unknown): string {
+    const label = this.label() ?? this.ariaLabel() ?? 'Auswahl';
+    const detail = err instanceof Error ? err.message : undefined;
+    return detail
+      ? `${label}: Speichern fehlgeschlagen — ${detail}`
+      : `${label}: Speichern fehlgeschlagen`;
   }
 
   private maybeAnnounce(option: CngxSelectOptionDef<T> | null): void {
