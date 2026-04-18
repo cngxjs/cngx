@@ -55,8 +55,9 @@ export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
 /**
  * Contract for controls that can participate in a `cngx-form-field`.
  *
- * `CngxInput` provides this natively. Third-party controls (including `matInput` via
- * `CngxMatInputBridge`) can adapt to this interface.
+ * `CngxInput` provides this natively. Third-party controls (Material, native HTML,
+ * or custom components) adapt to this interface via the universal `CngxBindField`
+ * directive, or a specialised bridge (e.g. `CngxListboxFieldBridge`).
  *
  * @category structure
  */

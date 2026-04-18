@@ -7,7 +7,7 @@ import {
 import type { CngxFormFieldControl, ErrorMessageMap } from './models';
 
 /**
- * Injection token provided by controls (`CngxInput`, `CngxMatInputBridge`) inside a `cngx-form-field`.
+ * Injection token provided by controls (`CngxInput`, `CngxBindField`, `CngxListboxFieldBridge`) inside a `cngx-form-field`.
  * The presenter reads this to discover the active control.
  *
  * @category tokens

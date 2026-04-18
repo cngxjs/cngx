@@ -43,6 +43,7 @@ export function createTransitionTracker(source: () => AsyncStatus): StatusTransi
       current,
       previous: prev?.value.current ?? 'idle',
     }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
   });
 
   return {

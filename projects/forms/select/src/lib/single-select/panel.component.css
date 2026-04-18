@@ -1,0 +1,17 @@
+/*
+ * panel.component.css — CngxSelectPanel-specific styles.
+ *
+ * The panel sub-component owns only its host wrapper here — all visual
+ * rules for the panel body (options, skeletons, spinners, error
+ * banners, refreshing indicators) live in `shared/select-base.css` and
+ * get loaded via this component's `styleUrls`.
+ *
+ * Atomic Decompose note: when a consumer ejects CngxSelect, the
+ * schematic can eject CngxSelectPanel together with it OR leave the
+ * panel linked from the library. Either way this file stays small
+ * because all the real styling is in the shared base.
+ */
+
+:host {
+  display: contents;
+}

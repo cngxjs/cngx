@@ -51,7 +51,14 @@ import { CngxOption } from './option.directive';
   hostDirectives: [
     {
       directive: CngxActiveDescendant,
-      inputs: ['orientation', 'loop', 'typeahead', 'autoHighlightFirst', 'virtualCount'],
+      inputs: [
+        'items',
+        'orientation',
+        'loop',
+        'typeahead',
+        'autoHighlightFirst',
+        'virtualCount',
+      ],
     },
   ],
   host: {
@@ -85,13 +92,44 @@ export class CngxListbox {
   readonly cngxSearchRef = input<CngxListboxSearch | null>(null);
 
   /**
+   * When `true`, the listbox stops auto-writing its own `value` / `selectedValues`
+   * on AD-activation. The consumer (typically a Level-3 composite like
+   * `CngxSelect` running an async `[commitAction]`) fully owns the value
+   * mutation flow and can intercept activations BEFORE any write happens.
+   *
+   * **Why this exists.**
+   * The commit flow needs to snapshot the pre-pick value synchronously when
+   * the user clicks an option — to roll back to it on error. Without this
+   * flag, CngxListbox writes `value` via two-way binding BEFORE the consumer's
+   * own `ad.activated` subscriber runs, and the pre-pick value is already
+   * gone by the time we try to snapshot it. Flipping this flag lets the
+   * consumer be the single writer.
+   *
+   * Default `false` preserves the self-contained listbox behaviour used
+   * everywhere outside the select family.
+   */
+  readonly externalActivation = input<boolean>(false);
+
+  /**
    * Underlying `CngxActiveDescendant` host directive. Exposed so triggers
    * (e.g. `CngxListboxTrigger`) can drive navigation without ancestor injection.
    */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
+  /**
+   * Optional explicit option list. When set, takes precedence over content
+   * projection. Useful for composites that project options via `<ng-content>`
+   * and query them one layer up (e.g. `CngxSelect`'s declarative mode).
+   */
+  readonly explicitOptions = input<readonly CngxOption[] | undefined>(undefined);
+
   /** Options collected via content projection. */
-  readonly options = contentChildren(CngxOption, { descendants: true });
+  private readonly contentOptions = contentChildren(CngxOption, { descendants: true });
+
+  /** Effective option list: explicit input wins, otherwise content-projection. */
+  readonly options = computed<readonly CngxOption[]>(
+    () => this.explicitOptions() ?? this.contentOptions(),
+  );
 
   /** Whether content-children have been initialised (guards effects from running early). */
   private readonly initialized = signal(false);
@@ -264,6 +302,14 @@ export class CngxListbox {
   }
 
   private handleActivation(value: unknown): void {
+    // See `externalActivation` — when the consumer opts in, we become
+    // activation-only (AD still fires `activated` on the Subject, but we
+    // don't write our own value). Consumers listen on `ad.activated`
+    // themselves and do the write after they've captured whatever they
+    // need (for example, the pre-pick value as a rollback target).
+    if (this.externalActivation()) {
+      return;
+    }
     if (this.multiple()) {
       this.toggle(value);
     } else {

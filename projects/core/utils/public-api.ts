@@ -12,3 +12,4 @@ export {
   type AsyncStateViewSources,
 } from './src/build-async-state-view';
 export { createTransitionTracker, type StatusTransition } from './src/transition-tracker';
+export { CNGX_STATEFUL, type CngxStateful } from './src/stateful';

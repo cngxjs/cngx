@@ -392,6 +392,11 @@ export const routes: Routes = [
           import('./demos/forms/otp-demo/otp-demo.component').then((m) => m.OtpDemoComponent),
       },
       {
+        path: 'select',
+        loadComponent: () =>
+          import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
+      },
+      {
         path: 'utilities',
         loadComponent: () =>
           import('./demos/forms/utilities-demo/utilities-demo.component').then((m) => m.UtilitiesDemoComponent),

@@ -1,5 +1,18 @@
-import { Directive, effect, inject, input } from '@angular/core';
-import { createTransitionTracker, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  afterNextRender,
+  Directive,
+  computed,
+  effect,
+  inject,
+  input,
+  isDevMode,
+  untracked,
+} from '@angular/core';
+import {
+  CNGX_STATEFUL,
+  createTransitionTracker,
+  type CngxAsyncState,
+} from '@cngx/core/utils';
 
 import { CngxBanner } from './banner.service';
 
@@ -27,9 +40,25 @@ import { CngxBanner } from './banner.service';
 })
 export class CngxBannerOn {
   private readonly bannerService = inject(CngxBanner, { optional: true });
+  private readonly statefulFallback = inject(CNGX_STATEFUL, { optional: true });
 
-  /** The async state to watch. */
-  readonly state = input.required<CngxAsyncState<unknown>>({ alias: 'cngxBannerOn' });
+  /**
+   * The async state to watch. Optional — when omitted, falls back to
+   * `CNGX_STATEFUL` from an ancestor/self component. A bare `cngxBannerOn`
+   * attribute is treated as "no input bound".
+   */
+  readonly state = input<CngxAsyncState<unknown> | undefined, CngxAsyncState<unknown> | '' | undefined>(
+    undefined,
+    {
+      alias: 'cngxBannerOn',
+      transform: (v) => (typeof v === 'string' ? undefined : v),
+    },
+  );
+
+  /** Effective state — input wins over ancestor `CNGX_STATEFUL`. */
+  private readonly effectiveState = computed<CngxAsyncState<unknown> | undefined>(
+    () => this.state() ?? this.statefulFallback?.state,
+  );
 
   /** Required banner id — dedup key. */
   readonly bannerId = input.required<string>();
@@ -51,10 +80,25 @@ export class CngxBannerOn {
     }
     const banner = this.bannerService;
 
-    const tracker = createTransitionTracker(() => this.state().status());
+    if (isDevMode()) {
+      // One-shot post-binding check — runs once after inputs are bound. Uses
+      // afterNextRender instead of an effect so we don't leave a dead node in
+      // the reactive graph for the lifetime of the directive.
+      afterNextRender(() => {
+        if (this.state() === undefined && !this.statefulFallback) {
+          console.error(
+            '[cngxBannerOn] No state source. Bind [cngxBannerOn]="state" explicitly or ' +
+              'place inside a component that provides CNGX_STATEFUL.',
+          );
+        }
+      });
+    }
+
+    const tracker = createTransitionTracker(() => this.effectiveState()?.status() ?? 'idle');
 
     effect(() => {
-      const s = this.state();
+      // Only tracker is tracked. All other signal reads happen inside untracked()
+      // below to keep the effect's dependency graph flat.
       const status = tracker.current();
       const previous = tracker.previous();
 
@@ -62,30 +106,37 @@ export class CngxBannerOn {
         return;
       }
 
-      if (status === 'error') {
-        const msg = this.bannerError();
-        if (msg) {
-          const err = s.error();
-          const detail =
-            this.bannerErrorDetail() && err != null
-              ? err instanceof Error
-                ? err.message
-                : typeof err === 'string'
-                  ? err
-                  : undefined
-              : undefined;
-          banner.show({
-            message: detail ? `${msg}: ${detail}` : msg,
-            id: this.bannerId(),
-            severity: this.bannerSeverity(),
-          });
+      untracked(() => {
+        const s = this.effectiveState();
+        if (!s) {
+          return;
         }
-      }
 
-      // Auto-dismiss on success or idle (condition resolved)
-      if (status === 'success' || status === 'idle') {
-        banner.dismiss(this.bannerId());
-      }
+        if (status === 'error') {
+          const msg = this.bannerError();
+          if (msg) {
+            const err = s.error();
+            const detail =
+              this.bannerErrorDetail() && err != null
+                ? err instanceof Error
+                  ? err.message
+                  : typeof err === 'string'
+                    ? err
+                    : undefined
+                : undefined;
+            banner.show({
+              message: detail ? `${msg}: ${detail}` : msg,
+              id: this.bannerId(),
+              severity: this.bannerSeverity(),
+            });
+          }
+        }
+
+        // Auto-dismiss on success or idle (condition resolved)
+        if (status === 'success' || status === 'idle') {
+          banner.dismiss(this.bannerId());
+        }
+      });
     });
   }
 }

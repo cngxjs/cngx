@@ -338,6 +338,22 @@ export class CngxActiveDescendant {
     }
   }
 
+  /**
+   * Push a printable character into the typeahead buffer and jump to the next
+   * matching option. Exposed for external keyboard hosts (e.g. a select
+   * trigger) that keep focus on themselves while using active-descendant
+   * semantics on a separate listbox.
+   *
+   * Consumers should only forward single-character printable keys (`length === 1`,
+   * non-whitespace). Navigation keys and non-printables must not be forwarded.
+   */
+  typeaheadChar(ch: string): void {
+    if (!this.typeahead()) {
+      return;
+    }
+    this.handleTypeahead(ch);
+  }
+
   private handleTypeahead(ch: string): void {
     const next = this.typeaheadBuffer() + ch.toLowerCase();
     this.typeaheadBuffer.set(next);
