@@ -54,7 +54,13 @@ export function runCommitAction<T>(
 
   if (isObservable(result)) {
     const sub = result.subscribe({
-      next: (value: T | undefined) => safeSuccess(value),
+      // Only the first emission is a commit result. Subsequent emissions
+      // are treated as noise — tear down after success so a hot source
+      // cannot double-write the value signal.
+      next: (value: T | undefined) => {
+        safeSuccess(value);
+        sub.unsubscribe();
+      },
       error: (err: unknown) => safeError(err),
     });
     unsubscribe = () => sub.unsubscribe();

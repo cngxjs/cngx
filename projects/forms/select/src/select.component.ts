@@ -1077,26 +1077,52 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /** @internal */
-  protected readonly panelClassList = computed<string | readonly string[] | null>(() => {
-    const global = this.config.panelClass;
-    const local = this.panelClass();
-    if (!global && !local) {
-      return null;
-    }
-    if (!global) {
-      return local;
-    }
-    if (!local) {
-      return global;
-    }
-    const globalArr: readonly string[] = Array.isArray(global)
-      ? (global as readonly string[])
-      : [global as string];
-    const localArr: readonly string[] = Array.isArray(local)
-      ? (local as readonly string[])
-      : [local as string];
-    return [...globalArr, ...localArr];
-  });
+  protected readonly panelClassList = computed<string | readonly string[] | null>(
+    () => {
+      const global = this.config.panelClass;
+      const local = this.panelClass();
+      if (!global && !local) {
+        return null;
+      }
+      if (!global) {
+        return local;
+      }
+      if (!local) {
+        return global;
+      }
+      const globalArr: readonly string[] = Array.isArray(global)
+        ? (global as readonly string[])
+        : [global as string];
+      const localArr: readonly string[] = Array.isArray(local)
+        ? (local as readonly string[])
+        : [local as string];
+      return [...globalArr, ...localArr];
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        const aArr = Array.isArray(a) ? a : a == null ? null : [a];
+        const bArr = Array.isArray(b) ? b : b == null ? null : [b];
+        if (aArr === null && bArr === null) {
+          return true;
+        }
+        if (aArr === null || bArr === null) {
+          return false;
+        }
+        if (aArr.length !== bArr.length) {
+          return false;
+        }
+        for (let i = 0; i < aArr.length; i++) {
+          if (aArr[i] !== bArr[i]) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
 
   /** @internal */
   protected readonly panelWidthCss = computed<string | null>(() => {
@@ -1167,8 +1193,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /** @internal — `[0, 1, 2, ...]` used to repeat the skeleton-row template. */
-  protected readonly skeletonIndices = computed<number[]>(() =>
-    Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
+  protected readonly skeletonIndices = computed<number[]>(
+    () => Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
+    { equal: (a, b) => a.length === b.length },
   );
 
   // ── Commit action state ─────────────────────────────────────────────
@@ -1209,20 +1236,26 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /** @internal — context passed to a `[cngxSelectCommitError]` template. */
-  protected readonly commitErrorContext = computed(() => {
-    const eq = this.compareWith();
-    const intended = this.lastCommitIntendedState();
-    const option =
-      intended === undefined
-        ? null
-        : (this.flatOptions().find((o) => eq(o.value, intended)) ?? null);
-    return {
-      $implicit: this.commitState.error(),
-      error: this.commitState.error(),
-      option,
-      retry: (): void => this.retryCommit(),
-    };
-  });
+  protected readonly commitErrorContext = computed(
+    () => {
+      const eq = this.compareWith();
+      const intended = this.lastCommitIntendedState();
+      const option =
+        intended === undefined
+          ? null
+          : (this.flatOptions().find((o) => eq(o.value, intended)) ?? null);
+      return {
+        $implicit: this.commitState.error(),
+        error: this.commitState.error(),
+        option,
+        retry: (): void => this.retryCommit(),
+      };
+    },
+    {
+      // Stable context identity as long as error and option haven't moved.
+      equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
+    },
+  );
 
   /**
    * @internal — true for the specific option currently being committed.
@@ -1240,11 +1273,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal — error context passed to a `[cngxSelectError]` template. */
-  protected readonly errorContext = computed(() => ({
-    $implicit: this.state()?.error(),
-    error: this.state()?.error(),
-    retry: (): void => this.handleRetry(),
-  }));
+  protected readonly errorContext = computed(
+    () => ({
+      $implicit: this.state()?.error(),
+      error: this.state()?.error(),
+      retry: (): void => this.handleRetry(),
+    }),
+    {
+      // Context object is recreated each run, but NgTemplateOutlet only
+      // needs to diff when the error identity changes. `retry` is a bound
+      // method reference — treat it as stable.
+      equal: (a, b) => Object.is(a.error, b.error),
+    },
+  );
 
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
@@ -1294,6 +1335,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
+    // Seed the rollback target synchronously so a first-pick commit-error
+    // rolls back to the bound initial value (not `undefined`). The
+    // subsequent effect handles all later updates.
+    this.lastCommittedValue = untracked(() => this.value());
+
     // Snapshot the "last committed value" for rollback targets. Any write
     // that happens OUTSIDE a commit pending state (initial value,
     // programmatic consumer write, commit success/error) refreshes the
@@ -1524,7 +1570,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
-    const eq = this.compareWith();
     const current = this.value();
     if (current === undefined || current === null) {
       return;
@@ -1533,7 +1578,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({ source: this, value: undefined, option: null });
     this.optionSelected.emit(null);
     this.maybeAnnounce(null);
-    void eq;
   }
 
   /** @internal */
