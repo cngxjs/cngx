@@ -73,6 +73,15 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly panelWidthCss: Signal<string | null>;
   readonly resolvedListboxLabel: Signal<string>;
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
+  /**
+   * Concrete indicator variant after `instance > config > 'auto'` cascade.
+   * Panel binds to `<cngx-checkbox-indicator [variant]="…">`.
+   */
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  /**
+   * Indicator position relative to the label inside a panel option row.
+   */
+  readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;
 

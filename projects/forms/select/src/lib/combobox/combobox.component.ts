@@ -350,6 +350,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Hide the default in-panel checkmark on this instance. */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
 
+  /** Per-instance override for the indicator position. `null` → inherit config (`'before'`). */
+  readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+
+  /** Per-instance override for the indicator variant. `null` → inherit config (`'auto'`). */
+  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
+
   /** Hide the default dropdown caret glyph. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
@@ -579,6 +585,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       panelOpen: this.panelOpen,
       errorState: this.errorState,
       filter: this.filter,
+      multi: computed(() => true),
+      currentSelection: this.values,
+      multiValues: this.values,
+      selectionIndicatorPosition: this.selectionIndicatorPosition,
+      selectionIndicatorVariant: this.selectionIndicatorVariant,
     },
     {
       announceChanges: this.announceChanges,
@@ -600,6 +611,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+    this.core.resolvedSelectionIndicatorVariant;
+  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+    this.core.resolvedSelectionIndicatorPosition;
   /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */ protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
@@ -718,16 +733,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    const vals = this.values();
-    if (vals.length === 0) {
-      return false;
-    }
-    const map = this.core.valueToOptionMap();
-    if (map) {
-      return vals.some((v) => Object.is(v, opt.value));
-    }
-    const eq = this.compareWith();
-    return vals.some((v) => eq(v, opt.value));
+    return this.core.isSelected(opt.value);
   }
 
   protected isEmpty(): boolean {
