@@ -1,6 +1,7 @@
-import { computed, Directive, input } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
 
 import type { CngxListbox } from './listbox.directive';
+import { CngxListboxSearch } from './listbox-search.directive';
 
 /**
  * Minimum popover contract this trigger expects. Matches `CngxPopover` from
@@ -50,15 +51,57 @@ export class CngxListboxTrigger<T = unknown> {
   readonly popover = input.required<PopoverController>();
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
-  /** Whether focusing the trigger auto-opens the popover. */
-  readonly openOnFocus = input<boolean>(false);
 
   /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
+  /**
+   * Fires when the user presses Backspace on an empty input. Only
+   * emitted when the host element is an `<input>` with a co-located
+   * `CngxListboxSearch` — the tag-input convention "Backspace on empty
+   * deletes the trailing chip" lives at the trigger, so consumers only
+   * wire one subscription to own the delete path. On non-input hosts
+   * (classic button triggers) the event never fires.
+   *
+   * @category interactive
+   */
+  readonly backspaceOnEmpty = output<void>();
+
+  /**
+   * When a `CngxListboxSearch` is attached to the same host element, we
+   * suppress the printable-character typeahead forwarding: the keystroke
+   * must reach the native `<input>` value so the search directive's
+   * debounced term picks it up. Without this guard every printable char
+   * would be `preventDefault()`'d and the input would never receive text.
+   *
+   * Injected as optional + self so only co-located search declarations
+   * flip the behaviour. Combobox-style triggers (where the focusable
+   * element IS an `<input cngxListboxSearch cngxListboxTrigger>`) opt in
+   * automatically; classic button triggers keep native-`<select>` parity.
+   */
+  private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
+
   protected handleKeydown(event: KeyboardEvent): void {
     const key = event.key;
     const ad = this.listbox().ad;
+
+    // Tag-input convention: Backspace on an empty search-input fires
+    // (backspaceOnEmpty) so the parent composite (CngxCombobox, future
+    // tag-input, …) can delete the trailing chip. Lives at the trigger
+    // because the trigger already owns keyboard on this element —
+    // having two keydown handlers on the same element is a smell we
+    // avoid by consolidating here. Non-input triggers never fire it
+    // because the co-located-search guard is false.
+    if (key === 'Backspace' && this.search) {
+      const host = this.el.nativeElement;
+      if (host instanceof HTMLInputElement && host.value === '') {
+        this.backspaceOnEmpty.emit();
+        // Do NOT preventDefault — let the user's Backspace bubble
+        // naturally; the consumer's chip-remove path handles the DOM
+        // impact via the output.
+      }
+    }
 
     if (!this.isOpen()) {
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
@@ -110,6 +153,11 @@ export class CngxListboxTrigger<T = unknown> {
         return;
     }
 
+    if (this.search) {
+      // Input-driven trigger: let the keystroke land in the <input>
+      // so CngxListboxSearch's debounced term updates.
+      return;
+    }
     if (key.length === 1 && /\S/.exec(key) !== null) {
       // Forward printable characters to active-descendant typeahead so the
       // select trigger behaves like a native <select>: first letter jumps

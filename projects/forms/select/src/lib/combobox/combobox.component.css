@@ -1,0 +1,129 @@
+/*
+ * combobox.component.css — CngxCombobox trigger skin.
+ *
+ * Structural parts shared with the rest of the select family (panel
+ * frame, option rows, loading variants, chip-list flex-wrap layout,
+ * error surfaces) come from `shared/select-base.css`. This file owns
+ * only the pieces that differ: the `role="group"` wrapper, the inline
+ * `<input>` that IS the combobox's focusable element, the caret glyph
+ * position, and the clear-all button.
+ *
+ * All tokens cascade to `--cngx-select-*` then to raw defaults — a
+ * consumer that themes the whole select family once via
+ * `--cngx-select-bg` / `--cngx-select-border` gets this component
+ * themed for free.
+ */
+
+/* ── Host + root wrapper ──────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  position: relative;
+  font: inherit;
+  min-width: var(--cngx-combobox-min-width, var(--cngx-select-min-width, 12rem));
+}
+
+.cngx-combobox__root {
+  display: contents;
+}
+
+/* ── role="group" wrapper ─────────────────────────────────────────── */
+
+.cngx-combobox__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-combobox-gap, var(--cngx-select-gap, 0.375rem));
+  width: 100%;
+  padding: var(--cngx-combobox-padding, var(--cngx-select-padding, 0.25rem 0.375rem));
+  border: var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4)));
+  border-radius: var(--cngx-combobox-radius, var(--cngx-select-radius, 0.25rem));
+  background: var(--cngx-combobox-bg, var(--cngx-select-bg, transparent));
+  color: var(--cngx-combobox-color, var(--cngx-select-color, inherit));
+  font: inherit;
+  cursor: text;
+  min-height: var(--cngx-combobox-min-height, 2.25rem);
+  flex-wrap: nowrap;
+}
+
+.cngx-combobox__trigger:focus-within {
+  outline: var(
+    --cngx-combobox-focus-outline,
+    var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2))
+  );
+  outline-offset: var(
+    --cngx-combobox-focus-offset,
+    var(--cngx-select-focus-offset, 2px)
+  );
+}
+
+.cngx-combobox__trigger[aria-disabled='true'] {
+  opacity: var(
+    --cngx-combobox-disabled-opacity,
+    var(--cngx-select-disabled-opacity, 0.5)
+  );
+  cursor: not-allowed;
+}
+
+/* ── Inline input (the focusable element) ─────────────────────────── */
+
+.cngx-combobox__input {
+  flex: 1 1 var(--cngx-combobox-input-flex-basis, 4rem);
+  min-width: var(--cngx-combobox-input-min-width, 4rem);
+  appearance: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.cngx-combobox__input:disabled {
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.cngx-combobox__input::placeholder {
+  opacity: var(--cngx-combobox-placeholder-opacity, 0.7);
+  color: inherit;
+}
+
+/* Slot wrapper for *cngxComboboxTriggerLabel — keeps text summary on
+ * the same baseline as the input without re-implementing chip-list
+ * flex rules. */
+.cngx-combobox__trigger-label {
+  flex: 0 1 auto;
+}
+
+/* ── Clear-all button ─────────────────────────────────────────────── */
+
+.cngx-combobox__clear-all {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font: inherit;
+  opacity: var(--cngx-combobox-clear-opacity, 0.6);
+}
+
+.cngx-combobox__clear-all:hover {
+  opacity: 1;
+}
+
+.cngx-combobox__clear-all:focus-visible {
+  outline: 2px solid var(--cngx-focus-ring, #1976d2);
+  border-radius: 0.125rem;
+}
+
+/* ── Caret ────────────────────────────────────────────────────────── */
+
+.cngx-combobox__caret {
+  flex: 0 0 auto;
+  opacity: 0.7;
+  pointer-events: none;
+}

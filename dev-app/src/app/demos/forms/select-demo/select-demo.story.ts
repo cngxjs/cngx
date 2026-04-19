@@ -8,6 +8,8 @@ export const STORY: DemoSpec = {
     'CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity.',
   apiComponents: [
     'CngxSelect',
+    'CngxMultiSelect',
+    'CngxCombobox',
     'CngxSelectCheck',
     'CngxSelectCaret',
     'CngxSelectOptgroup',
@@ -15,6 +17,7 @@ export const STORY: DemoSpec = {
     'CngxSelectLoading',
     'CngxSelectTriggerLabel',
     'CngxSelectOptionLabel',
+    'CngxComboboxTriggerLabel',
     'provideSelectConfig',
   ],
   overview:
@@ -36,7 +39,7 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -199,6 +202,38 @@ export const STORY: DemoSpec = {
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -810,6 +845,132 @@ export const STORY: DemoSpec = {
   </cngx-multi-select>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Combobox — basic (tag picker with typeahead filter)',
+      subtitle:
+        '<code>&lt;cngx-combobox&gt;</code> — inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>).',
+      imports: ['CngxCombobox'],
+      template: `
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboValues"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Combobox — async via [state] + [skipInitial] + (searchTermChange)',
+      subtitle:
+        'Async-option wiring for server-driven autocomplete. <code>[skipInitial]="true"</code> suppresses the hydrate-time empty-string emission so your request handler never fires a "load everything" on mount. <code>(searchTermChange)</code> bridges the debounced term to your backend; <code>[state]</code> feeds the returned options back into the panel with the full async-view protocol (loading/empty/error/refreshing).',
+      imports: ['CngxCombobox'],
+      template: `
+  <cngx-combobox
+    [label]="'Themen'"
+    [state]="comboAsyncState"
+    [(values)]="comboAsyncValues"
+    [skipInitial]="true"
+    (searchTermChange)="comboLastTerm.set($event)"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
+      <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>
+    </div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboAsyncValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ comboAsyncState.status() }}</span></div>
+    <div class="event-row"><span class="event-label">Last term</span><span class="event-value">{{ comboLastTerm() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Combobox — per-toggle [commitAction]',
+      subtitle:
+        'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.',
+      imports: ['CngxCombobox'],
+      template: `
+  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="comboCommitShouldFail()"
+             (change)="comboCommitShouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+  </div>
+  <cngx-combobox
+    [label]="'Themen (commit)'"
+    [options]="tagOptions"
+    [(values)]="comboCommitValues"
+    [commitAction]="comboCommitAction"
+    [commitMode]="comboCommitMode()"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Commit log</span>
+      <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Combobox — clearable + custom *cngxSelectClearButton',
+      subtitle:
+        'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.',
+      imports: ['CngxCombobox', 'CngxSelectClearButton'],
+      template: `
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [clearable]="true"
+    [(values)]="comboClearableValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
+        Alle zurücksetzen
+      </button>
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Combobox — text summary via *cngxComboboxTriggerLabel',
+      subtitle:
+        'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).',
+      imports: ['CngxCombobox', 'CngxComboboxTriggerLabel'],
+      template: `
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboTextValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
+      @if (count === 0) {
+        <!-- Placeholder takes over when empty -->
+      } @else if (count === 1) {
+        <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
+      } @else {
+        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+      }
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
   </div>`,
     },
   ],

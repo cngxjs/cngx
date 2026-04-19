@@ -186,6 +186,23 @@ export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
 }
 
 /**
+ * Context for the trigger-label template in `CngxCombobox`. Replaces
+ * only the chip strip — the search `<input>` stays visible next to it —
+ * so consumers can render a compact text summary ("3 Themen ausgewählt")
+ * while keeping type-to-filter interaction. Context shape mirrors
+ * {@link CngxMultiSelectTriggerLabelContext} so a single consumer
+ * template can cover both components when shared.
+ *
+ * @category interactive
+ */
+export interface CngxComboboxTriggerLabelContext<T = unknown> {
+  readonly $implicit: readonly CngxSelectOptionDef<T>[];
+  readonly selected: readonly CngxSelectOptionDef<T>[];
+  readonly values: readonly T[];
+  readonly count: number;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -514,4 +531,31 @@ export class CngxSelectOptionPending<T = unknown> {
 export class CngxSelectOptionError<T = unknown> {
   readonly templateRef =
     inject<TemplateRef<CngxSelectOptionErrorContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the chip strip portion of `CngxCombobox`'s
+ * trigger. When projected, the default per-chip loop is replaced; the
+ * search `<input>` stays in place next to it, so typeahead-filtering
+ * still works with a consumer-authored summary.
+ *
+ * @example
+ * ```html
+ * <cngx-combobox [options]="tags" [(values)]="picked">
+ *   <ng-template cngxComboboxTriggerLabel let-count="count">
+ *     @if (count > 0) { <span class="count-badge">{{ count }}</span> }
+ *   </ng-template>
+ * </cngx-combobox>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxComboboxTriggerLabel]',
+  standalone: true,
+  exportAs: 'cngxComboboxTriggerLabel',
+})
+export class CngxComboboxTriggerLabel<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxComboboxTriggerLabelContext<T>>>(TemplateRef);
 }

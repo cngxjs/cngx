@@ -6,19 +6,17 @@ import {
   computed,
   contentChild,
   effect,
-  ElementRef,
   inject,
   input,
   model,
   output,
   signal,
-  type Signal,
   untracked,
   viewChild,
+  type ElementRef,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
-import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
 import {
   CngxClickOutside,
@@ -37,10 +35,6 @@ import {
 } from '@cngx/forms/field';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
-import {
-  CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
-  type CngxCommitController,
-} from '../shared/commit-controller';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -53,8 +47,6 @@ import {
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
-  flattenSelectOptions,
-  isCngxSelectOptionGroupDef,
   isOptionDisabled,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
@@ -62,6 +54,11 @@ import {
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { resolveTemplate } from '../shared/resolve-template';
+import {
+  cngxSelectDefaultCompare,
+  createSelectCore,
+  type CngxSelectCompareFn,
+} from '../shared/select-core';
 import {
   CngxSelectCaret,
   CngxSelectCheck,
@@ -79,12 +76,9 @@ import {
   CngxSelectTriggerLabel,
 } from '../shared/template-slots';
 
-type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
-const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
-
 /**
- * Change event emitted by {@link CngxSelect.selectionChange} and related
- * outputs when the user (not programmatic writes) picks a value.
+ * Change event emitted by {@link CngxSelect.selectionChange} when the
+ * user (not programmatic writes) picks a value.
  *
  * @category interactive
  */
@@ -96,11 +90,9 @@ export interface CngxSelectChange<T = unknown> {
 
 /**
  * Native-feeling single-select dropdown. Behaves like `<select>`, exceeds
- * `mat-select` on a11y, and composes on top of the Level-2 atoms
- * `CngxListbox` + `CngxListboxTrigger` + `CngxPopover`.
- *
- * Full API summary — all inputs, outputs, methods, template slots, and config
- * hooks — lives in compodoc / `.internal/architektur/select-family-architecture.md`.
+ * `mat-select` on a11y, uses the shared {@link createSelectCore} factory
+ * for the stateless signal graph (ARIA projection, panel view, option
+ * model, commit-controller surface).
  *
  * @category interactive
  */
@@ -127,9 +119,6 @@ export interface CngxSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    // Provide ourselves as the panel-host contract. Panel sub-component
-    // injects this token and reads the surface defined in shared/panel-host.ts
-    // — avoids a cyclic type dependency between this file and panel.component.ts.
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelect },
   ],
   host: {
@@ -147,8 +136,8 @@ export interface CngxSelectChange<T = unknown> {
       role="combobox" with a focusable <div> — NOT a <button>. The
       trigger hosts an interactive child (clearable ✕ or a
       consumer-authored *cngxSelectClearButton template) which would
-      be an invalid nested button inside a <button>. This shape is
-      the WAI-ARIA 1.2 combobox pattern.
+      be an invalid nested button inside a <button>. WAI-ARIA 1.2
+      combobox pattern.
     -->
     <div
       #triggerBtn
@@ -261,212 +250,67 @@ export interface CngxSelectChange<T = unknown> {
         [items]="panelRef.items()"
         [(value)]="value"
       >
-        <!--
-          Panel body — see panel.component.ts + shared/panel-host.ts.
-          Options live in the sub-component's view; content-projection
-          scoping hides them from this listbox's contentChildren, so we
-          forward them via explicitOptions so AD registration + typeahead
-          still work.
-        -->
         <cngx-select-panel #panelRef="cngxSelectPanel" />
       </div>
     </div>
     </div>
   `,
-  // Styles split into two files:
-  // - shared/select-base.css: structural rules shared across the whole
-  //   select family (panel frame, option rows, skeletons, spinners,
-  //   shimmer animations, error banners, refreshing indicators). Stays
-  //   linked from the library after Atomic Decompose — or gets flattened
-  //   into the consumer's ejected component at schematic-run time.
-  // - select.component.css: CngxSelect-only trigger button + host
-  //   layout — the parts a multi-select / combobox will replace.
   styleUrls: ['../shared/select-base.css', './select.component.css'],
 })
 export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
-  /** Accessible label for the listbox region. Also used as the trigger's fallback a11y name when no form-field is around. */
   readonly label = input<string>('');
-
-  /**
-   * Options in data-driven mode (flat or grouped).
-   *
-   * Optional: leave unset and project `<cngx-option>` / `<cngx-optgroup>` /
-   * `<cngx-select-divider>` children for declarative composition.
-   */
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
-
-  /** Placeholder shown on the trigger when no value is selected. */
   readonly placeholder = input<string>('');
-
-  /** Disabled state. Merges with `presenter.disabled()` if inside a form-field. */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
-
-  /** Required state (standalone). Merges with `presenter.required()` if inside a form-field. */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
-
-  /** Equality function used to match the selected value to an option. Defaults to `Object.is`. */
-  readonly compareWith = input<CompareFn<T>>(defaultCompare as CompareFn<T>);
-
-  /** Custom id. Defaults to the presenter-generated ID inside form-field, else auto. */
+  readonly compareWith = input<CngxSelectCompareFn<T>>(
+    cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
+  );
   readonly idInput = input<string | null>(null, { alias: 'id' });
-
-  /** Explicit `aria-label` on the trigger. Takes precedence over the form-field label when set. */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
-
-  /** Explicit `aria-labelledby` on the trigger. Takes precedence over the form-field label when set. */
   readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
-
-  /** Trigger tab index. Defaults to `0`. */
   readonly tabIndex = input<number>(0);
-
-  /**
-   * Auto-focuses the trigger on first render. Complements the native
-   * `autofocus` attribute pattern — useful inside dialogs and wizards
-   * where the select should receive focus on open.
-   *
-   * **Evaluated once at first render.** Later changes of the bound
-   * expression do not re-trigger focus — matches the native `autofocus`
-   * attribute's one-shot semantic. Use `.focus()` imperatively to focus
-   * the trigger from outside the initialization path.
-   */
   readonly autofocus = input<boolean>(false);
-
-  /** Classes applied to the panel root. Merged with the library default. */
   readonly panelClass = input<string | readonly string[] | null>(null);
-
-  /** Panel width strategy — overrides `withPanelWidth()` from config. */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
-
-  /** Typeahead debounce override — defaults to config. */
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
-
-  /** Hide the default checkmark indicator on this instance. */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
-
-  /** Hide the default dropdown caret glyph on this instance. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
-
-  /** Render a clear-button when a value is selected. */
   readonly clearable = input<boolean>(false);
-
-  /** A11y label for the clear button. */
   readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
-
-  /** Display a loading state inside the panel. */
   readonly loading = input<boolean>(false);
-
-  /**
-   * First-load indicator variant: `'spinner'` (default), `'skeleton'`, `'bar'`, or `'text'`.
-   * Falls back to `CNGX_SELECT_CONFIG.loadingVariant`. A projected
-   * `*cngxSelectLoading` template always wins over this input.
-   */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
-
-  /** Number of skeleton rows when `loadingVariant === 'skeleton'`. */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
-
-  /**
-   * Subsequent-load indicator variant: `'bar'` (default), `'spinner'`,
-   * `'dots'`, or `'none'`. Falls back to `CNGX_SELECT_CONFIG.refreshingVariant`.
-   * A projected `*cngxSelectRefreshing` template always wins over this input.
-   */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
-
-  /**
-   * Async-state source for options — when bound, replaces `[options]` during
-   * loading/error/refreshing states and drives the panel's visual mode.
-   *
-   * `[state]` is the primary source when set. `[options]` remains the
-   * fallback for the static-array case. Both together: `[state]` wins.
-   */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
-
-  /**
-   * Callback invoked when the user clicks the default retry-button in the
-   * error panel (or calls `retry` on the error template). `(retry)` also
-   * fires in both cases.
-   */
   readonly retryFn = input<(() => void) | null>(null);
-
-  /**
-   * Async write handler invoked on user selection. Receives the intended
-   * value and returns a Promise/Observable/sync value resolving to the
-   * committed value (typically same as intended; may be a server-normalised
-   * variant). When bound, selection-change + field-value-write are deferred
-   * until commit success. Supersede semantics: a subsequent pick aborts the
-   * in-flight commit. See `[commitMode]`.
-   */
   readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
-
-  /**
-   * Commit UX mode: `'optimistic'` (default) closes the panel immediately
-   * and rolls back on error; `'pessimistic'` keeps the panel open with a
-   * pending indicator on the intended option.
-   */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
-
-  /**
-   * Where `commitAction` errors are rendered in the absence of a
-   * `*cngxSelectCommitError` template. Falls back to
-   * `CNGX_SELECT_CONFIG.commitErrorDisplay`.
-   */
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
     this.config.commitErrorDisplay,
   );
-
-  /** Per-instance announcer override. `null` defers to config / library default. */
   readonly announceChanges = input<boolean | null>(null);
-
-  /** Per-instance formatter override for the announcer message. */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
-
-  /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
 
   // ── Outputs ────────────────────────────────────────────────────────
 
-  /** Fires when the user selects an option (not on programmatic writes). */
   readonly selectionChange = output<CngxSelectChange<T>>();
-
-  /** Fires whenever the panel open state changes. */
   readonly openedChange = output<boolean>();
-
-  /** Fires on panel open. */
   readonly opened = output<void>();
-
-  /** Fires on panel close. */
   readonly closed = output<void>();
-
-  /** Fires with the selected option (null for clear) — sibling to `selectionChange`. */
   readonly optionSelected = output<CngxSelectOptionDef<T> | null>();
-
-  /**
-   * Fires when the user triggers a retry from the error panel (either the
-   * default retry-button or a custom `[cngxSelectError]` template).
-   */
   readonly retry = output<void>();
-
-  /** Fires with the rejected error when a `commitAction` transitions to error. */
   readonly commitError = output<unknown>();
-
-  /** Fires on every `commitState` status transition. */
   readonly stateChange = output<AsyncStatus>();
 
-  // ── Resolved template refs (3-stage cascade) ──────────────────────
-  //
-  // Each slot resolves via `injectResolvedTemplate`:
-  //   1. instance-level `*cngxSelect*` content-child
-  //   2. global `CNGX_SELECT_CONFIG.templates.<key>`
-  //   3. `null` (template branches to library default)
-
-  // ── Content-child directive queries (field-init — Angular requires this pattern) ──
+  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -498,38 +342,22 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template refs (3-stage cascade via resolveTemplate helper) ──
+  // ── Resolved template refs ─────────────────────────────────────────
 
-  /** @internal */
-  protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */
-  protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */
-  protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */
-  protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */
-  protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */
-  protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /** @internal */
-  protected readonly triggerLabelTpl = resolveTemplate(this.triggerLabelDirective, 'triggerLabel');
-  /** @internal */
-  protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */
-  protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */
-  protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */
-  protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */
-  protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */
-  protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */
-  protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
-  /** @internal — latest commit error (routed to optionErrorTpl context). */
-  readonly commitErrorValue = computed<unknown>(() => this.commitState.error());
+  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
+  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
+  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
+  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
+  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
+  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
+  /** @internal */ protected readonly triggerLabelTpl = resolveTemplate(this.triggerLabelDirective, 'triggerLabel');
+  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
+  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
+  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
+  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
+  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
+  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
+  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -537,37 +365,17 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
-
-  // ── Public Signals (mat-select parity) ─────────────────────────────
+  // ── Public derived signals ─────────────────────────────────────────
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
-  /**
-   * DOM id of the option currently highlighted via `CngxActiveDescendant`,
-   * or `null` when nothing is highlighted. Surfaced through the
-   * panel-host contract so the panel's option-row template can pass a
-   * real `highlighted` flag into `*cngxSelectOptionLabel` contexts.
-   *
-   * @internal
-   */
+  /** @internal */
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
 
-  /** Currently selected option, resolved against `options`. `null` when empty. */
-  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
-
-  /** Human-readable label displayed on the trigger (resolves custom trigger template first). */
-  readonly triggerValue = computed<string>(() => this.triggerText());
-
-  // ── CngxFormFieldControl implementation ────────────────────────────
-
-  readonly id = computed<string>(() => this.resolvedId() ?? '');
-
-  readonly disabled = computed<boolean>(
-    () => this.disabledInput() || (this.presenter?.disabled() ?? false),
-  );
+  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -576,366 +384,103 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
-  // ── Internal: ARIA projection ──────────────────────────────────────
-
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
-  /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
-  /** @internal */
-  protected readonly ariaBusy = computed(() => (this.presenter?.pending() ? true : null));
-  /** @internal */
-  protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
-  /** @internal */
-  protected readonly ariaErrorMessage = computed(() =>
-    this.errorState() ? (this.presenter?.errorId() ?? null) : null,
+  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
+    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  /** @internal */
-  protected readonly resolvedId = computed<string>(() => {
-    const override = this.idInput();
-    if (override) {
-      return override;
-    }
-    return this.presenter?.inputId() ?? '';
-  });
-
-  /** @internal */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    const explicit = this.ariaLabel();
-    if (explicit) {
-      return explicit;
-    }
-    if (this.resolvedAriaLabelledBy()) {
-      return null;
-    }
-    return this.label() || null;
-  });
-
-  /** @internal */
-  protected readonly resolvedAriaLabelledBy = computed<string | null>(
-    () => this.ariaLabelledBy() ?? this.presenter?.labelId() ?? null,
-  );
-
-  /** @internal */
-  protected readonly resolvedAriaRequired = computed<boolean | null>(() =>
-    this.requiredInput() || this.presenter?.required() ? true : null,
-  );
-
-  /** @internal */
-  protected readonly effectiveTabIndex = computed<number | null>(() =>
-    this.disabled() ? -1 : this.tabIndex(),
-  );
+  // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
-   * @internal — bundled ARIA projection for the trigger button.
+   * Signal-graph factory shared with {@link CngxMultiSelect} and
+   * {@link CngxCombobox}. Owns every derivation that's identical
+   * across the family.
    *
-   * Every individual ARIA attribute on the trigger is already a
-   * `computed()` — the bundle exists so the template (and, crucially,
-   * anything a consumer ejects via Atomic-Decompose) reads ONE named
-   * source instead of a scattered list of `[attr.aria-*]` bindings.
-   * Keeping the logic in one place also makes it trivial to diff when
-   * ARIA semantics evolve.
+   * @internal
    */
-  protected readonly triggerAria = computed(
-    () => ({
-      label: this.resolvedAriaLabel(),
-      labelledBy: this.resolvedAriaLabelledBy(),
-      describedBy: this.describedBy(),
-      errorMessage: this.ariaErrorMessage(),
-      expanded: this.panelOpen(),
-      disabled: this.disabled() || null,
-      invalid: this.ariaInvalid(),
-      required: this.resolvedAriaRequired(),
-      busy: this.ariaBusy(),
-    }),
+  private readonly core = createSelectCore<T, T>(
     {
-      equal: (a, b) =>
-        a.label === b.label &&
-        a.labelledBy === b.labelledBy &&
-        a.describedBy === b.describedBy &&
-        a.errorMessage === b.errorMessage &&
-        a.expanded === b.expanded &&
-        a.disabled === b.disabled &&
-        a.invalid === b.invalid &&
-        a.required === b.required &&
-        a.busy === b.busy,
-    },
-  );
-
-  /** @internal */
-  protected readonly resolvedShowSelectionIndicator = computed<boolean>(
-    () => !this.hideSelectionIndicator(),
-  );
-
-  /** @internal */
-  protected readonly resolvedShowCaret = computed<boolean>(() => !this.hideCaret());
-
-  /** @internal */
-  protected readonly resolvedListboxLabel = computed<string>(() => {
-    const label = this.label();
-    if (label.length > 0) {
-      return label;
-    }
-    const aria = this.ariaLabel();
-    if (aria && aria.length > 0) {
-      return aria;
-    }
-    const placeholder = this.placeholder();
-    if (placeholder.length > 0) {
-      return placeholder;
-    }
-    return 'Options';
-  });
-
-  /** @internal */
-  protected readonly panelClassList = computed<string | readonly string[] | null>(
-    () => {
-      const global = this.config.panelClass;
-      const local = this.panelClass();
-      if (!global && !local) {
-        return null;
-      }
-      if (!global) {
-        return local;
-      }
-      if (!local) {
-        return global;
-      }
-      const globalArr: readonly string[] = Array.isArray(global)
-        ? (global as readonly string[])
-        : [global as string];
-      const localArr: readonly string[] = Array.isArray(local)
-        ? (local as readonly string[])
-        : [local as string];
-      return [...globalArr, ...localArr];
+      label: this.label,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+      placeholder: this.placeholder,
+      idInput: this.idInput,
+      disabledInput: this.disabledInput,
+      requiredInput: this.requiredInput,
+      tabIndex: this.tabIndex,
+      options: this.options,
+      state: this.state,
+      loading: this.loading,
+      compareWith: this.compareWith,
+      skeletonRowCount: this.skeletonRowCount,
+      panelClass: this.panelClass,
+      panelWidth: this.panelWidth,
+      hideSelectionIndicator: this.hideSelectionIndicator,
+      hideCaret: this.hideCaret,
+      commitErrorDisplay: this.commitErrorDisplay,
+      commitAction: this.commitAction,
+      panelOpen: this.panelOpen,
+      errorState: this.errorState,
     },
     {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        const aArr = Array.isArray(a) ? a : a == null ? null : [a];
-        const bArr = Array.isArray(b) ? b : b == null ? null : [b];
-        if (aArr === null && bArr === null) {
-          return true;
-        }
-        if (aArr === null || bArr === null) {
-          return false;
-        }
-        if (aArr.length !== bArr.length) {
-          return false;
-        }
-        for (let i = 0; i < aArr.length; i++) {
-          if (aArr[i] !== bArr[i]) {
-            return false;
-          }
-        }
-        return true;
-      },
+      announceChanges: this.announceChanges,
+      announceTemplate: this.announceTemplate,
     },
   );
 
-  /** @internal */
-  protected readonly panelWidthCss = computed<string | null>(() => {
-    const w = this.panelWidth();
-    if (w === null) {
-      return 'auto';
-    }
-    if (w === 'trigger') {
-      return 'anchor-size(width)';
-    }
-    return `${w}px`;
-  });
+  // ── Template-facing protected surface (delegates to core) ──────────
 
-  /**
-   * @internal — resolved options source: `state.data()` when `[state]` is
-   * bound and has data, else `[options]`.
-   */
-  protected readonly effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
-    const s = this.state();
-    const fromState = s?.data();
-    if (fromState) {
-      return fromState;
-    }
-    return this.options();
-  });
+  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */ protected readonly activeView = this.core.activeView;
+  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+    this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
 
-  /** @internal — flattened option list for matcher / trigger-label lookups. */
-  protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(
-    () => flattenSelectOptions(this.effectiveOptions()),
-    {
-      // Reference-wise equal when length + every entry is identity-equal.
-      // Prevents downstream computed cascades from re-running on stable
-      // option arrays (e.g. when the source array was re-emitted without
-      // semantic change).
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (!Object.is(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
-  );
-
-  /**
-   * @internal — resolved view mode for the panel, derived from the bound
-   * state (or a simple `loading()`/`options()` fallback when no state is
-   * bound). Encodes the shared async state machine via `resolveAsyncView`.
-   */
-  protected readonly activeView = computed<AsyncView>(() => {
-    const s = this.state();
-    if (s) {
-      return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
-    }
-    if (this.loading()) {
-      return 'skeleton';
-    }
-    if (this.effectiveOptions().length === 0) {
-      return 'empty';
-    }
-    return 'content';
-  });
-
-  /** @internal — subtle refreshing indicator (options stay visible). */
-  protected readonly showRefreshIndicator = computed<boolean>(() => {
-    const s = this.state();
-    if (!s) {
-      return false;
-    }
-    const status = s.status();
-    return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
-  });
-
-  /**
-   * @internal — inline error banner on top of stale options (`'content+error'`
-   * view). Renders the same `[cngxSelectError]` template or the default
-   * error banner, only above the options instead of replacing them.
-   */
-  protected readonly showInlineError = computed<boolean>(
-    () => this.activeView() === 'content+error',
-  );
-
-  /** @internal — `[0, 1, 2, ...]` used to repeat the skeleton-row template. */
-  protected readonly skeletonIndices = computed<number[]>(
-    () => Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
-    { equal: (a, b) => a.length === b.length },
-  );
-
-  // ── Commit action state ─────────────────────────────────────────────
-
-  /**
-   * All commit-lifecycle plumbing lives in a dedicated controller — see
-   * `shared/commit-controller.ts` for the rationale. The component owns
-   * exactly one instance, reads its state for `CNGX_STATEFUL` / template
-   * queries, and delegates `begin` / `cancel` orchestration to it.
-   *
-   * Previously this class held five interdependent private fields
-   * (state slot, id counter, active-handle, last intended, last committed)
-   * plus a skip-on-pending effect. Extracting them removed ~40 lines from
-   * the component body and produced a state machine that CngxMultiSelect
-   * / CngxCombobox can reuse verbatim.
-   */
-  private readonly commitController: CngxCommitController<T> =
-    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
+  readonly disabled = this.core.disabled;
+  readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /** Read-only view of the commit lifecycle. */
-  readonly commitState: CngxAsyncState<T | undefined> = this.commitController.state;
-
+  readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
-  readonly isCommitting: Signal<boolean> = this.commitController.isCommitting;
+  readonly isCommitting = this.core.isCommitting;
+  /** @internal — latest commit error. */
+  readonly commitErrorValue = this.core.commitErrorValue;
 
-  /**
-   * Rollback target for a commit in flight — simply `value()` at the
-   * moment of activation. Because the listbox runs in
-   * `[externalActivation]` mode whenever a `commitAction` is bound, the
-   * listbox does NOT write through two-way binding before our
-   * `ad.activated` handler runs, so `value()` is still the pre-pick
-   * value when we read it. No skip-on-pending effect required.
-   */
-  private lastCommittedValue: T | undefined = undefined;
+  /** @internal */
+  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+  /** @internal */
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
 
-  /**
-   * @internal — drives `[externalActivation]` on the inner listbox. When a
-   * commit action is bound we take over value-writing so we can capture
-   * the pre-pick value before it's overwritten. Otherwise the listbox
-   * stays self-contained (its existing default).
-   */
-  protected readonly externalActivation = computed<boolean>(() => this.commitAction() !== null);
+  /** Currently selected option, resolved against `options`. */
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
 
-  /** @internal — inline/banner surface for `commitState.isError()`. */
-  protected readonly showCommitError = computed<boolean>(
-    () => this.commitState.status() === 'error' && this.commitErrorDisplay() !== 'none',
-  );
+  /** Human-readable label displayed on the trigger. */
+  readonly triggerValue = computed<string>(() => this.triggerText());
 
-  /** @internal — context passed to a `[cngxSelectCommitError]` template. */
-  protected readonly commitErrorContext = computed(
-    () => {
-      const eq = this.compareWith();
-      // Read the intended value from the controller — single source of
-      // truth. Previously this read a component-private signal that had
-      // to be kept in sync with the commit flow manually.
-      const intended = this.commitController.intendedValue();
-      const option =
-        intended === undefined
-          ? null
-          : (this.flatOptions().find((o) => eq(o.value, intended)) ?? null);
-      return {
-        $implicit: this.commitState.error(),
-        error: this.commitState.error(),
-        option,
-        retry: (): void => this.retryCommit(),
-      };
-    },
-    {
-      // Stable context identity as long as error and option haven't moved.
-      equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
-    },
-  );
-
-  /**
-   * @internal — true for the specific option currently being committed.
-   * Drives the pessimistic-mode per-row spinner.
-   */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    if (!this.isCommitting()) {
-      return false;
-    }
-    const intended = this.commitController.intendedValue();
-    if (intended === undefined) {
-      return false;
-    }
-    return this.compareWith()(opt.value, intended);
-  }
-
-  /** @internal — error context passed to a `[cngxSelectError]` template. */
-  protected readonly errorContext = computed(
-    () => ({
-      $implicit: this.state()?.error(),
-      error: this.state()?.error(),
-      retry: (): void => this.handleRetry(),
-    }),
-    {
-      // Context object is recreated each run, but NgTemplateOutlet only
-      // needs to diff when the error identity changes. `retry` is a bound
-      // method reference — treat it as stable.
-      equal: (a, b) => Object.is(a.error, b.error),
-    },
-  );
+  // ── Single-selection state ─────────────────────────────────────────
 
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
     const v = this.value();
     if (v === undefined || v === null) {
       return null;
+    }
+    const map = this.core.valueToOptionMap();
+    if (map) {
+      return map.get(v as unknown) ?? null;
     }
     const eq = this.compareWith();
     return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
@@ -947,17 +492,25 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     return this.selectedOption()?.label ?? fallback;
   });
 
-  /** @internal */
-  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
-    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
-  );
+  // ── Commit state (delegated) ───────────────────────────────────────
 
-  // ── Template helpers ───────────────────────────────────────────────
+  private readonly commitController = this.core.commitController;
+  private readonly togglingOption = this.core.togglingOption;
+
+  /** Rollback target for a commit in flight. */
+  private lastCommittedValue: T | undefined = undefined;
+
+  /** @internal */
+  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isCommittingOption(opt);
+  }
+
+  // ── Panel-host surface forwarding ──────────────────────────────────
 
   protected isGroup(
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T> {
-    return isCngxSelectOptionGroupDef(item);
+    return this.core.isGroup(item);
   }
 
   protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
@@ -974,14 +527,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    // Seed the rollback target synchronously so a first-pick commit-error
-    // rolls back to the bound initial value (not `undefined`). The
-    // subsequent effect handles all later updates.
     this.lastCommittedValue = untracked(() => this.value());
 
-    // Honor [autofocus] on first render — outside the reactive graph since
-    // it's a one-shot DOM side effect, not signal-driven. Signal reads
-    // inside afterNextRender are automatically untracked.
+    // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -990,17 +538,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
     // Bridge AD activations into popover-close, selectionChange output,
     // and (when bound) the commit flow.
-    //
-    // AD-order invariant:
-    //   When `externalActivation()` is true (commitAction is bound), the
-    //   inner listbox suppresses its own write on activation, so by the
-    //   time this subscriber runs `this.value()` is still the pre-pick
-    //   value. That's the rollback target — we call `beginCommit` with
-    //   it and then mutate value ourselves inside the commit flow.
-    //
-    //   When `externalActivation()` is false, the listbox wrote the
-    //   intended value before our handler fires (same-tick, same Subject
-    //   emit). We just call `finalizeSelection(intended)`.
     effect((onCleanup) => {
       const lb = this.listboxRef();
       const pop = this.popoverRef();
@@ -1013,14 +550,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           const action = this.commitAction();
           if (action) {
             // Listbox is in externalActivation mode — value() is still
-            // the pre-pick value. Capture it as rollback target, then
-            // let the commit flow mutate value itself on success.
+            // the pre-pick value. Capture for rollback, let commit flow
+            // mutate value on success.
             const previous = this.value();
             this.lastCommittedValue = previous;
-            // For optimistic UX we write the intended value immediately
-            // so the trigger shows the picked option. For pessimistic
-            // the value stays at `previous` until commit success; the
-            // pending spinner on the intended row conveys the attempt.
+            // Set togglingOption so core's commitErrorContext /
+            // isCommittingOption know which option the user picked.
+            const opt = this.core.findOption(intended);
+            this.togglingOption.set(opt);
             if (this.commitMode() === 'optimistic') {
               this.value.set(intended);
             }
@@ -1060,7 +597,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
       const fieldRef: CngxFieldRef = presenter.fieldState();
       const fieldValue: unknown = fieldRef.value();
-      const eq = this.compareWith() as CompareFn<unknown>;
+      const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
       const current: unknown = untracked(() => this.value());
       if (!eq(current, fieldValue)) {
         this.value.set(fieldValue as T | undefined);
@@ -1076,7 +613,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       const fieldRef = presenter.fieldState();
       const selectValue: unknown = this.value();
       const current: unknown = untracked(() => fieldRef.value());
-      const eq = this.compareWith() as CompareFn<unknown>;
+      const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
       if (eq(current, selectValue)) {
         return;
       }
@@ -1086,39 +623,22 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Public API (mat-select parity) ─────────────────────────────────
 
-  /** Open the panel. */
-  open(): void {
-    this.popoverRef()?.show();
-  }
-
-  /** Close the panel. */
-  close(): void {
-    this.popoverRef()?.hide();
-  }
-
-  /** Toggle the panel. */
-  toggle(): void {
-    this.popoverRef()?.toggle();
-  }
-
-  /** Focus the trigger button. */
-  focus(options?: FocusOptions): void {
-    this.triggerBtn()?.nativeElement.focus(options);
-  }
+  open(): void { this.popoverRef()?.show(); }
+  close(): void { this.popoverRef()?.hide(); }
+  toggle(): void { this.popoverRef()?.toggle(); }
+  focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
 
   // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleTriggerClick(): void {
-    // <button disabled> blocks clicks natively; <div role="combobox">
-    // does not, so the check lives in the handler.
     if (this.disabled()) {
       return;
     }
     this.toggle();
   }
 
-  /** @internal — closes the panel on outside click (config-driven). */
+  /** @internal */
   protected handleClickOutside(): void {
     const mode = this.config.dismissOn;
     if (mode === 'outside' || mode === 'both') {
@@ -1128,7 +648,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  /** @internal — runs the retry callback and emits `(retry)`. */
+  /** @internal */
   protected handleRetry(): void {
     const fn = this.retryFn();
     if (fn) {
@@ -1137,10 +657,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.retry.emit();
   }
 
-  /**
-   * @internal — emit selectionChange/optionSelected/announcer for a picked
-   * value. Used by the non-commit path and by commit success.
-   */
+  /** @internal — emit outputs + announcer for a picked value. */
   private finalizeSelection(value: T | undefined): void {
     const eq = this.compareWith();
     const opt =
@@ -1149,21 +666,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         : (this.flatOptions().find((o) => eq(o.value, value)) ?? null);
     this.selectionChange.emit({ source: this, value, option: opt });
     this.optionSelected.emit(opt);
-    this.maybeAnnounce(opt);
+    this.core.announce(opt, 'added', opt ? 1 : 0, false);
   }
 
-  /**
-   * @internal — start a commit. Delegates lifecycle state to the commit
-   * controller; the component's job here is to route outcomes into its
-   * own DOM + outputs (panel open/close, value.set, selectionChange,
-   * commitError, announcer, stateChange).
-   *
-   * **Why the component still owns these outcomes.**
-   * The controller is intentionally UI-agnostic so it can be reused by
-   * CngxMultiSelect and CngxCombobox. The "what do we do on success"
-   * (close panel, emit selectionChange, re-announce) differs per select
-   * variant, so those stay here.
-   */
+  /** @internal — start a commit. */
   private beginCommit(
     intended: T | undefined,
     previous: T | undefined,
@@ -1174,44 +680,33 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     const mode = this.commitMode();
     const pop = this.popoverRef();
     if (mode === 'optimistic' && pop?.isVisible()) {
-      // Value was already set to intended via listbox [(value)]. Close panel.
       pop.hide();
     }
-    // Pessimistic: leave value at intended so the option shows selected, but
-    // keep panel open with pending spinner on the intended option.
 
     this.commitController.begin(action, intended, previous, {
       onSuccess: (committed) => {
         this.stateChange.emit('success');
-        // Ensure value reflects the server-committed result (may differ).
         if (!Object.is(committed, this.value())) {
           this.value.set(committed);
         }
         if (mode === 'pessimistic' && pop?.isVisible()) {
           pop.hide();
         }
+        this.togglingOption.set(null);
         this.finalizeSelection(committed);
       },
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
         this.commitError.emit(err);
-        // Roll back value to whatever was there before the user's pick.
         if (!Object.is(this.value(), rollbackTo)) {
           this.value.set(rollbackTo);
         }
-        // Announce the failure to AT so the inline "!" glyph — which is
-        // purely visual — doesn't leave screen-reader users without
-        // feedback on the rolled-back write.
-        this.announcer.announce(this.commitErrorMessage(err), 'assertive');
-        // Pessimistic keeps panel open so user sees the error inline.
+        this.announcer.announce(this.core.commitErrorMessage(err), 'assertive');
       },
     });
   }
 
-  /**
-   * @internal — re-invoke the last failed commit with the same intended
-   * value. Accessible via the commit-error template's `retry` callback.
-   */
+  /** @internal — replay the last failed commit. */
   private retryCommit(): void {
     const intended = this.commitController.intendedValue();
     const action = this.commitAction();
@@ -1227,15 +722,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.clearCallback();
   }
 
-  /**
-   * @internal — imperative clear path exposed to the `*cngxSelectClearButton`
-   * template context. Same outcome as the default button's click handler:
-   * flip `value` to `undefined`, emit selectionChange/optionSelected,
-   * announce the empty state.
-   *
-   * A stable reference (bound in the constructor) so `ngTemplateOutlet`
-   * doesn't re-stamp the view on every change-detection cycle.
-   */
+  /** @internal — imperative clear path. Stable reference for ngTemplateOutlet. */
   protected readonly clearCallback: () => void = () => {
     const current = this.value();
     if (current === undefined || current === null) {
@@ -1244,7 +731,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.value.set(undefined);
     this.selectionChange.emit({ source: this, value: undefined, option: null });
     this.optionSelected.emit(null);
-    this.maybeAnnounce(null);
+    this.core.announce(null, 'removed', 0, false);
   };
 
   /** @internal */
@@ -1290,14 +777,14 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
               option: candidate,
             });
             this.optionSelected.emit(candidate);
-            this.maybeAnnounce(candidate);
+            this.core.announce(candidate, 'added', 1, false);
             return;
           }
         }
       }
     }
 
-    // PageUp / PageDown — open and jump ±10 (clamped, skipping disabled).
+    // PageUp / PageDown — open + jump ±10.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       const lb = this.listboxRef();
@@ -1319,15 +806,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       const currentId = ad.activeId();
       const currentIdx = options.findIndex((o) => o.id === currentId);
       let target = Math.max(0, Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step));
-      // Scan toward the boundary in `direction` to find the nearest
-      // non-disabled option. Fall back to scanning the other direction
-      // if the boundary side is fully disabled.
       while (isOptionDisabled(options[target]) && target > 0 && target < total - 1) {
         target += direction;
       }
       if (isOptionDisabled(options[target])) {
-        // Boundary row is disabled — scan the opposite direction for any
-        // enabled option within the PageDown/Up window.
         let probe = target - direction;
         while (probe >= 0 && probe < total && isOptionDisabled(options[probe])) {
           probe -= direction;
@@ -1340,44 +822,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
       ad.highlightByIndex(target);
     }
-  }
-
-  /**
-   * Format a commit-error for live-region announcement. Falls back to
-   * a generic message when the error isn't an `Error` instance.
-   */
-  private commitErrorMessage(err: unknown): string {
-    const label = this.label() ?? this.ariaLabel() ?? 'Auswahl';
-    const detail = err instanceof Error ? err.message : undefined;
-    return detail
-      ? `${label}: Speichern fehlgeschlagen — ${detail}`
-      : `${label}: Speichern fehlgeschlagen`;
-  }
-
-  private maybeAnnounce(option: CngxSelectOptionDef<T> | null): void {
-    const announcerConfig = this.config.announcer;
-    const perInstance = this.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = this.announceTemplate() ?? announcerConfig.format;
-    const label = this.label();
-    const ariaLabel = this.ariaLabel();
-    let fieldLabel = 'Auswahl';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (ariaLabel && ariaLabel.length > 0) {
-      fieldLabel = ariaLabel;
-    }
-    const message = format({
-      selectedLabel: option?.label ?? null,
-      fieldLabel,
-      multi: false,
-    });
-    this.announcer.announce(message, announcerConfig.politeness);
-    // Suppress "unused" — host ref is kept for future extensions.
-    void this.host;
   }
 }
 

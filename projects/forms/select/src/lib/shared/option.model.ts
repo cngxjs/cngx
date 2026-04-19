@@ -79,6 +79,55 @@ export function flattenSelectOptions<T>(
 }
 
 /**
+ * Filter a `CngxSelectOptionsInput<T>` by a search term using a listbox
+ * matcher. Preserves the input's group/flat shape: grouped entries stay
+ * grouped; empty groups (no surviving children) are dropped.
+ *
+ * The synthetic `id: ''` on the matcher payload is deliberate — every
+ * in-tree matcher (including {@link ListboxMatchFn}'s default
+ * label-substring) ignores the id field. Real options get their DOM id
+ * from `CngxOption`, not from this data-level scan.
+ *
+ * @category interactive
+ */
+export function filterSelectOptions<T>(
+  input: CngxSelectOptionsInput<T>,
+  term: string,
+  match: (
+    option: { readonly id: string; readonly value: T; readonly label: string; readonly disabled: boolean },
+    term: string,
+  ) => boolean,
+): CngxSelectOptionsInput<T> {
+  if (term === '') {
+    return input;
+  }
+  const out: (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[] = [];
+  for (const item of input) {
+    if (isCngxSelectOptionGroupDef(item)) {
+      const kept = item.children.filter((opt) =>
+        match(
+          { id: '', value: opt.value, label: opt.label, disabled: !!opt.disabled },
+          term,
+        ),
+      );
+      if (kept.length > 0) {
+        out.push({ ...item, children: kept });
+      }
+    } else {
+      if (
+        match(
+          { id: '', value: item.value, label: item.label, disabled: !!item.disabled },
+          term,
+        )
+      ) {
+        out.push(item);
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * Uniform "is this option disabled?" check that handles both option shapes
  * transparently.
  *
