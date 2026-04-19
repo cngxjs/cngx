@@ -64,6 +64,7 @@ import {
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   CngxMultiSelectChip,
+  CngxMultiSelectTriggerLabel,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectCommitError,
@@ -74,7 +75,6 @@ import {
   CngxSelectOptionLabel,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
-  CngxSelectTriggerLabel,
 } from '../shared/template-slots';
 
 type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
@@ -173,14 +173,7 @@ export interface CngxMultiSelectChange<T = unknown> {
         (keydown)="handleTriggerKeydown($event)"
       >
         <span class="cngx-select__chip-list">
-          @if (hasTriggerLabelTemplate() && !isEmpty()) {
-            <ng-container
-              *ngTemplateOutlet="
-                triggerLabelTpl()!.templateRef;
-                context: { $implicit: null, selected: null }
-              "
-            />
-          } @else if (isEmpty()) {
+          @if (isEmpty()) {
             @if (placeholderTpl(); as tpl) {
               <ng-container
                 *ngTemplateOutlet="
@@ -193,6 +186,18 @@ export interface CngxMultiSelectChange<T = unknown> {
                 {{ placeholder() || label() }}
               </span>
             }
+          } @else if (triggerLabelTpl(); as tpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                tpl.templateRef;
+                context: {
+                  $implicit: selectedOptions(),
+                  selected: selectedOptions(),
+                  values: values(),
+                  count: selectedOptions().length
+                }
+              "
+            />
           } @else {
             @for (opt of selectedOptions(); track opt.value) {
               @if (chipTpl(); as tpl) {
@@ -433,9 +438,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly emptyTpl = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   /** @internal */
   protected readonly loadingTpl = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  /** @internal */
-  protected readonly triggerLabelTpl = contentChild<CngxSelectTriggerLabel<T>>(
-    CngxSelectTriggerLabel,
+  /** @internal — multi-specific trigger-label slot (replaces the whole chip strip when projected). */
+  protected readonly triggerLabelTpl = contentChild<CngxMultiSelectTriggerLabel<T>>(
+    CngxMultiSelectTriggerLabel,
   );
   /** @internal */
   protected readonly optionLabelTpl = contentChild<CngxSelectOptionLabel<T>>(
@@ -824,11 +829,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       .map((o) => o.label)
       .join(', ');
   });
-
-  /** @internal */
-  protected readonly hasTriggerLabelTemplate = computed<boolean>(
-    () => this.triggerLabelTpl() != null,
-  );
 
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(

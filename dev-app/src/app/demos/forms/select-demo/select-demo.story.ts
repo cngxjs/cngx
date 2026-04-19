@@ -36,7 +36,7 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -183,6 +183,7 @@ export const STORY: DemoSpec = {
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -761,6 +762,31 @@ export const STORY: DemoSpec = {
     <div class="event-row"><span class="event-label">Commit log</span>
       <span class="event-value" style="white-space:pre">{{ multiCommitLog().slice(-4).join('\\n') || '—' }}</span>
     </div>
+  </div>`,
+    },
+    {
+      title: 'Multi — text summary via *cngxMultiSelectTriggerLabel',
+      subtitle:
+        'Replace the whole chip strip with a plain-text summary by projecting <code>*cngxMultiSelectTriggerLabel</code>. The template context gives you the resolved options, raw values, and count — pick any shape (count badge, comma list, first-label + "+N", …).',
+      imports: ['CngxMultiSelect', 'CngxMultiSelectTriggerLabel'],
+      template: `
+  <cngx-multi-select
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="multiTextValues"
+    placeholder="Themen wählen…"
+  >
+    <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
+      @if (count === 1) {
+        {{ opts[0].label }}
+      } @else {
+        {{ count }} Themen ausgewählt
+      }
+    </ng-template>
+  </cngx-multi-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
   </div>`,
     },
     {

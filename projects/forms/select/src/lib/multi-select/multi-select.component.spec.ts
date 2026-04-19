@@ -17,7 +17,10 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
-import { CngxMultiSelectChip } from '../shared/template-slots';
+import {
+  CngxMultiSelectChip,
+  CngxMultiSelectTriggerLabel,
+} from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
 
@@ -618,6 +621,56 @@ describe('CngxMultiSelect — chip template + announcer', () => {
     } finally {
       announcer.announce = originalAnnounce;
     }
+  });
+});
+
+// ── *cngxMultiSelectTriggerLabel (text-vs-chip switch) ───────────────
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Themen'"
+      [options]="options"
+      [(values)]="values"
+    >
+      <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
+        <span class="trigger-summary">{{ count }} ausgewählt: {{ opts.length }} items</span>
+      </ng-template>
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxMultiSelectTriggerLabel],
+})
+class TriggerLabelHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('CngxMultiSelect — trigger label slot', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('renders the trigger-label template instead of the default chip strip', () => {
+    const fixture = TestBed.createComponent(TriggerLabelHost);
+    flush(fixture);
+    // Chip molecules are gone — summary span replaces them.
+    expect(fixture.nativeElement.querySelectorAll('cngx-chip').length).toBe(0);
+    const summary: HTMLElement = fixture.nativeElement.querySelector('.trigger-summary');
+    expect(summary).not.toBeNull();
+    expect(summary.textContent).toContain('2 ausgewählt');
+    expect(summary.textContent).toContain('2 items');
+  });
+
+  it('falls back to the placeholder when the selection is empty, even with a trigger-label projected', () => {
+    const fixture = TestBed.createComponent(TriggerLabelHost);
+    fixture.componentInstance.values.set([]);
+    flush(fixture);
+    // Empty-state placeholder wins over the trigger-label template so
+    // consumers don't have to branch on count=0 inside their template.
+    expect(fixture.nativeElement.querySelector('.trigger-summary')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.cngx-multi-select__placeholder'),
+    ).not.toBeNull();
   });
 });
 

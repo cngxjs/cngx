@@ -94,6 +94,7 @@ export {
   CngxSelectRefreshing,
   CngxSelectCommitError,
   CngxMultiSelectChip,
+  CngxMultiSelectTriggerLabel,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -106,4 +107,5 @@ export {
   type CngxSelectRefreshingContext,
   type CngxSelectCommitErrorContext,
   type CngxMultiSelectChipContext,
+  type CngxMultiSelectTriggerLabelContext,
 } from './src/lib/shared/template-slots';

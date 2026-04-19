@@ -127,6 +127,24 @@ export interface CngxMultiSelectChipContext<T = unknown> {
 }
 
 /**
+ * Context for the trigger-label template in `CngxMultiSelect`. Replaces
+ * the default chip strip entirely, letting consumers render a text
+ * summary ("3 ausgewählt"), a compact badge + first label, or any other
+ * custom markup. Receives the fully-resolved option list, the raw
+ * values, and the selection count so one template covers every style
+ * (plain text, chip+overflow-count, icon group, …) without re-deriving
+ * the same data in the consumer.
+ *
+ * @category interactive
+ */
+export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
+  readonly $implicit: readonly CngxSelectOptionDef<T>[];
+  readonly selected: readonly CngxSelectOptionDef<T>[];
+  readonly values: readonly T[];
+  readonly count: number;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -342,4 +360,37 @@ export class CngxSelectCommitError<T = unknown> {
 })
 export class CngxMultiSelectChip<T = unknown> {
   readonly templateRef = inject<TemplateRef<CngxMultiSelectChipContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the whole trigger label in `CngxMultiSelect`.
+ * When projected, the default chip strip is suppressed and the consumer
+ * owns the trigger's rendering — use this for "3 Themen ausgewählt"
+ * text summaries, for a single pill showing the first value + "+N"
+ * counter, or for any other shape that isn't a chip strip.
+ *
+ * Mutually exclusive with `*cngxMultiSelectChip`: project this slot and
+ * you render the whole trigger; project only the chip slot to tweak
+ * the individual pill while keeping the flex-wrap strip layout.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
+ *     @if (count === 0) { Wähle Themen }
+ *     @else { {{ count }} Themen ausgewählt }
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectTriggerLabel]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectTriggerLabel',
+})
+export class CngxMultiSelectTriggerLabel<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxMultiSelectTriggerLabelContext<T>>>(TemplateRef);
 }

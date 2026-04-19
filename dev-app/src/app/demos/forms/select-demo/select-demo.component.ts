@@ -9,7 +9,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -40,6 +40,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     CngxLabel,
     CngxFieldErrors,
     CngxMultiSelect,
+    CngxMultiSelectTriggerLabel,
     CngxMultiSelectChip,
   ],
   template: `
@@ -555,10 +556,34 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Multi — custom *cngxMultiSelectChip template"
+      <app-example-card title="Multi — text summary via *cngxMultiSelectTriggerLabel"
         [subtitle]="_s23"
         [sourceHtml]="_srcHtml23"
         [sourceTs]="_srcTs23">
+        
+  <cngx-multi-select
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="multiTextValues"
+    placeholder="Themen wählen…"
+  >
+    <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
+      @if (count === 1) {
+        {{ opts[0].label }}
+      } @else {
+        {{ count }} Themen ausgewählt
+      }
+    </ng-template>
+  </cngx-multi-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Multi — custom *cngxMultiSelectChip template"
+        [subtitle]="_s24"
+        [sourceHtml]="_srcHtml24"
+        [sourceTs]="_srcTs24">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -604,7 +629,8 @@ export class SelectDemoComponent {
   protected readonly _s20 = '<code>[clearable]="true"</code> exposes a single ✕ next to the caret that empties the whole selection in one click. The per-chip ✕ on every pill stays independent of this flag.';
   protected readonly _s21 = 'Same async-state protocol as the single variant. The panel renders skeleton / empty / error / refreshing states from the bound <code>CngxAsyncState</code>; the trigger chip list stays derived from the resolved data.';
   protected readonly _s22 = 'Each toggle routes through an async write. <code>optimistic</code> (default) updates <code>values()</code> immediately and rolls back on error; <code>pessimistic</code> defers the write until success and surfaces a spinner on the toggled option. Consecutive toggles supersede any in-flight commit.';
-  protected readonly _s23 = 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.';
+  protected readonly _s23 = 'Replace the whole chip strip with a plain-text summary by projecting <code>*cngxMultiSelectTriggerLabel</code>. The template context gives you the resolved options, raw values, and count — pick any shape (count badge, comma list, first-label + "+N", …).';
+  protected readonly _s24 = 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -621,7 +647,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -768,6 +794,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -811,7 +838,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -958,6 +985,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1012,7 +1040,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1159,6 +1187,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1192,7 +1221,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1339,6 +1368,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1372,7 +1402,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1519,6 +1549,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1557,7 +1588,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1704,6 +1735,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1744,7 +1776,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1891,6 +1923,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -1941,7 +1974,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2088,6 +2121,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -2141,7 +2175,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2288,6 +2322,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -2334,7 +2369,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2481,6 +2516,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -2526,7 +2562,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2673,6 +2709,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -2715,7 +2752,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2862,6 +2899,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -2898,7 +2936,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3045,6 +3083,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3083,7 +3122,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3230,6 +3269,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3265,7 +3305,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3412,6 +3452,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3446,7 +3487,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3593,6 +3634,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3632,7 +3674,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3779,6 +3821,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3816,7 +3859,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3963,6 +4006,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -3996,7 +4040,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4143,6 +4187,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -4177,7 +4222,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4324,6 +4369,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -4358,7 +4404,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4505,6 +4551,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -4543,7 +4590,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4690,6 +4737,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -4742,7 +4790,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4889,6 +4937,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -4911,25 +4960,27 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly _srcHtml23 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
-    [(values)]="multiCustomChipValues"
+    [(values)]="multiTextValues"
     placeholder="Themen wählen…"
   >
-    <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
-        <span>#{{ opt.label }}</span>
-        <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
-      </span>
+    <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
+      @if (count === 1) {
+        {{ opts[0].label }}
+      } @else {
+        {{ count }} Themen ausgewählt
+      }
     </ng-template>
   </cngx-multi-select>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
   </div>`;
   protected readonly _srcTs23 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5076,6 +5127,195 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml24 = `<cngx-multi-select
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="multiCustomChipValues"
+    placeholder="Themen wählen…"
+  >
+    <ng-template cngxMultiSelectChip let-opt let-remove="remove">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
+        <span>#{{ opt.label }}</span>
+        <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
+      </span>
+    </ng-template>
+  </cngx-multi-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs24 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
@@ -5236,6 +5476,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly multiValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
   protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
   protected readonly multiAsyncValues = signal<string[]>([]);
   protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
     createManualState<CngxSelectOptionsInput<string>>();
