@@ -67,6 +67,8 @@ import {
   type CngxSelectCaretContext,
   CngxSelectCheck,
   type CngxSelectCheckContext,
+  CngxSelectClearButton,
+  type CngxSelectClearButtonContext,
   CngxSelectCommitError,
   type CngxSelectCommitErrorContext,
   CngxSelectEmpty,
@@ -77,8 +79,12 @@ import {
   type CngxSelectLoadingContext,
   CngxSelectOptgroupTemplate,
   type CngxSelectOptgroupContext,
+  CngxSelectOptionError,
+  type CngxSelectOptionErrorContext,
   CngxSelectOptionLabel,
   type CngxSelectOptionLabelContext,
+  CngxSelectOptionPending,
+  type CngxSelectOptionPendingContext,
   CngxSelectPlaceholder,
   type CngxSelectPlaceholderContext,
   CngxSelectRefreshing,
@@ -211,14 +217,29 @@ export interface CngxSelectChange<T = unknown> {
         }
       </span>
       @if (clearable() && !isEmpty() && !disabled()) {
-        <button
-          type="button"
-          class="cngx-select__clear"
-          [attr.aria-label]="clearButtonAriaLabel()"
-          (click)="handleClearClick($event)"
-        >
-          ✕
-        </button>
+        @if (clearButtonTpl(); as tpl) {
+          <span class="cngx-select__clear-slot" (click)="$event.stopPropagation()">
+            <ng-container
+              *ngTemplateOutlet="
+                tpl;
+                context: {
+                  $implicit: clearCallback,
+                  clear: clearCallback,
+                  disabled: disabled()
+                }
+              "
+            />
+          </span>
+        } @else {
+          <button
+            type="button"
+            class="cngx-select__clear"
+            [attr.aria-label]="clearButtonAriaLabel()"
+            (click)="handleClearClick($event)"
+          >
+            ✕
+          </button>
+        }
       }
       @if (resolvedShowCaret()) {
         @if (caretTpl(); as tpl) {
@@ -469,6 +490,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
     CngxSelectCommitError,
   );
+  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(
+    CngxSelectClearButton,
+  );
+  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
+    CngxSelectOptionPending,
+  );
+  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
+    CngxSelectOptionError,
+  );
 
   // ── Resolved template refs (3-stage cascade) ──────────────────────
   //
@@ -524,6 +554,20 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly commitErrorTpl = computed<TemplateRef<CngxSelectCommitErrorContext<T>> | null>(
     () => this.commitErrorDirective()?.templateRef ?? (this.config.templates.commitError as TemplateRef<CngxSelectCommitErrorContext<T>> | null | undefined) ?? null,
   );
+  /** @internal */
+  protected readonly clearButtonTpl = computed<TemplateRef<CngxSelectClearButtonContext> | null>(
+    () => this.clearButtonDirective()?.templateRef ?? this.config.templates.clearButton ?? null,
+  );
+  /** @internal */
+  protected readonly optionPendingTpl = computed<TemplateRef<CngxSelectOptionPendingContext<T>> | null>(
+    () => this.optionPendingDirective()?.templateRef ?? (this.config.templates.optionPending as TemplateRef<CngxSelectOptionPendingContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly optionErrorTpl = computed<TemplateRef<CngxSelectOptionErrorContext<T>> | null>(
+    () => this.optionErrorDirective()?.templateRef ?? (this.config.templates.optionError as TemplateRef<CngxSelectOptionErrorContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal — latest commit error (routed to optionErrorTpl context). */
+  readonly commitErrorValue = computed<unknown>(() => this.commitState.error());
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -1213,6 +1257,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleClearClick(event: Event): void {
     event.stopPropagation();
+    this.clearCallback();
+  }
+
+  /**
+   * @internal — imperative clear path exposed to the `*cngxSelectClearButton`
+   * template context. Same outcome as the default button's click handler:
+   * flip `value` to `undefined`, emit selectionChange/optionSelected,
+   * announce the empty state.
+   *
+   * A stable reference (bound in the constructor) so `ngTemplateOutlet`
+   * doesn't re-stamp the view on every change-detection cycle.
+   */
+  protected readonly clearCallback: () => void = () => {
     const current = this.value();
     if (current === undefined || current === null) {
       return;
@@ -1221,7 +1278,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({ source: this, value: undefined, option: null });
     this.optionSelected.emit(null);
     this.maybeAnnounce(null);
-  }
+  };
 
   /** @internal */
   protected handleFocus(): void {

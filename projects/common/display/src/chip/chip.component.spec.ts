@@ -81,4 +81,26 @@ describe('CngxChip', () => {
     const host: HTMLElement = fixture.nativeElement.querySelector('cngx-chip');
     expect(host.getAttribute('id')).toBe('my-tag-1');
   });
+
+  it('renders projected [cngxChipClose] content instead of the default ✕ glyph', () => {
+    @Component({
+      template: `
+        <cngx-chip [removable]="true">
+          Custom
+          <span cngxChipClose class="my-close">dismiss</span>
+        </cngx-chip>
+      `,
+      imports: [CngxChip],
+    })
+    class CloseSlotHost {}
+    TestBed.configureTestingModule({ imports: [CloseSlotHost] });
+    const fixture = TestBed.createComponent(CloseSlotHost);
+    flush(fixture);
+    const button: HTMLElement = fixture.nativeElement.querySelector('.cngx-chip__remove');
+    expect(button).not.toBeNull();
+    expect(button.querySelector('.my-close')).not.toBeNull();
+    // Default × fallback is not rendered when the slot is filled.
+    expect(button.textContent).toContain('dismiss');
+    expect(button.textContent).not.toContain('\u2715');
+  });
 });

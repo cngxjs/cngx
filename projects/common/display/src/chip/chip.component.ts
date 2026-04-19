@@ -56,7 +56,23 @@ import { nextUid } from '@cngx/core/utils';
         [attr.aria-label]="removeAriaLabel()"
         (click)="handleRemoveClick($event)"
       >
-        <span aria-hidden="true">&#10005;</span>
+        <!--
+          Named content slot for the close glyph. Default renders the
+          library's × — consumers project any icon component by tagging
+          it with the attribute:
+
+            <cngx-chip [removable]="true">
+              Label
+              <my-icon cngxChipClose name="cross" />
+            </cngx-chip>
+
+          Kept as an ng-content slot (not an input TemplateRef) so
+          consumers can drop in their own component instances without
+          the TemplateRef/outlet dance.
+        -->
+        <ng-content select="[cngxChipClose]">
+          <span aria-hidden="true">&#10005;</span>
+        </ng-content>
       </button>
     }
   `,

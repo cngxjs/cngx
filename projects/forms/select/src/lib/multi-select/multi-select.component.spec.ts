@@ -20,6 +20,9 @@ import type {
 import {
   CngxMultiSelectChip,
   CngxMultiSelectTriggerLabel,
+  CngxSelectClearButton,
+  CngxSelectOptionError,
+  CngxSelectOptionPending,
 } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
@@ -671,6 +674,152 @@ describe('CngxMultiSelect — trigger label slot', () => {
     expect(
       fixture.nativeElement.querySelector('.cngx-multi-select__placeholder'),
     ).not.toBeNull();
+  });
+});
+
+// ── Clear-button / option-pending / option-error slots ──────────────
+
+@Component({
+  template: `
+    <cngx-multi-select
+      [label]="'Themen'"
+      [options]="options"
+      [clearable]="true"
+      [(values)]="values"
+    >
+      <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+        <button type="button" class="custom-clear" [disabled]="disabled" (click)="clear()">
+          CLEAR
+        </button>
+      </ng-template>
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxSelectClearButton],
+})
+class ClearButtonHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('CngxMultiSelect — clear-button / option-pending / option-error slots', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('clear-button slot replaces the default ✕ and routes clear() through commit-aware path', () => {
+    const fixture = TestBed.createComponent(ClearButtonHost);
+    flush(fixture);
+    // Default button is gone; consumer markup took over.
+    expect(fixture.nativeElement.querySelector('.cngx-multi-select__clear-all')).toBeNull();
+    const custom: HTMLButtonElement = fixture.nativeElement.querySelector('.custom-clear');
+    expect(custom).not.toBeNull();
+    custom.click();
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual([]);
+  });
+
+  it('option-pending slot replaces the default spinner glyph during a commit', async () => {
+    @Component({
+      template: `
+        <cngx-multi-select
+          [label]="'Tags'"
+          [options]="options"
+          [(values)]="values"
+          [commitAction]="commitAction"
+          commitMode="pessimistic"
+        >
+          <ng-template cngxSelectOptionPending let-opt>
+            <span class="custom-spinner">loading: {{ opt.label }}</span>
+          </ng-template>
+        </cngx-multi-select>
+      `,
+      imports: [CngxMultiSelect, CngxSelectOptionPending],
+    })
+    class Host2 {
+      readonly options = OPTIONS;
+      readonly values = signal<string[]>([]);
+      pending: Subject<string[] | undefined> | null = null;
+      readonly commitAction: CngxSelectCommitAction<string[]> = () => {
+        const s = new Subject<string[] | undefined>();
+        this.pending = s;
+        return s.asObservable() as Observable<string[] | undefined>;
+      };
+    }
+    TestBed.configureTestingModule({ imports: [Host2] });
+    const fixture = TestBed.createComponent(Host2);
+    fixture.detectChanges();
+    flush(fixture);
+    // Open + click first option — pessimistic commit, spinner slot shows.
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.click();
+    flush(fixture);
+    const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    (options[0] as HTMLElement).click();
+    flush(fixture);
+    const customSpinner: HTMLElement | null = fixture.nativeElement.querySelector(
+      '.custom-spinner',
+    );
+    expect(customSpinner).not.toBeNull();
+    expect(customSpinner!.textContent).toContain('loading: Rot');
+    // Default spinner glyph gone.
+    expect(fixture.nativeElement.querySelector('.cngx-select__option-spinner')).toBeNull();
+  });
+
+  it('option-error slot replaces the default ! glyph on commit error with inline display', () => {
+    @Component({
+      template: `
+        <cngx-multi-select
+          [label]="'Tags'"
+          [options]="options"
+          [(values)]="values"
+          [commitAction]="commitAction"
+          commitMode="optimistic"
+          commitErrorDisplay="inline"
+        >
+          <ng-template cngxSelectOptionError let-opt let-err="error">
+            <span class="custom-error">{{ opt.label }}: {{ err.message }}</span>
+          </ng-template>
+        </cngx-multi-select>
+      `,
+      imports: [CngxMultiSelect, CngxSelectOptionError],
+    })
+    class Host3 {
+      readonly options = OPTIONS;
+      readonly values = signal<string[]>([]);
+      pending: Subject<string[] | undefined> | null = null;
+      readonly commitAction: CngxSelectCommitAction<string[]> = () => {
+        const s = new Subject<string[] | undefined>();
+        this.pending = s;
+        return s.asObservable() as Observable<string[] | undefined>;
+      };
+    }
+    TestBed.configureTestingModule({ imports: [Host3] });
+    const fixture = TestBed.createComponent(Host3);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.click();
+    flush(fixture);
+    const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    (options[0] as HTMLElement).click();
+    flush(fixture);
+    // Optimistic wrote 'red'. Commit errors — inline error glyph shows on the selected row.
+    fixture.componentInstance.pending!.error(new Error('nope'));
+    flush(fixture);
+    // Values rolled back, but commitErrorDisplay='inline' + showCommitError triggers the slot
+    // only when isSelected(opt) is true. Rollback empties values, so inline glyph won't render.
+    // Re-select to reproduce the isSelected=true + error condition:
+    fixture.componentInstance.values.set(['red']);
+    flush(fixture);
+    const customError: HTMLElement | null = fixture.nativeElement.querySelector('.custom-error');
+    expect(customError).not.toBeNull();
+    expect(customError!.textContent).toContain('Rot');
+    expect(customError!.textContent).toContain('nope');
+    expect(fixture.nativeElement.querySelector('.cngx-select__option-error')).toBeNull();
   });
 });
 

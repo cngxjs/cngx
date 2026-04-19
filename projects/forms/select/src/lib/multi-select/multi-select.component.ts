@@ -72,6 +72,8 @@ import {
   type CngxSelectCaretContext,
   CngxSelectCheck,
   type CngxSelectCheckContext,
+  CngxSelectClearButton,
+  type CngxSelectClearButtonContext,
   CngxSelectCommitError,
   type CngxSelectCommitErrorContext,
   CngxSelectEmpty,
@@ -82,8 +84,12 @@ import {
   type CngxSelectLoadingContext,
   CngxSelectOptgroupTemplate,
   type CngxSelectOptgroupContext,
+  CngxSelectOptionError,
+  type CngxSelectOptionErrorContext,
   CngxSelectOptionLabel,
   type CngxSelectOptionLabelContext,
+  CngxSelectOptionPending,
+  type CngxSelectOptionPendingContext,
   CngxSelectPlaceholder,
   type CngxSelectPlaceholderContext,
   CngxSelectRefreshing,
@@ -237,14 +243,29 @@ export interface CngxMultiSelectChange<T = unknown> {
           }
         </span>
         @if (clearable() && !isEmpty() && !disabled()) {
-          <button
-            type="button"
-            class="cngx-multi-select__clear-all"
-            [attr.aria-label]="clearButtonAriaLabel()"
-            (click)="handleClearAllClick($event)"
-          >
-            ✕
-          </button>
+          @if (clearButtonTpl(); as tpl) {
+            <span class="cngx-multi-select__clear-slot" (click)="$event.stopPropagation()">
+              <ng-container
+                *ngTemplateOutlet="
+                  tpl;
+                  context: {
+                    $implicit: clearAllCallback,
+                    clear: clearAllCallback,
+                    disabled: disabled()
+                  }
+                "
+              />
+            </span>
+          } @else {
+            <button
+              type="button"
+              class="cngx-multi-select__clear-all"
+              [attr.aria-label]="clearButtonAriaLabel()"
+              (click)="handleClearAllClick($event)"
+            >
+              ✕
+            </button>
+          }
         }
         @if (resolvedShowCaret()) {
           @if (caretTpl(); as tpl) {
@@ -459,6 +480,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectCommitError,
   );
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(
+    CngxSelectClearButton,
+  );
+  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
+    CngxSelectOptionPending,
+  );
+  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
+    CngxSelectOptionError,
+  );
 
   // ── Resolved template refs (3-stage cascade) ──────────────────────
   //
@@ -530,6 +560,20 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
   );
+  /** @internal */
+  protected readonly clearButtonTpl = computed<TemplateRef<CngxSelectClearButtonContext> | null>(
+    () => this.clearButtonDirective()?.templateRef ?? this.config.templates.clearButton ?? null,
+  );
+  /** @internal */
+  protected readonly optionPendingTpl = computed<TemplateRef<CngxSelectOptionPendingContext<T>> | null>(
+    () => this.optionPendingDirective()?.templateRef ?? (this.config.templates.optionPending as TemplateRef<CngxSelectOptionPendingContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly optionErrorTpl = computed<TemplateRef<CngxSelectOptionErrorContext<T>> | null>(
+    () => this.optionErrorDirective()?.templateRef ?? (this.config.templates.optionError as TemplateRef<CngxSelectOptionErrorContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal — latest commit error routed to optionErrorTpl context. */
+  readonly commitErrorValue = computed<unknown>(() => this.commitState.error());
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -1210,6 +1254,19 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleClearAllClick(event: Event): void {
     event.stopPropagation();
+    this.clearAllCallback();
+  }
+
+  /**
+   * @internal — imperative clear-all path exposed to the
+   * `*cngxSelectClearButton` template context. Same outcome as the
+   * default ✕ button: commit flow when `[commitAction]` is bound,
+   * otherwise direct values reset + outputs + announce.
+   *
+   * Stable reference so `ngTemplateOutlet` doesn't re-stamp the slot
+   * on every change-detection cycle.
+   */
+  protected readonly clearAllCallback: () => void = () => {
     const previous = [...this.values()];
     if (previous.length === 0) {
       return;
@@ -1235,7 +1292,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       action: 'clear',
     });
     this.maybeAnnounce(null, 'removed', 0);
-  }
+  };
 
   /** @internal */
   protected handleFocus(): void {

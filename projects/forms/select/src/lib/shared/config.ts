@@ -10,12 +10,15 @@ import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type {
   CngxSelectCaretContext,
   CngxSelectCheckContext,
+  CngxSelectClearButtonContext,
   CngxSelectCommitErrorContext,
   CngxSelectEmptyContext,
   CngxSelectErrorContext,
   CngxSelectLoadingContext,
   CngxSelectOptgroupContext,
+  CngxSelectOptionErrorContext,
   CngxSelectOptionLabelContext,
+  CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
   CngxSelectTriggerLabelContext,
@@ -41,6 +44,9 @@ export interface CngxSelectTemplateContexts {
   readonly error?: CngxSelectErrorContext;
   readonly refreshing?: CngxSelectRefreshingContext;
   readonly commitError?: CngxSelectCommitErrorContext;
+  readonly clearButton?: CngxSelectClearButtonContext;
+  readonly optionPending?: CngxSelectOptionPendingContext;
+  readonly optionError?: CngxSelectOptionErrorContext;
 }
 
 /**
@@ -150,6 +156,9 @@ export interface CngxSelectConfig {
     readonly error?: TemplateRef<CngxSelectErrorContext> | null;
     readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
     readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
+    readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
+    readonly optionPending?: TemplateRef<CngxSelectOptionPendingContext> | null;
+    readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
   };
 }
 
@@ -216,6 +225,9 @@ export const CNGX_SELECT_DEFAULTS: Required<
     error: null,
     refreshing: null,
     commitError: null,
+    clearButton: null,
+    optionPending: null,
+    optionError: null,
   },
 };
 

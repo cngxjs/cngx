@@ -127,6 +127,47 @@ export interface CngxMultiSelectChipContext<T = unknown> {
 }
 
 /**
+ * Context for the clear-button template shared by `CngxSelect`
+ * (`[clearable]="true"` single-clear) and `CngxMultiSelect`
+ * (clear-all). Exposes the imperative `clear()` callback plus the
+ * current disabled flag so a consumer-authored icon can honour the
+ * disabled state without re-deriving it.
+ *
+ * @category interactive
+ */
+export interface CngxSelectClearButtonContext {
+  readonly $implicit: () => void;
+  readonly clear: () => void;
+  readonly disabled: boolean;
+}
+
+/**
+ * Context for the per-row pending-indicator template (shown while a
+ * `[commitAction]` is in flight for THIS option). Consumer can render
+ * anything — custom spinner glyph, text, a dots animation — instead of
+ * the default `.cngx-select__option-spinner`.
+ *
+ * @category interactive
+ */
+export interface CngxSelectOptionPendingContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+}
+
+/**
+ * Context for the per-row commit-error glyph (shown inline next to the
+ * selected option when a commit fails and `commitErrorDisplay` is
+ * `'inline'`). Consumer-authored icon can vary by error shape.
+ *
+ * @category interactive
+ */
+export interface CngxSelectOptionErrorContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly error: unknown;
+}
+
+/**
  * Context for the trigger-label template in `CngxMultiSelect`. Replaces
  * the default chip strip entirely, letting consumers render a text
  * summary ("3 ausgewählt"), a compact badge + first label, or any other
@@ -393,4 +434,84 @@ export class CngxMultiSelectChip<T = unknown> {
 export class CngxMultiSelectTriggerLabel<T = unknown> {
   readonly templateRef =
     inject<TemplateRef<CngxMultiSelectTriggerLabelContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the clear button on `CngxSelect` (single) and
+ * the clear-all button on `CngxMultiSelect`. When projected, replaces
+ * the default `✕` button entirely — the consumer template owns the
+ * element(s) and invokes the `clear()` callback from the context.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [clearable]="true" [(values)]="picked">
+ *   <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+ *     <my-icon-button icon="trash" [disabled]="disabled" (action)="clear()" />
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectClearButton]',
+  standalone: true,
+  exportAs: 'cngxSelectClearButton',
+})
+export class CngxSelectClearButton {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectClearButtonContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the per-row pending indicator shown while a
+ * `[commitAction]` commit is in flight for the option. Replaces the
+ * default `.cngx-select__option-spinner` glyph.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [commitAction]="saveTag" [(values)]="tags">
+ *   <ng-template cngxSelectOptionPending let-opt>
+ *     <my-inline-spinner [label]="opt.label + ' wird gespeichert'" />
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectOptionPending]',
+  standalone: true,
+  exportAs: 'cngxSelectOptionPending',
+})
+export class CngxSelectOptionPending<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectOptionPendingContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the per-row commit-error glyph shown inline
+ * next to the selected option when a `[commitAction]` transitions to
+ * error and `commitErrorDisplay` is `'inline'`. Replaces the default
+ * `.cngx-select__option-error` `!` badge.
+ *
+ * @example
+ * ```html
+ * <cngx-select [commitAction]="saveColor" commitErrorDisplay="inline">
+ *   <ng-template cngxSelectOptionError let-opt let-error="error">
+ *     <my-icon name="alert" [tooltip]="error.message" />
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectOptionError]',
+  standalone: true,
+  exportAs: 'cngxSelectOptionError',
+})
+export class CngxSelectOptionError<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectOptionErrorContext<T>>>(TemplateRef);
 }

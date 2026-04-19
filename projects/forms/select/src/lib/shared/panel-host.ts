@@ -7,7 +7,9 @@ import type {
   CngxSelectErrorContext,
   CngxSelectLoadingContext,
   CngxSelectOptgroupContext,
+  CngxSelectOptionErrorContext,
   CngxSelectOptionLabelContext,
+  CngxSelectOptionPendingContext,
   CngxSelectRefreshingContext,
 } from './template-slots';
 import type {
@@ -83,6 +85,13 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly errorTpl: Signal<TemplateRef<CngxSelectErrorContext> | null>;
   readonly commitErrorTpl: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
   readonly optionLabelTpl: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
+  readonly optionPendingTpl: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
+  readonly optionErrorTpl: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
+  /**
+   * Latest commit error surfaced inline on the selected option row.
+   * `null` when no commit is in error or `commitErrorDisplay !== 'inline'`.
+   */
+  readonly commitErrorValue: Signal<unknown>;
 
   // ── Active-descendant highlight (for options template context) ────
   /**

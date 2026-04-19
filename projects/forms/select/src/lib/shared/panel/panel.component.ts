@@ -202,9 +202,17 @@ import type { CngxSelectOptionDef } from '../option.model';
           {{ opt.label }}
         }
         @if (host.isCommittingOption(opt)) {
-          <span aria-hidden="true" class="cngx-select__option-spinner"></span>
+          @if (host.optionPendingTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt }" />
+          } @else {
+            <span aria-hidden="true" class="cngx-select__option-spinner"></span>
+          }
         } @else if (host.commitErrorDisplay() === 'inline' && host.showCommitError() && host.isSelected(opt)) {
-          <span aria-hidden="true" class="cngx-select__option-error">!</span>
+          @if (host.optionErrorTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, error: host.commitErrorValue() }" />
+          } @else {
+            <span aria-hidden="true" class="cngx-select__option-error">!</span>
+          }
         }
       </div>
     </ng-template>
