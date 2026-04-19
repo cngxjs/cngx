@@ -169,7 +169,7 @@ export interface CngxMultiSelectChange<T = unknown> {
         (blur)="handleBlur()"
         (keydown)="handleTriggerKeydown($event)"
       >
-        <span class="cngx-multi-select__chips">
+        <span class="cngx-select__chip-list">
           @if (hasTriggerLabelTemplate() && !isEmpty()) {
             <ng-container
               *ngTemplateOutlet="
@@ -192,11 +192,11 @@ export interface CngxMultiSelectChange<T = unknown> {
             }
           } @else {
             @for (opt of selectedOptions(); track opt.value) {
-              <span class="cngx-multi-select__chip">
-                <span class="cngx-multi-select__chip-label">{{ opt.label }}</span>
+              <span class="cngx-select__chip">
+                <span class="cngx-select__chip-label">{{ opt.label }}</span>
                 <button
                   type="button"
-                  class="cngx-multi-select__chip-remove"
+                  class="cngx-select__chip-remove"
                   [attr.aria-label]="chipRemoveAriaLabel() + ': ' + opt.label"
                   (click)="handleChipRemoveClick($event, opt)"
                 >

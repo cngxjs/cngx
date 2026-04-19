@@ -247,6 +247,72 @@
   font-size: 0.875rem;
 }
 
+/* ── Chip strip (reusable) ────────────────────────────────────────── */
+
+/*
+ * Chip list + chip pill shape. Used by CngxMultiSelect's trigger and
+ * designed to be reused by upcoming siblings in the select family
+ * (CngxMultiCombobox, CngxTagInput) — flex-wrap layout and chip-shape
+ * rules live here so every multi-value trigger renders identically.
+ *
+ * Single-Select's trigger is NOT a chip strip; it uses
+ * `.cngx-select__label` + `.cngx-select__caret` in its own skin file.
+ *
+ * If a chip-consuming component lives outside `@cngx/forms/select`
+ * (real Tag-Input in a separate secondary entry), promote this block
+ * into a higher-level shared CSS asset and import it from both places.
+ * Kept here for now because no such consumer exists yet.
+ */
+
+.cngx-select__chip-list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-select-chip-gap, 0.25rem);
+  align-items: center;
+  min-width: 0;
+}
+
+.cngx-select__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-chip-inner-gap, 0.25rem);
+  padding: var(--cngx-select-chip-padding, 0.125rem 0.5rem);
+  border-radius: var(--cngx-select-chip-radius, 999px);
+  background: var(--cngx-select-chip-bg, rgba(25, 118, 210, 0.12));
+  color: var(--cngx-select-chip-color, inherit);
+  font-size: var(--cngx-select-chip-font-size, 0.875em);
+  line-height: 1.25;
+  max-width: 100%;
+}
+
+.cngx-select__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cngx-select__chip-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.125rem;
+  font: inherit;
+  line-height: 1;
+  opacity: var(--cngx-select-chip-remove-opacity, 0.7);
+  border-radius: var(--cngx-select-chip-remove-radius, 0.125rem);
+}
+.cngx-select__chip-remove:hover {
+  opacity: 1;
+}
+.cngx-select__chip-remove:focus-visible {
+  outline: var(--cngx-select-chip-remove-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
+  outline-offset: 1px;
+}
+
 /* ── Panel-level error surfaces ───────────────────────────────────── */
 
 .cngx-select__error {

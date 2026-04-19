@@ -1,20 +1,17 @@
 /*
- * multi-select.component.css — CngxMultiSelect-specific trigger + chip skin.
+ * multi-select.component.css — CngxMultiSelect-specific trigger skin.
  *
- * Structural rules (panel frame, option rows, skeletons, spinners,
- * shimmer/refresh animations, error surfaces) live in
- * `shared/select-base.css` and are linked via the component's
- * `styleUrls`.
+ * Intentionally minimal. Everything that's structurally shareable with
+ * other multi-value triggers (chip strip flex-wrap, chip pill shape,
+ * chip remove button) lives in `shared/select-base.css` under the
+ * `.cngx-select__chip-*` classes — CngxMultiCombobox, CngxTagInput, and
+ * any future sibling that needs a chip-bearing trigger gets the same
+ * visual baseline without re-authoring flex-wrap edge cases.
  *
- * The multi-select diverges from the single-select skin in three places:
- *
- *   1. The trigger lays out chips with natural flex-wrap instead of a
- *      single ellipsised line.
- *   2. Each selected value renders as a chip (pill + per-chip remove ×).
- *   3. The optional clear-all button sits between the chip strip and
- *      the caret.
- *
- * Everything else (panel frame, option rows, …) is shared.
+ * What stays here: the multi-specific trigger button (padding, border,
+ * wrapping behaviour), the placeholder text rendering, the clear-all
+ * button, and the caret glyph position. These are the parts that
+ * differ between variants.
  */
 
 /* ── Host + root wrapper ──────────────────────────────────────────── */
@@ -58,17 +55,6 @@
   cursor: not-allowed;
 }
 
-/* ── Chip container ───────────────────────────────────────────────── */
-
-.cngx-multi-select__chips {
-  flex: 1 1 auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--cngx-multi-select-chip-gap, 0.25rem);
-  align-items: center;
-  min-width: 0;
-}
-
 /* ── Placeholder ──────────────────────────────────────────────────── */
 
 .cngx-multi-select__placeholder {
@@ -76,48 +62,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   opacity: var(--cngx-multi-select-placeholder-opacity, 0.7);
-}
-
-/* ── Default chip ─────────────────────────────────────────────────── */
-
-.cngx-multi-select__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--cngx-multi-select-chip-inner-gap, 0.25rem);
-  padding: var(--cngx-multi-select-chip-padding, 0.125rem 0.5rem);
-  border-radius: var(--cngx-multi-select-chip-radius, 999px);
-  background: var(--cngx-multi-select-chip-bg, rgba(25, 118, 210, 0.12));
-  color: var(--cngx-multi-select-chip-color, inherit);
-  font-size: var(--cngx-multi-select-chip-font-size, 0.875em);
-  line-height: 1.25;
-  max-width: 100%;
-}
-
-.cngx-multi-select__chip-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.cngx-multi-select__chip-remove {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0 0.125rem;
-  font: inherit;
-  line-height: 1;
-  opacity: var(--cngx-multi-select-chip-remove-opacity, 0.7);
-  border-radius: var(--cngx-multi-select-chip-remove-radius, 0.125rem);
-}
-.cngx-multi-select__chip-remove:hover {
-  opacity: 1;
-}
-.cngx-multi-select__chip-remove:focus-visible {
-  outline: var(--cngx-multi-select-chip-remove-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
-  outline-offset: 1px;
 }
 
 /* ── Clear-all button ─────────────────────────────────────────────── */

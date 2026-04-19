@@ -112,13 +112,13 @@ describe('CngxMultiSelect — skeleton', () => {
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
     const chips: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('.cngx-multi-select__chip'),
+      fixture.nativeElement.querySelectorAll('.cngx-select__chip'),
     );
     expect(chips.length).toBe(2);
     expect(chips[0].textContent).toContain('Rot');
     expect(chips[1].textContent).toContain('Grün');
     const removes = fixture.nativeElement.querySelectorAll(
-      '.cngx-multi-select__chip-remove',
+      '.cngx-select__chip-remove',
     );
     expect(removes.length).toBe(2);
   });
@@ -128,7 +128,7 @@ describe('CngxMultiSelect — skeleton', () => {
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
     const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__chip-remove',
+      '.cngx-select__chip-remove',
     );
     firstRemove.click();
     flush(fixture);
@@ -429,7 +429,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     flush(fixture);
 
     const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '.cngx-multi-select__chip-remove',
+      '.cngx-select__chip-remove',
     );
     firstRemove.click();
     flush(fixture);
