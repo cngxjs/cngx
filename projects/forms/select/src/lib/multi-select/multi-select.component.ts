@@ -63,37 +63,25 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { resolveTemplate } from '../shared/resolve-template';
 import {
   CngxMultiSelectChip,
   type CngxMultiSelectChipContext,
   CngxMultiSelectTriggerLabel,
   type CngxMultiSelectTriggerLabelContext,
   CngxSelectCaret,
-  type CngxSelectCaretContext,
   CngxSelectCheck,
-  type CngxSelectCheckContext,
   CngxSelectClearButton,
-  type CngxSelectClearButtonContext,
   CngxSelectCommitError,
-  type CngxSelectCommitErrorContext,
   CngxSelectEmpty,
-  type CngxSelectEmptyContext,
   CngxSelectError,
-  type CngxSelectErrorContext,
   CngxSelectLoading,
-  type CngxSelectLoadingContext,
   CngxSelectOptgroupTemplate,
-  type CngxSelectOptgroupContext,
   CngxSelectOptionError,
-  type CngxSelectOptionErrorContext,
   CngxSelectOptionLabel,
-  type CngxSelectOptionLabelContext,
   CngxSelectOptionPending,
-  type CngxSelectOptionPendingContext,
   CngxSelectPlaceholder,
-  type CngxSelectPlaceholderContext,
   CngxSelectRefreshing,
-  type CngxSelectRefreshingContext,
 } from '../shared/template-slots';
 
 type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
@@ -456,16 +444,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** Fires on every `commitState` status transition. */
   readonly stateChange = output<AsyncStatus>();
 
-  // ── Content templates (instance-level directive queries) ──────────
+  // ── Content-child directive queries (field-init — Angular requires this pattern) ──
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
   private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  private readonly placeholderDirective = contentChild<CngxSelectPlaceholder>(
-    CngxSelectPlaceholder,
-  );
+  private readonly placeholderDirective =
+    contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly triggerLabelDirective = contentChild<CngxMultiSelectTriggerLabel<T>>(
@@ -474,15 +461,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
-  private readonly errorDirective = contentChild(CngxSelectError);
-  private readonly refreshingDirective = contentChild(CngxSelectRefreshing);
+  private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly refreshingDirective =
+    contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
     CngxSelectCommitError,
   );
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
-  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(
-    CngxSelectClearButton,
-  );
+  private readonly clearButtonDirective =
+    contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
     CngxSelectOptionPending,
   );
@@ -490,70 +477,45 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template refs (3-stage cascade) ──────────────────────
-  //
-  // Instance content-child > global CNGX_SELECT_CONFIG.templates > null.
-  // See CngxSelect for the rationale — same pattern applied here.
+  // ── Resolved template refs (3-stage cascade via resolveTemplate helper) ──
 
   /** @internal */
-  protected readonly checkTpl = computed<TemplateRef<CngxSelectCheckContext<T>> | null>(
-    () => this.checkDirective()?.templateRef ?? (this.config.templates.check as TemplateRef<CngxSelectCheckContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
   /** @internal */
-  protected readonly caretTpl = computed<TemplateRef<CngxSelectCaretContext> | null>(
-    () => this.caretDirective()?.templateRef ?? this.config.templates.caret ?? null,
-  );
+  protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
   /** @internal */
-  protected readonly optgroupTpl = computed<TemplateRef<CngxSelectOptgroupContext<T>> | null>(
-    () => this.optgroupDirective()?.templateRef ?? (this.config.templates.optgroup as TemplateRef<CngxSelectOptgroupContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
   /** @internal */
-  protected readonly placeholderTpl = computed<TemplateRef<CngxSelectPlaceholderContext> | null>(
-    () => this.placeholderDirective()?.templateRef ?? this.config.templates.placeholder ?? null,
-  );
+  protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
   /** @internal */
-  protected readonly emptyTpl = computed<TemplateRef<CngxSelectEmptyContext> | null>(
-    () => this.emptyDirective()?.templateRef ?? this.config.templates.empty ?? null,
-  );
+  protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
   /** @internal */
-  protected readonly loadingTpl = computed<TemplateRef<CngxSelectLoadingContext> | null>(
-    () => this.loadingDirective()?.templateRef ?? this.config.templates.loading ?? null,
-  );
+  protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
   /**
    * Multi-specific trigger-label — replaces the whole chip strip when
-   * projected. No global fallback via `CNGX_SELECT_CONFIG.templates` yet
-   * because the context shape (`CngxMultiSelectTriggerLabelContext`)
-   * differs from the single-select variant; add a separate config key
-   * if global overrides become desirable.
+   * projected. Multi doesn't route through `resolveTemplate`: its
+   * context shape (`CngxMultiSelectTriggerLabelContext`) differs from
+   * the single-select variant and has no matching global config key.
+   * Add one if a real consumer requests global overrides.
    *
    * @internal
    */
-  protected readonly triggerLabelTpl = computed<TemplateRef<CngxMultiSelectTriggerLabelContext<T>> | null>(
-    () => this.triggerLabelDirective()?.templateRef ?? null,
-  );
+  protected readonly triggerLabelTpl = computed<
+    TemplateRef<CngxMultiSelectTriggerLabelContext<T>> | null
+  >(() => this.triggerLabelDirective()?.templateRef ?? null);
   /** @internal */
-  protected readonly optionLabelTpl = computed<TemplateRef<CngxSelectOptionLabelContext<T>> | null>(
-    () => this.optionLabelDirective()?.templateRef ?? (this.config.templates.optionLabel as TemplateRef<CngxSelectOptionLabelContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
   /** @internal */
-  protected readonly errorTpl = computed<TemplateRef<CngxSelectErrorContext> | null>(
-    () => this.errorDirective()?.templateRef ?? this.config.templates.error ?? null,
-  );
+  protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
   /** @internal */
-  protected readonly refreshingTpl = computed<TemplateRef<CngxSelectRefreshingContext> | null>(
-    () => this.refreshingDirective()?.templateRef ?? this.config.templates.refreshing ?? null,
-  );
+  protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
   /** @internal */
-  protected readonly commitErrorTpl = computed<TemplateRef<CngxSelectCommitErrorContext<T>> | null>(
-    () => this.commitErrorDirective()?.templateRef ?? (this.config.templates.commitError as TemplateRef<CngxSelectCommitErrorContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
   /**
-   * Per-chip override. No global config fallback: chip shape
-   * (`CngxMultiSelectChipContext`) is multi-specific and the library
-   * default is the `<cngx-chip>` molecule from `@cngx/common/display`,
-   * which consumers style via CSS custom properties rather than a
-   * template swap. Project `*cngxMultiSelectChip` per instance for
-   * structural changes.
+   * Per-chip override. No global config fallback: chip shape is
+   * multi-specific and the library default is `<cngx-chip>` from
+   * `@cngx/common/display`, styled via CSS custom properties rather
+   * than a template swap.
    *
    * @internal
    */
@@ -561,17 +523,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     () => this.chipDirective()?.templateRef ?? null,
   );
   /** @internal */
-  protected readonly clearButtonTpl = computed<TemplateRef<CngxSelectClearButtonContext> | null>(
-    () => this.clearButtonDirective()?.templateRef ?? this.config.templates.clearButton ?? null,
-  );
+  protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
   /** @internal */
-  protected readonly optionPendingTpl = computed<TemplateRef<CngxSelectOptionPendingContext<T>> | null>(
-    () => this.optionPendingDirective()?.templateRef ?? (this.config.templates.optionPending as TemplateRef<CngxSelectOptionPendingContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
   /** @internal */
-  protected readonly optionErrorTpl = computed<TemplateRef<CngxSelectOptionErrorContext<T>> | null>(
-    () => this.optionErrorDirective()?.templateRef ?? (this.config.templates.optionError as TemplateRef<CngxSelectOptionErrorContext<T>> | null | undefined) ?? null,
-  );
+  protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
   /** @internal — latest commit error routed to optionErrorTpl context. */
   readonly commitErrorValue = computed<unknown>(() => this.commitState.error());
 
