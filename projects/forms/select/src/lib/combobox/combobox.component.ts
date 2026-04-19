@@ -551,6 +551,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
 
+  /**
+   * Debounced search term from the inline `CngxListboxSearch`.
+   * Signal-first primary API — consume via `computed()`/`effect()`.
+   * The `(searchTermChange)` output mirrors this for template-style
+   * event binding. `''` when the search directive hasn't resolved yet.
+   */
+  readonly searchTerm: Signal<string> = computed(
+    () => this.searchInput()?.term() ?? '',
+  );
+
   /** Currently selected options (public). */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -941,6 +951,13 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
 
+  /**
+   * Tracks whether the first `searchTermChange` emission has been
+   * processed. Signal-based instead of a closure flag so it shows up
+   * in the reactive graph like every other piece of state.
+   */
+  private readonly hasEmittedInitial = signal(false);
+
   /** @internal — drives `[externalActivation]` on the inner listbox. */
   protected readonly externalActivation = computed<boolean>(() => this.commitAction() !== null);
 
@@ -1133,31 +1150,32 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Search-term bridge: surface the debounced term to consumers (for
-    // server-driven autocomplete wiring) and re-open the panel when
-    // typing starts after an Escape-dismiss. Re-open is intentional
-    // tag-input UX: typing always implies "show me matches".
+    // Search-term bridge — split in two so each effect has exactly one
+    // responsibility.
     //
-    // `[skipInitial]` drops the very first emission (the hydrate-time
-    // empty string) so server-driven consumers don't fire a useless
-    // "load everything" request on mount. Panel-open semantics are
-    // unaffected either way — the first term is empty, which never
-    // opens the panel.
-    let firstSearchEmit = true;
+    // 1. Term → output (with `[skipInitial]` guard).
+    //    `hasEmittedInitial` is a writable signal, not a closure flag,
+    //    so the first-run state lives in the reactive graph alongside
+    //    every other stateful signal. The write is inside `untracked()`
+    //    to avoid self-re-triggering the effect.
     effect(() => {
-      const search = this.searchInput();
-      if (!search) {
-        return;
-      }
-      const term = search.term();
+      const term = this.searchTerm();
       untracked(() => {
-        if (firstSearchEmit) {
-          firstSearchEmit = false;
-          if (this.skipInitial()) {
-            return;
-          }
+        const initial = !this.hasEmittedInitial();
+        this.hasEmittedInitial.set(true);
+        if (initial && this.skipInitial()) {
+          return;
         }
         this.searchTermChange.emit(term);
+      });
+    });
+
+    // 2. Term → auto-open the panel when the user starts typing.
+    //    Tag-input UX: typing always implies "show me matches". Re-open
+    //    after Escape is intentional — users expect restart-by-typing.
+    effect(() => {
+      const term = this.searchTerm();
+      untracked(() => {
         if (term !== '' && !this.panelOpen() && !this.disabled()) {
           this.open();
         }
