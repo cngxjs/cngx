@@ -215,7 +215,6 @@ export interface CngxComboboxChange<T = unknown> {
           [cngxListboxTrigger]="lb"
           [popover]="pop"
           [closeOnSelect]="closeOnSelect()"
-          [openOnFocus]="true"
           [disabled]="disabled()"
           [placeholder]="effectivePlaceholder()"
           [attr.id]="resolvedId() || null"

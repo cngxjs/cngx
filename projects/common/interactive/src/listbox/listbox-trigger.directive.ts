@@ -51,8 +51,6 @@ export class CngxListboxTrigger<T = unknown> {
   readonly popover = input.required<PopoverController>();
   /** Whether activating an option closes the popover. */
   readonly closeOnSelect = input<boolean>(true);
-  /** Whether focusing the trigger auto-opens the popover. */
-  readonly openOnFocus = input<boolean>(false);
 
   /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
