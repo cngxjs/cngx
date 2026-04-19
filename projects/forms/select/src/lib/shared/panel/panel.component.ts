@@ -10,6 +10,7 @@ import {
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
+import type { CngxSelectOptionDef } from '../option.model';
 
 /**
  * Panel body sub-component — renders the dropdown's inner switch: the
@@ -33,6 +34,12 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
  * minimal `CngxSelectPanelHost` interface — refactors on `CngxSelect`
  * show up there first, not in this template.
  *
+ * **Template signals are pre-resolved.** Every `host.xxxTpl()` is a
+ * `TemplateRef | null` — the 3-stage cascade (instance content-child →
+ * `CNGX_SELECT_CONFIG.templates.xxx` → library default) is evaluated by
+ * the select component. The panel just renders whatever the host hands
+ * it.
+ *
  * @internal
  */
 @Component({
@@ -48,22 +55,22 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
     @switch (host.activeView()) {
       @case ('skeleton') {
         @if (host.loadingTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container *ngTemplateOutlet="tpl" />
         } @else {
           @switch (host.loadingVariant()) {
             @case ('spinner') {
-              <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" aria-label="Lädt">
+              <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" aria-label="Loading">
                 <div aria-hidden="true" class="cngx-select__spinner"></div>
               </div>
             }
             @case ('bar') {
-              <div class="cngx-select__loading-bar" role="status" aria-live="polite" aria-label="Lädt"></div>
+              <div class="cngx-select__loading-bar" role="status" aria-live="polite" aria-label="Loading"></div>
             }
             @case ('text') {
-              <div class="cngx-select__loading" role="status" aria-live="polite">Lädt…</div>
+              <div class="cngx-select__loading" role="status" aria-live="polite">Loading…</div>
             }
             @default {
-              <div class="cngx-select__skeleton" role="status" aria-live="polite" aria-label="Lädt">
+              <div class="cngx-select__skeleton" role="status" aria-live="polite" aria-label="Loading">
                 @for (i of host.skeletonIndices(); track i) {
                   <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
                 }
@@ -74,26 +81,26 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
       }
       @case ('empty') {
         @if (host.emptyTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          <div class="cngx-select__empty">Keine Optionen</div>
+          <div class="cngx-select__empty">No Options</div>
         }
       }
       @case ('none') {
         @if (host.emptyTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef" />
+          <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          <div class="cngx-select__empty">Keine Optionen</div>
+          <div class="cngx-select__empty">No Options</div>
         }
       }
       @case ('error') {
         @if (host.errorTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: host.errorContext()" />
+          <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
         } @else {
           <div class="cngx-select__error" role="alert">
-            <span class="cngx-select__error-message">Laden fehlgeschlagen</span>
+            <span class="cngx-select__error-message">Loading failed</span>
             <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              Nochmal versuchen
+              Retry
             </button>
           </div>
         }
@@ -101,7 +108,7 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
       @default {
         @if (host.showInlineError()) {
           @if (host.errorTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef; context: host.errorContext()" />
+            <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
           } @else {
             <div class="cngx-select__error cngx-select__error--inline" role="alert">
               <span class="cngx-select__error-message">Aktualisieren fehlgeschlagen</span>
@@ -113,7 +120,7 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
         }
         @if (host.showCommitError() && host.commitErrorDisplay() === 'banner') {
           @if (host.commitErrorTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef; context: host.commitErrorContext()" />
+            <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
           } @else {
             <div class="cngx-select__commit-error" role="alert">
               <span class="cngx-select__error-message">Speichern fehlgeschlagen</span>
@@ -125,7 +132,7 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
         }
         @if (host.showRefreshIndicator()) {
           @if (host.refreshingTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef" />
+            <ng-container *ngTemplateOutlet="tpl" />
           } @else {
             @switch (host.refreshingVariant()) {
               @case ('none') { <!-- suppressed --> }
@@ -151,7 +158,7 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
           @if (host.isGroup(item)) {
             <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
               @if (host.optgroupTpl(); as tpl) {
-                <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: item, group: item }" />
+                <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
               } @else {
                 <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
               }
@@ -184,13 +191,13 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
       >
         @if (host.resolvedShowSelectionIndicator()) {
           @if (host.checkTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: opt, option: opt, selected: host.isSelected(opt) }" />
+            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt) }" />
           } @else if (host.isSelected(opt)) {
             <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
           }
         }
         @if (host.optionLabelTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl.templateRef; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: false }" />
+          <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: isHighlighted(opt) }" />
         } @else {
           {{ opt.label }}
         }
@@ -238,4 +245,26 @@ export class CngxSelectPanel<T = unknown> {
       disabled: o.disabled(),
     })),
   );
+
+  /**
+   * Whether the option identified by `opt` is the one currently
+   * highlighted via `CngxActiveDescendant`. Derived from the host's
+   * `activeId` plus the locally-rendered `CngxOption` view-children,
+   * so the panel stays independent of the listbox directive itself.
+   *
+   * Consumed by the `optionLabelTpl` context — consumers who project
+   * `*cngxSelectOptionLabel` can render a highlight-reactive style
+   * (e.g. custom background when keyboard nav lands on a row).
+   */
+  protected isHighlighted(opt: CngxSelectOptionDef<T>): boolean {
+    const activeId = this.host.activeId();
+    if (!activeId) {
+      return false;
+    }
+    const match = this.options().find((o) => o.id === activeId);
+    if (!match) {
+      return false;
+    }
+    return this.host.listboxCompareWith()(match.value(), opt.value);
+  }
 }

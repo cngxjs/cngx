@@ -7,24 +7,40 @@ import {
 } from '@angular/core';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
+import type {
+  CngxSelectCaretContext,
+  CngxSelectCheckContext,
+  CngxSelectCommitErrorContext,
+  CngxSelectEmptyContext,
+  CngxSelectErrorContext,
+  CngxSelectLoadingContext,
+  CngxSelectOptgroupContext,
+  CngxSelectOptionLabelContext,
+  CngxSelectPlaceholderContext,
+  CngxSelectRefreshingContext,
+  CngxSelectTriggerLabelContext,
+} from './template-slots';
 
 /**
- * Template contexts the select family exposes for override.
+ * Template contexts the select family exposes for override. Each key
+ * corresponds to a `*cngxSelect*` template-slot directive — the types
+ * mirror the consumer-facing contexts so global defaults stay in lockstep
+ * with what `ng-template let-*` bindings receive per instance.
  *
  * @category interactive
  */
 export interface CngxSelectTemplateContexts {
-  readonly check?: unknown;
-  readonly caret?: unknown;
-  readonly optgroup?: unknown;
-  readonly placeholder?: unknown;
-  readonly empty?: unknown;
-  readonly loading?: unknown;
-  readonly triggerLabel?: unknown;
-  readonly optionLabel?: unknown;
-  readonly error?: unknown;
-  readonly refreshing?: unknown;
-  readonly commitError?: unknown;
+  readonly check?: CngxSelectCheckContext;
+  readonly caret?: CngxSelectCaretContext;
+  readonly optgroup?: CngxSelectOptgroupContext;
+  readonly placeholder?: CngxSelectPlaceholderContext;
+  readonly empty?: CngxSelectEmptyContext;
+  readonly loading?: CngxSelectLoadingContext;
+  readonly triggerLabel?: CngxSelectTriggerLabelContext;
+  readonly optionLabel?: CngxSelectOptionLabelContext;
+  readonly error?: CngxSelectErrorContext;
+  readonly refreshing?: CngxSelectRefreshingContext;
+  readonly commitError?: CngxSelectCommitErrorContext;
 }
 
 /**
@@ -116,18 +132,24 @@ export interface CngxSelectConfig {
   readonly announcer?: CngxSelectAnnouncerConfig;
   /**
    * Default template overrides (applied when a component instance doesn't
-   * project its own). Each is a `TemplateRef` or `null`.
+   * project its own). Each slot carries the same typed context a
+   * per-instance `*cngxSelect*` directive would receive — so the
+   * consumer's `ng-template let-*` bindings are type-checked against
+   * the real shape no matter whether the template is projected per
+   * instance or supplied globally via config.
    */
   readonly templates?: {
-    readonly check?: TemplateRef<CngxSelectTemplateContexts['check']> | null;
-    readonly caret?: TemplateRef<CngxSelectTemplateContexts['caret']> | null;
-    readonly optgroup?: TemplateRef<CngxSelectTemplateContexts['optgroup']> | null;
-    readonly placeholder?: TemplateRef<CngxSelectTemplateContexts['placeholder']> | null;
-    readonly empty?: TemplateRef<CngxSelectTemplateContexts['empty']> | null;
-    readonly loading?: TemplateRef<CngxSelectTemplateContexts['loading']> | null;
-    readonly error?: TemplateRef<CngxSelectTemplateContexts['error']> | null;
-    readonly refreshing?: TemplateRef<CngxSelectTemplateContexts['refreshing']> | null;
-    readonly commitError?: TemplateRef<CngxSelectTemplateContexts['commitError']> | null;
+    readonly check?: TemplateRef<CngxSelectCheckContext> | null;
+    readonly caret?: TemplateRef<CngxSelectCaretContext> | null;
+    readonly optgroup?: TemplateRef<CngxSelectOptgroupContext> | null;
+    readonly placeholder?: TemplateRef<CngxSelectPlaceholderContext> | null;
+    readonly empty?: TemplateRef<CngxSelectEmptyContext> | null;
+    readonly loading?: TemplateRef<CngxSelectLoadingContext> | null;
+    readonly triggerLabel?: TemplateRef<CngxSelectTriggerLabelContext> | null;
+    readonly optionLabel?: TemplateRef<CngxSelectOptionLabelContext> | null;
+    readonly error?: TemplateRef<CngxSelectErrorContext> | null;
+    readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
+    readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
   };
 }
 
@@ -189,6 +211,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
     placeholder: null,
     empty: null,
     loading: null,
+    triggerLabel: null,
+    optionLabel: null,
     error: null,
     refreshing: null,
     commitError: null,

@@ -13,6 +13,7 @@ import {
   output,
   signal,
   type Signal,
+  type TemplateRef,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -38,7 +39,7 @@ import {
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
-  createCommitController,
+  CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
 } from '../shared/commit-controller';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
@@ -63,16 +64,27 @@ import {
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   CngxSelectCaret,
+  type CngxSelectCaretContext,
   CngxSelectCheck,
+  type CngxSelectCheckContext,
   CngxSelectCommitError,
+  type CngxSelectCommitErrorContext,
   CngxSelectEmpty,
+  type CngxSelectEmptyContext,
   CngxSelectError,
+  type CngxSelectErrorContext,
   CngxSelectLoading,
+  type CngxSelectLoadingContext,
   CngxSelectOptgroupTemplate,
+  type CngxSelectOptgroupContext,
   CngxSelectOptionLabel,
+  type CngxSelectOptionLabelContext,
   CngxSelectPlaceholder,
+  type CngxSelectPlaceholderContext,
   CngxSelectRefreshing,
+  type CngxSelectRefreshingContext,
   CngxSelectTriggerLabel,
+  type CngxSelectTriggerLabelContext,
 } from '../shared/template-slots';
 
 type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
@@ -150,33 +162,44 @@ export interface CngxSelectChange<T = unknown> {
       [closeOnSelect]="true"
       [disabled]="disabled()"
       [attr.tabindex]="effectiveTabIndex()"
-      [attr.aria-label]="resolvedAriaLabel()"
-      [attr.aria-labelledby]="resolvedAriaLabelledBy()"
-      [attr.aria-describedby]="describedBy()"
-      [attr.aria-errormessage]="ariaErrorMessage()"
-      [attr.aria-expanded]="panelOpen()"
-      [attr.aria-disabled]="disabled() || null"
-      [attr.aria-invalid]="ariaInvalid()"
-      [attr.aria-required]="resolvedAriaRequired()"
-      [attr.aria-busy]="ariaBusy()"
+      [attr.aria-label]="triggerAria().label"
+      [attr.aria-labelledby]="triggerAria().labelledBy"
+      [attr.aria-describedby]="triggerAria().describedBy"
+      [attr.aria-errormessage]="triggerAria().errorMessage"
+      [attr.aria-expanded]="triggerAria().expanded"
+      [attr.aria-disabled]="triggerAria().disabled"
+      [attr.aria-invalid]="triggerAria().invalid"
+      [attr.aria-required]="triggerAria().required"
+      [attr.aria-busy]="triggerAria().busy"
       (click)="handleTriggerClick()"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
       (keydown)="handleTriggerKeydown($event)"
     >
       <span class="cngx-select__label">
-        @if (hasTriggerLabelTemplate() && !isEmpty()) {
-          <ng-container
-            *ngTemplateOutlet="
-              triggerLabelTpl()!.templateRef;
-              context: { $implicit: selectedOption(), selected: selectedOption() }
-            "
-          />
+        @if (triggerLabelTpl(); as tpl) {
+          @if (!isEmpty()) {
+            <ng-container
+              *ngTemplateOutlet="
+                tpl;
+                context: { $implicit: selectedOption(), selected: selectedOption() }
+              "
+            />
+          } @else if (placeholderTpl(); as phTpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                phTpl;
+                context: { $implicit: placeholder(), placeholder: placeholder() }
+              "
+            />
+          } @else {
+            {{ placeholder() || label() }}
+          }
         } @else if (isEmpty()) {
           @if (placeholderTpl(); as tpl) {
             <ng-container
               *ngTemplateOutlet="
-                tpl.templateRef;
+                tpl;
                 context: { $implicit: placeholder(), placeholder: placeholder() }
               "
             />
@@ -200,7 +223,7 @@ export interface CngxSelectChange<T = unknown> {
       @if (resolvedShowCaret()) {
         @if (caretTpl(); as tpl) {
           <ng-container
-            *ngTemplateOutlet="tpl.templateRef; context: { $implicit: panelOpen(), open: panelOpen() }"
+            *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
           />
         } @else {
           <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
@@ -423,37 +446,83 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** Fires on every `commitState` status transition. */
   readonly stateChange = output<AsyncStatus>();
 
-  // ── Content templates ──────────────────────────────────────────────
+  // ── Content templates (instance-level directive queries) ──────────
 
-  /** @internal */
-  protected readonly checkTpl = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
-  /** @internal */
-  protected readonly caretTpl = contentChild<CngxSelectCaret>(CngxSelectCaret);
-  /** @internal */
-  protected readonly optgroupTpl = contentChild<CngxSelectOptgroupTemplate<T>>(
+  private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
+  private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
     CngxSelectOptgroupTemplate,
   );
-  /** @internal */
-  protected readonly placeholderTpl = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
-  /** @internal */
-  protected readonly emptyTpl = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
-  /** @internal */
-  protected readonly loadingTpl = contentChild<CngxSelectLoading>(CngxSelectLoading);
-  /** @internal */
-  protected readonly triggerLabelTpl = contentChild<CngxSelectTriggerLabel<T>>(
+  private readonly placeholderDirective = contentChild<CngxSelectPlaceholder>(
+    CngxSelectPlaceholder,
+  );
+  private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
+  private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly triggerLabelDirective = contentChild<CngxSelectTriggerLabel<T>>(
     CngxSelectTriggerLabel,
   );
-  /** @internal */
-  protected readonly optionLabelTpl = contentChild<CngxSelectOptionLabel<T>>(
+  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
-  /** @internal */
-  protected readonly errorTpl = contentChild(CngxSelectError);
-  /** @internal */
-  protected readonly refreshingTpl = contentChild(CngxSelectRefreshing);
-  /** @internal */
-  protected readonly commitErrorTpl = contentChild<CngxSelectCommitError<T>>(
+  private readonly errorDirective = contentChild(CngxSelectError);
+  private readonly refreshingDirective = contentChild(CngxSelectRefreshing);
+  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
     CngxSelectCommitError,
+  );
+
+  // ── Resolved template refs (3-stage cascade) ──────────────────────
+  //
+  // Resolution order (highest → lowest):
+  //   1. Instance content-child (consumer-projected `*cngxSelect*`)
+  //   2. Global `CNGX_SELECT_CONFIG.templates.<slot>`
+  //   3. Library default (inline in the panel / trigger template)
+  //
+  // Signals expose the final `TemplateRef | null`, so the panel and
+  // trigger templates stay free of cascade logic.
+
+  /** @internal */
+  protected readonly checkTpl = computed<TemplateRef<CngxSelectCheckContext<T>> | null>(
+    () => this.checkDirective()?.templateRef ?? (this.config.templates.check as TemplateRef<CngxSelectCheckContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly caretTpl = computed<TemplateRef<CngxSelectCaretContext> | null>(
+    () => this.caretDirective()?.templateRef ?? this.config.templates.caret ?? null,
+  );
+  /** @internal */
+  protected readonly optgroupTpl = computed<TemplateRef<CngxSelectOptgroupContext<T>> | null>(
+    () => this.optgroupDirective()?.templateRef ?? (this.config.templates.optgroup as TemplateRef<CngxSelectOptgroupContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly placeholderTpl = computed<TemplateRef<CngxSelectPlaceholderContext> | null>(
+    () => this.placeholderDirective()?.templateRef ?? this.config.templates.placeholder ?? null,
+  );
+  /** @internal */
+  protected readonly emptyTpl = computed<TemplateRef<CngxSelectEmptyContext> | null>(
+    () => this.emptyDirective()?.templateRef ?? this.config.templates.empty ?? null,
+  );
+  /** @internal */
+  protected readonly loadingTpl = computed<TemplateRef<CngxSelectLoadingContext> | null>(
+    () => this.loadingDirective()?.templateRef ?? this.config.templates.loading ?? null,
+  );
+  /** @internal */
+  protected readonly triggerLabelTpl = computed<TemplateRef<CngxSelectTriggerLabelContext<T>> | null>(
+    () => this.triggerLabelDirective()?.templateRef ?? (this.config.templates.triggerLabel as TemplateRef<CngxSelectTriggerLabelContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly optionLabelTpl = computed<TemplateRef<CngxSelectOptionLabelContext<T>> | null>(
+    () => this.optionLabelDirective()?.templateRef ?? (this.config.templates.optionLabel as TemplateRef<CngxSelectOptionLabelContext<T>> | null | undefined) ?? null,
+  );
+  /** @internal */
+  protected readonly errorTpl = computed<TemplateRef<CngxSelectErrorContext> | null>(
+    () => this.errorDirective()?.templateRef ?? this.config.templates.error ?? null,
+  );
+  /** @internal */
+  protected readonly refreshingTpl = computed<TemplateRef<CngxSelectRefreshingContext> | null>(
+    () => this.refreshingDirective()?.templateRef ?? this.config.templates.refreshing ?? null,
+  );
+  /** @internal */
+  protected readonly commitErrorTpl = computed<TemplateRef<CngxSelectCommitErrorContext<T>> | null>(
+    () => this.commitErrorDirective()?.templateRef ?? (this.config.templates.commitError as TemplateRef<CngxSelectCommitErrorContext<T>> | null | undefined) ?? null,
   );
 
   // ── ViewChildren ───────────────────────────────────────────────────
@@ -467,6 +536,18 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
+
+  /**
+   * DOM id of the option currently highlighted via `CngxActiveDescendant`,
+   * or `null` when nothing is highlighted. Surfaced through the
+   * panel-host contract so the panel's option-row template can pass a
+   * real `highlighted` flag into `*cngxSelectOptionLabel` contexts.
+   *
+   * @internal
+   */
+  readonly activeId = computed<string | null>(
+    () => this.listboxRef()?.ad.activeId() ?? null,
+  );
 
   /** Currently selected option, resolved against `options`. `null` when empty. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
@@ -538,6 +619,42 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly effectiveTabIndex = computed<number | null>(() =>
     this.disabled() ? -1 : this.tabIndex(),
+  );
+
+  /**
+   * @internal — bundled ARIA projection for the trigger button.
+   *
+   * Every individual ARIA attribute on the trigger is already a
+   * `computed()` — the bundle exists so the template (and, crucially,
+   * anything a consumer ejects via Atomic-Decompose) reads ONE named
+   * source instead of a scattered list of `[attr.aria-*]` bindings.
+   * Keeping the logic in one place also makes it trivial to diff when
+   * ARIA semantics evolve.
+   */
+  protected readonly triggerAria = computed(
+    () => ({
+      label: this.resolvedAriaLabel(),
+      labelledBy: this.resolvedAriaLabelledBy(),
+      describedBy: this.describedBy(),
+      errorMessage: this.ariaErrorMessage(),
+      expanded: this.panelOpen(),
+      disabled: this.disabled() || null,
+      invalid: this.ariaInvalid(),
+      required: this.resolvedAriaRequired(),
+      busy: this.ariaBusy(),
+    }),
+    {
+      equal: (a, b) =>
+        a.label === b.label &&
+        a.labelledBy === b.labelledBy &&
+        a.describedBy === b.describedBy &&
+        a.errorMessage === b.errorMessage &&
+        a.expanded === b.expanded &&
+        a.disabled === b.disabled &&
+        a.invalid === b.invalid &&
+        a.required === b.required &&
+        a.busy === b.busy,
+    },
   );
 
   /** @internal */
@@ -721,7 +838,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * the component body and produced a state machine that CngxMultiSelect
    * / CngxCombobox can reuse verbatim.
    */
-  private readonly commitController: CngxCommitController<T> = createCommitController<T>();
+  private readonly commitController: CngxCommitController<T> =
+    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
 
   /** Read-only view of the commit lifecycle. */
   readonly commitState: CngxAsyncState<T | undefined> = this.commitController.state;
@@ -822,11 +940,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     const fallback = this.placeholder() || this.label();
     return this.selectedOption()?.label ?? fallback;
   });
-
-  /** @internal */
-  protected readonly hasTriggerLabelTemplate = computed<boolean>(
-    () => this.triggerLabelTpl() != null,
-  );
 
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
