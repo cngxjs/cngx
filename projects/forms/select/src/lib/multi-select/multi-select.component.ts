@@ -20,6 +20,7 @@ import {
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
+import { CngxChip } from '@cngx/common/display';
 import {
   CngxClickOutside,
   CngxListbox,
@@ -112,6 +113,7 @@ export interface CngxMultiSelectChange<T = unknown> {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    CngxChip,
     CngxClickOutside,
     CngxListbox,
     CngxListboxTrigger,
@@ -205,17 +207,13 @@ export interface CngxMultiSelectChange<T = unknown> {
                   "
                 />
               } @else {
-                <span class="cngx-select__chip">
-                  <span class="cngx-select__chip-label">{{ opt.label }}</span>
-                  <button
-                    type="button"
-                    class="cngx-select__chip-remove"
-                    [attr.aria-label]="chipRemoveAriaLabel() + ': ' + opt.label"
-                    (click)="handleChipRemoveClick($event, opt)"
-                  >
-                    ✕
-                  </button>
-                </span>
+                <cngx-chip
+                  [removable]="!disabled()"
+                  [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+                  (remove)="handleChipRemoveClick($event, opt)"
+                >
+                  {{ opt.label }}
+                </cngx-chip>
               }
             }
           }

@@ -114,14 +114,12 @@ describe('CngxMultiSelect — skeleton', () => {
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
     const chips: HTMLElement[] = Array.from(
-      fixture.nativeElement.querySelectorAll('.cngx-select__chip'),
+      fixture.nativeElement.querySelectorAll('cngx-chip'),
     );
     expect(chips.length).toBe(2);
     expect(chips[0].textContent).toContain('Rot');
     expect(chips[1].textContent).toContain('Grün');
-    const removes = fixture.nativeElement.querySelectorAll(
-      '.cngx-select__chip-remove',
-    );
+    const removes = fixture.nativeElement.querySelectorAll('.cngx-chip__remove');
     expect(removes.length).toBe(2);
   });
 
@@ -130,7 +128,7 @@ describe('CngxMultiSelect — skeleton', () => {
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
     const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '.cngx-select__chip-remove',
+      '.cngx-chip__remove',
     );
     firstRemove.click();
     flush(fixture);
@@ -431,7 +429,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     flush(fixture);
 
     const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-      '.cngx-select__chip-remove',
+      '.cngx-chip__remove',
     );
     firstRemove.click();
     flush(fixture);
@@ -517,7 +515,7 @@ describe('CngxMultiSelect — chip template + announcer', () => {
   it('renders chip template override instead of the default pill', () => {
     const fixture = TestBed.createComponent(ChipTemplateHost);
     flush(fixture);
-    const defaults = fixture.nativeElement.querySelectorAll('.cngx-select__chip');
+    const defaults = fixture.nativeElement.querySelectorAll('cngx-chip');
     const customs = fixture.nativeElement.querySelectorAll('.my-tag');
     expect(defaults.length).toBe(0);
     expect(customs.length).toBe(2);
@@ -551,7 +549,7 @@ describe('CngxMultiSelect — chip template + announcer', () => {
 
       // Click the chip × to trigger the removal path which invokes the announcer.
       const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
-        '.cngx-select__chip-remove',
+        '.cngx-chip__remove',
       );
       firstRemove.click();
       flush(fixture);
