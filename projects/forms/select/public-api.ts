@@ -15,6 +15,10 @@ export {
   CngxSelect,
   type CngxSelectChange,
 } from './src/lib/single-select/select.component';
+export {
+  CngxMultiSelect,
+  type CngxMultiSelectChange,
+} from './src/lib/multi-select/multi-select.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
