@@ -9,6 +9,8 @@ import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 
+import { CngxFormField } from '@cngx/forms/field';
+
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import type {
@@ -17,6 +19,7 @@ import type {
 } from '../shared/commit-action.types';
 import { CngxMultiSelectChip } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
 
 // jsdom has no Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -226,6 +229,60 @@ describe('CngxMultiSelect — skeleton', () => {
     };
     expect(multi.isSelected(OPTIONS[0])).toBe(true); // red
     expect(multi.isSelected(OPTIONS[1])).toBe(false); // green
+  });
+
+  it('clicking a disabled option does not toggle the value', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.click();
+    flush(fixture);
+    // Third option (index 2) is 'blue' with disabled: true.
+    const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    (options[2] as HTMLElement).click();
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual([]);
+  });
+
+  it('typeahead-while-closed toggles the matched option without opening the panel', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.focus();
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['red']);
+    // Panel remained closed — aria-expanded is false.
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+
+    // Second press of 'r' toggles it back off.
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'r', bubbles: true }));
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual([]);
+  });
+
+  it('PageDown from closed opens the panel and highlights an enabled option', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'PageDown', bubbles: true }),
+    );
+    flush(fixture);
+    const lb = fixture.debugElement
+      .query(By.directive(CngxListbox))
+      .injector.get(CngxListbox);
+    const options = lb.options();
+    const activeId = lb.ad.activeId();
+    const active = options.find((o) => o.id === activeId);
+    expect(active).toBeDefined();
+    expect(active!.disabled()).toBe(false);
   });
 });
 
@@ -563,3 +620,67 @@ describe('CngxMultiSelect — chip template + announcer', () => {
     }
   });
 });
+
+// ── FormField integration ─────────────────────────────────────────────
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-multi-select [label]="'Farben'" [options]="options" />
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxMultiSelect],
+})
+class MultiFormFieldHost {
+  readonly options = OPTIONS;
+  readonly _mock = createMockField<string[]>({
+    name: 'colors',
+    value: ['red'],
+  });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string[]> = this._mock.ref;
+}
+
+describe('CngxMultiSelect — form-field integration', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [MultiFormFieldHost] });
+  });
+
+  it('syncs initial field value into the multi-select', () => {
+    const fixture = TestBed.createComponent(MultiFormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const multi = fixture.debugElement.query(By.directive(CngxMultiSelect))
+      .componentInstance as CngxMultiSelect<string>;
+    expect(multi.values()).toEqual(['red']);
+  });
+
+  it('external field mutation reflects in the multi-select', () => {
+    const fixture = TestBed.createComponent(MultiFormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+    fixture.componentInstance.ref.value.set(['red', 'green']);
+    flush(fixture);
+    const multi = fixture.debugElement.query(By.directive(CngxMultiSelect))
+      .componentInstance as CngxMultiSelect<string>;
+    expect(multi.values()).toEqual(['red', 'green']);
+  });
+
+  it('internal toggle pushes into the field', () => {
+    const fixture = TestBed.createComponent(MultiFormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__trigger',
+    );
+    trigger.click();
+    flush(fixture);
+    const options = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    // Second option = 'green' — toggles ON (not yet in [red]).
+    (options[1] as HTMLElement).click();
+    flush(fixture);
+    expect(fixture.componentInstance.ref.value()).toEqual(['red', 'green']);
+  });
+});
+
