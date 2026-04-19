@@ -15,3 +15,4 @@ export {
   type CngxBadgePosition,
 } from './src/badge/badge.directive';
 export { CngxChip } from './src/chip/chip.component';
+export { CngxCheckboxIndicator } from './src/checkbox-indicator/checkbox-indicator.component';
