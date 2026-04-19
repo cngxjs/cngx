@@ -56,7 +56,10 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
   },
 })
 export class CngxListboxFieldBridge implements CngxFormFieldControl {
-  private readonly listbox = inject(CngxListbox, { self: true, host: true });
+  private readonly listbox: CngxListbox<unknown> = inject<CngxListbox<unknown>>(
+    CngxListbox,
+    { self: true, host: true },
+  );
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
   // ── CngxFormFieldControl ───────────────────────────────────────────

@@ -282,7 +282,7 @@ export interface CngxMultiSelectChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
-          [(selectedValues)]="listboxValues"
+          [(selectedValues)]="values"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
         </div>
@@ -853,9 +853,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  /** @internal — adapter so the inner listbox can bind `[(selectedValues)]` (typed `unknown[]`). */
-  protected readonly listboxValues = model<unknown[]>([]);
-
   // ── Commit action state ─────────────────────────────────────────────
 
   /**
@@ -981,31 +978,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     // rolls back to the bound initial array (not `[]`).
     this.lastCommittedValues = untracked(() => [...this.values()]);
 
-    // Sync the listbox's `selectedValues` (typed `unknown[]`) with our
-    // typed `values` model in both directions. Effects read the primary
-    // signal and write the adapter; writes from the listbox flow back to
-    // `values` via the reverse effect. The compareWith() array-equality
-    // guard prevents ping-pong loops when both sides hold the same
-    // element set.
-    effect(() => {
-      const v = this.values();
-      untracked(() => {
-        const current = this.listboxValues();
-        if (!sameArrayContents(current, v, this.compareWith() as CompareFn<unknown>)) {
-          this.listboxValues.set([...v]);
-        }
-      });
-    });
-
-    effect(() => {
-      const v = this.listboxValues() as T[];
-      untracked(() => {
-        const current = this.values();
-        if (!sameArrayContents(current, v, this.compareWith() as CompareFn<unknown>)) {
-          this.values.set([...v]);
-        }
-      });
-    });
+    // `values` binds directly to the listbox's `[(selectedValues)]` now
+    // that CngxListbox is generic over T. No adapter, no sync effects —
+    // the listbox model and our model are the same signal under the hood.
 
     // Honor [autofocus] on first render — one-shot DOM side effect,
     // matches native <select autofocus> semantics.
