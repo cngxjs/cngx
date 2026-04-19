@@ -1,16 +1,16 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
 import type {
-  CngxSelectCheck,
-  CngxSelectCommitError,
-  CngxSelectEmpty,
-  CngxSelectError,
-  CngxSelectErrorContext,
+  CngxSelectCheckContext,
   CngxSelectCommitErrorContext,
-  CngxSelectLoading,
-  CngxSelectOptgroupTemplate,
-  CngxSelectOptionLabel,
-  CngxSelectRefreshing,
+  CngxSelectEmptyContext,
+  CngxSelectErrorContext,
+  CngxSelectLoadingContext,
+  CngxSelectOptgroupContext,
+  CngxSelectOptionErrorContext,
+  CngxSelectOptionLabelContext,
+  CngxSelectOptionPendingContext,
+  CngxSelectRefreshingContext,
 } from './template-slots';
 import type {
   CngxSelectCommitErrorDisplay,
@@ -41,6 +41,12 @@ import type { AsyncView } from '@cngx/common/data';
  * decouples the two files: the panel depends on a stable,
  * purposefully-minimal surface, not on the entire `CngxSelect` class.
  *
+ * **Template-slot signals carry resolved `TemplateRef`s, not directive
+ * wrappers.** Each variant owns a 3-step cascade (instance-projected
+ * directive → global `CNGX_SELECT_CONFIG.templates.*` → library default)
+ * and exposes only the final `TemplateRef | null`. The panel stays free
+ * of cascade logic.
+ *
  * If you reshape `CngxSelect`, you'll see the breakage on this interface
  * before the panel's template — which is where you want it.
  *
@@ -51,7 +57,6 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly activeView: Signal<AsyncView>;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
-  readonly selectedOption: Signal<CngxSelectOptionDef<T> | null>;
   readonly skeletonIndices: Signal<number[]>;
   readonly showInlineError: Signal<boolean>;
   readonly showCommitError: Signal<boolean>;
@@ -71,22 +76,32 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;
 
-  // ── Content-projected templates ───────────────────────────────────
-  readonly checkTpl: Signal<CngxSelectCheck<T> | undefined>;
-  readonly optgroupTpl: Signal<CngxSelectOptgroupTemplate<T> | undefined>;
-  readonly emptyTpl: Signal<CngxSelectEmpty | undefined>;
-  readonly loadingTpl: Signal<CngxSelectLoading | undefined>;
-  readonly refreshingTpl: Signal<CngxSelectRefreshing | undefined>;
-  readonly errorTpl: Signal<CngxSelectError | undefined>;
-  readonly commitErrorTpl: Signal<CngxSelectCommitError<T> | undefined>;
-  readonly optionLabelTpl: Signal<CngxSelectOptionLabel<T> | undefined>;
+  // ── Resolved templates (instance > config.templates > library default) ─
+  readonly checkTpl: Signal<TemplateRef<CngxSelectCheckContext<T>> | null>;
+  readonly optgroupTpl: Signal<TemplateRef<CngxSelectOptgroupContext<T>> | null>;
+  readonly emptyTpl: Signal<TemplateRef<CngxSelectEmptyContext> | null>;
+  readonly loadingTpl: Signal<TemplateRef<CngxSelectLoadingContext> | null>;
+  readonly refreshingTpl: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
+  readonly errorTpl: Signal<TemplateRef<CngxSelectErrorContext> | null>;
+  readonly commitErrorTpl: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
+  readonly optionLabelTpl: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
+  readonly optionPendingTpl: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
+  readonly optionErrorTpl: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
+  /**
+   * Latest commit error surfaced inline on the selected option row.
+   * `null` when no commit is in error or `commitErrorDisplay !== 'inline'`.
+   */
+  readonly commitErrorValue: Signal<unknown>;
 
-  // ── Two-way value + imperative helpers ────────────────────────────
-  readonly value: {
-    (): T | undefined;
-    set(v: T | undefined): void;
-    update(fn: (v: T | undefined) => T | undefined): void;
-  };
+  // ── Active-descendant highlight (for options template context) ────
+  /**
+   * DOM id of the currently highlighted option inside the inner listbox,
+   * or `null` when nothing is highlighted. Lets the panel compute
+   * `highlighted` per option without injecting the listbox directly.
+   */
+  readonly activeId: Signal<string | null>;
+
+  // ── Imperative helpers ────────────────────────────────────────────
   isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
     item is CngxSelectOptionGroupDef<T>;
   isSelected(opt: CngxSelectOptionDef<T>): boolean;
@@ -96,7 +111,7 @@ export interface CngxSelectPanelHost<T = unknown> {
 
 /**
  * Injection token for the panel-host contract. Provided by `CngxSelect`
- * (and, eventually, `CngxMultiSelect`/`CngxCombobox`) via `useExisting`.
+ * (and `CngxMultiSelect` / future `CngxCombobox`) via `useExisting`.
  * The panel sub-component injects this token — never the concrete
  * `CngxSelect` class — so the two files stay decoupled.
  *

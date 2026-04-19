@@ -10,7 +10,7 @@ test.describe('CngxSelect demo', () => {
   test('standalone: click option updates value + closes popover', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Standalone');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.click();
     await section.locator('[cngxOption]').nth(1).click();
     await expect(
@@ -28,7 +28,7 @@ test.describe('CngxSelect demo', () => {
       section.locator('.event-row', { hasText: 'Valid' }).locator('.event-value'),
     ).toHaveText('no');
 
-    const trigger = select.locator('button').first();
+    const trigger = select.locator('.cngx-select__trigger').first();
     await trigger.click();
     await section.locator('[cngxOption]').nth(0).click();
     await expect(
@@ -44,7 +44,7 @@ test.describe('CngxSelect demo', () => {
   }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Standalone');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.focus();
     await trigger.click();
 
@@ -77,7 +77,7 @@ test.describe('CngxSelect demo', () => {
   test('click-outside closes the panel', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Standalone');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.click();
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
 
@@ -91,7 +91,7 @@ test.describe('CngxSelect demo', () => {
   }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Reactive Forms');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await expect(trigger).toContainText('Grün');
 
     await trigger.click();
@@ -104,7 +104,7 @@ test.describe('CngxSelect demo', () => {
   test('async state: loading shows spinner, success shows options', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Async state consumer');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
 
     await section.getByRole('button', { name: 'loading' }).click();
     await trigger.click();
@@ -118,7 +118,7 @@ test.describe('CngxSelect demo', () => {
   test('async state: error panel invokes retry callback', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Async state consumer');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
 
     await section.getByRole('button', { name: 'error' }).click();
     await trigger.click();
@@ -133,7 +133,7 @@ test.describe('CngxSelect demo', () => {
   test('async state: refreshing shows top-bar while options stay visible', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Async state consumer');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
 
     await section.getByRole('button', { name: 'refreshing' }).click();
     await trigger.click();
@@ -144,7 +144,7 @@ test.describe('CngxSelect demo', () => {
   test('typeahead-while-closed commits a value without opening the panel', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Standalone');
-    const trigger = section.locator('cngx-select button').first();
+    const trigger = section.locator('cngx-select .cngx-select__trigger').first();
     await trigger.focus();
 
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');

@@ -43,9 +43,9 @@ interface PopoverController {
     '(keydown)': 'handleKeydown($event)',
   },
 })
-export class CngxListboxTrigger {
+export class CngxListboxTrigger<T = unknown> {
   /** Listbox controlled by this trigger. */
-  readonly listbox = input.required<CngxListbox>({ alias: 'cngxListboxTrigger' });
+  readonly listbox = input.required<CngxListbox<T>>({ alias: 'cngxListboxTrigger' });
   /** Popover that wraps the listbox panel. */
   readonly popover = input.required<PopoverController>();
   /** Whether activating an option closes the popover. */

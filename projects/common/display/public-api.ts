@@ -14,3 +14,4 @@ export {
   type CngxBadgeColor,
   type CngxBadgePosition,
 } from './src/badge/badge.directive';
+export { CngxChip } from './src/chip/chip.component';

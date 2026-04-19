@@ -247,6 +247,29 @@
   font-size: 0.875rem;
 }
 
+/* ── Chip strip container (layout only) ───────────────────────────── */
+
+/*
+ * Multi-value triggers (CngxMultiSelect, upcoming CngxMultiCombobox and
+ * CngxTagInput) all wrap a flex-wrap row of chip pills. The individual
+ * pill rendering is a separate molecule — `<cngx-chip>` from
+ * `@cngx/common/display` — so only the layout of the strip
+ * (flex-wrap, gap, baseline alignment) lives here.
+ *
+ * This keeps the pill visual swappable without editing the parent's
+ * skin file, and makes the container reusable by any future multi-value
+ * trigger inside the select family.
+ */
+
+.cngx-select__chip-list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-select-chip-gap, 0.25rem);
+  align-items: center;
+  min-width: 0;
+}
+
 /* ── Panel-level error surfaces ───────────────────────────────────── */
 
 .cngx-select__error {

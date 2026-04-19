@@ -7,24 +7,46 @@ import {
 } from '@angular/core';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
+import type {
+  CngxSelectCaretContext,
+  CngxSelectCheckContext,
+  CngxSelectClearButtonContext,
+  CngxSelectCommitErrorContext,
+  CngxSelectEmptyContext,
+  CngxSelectErrorContext,
+  CngxSelectLoadingContext,
+  CngxSelectOptgroupContext,
+  CngxSelectOptionErrorContext,
+  CngxSelectOptionLabelContext,
+  CngxSelectOptionPendingContext,
+  CngxSelectPlaceholderContext,
+  CngxSelectRefreshingContext,
+  CngxSelectTriggerLabelContext,
+} from './template-slots';
 
 /**
- * Template contexts the select family exposes for override.
+ * Template contexts the select family exposes for override. Each key
+ * corresponds to a `*cngxSelect*` template-slot directive — the types
+ * mirror the consumer-facing contexts so global defaults stay in lockstep
+ * with what `ng-template let-*` bindings receive per instance.
  *
  * @category interactive
  */
 export interface CngxSelectTemplateContexts {
-  readonly check?: unknown;
-  readonly caret?: unknown;
-  readonly optgroup?: unknown;
-  readonly placeholder?: unknown;
-  readonly empty?: unknown;
-  readonly loading?: unknown;
-  readonly triggerLabel?: unknown;
-  readonly optionLabel?: unknown;
-  readonly error?: unknown;
-  readonly refreshing?: unknown;
-  readonly commitError?: unknown;
+  readonly check?: CngxSelectCheckContext;
+  readonly caret?: CngxSelectCaretContext;
+  readonly optgroup?: CngxSelectOptgroupContext;
+  readonly placeholder?: CngxSelectPlaceholderContext;
+  readonly empty?: CngxSelectEmptyContext;
+  readonly loading?: CngxSelectLoadingContext;
+  readonly triggerLabel?: CngxSelectTriggerLabelContext;
+  readonly optionLabel?: CngxSelectOptionLabelContext;
+  readonly error?: CngxSelectErrorContext;
+  readonly refreshing?: CngxSelectRefreshingContext;
+  readonly commitError?: CngxSelectCommitErrorContext;
+  readonly clearButton?: CngxSelectClearButtonContext;
+  readonly optionPending?: CngxSelectOptionPendingContext;
+  readonly optionError?: CngxSelectOptionErrorContext;
 }
 
 /**
@@ -40,11 +62,18 @@ export interface CngxSelectAnnouncerConfig {
   /**
    * Message formatter. Receives selection metadata and returns the
    * sentence read by assistive tech.
+   *
+   * `action` and `count` are only supplied by multi-select variants
+   * (`multi: true`). Single-select consumers leave them undefined; the
+   * library default ignores them on the single-select path for
+   * back-compat with existing overrides.
    */
   readonly format?: (input: {
     readonly selectedLabel: string | null;
     readonly fieldLabel: string;
     readonly multi: boolean;
+    readonly action?: 'added' | 'removed';
+    readonly count?: number;
   }) => string;
 }
 
@@ -109,18 +138,27 @@ export interface CngxSelectConfig {
   readonly announcer?: CngxSelectAnnouncerConfig;
   /**
    * Default template overrides (applied when a component instance doesn't
-   * project its own). Each is a `TemplateRef` or `null`.
+   * project its own). Each slot carries the same typed context a
+   * per-instance `*cngxSelect*` directive would receive — so the
+   * consumer's `ng-template let-*` bindings are type-checked against
+   * the real shape no matter whether the template is projected per
+   * instance or supplied globally via config.
    */
   readonly templates?: {
-    readonly check?: TemplateRef<CngxSelectTemplateContexts['check']> | null;
-    readonly caret?: TemplateRef<CngxSelectTemplateContexts['caret']> | null;
-    readonly optgroup?: TemplateRef<CngxSelectTemplateContexts['optgroup']> | null;
-    readonly placeholder?: TemplateRef<CngxSelectTemplateContexts['placeholder']> | null;
-    readonly empty?: TemplateRef<CngxSelectTemplateContexts['empty']> | null;
-    readonly loading?: TemplateRef<CngxSelectTemplateContexts['loading']> | null;
-    readonly error?: TemplateRef<CngxSelectTemplateContexts['error']> | null;
-    readonly refreshing?: TemplateRef<CngxSelectTemplateContexts['refreshing']> | null;
-    readonly commitError?: TemplateRef<CngxSelectTemplateContexts['commitError']> | null;
+    readonly check?: TemplateRef<CngxSelectCheckContext> | null;
+    readonly caret?: TemplateRef<CngxSelectCaretContext> | null;
+    readonly optgroup?: TemplateRef<CngxSelectOptgroupContext> | null;
+    readonly placeholder?: TemplateRef<CngxSelectPlaceholderContext> | null;
+    readonly empty?: TemplateRef<CngxSelectEmptyContext> | null;
+    readonly loading?: TemplateRef<CngxSelectLoadingContext> | null;
+    readonly triggerLabel?: TemplateRef<CngxSelectTriggerLabelContext> | null;
+    readonly optionLabel?: TemplateRef<CngxSelectOptionLabelContext> | null;
+    readonly error?: TemplateRef<CngxSelectErrorContext> | null;
+    readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
+    readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
+    readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
+    readonly optionPending?: TemplateRef<CngxSelectOptionPendingContext> | null;
+    readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
   };
 }
 
@@ -154,11 +192,25 @@ export const CNGX_SELECT_DEFAULTS: Required<
   announcer: {
     enabled: true,
     politeness: 'polite',
-    format: ({ selectedLabel, fieldLabel, multi }): string => {
+    format: ({ selectedLabel, fieldLabel, multi, action, count }): string => {
+      if (!multi) {
+        if (selectedLabel == null) {
+          return `${fieldLabel}: Auswahl geleert`;
+        }
+        return `${fieldLabel}: ${selectedLabel} gewählt`;
+      }
+      // Multi-select path: prefer the action + count detail when the
+      // caller supplies them — gives AT users the delta ("added" /
+      // "removed") plus the resulting selection size.
       if (selectedLabel == null) {
+        // Clear-all or last option removed.
         return `${fieldLabel}: Auswahl geleert`;
       }
-      return multi ? `${fieldLabel}: ${selectedLabel}` : `${fieldLabel}: ${selectedLabel} gewählt`;
+      const verb = action === 'removed' ? 'entfernt' : 'hinzugefügt';
+      if (typeof count === 'number') {
+        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} ausgewählt`;
+      }
+      return `${fieldLabel}: ${selectedLabel} ${verb}`;
     },
   },
   templates: {
@@ -168,9 +220,14 @@ export const CNGX_SELECT_DEFAULTS: Required<
     placeholder: null,
     empty: null,
     loading: null,
+    triggerLabel: null,
+    optionLabel: null,
     error: null,
     refreshing: null,
     commitError: null,
+    clearButton: null,
+    optionPending: null,
+    optionError: null,
   },
 };
 

@@ -67,21 +67,21 @@ import { CngxOption } from './option.directive';
     '[attr.aria-multiselectable]': 'multiple() ? "true" : null',
   },
 })
-export class CngxListbox {
+export class CngxListbox<T = unknown> {
   /** Accessible label for the listbox region. */
   readonly label = input.required<string>();
 
   /** Two-way single-value binding. */
-  readonly value = model<unknown>(undefined);
+  readonly value = model<T | undefined>(undefined);
 
   /** Two-way multi-value binding. */
-  readonly selectedValues = model<unknown[]>([]);
+  readonly selectedValues = model<T[]>([]);
 
   /** Whether multiple options can be selected. */
   readonly multiple = input<boolean>(false);
 
   /** Equality function for matching values. Defaults to `Object.is`. */
-  readonly compareWith = input<(a: unknown, b: unknown) => boolean>(Object.is);
+  readonly compareWith = input<(a: T, b: T) => boolean>(Object.is as (a: T, b: T) => boolean);
 
   /**
    * Optional explicit reference to a `CngxListboxSearch` whose term drives
@@ -145,7 +145,7 @@ export class CngxListbox {
       const selected = this.selected();
       const eq = this.compareWith();
       for (const opt of this.options()) {
-        opt.markSelected(selected.some((s) => eq(s, opt.value())));
+        opt.markSelected(selected.some((s) => eq(s, opt.value() as T)));
       }
     });
 
@@ -154,12 +154,12 @@ export class CngxListbox {
   }
 
   /** Current selection as an array (single-mode → `[value]` or `[]`, multi-mode → `selectedValues`). */
-  readonly selected = computed<unknown[]>(() => {
+  readonly selected = computed<T[]>(() => {
     if (this.multiple()) {
       return [...this.selectedValues()];
     }
     const v = this.value();
-    return v === undefined || v === null ? [] : [v];
+    return v === undefined || v === null ? [] : [v as T];
   });
 
   /** Labels of currently selected options, in selection order. */
@@ -169,7 +169,7 @@ export class CngxListbox {
     const opts = this.options();
     const labels: string[] = [];
     for (const value of selected) {
-      const opt = opts.find((o) => eq(o.value(), value));
+      const opt = opts.find((o) => eq(o.value() as T, value));
       if (opt) {
         labels.push(opt.resolvedLabel());
       }
@@ -189,7 +189,7 @@ export class CngxListbox {
     }
     const selected = this.selected();
     const eq = this.compareWith();
-    return selectable.every((o) => selected.some((s) => eq(s, o.value())));
+    return selectable.every((o) => selected.some((s) => eq(s, o.value() as T)));
   });
 
   /** Whether the listbox has no options at all. */
@@ -210,7 +210,7 @@ export class CngxListbox {
       matchFn(
         {
           id: opt.id,
-          value: opt.value(),
+          value: opt.value() as T,
           label: opt.resolvedLabel(),
           disabled: opt.disabled(),
         },
@@ -227,7 +227,7 @@ export class CngxListbox {
    * In multi mode, adds to the selection if not already present. Values that
    * do not correspond to any option are ignored.
    */
-  select(value: unknown): void {
+  select(value: T): void {
     if (!this.hasOption(value)) {
       return;
     }
@@ -242,17 +242,20 @@ export class CngxListbox {
   }
 
   /** Remove `value` from the selection. No-op if not selected. */
-  deselect(value: unknown): void {
+  deselect(value: T): void {
     const eq = this.compareWith();
     if (this.multiple()) {
       this.selectedValues.set(this.selectedValues().filter((v) => !eq(v, value)));
-    } else if (eq(this.value(), value)) {
-      this.value.set(undefined);
+    } else {
+      const current = this.value();
+      if (current !== undefined && eq(current, value)) {
+        this.value.set(undefined);
+      }
     }
   }
 
   /** Flip selection state for `value`. */
-  toggle(value: unknown): void {
+  toggle(value: T): void {
     if (this.isSelected(value)) {
       this.deselect(value);
     } else {
@@ -279,26 +282,26 @@ export class CngxListbox {
     }
     const values = this.options()
       .filter((o) => !o.disabled())
-      .map((o) => o.value());
+      .map((o) => o.value() as T);
     this.selectedValues.set(values);
   }
 
   /** Returns the resolved label for a value, or `null` if no such option. */
-  getLabel(value: unknown): string | null {
+  getLabel(value: T): string | null {
     const eq = this.compareWith();
-    const opt = this.options().find((o) => eq(o.value(), value));
+    const opt = this.options().find((o) => eq(o.value() as T, value));
     return opt ? opt.resolvedLabel() : null;
   }
 
   /** Whether `value` is currently part of the selection. */
-  isSelected(value: unknown): boolean {
+  isSelected(value: T): boolean {
     const eq = this.compareWith();
     return this.selected().some((v) => eq(v, value));
   }
 
-  private hasOption(value: unknown): boolean {
+  private hasOption(value: T): boolean {
     const eq = this.compareWith();
-    return this.options().some((o) => eq(o.value(), value));
+    return this.options().some((o) => eq(o.value() as T, value));
   }
 
   private handleActivation(value: unknown): void {
@@ -310,10 +313,14 @@ export class CngxListbox {
     if (this.externalActivation()) {
       return;
     }
+    // AD emits raw `unknown` because the Subject is typed against option
+    // values as they come off the DOM; narrow to T here since the
+    // listbox owns the value domain.
+    const narrowed = value as T;
     if (this.multiple()) {
-      this.toggle(value);
+      this.toggle(narrowed);
     } else {
-      this.select(value);
+      this.select(narrowed);
     }
   }
 }

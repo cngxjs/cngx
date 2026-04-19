@@ -1,0 +1,52 @@
+/*
+ * chip.component.css — visual skin of a single chip pill.
+ *
+ * Only the chip's own appearance lives here (padding, radius, background,
+ * hover, the close-button). Layout concerns of a CONTAINER rendering
+ * multiple chips (gap, flex-wrap) stay with that container — e.g.
+ * CngxMultiSelect's shared `.cngx-select__chip-list` rules.
+ *
+ * Thematic values are `--cngx-chip-*` custom properties with fallbacks;
+ * consumers override at the :root or component level without forking.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-chip-inner-gap, 0.25rem);
+  padding: var(--cngx-chip-padding, 0.125rem 0.5rem);
+  border-radius: var(--cngx-chip-radius, 999px);
+  background: var(--cngx-chip-bg, rgba(25, 118, 210, 0.12));
+  color: var(--cngx-chip-color, inherit);
+  font-size: var(--cngx-chip-font-size, 0.875em);
+  line-height: 1.25;
+  max-width: 100%;
+}
+
+.cngx-chip__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.cngx-chip__remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.125rem;
+  font: inherit;
+  line-height: 1;
+  opacity: var(--cngx-chip-remove-opacity, 0.7);
+  border-radius: var(--cngx-chip-remove-radius, 0.125rem);
+  flex: 0 0 auto;
+}
+.cngx-chip__remove:hover {
+  opacity: 1;
+}
+.cngx-chip__remove:focus-visible {
+  outline: var(--cngx-chip-remove-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
+  outline-offset: 1px;
+}

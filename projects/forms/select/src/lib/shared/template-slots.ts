@@ -113,6 +113,79 @@ export interface CngxSelectCommitErrorContext<T = unknown> {
 }
 
 /**
+ * Context for the per-chip template in `CngxMultiSelect`. Receives the
+ * option the chip represents and a `remove()` callback that removes the
+ * value from the current selection (routed through the commit flow if
+ * `[commitAction]` is bound).
+ *
+ * @category interactive
+ */
+export interface CngxMultiSelectChipContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly remove: () => void;
+}
+
+/**
+ * Context for the clear-button template shared by `CngxSelect`
+ * (`[clearable]="true"` single-clear) and `CngxMultiSelect`
+ * (clear-all). Exposes the imperative `clear()` callback plus the
+ * current disabled flag so a consumer-authored icon can honour the
+ * disabled state without re-deriving it.
+ *
+ * @category interactive
+ */
+export interface CngxSelectClearButtonContext {
+  readonly $implicit: () => void;
+  readonly clear: () => void;
+  readonly disabled: boolean;
+}
+
+/**
+ * Context for the per-row pending-indicator template (shown while a
+ * `[commitAction]` is in flight for THIS option). Consumer can render
+ * anything — custom spinner glyph, text, a dots animation — instead of
+ * the default `.cngx-select__option-spinner`.
+ *
+ * @category interactive
+ */
+export interface CngxSelectOptionPendingContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+}
+
+/**
+ * Context for the per-row commit-error glyph (shown inline next to the
+ * selected option when a commit fails and `commitErrorDisplay` is
+ * `'inline'`). Consumer-authored icon can vary by error shape.
+ *
+ * @category interactive
+ */
+export interface CngxSelectOptionErrorContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly error: unknown;
+}
+
+/**
+ * Context for the trigger-label template in `CngxMultiSelect`. Replaces
+ * the default chip strip entirely, letting consumers render a text
+ * summary ("3 ausgewählt"), a compact badge + first label, or any other
+ * custom markup. Receives the fully-resolved option list, the raw
+ * values, and the selection count so one template covers every style
+ * (plain text, chip+overflow-count, icon group, …) without re-deriving
+ * the same data in the consumer.
+ *
+ * @category interactive
+ */
+export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
+  readonly $implicit: readonly CngxSelectOptionDef<T>[];
+  readonly selected: readonly CngxSelectOptionDef<T>[];
+  readonly values: readonly T[];
+  readonly count: number;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -302,4 +375,143 @@ export class CngxSelectRefreshing {
 })
 export class CngxSelectCommitError<T = unknown> {
   readonly templateRef = inject<TemplateRef<CngxSelectCommitErrorContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for a per-chip rendering inside `CngxMultiSelect`'s
+ * trigger. Replaces the built-in pill + ✕ button with a consumer-authored
+ * chip. The `remove` callback in the context routes through the commit
+ * flow just like the built-in chip's ✕ does.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
+ *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectChip]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectChip',
+})
+export class CngxMultiSelectChip<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxMultiSelectChipContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the whole trigger label in `CngxMultiSelect`.
+ * When projected, the default chip strip is suppressed and the consumer
+ * owns the trigger's rendering — use this for "3 Themen ausgewählt"
+ * text summaries, for a single pill showing the first value + "+N"
+ * counter, or for any other shape that isn't a chip strip.
+ *
+ * Mutually exclusive with `*cngxMultiSelectChip`: project this slot and
+ * you render the whole trigger; project only the chip slot to tweak
+ * the individual pill while keeping the flex-wrap strip layout.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
+ *     @if (count === 0) { Wähle Themen }
+ *     @else { {{ count }} Themen ausgewählt }
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectTriggerLabel]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectTriggerLabel',
+})
+export class CngxMultiSelectTriggerLabel<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxMultiSelectTriggerLabelContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the clear button on `CngxSelect` (single) and
+ * the clear-all button on `CngxMultiSelect`. When projected, replaces
+ * the default `✕` button entirely — the consumer template owns the
+ * element(s) and invokes the `clear()` callback from the context.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [clearable]="true" [(values)]="picked">
+ *   <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+ *     <my-icon-button icon="trash" [disabled]="disabled" (action)="clear()" />
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectClearButton]',
+  standalone: true,
+  exportAs: 'cngxSelectClearButton',
+})
+export class CngxSelectClearButton {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectClearButtonContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the per-row pending indicator shown while a
+ * `[commitAction]` commit is in flight for the option. Replaces the
+ * default `.cngx-select__option-spinner` glyph.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [commitAction]="saveTag" [(values)]="tags">
+ *   <ng-template cngxSelectOptionPending let-opt>
+ *     <my-inline-spinner [label]="opt.label + ' wird gespeichert'" />
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectOptionPending]',
+  standalone: true,
+  exportAs: 'cngxSelectOptionPending',
+})
+export class CngxSelectOptionPending<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectOptionPendingContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for the per-row commit-error glyph shown inline
+ * next to the selected option when a `[commitAction]` transitions to
+ * error and `commitErrorDisplay` is `'inline'`. Replaces the default
+ * `.cngx-select__option-error` `!` badge.
+ *
+ * @example
+ * ```html
+ * <cngx-select [commitAction]="saveColor" commitErrorDisplay="inline">
+ *   <ng-template cngxSelectOptionError let-opt let-error="error">
+ *     <my-icon name="alert" [tooltip]="error.message" />
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectOptionError]',
+  standalone: true,
+  exportAs: 'cngxSelectOptionError',
+})
+export class CngxSelectOptionError<T = unknown> {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectOptionErrorContext<T>>>(TemplateRef);
 }

@@ -15,6 +15,10 @@ export {
   CngxSelect,
   type CngxSelectChange,
 } from './src/lib/single-select/select.component';
+export {
+  CngxMultiSelect,
+  type CngxMultiSelectChange,
+} from './src/lib/multi-select/multi-select.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
@@ -89,6 +93,11 @@ export {
   CngxSelectError,
   CngxSelectRefreshing,
   CngxSelectCommitError,
+  CngxSelectClearButton,
+  CngxSelectOptionPending,
+  CngxSelectOptionError,
+  CngxMultiSelectChip,
+  CngxMultiSelectTriggerLabel,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -100,4 +109,18 @@ export {
   type CngxSelectErrorContext,
   type CngxSelectRefreshingContext,
   type CngxSelectCommitErrorContext,
+  type CngxSelectClearButtonContext,
+  type CngxSelectOptionPendingContext,
+  type CngxSelectOptionErrorContext,
+  type CngxMultiSelectChipContext,
+  type CngxMultiSelectTriggerLabelContext,
 } from './src/lib/shared/template-slots';
+
+// ── Commit-controller DI factory ──────────────────────────────────────
+export {
+  CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
+  type CngxSelectCommitControllerFactory,
+  type CngxCommitController,
+  type CngxCommitBeginHandlers,
+  createCommitController,
+} from './src/lib/shared/commit-controller';

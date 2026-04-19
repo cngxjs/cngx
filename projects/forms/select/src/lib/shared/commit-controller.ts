@@ -1,4 +1,4 @@
-import { computed, signal, type Signal } from '@angular/core';
+import { computed, InjectionToken, signal, type Signal } from '@angular/core';
 
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import type { CngxAsyncState } from '@cngx/core/utils';
@@ -172,3 +172,43 @@ export function createCommitController<T>(): CngxCommitController<T> {
     },
   };
 }
+
+/**
+ * Factory signature for producing {@link CngxCommitController} instances.
+ * Consumers override the DI token {@link CNGX_SELECT_COMMIT_CONTROLLER_FACTORY}
+ * with a custom factory to inject retry-with-backoff, offline queues,
+ * telemetry, or any other enterprise-specific commit lifecycle — without
+ * forking the select components.
+ *
+ * @category interactive
+ */
+export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>;
+
+/**
+ * DI token carrying the factory that every select variant uses to
+ * allocate its commit controller. Default `providedIn: 'root'` factory
+ * returns {@link createCommitController}. Override globally via app
+ * providers or per-component via `viewProviders`.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     {
+ *       provide: CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
+ *       useValue: <T>() => createRetryingCommitController<T>({ attempts: 3 }),
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =
+  new InjectionToken<CngxSelectCommitControllerFactory>(
+    'CngxSelectCommitControllerFactory',
+    {
+      providedIn: 'root',
+      factory: () => createCommitController,
+    },
+  );
