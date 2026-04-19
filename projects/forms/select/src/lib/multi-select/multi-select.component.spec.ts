@@ -3,11 +3,18 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { Subject, type Observable } from 'rxjs';
+
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import { CNGX_STATEFUL } from '@cngx/core/utils';
 
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitMode,
+} from '../shared/commit-action.types';
 
 // jsdom has no Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -219,5 +226,263 @@ describe('CngxMultiSelect — skeleton', () => {
     };
     expect(multi.isSelected(OPTIONS[0])).toBe(true); // red
     expect(multi.isSelected(OPTIONS[1])).toBe(false); // green
+  });
+});
+
+// ── [commitAction] per-toggle + supersede ─────────────────────────────
+
+@Component({
+  selector: 'multi-commit-host',
+  template: `
+    <cngx-multi-select
+      [label]="'Farben'"
+      [options]="options"
+      [clearable]="true"
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      [(values)]="values"
+      (commitError)="errors.push($event)"
+      (stateChange)="statuses.push($event)"
+      (selectionChange)="changes.push($event)"
+      (optionToggled)="toggles.push($event)"
+    />
+  `,
+  imports: [CngxMultiSelect],
+})
+class MultiCommitHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>([]);
+  readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly errors: unknown[] = [];
+  readonly statuses: string[] = [];
+  readonly changes: CngxMultiSelectChange<string>[] = [];
+  readonly toggles: { option: CngxSelectOptionDef<string>; added: boolean }[] = [];
+  pending: Subject<string[] | undefined> | null = null;
+  commitCallCount = 0;
+  readonly commitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    this.commitCallCount += 1;
+    const subject = new Subject<string[] | undefined>();
+    this.pending = subject;
+    void intended;
+    return subject.asObservable() as Observable<string[] | undefined>;
+  };
+}
+
+describe('CngxMultiSelect — commit action producer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [MultiCommitHost] });
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<MultiCommitHost>>;
+    multi: CngxMultiSelect<string>;
+    host: MultiCommitHost;
+    triggerBtn: HTMLButtonElement;
+    optionAt: (idx: number) => HTMLElement;
+  } {
+    const fixture = TestBed.createComponent(MultiCommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const multiDe = fixture.debugElement.query(By.directive(CngxMultiSelect));
+    return {
+      fixture,
+      multi: multiDe.componentInstance as CngxMultiSelect<string>,
+      host: fixture.componentInstance,
+      triggerBtn: multiDe.nativeElement.querySelector(
+        'button.cngx-multi-select__trigger',
+      ) as HTMLButtonElement,
+      optionAt: (idx) => {
+        const options = multiDe.nativeElement.querySelectorAll('[cngxOption]');
+        return options[idx] as HTMLElement;
+      },
+    };
+  }
+
+  it('optimistic success: values updated immediately, selectionChange emits on success', () => {
+    const { fixture, host, triggerBtn, optionAt } = setup();
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click(); // red
+    flush(fixture);
+
+    // Optimistic: values already reflects the intended next-array,
+    // but selectionChange fires only after commit success.
+    expect(host.values()).toEqual(['red']);
+    expect(host.changes).toEqual([]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+
+    host.pending!.next(['red']);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red']);
+    expect(host.changes.length).toBe(1);
+    expect(host.changes[0].added).toEqual(['red']);
+    expect(host.changes[0].action).toBe('toggle');
+    expect(host.statuses[host.statuses.length - 1]).toBe('success');
+  });
+
+  it('optimistic error: values roll back to previous, commitError fires', () => {
+    const { fixture, host, triggerBtn, optionAt } = setup();
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click(); // red
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red']);
+
+    const err = new Error('server down');
+    host.pending!.error(err);
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    expect(host.errors).toEqual([err]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('pessimistic: panel stays open, togglingOption drives per-row spinner, values deferred', () => {
+    const { fixture, host, multi, triggerBtn, optionAt } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    expect(multi.panelOpen()).toBe(true);
+    expect(host.values()).toEqual([]); // deferred
+    expect(multi.isCommitting()).toBe(true);
+
+    host.pending!.next(['red']);
+    host.pending!.complete();
+    flush(fixture);
+
+    // Panel stays open in multi on success (unlike single).
+    expect(multi.panelOpen()).toBe(true);
+    expect(host.values()).toEqual(['red']);
+    expect(multi.isCommitting()).toBe(false);
+    expect(host.changes.length).toBe(1);
+    expect(host.changes[0].action).toBe('toggle');
+  });
+
+  it('pessimistic error: values stay at previous (no rollback needed), panel remains open', () => {
+    const { fixture, host, multi, triggerBtn, optionAt } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+
+    host.pending!.error(new Error('nope'));
+    flush(fixture);
+
+    // Pessimistic never wrote in the first place — values unchanged.
+    expect(host.values()).toEqual([]);
+    expect(multi.panelOpen()).toBe(true);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('supersede: a second toggle while the first is pending aborts the first', () => {
+    const { fixture, host, triggerBtn, optionAt } = setup();
+
+    triggerBtn.click();
+    flush(fixture);
+    optionAt(0).click(); // red — pending 1
+    flush(fixture);
+    const firstPending = host.pending!;
+    const firstCount = host.commitCallCount;
+
+    // Second toggle while first is still pending (panel stays open in multi).
+    optionAt(1).click(); // green — pending 2, supersedes
+    flush(fixture);
+    expect(host.commitCallCount).toBeGreaterThan(firstCount);
+
+    // Late resolve of the first pending must be ignored.
+    const changesBefore = host.changes.length;
+    const statusesBefore = [...host.statuses];
+    firstPending.next(['red']);
+    firstPending.complete();
+    flush(fixture);
+    expect(host.changes.length).toBe(changesBefore);
+    expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('provides CNGX_STATEFUL that resolves to commitState', () => {
+    const { fixture, multi } = setup();
+    const stateful = fixture.debugElement
+      .query(By.directive(CngxMultiSelect))
+      .injector.get(CNGX_STATEFUL);
+    expect(stateful.state).toBe(multi.commitState);
+  });
+
+  it('chip-remove optimistic rollback: chip × on failing commit restores value', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+
+    const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__chip-remove',
+    );
+    firstRemove.click();
+    flush(fixture);
+
+    // Optimistic: values already reflect removal.
+    expect(host.values()).toEqual(['green']);
+
+    host.pending!.error(new Error('retry'));
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red', 'green']);
+    expect(host.errors.length).toBe(1);
+  });
+
+  it('clear-all optimistic success: values empty stays and selectionChange fires action=clear', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+
+    const clear: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    );
+    clear.click();
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+
+    host.pending!.next([]);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    const clearChange = host.changes.find((c) => c.action === 'clear');
+    expect(clearChange).toBeDefined();
+    expect(clearChange!.removed).toEqual(['red', 'green']);
+  });
+
+  it('clear-all optimistic error: values roll back to previous selection', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+
+    const clear: HTMLButtonElement = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    );
+    clear.click();
+    flush(fixture);
+    expect(host.values()).toEqual([]);
+
+    host.pending!.error(new Error('nope'));
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red', 'green']);
   });
 });
