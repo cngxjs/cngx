@@ -230,7 +230,7 @@ export interface CngxComboboxChange<T = unknown> {
           [attr.aria-busy]="triggerAria().busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
-          (keydown)="handleInputKeydown($event)"
+          (backspaceOnEmpty)="removeLastChip()"
         />
         @if (clearable() && !isEmpty() && !disabled()) {
           @if (clearButtonTpl(); as tpl) {
@@ -1314,26 +1314,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * @internal — input-level keys that the listbox-trigger can't reach.
-   * Backspace-on-empty removes the trailing chip (native tag-input
-   * parity). All other keys fall through to `CngxListboxTrigger`'s host
-   * listener for Enter / Arrow / Home / End / Escape handling.
+   * @internal — invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`
+   * when the user presses Backspace on an empty input. Removes the
+   * trailing chip via the same commit-aware `removeOption` path that
+   * the ✕ button uses.
    */
-  protected handleInputKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Backspace') {
-      return;
-    }
-    const target = event.target as HTMLInputElement | null;
-    if (target?.value !== '') {
-      return;
-    }
+  protected removeLastChip(): void {
     const selected = this.selectedOptions();
     if (selected.length === 0) {
       return;
     }
-    event.preventDefault();
-    const last = selected[selected.length - 1];
-    this.removeOption(last);
+    this.removeOption(selected[selected.length - 1]);
   }
 
   // ── Commit orchestration ───────────────────────────────────────────

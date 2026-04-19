@@ -1,4 +1,4 @@
-import { computed, Directive, inject, input } from '@angular/core';
+import { computed, Directive, ElementRef, inject, input, output } from '@angular/core';
 
 import type { CngxListbox } from './listbox.directive';
 import { CngxListboxSearch } from './listbox-search.directive';
@@ -56,6 +56,18 @@ export class CngxListboxTrigger<T = unknown> {
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
   /**
+   * Fires when the user presses Backspace on an empty input. Only
+   * emitted when the host element is an `<input>` with a co-located
+   * `CngxListboxSearch` — the tag-input convention "Backspace on empty
+   * deletes the trailing chip" lives at the trigger, so consumers only
+   * wire one subscription to own the delete path. On non-input hosts
+   * (classic button triggers) the event never fires.
+   *
+   * @category interactive
+   */
+  readonly backspaceOnEmpty = output<void>();
+
+  /**
    * When a `CngxListboxSearch` is attached to the same host element, we
    * suppress the printable-character typeahead forwarding: the keystroke
    * must reach the native `<input>` value so the search directive's
@@ -68,10 +80,28 @@ export class CngxListboxTrigger<T = unknown> {
    * automatically; classic button triggers keep native-`<select>` parity.
    */
   private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
+  private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected handleKeydown(event: KeyboardEvent): void {
     const key = event.key;
     const ad = this.listbox().ad;
+
+    // Tag-input convention: Backspace on an empty search-input fires
+    // (backspaceOnEmpty) so the parent composite (CngxCombobox, future
+    // tag-input, …) can delete the trailing chip. Lives at the trigger
+    // because the trigger already owns keyboard on this element —
+    // having two keydown handlers on the same element is a smell we
+    // avoid by consolidating here. Non-input triggers never fire it
+    // because the co-located-search guard is false.
+    if (key === 'Backspace' && this.search) {
+      const host = this.el.nativeElement;
+      if (host instanceof HTMLInputElement && host.value === '') {
+        this.backspaceOnEmpty.emit();
+        // Do NOT preventDefault — let the user's Backspace bubble
+        // naturally; the consumer's chip-remove path handles the DOM
+        // impact via the output.
+      }
+    }
 
     if (!this.isOpen()) {
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
