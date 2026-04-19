@@ -28,7 +28,7 @@ import {
 } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 
-import { CngxSelectPanel } from '../single-select/panel.component';
+import { CngxSelectPanel } from '../shared/panel/panel.component';
 
 import {
   CNGX_FORM_FIELD_CONTROL,
