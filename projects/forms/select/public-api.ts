@@ -19,6 +19,10 @@ export {
   CngxMultiSelect,
   type CngxMultiSelectChange,
 } from './src/lib/multi-select/multi-select.component';
+export {
+  CngxCombobox,
+  type CngxComboboxChange,
+} from './src/lib/combobox/combobox.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
@@ -98,6 +102,7 @@ export {
   CngxSelectOptionError,
   CngxMultiSelectChip,
   CngxMultiSelectTriggerLabel,
+  CngxComboboxTriggerLabel,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -114,6 +119,7 @@ export {
   type CngxSelectOptionErrorContext,
   type CngxMultiSelectChipContext,
   type CngxMultiSelectTriggerLabelContext,
+  type CngxComboboxTriggerLabelContext,
 } from './src/lib/shared/template-slots';
 
 // ── Commit-controller DI factory ──────────────────────────────────────

@@ -1,6 +1,7 @@
-import { computed, Directive, input } from '@angular/core';
+import { computed, Directive, inject, input } from '@angular/core';
 
 import type { CngxListbox } from './listbox.directive';
+import { CngxListboxSearch } from './listbox-search.directive';
 
 /**
  * Minimum popover contract this trigger expects. Matches `CngxPopover` from
@@ -56,6 +57,20 @@ export class CngxListboxTrigger<T = unknown> {
   /** Mirrors `CngxPopover.isVisible()` for host binding and external read. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
+  /**
+   * When a `CngxListboxSearch` is attached to the same host element, we
+   * suppress the printable-character typeahead forwarding: the keystroke
+   * must reach the native `<input>` value so the search directive's
+   * debounced term picks it up. Without this guard every printable char
+   * would be `preventDefault()`'d and the input would never receive text.
+   *
+   * Injected as optional + self so only co-located search declarations
+   * flip the behaviour. Combobox-style triggers (where the focusable
+   * element IS an `<input cngxListboxSearch cngxListboxTrigger>`) opt in
+   * automatically; classic button triggers keep native-`<select>` parity.
+   */
+  private readonly search = inject(CngxListboxSearch, { optional: true, self: true });
+
   protected handleKeydown(event: KeyboardEvent): void {
     const key = event.key;
     const ad = this.listbox().ad;
@@ -110,6 +125,11 @@ export class CngxListboxTrigger<T = unknown> {
         return;
     }
 
+    if (this.search) {
+      // Input-driven trigger: let the keystroke land in the <input>
+      // so CngxListboxSearch's debounced term updates.
+      return;
+    }
     if (key.length === 1 && /\S/.exec(key) !== null) {
       // Forward printable characters to active-descendant typeahead so the
       // select trigger behaves like a native <select>: first letter jumps
