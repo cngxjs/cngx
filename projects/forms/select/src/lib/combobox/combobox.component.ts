@@ -6,20 +6,19 @@ import {
   computed,
   contentChild,
   effect,
-  ElementRef,
   inject,
   input,
   model,
   output,
   signal,
-  type Signal,
-  type TemplateRef,
   untracked,
   viewChild,
+  type ElementRef,
+  type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
-import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
 import { CngxChip } from '@cngx/common/display';
 import {
@@ -40,11 +39,6 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-import { CngxSelectAnnouncer } from '../shared/announcer';
-import {
-  CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
-  type CngxCommitController,
-} from '../shared/commit-controller';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -58,14 +52,17 @@ import {
 } from '../shared/config';
 import {
   filterSelectOptions,
-  flattenSelectOptions,
-  isCngxSelectOptionGroupDef,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { resolveTemplate } from '../shared/resolve-template';
+import {
+  cngxSelectDefaultCompare,
+  createSelectCore,
+  type CngxSelectCompareFn,
+} from '../shared/select-core';
 import {
   CngxComboboxTriggerLabel,
   type CngxComboboxTriggerLabelContext,
@@ -84,14 +81,8 @@ import {
   CngxSelectRefreshing,
 } from '../shared/template-slots';
 
-type CompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
-const defaultCompare: CompareFn<unknown> = (a, b) => Object.is(a, b);
-
 /**
- * Change event emitted by {@link CngxCombobox.selectionChange} whenever
- * a user-driven action — not a programmatic write — toggles the
- * selection array. Shape mirrors `CngxMultiSelectChange` so consumers
- * that handle both variants can share one callback signature.
+ * Change event emitted by {@link CngxCombobox.selectionChange}.
  *
  * @category interactive
  */
@@ -107,11 +98,15 @@ export interface CngxComboboxChange<T = unknown> {
 /**
  * Tag-input style multi-value combobox. Third sibling of the select
  * family after {@link CngxSelect} (single) and {@link CngxMultiSelect}
- * (multi). The trigger carries an inline `<input role="combobox">`
- * next to the chip strip; typing filters the option panel live (wired
- * in Phase B) and Backspace-on-empty removes the trailing chip (also
- * Phase B). Everything else — panel body, option model, async state,
- * commit action, announcer — reuses the `shared/` layer verbatim.
+ * (multi). Inline `<input role="combobox">` next to a chip strip;
+ * typing filters the panel live and Backspace-on-empty removes the
+ * trailing chip.
+ *
+ * Stateless derivations (ARIA projection, option model, panel view,
+ * commit-controller surface) live in `shared/select-core.ts` — this
+ * component is a thin adapter binding its own trigger template to the
+ * core's signals plus a handful of value-shape-specific write-paths
+ * (AD-activated dispatch, Field↔sync, search filter overlay).
  *
  * @category interactive
  */
@@ -155,12 +150,9 @@ export interface CngxComboboxChange<T = unknown> {
     >
       <!--
         WAI-ARIA 1.2 combobox pattern.
-
-        The focusable element is the inner <input role="combobox">.
-        The wrapper carries role="group" so AT users hear the
-        chip-strip + input as one logical widget. Chip × buttons are
-        valid siblings of the input (no nested <button> problem that
-        forces the Select/MultiSelect <div role="combobox"> pattern).
+        Focusable element is the inner <input role="combobox">. Wrapper
+        carries role="group" so AT reads the chip-strip + input as one
+        widget. Chip × buttons are valid siblings of the input.
       -->
       <div
         class="cngx-combobox__trigger"
@@ -295,11 +287,9 @@ export interface CngxComboboxChange<T = unknown> {
 })
 export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
-  private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  // ── Inputs ─────────────────────────────────────────────────────────
+  // ── Inputs (primary API — unchanged) ───────────────────────────────
 
   /** Accessible label for the listbox region and fallback trigger name. */
   readonly label = input<string>('');
@@ -310,14 +300,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Placeholder rendered inside the input when nothing is selected. */
   readonly placeholder = input<string>('');
 
-  /** Disabled state. Merges with `presenter.disabled()` inside a form-field. */
+  /** Disabled state. Merges with `presenter.disabled()`. */
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
 
-  /** Required state. Merges with `presenter.required()` inside a form-field. */
+  /** Required state. Merges with `presenter.required()`. */
   readonly requiredInput = input<boolean>(false, { alias: 'required' });
 
   /** Equality function used to match values to options. Defaults to `Object.is`. */
-  readonly compareWith = input<CompareFn<T>>(defaultCompare as CompareFn<T>);
+  readonly compareWith = input<CngxSelectCompareFn<T>>(
+    cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
+  );
 
   /** Custom id. Defaults to the presenter-generated ID inside form-field. */
   readonly idInput = input<string | null>(null, { alias: 'id' });
@@ -341,11 +333,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
 
   /**
-   * Whether activating an option closes the panel.
-   *
-   * Defaults to `false` to match tag-input UX: after picking one value
-   * the user usually wants to keep typing for the next chip. Set `true`
-   * for "one-shot combobox" flows (no chip strip, single pick).
+   * Whether activating an option closes the panel. Defaults to `false`
+   * (tag-input UX — keep typing after each pick).
    */
   readonly closeOnSelect = input<boolean>(false);
 
@@ -355,16 +344,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Debounce for search term updates, in milliseconds. */
   readonly searchDebounceMs = input<number>(300);
 
-  /**
-   * Suppress the first `searchTermChange` emission (the initial `''`
-   * that fires when the directive hydrates). Useful for consumers that
-   * kick off a server request on every term change and don't want a
-   * fetch for the empty-string initial state.
-   *
-   * Does NOT affect `effectiveOptions` filtering — only the output
-   * stream. Defaults to `false` for parity with other cngx search
-   * bridges.
-   */
+  /** Suppress the first `searchTermChange` emission (hydrate-time `''`). */
   readonly skipInitial = input<boolean>(false);
 
   /** Hide the default in-panel checkmark on this instance. */
@@ -394,7 +374,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Subsequent-load ("refreshing") indicator variant. */
   readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
 
-  /** Async-state source for options. Takes precedence over `[options]` when set. */
+  /** Async-state source for options. */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
 
   /** Callback invoked when the user clicks the default retry-button. */
@@ -403,7 +383,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Async write handler invoked per toggle. */
   readonly commitAction = input<CngxSelectCommitAction<T[]> | null>(null);
 
-  /** Commit UX mode. See {@link CngxMultiSelect.commitMode}. */
+  /** Commit UX mode. */
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
 
   /** Where `commitAction` errors render without a `*cngxSelectCommitError` template. */
@@ -411,7 +391,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.config.commitErrorDisplay,
   );
 
-  /** Per-instance announcer override. `null` defers to config / library default. */
+  /** Per-instance announcer override. */
   readonly announceChanges = input<boolean | null>(null);
 
   /** Per-instance formatter override for the announcer message. */
@@ -422,41 +402,18 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Outputs ────────────────────────────────────────────────────────
 
-  /** Fires on user-driven selection changes. */
   readonly selectionChange = output<CngxComboboxChange<T>>();
-
-  /** Fires once per toggle with the affected option and its new state. */
   readonly optionToggled = output<{
     readonly option: CngxSelectOptionDef<T>;
     readonly added: boolean;
   }>();
-
-  /** Fires whenever the panel open state changes. */
   readonly openedChange = output<boolean>();
-
-  /** Fires on panel open. */
   readonly opened = output<void>();
-
-  /** Fires on panel close. */
   readonly closed = output<void>();
-
-  /** Fires when the clear-all button empties the selection. */
   readonly cleared = output<void>();
-
-  /** Fires when the user triggers a retry from the error panel. */
   readonly retry = output<void>();
-
-  /** Fires with the rejected error when a `commitAction` transitions to error. */
   readonly commitError = output<unknown>();
-
-  /** Fires on every `commitState` status transition. */
   readonly stateChange = output<AsyncStatus>();
-
-  /**
-   * Fires with the latest debounced search term (Phase B wires the
-   * bridge). Wiring an empty output at Phase A keeps the public
-   * surface stable.
-   */
   readonly searchTermChange = output<string>();
 
   // ── Content-child directive queries ────────────────────────────────
@@ -505,15 +462,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
   /** @internal */
   protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /**
-   * Combobox-specific trigger-label slot. Unlike the generic slots, the
-   * context shape carries the full multi-selection array + count so a
-   * consumer can render either a chip-like summary ("3 Themen") or a
-   * first-label-plus-overflow badge. Bypasses `resolveTemplate`
-   * because it has no matching global config key.
-   *
-   * @internal
-   */
+  /** Combobox-specific trigger-label slot. @internal */
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxComboboxTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
@@ -531,17 +480,15 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
   /** @internal */
   protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
-  /** @internal — latest commit error routed to optionErrorTpl context. */
-  readonly commitErrorValue = computed<unknown>(() => this.commitState.error());
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
-  private readonly searchInput = viewChild(CngxListboxSearch);
+  private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
-  // ── Public Signals ─────────────────────────────────────────────────
+  // ── Public derived signals (trigger-specific) ──────────────────────
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
@@ -551,28 +498,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
 
-  /**
-   * Debounced search term from the inline `CngxListboxSearch`.
-   * Signal-first primary API — consume via `computed()`/`effect()`.
-   * The `(searchTermChange)` output mirrors this for template-style
-   * event binding. `''` when the search directive hasn't resolved yet.
-   */
+  /** Debounced search term — signal-first primary API. */
   readonly searchTerm: Signal<string> = computed(
-    () => this.searchInput()?.term() ?? '',
+    () => this.searchInputRef()?.term() ?? '',
   );
 
-  /** Currently selected options (public). */
-  readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
-    () => this.selectedOptions(),
-  );
-
-  // ── CngxFormFieldControl implementation ────────────────────────────
-
-  readonly id = computed<string>(() => this.resolvedId() ?? '');
-
-  readonly disabled = computed<boolean>(
-    () => this.disabledInput() || (this.presenter?.disabled() ?? false),
-  );
+  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -581,199 +512,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
-  // ── Internal: ARIA projection ──────────────────────────────────────
-
   /** @internal */
-  protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
-  /** @internal */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? true : null));
-  /** @internal */
-  protected readonly ariaBusy = computed(() => {
-    if (this.presenter?.pending()) {
-      return true;
-    }
-    const s = this.state();
-    if (s?.isLoading() || s?.isPending() || s?.isRefreshing()) {
-      return true;
-    }
-    if (this.isCommitting()) {
-      return true;
-    }
-    return null;
-  });
-  /** @internal */
-  protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
-  /** @internal */
-  protected readonly ariaErrorMessage = computed(() =>
-    this.errorState() ? (this.presenter?.errorId() ?? null) : null,
-  );
-
-  /** @internal */
-  protected readonly resolvedId = computed<string>(() => {
-    const override = this.idInput();
-    if (override) {
-      return override;
-    }
-    return this.presenter?.inputId() ?? '';
-  });
-
-  /** @internal */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    const explicit = this.ariaLabel();
-    if (explicit) {
-      return explicit;
-    }
-    if (this.resolvedAriaLabelledBy()) {
-      return null;
-    }
-    return this.label() || null;
-  });
-
-  /** @internal */
-  protected readonly resolvedAriaLabelledBy = computed<string | null>(
-    () => this.ariaLabelledBy() ?? this.presenter?.labelId() ?? null,
-  );
-
-  /** @internal */
-  protected readonly resolvedAriaRequired = computed<boolean | null>(() =>
-    this.requiredInput() || this.presenter?.required() ? true : null,
-  );
-
-  /** @internal */
-  protected readonly effectiveTabIndex = computed<number | null>(() =>
-    this.disabled() ? -1 : this.tabIndex(),
-  );
-
-  /**
-   * @internal — bundled ARIA projection for the trigger. Mirrors the
-   * shape used by Select/MultiSelect; the wrapper `<div role="group">`
-   * reads `label` / `labelledBy` / `disabled`, the inner input reads
-   * the rest.
-   */
-  protected readonly triggerAria = computed(
-    () => ({
-      label: this.resolvedAriaLabel(),
-      labelledBy: this.resolvedAriaLabelledBy(),
-      describedBy: this.describedBy(),
-      errorMessage: this.ariaErrorMessage(),
-      expanded: this.panelOpen(),
-      disabled: this.disabled() || null,
-      invalid: this.ariaInvalid(),
-      required: this.resolvedAriaRequired(),
-      busy: this.ariaBusy(),
-    }),
-    {
-      equal: (a, b) =>
-        a.label === b.label &&
-        a.labelledBy === b.labelledBy &&
-        a.describedBy === b.describedBy &&
-        a.errorMessage === b.errorMessage &&
-        a.expanded === b.expanded &&
-        a.disabled === b.disabled &&
-        a.invalid === b.invalid &&
-        a.required === b.required &&
-        a.busy === b.busy,
-    },
-  );
-
-  /** @internal */
-  protected readonly effectivePlaceholder = computed<string>(() => {
-    if (!this.isEmpty()) {
-      return '';
-    }
-    return this.placeholder() || this.label() || '';
-  });
-
-  /** @internal */
-  protected readonly resolvedShowSelectionIndicator = computed<boolean>(
-    () => !this.hideSelectionIndicator(),
-  );
-
-  /** @internal */
-  protected readonly resolvedShowCaret = computed<boolean>(() => !this.hideCaret());
-
-  /** @internal */
-  protected readonly resolvedListboxLabel = computed<string>(() => {
-    const label = this.label();
-    if (label.length > 0) {
-      return label;
-    }
-    const aria = this.ariaLabel();
-    if (aria && aria.length > 0) {
-      return aria;
-    }
-    const placeholder = this.placeholder();
-    if (placeholder.length > 0) {
-      return placeholder;
-    }
-    return 'Options';
-  });
-
-  /** @internal */
-  protected readonly panelClassList = computed<string | readonly string[] | null>(
-    () => {
-      const global = this.config.panelClass;
-      const local = this.panelClass();
-      if (!global && !local) {
-        return null;
-      }
-      if (!global) {
-        return local;
-      }
-      if (!local) {
-        return global;
-      }
-      const globalArr: readonly string[] = Array.isArray(global)
-        ? (global as readonly string[])
-        : [global as string];
-      const localArr: readonly string[] = Array.isArray(local)
-        ? (local as readonly string[])
-        : [local as string];
-      return [...globalArr, ...localArr];
-    },
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        const aArr = Array.isArray(a) ? a : a == null ? null : [a];
-        const bArr = Array.isArray(b) ? b : b == null ? null : [b];
-        if (aArr === null && bArr === null) {
-          return true;
-        }
-        if (aArr === null || bArr === null) {
-          return false;
-        }
-        if (aArr.length !== bArr.length) {
-          return false;
-        }
-        for (let i = 0; i < aArr.length; i++) {
-          if (aArr[i] !== bArr[i]) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
-  );
-
-  /** @internal */
-  protected readonly panelWidthCss = computed<string | null>(() => {
-    const w = this.panelWidth();
-    if (w === null) {
-      return 'auto';
-    }
-    if (w === 'trigger') {
-      return 'anchor-size(width)';
-    }
-    return `${w}px`;
-  });
-
-  /**
-   * @internal — effective matcher for `CngxListboxSearch`. Default is
-   * the directive's built-in case-insensitive substring match; a
-   * consumer-supplied `[searchMatchFn]` wins.
-   */
   protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
     () =>
       this.searchMatchFn() ??
@@ -786,107 +525,127 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * @internal — effective option list: async-state > `[options]`,
-   * then the live search term applied through {@link filterSelectOptions}.
+   * Filter overlay bound to the inline search term. `null` when term is
+   * empty — the core short-circuits and returns `effectiveOptions`
+   * unchanged. `null` also when the search directive hasn't resolved
+   * yet (first render before `viewChild` populates).
    *
-   * When the consumer supplies a remote data source that already
-   * filters on the server (via `[state]` subscribing to
-   * `(searchTermChange)`) they can disable the local filter by
-   * matching every option — pass `[searchMatchFn]="() => true"`.
+   * @internal
    */
-  protected readonly effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
-    const s = this.state();
-    const fromState = s?.data();
-    const all = fromState ?? this.options();
-    const term = this.searchInput()?.term() ?? '';
+  private readonly filter = computed<
+    ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
+  >(() => {
+    const term = this.searchTerm();
     if (term === '') {
-      return all;
+      return null;
     }
-    return filterSelectOptions(all, term, this.effectiveMatchFn());
+    const matcher = this.effectiveMatchFn();
+    return (all) => filterSelectOptions(all, term, matcher);
   });
 
-  /** @internal */
-  protected readonly flatOptions = computed<CngxSelectOptionDef<T>[]>(
-    () => flattenSelectOptions(this.effectiveOptions()),
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (!Object.is(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
-  );
+  // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
-   * @internal — O(1) value→option lookup when `compareWith` is the
-   * default identity check. Falls back to an O(n) scan for custom
-   * comparators (which defeat Map-keyed lookup). Keyed on raw `value`
-   * so Maps constructed from primitives (strings, numbers) stay cheap.
+   * Signal-graph factory shared with {@link CngxSelect} and {@link CngxMultiSelect}.
+   * Owns every derivation that's identical across the family: ARIA
+   * projection, panel view, option model, commit-controller surface,
+   * announcer helper. The component keeps value-shape specifics
+   * (AD-activated dispatch, Field↔sync, trigger keyboard) and this
+   * thin adapter surface for template bindings.
+   *
+   * @internal
    */
-  private readonly valueToOptionMap = computed<Map<unknown, CngxSelectOptionDef<T>> | null>(
-    () => {
-      const eq = this.compareWith();
-      if (eq !== (defaultCompare as unknown)) {
-        return null;
-      }
-      const map = new Map<unknown, CngxSelectOptionDef<T>>();
-      for (const opt of this.flatOptions()) {
-        map.set(opt.value as unknown, opt);
-      }
-      return map;
+  private readonly core = createSelectCore<T, T[]>(
+    {
+      label: this.label,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+      placeholder: this.placeholder,
+      idInput: this.idInput,
+      disabledInput: this.disabledInput,
+      requiredInput: this.requiredInput,
+      tabIndex: this.tabIndex,
+      options: this.options,
+      state: this.state,
+      loading: this.loading,
+      compareWith: this.compareWith,
+      skeletonRowCount: this.skeletonRowCount,
+      panelClass: this.panelClass,
+      panelWidth: this.panelWidth,
+      hideSelectionIndicator: this.hideSelectionIndicator,
+      hideCaret: this.hideCaret,
+      commitErrorDisplay: this.commitErrorDisplay,
+      commitAction: this.commitAction,
+      panelOpen: this.panelOpen,
+      errorState: this.errorState,
+      filter: this.filter,
+    },
+    {
+      announceChanges: this.announceChanges,
+      announceTemplate: this.announceTemplate,
     },
   );
 
-  /** @internal */
-  protected readonly activeView = computed<AsyncView>(() => {
-    const s = this.state();
-    if (s) {
-      return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
-    }
-    if (this.loading()) {
-      return 'skeleton';
-    }
-    if (this.effectiveOptions().length === 0) {
-      return 'empty';
-    }
-    return 'content';
-  });
+  // ── Template-facing protected surface (delegates to core) ──────────
 
-  /** @internal */
-  protected readonly showRefreshIndicator = computed<boolean>(() => {
-    const s = this.state();
-    if (!s) {
-      return false;
-    }
-    const status = s.status();
-    return status === 'refreshing' || (status === 'loading' && !s.isFirstLoad());
-  });
+  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */ protected readonly activeView = this.core.activeView;
+  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+    this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
 
-  /** @internal */
-  protected readonly showInlineError = computed<boolean>(
-    () => this.activeView() === 'content+error',
+  readonly disabled = this.core.disabled;
+  readonly id = computed<string>(() => this.core.resolvedId() ?? '');
+
+  /** Read-only view of the commit lifecycle. */
+  readonly commitState = this.core.commitState;
+  /** `true` while a commit is in flight. */
+  readonly isCommitting = this.core.isCommitting;
+  /** @internal — latest commit error. */
+  readonly commitErrorValue = this.core.commitErrorValue;
+
+  /** @internal — errorContext signal (wired once with the retry handler). */
+  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+  /** @internal — commitErrorContext signal (wired once with retry handler). */
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+
+  /** Currently selected options (public). */
+  readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
+    () => this.selectedOptions(),
   );
 
   /** @internal */
-  protected readonly skeletonIndices = computed<number[]>(
-    () => Array.from({ length: Math.max(1, this.skeletonRowCount()) }, (_, i) => i),
-    { equal: (a, b) => a.length === b.length },
+  protected readonly effectivePlaceholder = computed<string>(() => {
+    if (!this.isEmpty()) {
+      return '';
+    }
+    return this.placeholder() || this.label() || '';
+  });
+
+  /** @internal */
+  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
+    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Multi-selection state ──────────────────────────────────────────
+  // ── Multi-selection state (value-shape-specific) ───────────────────
 
   /**
-   * Options currently selected, resolved from `values()` against
-   * `flatOptions()`. Uses the O(1) map fast-path when available.
+   * Options currently selected, resolved from `values()`. Uses the
+   * O(1) map fast-path from the core when the compareWith is the
+   * default; falls back to O(n) scan otherwise.
    */
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {
@@ -894,7 +653,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       if (vals.length === 0) {
         return [];
       }
-      const map = this.valueToOptionMap();
+      const map = this.core.valueToOptionMap();
       if (map) {
         const out: CngxSelectOptionDef<T>[] = [];
         for (const v of vals) {
@@ -934,86 +693,28 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  // ── Commit action state ─────────────────────────────────────────────
+  // ── Commit state (delegated helpers) ───────────────────────────────
 
-  private readonly commitController: CngxCommitController<T[]> =
-    inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T[]>();
-
-  /** Read-only view of the commit lifecycle. */
-  readonly commitState: CngxAsyncState<T[] | undefined> = this.commitController.state;
-
-  /** `true` while a commit is in flight. */
-  readonly isCommitting: Signal<boolean> = this.commitController.isCommitting;
-
-  /** Option the user just toggled — drives per-row spinner / commit-error context. */
-  private readonly togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
+  private readonly commitController = this.core.commitController;
+  private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
 
-  /**
-   * Tracks whether the first `searchTermChange` emission has been
-   * processed. Signal-based instead of a closure flag so it shows up
-   * in the reactive graph like every other piece of state.
-   */
+  /** Tracks whether the first `searchTermChange` emission has been processed. */
   private readonly hasEmittedInitial = signal(false);
 
-  /** @internal — drives `[externalActivation]` on the inner listbox. */
-  protected readonly externalActivation = computed<boolean>(() => this.commitAction() !== null);
-
-  /** @internal — inline/banner surface for `commitState.isError()`. */
-  protected readonly showCommitError = computed<boolean>(
-    () => this.commitState.status() === 'error' && this.commitErrorDisplay() !== 'none',
-  );
-
-  /** @internal — context passed to the `[cngxSelectCommitError]` template. */
-  protected readonly commitErrorContext = computed(
-    () => ({
-      $implicit: this.commitState.error(),
-      error: this.commitState.error(),
-      option: this.togglingOption(),
-      retry: (): void => this.retryCommit(),
-    }),
-    {
-      equal: (a, b) => Object.is(a.error, b.error) && Object.is(a.option, b.option),
-    },
-  );
-
-  /** @internal — error context for the `[cngxSelectError]` template. */
-  protected readonly errorContext = computed(
-    () => ({
-      $implicit: this.state()?.error(),
-      error: this.state()?.error(),
-      retry: (): void => this.handleRetry(),
-    }),
-    {
-      equal: (a, b) => Object.is(a.error, b.error),
-    },
-  );
-
-  /** @internal */
+  /** @internal — `optionLabelTpl`/option-row uses this via panel-host. */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    if (!this.isCommitting()) {
-      return false;
-    }
-    const t = this.togglingOption();
-    if (!t) {
-      return false;
-    }
-    return this.compareWith()(opt.value, t.value);
+    return this.core.isCommittingOption(opt);
   }
 
-  /** @internal */
-  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
-    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
-  );
-
-  // ── Template helpers (panel-host surface) ──────────────────────────
+  // ── Panel-host surface forwarding ──────────────────────────────────
 
   protected isGroup(
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T> {
-    return isCngxSelectOptionGroupDef(item);
+    return this.core.isGroup(item);
   }
 
   protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
@@ -1021,7 +722,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     if (vals.length === 0) {
       return false;
     }
-    const map = this.valueToOptionMap();
+    const map = this.core.valueToOptionMap();
     if (map) {
       return vals.some((v) => Object.is(v, opt.value));
     }
@@ -1034,9 +735,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * WeakMap cache of per-option remove callbacks. A fresh closure every
-   * template pass would thrash `ngTemplateOutlet` — each option's
-   * callback is stable for the option's lifetime instead.
+   * WeakMap cache of per-option remove callbacks. Stable closures per
+   * option prevent `ngTemplateOutlet` thrash on template re-renders.
    */
   private readonly chipRemoveCache = new WeakMap<
     CngxSelectOptionDef<T>,
@@ -1073,7 +773,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       const sub = lb.ad.activated.subscribe((raw: unknown) => {
         untracked(() => {
           const toggledValue = raw as T;
-          const opt = this.findOption(toggledValue);
+          const opt = this.core.findOption(toggledValue);
           if (!opt) {
             return;
           }
@@ -1115,7 +815,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Field → Combobox: mirror bound field value (expected T[]) into our model.
+    // Field → Combobox: mirror bound field value into our model.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -1126,7 +826,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       const arr = Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
       untracked(() => {
         const current = this.values();
-        if (!sameArrayContents(current, arr, this.compareWith() as CompareFn<unknown>)) {
+        if (!sameArrayContents(current, arr, this.compareWith())) {
           this.values.set([...arr]);
         }
       });
@@ -1143,21 +843,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       untracked(() => {
         const current = fieldRef.value();
         const currentArr = Array.isArray(current) ? (current as T[]) : [];
-        if (sameArrayContents(currentArr, next, this.compareWith() as CompareFn<unknown>)) {
+        if (sameArrayContents(currentArr, next, this.compareWith())) {
           return;
         }
         writeFieldValue(fieldRef, [...next]);
       });
     });
 
-    // Search-term bridge — split in two so each effect has exactly one
-    // responsibility.
-    //
-    // 1. Term → output (with `[skipInitial]` guard).
-    //    `hasEmittedInitial` is a writable signal, not a closure flag,
-    //    so the first-run state lives in the reactive graph alongside
-    //    every other stateful signal. The write is inside `untracked()`
-    //    to avoid self-re-triggering the effect.
+    // Term → searchTermChange output (with [skipInitial] guard).
     effect(() => {
       const term = this.searchTerm();
       untracked(() => {
@@ -1170,9 +863,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // 2. Term → auto-open the panel when the user starts typing.
-    //    Tag-input UX: typing always implies "show me matches". Re-open
-    //    after Escape is intentional — users expect restart-by-typing.
+    // Term → auto-open panel on typing.
     effect(() => {
       const term = this.searchTerm();
       untracked(() => {
@@ -1185,42 +876,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Public API ─────────────────────────────────────────────────────
 
-  /** Open the panel. */
-  open(): void {
-    this.popoverRef()?.show();
-  }
-
-  /** Close the panel. */
-  close(): void {
-    this.popoverRef()?.hide();
-  }
-
-  /** Toggle the panel. */
-  toggle(): void {
-    this.popoverRef()?.toggle();
-  }
-
-  /** Focus the inline input. */
-  focus(options?: FocusOptions): void {
-    this.inputEl()?.nativeElement.focus(options);
-  }
+  open(): void { this.popoverRef()?.show(); }
+  close(): void { this.popoverRef()?.hide(); }
+  toggle(): void { this.popoverRef()?.toggle(); }
+  focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
 
   // ── Event handlers ─────────────────────────────────────────────────
 
-  /**
-   * @internal — clicks inside the `role="group"` wrapper route focus
-   * into the inline input and open the panel. The input's own click
-   * also bubbles here via event delegation, so a single handler
-   * covers both "click the chip strip padding" and "click the input
-   * itself". Chip remove / clear-all buttons stopPropagation on their
-   * own and don't end up here.
-   *
-   * Focus-only opening is deliberately NOT used — browsers re-fire
-   * focus events in hard-to-predict ways (native Popover API can blur
-   * the anchor element when the popover enters the top-layer), which
-   * made a focus-based open-path flap open/closed in rapid focus
-   * churn. Click-driven open is deterministic.
-   */
+  /** @internal — click on the wrapper routes focus into the input + opens. */
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
@@ -1261,9 +924,18 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * @internal — removal path shared by the default chip ✕ button and
-   * `chipRemoveFor(opt)` callback.
+   * @internal — invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
+   * Removes the trailing chip via the same commit-aware path the ✕ uses.
    */
+  protected removeLastChip(): void {
+    const selected = this.selectedOptions();
+    if (selected.length === 0) {
+      return;
+    }
+    this.removeOption(selected[selected.length - 1]);
+  }
+
+  /** Shared removal path for chip ✕, Backspace-on-empty, and callback. */
   private removeOption(opt: CngxSelectOptionDef<T>): void {
     if (this.disabled()) {
       return;
@@ -1317,7 +989,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       option: null,
       action: 'clear',
     });
-    this.maybeAnnounce(null, 'removed', 0);
+    this.core.announce(null, 'removed', 0, true);
   };
 
   /** @internal */
@@ -1329,20 +1001,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected handleBlur(): void {
     this.focusedState.set(false);
     this.presenter?.fieldState().markAsTouched();
-  }
-
-  /**
-   * @internal — invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`
-   * when the user presses Backspace on an empty input. Removes the
-   * trailing chip via the same commit-aware `removeOption` path that
-   * the ✕ button uses.
-   */
-  protected removeLastChip(): void {
-    const selected = this.selectedOptions();
-    if (selected.length === 0) {
-      return;
-    }
-    this.removeOption(selected[selected.length - 1]);
   }
 
   // ── Commit orchestration ───────────────────────────────────────────
@@ -1357,7 +1015,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       option: opt,
       action: 'toggle',
     });
-    this.maybeAnnounce(opt, isNowSelected ? 'added' : 'removed', this.values().length);
+    this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
   }
 
   private beginCommit(
@@ -1372,18 +1030,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       onSuccess: (committed) => {
         this.stateChange.emit('success');
         const finalValues = committed ?? next;
-        if (
-          !sameArrayContents(
-            this.values(),
-            finalValues,
-            this.compareWith() as CompareFn<unknown>,
-          )
-        ) {
+        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
           this.values.set([...finalValues]);
         }
-        const isNowSelected = finalValues.some((v) =>
-          this.compareWith()(v, opt.value),
-        );
+        const isNowSelected = finalValues.some((v) => this.compareWith()(v, opt.value));
         this.togglingOption.set(null);
         this.finalizeToggle(opt, isNowSelected);
       },
@@ -1391,38 +1041,23 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         this.stateChange.emit('error');
         this.commitError.emit(err);
         if (mode === 'optimistic') {
-          if (
-            !sameArrayContents(
-              this.values(),
-              rollbackTo ?? [],
-              this.compareWith() as CompareFn<unknown>,
-            )
-          ) {
+          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
             this.values.set([...(rollbackTo ?? [])]);
           }
         }
-        this.announcer.announce(this.commitErrorMessage(err), 'assertive');
+        this.core.announce(null, 'removed', this.values().length, true);
       },
     });
   }
 
-  private beginCommitClear(
-    previous: T[],
-    action: CngxSelectCommitAction<T[]>,
-  ): void {
+  private beginCommitClear(previous: T[], action: CngxSelectCommitAction<T[]>): void {
     this.stateChange.emit('pending');
     const mode = this.commitMode();
     this.commitController.begin(action, [], previous, {
       onSuccess: (committed) => {
         this.stateChange.emit('success');
         const finalValues = committed ?? [];
-        if (
-          !sameArrayContents(
-            this.values(),
-            finalValues,
-            this.compareWith() as CompareFn<unknown>,
-          )
-        ) {
+        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
           this.values.set([...finalValues]);
         }
         this.togglingOption.set(null);
@@ -1435,23 +1070,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
           option: null,
           action: 'clear',
         });
-        this.maybeAnnounce(null, 'removed', finalValues.length);
+        this.core.announce(null, 'removed', finalValues.length, true);
       },
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
         this.commitError.emit(err);
         if (mode === 'optimistic') {
-          if (
-            !sameArrayContents(
-              this.values(),
-              rollbackTo ?? [],
-              this.compareWith() as CompareFn<unknown>,
-            )
-          ) {
+          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
             this.values.set([...(rollbackTo ?? [])]);
           }
         }
-        this.announcer.announce(this.commitErrorMessage(err), 'assertive');
+        this.core.announce(null, 'removed', this.values().length, true);
       },
     });
   }
@@ -1470,62 +1099,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     }
     this.beginCommit(intendedNext, this.lastCommittedValues, opt, action);
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────
-
-  private findOption(value: T): CngxSelectOptionDef<T> | null {
-    const map = this.valueToOptionMap();
-    if (map) {
-      return map.get(value as unknown) ?? null;
-    }
-    const eq = this.compareWith();
-    return this.flatOptions().find((o) => eq(o.value, value)) ?? null;
-  }
-
-  private commitErrorMessage(err: unknown): string {
-    const label = this.label() ?? this.ariaLabel() ?? 'Auswahl';
-    const detail = err instanceof Error ? err.message : undefined;
-    return detail
-      ? `${label}: Speichern fehlgeschlagen — ${detail}`
-      : `${label}: Speichern fehlgeschlagen`;
-  }
-
-  private maybeAnnounce(
-    option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed',
-    count: number,
-  ): void {
-    const announcerConfig = this.config.announcer;
-    const perInstance = this.announceChanges();
-    const enabled = perInstance ?? announcerConfig.enabled ?? true;
-    if (!enabled) {
-      return;
-    }
-    const format = this.announceTemplate() ?? announcerConfig.format;
-    const label = this.label();
-    const ariaLabel = this.ariaLabel();
-    let fieldLabel = 'Auswahl';
-    if (label.length > 0) {
-      fieldLabel = label;
-    } else if (ariaLabel && ariaLabel.length > 0) {
-      fieldLabel = ariaLabel;
-    }
-    const message = format({
-      selectedLabel: option?.label ?? null,
-      fieldLabel,
-      multi: true,
-      action,
-      count,
-    });
-    this.announcer.announce(message, announcerConfig.politeness);
-    void this.host;
-  }
 }
 
 function sameArrayContents<T>(
   a: readonly T[],
   b: readonly T[],
-  eq: CompareFn<unknown>,
+  eq: CngxSelectCompareFn<T>,
 ): boolean {
   if (a === b) {
     return true;
