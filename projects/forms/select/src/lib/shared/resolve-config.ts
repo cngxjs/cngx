@@ -30,6 +30,10 @@ export function resolveSelectConfig(): Required<
       user.typeaheadWhileClosed ?? CNGX_SELECT_DEFAULTS.typeaheadWhileClosed,
     showSelectionIndicator:
       user.showSelectionIndicator ?? CNGX_SELECT_DEFAULTS.showSelectionIndicator,
+    selectionIndicatorPosition:
+      user.selectionIndicatorPosition ?? CNGX_SELECT_DEFAULTS.selectionIndicatorPosition,
+    selectionIndicatorVariant:
+      user.selectionIndicatorVariant ?? CNGX_SELECT_DEFAULTS.selectionIndicatorVariant,
     showCaret: user.showCaret ?? CNGX_SELECT_DEFAULTS.showCaret,
     restoreFocus: user.restoreFocus ?? CNGX_SELECT_DEFAULTS.restoreFocus,
     dismissOn: user.dismissOn ?? CNGX_SELECT_DEFAULTS.dismissOn,
