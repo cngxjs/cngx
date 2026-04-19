@@ -10,7 +10,7 @@ test.describe('CngxMultiSelect demo', () => {
   test('basic: picking two options renders two chips, panel stays open', async ({ page }) => {
     await page.goto(ROUTE);
     const section = card(page, 'Multi — basic');
-    const trigger = section.locator('cngx-multi-select button.cngx-multi-select__trigger').first();
+    const trigger = section.locator('cngx-multi-select .cngx-multi-select__trigger').first();
     await trigger.click();
 
     // aria-multiselectable is a contractual a11y signal on the inner listbox.

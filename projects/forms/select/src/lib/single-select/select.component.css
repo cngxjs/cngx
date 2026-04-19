@@ -50,12 +50,14 @@
   cursor: pointer;
   text-align: start;
   justify-content: space-between;
+  /* <div role="combobox"> — prevent accidental text selection on drag-click. */
+  user-select: none;
 }
 .cngx-select__trigger:focus-visible {
   outline: var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2));
   outline-offset: var(--cngx-select-focus-offset, 2px);
 }
-.cngx-select__trigger[disabled] {
+.cngx-select__trigger[aria-disabled='true'] {
   opacity: var(--cngx-select-disabled-opacity, 0.5);
   cursor: not-allowed;
 }

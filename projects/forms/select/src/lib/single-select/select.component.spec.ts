@@ -161,7 +161,7 @@ describe('CngxSelect — standalone', () => {
   function setup(): {
     fixture: ReturnType<typeof TestBed.createComponent<StandaloneHost>>;
     select: CngxSelect<string>;
-    triggerBtn: HTMLButtonElement;
+    triggerBtn: HTMLElement;
     listbox: CngxListbox;
     popover: CngxPopover;
   } {
@@ -174,7 +174,7 @@ describe('CngxSelect — standalone', () => {
     return {
       fixture,
       select: selectDe.componentInstance as CngxSelect<string>,
-      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
       listbox: listboxDe.injector.get(CngxListbox),
       popover: popoverDe.injector.get(CngxPopover),
     };
@@ -272,8 +272,8 @@ describe('CngxSelect — standalone a11y', () => {
     fixture.detectChanges();
     flush(fixture);
     const trigger = fixture.debugElement.nativeElement.querySelector(
-      'button.cngx-select__trigger',
-    ) as HTMLButtonElement;
+      '.cngx-select__trigger',
+    ) as HTMLElement;
     expect(trigger.getAttribute('aria-label')).toBe('Choose color');
     expect(trigger.getAttribute('aria-required')).toBe('true');
   });
@@ -284,7 +284,7 @@ describe('CngxSelect — standalone a11y', () => {
     flush(fixture);
     const clear = fixture.debugElement.nativeElement.querySelector(
       '.cngx-select__clear',
-    ) as HTMLButtonElement;
+    ) as HTMLElement;
     expect(clear).toBeTruthy();
     clear.click();
     flush(fixture);
@@ -342,7 +342,7 @@ describe('CngxSelect — form-field integration', () => {
   function setup(): {
     fixture: ReturnType<typeof TestBed.createComponent<FormFieldHost>>;
     select: CngxSelect<string>;
-    triggerBtn: HTMLButtonElement;
+    triggerBtn: HTMLElement;
     ref: MockFieldRef<string>;
   } {
     const fixture = TestBed.createComponent(FormFieldHost);
@@ -352,7 +352,7 @@ describe('CngxSelect — form-field integration', () => {
     return {
       fixture,
       select: selectDe.componentInstance as CngxSelect<string>,
-      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
       ref: fixture.componentInstance.ref,
     };
   }
@@ -396,7 +396,7 @@ describe('CngxSelect — form-field integration', () => {
     expect(selectHost.id).toBe('cngx-color-input');
     // aria-describedby belongs on the focusable trigger (AT reads it from
     // the element that has focus, not from the container).
-    const triggerBtn = selectHost.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+    const triggerBtn = selectHost.querySelector('.cngx-select__trigger') as HTMLElement;
     expect(triggerBtn.getAttribute('aria-describedby')).toContain('cngx-color-hint');
     expect(triggerBtn.getAttribute('aria-describedby')).toContain('cngx-color-error');
   });
@@ -450,7 +450,7 @@ describe('CngxSelect — async state consumer', () => {
     select: CngxSelect<string>;
     host: StateConsumerHost;
     panel: () => HTMLElement;
-    triggerBtn: HTMLButtonElement;
+    triggerBtn: HTMLElement;
   } {
     const fixture = TestBed.createComponent(StateConsumerHost);
     fixture.detectChanges();
@@ -461,7 +461,7 @@ describe('CngxSelect — async state consumer', () => {
       select: selectDe.componentInstance as CngxSelect<string>,
       host: fixture.componentInstance,
       panel: () => selectDe.nativeElement.querySelector('.cngx-select__panel') as HTMLElement,
-      triggerBtn: selectDe.nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement,
+      triggerBtn: selectDe.nativeElement.querySelector('.cngx-select__trigger') as HTMLElement,
     };
   }
 
@@ -514,7 +514,7 @@ describe('CngxSelect — async state consumer', () => {
     fixture.componentInstance.state.set('loading');
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const panel = fixture.debugElement.nativeElement.querySelector(
@@ -549,7 +549,7 @@ describe('CngxSelect — async state consumer', () => {
     fixture.componentInstance.state.set('loading');
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const panel = fixture.debugElement.nativeElement.querySelector(
@@ -574,7 +574,7 @@ describe('CngxSelect — async state consumer', () => {
     flush(fixture);
     const errorEl = panel().querySelector('.cngx-select__error');
     expect(errorEl).toBeTruthy();
-    const retryBtn = errorEl!.querySelector('button.cngx-select__error-retry') as HTMLButtonElement;
+    const retryBtn = errorEl!.querySelector('button.cngx-select__error-retry') as HTMLElement;
     retryBtn.click();
     flush(fixture);
     expect(host.reloadCalls).toBe(1);
@@ -618,7 +618,7 @@ describe('CngxSelect — async state consumer', () => {
     fixture.componentInstance.state.set('refreshing');
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const panel = fixture.debugElement.nativeElement.querySelector(
@@ -656,7 +656,7 @@ describe('CngxSelect — async state consumer', () => {
     fixture.componentInstance.state.set('refreshing');
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const panel = fixture.debugElement.nativeElement.querySelector(
@@ -677,7 +677,7 @@ describe('CngxSelect — async state consumer', () => {
     // Error banner sits above them
     const banner = panel().querySelector('.cngx-select__error--inline');
     expect(banner).toBeTruthy();
-    const retryBtn = banner!.querySelector('button.cngx-select__error-retry') as HTMLButtonElement;
+    const retryBtn = banner!.querySelector('button.cngx-select__error-retry') as HTMLElement;
     retryBtn.click();
     flush(fixture);
     expect(host.reloadCalls).toBe(1);
@@ -751,7 +751,7 @@ describe('CngxSelect — commit action producer', () => {
     fixture: ReturnType<typeof TestBed.createComponent<CommitHost>>;
     select: CngxSelect<string>;
     host: CommitHost;
-    triggerBtn: HTMLButtonElement;
+    triggerBtn: HTMLElement;
     firstOption: () => HTMLElement;
     secondOption: () => HTMLElement;
   } {
@@ -764,8 +764,8 @@ describe('CngxSelect — commit action producer', () => {
       select: selectDe.componentInstance as CngxSelect<string>,
       host: fixture.componentInstance,
       triggerBtn: selectDe.nativeElement.querySelector(
-        'button.cngx-select__trigger',
-      ) as HTMLButtonElement,
+        '.cngx-select__trigger',
+      ) as HTMLElement,
       firstOption: () =>
         selectDe.nativeElement.querySelector('[cngxOption]:nth-of-type(1)') as HTMLElement,
       secondOption: () =>
@@ -917,7 +917,7 @@ describe('CngxSelect — announcer', () => {
     flush(fixture);
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const firstOption = fixture.debugElement.nativeElement.querySelector(
@@ -937,7 +937,7 @@ describe('CngxSelect — announcer', () => {
     flush(fixture);
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const firstOption = fixture.debugElement.nativeElement.querySelector(
@@ -972,7 +972,7 @@ describe('CngxSelect — autofocus', () => {
     flush(fixture);
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     expect(document.activeElement).toBe(trigger);
   });
 });
@@ -1076,7 +1076,7 @@ describe('CngxSelect — config cascade (input > component-scope > app-scope > d
     fixture.componentInstance.state.set('loading');
     const trigger = fixture.debugElement
       .query(By.directive(CngxSelect))
-      .nativeElement.querySelector('button.cngx-select__trigger') as HTMLButtonElement;
+      .nativeElement.querySelector('.cngx-select__trigger') as HTMLElement;
     trigger.click();
     flush(fixture);
     const panel = fixture.debugElement.nativeElement.querySelector(

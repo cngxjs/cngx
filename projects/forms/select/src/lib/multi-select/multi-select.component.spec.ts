@@ -136,7 +136,7 @@ describe('CngxMultiSelect — skeleton', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
-    const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     );
     firstRemove.click();
@@ -164,7 +164,7 @@ describe('CngxMultiSelect — skeleton', () => {
     fixture.componentInstance.clearable = true;
     fixture.componentInstance.values.set(['red', 'green']);
     flush(fixture);
-    const clear: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-multi-select__clear-all',
     );
     clear.click();
@@ -255,7 +255,7 @@ describe('CngxMultiSelect — skeleton', () => {
   it('typeahead-while-closed toggles the matched option without opening the panel', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const trigger: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const trigger: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-multi-select__trigger',
     );
     trigger.focus();
@@ -341,7 +341,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     fixture: ReturnType<typeof TestBed.createComponent<MultiCommitHost>>;
     multi: CngxMultiSelect<string>;
     host: MultiCommitHost;
-    triggerBtn: HTMLButtonElement;
+    triggerBtn: HTMLElement;
     optionAt: (idx: number) => HTMLElement;
   } {
     const fixture = TestBed.createComponent(MultiCommitHost);
@@ -353,8 +353,8 @@ describe('CngxMultiSelect — commit action producer', () => {
       multi: multiDe.componentInstance as CngxMultiSelect<string>,
       host: fixture.componentInstance,
       triggerBtn: multiDe.nativeElement.querySelector(
-        'button.cngx-multi-select__trigger',
-      ) as HTMLButtonElement,
+        '.cngx-multi-select__trigger',
+      ) as HTMLElement,
       optionAt: (idx) => {
         const options = multiDe.nativeElement.querySelectorAll('[cngxOption]');
         return options[idx] as HTMLElement;
@@ -491,7 +491,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     );
     firstRemove.click();
@@ -512,7 +512,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const clear: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-multi-select__clear-all',
     );
     clear.click();
@@ -536,7 +536,7 @@ describe('CngxMultiSelect — commit action producer', () => {
     host.values.set(['red', 'green']);
     flush(fixture);
 
-    const clear: HTMLButtonElement = fixture.nativeElement.querySelector(
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
       '.cngx-multi-select__clear-all',
     );
     clear.click();
@@ -588,7 +588,7 @@ describe('CngxMultiSelect — chip template + announcer', () => {
   it('chip template remove() callback removes the value', () => {
     const fixture = TestBed.createComponent(ChipTemplateHost);
     flush(fixture);
-    const firstClose: HTMLButtonElement =
+    const firstClose: HTMLElement =
       fixture.nativeElement.querySelector('.my-tag__close');
     firstClose.click();
     flush(fixture);
@@ -611,7 +611,7 @@ describe('CngxMultiSelect — chip template + announcer', () => {
       flush(fixture);
 
       // Click the chip × to trigger the removal path which invokes the announcer.
-      const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+      const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
         '.cngx-chip__remove',
       );
       firstRemove.click();
@@ -711,7 +711,7 @@ describe('CngxMultiSelect — clear-button / option-pending / option-error slots
     flush(fixture);
     // Default button is gone; consumer markup took over.
     expect(fixture.nativeElement.querySelector('.cngx-multi-select__clear-all')).toBeNull();
-    const custom: HTMLButtonElement = fixture.nativeElement.querySelector('.custom-clear');
+    const custom: HTMLElement = fixture.nativeElement.querySelector('.custom-clear');
     expect(custom).not.toBeNull();
     custom.click();
     flush(fixture);

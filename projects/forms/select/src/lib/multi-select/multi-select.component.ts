@@ -154,16 +154,22 @@ export interface CngxMultiSelectChange<T = unknown> {
       [enabled]="panelOpen()"
       (clickOutside)="handleClickOutside()"
     >
-      <button
+      <!--
+        role="combobox" with a focusable <div> — NOT a <button>. The
+        trigger carries interactive children (chip × buttons, clear-all,
+        custom chip-close slots) which would be invalid nested buttons
+        inside a <button>. This shape is the WAI-ARIA 1.2 pattern for
+        multi-value comboboxes.
+      -->
+      <div
         #triggerBtn
-        type="button"
         class="cngx-multi-select__trigger"
+        role="combobox"
         [cngxPopoverTrigger]="pop"
         [haspopup]="'listbox'"
         [cngxListboxTrigger]="lb"
         [popover]="pop"
         [closeOnSelect]="false"
-        [disabled]="disabled()"
         [attr.tabindex]="effectiveTabIndex()"
         [attr.aria-label]="triggerAria().label"
         [attr.aria-labelledby]="triggerAria().labelledBy"
@@ -264,7 +270,7 @@ export interface CngxMultiSelectChange<T = unknown> {
             <span aria-hidden="true" class="cngx-multi-select__caret">&#9662;</span>
           }
         }
-      </button>
+      </div>
       <div
         cngxPopover
         #pop="cngxPopover"
@@ -533,7 +539,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
-  private readonly triggerBtn = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
+  private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
@@ -1115,6 +1121,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerClick(): void {
+    // <button disabled> blocks clicks natively; <div role="combobox">
+    // does not, so the check lives in the handler.
+    if (this.disabled()) {
+      return;
+    }
     this.toggle();
   }
 

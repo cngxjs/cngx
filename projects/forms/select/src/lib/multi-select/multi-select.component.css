@@ -45,12 +45,14 @@
   justify-content: space-between;
   flex-wrap: nowrap;
   min-height: var(--cngx-multi-select-min-height, 2.25rem);
+  /* <div role="combobox"> — prevent accidental text selection on drag-click. */
+  user-select: none;
 }
 .cngx-multi-select__trigger:focus-visible {
   outline: var(--cngx-multi-select-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2)));
   outline-offset: var(--cngx-multi-select-focus-offset, var(--cngx-select-focus-offset, 2px));
 }
-.cngx-multi-select__trigger[disabled] {
+.cngx-multi-select__trigger[aria-disabled='true'] {
   opacity: var(--cngx-multi-select-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5));
   cursor: not-allowed;
 }

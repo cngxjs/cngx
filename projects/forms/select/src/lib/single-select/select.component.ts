@@ -143,16 +143,22 @@ export interface CngxSelectChange<T = unknown> {
       [enabled]="panelOpen()"
       (clickOutside)="handleClickOutside()"
     >
-    <button
+    <!--
+      role="combobox" with a focusable <div> — NOT a <button>. The
+      trigger hosts an interactive child (clearable ✕ or a
+      consumer-authored *cngxSelectClearButton template) which would
+      be an invalid nested button inside a <button>. This shape is
+      the WAI-ARIA 1.2 combobox pattern.
+    -->
+    <div
       #triggerBtn
-      type="button"
       class="cngx-select__trigger"
+      role="combobox"
       [cngxPopoverTrigger]="pop"
       [haspopup]="'listbox'"
       [cngxListboxTrigger]="lb"
       [popover]="pop"
       [closeOnSelect]="true"
-      [disabled]="disabled()"
       [attr.tabindex]="effectiveTabIndex()"
       [attr.aria-label]="triggerAria().label"
       [attr.aria-labelledby]="triggerAria().labelledBy"
@@ -236,7 +242,7 @@ export interface CngxSelectChange<T = unknown> {
           <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
         }
       }
-    </button>
+    </div>
     <div
       cngxPopover
       #pop="cngxPopover"
@@ -527,7 +533,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
-  private readonly triggerBtn = viewChild<ElementRef<HTMLButtonElement>>('triggerBtn');
+  private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
@@ -1104,6 +1110,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerClick(): void {
+    // <button disabled> blocks clicks natively; <div role="combobox">
+    // does not, so the check lives in the handler.
+    if (this.disabled()) {
+      return;
+    }
     this.toggle();
   }
 
