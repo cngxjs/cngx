@@ -39,6 +39,7 @@ export {
   type CngxSelectOptionsInput,
   isCngxSelectOptionGroupDef,
   flattenSelectOptions,
+  filterSelectOptions,
 } from './src/lib/shared/option.model';
 
 // ── Config system ─────────────────────────────────────────────────────

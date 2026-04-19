@@ -57,6 +57,7 @@ import {
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
+  filterSelectOptions,
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
   type CngxSelectOptionDef,
@@ -355,6 +356,18 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Debounce for search term updates, in milliseconds. */
   readonly searchDebounceMs = input<number>(300);
 
+  /**
+   * Suppress the first `searchTermChange` emission (the initial `''`
+   * that fires when the directive hydrates). Useful for consumers that
+   * kick off a server request on every term change and don't want a
+   * fetch for the empty-string initial state.
+   *
+   * Does NOT affect `effectiveOptions` filtering — only the output
+   * stream. Defaults to `false` for parity with other cngx search
+   * bridges.
+   */
+  readonly skipInitial = input<boolean>(false);
+
   /** Hide the default in-panel checkmark on this instance. */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
 
@@ -525,6 +538,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // ── ViewChildren ───────────────────────────────────────────────────
 
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
+  private readonly searchInput = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
@@ -763,16 +777,23 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * @internal — effective option list. Phase A: state > options, no
-   * filter applied. Phase B will overlay the live search term.
+   * @internal — effective option list: async-state > `[options]`,
+   * then the live search term applied through {@link filterSelectOptions}.
+   *
+   * When the consumer supplies a remote data source that already
+   * filters on the server (via `[state]` subscribing to
+   * `(searchTermChange)`) they can disable the local filter by
+   * matching every option — pass `[searchMatchFn]="() => true"`.
    */
   protected readonly effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
     const s = this.state();
     const fromState = s?.data();
-    if (fromState) {
-      return fromState;
+    const all = fromState ?? this.options();
+    const term = this.searchInput()?.term() ?? '';
+    if (term === '') {
+      return all;
     }
-    return this.options();
+    return filterSelectOptions(all, term, this.effectiveMatchFn());
   });
 
   /** @internal */
@@ -1112,6 +1133,37 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         writeFieldValue(fieldRef, [...next]);
       });
     });
+
+    // Search-term bridge: surface the debounced term to consumers (for
+    // server-driven autocomplete wiring) and re-open the panel when
+    // typing starts after an Escape-dismiss. Re-open is intentional
+    // tag-input UX: typing always implies "show me matches".
+    //
+    // `[skipInitial]` drops the very first emission (the hydrate-time
+    // empty string) so server-driven consumers don't fire a useless
+    // "load everything" request on mount. Panel-open semantics are
+    // unaffected either way — the first term is empty, which never
+    // opens the panel.
+    let firstSearchEmit = true;
+    effect(() => {
+      const search = this.searchInput();
+      if (!search) {
+        return;
+      }
+      const term = search.term();
+      untracked(() => {
+        if (firstSearchEmit) {
+          firstSearchEmit = false;
+          if (this.skipInitial()) {
+            return;
+          }
+        }
+        this.searchTermChange.emit(term);
+        if (term !== '' && !this.panelOpen() && !this.disabled()) {
+          this.open();
+        }
+      });
+    });
   }
 
   // ── Public API ─────────────────────────────────────────────────────
@@ -1252,12 +1304,26 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * @internal — Phase A: stub. CngxListboxTrigger already handles
-   * Enter / Arrow / Home / End / Escape; Backspace-on-empty and
-   * search-driven open happen in Phase B.
+   * @internal — input-level keys that the listbox-trigger can't reach.
+   * Backspace-on-empty removes the trailing chip (native tag-input
+   * parity). All other keys fall through to `CngxListboxTrigger`'s host
+   * listener for Enter / Arrow / Home / End / Escape handling.
    */
   protected handleInputKeydown(event: KeyboardEvent): void {
-    void event;
+    if (event.key !== 'Backspace') {
+      return;
+    }
+    const target = event.target as HTMLInputElement | null;
+    if (target?.value !== '') {
+      return;
+    }
+    const selected = this.selectedOptions();
+    if (selected.length === 0) {
+      return;
+    }
+    event.preventDefault();
+    const last = selected[selected.length - 1];
+    this.removeOption(last);
   }
 
   // ── Commit orchestration ───────────────────────────────────────────
