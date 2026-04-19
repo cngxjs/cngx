@@ -51,7 +51,6 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly activeView: Signal<AsyncView>;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
-  readonly selectedOption: Signal<CngxSelectOptionDef<T> | null>;
   readonly skeletonIndices: Signal<number[]>;
   readonly showInlineError: Signal<boolean>;
   readonly showCommitError: Signal<boolean>;
@@ -81,12 +80,7 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly commitErrorTpl: Signal<CngxSelectCommitError<T> | undefined>;
   readonly optionLabelTpl: Signal<CngxSelectOptionLabel<T> | undefined>;
 
-  // ── Two-way value + imperative helpers ────────────────────────────
-  readonly value: {
-    (): T | undefined;
-    set(v: T | undefined): void;
-    update(fn: (v: T | undefined) => T | undefined): void;
-  };
+  // ── Imperative helpers ────────────────────────────────────────────
   isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
     item is CngxSelectOptionGroupDef<T>;
   isSelected(opt: CngxSelectOptionDef<T>): boolean;
