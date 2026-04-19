@@ -415,8 +415,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.config.commitErrorDisplay,
   );
 
-  /** Per-instance announcer override. */
-  readonly announceChanges = input<boolean | undefined>(undefined);
+  /** Per-instance announcer override. `null` defers to config / library default. */
+  readonly announceChanges = input<boolean | null>(null);
 
   /** Per-instance formatter override for the announcer message. */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);

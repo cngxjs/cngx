@@ -9,7 +9,7 @@ import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
-import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
+import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxSelect, type CngxSelectChange } from './select.component';

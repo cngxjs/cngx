@@ -25,7 +25,7 @@ import {
   CngxSelectOptionPending,
 } from '../shared/template-slots';
 import { CngxSelectAnnouncer } from '../shared/announcer';
-import { createMockField, type MockFieldRef } from '../../../../field/src/testing/mock-field';
+import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 // jsdom has no Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
