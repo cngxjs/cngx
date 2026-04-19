@@ -1191,20 +1191,31 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // ── Event handlers ─────────────────────────────────────────────────
 
   /**
-   * @internal — clicks anywhere inside the `role="group"` wrapper (on
-   * padding, on a chip label, on the caret) should route focus into
-   * the inline input so the user can keep typing. Clicks on the chip
-   * remove button / clear-all already stopPropagation themselves.
+   * @internal — clicks inside the `role="group"` wrapper route focus
+   * into the inline input and open the panel. The input's own click
+   * also bubbles here via event delegation, so a single handler
+   * covers both "click the chip strip padding" and "click the input
+   * itself". Chip remove / clear-all buttons stopPropagation on their
+   * own and don't end up here.
+   *
+   * Focus-only opening is deliberately NOT used — browsers re-fire
+   * focus events in hard-to-predict ways (native Popover API can blur
+   * the anchor element when the popover enters the top-layer), which
+   * made a focus-based open-path flap open/closed in rapid focus
+   * churn. Click-driven open is deterministic.
    */
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
     }
     const target = event.target as HTMLElement | null;
-    if (target?.closest('input, button, .cngx-chip__remove')) {
+    if (target?.closest('button, .cngx-chip__remove')) {
       return;
     }
     this.focus();
+    if (!this.panelOpen()) {
+      this.open();
+    }
   }
 
   /** @internal */

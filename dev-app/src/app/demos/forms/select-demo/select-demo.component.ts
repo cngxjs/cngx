@@ -9,7 +9,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -42,12 +42,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     CngxMultiSelect,
     CngxMultiSelectTriggerLabel,
     CngxMultiSelectChip,
+    CngxCombobox,
+    CngxSelectClearButton,
+    CngxComboboxTriggerLabel,
   ],
   template: `
     <app-doc-shell title="Select"
       description="CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity."
       overview="<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code> into a native-feeling dropdown. Single-select only — for multi use <code>CngxMultiSelect</code>.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly, full <code>mat-select</code> parity (<code>open</code>/<code>close</code>/<code>toggle</code>/<code>focus</code>, <code>panelOpen</code>/<code>selected</code>/<code>triggerValue</code> signals, <code>selectionChange</code>/<code>openedChange</code>/<code>opened</code>/<code>closed</code> outputs, <code>[panelWidth]</code>, <code>[panelClass]</code>, <code>[tabIndex]</code>, <code>[aria-label]</code>, <code>[compareWith]</code>, <code>[required]</code>).</p><p>Template overrides per-instance: <code>*cngxSelectCheck</code>, <code>*cngxSelectCaret</code>, <code>*cngxSelectOptgroup</code>, <code>*cngxSelectPlaceholder</code>, <code>*cngxSelectEmpty</code>, <code>*cngxSelectLoading</code>, <code>*cngxSelectTriggerLabel</code>, <code>*cngxSelectOptionLabel</code>. Globally via <code>provideSelectConfig(withSelectionIndicator(false), withPanelWidth('trigger'), ...)</code>.</p><p>Live-region announcements on every selection change (configurable).</p>"
-      [apiComponents]="['CngxSelect', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'provideSelectConfig']">
+      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'CngxComboboxTriggerLabel', 'provideSelectConfig']">
       <app-example-card title="Standalone"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -602,6 +605,127 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
   </div>
       </app-example-card>
+      <app-example-card title="Combobox — basic (tag picker with typeahead filter)"
+        [subtitle]="_s25"
+        [sourceHtml]="_srcHtml25"
+        [sourceTs]="_srcTs25">
+        
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboValues"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Combobox — async via [state] + [skipInitial] + (searchTermChange)"
+        [subtitle]="_s26"
+        [sourceHtml]="_srcHtml26"
+        [sourceTs]="_srcTs26">
+        
+  <cngx-combobox
+    [label]="'Themen'"
+    [state]="comboAsyncState"
+    [(values)]="comboAsyncValues"
+    [skipInitial]="true"
+    (searchTermChange)="comboLastTerm.set($event)"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
+      <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>
+    </div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboAsyncValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ comboAsyncState.status() }}</span></div>
+    <div class="event-row"><span class="event-label">Last term</span><span class="event-value">{{ comboLastTerm() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Combobox — per-toggle [commitAction]"
+        [subtitle]="_s27"
+        [sourceHtml]="_srcHtml27"
+        [sourceTs]="_srcTs27">
+        
+  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="comboCommitShouldFail()"
+             (change)="comboCommitShouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+  </div>
+  <cngx-combobox
+    [label]="'Themen (commit)'"
+    [options]="tagOptions"
+    [(values)]="comboCommitValues"
+    [commitAction]="comboCommitAction"
+    [commitMode]="comboCommitMode()"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Commit log</span>
+      <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\n') || '—' }}</span>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Combobox — clearable + custom *cngxSelectClearButton"
+        [subtitle]="_s28"
+        [sourceHtml]="_srcHtml28"
+        [sourceTs]="_srcTs28">
+        
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [clearable]="true"
+    [(values)]="comboClearableValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
+        Alle zurücksetzen
+      </button>
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Combobox — text summary via *cngxComboboxTriggerLabel"
+        [subtitle]="_s29"
+        [sourceHtml]="_srcHtml29"
+        [sourceTs]="_srcTs29">
+        
+  <cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboTextValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
+      @if (count === 0) {
+        <!-- Placeholder takes over when empty -->
+      } @else if (count === 1) {
+        <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
+      } @else {
+        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+      }
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -631,6 +755,11 @@ export class SelectDemoComponent {
   protected readonly _s22 = 'Each toggle routes through an async write. <code>optimistic</code> (default) updates <code>values()</code> immediately and rolls back on error; <code>pessimistic</code> defers the write until success and surfaces a spinner on the toggled option. Consecutive toggles supersede any in-flight commit.';
   protected readonly _s23 = 'Replace the whole chip strip with a plain-text summary by projecting <code>*cngxMultiSelectTriggerLabel</code>. The template context gives you the resolved options, raw values, and count — pick any shape (count badge, comma list, first-label + "+N", …).';
   protected readonly _s24 = 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.';
+  protected readonly _s25 = '<code>&lt;cngx-combobox&gt;</code> — inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>).';
+  protected readonly _s26 = 'Async-option wiring for server-driven autocomplete. <code>[skipInitial]="true"</code> suppresses the hydrate-time empty-string emission so your request handler never fires a "load everything" on mount. <code>(searchTermChange)</code> bridges the debounced term to your backend; <code>[state]</code> feeds the returned options back into the panel with the full async-view protocol (loading/empty/error/refreshing).';
+  protected readonly _s27 = 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.';
+  protected readonly _s28 = 'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.';
+  protected readonly _s29 = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -647,7 +776,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -810,6 +939,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -838,7 +999,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1001,6 +1162,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1040,7 +1233,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1203,6 +1396,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1221,7 +1446,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1384,6 +1609,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1402,7 +1659,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1565,6 +1822,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1588,7 +1877,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1751,6 +2040,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1776,7 +2097,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1939,6 +2260,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -1974,7 +2327,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2137,6 +2490,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -2175,7 +2560,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2338,6 +2723,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -2369,7 +2786,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2532,6 +2949,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -2562,7 +3011,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2725,6 +3174,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -2752,7 +3233,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2915,6 +3396,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -2936,7 +3449,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3099,6 +3612,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -3122,7 +3667,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3285,6 +3830,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -3305,7 +3882,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3468,6 +4045,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -3487,7 +4096,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3650,6 +4259,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -3674,7 +4315,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3837,6 +4478,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -3859,7 +4532,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4022,6 +4695,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4040,7 +4745,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4203,6 +4908,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4222,7 +4959,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4385,6 +5122,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4404,7 +5173,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4567,6 +5336,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4590,7 +5391,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4753,6 +5554,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4790,7 +5623,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4953,6 +5786,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -4980,7 +5845,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5143,6 +6008,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
@@ -5168,7 +6065,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5334,6 +6231,1149 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml25 = `<cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboValues"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>
+  </div>`;
+  protected readonly _srcTs25 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml26 = `<cngx-combobox
+    [label]="'Themen'"
+    [state]="comboAsyncState"
+    [(values)]="comboAsyncValues"
+    [skipInitial]="true"
+    (searchTermChange)="comboLastTerm.set($event)"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
+      <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>
+    </div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboAsyncValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ comboAsyncState.status() }}</span></div>
+    <div class="event-row"><span class="event-label">Last term</span><span class="event-value">{{ comboLastTerm() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs26 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml27 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="comboCommitShouldFail()"
+             (change)="comboCommitShouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+  </div>
+  <cngx-combobox
+    [label]="'Themen (commit)'"
+    [options]="tagOptions"
+    [(values)]="comboCommitValues"
+    [commitAction]="comboCommitAction"
+    [commitMode]="comboCommitMode()"
+    placeholder="Themen suchen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Commit log</span>
+      <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs27 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml28 = `<cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [clearable]="true"
+    [(values)]="comboClearableValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
+        Alle zurücksetzen
+      </button>
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs28 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml29 = `<cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboTextValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
+      @if (count === 0) {
+        <!-- Placeholder takes over when empty -->
+      } @else if (count === 1) {
+        <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
+      } @else {
+        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+      }
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
+  </div>`;
+  protected readonly _srcTs29 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
   };`;
 
   protected readonly colors: CngxSelectOptionDef<string>[] = [
@@ -5492,6 +7532,38 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     const ts = new Date().toLocaleTimeString();
     this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
     if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));

@@ -3,9 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Subject, type Observable } from 'rxjs';
+
 import { CngxListbox, type ListboxMatchFn } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import {
@@ -13,6 +16,10 @@ import {
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitMode,
+} from '../shared/commit-action.types';
 
 // jsdom has no Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -161,15 +168,13 @@ describe('CngxCombobox — skeleton', () => {
     expect(combo.isSelected(OPTIONS[1])).toBe(false);
   });
 
-  it('focusing the input opens the panel (openOnFocus=true)', () => {
+  it('clicking the trigger wrapper opens the panel and focuses the input', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
-    const input: HTMLElement = fixture.nativeElement.querySelector(
-      '.cngx-combobox__input',
+    const wrapper: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__trigger',
     );
-    input.focus();
-    input.dispatchEvent(new FocusEvent('focus'));
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    wrapper.click();
     flush(fixture);
     const popover = fixture.debugElement
       .query(By.directive(CngxPopover))
@@ -536,5 +541,340 @@ describe('CngxCombobox — search + filter', () => {
     expect(groups.length).toBe(1);
     const header = groups[0].querySelector('.cngx-select__group-header');
     expect(header!.textContent!.trim()).toBe('Warm');
+  });
+});
+
+// ── Phase C — commit-flow producer (per-toggle [commitAction]) ────────
+
+@Component({
+  selector: 'commit-host',
+  template: `
+    <cngx-combobox
+      [label]="'Tags'"
+      [options]="options"
+      [clearable]="true"
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      [(values)]="values"
+      (commitError)="errors.push($event)"
+      (stateChange)="statuses.push($event)"
+      (selectionChange)="changes.push($event)"
+      (optionToggled)="toggles.push($event)"
+    />
+  `,
+  imports: [CngxCombobox],
+})
+class CommitHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>([]);
+  readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly errors: unknown[] = [];
+  readonly statuses: string[] = [];
+  readonly changes: CngxComboboxChange<string>[] = [];
+  readonly toggles: { option: CngxSelectOptionDef<string>; added: boolean }[] = [];
+  pending: Subject<string[] | undefined> | null = null;
+  commitCallCount = 0;
+  readonly commitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    this.commitCallCount += 1;
+    const subject = new Subject<string[] | undefined>();
+    this.pending = subject;
+    void intended;
+    return subject.asObservable() as Observable<string[] | undefined>;
+  };
+}
+
+describe('CngxCombobox — commit action producer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [CommitHost] });
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<CommitHost>>;
+    combo: CngxCombobox<string>;
+    host: CommitHost;
+    input: HTMLInputElement;
+    optionAt: (idx: number) => HTMLElement;
+  } {
+    const fixture = TestBed.createComponent(CommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const comboDe = fixture.debugElement.query(By.directive(CngxCombobox));
+    return {
+      fixture,
+      combo: comboDe.componentInstance as CngxCombobox<string>,
+      host: fixture.componentInstance,
+      input: comboDe.nativeElement.querySelector(
+        '.cngx-combobox__input',
+      ) as HTMLInputElement,
+      optionAt: (idx) => {
+        const options = comboDe.nativeElement.querySelectorAll('[cngxOption]');
+        return options[idx] as HTMLElement;
+      },
+    };
+  }
+
+  it('optimistic success: values updated immediately, selectionChange on success', () => {
+    const { fixture, host, combo, optionAt } = setup();
+    combo.open();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red']);
+    expect(host.changes).toEqual([]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+
+    host.pending!.next(['red']);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red']);
+    expect(host.changes.length).toBe(1);
+    expect(host.changes[0].added).toEqual(['red']);
+    expect(host.statuses[host.statuses.length - 1]).toBe('success');
+  });
+
+  it('optimistic error: values roll back to previous, commitError fires', () => {
+    const { fixture, host, combo, optionAt } = setup();
+    combo.open();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+    expect(host.values()).toEqual(['red']);
+
+    const err = new Error('server down');
+    host.pending!.error(err);
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    expect(host.errors).toEqual([err]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('pessimistic: panel stays open, togglingOption drives spinner, values deferred', () => {
+    const { fixture, host, combo, optionAt } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    combo.open();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    expect(combo.isCommitting()).toBe(true);
+    expect(combo.panelOpen()).toBe(true);
+
+    host.pending!.next(['red']);
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.values()).toEqual(['red']);
+    expect(combo.isCommitting()).toBe(false);
+    expect(combo.panelOpen()).toBe(true);
+  });
+
+  it('pessimistic error: values stay at previous, panel remains open', () => {
+    const { fixture, host, combo, optionAt } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    combo.open();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+    expect(host.values()).toEqual([]);
+
+    host.pending!.error(new Error('nope'));
+    flush(fixture);
+
+    expect(host.values()).toEqual([]);
+    expect(combo.panelOpen()).toBe(true);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+  });
+
+  it('supersede: second toggle while first pending aborts the first callback', () => {
+    const { fixture, host, combo, optionAt } = setup();
+    combo.open();
+    flush(fixture);
+    optionAt(0).click();
+    flush(fixture);
+    const firstPending = host.pending!;
+    const firstCount = host.commitCallCount;
+
+    optionAt(1).click();
+    flush(fixture);
+    expect(host.commitCallCount).toBeGreaterThan(firstCount);
+
+    const changesBefore = host.changes.length;
+    firstPending.next(['red']);
+    firstPending.complete();
+    flush(fixture);
+    expect(host.changes.length).toBe(changesBefore);
+  });
+
+  it('chip × with commitAction: optimistic rollback on reject restores value', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+    const firstRemove: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-chip__remove',
+    );
+    firstRemove.click();
+    flush(fixture);
+    expect(host.values()).toEqual(['green']);
+
+    host.pending!.error(new Error('retry'));
+    flush(fixture);
+    expect(host.values()).toEqual(['red', 'green']);
+  });
+
+  it('clear-all with commitAction: optimistic success empties, error rolls back', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+    const clear: HTMLElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__clear-all',
+    );
+    clear.click();
+    flush(fixture);
+    expect(host.values()).toEqual([]);
+
+    host.pending!.error(new Error('nope'));
+    flush(fixture);
+    expect(host.values()).toEqual(['red', 'green']);
+  });
+
+  it('Backspace-remove with commitAction triggers the commit flow', () => {
+    const { fixture, host } = setup();
+    host.values.set(['red', 'green']);
+    flush(fixture);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__input',
+    );
+    input.focus();
+    flush(fixture);
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }),
+    );
+    flush(fixture);
+    // Optimistic-default: green removed immediately.
+    expect(host.values()).toEqual(['red']);
+    // And a commit is in flight.
+    expect(host.pending).not.toBeNull();
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+  });
+
+  it('pessimistic commit + typing filter: commit survives filter change', () => {
+    const { fixture, host, combo, input, optionAt } = setup();
+    host.mode.set('pessimistic');
+    flush(fixture);
+    combo.open();
+    flush(fixture);
+    optionAt(0).click(); // commit pending on 'red'
+    flush(fixture);
+
+    // User types to filter — 'red' (Rot) stays, but 'green' / 'blue'
+    // disappear from the rendered panel. The commit in flight is
+    // orthogonal to the filter — it still completes on 'red'.
+    input.focus();
+    flush(fixture);
+    setInputValue(input, 'gr');
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(350);
+    flush(fixture);
+    vi.useRealTimers();
+
+    expect(combo.isCommitting()).toBe(true);
+
+    host.pending!.next(['red']);
+    host.pending!.complete();
+    flush(fixture);
+    expect(host.values()).toEqual(['red']);
+    expect(combo.isCommitting()).toBe(false);
+  });
+
+  it('effectiveOptions filter applies to [state]-async options', () => {
+    @Component({
+      template: `
+        <cngx-combobox [label]="'Tags'" [state]="state" [(values)]="values" />
+      `,
+      imports: [CngxCombobox],
+    })
+    class AsyncFilterHost {
+      readonly state: ManualAsyncState<CngxSelectOptionsInput<string>> =
+        createManualState<CngxSelectOptionsInput<string>>();
+      readonly values = signal<string[]>([]);
+      constructor() {
+        this.state.setSuccess(OPTIONS);
+      }
+    }
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(AsyncFilterHost);
+    flush(fixture);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(
+      '.cngx-combobox__input',
+    );
+    input.focus();
+    flush(fixture);
+    setInputValue(input, 'ro');
+    vi.advanceTimersByTime(350);
+    flush(fixture);
+    const rows = fixture.nativeElement.querySelectorAll('[cngxOption]');
+    expect(rows.length).toBe(1);
+    expect((rows[0] as HTMLElement).textContent).toContain('Rot');
+    vi.useRealTimers();
+  });
+
+  it('CNGX_STATEFUL resolves to commitState', () => {
+    const { fixture, combo } = setup();
+    const stateful = fixture.debugElement
+      .query(By.directive(CngxCombobox))
+      .injector.get(CNGX_STATEFUL);
+    expect(stateful.state).toBe(combo.commitState);
+  });
+});
+
+// ── Phase C — a11y audit (nested buttons) ─────────────────────────────
+
+describe('CngxCombobox — a11y', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('never nests a <button> inside another <button>, even with chips + clear + commit spinner', () => {
+    @Component({
+      template: `
+        <cngx-combobox
+          [label]="'Tags'"
+          [options]="options"
+          [clearable]="true"
+          [commitAction]="commitAction"
+          commitMode="pessimistic"
+          [(values)]="values"
+        />
+      `,
+      imports: [CngxCombobox],
+    })
+    class HeavyHost {
+      readonly options = OPTIONS;
+      readonly values = signal<string[]>(['red', 'green']);
+      readonly commitAction: CngxSelectCommitAction<string[]> = () =>
+        new Subject<string[] | undefined>().asObservable() as Observable<
+          string[] | undefined
+        >;
+    }
+    const fixture = TestBed.createComponent(HeavyHost);
+    flush(fixture);
+    const combo = fixture.debugElement.query(By.directive(CngxCombobox))
+      .componentInstance as CngxCombobox<string>;
+    combo.open();
+    flush(fixture);
+    // Trigger a pessimistic commit so the option-row spinner renders.
+    const option: HTMLElement = fixture.nativeElement.querySelector('[cngxOption]');
+    option.click();
+    flush(fixture);
+
+    const nested = fixture.nativeElement.querySelectorAll('button button');
+    expect(nested.length).toBe(0);
   });
 });
