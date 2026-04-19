@@ -1,0 +1,277 @@
+import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { describe, expect, it } from 'vitest';
+import { createSelectionController } from './selection-controller';
+
+interface Item {
+  readonly id: number;
+  readonly label: string;
+}
+
+describe('createSelectionController', () => {
+  describe('initial state', () => {
+    it('starts empty: selectedCount 0, isEmpty true, hasSelection false', () => {
+      const values = signal<Item[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      expect(c.selectedCount()).toBe(0);
+      expect(c.isEmpty()).toBe(true);
+      expect(c.hasSelection()).toBe(false);
+      expect(c.selected()).toEqual([]);
+    });
+  });
+
+  describe('select / deselect', () => {
+    it('select adds a value', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.select(1);
+
+      expect(values()).toEqual([1]);
+      expect(c.selectedCount()).toBe(1);
+      expect(c.hasSelection()).toBe(true);
+    });
+
+    it('select is idempotent — does not duplicate', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.select(1);
+      c.select(1);
+
+      expect(values()).toEqual([1]);
+      expect(c.selectedCount()).toBe(1);
+    });
+
+    it('deselect removes a value', () => {
+      const values = signal<number[]>([1, 2, 3]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.deselect(2);
+
+      expect(values()).toEqual([1, 3]);
+    });
+
+    it('deselect on absent value is a no-op (same array reference)', () => {
+      const initial = [1, 2];
+      const values = signal<number[]>(initial);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.deselect(99);
+
+      expect(values()).toBe(initial);
+    });
+  });
+
+  describe('toggle', () => {
+    it('toggle adds when absent, removes when present', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.toggle(7);
+      expect(values()).toEqual([7]);
+
+      c.toggle(7);
+      expect(values()).toEqual([]);
+    });
+  });
+
+  describe('toggleAll', () => {
+    it('all-selected input deselects all of them', () => {
+      const values = signal<number[]>([1, 2, 3]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.toggleAll([1, 2, 3]);
+
+      expect(values()).toEqual([]);
+    });
+
+    it('some-selected input selects the missing ones', () => {
+      const values = signal<number[]>([1]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.toggleAll([1, 2, 3]);
+
+      expect(values()).toEqual([1, 2, 3]);
+    });
+
+    it('empty input is a no-op', () => {
+      const initial = [1, 2];
+      const values = signal<number[]>(initial);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.toggleAll([]);
+
+      expect(values()).toBe(initial);
+    });
+  });
+
+  describe('clear / set', () => {
+    it('clear empties the selection', () => {
+      const values = signal<number[]>([1, 2, 3]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.clear();
+
+      expect(values()).toEqual([]);
+    });
+
+    it('clear on already-empty is a no-op', () => {
+      const initial: number[] = [];
+      const values = signal<number[]>(initial);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.clear();
+
+      expect(values()).toBe(initial);
+    });
+
+    it('set replaces the entire values array (copy, not reference)', () => {
+      const values = signal<number[]>([1]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+      const next = [2, 3, 4];
+
+      c.set(next);
+
+      expect(values()).toEqual([2, 3, 4]);
+      expect(values()).not.toBe(next);
+    });
+  });
+
+  describe('custom keyFn', () => {
+    it('matches membership by key, not reference', () => {
+      const alice1: Item = { id: 1, label: 'Alice' };
+      const alice2: Item = { id: 1, label: 'Alice (refetched)' };
+      const values = signal<Item[]>([alice1]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, { keyFn: (v) => v.id }),
+      );
+
+      expect(c.isSelected(alice2)()).toBe(true);
+    });
+  });
+
+  describe('per-value signal identity', () => {
+    it('isSelected(v) returns the same Signal instance for the same key', () => {
+      const values = signal<Item[]>([]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, { keyFn: (v) => v.id }),
+      );
+      const item: Item = { id: 1, label: 'A' };
+
+      const a = c.isSelected(item);
+      const b = c.isSelected({ id: 1, label: 'other' });
+
+      expect(a).toBe(b);
+    });
+  });
+
+  describe('reactivity', () => {
+    it('isSelected(v) flips false → true when select is called', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+      const sig = c.isSelected(42);
+
+      expect(sig()).toBe(false);
+
+      c.select(42);
+
+      expect(sig()).toBe(true);
+    });
+
+    it('selectedCount updates on set / clear / toggle', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.set([1, 2, 3]);
+      expect(c.selectedCount()).toBe(3);
+
+      c.toggle(4);
+      expect(c.selectedCount()).toBe(4);
+
+      c.clear();
+      expect(c.selectedCount()).toBe(0);
+    });
+  });
+
+  describe('tree — isIndeterminate with childrenFn', () => {
+    interface Node {
+      readonly id: number;
+      readonly children?: readonly Node[];
+    }
+    const leaf = (id: number): Node => ({ id });
+    const parent = (id: number, ...cs: Node[]): Node => ({ id, children: cs });
+
+    it('returns false on a leaf when that leaf is selected', () => {
+      const lfA = leaf(2);
+      const values = signal<Node[]>([lfA]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, {
+          keyFn: (n) => n.id,
+          childrenFn: (n) => n.children ?? [],
+        }),
+      );
+
+      expect(c.isIndeterminate(lfA)()).toBe(false);
+    });
+
+    it('true when SOME but not ALL descendants are selected', () => {
+      const a = leaf(2);
+      const b = leaf(3);
+      const root = parent(1, a, b);
+      const values = signal<Node[]>([a]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, {
+          keyFn: (n) => n.id,
+          childrenFn: (n) => n.children ?? [],
+        }),
+      );
+
+      expect(c.isIndeterminate(root)()).toBe(true);
+    });
+
+    it('false when ALL descendants are selected', () => {
+      const a = leaf(2);
+      const b = leaf(3);
+      const root = parent(1, a, b);
+      const values = signal<Node[]>([a, b]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, {
+          keyFn: (n) => n.id,
+          childrenFn: (n) => n.children ?? [],
+        }),
+      );
+
+      expect(c.isIndeterminate(root)()).toBe(false);
+    });
+
+    it('cycle guard: a self-referencing childrenFn does not loop', () => {
+      const self: { id: number; children: unknown[] } = { id: 1, children: [] };
+      self.children.push(self);
+      const values = signal<{ id: number; children: unknown[] }[]>([]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, {
+          keyFn: (n) => n.id,
+          childrenFn: (n) => n.children as { id: number; children: unknown[] }[],
+        }),
+      );
+
+      expect(() => c.isIndeterminate(self)()).not.toThrow();
+      expect(c.isIndeterminate(self)()).toBe(false);
+    });
+  });
+
+  describe('flat — isIndeterminate without childrenFn', () => {
+    it('returns the SAME shared Signal<false> constant for every value', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      const a = c.isIndeterminate(1);
+      const b = c.isIndeterminate(2);
+
+      expect(a).toBe(b);
+      expect(a()).toBe(false);
+    });
+  });
+});
