@@ -40,11 +40,18 @@ export interface CngxSelectAnnouncerConfig {
   /**
    * Message formatter. Receives selection metadata and returns the
    * sentence read by assistive tech.
+   *
+   * `action` and `count` are only supplied by multi-select variants
+   * (`multi: true`). Single-select consumers leave them undefined; the
+   * library default ignores them on the single-select path for
+   * back-compat with existing overrides.
    */
   readonly format?: (input: {
     readonly selectedLabel: string | null;
     readonly fieldLabel: string;
     readonly multi: boolean;
+    readonly action?: 'added' | 'removed';
+    readonly count?: number;
   }) => string;
 }
 
@@ -154,11 +161,25 @@ export const CNGX_SELECT_DEFAULTS: Required<
   announcer: {
     enabled: true,
     politeness: 'polite',
-    format: ({ selectedLabel, fieldLabel, multi }): string => {
+    format: ({ selectedLabel, fieldLabel, multi, action, count }): string => {
+      if (!multi) {
+        if (selectedLabel == null) {
+          return `${fieldLabel}: Auswahl geleert`;
+        }
+        return `${fieldLabel}: ${selectedLabel} gewählt`;
+      }
+      // Multi-select path: prefer the action + count detail when the
+      // caller supplies them — gives AT users the delta ("added" /
+      // "removed") plus the resulting selection size.
       if (selectedLabel == null) {
+        // Clear-all or last option removed.
         return `${fieldLabel}: Auswahl geleert`;
       }
-      return multi ? `${fieldLabel}: ${selectedLabel}` : `${fieldLabel}: ${selectedLabel} gewählt`;
+      const verb = action === 'removed' ? 'entfernt' : 'hinzugefügt';
+      if (typeof count === 'number') {
+        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} ausgewählt`;
+      }
+      return `${fieldLabel}: ${selectedLabel} ${verb}`;
     },
   },
   templates: {

@@ -113,6 +113,20 @@ export interface CngxSelectCommitErrorContext<T = unknown> {
 }
 
 /**
+ * Context for the per-chip template in `CngxMultiSelect`. Receives the
+ * option the chip represents and a `remove()` callback that removes the
+ * value from the current selection (routed through the commit flow if
+ * `[commitAction]` is bound).
+ *
+ * @category interactive
+ */
+export interface CngxMultiSelectChipContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly remove: () => void;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -302,4 +316,30 @@ export class CngxSelectRefreshing {
 })
 export class CngxSelectCommitError<T = unknown> {
   readonly templateRef = inject<TemplateRef<CngxSelectCommitErrorContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for a per-chip rendering inside `CngxMultiSelect`'s
+ * trigger. Replaces the built-in pill + ✕ button with a consumer-authored
+ * chip. The `remove` callback in the context routes through the commit
+ * flow just like the built-in chip's ✕ does.
+ *
+ * @example
+ * ```html
+ * <cngx-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
+ *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
+ *   </ng-template>
+ * </cngx-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectChip]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectChip',
+})
+export class CngxMultiSelectChip<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxMultiSelectChipContext<T>>>(TemplateRef);
 }

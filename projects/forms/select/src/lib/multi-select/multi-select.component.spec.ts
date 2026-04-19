@@ -15,6 +15,8 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
+import { CngxMultiSelectChip } from '../shared/template-slots';
+import { CngxSelectAnnouncer } from '../shared/announcer';
 
 // jsdom has no Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -484,5 +486,82 @@ describe('CngxMultiSelect — commit action producer', () => {
     flush(fixture);
 
     expect(host.values()).toEqual(['red', 'green']);
+  });
+});
+
+// ── Chip template override + announcer formatter ──────────────────────
+
+@Component({
+  template: `
+    <cngx-multi-select [label]="'Farben'" [options]="options" [(values)]="values">
+      <ng-template cngxMultiSelectChip let-opt let-remove="remove">
+        <span class="my-tag">
+          <span class="my-tag__label">{{ opt.label }}</span>
+          <button type="button" class="my-tag__close" (click)="remove()">×</button>
+        </span>
+      </ng-template>
+    </cngx-multi-select>
+  `,
+  imports: [CngxMultiSelect, CngxMultiSelectChip],
+})
+class ChipTemplateHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('CngxMultiSelect — chip template + announcer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('renders chip template override instead of the default pill', () => {
+    const fixture = TestBed.createComponent(ChipTemplateHost);
+    flush(fixture);
+    const defaults = fixture.nativeElement.querySelectorAll('.cngx-select__chip');
+    const customs = fixture.nativeElement.querySelectorAll('.my-tag');
+    expect(defaults.length).toBe(0);
+    expect(customs.length).toBe(2);
+    expect(customs[0].textContent).toContain('Rot');
+  });
+
+  it('chip template remove() callback removes the value', () => {
+    const fixture = TestBed.createComponent(ChipTemplateHost);
+    flush(fixture);
+    const firstClose: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.my-tag__close');
+    firstClose.click();
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['green']);
+  });
+
+  it('announcer default formatter receives action + count for multi-toggles', () => {
+    const announcer = TestBed.inject(CngxSelectAnnouncer);
+    const captured: string[] = [];
+    const originalAnnounce = announcer.announce.bind(announcer);
+    announcer.announce = (message: string, politeness?: 'polite' | 'assertive'): void => {
+      captured.push(message);
+      void politeness;
+    };
+
+    try {
+      const fixture = TestBed.createComponent(Host);
+      flush(fixture);
+      fixture.componentInstance.values.set(['red']);
+      flush(fixture);
+
+      // Click the chip × to trigger the removal path which invokes the announcer.
+      const firstRemove: HTMLButtonElement = fixture.nativeElement.querySelector(
+        '.cngx-select__chip-remove',
+      );
+      firstRemove.click();
+      flush(fixture);
+
+      const msg = captured[captured.length - 1];
+      expect(msg).toContain('Rot');
+      expect(msg).toContain('entfernt');
+      expect(msg).toContain('0 ausgewählt');
+    } finally {
+      announcer.announce = originalAnnounce;
+    }
   });
 });

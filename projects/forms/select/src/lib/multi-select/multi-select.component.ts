@@ -62,6 +62,7 @@ import {
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
+  CngxMultiSelectChip,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectCommitError,
@@ -192,17 +193,30 @@ export interface CngxMultiSelectChange<T = unknown> {
             }
           } @else {
             @for (opt of selectedOptions(); track opt.value) {
-              <span class="cngx-select__chip">
-                <span class="cngx-select__chip-label">{{ opt.label }}</span>
-                <button
-                  type="button"
-                  class="cngx-select__chip-remove"
-                  [attr.aria-label]="chipRemoveAriaLabel() + ': ' + opt.label"
-                  (click)="handleChipRemoveClick($event, opt)"
-                >
-                  ✕
-                </button>
-              </span>
+              @if (chipTpl(); as tpl) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    tpl.templateRef;
+                    context: {
+                      $implicit: opt,
+                      option: opt,
+                      remove: chipRemoveFor(opt)
+                    }
+                  "
+                />
+              } @else {
+                <span class="cngx-select__chip">
+                  <span class="cngx-select__chip-label">{{ opt.label }}</span>
+                  <button
+                    type="button"
+                    class="cngx-select__chip-remove"
+                    [attr.aria-label]="chipRemoveAriaLabel() + ': ' + opt.label"
+                    (click)="handleChipRemoveClick($event, opt)"
+                  >
+                    ✕
+                  </button>
+                </span>
+              }
             }
           }
         </span>
@@ -437,6 +451,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly commitErrorTpl = contentChild<CngxSelectCommitError<T>>(
     CngxSelectCommitError,
   );
+  /** @internal — per-chip template override. */
+  protected readonly chipTpl = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -1031,6 +1047,28 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
+    this.removeOption(opt);
+  }
+
+  /**
+   * @internal — returns the `remove` callback supplied to the
+   * `*cngxMultiSelectChip` template context. Thin wrapper so the
+   * consumer template can `(click)="remove()"` without knowing about
+   * the commit routing; kept as a method (not a cached-per-option Map)
+   * because the closure allocation is trivial against the chip loop's
+   * natural cadence.
+   */
+  protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
+    return () => this.removeOption(opt);
+  }
+
+  /**
+   * @internal — shared removal path used by the default chip ✕ button
+   * and by the `remove()` callback exposed on the chip-template context.
+   * Routes through the commit flow when `[commitAction]` is bound;
+   * otherwise simply drops the value from `values()` and emits outputs.
+   */
+  private removeOption(opt: CngxSelectOptionDef<T>): void {
     if (this.disabled()) {
       return;
     }
@@ -1345,8 +1383,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   private maybeAnnounce(
     option: CngxSelectOptionDef<T> | null,
-    _action: 'added' | 'removed',
-    _count: number,
+    action: 'added' | 'removed',
+    count: number,
   ): void {
     const announcerConfig = this.config.announcer;
     const perInstance = this.announceChanges();
@@ -1363,13 +1401,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     } else if (ariaLabel && ariaLabel.length > 0) {
       fieldLabel = ariaLabel;
     }
-    // Phase 4 extends this formatter with `action` + `count`. For now the
-    // existing `multi: true` branch already covers "{label}: {label}" for
-    // added and "{label}: Auswahl geleert" for removed (option=null).
+    // Multi-specific announcer payload: the formatter receives the
+    // toggle direction + the resulting selection count so AT users hear
+    // "Rot hinzugefügt, 2 ausgewählt" rather than just the label.
     const message = format({
       selectedLabel: option?.label ?? null,
       fieldLabel,
       multi: true,
+      action,
+      count,
     });
     this.announcer.announce(message, announcerConfig.politeness);
     void this.host;
