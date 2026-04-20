@@ -159,3 +159,10 @@ export {
   type TypeaheadController,
   type TypeaheadControllerOptions,
 } from './src/lib/shared/typeahead-controller';
+
+// ── Display binding (scalar value ↔ input text) ───────────────────────
+export {
+  createDisplayBinding,
+  type DisplayBinding,
+  type DisplayBindingOptions,
+} from './src/lib/shared/display-binding';

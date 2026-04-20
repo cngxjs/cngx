@@ -37,6 +37,7 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { createDisplayBinding, type DisplayBinding } from '../shared/display-binding';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
@@ -457,9 +458,22 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
   private lastCommittedValue: T | undefined = undefined;
-  private readonly hasEmittedInitial = signal(false);
-  /** Flag — `true` while the field-sync effect is programmatically writing to the input. */
-  private writingInputFromValue = false;
+  /**
+   * Display binding — owns the value ↔ input-text reconciliation cycle
+   * (including `writingFromValue` flag, skipInitial-aware
+   * `searchTermChange` forwarding, and the imperative
+   * `writeFromValue` seed). See `shared/display-binding.ts`.
+   */
+  private readonly display: DisplayBinding<T> = createDisplayBinding<T>({
+    value: this.value,
+    displayWith: this.displayWith,
+    focused: this.focusedState,
+    inputEl: this.inputEl,
+    searchRef: this.searchInputRef,
+    searchTerm: this.searchTerm,
+    skipInitial: this.skipInitial,
+    onUserSearchTerm: (term) => this.searchTermChange.emit(term),
+  });
 
   /** @internal */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
@@ -492,7 +506,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
         this.focus();
       }
       // Seed input text from the initial value.
-      this.writeInputFromValue();
+      this.display.writeFromValue(this.value());
     });
 
     // Bridge AD activations into selectionChange + commit flow. closeOnSelect
@@ -541,46 +555,19 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Value → input text (formatted display). Skips while user is typing
-    // by checking focusedState AND the search directive's own term; the
-    // `writingInputFromValue` flag prevents the next searchTerm emit from
-    // treating our own write as user input.
-    effect(() => {
-      const v = this.value();
-      untracked(() => {
-        // Only auto-write when the field is NOT focused. While focused,
-        // the user's typing owns the text; blur handling (clearOnBlur)
-        // decides whether to restore.
-        if (!this.focusedState()) {
-          this.writeInputFromValueFor(v);
-        }
-      });
-    });
-
-    // Debounced search-term forwarding (matches Combobox).
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        const initial = !this.hasEmittedInitial();
-        this.hasEmittedInitial.set(true);
-        // Internally-authored writes (displayWith seed, clearOnBlur reset)
-        // should not emit as user searches.
-        if (this.writingInputFromValue) {
-          this.writingInputFromValue = false;
-          return;
-        }
-        if (initial && this.skipInitial()) {
-          return;
-        }
-        this.searchTermChange.emit(term);
-      });
-    });
-
     // Auto-open panel on typing — UX convention for autocomplete.
+    // `display.isWritingFromValue` gates library-authored writes
+    // (display-binding seed, commit reconciliation, blur restore)
+    // from triggering the open.
     effect(() => {
       const term = this.searchTerm();
       untracked(() => {
-        if (term !== '' && !this.panelOpen() && !this.disabled() && !this.writingInputFromValue) {
+        if (
+          term !== '' &&
+          !this.panelOpen() &&
+          !this.disabled() &&
+          !this.display.isWritingFromValue()
+        ) {
           this.open();
         }
       });
@@ -631,7 +618,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.value.set(undefined);
-    this.writeInputFromValueFor(undefined);
+    this.display.writeFromValue(undefined);
     this.cleared.emit();
     this.selectionChange.emit({ source: this, value: undefined, option: null });
     this.core.announce(null, 'removed', 0, false);
@@ -647,40 +634,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     // clearOnBlur: if the current input text doesn't match `displayWith(value)`,
     // snap back. Disable by setting `[clearOnBlur]="false"`.
     if (this.clearOnBlur()) {
-      this.writeInputFromValueFor(this.value());
-    }
-  }
-
-  // ── displayWith / input-text seeding ───────────────────────────────
-
-  private writeInputFromValue(): void {
-    this.writeInputFromValueFor(this.value());
-  }
-
-  /**
-   * Set the input's display text to `displayWith(v)` while resetting the
-   * underlying search term to `''` so the panel stops filtering by a
-   * stale typed query. Uses `search.clear()` for the term reset (it
-   * updates the `termState` signal + clears the DOM value atomically);
-   * then overwrites the DOM value with `displayWith(v)` for the user-
-   * facing text. The `writingInputFromValue` flag suppresses the
-   * `searchTermChange` emission the upstream effect would otherwise fire
-   * for this library-authored write.
-   */
-  private writeInputFromValueFor(v: T | undefined): void {
-    const search = this.searchInputRef();
-    const el = this.inputEl()?.nativeElement;
-    if (!search || !el) {
-      return;
-    }
-    const next = v === undefined ? '' : this.displayWith()(v);
-    if (el.value === next && !search.hasValue()) {
-      return;
-    }
-    this.writingInputFromValue = true;
-    search.clear();
-    if (next !== '') {
-      el.value = next;
+      this.display.writeFromValue(this.value());
     }
   }
 
@@ -688,7 +642,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   private finalizeSelection(intended: T, option: CngxSelectOptionDef<T>): void {
     this.value.set(intended);
-    this.writeInputFromValueFor(intended);
+    this.display.writeFromValue(intended);
     this.selectionChange.emit({ source: this, value: intended, option });
     this.core.announce(option, 'added', 1, false);
   }
@@ -705,7 +659,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
         }
         this.togglingOption.set(null);
         const opt = this.core.findOption(finalValue);
-        this.writeInputFromValueFor(finalValue);
+        this.display.writeFromValue(finalValue);
         if (opt) {
           this.selectionChange.emit({ source: this, value: finalValue, option: opt });
           this.core.announce(opt, 'added', 1, false);
@@ -719,7 +673,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
           if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), rollback)) {
             this.value.set(rollback);
           }
-          this.writeInputFromValueFor(rollback);
+          this.display.writeFromValue(rollback);
         }
         this.core.announce(null, 'removed', 0, false);
       },
