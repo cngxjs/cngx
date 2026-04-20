@@ -280,6 +280,84 @@ describe('createSelectionController', () => {
     });
   });
 
+  describe('destroy', () => {
+    it('clears caches and makes isSelected(v)() return false after destroy', () => {
+      const values = signal<number[]>([1, 2]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+      const sig = c.isSelected(1);
+      expect(sig()).toBe(true);
+
+      c.destroy();
+
+      expect(c.isSelected(1)()).toBe(false);
+      expect(c.isSelected(2)()).toBe(false);
+    });
+
+    it('returns the SAME shared post-destroy Signal<false> across all calls and controllers', () => {
+      const aValues = signal<number[]>([]);
+      const bValues = signal<string[]>([]);
+      const a = TestBed.runInInjectionContext(() => createSelectionController(aValues));
+      const b = TestBed.runInInjectionContext(() => createSelectionController(bValues));
+
+      a.destroy();
+      b.destroy();
+
+      const s1 = a.isSelected(1);
+      const s2 = a.isSelected(2);
+      const s3 = b.isSelected('x');
+      const s4 = a.isIndeterminate(1);
+
+      expect(s1).toBe(s2);
+      expect(s1).toBe(s3);
+      expect(s1).toBe(s4);
+      expect(s1()).toBe(false);
+    });
+
+    it('is idempotent — calling destroy twice does not throw', () => {
+      const values = signal<number[]>([1]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      c.destroy();
+      expect(() => c.destroy()).not.toThrow();
+      expect(c.isSelected(1)()).toBe(false);
+    });
+  });
+
+  describe('cacheLimit', () => {
+    it('FIFO-evicts the oldest cached signal when cache size exceeds the limit', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() =>
+        createSelectionController(values, { cacheLimit: 3 }),
+      );
+
+      const s1First = c.isSelected(1);
+      c.isSelected(2);
+      c.isSelected(3);
+      const s1SameWindow = c.isSelected(1);
+      expect(s1SameWindow).toBe(s1First);
+
+      // 4th distinct key → evicts the oldest entry (key=1).
+      c.isSelected(4);
+      const s1Evicted = c.isSelected(1);
+
+      // Values are equivalent but signal identity must have changed.
+      expect(s1Evicted).not.toBe(s1First);
+      expect(s1Evicted()).toBe(false);
+    });
+
+    it('without cacheLimit, signal-identity holds across 1000+ distinct queries', () => {
+      const values = signal<number[]>([]);
+      const c = TestBed.runInInjectionContext(() => createSelectionController(values));
+
+      const first = c.isSelected(0);
+      for (let i = 1; i < 1100; i++) {
+        c.isSelected(i);
+      }
+
+      expect(c.isSelected(0)).toBe(first);
+    });
+  });
+
   describe('CNGX_SELECTION_CONTROLLER_FACTORY', () => {
     it('default injection resolves to createSelectionController', () => {
       TestBed.configureTestingModule({});
