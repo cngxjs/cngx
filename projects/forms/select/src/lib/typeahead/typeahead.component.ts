@@ -94,6 +94,14 @@ import {
 export interface CngxTypeaheadChange<T = unknown> {
   readonly source: CngxTypeahead<T>;
   readonly value: T | undefined;
+  /**
+   * Value before the change was committed. Populated from the pre-pick
+   * snapshot captured in the AD-activation callback, from the
+   * commit-controller's rollback target on success/error, and from the
+   * pre-clear value in the clear path. `undefined` back-compat default
+   * for callers on older change-event shapes.
+   */
+  readonly previousValue?: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
@@ -609,7 +617,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
           this.beginCommit(intended, previous, action);
         }
       },
-      onActivate: (intended, opt) => this.finalizeSelection(intended, opt),
+      onActivate: (intended, opt) => {
+        const previous = untracked(() => this.value());
+        this.finalizeSelection(intended, opt, previous);
+      },
     });
 
     // Panel open/close lifecycle.
@@ -700,7 +711,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.value.set(undefined);
     this.display.writeFromValue(undefined);
     this.cleared.emit();
-    this.selectionChange.emit({ source: this, value: undefined, option: null });
+    this.selectionChange.emit({
+      source: this,
+      value: undefined,
+      previousValue: current,
+      option: null,
+    });
     this.core.announce(null, 'removed', 0, false);
   };
 
@@ -720,10 +736,14 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit / selection finalize ────────────────────────────────────
 
-  private finalizeSelection(intended: T, option: CngxSelectOptionDef<T>): void {
+  private finalizeSelection(
+    intended: T,
+    option: CngxSelectOptionDef<T>,
+    previousValue: T | undefined,
+  ): void {
     this.value.set(intended);
     this.display.writeFromValue(intended);
-    this.selectionChange.emit({ source: this, value: intended, option });
+    this.selectionChange.emit({ source: this, value: intended, previousValue, option });
     this.core.announce(option, 'added', 1, false);
   }
 
@@ -741,7 +761,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
         const opt = this.core.findOption(finalValue);
         this.display.writeFromValue(finalValue);
         if (opt) {
-          this.selectionChange.emit({ source: this, value: finalValue, option: opt });
+          this.selectionChange.emit({
+            source: this,
+            value: finalValue,
+            previousValue: previous,
+            option: opt,
+          });
           this.core.announce(opt, 'added', 1, false);
         }
       },

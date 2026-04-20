@@ -98,6 +98,14 @@ import {
 export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
   readonly values: readonly T[];
+  /**
+   * Values before the change was committed. Populated on the
+   * commit-success path, the direct-pick/removal/clear paths, and the
+   * Backspace-on-empty chip-remove path. Plural name matches
+   * `CngxMultiSelectChange.previousValues` so consumer templates can
+   * share change-event shapes.
+   */
+  readonly previousValues?: readonly T[];
   readonly added: readonly T[];
   readonly removed: readonly T[];
   readonly option: CngxSelectOptionDef<T> | null;
@@ -813,12 +821,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     core: this.core,
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
-    onToggleFinalize: (option, isNowSelected) => this.finalizeToggle(option, isNowSelected),
+    onToggleFinalize: (option, isNowSelected) =>
+      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) => {
       this.cleared.emit();
       this.selectionChange.emit({
         source: this,
         values: finalValues,
+        previousValues: previous,
         added: [],
         removed: previous,
         option: null,
@@ -909,8 +919,15 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
+        // Listbox has already mutated values — reconstruct the pre-
+        // toggle snapshot by inverting the change.
         const currentSelected = this.isSelected(opt);
-        this.finalizeToggle(opt, currentSelected);
+        const current = this.values();
+        const eq = this.compareWith();
+        const previousValues = currentSelected
+          ? current.filter((v) => !eq(v, opt.value))
+          : [...current, opt.value];
+        this.finalizeToggle(opt, currentSelected, previousValues);
       },
     });
 
@@ -1042,7 +1059,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, false);
+    this.finalizeToggle(opt, false, previous);
   }
 
   /** @internal */
@@ -1072,6 +1089,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({
       source: this,
       values: [],
+      previousValues: previous,
       added: [],
       removed: previous,
       option: null,
@@ -1093,11 +1111,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit orchestration ───────────────────────────────────────────
 
-  private finalizeToggle(opt: CngxSelectOptionDef<T>, isNowSelected: boolean): void {
+  private finalizeToggle(
+    opt: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previousValues: readonly T[] = [],
+  ): void {
     this.optionToggled.emit({ option: opt, added: isNowSelected });
     this.selectionChange.emit({
       source: this,
       values: this.values(),
+      previousValues,
       added: isNowSelected ? [opt.value] : [],
       removed: isNowSelected ? [] : [opt.value],
       option: opt,

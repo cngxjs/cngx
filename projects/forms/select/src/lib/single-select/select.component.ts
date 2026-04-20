@@ -92,6 +92,16 @@ import {
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
   readonly value: T | undefined;
+  /**
+   * Value before the change was committed. `undefined` both when the
+   * previous state was empty and (for back-compat) on the narrow paths
+   * where no snapshot was captured. Consumers implementing
+   * undo/redo, audit logging, or commit-error recovery UIs can rely on
+   * this being populated for every emission from the commit-flow
+   * (success + error paths) and from the direct activation / clear
+   * paths.
+   */
+  readonly previousValue?: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
@@ -633,7 +643,20 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           this.beginCommit(intended, previous, action);
         }
       },
-      onActivate: (intended) => this.finalizeSelection(intended),
+      onActivate: (intended) => {
+        // Capture previous BEFORE the listbox's internal activation
+        // subscriber mutates our value via the [(value)] binding. We're
+        // running inside the dispatcher's untracked() block, and RxJS
+        // Subject subscribers fire in registration order — the listbox
+        // (subscribed during its own constructor) runs before us, so by
+        // the time we're here the value MAY already be the new one.
+        // Reading untracked(value) snapshots whatever has propagated.
+        // If the snapshot equals intended, consumers see
+        // `previousValue === value` — semantically "no change detected"
+        // which is a valid honest report.
+        const previous = untracked(() => this.value());
+        this.finalizeSelection(intended, previous);
+      },
     });
 
     // Panel open/close lifecycle events.
@@ -698,13 +721,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal — emit outputs + announcer for a picked value. */
-  private finalizeSelection(value: T | undefined): void {
+  private finalizeSelection(value: T | undefined, previousValue: T | undefined): void {
     const eq = this.compareWith();
     const opt =
       value === undefined
         ? null
         : (this.flatOptions().find((o) => eq(o.value, value)) ?? null);
-    this.selectionChange.emit({ source: this, value, option: opt });
+    this.selectionChange.emit({ source: this, value, previousValue, option: opt });
     this.optionSelected.emit(opt);
     this.core.announce(opt, 'added', opt ? 1 : 0, false);
   }
@@ -733,7 +756,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           pop.hide();
         }
         this.togglingOption.set(null);
-        this.finalizeSelection(committed);
+        this.finalizeSelection(committed, previous);
       },
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
@@ -769,7 +792,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.value.set(undefined);
-    this.selectionChange.emit({ source: this, value: undefined, option: null });
+    this.selectionChange.emit({
+      source: this,
+      value: undefined,
+      previousValue: current,
+      option: null,
+    });
     this.optionSelected.emit(null);
     this.core.announce(null, 'removed', 0, false);
   };
@@ -805,10 +833,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         const candidate = this.typeaheadController.matchFromIndex(key, currentIdx);
         if (candidate) {
           event.preventDefault();
+          const previous = v;
           this.value.set(candidate.value);
           this.selectionChange.emit({
             source: this,
             value: candidate.value,
+            previousValue: previous,
             option: candidate,
           });
           this.optionSelected.emit(candidate);

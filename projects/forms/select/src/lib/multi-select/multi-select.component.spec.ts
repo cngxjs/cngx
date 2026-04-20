@@ -174,6 +174,8 @@ describe('CngxMultiSelect — skeleton', () => {
     expect(change!.action).toBe('clear');
     expect(change!.removed).toEqual(['red', 'green']);
     expect(change!.values).toEqual([]);
+    // previousValues snapshot captures the pre-clear state.
+    expect(change!.previousValues).toEqual(['red', 'green']);
   });
 
   it('mirrors programmatic values writes into the inner listbox', () => {

@@ -230,6 +230,20 @@ describe('CngxTypeahead — standalone', () => {
     const { typeahead } = setup();
     expect(typeahead.errorState()).toBe(false);
   });
+
+  it('selectionChange clearCallback emits previousValue = prior value', () => {
+    const { fixture, host, typeahead } = setup();
+    host.value.set({ id: 2, name: 'Bob' });
+    flush(fixture);
+    const events: Array<{ value: { name: string } | undefined; previousValue?: { name: string } | undefined }> = [];
+    typeahead.selectionChange.subscribe((e) =>
+      events.push({ value: e.value, previousValue: e.previousValue }),
+    );
+    (typeahead as unknown as { clearCallback: () => void }).clearCallback();
+    flush(fixture);
+    expect(events.at(-1)?.value).toBeUndefined();
+    expect(events.at(-1)?.previousValue?.name).toBe('Bob');
+  });
 });
 
 // ── Form-field integration ─────────────────────────────────────────────

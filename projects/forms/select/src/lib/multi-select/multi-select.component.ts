@@ -99,6 +99,14 @@ import {
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
   readonly values: readonly T[];
+  /**
+   * Values before the change was committed. Populated from the pre-
+   * toggle snapshot in the AD-activation callback, from the commit-
+   * controller's rollback target on success, and from the pre-clear
+   * array in the clear path. Plural name to disambiguate from the
+   * scalar `previousValue` on `CngxSelectChange` / `CngxTypeaheadChange`.
+   */
+  readonly previousValues?: readonly T[];
   readonly added: readonly T[];
   readonly removed: readonly T[];
   readonly option: CngxSelectOptionDef<T> | null;
@@ -658,12 +666,14 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     core: this.core,
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
-    onToggleFinalize: (option, isNowSelected) => this.finalizeToggle(option, isNowSelected),
+    onToggleFinalize: (option, isNowSelected) =>
+      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
     onClearFinalize: (previous, finalValues) => {
       this.cleared.emit();
       this.selectionChange.emit({
         source: this,
         values: finalValues,
+        previousValues: previous,
         added: [],
         removed: previous,
         option: null,
@@ -734,8 +744,17 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
+        // Values have already been mutated by the listbox. Reconstruct
+        // the pre-toggle snapshot by inverting the change:
+        //   currentSelected=true  → opt was added    → previous = current \ {opt}
+        //   currentSelected=false → opt was removed  → previous = current ∪ {opt}
         const currentSelected = this.isSelected(opt);
-        this.finalizeToggle(opt, currentSelected);
+        const current = this.values();
+        const eq = this.compareWith();
+        const previousValues = currentSelected
+          ? current.filter((v) => !eq(v, opt.value))
+          : [...current, opt.value];
+        this.finalizeToggle(opt, currentSelected, previousValues);
       },
     });
 
@@ -830,7 +849,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, false);
+    this.finalizeToggle(opt, false, previous);
   }
 
   /** @internal */
@@ -860,6 +879,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({
       source: this,
       values: [],
+      previousValues: previous,
       added: [],
       removed: previous,
       option: null,
@@ -949,14 +969,19 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, !wasSelected);
+    this.finalizeToggle(opt, !wasSelected, previous);
   }
 
-  private finalizeToggle(opt: CngxSelectOptionDef<T>, isNowSelected: boolean): void {
+  private finalizeToggle(
+    opt: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previousValues: readonly T[] = [],
+  ): void {
     this.optionToggled.emit({ option: opt, added: isNowSelected });
     this.selectionChange.emit({
       source: this,
       values: this.values(),
+      previousValues,
       added: isNowSelected ? [opt.value] : [],
       removed: isNowSelected ? [] : [opt.value],
       option: opt,

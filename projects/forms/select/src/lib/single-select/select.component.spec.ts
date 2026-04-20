@@ -124,6 +124,7 @@ class FormFieldHost {
       [required]="true"
       [clearable]="true"
       [(value)]="value"
+      (selectionChange)="lastChange.set($event)"
     />
   `,
   imports: [CngxSelect],
@@ -131,6 +132,7 @@ class FormFieldHost {
 class StandaloneA11yHost {
   readonly options = OPTIONS;
   readonly value = signal<string | undefined>('red');
+  readonly lastChange = signal<CngxSelectChange<string> | null>(null);
 }
 
 @Component({
@@ -289,6 +291,21 @@ describe('CngxSelect — standalone a11y', () => {
     clear.click();
     flush(fixture);
     expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('clear emits selectionChange with previousValue = prior value', () => {
+    const fixture = TestBed.createComponent(StandaloneA11yHost);
+    fixture.detectChanges();
+    flush(fixture);
+    // Prior state: StandaloneA11yHost's default value is 'red'.
+    const clear = fixture.debugElement.nativeElement.querySelector(
+      '.cngx-select__clear',
+    ) as HTMLElement;
+    clear.click();
+    flush(fixture);
+    const change = fixture.componentInstance.lastChange();
+    expect(change?.value).toBeUndefined();
+    expect(change?.previousValue).toBe('red');
   });
 });
 
