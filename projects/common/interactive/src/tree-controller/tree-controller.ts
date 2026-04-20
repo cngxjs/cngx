@@ -93,23 +93,47 @@ export interface CngxTreeController<T> {
   readonly expandedIds: Signal<ReadonlySet<string>>;
   /** Stable-identity membership signal per id. */
   isExpanded(id: string): Signal<boolean>;
-  /** Direct-children values of a node, for selection `childrenFn`. */
+  /**
+   * Direct-children values of a node, for selection `childrenFn`.
+   *
+   * Returns a fresh array per call. SelectionController's cascade
+   * `isIndeterminate` walk invokes `childrenFn` once per tree node on
+   * every membership change — a cascade-toggle on a 10k-descendant root
+   * triggers O(n) fresh allocations per recompute. Tracked as a perf
+   * follow-up: memoize by (tree-version, value-key) if the 10k demo
+   * surfaces measurable jitter; spec `tree-controller.spec.ts` carries
+   * a reserved baseline-benchmark slot (`it.todo`).
+   */
   childrenOfValue(value: T): T[];
-  /** All descendant values (DFS, exclusive of self), for cascade-select. */
+  /**
+   * All descendant values (DFS, exclusive of self), for cascade-select.
+   * Same allocation caveat as `childrenOfValue` — returns a fresh array;
+   * cascade-select on wide subtrees allocates O(descendants) per call.
+   */
   descendantsOfValue(value: T): T[];
   expand(id: string): void;
   collapse(id: string): void;
   toggle(id: string): void;
-  /** Expand every node that has children. */
+  /** Expand every node that has children. No-op when already fully expanded. */
   expandAll(): void;
   collapseAll(): void;
   findById(id: string): FlatTreeNode<T> | undefined;
   parentOf(id: string): FlatTreeNode<T> | undefined;
   firstChildOf(id: string): FlatTreeNode<T> | undefined;
   /**
-   * Release memoization caches. After `destroy()`, `isExpanded(id)` returns
-   * a shared `Signal<false>` constant so existing bindings keep working.
-   * Idempotent.
+   * Release the `isExpanded(id)` signal-cache. **Soft contract** — matches
+   * `createSelectionController`'s destroy semantics:
+   * - New `isExpanded(id)` queries return a shared `Signal<false>` constant.
+   * - Existing signal bindings created before destroy keep working — the
+   *   underlying `expandedIds` signal is still live, so downstream updates
+   *   continue to propagate.
+   * - Mutators (`expand` / `collapse` / `toggle` / `expandAll` /
+   *   `collapseAll`) continue to function; post-destroy writes do NOT
+   *   repopulate the cache.
+   *
+   * Idempotent. Prefer this over a hard teardown so long-lived consumer
+   * bindings that outlive the controller's active phase degrade
+   * gracefully rather than throwing.
    */
   destroy(): void;
 }
@@ -314,8 +338,27 @@ export function createTreeController<T>(
     }
   };
 
+  const setsEqual = (a: ReadonlySet<string>, b: ReadonlySet<string>): boolean => {
+    if (a === b) {
+      return true;
+    }
+    if (a.size !== b.size) {
+      return false;
+    }
+    for (const id of a) {
+      if (!b.has(id)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const expandAll = (): void => {
-    expandedIdsWritable.set(untracked(() => collectExpandAllIds()));
+    const next = untracked(() => collectExpandAllIds());
+    if (setsEqual(peekExpanded(), next)) {
+      return;
+    }
+    expandedIdsWritable.set(next);
   };
 
   const collapseAll = (): void => {

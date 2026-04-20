@@ -116,18 +116,51 @@ describe('createTreeController — derivation contract', () => {
     expect([...ctrlB.expandedIds()]).toEqual(['a']);
   });
 
-  it('destroy() freezes isExpanded to a shared false-signal', () => {
+  it('destroy() is a soft release: cache frozen for NEW queries, existing bindings live', () => {
     const ctrl = makeController();
     ctrl.expand('a');
     const live = ctrl.isExpanded('a');
     expect(live()).toBe(true);
+
     ctrl.destroy();
+
+    // New queries receive the shared POST_DESTROY_FALSE constant.
     const post = ctrl.isExpanded('a');
     expect(post).not.toBe(live);
     expect(post()).toBe(false);
+
+    // Existing binding keeps working because `expandedIds` is still live.
+    // Post-destroy mutations propagate to it (SelectionController parity).
+    ctrl.collapse('a');
+    expect(live()).toBe(false);
+    ctrl.expand('a');
+    expect(live()).toBe(true);
+
     // idempotent
     ctrl.destroy();
   });
+
+  it('expandAll() / collapseAll() are no-ops when the set is already at the target', () => {
+    const ctrl = makeController();
+    ctrl.expandAll();
+    const snapshot = ctrl.expandedIds();
+    ctrl.expandAll();
+    // Same reference — no signal write happened.
+    expect(ctrl.expandedIds()).toBe(snapshot);
+
+    ctrl.collapseAll();
+    const emptySnapshot = ctrl.expandedIds();
+    ctrl.collapseAll();
+    expect(ctrl.expandedIds()).toBe(emptySnapshot);
+  });
+
+  // Perf follow-up: `childrenOfValue` / `descendantsOfValue` allocate a
+  // fresh array per call. SelectionController's `isIndeterminate` cascade
+  // walk triggers O(descendants) allocations per recompute. Benchmark slot
+  // reserved — fill in when the 10k demo (Commit 10) gives us a realistic
+  // cascade scenario to measure against.
+  it.todo('perf baseline — childrenOfValue allocation during cascade isIndeterminate walk');
+  it.todo('perf baseline — descendantsOfValue allocation on wide-subtree cascade toggle');
 
   it('10k-node flatten + visibleNodes stays well under 16ms budget', () => {
     // Three-level fan-out: 10 × 10 × 100 = 10_000
