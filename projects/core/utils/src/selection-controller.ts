@@ -1,4 +1,10 @@
-import { computed, signal, type Signal, type WritableSignal } from '@angular/core';
+import {
+  computed,
+  InjectionToken,
+  signal,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 
 /**
  * Configuration options for `createSelectionController`.
@@ -240,3 +246,37 @@ export function createSelectionController<T>(
     set: setFn,
   };
 }
+
+/**
+ * Factory signature for {@link SelectionController} — the exact shape of
+ * {@link createSelectionController}, carried as a DI-overridable symbol so
+ * consumers can swap the selection engine app-wide (telemetry wrappers,
+ * audit logging, server-synced selections, …) without forking any component
+ * that depends on it.
+ *
+ * @category selection
+ */
+export type CngxSelectionControllerFactory = <T>(
+  values: WritableSignal<T[]>,
+  options?: SelectionControllerOptions<T>,
+) => SelectionController<T>;
+
+/**
+ * Injection token that resolves the factory used to instantiate a
+ * {@link SelectionController}. Defaults to {@link createSelectionController};
+ * override app-wide via `providers: [{ provide: CNGX_SELECTION_CONTROLLER_FACTORY, useValue: customFactory }]`
+ * or per-component via `viewProviders` to inject cross-cutting concerns.
+ *
+ * Symmetrical to `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` in `@cngx/forms/select` —
+ * same pattern, applied at the selection-primitive level so future
+ * `@cngx/data-display` grid/tree components share the override surface.
+ *
+ * @category selection
+ */
+export const CNGX_SELECTION_CONTROLLER_FACTORY = new InjectionToken<CngxSelectionControllerFactory>(
+  'CngxSelectionControllerFactory',
+  {
+    providedIn: 'root',
+    factory: () => createSelectionController,
+  },
+);

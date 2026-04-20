@@ -527,6 +527,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     return this.core.isSelected(opt.value);
   }
 
+  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isIndeterminate(opt.value);
+  }
+
   protected isEmpty(): boolean {
     const v = this.value();
     return v === undefined || v === null;

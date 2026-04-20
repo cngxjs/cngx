@@ -736,6 +736,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     return this.core.isSelected(opt.value);
   }
 
+  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isIndeterminate(opt.value);
+  }
+
   protected isEmpty(): boolean {
     return this.values().length === 0;
   }

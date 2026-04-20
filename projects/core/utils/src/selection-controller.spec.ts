@@ -1,7 +1,12 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
-import { createSelectionController } from './selection-controller';
+import {
+  CNGX_SELECTION_CONTROLLER_FACTORY,
+  createSelectionController,
+  type CngxSelectionControllerFactory,
+  type SelectionController,
+} from './selection-controller';
 
 interface Item {
   readonly id: number;
@@ -272,6 +277,58 @@ describe('createSelectionController', () => {
 
       expect(a).toBe(b);
       expect(a()).toBe(false);
+    });
+  });
+
+  describe('CNGX_SELECTION_CONTROLLER_FACTORY', () => {
+    it('default injection resolves to createSelectionController', () => {
+      TestBed.configureTestingModule({});
+      const factory = TestBed.runInInjectionContext(() =>
+        TestBed.inject(CNGX_SELECTION_CONTROLLER_FACTORY),
+      );
+      expect(factory).toBe(createSelectionController);
+
+      const values = signal<number[]>([]);
+      const c = factory(values);
+      c.select(1);
+      expect(values()).toEqual([1]);
+      expect(c.isSelected(1)()).toBe(true);
+    });
+
+    it('can be overridden via DI — consumer-supplied factory wraps the default', () => {
+      const calls: Array<readonly [unknown[], unknown]> = [];
+      const wrappingFactory: CngxSelectionControllerFactory = <T>(
+        values: ReturnType<typeof signal<T[]>>,
+        options?: Parameters<typeof createSelectionController<T>>[1],
+      ): SelectionController<T> => {
+        const inner = createSelectionController<T>(values, options);
+        // Wrap `select` to record calls — proof the consumer's logic runs.
+        return {
+          ...inner,
+          select(value: T): void {
+            calls.push([values(), value]);
+            inner.select(value);
+          },
+        };
+      };
+
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: CNGX_SELECTION_CONTROLLER_FACTORY, useValue: wrappingFactory },
+        ],
+      });
+      const factory = TestBed.runInInjectionContext(() =>
+        TestBed.inject(CNGX_SELECTION_CONTROLLER_FACTORY),
+      );
+
+      expect(factory).toBe(wrappingFactory);
+
+      const values = signal<string[]>([]);
+      const c = factory(values);
+      c.select('alpha');
+
+      expect(calls).toEqual([[[], 'alpha']]);
+      expect(values()).toEqual(['alpha']);
     });
   });
 });

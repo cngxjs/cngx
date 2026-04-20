@@ -1,7 +1,7 @@
 import { computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 
 import {
-  createSelectionController,
+  CNGX_SELECTION_CONTROLLER_FACTORY,
   type AsyncStatus,
   type CngxAsyncState,
   type SelectionController,
@@ -215,6 +215,14 @@ export interface CngxSelectCore<T, TCommit> {
    * `compareWith` fallback for non-default comparators.
    */
   isSelected(value: T): boolean;
+  /**
+   * Partial-selection test. `true` when the value represents a group
+   * whose descendants are partially selected. Delegates to
+   * {@link SelectionController.isIndeterminate} — for multi / combobox
+   * without a `childrenFn` it is always `false`. Future tree-select
+   * consumers supply `childrenFn` and this propagates automatically.
+   */
+  isIndeterminate(value: T): boolean;
   /**
    * Shared selection controller — `null` for single-select. Exposed as
    * an escape hatch for consumers building custom panels or advanced
@@ -503,8 +511,13 @@ export function createSelectCore<T, TCommit>(
   // passes no multiValues → controller stays null. The `selection` signal
   // is a constant readonly view — no computed needed, no closure-mutation
   // side effect inside a computed.
+  //
+  // Factory resolved via CNGX_SELECTION_CONTROLLER_FACTORY (DI token,
+  // `providedIn: 'root'`) so consumers can swap the engine app-wide —
+  // same override surface as CNGX_SELECT_COMMIT_CONTROLLER_FACTORY.
+  const selectionFactory = inject(CNGX_SELECTION_CONTROLLER_FACTORY);
   const controllerInstance: SelectionController<T> | null = deps.multiValues
-    ? createSelectionController<T>(deps.multiValues)
+    ? selectionFactory<T>(deps.multiValues)
     : null;
   const selection = signal<SelectionController<T> | null>(controllerInstance).asReadonly();
 
@@ -525,6 +538,12 @@ export function createSelectCore<T, TCommit>(
       return false;
     }
     return eq(current, value);
+  }
+
+  function isIndeterminate(value: T): boolean {
+    // Flat selection (no childrenFn wired through) → controller always
+    // returns the shared Signal<false> constant. Reading () here is cheap.
+    return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
   const describedBy = computed(() => presenter?.describedBy() ?? null);
@@ -720,6 +739,7 @@ export function createSelectCore<T, TCommit>(
     triggerAria,
     disabled,
     isSelected,
+    isIndeterminate,
     selection,
     commitController,
     commitState,

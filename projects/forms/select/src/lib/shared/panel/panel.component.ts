@@ -192,12 +192,20 @@ import type { CngxSelectOptionDef } from '../option.model';
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.checkTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt) }" />
+            <ng-container *ngTemplateOutlet="tpl; context: {
+              $implicit: opt,
+              option: opt,
+              selected: host.isSelected(opt),
+              indeterminate: host.isIndeterminate(opt),
+              variant: host.resolvedSelectionIndicatorVariant(),
+              position: 'before'
+            }" />
           } @else {
             <cngx-checkbox-indicator
               class="cngx-select__check"
               [variant]="host.resolvedSelectionIndicatorVariant()"
               [checked]="host.isSelected(opt)"
+              [indeterminate]="host.isIndeterminate(opt)"
             />
           }
         }
@@ -208,12 +216,20 @@ import type { CngxSelectOptionDef } from '../option.model';
         }
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
           @if (host.checkTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt) }" />
+            <ng-container *ngTemplateOutlet="tpl; context: {
+              $implicit: opt,
+              option: opt,
+              selected: host.isSelected(opt),
+              indeterminate: host.isIndeterminate(opt),
+              variant: host.resolvedSelectionIndicatorVariant(),
+              position: 'after'
+            }" />
           } @else {
             <cngx-checkbox-indicator
               class="cngx-select__check"
               [variant]="host.resolvedSelectionIndicatorVariant()"
               [checked]="host.isSelected(opt)"
+              [indeterminate]="host.isIndeterminate(opt)"
             />
           }
         }
