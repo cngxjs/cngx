@@ -16,13 +16,26 @@ import {
 /**
  * Configuration for {@link createTreeController}.
  *
+ * `nodeIdFn` is required on purpose: the controller hands its ids out to
+ * `expandedIds`, to selection memoization (`keyFn` consumers), and to the
+ * stable-identity `isExpanded(id)` signal cache. A non-stable id (e.g. the
+ * path-based fallback from `flattenTree`) silently breaks all three the
+ * moment the tree is sorted or filtered — exactly the Sort/Filter
+ * integration pattern this stack is designed to support. Forcing the
+ * caller to think about identity at construction eliminates that whole
+ * class of heisenbugs.
+ *
  * @category interactive
  */
 export interface CngxTreeControllerOptions<T> {
   /** Source tree — the controller re-derives on every change. */
   readonly nodes: Signal<readonly CngxTreeNode<T>[]>;
-  /** Derives a stable id per flat node. Defaults to `path.join('.')`. */
-  readonly nodeIdFn?: (value: T, path: readonly number[]) => string;
+  /**
+   * Derives a stable id per flat node. **Required** — must survive
+   * re-ordering and filtering of the source tree. Use a domain id
+   * (`(v) => v.id`) rather than a positional fallback.
+   */
+  readonly nodeIdFn: (value: T, path: readonly number[]) => string;
   /** Visible label. Defaults to `String(value)`. */
   readonly labelFn?: (value: T) => string;
   /** Membership key for value-based lookups. Defaults to the value itself. */
@@ -39,13 +52,35 @@ export interface CngxTreeControllerOptions<T> {
  * hierarchical source, owns the expansion-set, and exposes value- and
  * id-based lookups used by the surrounding render / keyboard-nav layers.
  *
- * Pure-derivation contract:
+ * ## Derivation contract
  * - No `effect()`, no subscriptions. The only writable slot is the internal
  *   expandedIds set; every other accessor is a `computed()` or pure fn.
  * - `isExpanded(id)` returns the SAME `Signal` instance per id across the
  *   controller's lifetime — safe to pass into OnPush children without churn.
  * - Controller is a11y-agnostic — adapters like `createTreeAdItems` live
  *   in sibling files so `@cngx/core`-level reuse stays clean.
+ *
+ * ## Reactivity contract
+ * The surface splits into two classes of accessors, **by design**:
+ *
+ * - **Reactive** (`Signal<…>` returners): `flatNodes`, `visibleNodes`,
+ *   `expandedIds`, `isExpanded(id)`. Bind these in templates and wrap in
+ *   `computed()` freely — Angular tracks their dependencies automatically.
+ *
+ * - **Snapshot** (plain-return methods): `findById`, `parentOf`,
+ *   `firstChildOf`, `childrenOfValue`, `descendantsOfValue`. These read
+ *   the underlying indexes reactively when called inside a tracked
+ *   context, but intentionally return raw values rather than signals.
+ *   They are intended for imperative call-sites — keydown handlers,
+ *   commit flows, AD-activation dispatch — where the caller wants a
+ *   one-shot lookup, not a subscription. If you *do* call them from
+ *   inside an `effect()` that should NOT re-fire on tree changes, wrap
+ *   the call in `untracked(() => ctrl.parentOf(id))`.
+ *
+ * ## Mutations
+ * All mutators (`expand`, `collapse`, `toggle`, `expandAll`, `collapseAll`)
+ * peek at the expansion set via `untracked()` so invoking them from
+ * inside an `effect()` never latches that effect onto the expansion set.
  *
  * @category interactive
  */
@@ -132,6 +167,12 @@ function flatEq<T>(
   return true;
 }
 
+interface TreeIndexes<T> {
+  readonly byId: ReadonlyMap<string, FlatTreeNode<T>>;
+  readonly byValue: ReadonlyMap<unknown, CngxTreeNode<T>>;
+  readonly firstChildById: ReadonlyMap<string, FlatTreeNode<T>>;
+}
+
 export function createTreeController<T>(
   opts: CngxTreeControllerOptions<T>,
 ): CngxTreeController<T> {
@@ -142,22 +183,26 @@ export function createTreeController<T>(
     equal: flatEq,
   });
 
-  // Single DFS: both lookup maps derive from the flat projection (which
-  // carries a `node` backref) — no second `walkTree` pass.
-  const flatById = computed(() => {
-    const map = new Map<string, FlatTreeNode<T>>();
+  // One pass over flatNodes produces every index the controller needs:
+  // id → FlatTreeNode, value-key → source CngxTreeNode, parentId →
+  // first-child FlatTreeNode. All lookups are O(1); the old linear
+  // scan in firstChildOf is gone.
+  const indexes = computed<TreeIndexes<T>>(() => {
+    const byId = new Map<string, FlatTreeNode<T>>();
+    const byValue = new Map<unknown, CngxTreeNode<T>>();
+    const firstChildById = new Map<string, FlatTreeNode<T>>();
     for (const n of flatNodes()) {
-      map.set(n.id, n);
+      byId.set(n.id, n);
+      byValue.set(keyFn(n.value), n.node);
+      const pids = n.parentIds;
+      if (pids.length > 0) {
+        const parentId = pids[pids.length - 1];
+        if (!firstChildById.has(parentId)) {
+          firstChildById.set(parentId, n);
+        }
+      }
     }
-    return map;
-  });
-
-  const valueToNode = computed(() => {
-    const map = new Map<unknown, CngxTreeNode<T>>();
-    for (const n of flatNodes()) {
-      map.set(keyFn(n.value), n.node);
-    }
-    return map;
+    return { byId, byValue, firstChildById };
   });
 
   const collectExpandAllIds = (): Set<string> => {
@@ -207,36 +252,30 @@ export function createTreeController<T>(
   };
 
   const childrenOfValue = (v: T): T[] => {
-    const node = valueToNode().get(keyFn(v));
+    const node = indexes().byValue.get(keyFn(v));
     const children = node?.children ?? [];
     return children.map((c) => c.value);
   };
 
   const descendantsOfValue = (v: T): T[] => {
-    const node = valueToNode().get(keyFn(v));
+    const node = indexes().byValue.get(keyFn(v));
     return node ? collectDescendantValues(node) : [];
   };
 
   const findById = (id: string): FlatTreeNode<T> | undefined =>
-    flatById().get(id);
+    indexes().byId.get(id);
 
   const parentOf = (id: string): FlatTreeNode<T> | undefined => {
-    const node = findById(id);
+    const byId = indexes().byId;
+    const node = byId.get(id);
     if (!node || node.parentIds.length === 0) {
       return undefined;
     }
-    return findById(node.parentIds[node.parentIds.length - 1]);
+    return byId.get(node.parentIds[node.parentIds.length - 1]);
   };
 
-  const firstChildOf = (id: string): FlatTreeNode<T> | undefined => {
-    for (const n of flatNodes()) {
-      const pids = n.parentIds;
-      if (pids.length > 0 && pids[pids.length - 1] === id) {
-        return n;
-      }
-    }
-    return undefined;
-  };
+  const firstChildOf = (id: string): FlatTreeNode<T> | undefined =>
+    indexes().firstChildById.get(id);
 
   // Mutation helpers read the writable signal via `untracked()` — these
   // methods can be invoked from anywhere (event handlers, effects, async
