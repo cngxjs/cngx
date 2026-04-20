@@ -1,4 +1,4 @@
-import { Component, TemplateRef, contentChild, viewChild } from '@angular/core';
+import { Component, TemplateRef, contentChild, inject, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -18,8 +18,10 @@ import {
   CngxSelectRefreshing,
 } from './template-slots';
 import {
+  CNGX_TEMPLATE_REGISTRY_FACTORY,
   createTemplateRegistry,
   type CngxSelectTemplateRegistry,
+  type CngxTemplateRegistryFactory,
 } from './template-registry';
 import { provideSelectConfig } from './config';
 
@@ -59,7 +61,9 @@ class RegistryProbe<T> {
     CngxSelectOptionError,
   );
 
-  readonly registry: CngxSelectTemplateRegistry<T> = createTemplateRegistry<T>({
+  readonly registry: CngxSelectTemplateRegistry<T> = inject(
+    CNGX_TEMPLATE_REGISTRY_FACTORY,
+  )<T>({
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
@@ -174,6 +178,31 @@ describe('createTemplateRegistry', () => {
     expect(registry.clearButton()).toBeNull();
     expect(registry.optionPending()).toBeNull();
     expect(registry.optionError()).toBeNull();
+  });
+
+  it('CNGX_TEMPLATE_REGISTRY_FACTORY defaults to createTemplateRegistry', () => {
+    const fixture = TestBed.createComponent(AllSlotsHost);
+    flush(fixture);
+    const factory = TestBed.inject(CNGX_TEMPLATE_REGISTRY_FACTORY);
+    expect(factory).toBe(createTemplateRegistry);
+  });
+
+  it('CNGX_TEMPLATE_REGISTRY_FACTORY override lets consumers wrap the cascade', () => {
+    const calls: string[] = [];
+    const wrapped: CngxTemplateRegistryFactory = (queries) => {
+      calls.push('factory-invoked');
+      return createTemplateRegistry(queries);
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_TEMPLATE_REGISTRY_FACTORY, useValue: wrapped }],
+    });
+    const fixture = TestBed.createComponent(NoSlotsHost);
+    flush(fixture);
+    // Probe's field init calls the factory once per instance.
+    expect(calls).toEqual(['factory-invoked']);
+    // And the resulting registry still behaves correctly (null-slot semantics).
+    expect(fixture.componentInstance.probe().registry.check()).toBeNull();
   });
 
   it('falls back to CNGX_SELECT_CONFIG.templates when no content is projected', () => {

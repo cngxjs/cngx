@@ -61,7 +61,13 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { createTemplateRegistry } from '../shared/template-registry';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -362,7 +368,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
   /** @internal */
-  protected readonly tpl = createTemplateRegistry<T>({
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
@@ -398,8 +404,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
   /** @internal */
@@ -547,6 +553,19 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
+  private readonly announcer = inject(CngxSelectAnnouncer);
+  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
+    kind: 'soft',
+  });
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.errorAnnouncePolicy,
+  });
   private lastCommittedValue: T | undefined = undefined;
   /**
    * Display binding — owns the value ↔ input-text reconciliation cycle
@@ -560,7 +579,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.displayWith,
-    focused: this.focusedState,
+    focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,
     searchTerm: this.searchTerm,
@@ -726,11 +745,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   };
 
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
   }
 
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
     // clearOnBlur: if the current input text doesn't match `displayWith(value)`,
     // snap back. Disable by setting `[clearOnBlur]="false"`.
@@ -785,7 +804,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
           }
           this.display.writeFromValue(rollback);
         }
-        this.core.announce(null, 'removed', 0, false);
+        this.announceCommitError(err);
       },
     });
   }

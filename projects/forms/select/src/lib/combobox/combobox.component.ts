@@ -63,7 +63,8 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { createTemplateRegistry } from '../shared/template-registry';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -512,7 +513,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   // ── Resolved template-slot registry ────────────────────────────────
 
   /** @internal */
-  protected readonly tpl = createTemplateRegistry<T>({
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
@@ -566,8 +567,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -1094,12 +1095,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
   }
 
   /** @internal */
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
 

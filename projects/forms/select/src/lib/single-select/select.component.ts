@@ -60,8 +60,13 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { createTemplateRegistry } from '../shared/template-registry';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { resolveTemplate } from '../shared/resolve-template';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -288,6 +293,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
+  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
+    kind: 'verbose',
+    severity: 'assertive',
+  });
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
@@ -389,7 +398,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   // ── Resolved template-slot registry ────────────────────────────────
 
   /** @internal */
-  protected readonly tpl = createTemplateRegistry<T>({
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
@@ -436,8 +445,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -595,6 +604,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.errorAnnouncePolicy,
+  });
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValue: T | undefined = undefined;
@@ -780,7 +798,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         if (!Object.is(this.value(), rollbackTo)) {
           this.value.set(rollbackTo);
         }
-        this.announcer.announce(this.core.commitErrorMessage(err), 'assertive');
+        this.announceCommitError(err);
       },
     });
   }
@@ -820,7 +838,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
     if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
       this.open();
     }
@@ -828,7 +846,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
 

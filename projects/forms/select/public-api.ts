@@ -185,7 +185,27 @@ export {
 
 // ── Shared template-slot registry ─────────────────────────────────────
 export {
+  CNGX_TEMPLATE_REGISTRY_FACTORY,
   createTemplateRegistry,
   type CngxSelectTemplateRegistry,
   type CngxSelectTemplateRegistryQueries,
+  type CngxTemplateRegistryFactory,
 } from './src/lib/shared/template-registry';
+
+// ── Scalar commit-error announce policy ───────────────────────────────
+export {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  createCommitErrorAnnouncer,
+  type CngxCommitErrorAnnouncePolicy,
+  type CngxCommitErrorAnnounceDeps,
+  type CngxCommitErrorAnnouncerOptions,
+  type CngxCommitErrorAnnouncerFactory,
+} from './src/lib/shared/commit-error-announcer';
+
+// ── Shared trigger focus state ────────────────────────────────────────
+export {
+  CNGX_TRIGGER_FOCUS_FACTORY,
+  createTriggerFocusState,
+  type CngxTriggerFocusState,
+  type CngxTriggerFocusFactory,
+} from './src/lib/shared/trigger-focus';

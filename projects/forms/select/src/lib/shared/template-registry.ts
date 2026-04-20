@@ -1,4 +1,4 @@
-import { type Signal, type TemplateRef } from '@angular/core';
+import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
 import { resolveTemplate } from './resolve-template';
 import type {
@@ -147,3 +147,49 @@ export function createTemplateRegistry<T = unknown>(
     optionError: resolveTemplate(queries.optionError, 'optionError'),
   };
 }
+
+/**
+ * Factory-signature matching {@link createTemplateRegistry} — used by
+ * {@link CNGX_TEMPLATE_REGISTRY_FACTORY} for DI-swappable cascade
+ * implementations.
+ *
+ * @category interactive
+ */
+export type CngxTemplateRegistryFactory = <T = unknown>(
+  queries: CngxSelectTemplateRegistryQueries<T>,
+) => CngxSelectTemplateRegistry<T>;
+
+/**
+ * Override-capable factory for the select-family template-slot cascade.
+ * Defaults to {@link createTemplateRegistry}; override app-wide or per-
+ * component (via `providers` / `viewProviders`) for telemetry-wrapped
+ * cascades, custom resolution policies, or alternative fallback chains.
+ *
+ * Symmetrical to the other five select-family factory tokens
+ * (`CNGX_SELECTION_CONTROLLER_FACTORY`, `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`,
+ * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`, `CNGX_DISPLAY_BINDING_FACTORY`).
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     {
+ *       provide: CNGX_TEMPLATE_REGISTRY_FACTORY,
+ *       useValue: (queries) => {
+ *         const registry = createTemplateRegistry(queries);
+ *         // Wrap each signal with a telemetry probe, or return a
+ *         // caller-local variant.
+ *         return registry;
+ *       },
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export const CNGX_TEMPLATE_REGISTRY_FACTORY =
+  new InjectionToken<CngxTemplateRegistryFactory>('CNGX_TEMPLATE_REGISTRY_FACTORY', {
+    providedIn: 'root',
+    factory: () => createTemplateRegistry,
+  });
