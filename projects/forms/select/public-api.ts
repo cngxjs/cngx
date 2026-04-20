@@ -23,6 +23,10 @@ export {
   CngxCombobox,
   type CngxComboboxChange,
 } from './src/lib/combobox/combobox.component';
+export {
+  CngxTypeahead,
+  type CngxTypeaheadChange,
+} from './src/lib/typeahead/typeahead.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
