@@ -36,6 +36,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
@@ -616,38 +617,33 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     });
 
     // Bridge AD-activations into user-selection outputs and commit flow.
-    effect((onCleanup) => {
-      const lb = this.listboxRef();
-      if (!lb) {
-        return;
-      }
-      const sub = lb.ad.activated.subscribe((raw: unknown) => {
-        untracked(() => {
-          const toggledValue = raw as T;
-          const opt = this.core.findOption(toggledValue);
-          if (!opt) {
-            return;
-          }
-          const action = this.commitAction();
-          if (action) {
-            const previous = [...this.values()];
-            const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-            const next = wasSelected
-              ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-              : [...previous, toggledValue];
-            this.lastCommittedValues = previous;
-            this.togglingOption.set(opt);
-            if (this.commitMode() === 'optimistic') {
-              this.values.set(next);
-            }
-            this.beginCommit(next, previous, opt, action);
-            return;
-          }
-          const currentSelected = this.isSelected(opt);
-          this.finalizeToggle(opt, currentSelected);
-        });
-      });
-      onCleanup(() => sub.unsubscribe());
+    // Lifecycle + routing live in `createADActivationDispatcher`;
+    // array-shape toggle logic stays here.
+    createADActivationDispatcher<T, T[]>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      closeOnSelect: false,
+      commitAction: this.commitAction,
+      onCommit: (toggledValue, opt) => {
+        const previous = [...this.values()];
+        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
+        const next = wasSelected
+          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
+          : [...previous, toggledValue];
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.values.set(next);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.beginCommit(next, previous, opt, action);
+        }
+      },
+      onActivate: (_value, opt) => {
+        const currentSelected = this.isSelected(opt);
+        this.finalizeToggle(opt, currentSelected);
+      },
     });
 
     // Panel open/close lifecycle events.

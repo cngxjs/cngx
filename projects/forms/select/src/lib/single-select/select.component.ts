@@ -33,6 +33,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -548,40 +549,30 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     });
 
     // Bridge AD activations into popover-close, selectionChange output,
-    // and (when bound) the commit flow.
-    effect((onCleanup) => {
-      const lb = this.listboxRef();
-      const pop = this.popoverRef();
-      if (!lb || !pop) {
-        return;
-      }
-      const sub = lb.ad.activated.subscribe((raw: unknown) => {
-        untracked(() => {
-          const intended = raw as T;
-          const action = this.commitAction();
-          if (action) {
-            // Listbox is in externalActivation mode — value() is still
-            // the pre-pick value. Capture for rollback, let commit flow
-            // mutate value on success.
-            const previous = this.value();
-            this.lastCommittedValue = previous;
-            // Set togglingOption so core's commitErrorContext /
-            // isCommittingOption know which option the user picked.
-            const opt = this.core.findOption(intended);
-            this.togglingOption.set(opt);
-            if (this.commitMode() === 'optimistic') {
-              this.value.set(intended);
-            }
-            this.beginCommit(intended, previous, action);
-            return;
-          }
-          this.finalizeSelection(intended);
-          if (pop.isVisible()) {
-            pop.hide();
-          }
-        });
-      });
-      onCleanup(() => sub.unsubscribe());
+    // and (when bound) the commit flow. Lifecycle + routing live in
+    // `createADActivationDispatcher`; value-shape work stays here.
+    createADActivationDispatcher<T, T>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      popoverRef: this.popoverRef,
+      closeOnSelect: true,
+      commitAction: this.commitAction,
+      onCommit: (intended, opt) => {
+        // Listbox is in externalActivation mode — value() is still the
+        // pre-pick value. Capture for rollback, then let the commit flow
+        // mutate value on success.
+        const previous = this.value();
+        this.lastCommittedValue = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.value.set(intended);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.beginCommit(intended, previous, action);
+        }
+      },
+      onActivate: (intended) => this.finalizeSelection(intended),
     });
 
     // Panel open/close lifecycle events.

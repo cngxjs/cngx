@@ -141,3 +141,9 @@ export {
   createFieldSync,
   type FieldSyncOptions,
 } from './src/lib/shared/field-sync';
+
+// ── ActiveDescendant activation dispatcher ────────────────────────────
+export {
+  createADActivationDispatcher,
+  type ADActivationDispatcherOptions,
+} from './src/lib/shared/ad-activation-dispatcher';
