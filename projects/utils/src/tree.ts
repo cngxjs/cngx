@@ -35,6 +35,11 @@ export interface FlatTreeNode<T> {
   readonly disabled: boolean;
   readonly posinset: number;
   readonly setsize: number;
+  /**
+   * Back-reference to the source tree node. Lets consumers reach `children`
+   * (e.g. cascade-select helpers) without a parallel DFS walk.
+   */
+  readonly node: CngxTreeNode<T>;
 }
 
 type IdFn<T> = (value: T, path: readonly number[]) => string;
@@ -84,6 +89,7 @@ export function flattenTree<T>(
         disabled: node.disabled === true,
         posinset: i + 1,
         setsize,
+        node,
       });
       if (hasChildren) {
         visit(children, depth + 1, [...parentIds, id], path);

@@ -38,30 +38,22 @@ function makeController(tree = makeTree()) {
 }
 
 describe('createTreeController — derivation contract', () => {
-  it('flattens DFS with stable ids; adItems mirrors visibleNodes (not all flatNodes)', () => {
+  it('flattens DFS with stable ids and exposes node backref per FlatTreeNode', () => {
     const ctrl = makeController();
-    expect(ctrl.flatNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
-    // adItems is the AD-navigation surface — collapsed descendants are hidden
-    // from the keyboard flow by definition.
-    expect(ctrl.adItems().map((i) => i.id)).toEqual(['a', 'b']);
-    ctrl.expandAll();
-    expect(ctrl.adItems().map((i) => i.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
-    expect(ctrl.adItems()[0]).toEqual({
-      id: 'a',
-      value: { id: 'a', name: 'Alpha' },
-      label: 'Alpha',
-      disabled: false,
-    });
+    const flat = ctrl.flatNodes();
+    expect(flat.map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
+    // Backref shortcuts consumer walks (cascade-select, custom decorators).
+    expect(flat[0].node.value.id).toBe('a');
+    expect(flat[2].node.children?.[0].value.id).toBe('a2a');
   });
 
-  it('hides descendants of collapsed ancestors; filters adItems accordingly', () => {
+  it('hides descendants of collapsed ancestors', () => {
     const ctrl = makeController();
     expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'b']);
     ctrl.expand('a');
     expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'b']);
     ctrl.expand('a2');
     expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
-    expect(ctrl.adItems().map((i) => i.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
   });
 
   it('isExpanded(id) returns a stable Signal instance per id', () => {

@@ -1,12 +1,16 @@
-import { computed, InjectionToken, signal, type Signal } from '@angular/core';
-import { type ActiveDescendantItem } from '@cngx/common/a11y';
+import {
+  computed,
+  InjectionToken,
+  signal,
+  type Signal,
+  untracked,
+} from '@angular/core';
 import {
   type CngxTreeNode,
   type FlatTreeNode,
   collectDescendantValues,
   flattenTree,
   isNodeVisible,
-  walkTree,
 } from '@cngx/utils';
 
 /**
@@ -40,16 +44,16 @@ export interface CngxTreeControllerOptions<T> {
  *   expandedIds set; every other accessor is a `computed()` or pure fn.
  * - `isExpanded(id)` returns the SAME `Signal` instance per id across the
  *   controller's lifetime — safe to pass into OnPush children without churn.
+ * - Controller is a11y-agnostic — adapters like `createTreeAdItems` live
+ *   in sibling files so `@cngx/core`-level reuse stays clean.
  *
  * @category interactive
  */
 export interface CngxTreeController<T> {
-  /** Flat DFS projection with ARIA metadata. */
+  /** Flat DFS projection with ARIA metadata + backref to the source node. */
   readonly flatNodes: Signal<readonly FlatTreeNode<T>[]>;
   /** Flat nodes minus those under a collapsed ancestor. */
   readonly visibleNodes: Signal<readonly FlatTreeNode<T>[]>;
-  /** Passthrough descriptors for `CngxActiveDescendant.items`. */
-  readonly adItems: Signal<readonly ActiveDescendantItem[]>;
   /** Read-only view of the expansion set. */
   readonly expandedIds: Signal<ReadonlySet<string>>;
   /** Stable-identity membership signal per id. */
@@ -128,31 +132,6 @@ function flatEq<T>(
   return true;
 }
 
-function adEq(
-  a: readonly ActiveDescendantItem[],
-  b: readonly ActiveDescendantItem[],
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    const ai = a[i];
-    const bi = b[i];
-    if (
-      ai.id !== bi.id ||
-      !Object.is(ai.value, bi.value) ||
-      ai.disabled !== bi.disabled ||
-      ai.label !== bi.label
-    ) {
-      return false;
-    }
-  }
-  return true;
-}
-
 export function createTreeController<T>(
   opts: CngxTreeControllerOptions<T>,
 ): CngxTreeController<T> {
@@ -163,6 +142,8 @@ export function createTreeController<T>(
     equal: flatEq,
   });
 
+  // Single DFS: both lookup maps derive from the flat projection (which
+  // carries a `node` backref) — no second `walkTree` pass.
   const flatById = computed(() => {
     const map = new Map<string, FlatTreeNode<T>>();
     for (const n of flatNodes()) {
@@ -173,9 +154,9 @@ export function createTreeController<T>(
 
   const valueToNode = computed(() => {
     const map = new Map<unknown, CngxTreeNode<T>>();
-    walkTree(nodes(), (node) => {
-      map.set(keyFn(node.value), node);
-    });
+    for (const n of flatNodes()) {
+      map.set(keyFn(n.value), n.node);
+    }
     return map;
   });
 
@@ -189,7 +170,10 @@ export function createTreeController<T>(
     return next;
   };
 
-  const initialSet = (() => {
+  // Seed the expansion set once. `untracked` is defensive — if the factory
+  // is mistakenly called from an outer reactive context, this read must not
+  // leak `flatNodes` / `nodes` into that context's dependency graph.
+  const initialSet = untracked(() => {
     if (initiallyExpanded === 'all') {
       return collectExpandAllIds();
     }
@@ -197,7 +181,7 @@ export function createTreeController<T>(
       return new Set(initiallyExpanded);
     }
     return new Set<string>();
-  })();
+  });
 
   const expandedIdsWritable = signal<ReadonlySet<string>>(initialSet);
   const expandedIds = expandedIdsWritable.asReadonly();
@@ -205,17 +189,6 @@ export function createTreeController<T>(
   const visibleNodes = computed(
     () => flatNodes().filter((n) => isNodeVisible(n, expandedIds())),
     { equal: flatEq },
-  );
-
-  const adItems = computed<ActiveDescendantItem[]>(
-    () =>
-      visibleNodes().map((n) => ({
-        id: n.id,
-        value: n.value,
-        label: n.label,
-        disabled: n.disabled,
-      })),
-    { equal: adEq },
   );
 
   const expandedCache = new Map<string, Signal<boolean>>();
@@ -265,8 +238,15 @@ export function createTreeController<T>(
     return undefined;
   };
 
+  // Mutation helpers read the writable signal via `untracked()` — these
+  // methods can be invoked from anywhere (event handlers, effects, async
+  // callbacks); reading outside a tracked context keeps consumer `effect()`
+  // graphs from latching onto the expansion set accidentally.
+  const peekExpanded = (): ReadonlySet<string> =>
+    untracked(() => expandedIdsWritable());
+
   const expand = (id: string): void => {
-    if (expandedIdsWritable().has(id)) {
+    if (peekExpanded().has(id)) {
       return;
     }
     expandedIdsWritable.update((s) => {
@@ -277,7 +257,7 @@ export function createTreeController<T>(
   };
 
   const collapse = (id: string): void => {
-    if (!expandedIdsWritable().has(id)) {
+    if (!peekExpanded().has(id)) {
       return;
     }
     expandedIdsWritable.update((s) => {
@@ -288,7 +268,7 @@ export function createTreeController<T>(
   };
 
   const toggle = (id: string): void => {
-    if (expandedIdsWritable().has(id)) {
+    if (peekExpanded().has(id)) {
       collapse(id);
     } else {
       expand(id);
@@ -296,11 +276,11 @@ export function createTreeController<T>(
   };
 
   const expandAll = (): void => {
-    expandedIdsWritable.set(collectExpandAllIds());
+    expandedIdsWritable.set(untracked(() => collectExpandAllIds()));
   };
 
   const collapseAll = (): void => {
-    if (expandedIdsWritable().size === 0) {
+    if (peekExpanded().size === 0) {
       return;
     }
     expandedIdsWritable.set(new Set());
@@ -317,7 +297,6 @@ export function createTreeController<T>(
   return {
     flatNodes,
     visibleNodes,
-    adItems,
     expandedIds,
     isExpanded,
     childrenOfValue,

@@ -33,6 +33,7 @@ export {
   type CngxTreeControllerFactory,
   type CngxTreeControllerOptions,
 } from './src/tree-controller/tree-controller';
+export { createTreeAdItems } from './src/tree-controller/tree-ad-items';
 export { withRetry, type RetryConfig, type RetryState } from './src/retry/with-retry';
 export { optimistic, type OptimisticState } from './src/optimistic/optimistic';
 export { CngxLongPress } from './src/gestures/long-press.directive';
