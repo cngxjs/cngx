@@ -35,6 +35,10 @@ import {
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
+import {
+  createTypeaheadController,
+  resolvePageJumpTarget,
+} from '../shared/typeahead-controller';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
@@ -464,6 +468,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
+  /**
+   * Keyboard typeahead engine. Shared with the rest of the select family
+   * via `@cngx/forms/select/shared/typeahead-controller`. Handles
+   * printable-key matching, multi-char buffering, debounce-reset and
+   * disabled-skip in one place.
+   */
+  private readonly typeaheadController = createTypeaheadController<T>({
+    options: this.flatOptions,
+    compareWith: this.compareWith,
+    debounceMs: this.typeaheadDebounceInterval,
+    disabled: this.disabled,
+  });
+
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
@@ -729,41 +746,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
-    // Typeahead-while-closed parity with native <select>.
+    // Typeahead-while-closed — native <select> parity via shared
+    // typeahead controller.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
-        event.preventDefault();
         const eq = this.compareWith();
         const flat = this.flatOptions();
-        const start =
-          flat.findIndex((o) => {
-            const v = this.value();
-            return v !== undefined && v !== null && eq(o.value, v);
-          }) + 1;
-        const lower = key.toLowerCase();
-        for (let i = 0; i < flat.length; i++) {
-          const idx = (start + i) % flat.length;
-          const candidate = flat[idx];
-          if (candidate.disabled) {
-            continue;
-          }
-          if (candidate.label.toLowerCase().startsWith(lower)) {
-            this.value.set(candidate.value);
-            this.selectionChange.emit({
-              source: this,
-              value: candidate.value,
-              option: candidate,
-            });
-            this.optionSelected.emit(candidate);
-            this.core.announce(candidate, 'added', 1, false);
-            return;
-          }
+        const v = this.value();
+        const currentIdx =
+          v === undefined || v === null
+            ? -1
+            : flat.findIndex((o) => eq(o.value, v));
+        const candidate = this.typeaheadController.matchFromIndex(key, currentIdx);
+        if (candidate) {
+          event.preventDefault();
+          this.value.set(candidate.value);
+          this.selectionChange.emit({
+            source: this,
+            value: candidate.value,
+            option: candidate,
+          });
+          this.optionSelected.emit(candidate);
+          this.core.announce(candidate, 'added', 1, false);
+          return;
         }
       }
     }
 
-    // PageUp / PageDown — open + jump ±10.
+    // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       const lb = this.listboxRef();
@@ -775,31 +786,16 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         pop.show();
       }
       const options = lb.options();
-      const total = options.length;
-      if (total === 0) {
-        return;
-      }
       const ad = lb.ad;
-      const direction = event.key === 'PageDown' ? 1 : -1;
-      const step = 10 * direction;
       const currentId = ad.activeId();
       const currentIdx = options.findIndex((o) => o.id === currentId);
-      let target = Math.max(0, Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step));
-      while (isOptionDisabled(options[target]) && target > 0 && target < total - 1) {
-        target += direction;
+      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
+      const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
+        isOptionDisabled(o),
+      );
+      if (target !== null) {
+        ad.highlightByIndex(target);
       }
-      if (isOptionDisabled(options[target])) {
-        let probe = target - direction;
-        while (probe >= 0 && probe < total && isOptionDisabled(options[probe])) {
-          probe -= direction;
-        }
-        if (probe >= 0 && probe < total) {
-          target = probe;
-        } else {
-          return;
-        }
-      }
-      ad.highlightByIndex(target);
     }
   }
 }

@@ -147,3 +147,11 @@ export {
   createADActivationDispatcher,
   type ADActivationDispatcherOptions,
 } from './src/lib/shared/ad-activation-dispatcher';
+
+// ── Keyboard typeahead controller + page-jump helper ──────────────────
+export {
+  createTypeaheadController,
+  resolvePageJumpTarget,
+  type TypeaheadController,
+  type TypeaheadControllerOptions,
+} from './src/lib/shared/typeahead-controller';
