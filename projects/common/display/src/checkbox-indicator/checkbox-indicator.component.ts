@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@angular/core';
 
 /**
  * Presentational checkbox / checkmark indicator.
@@ -36,6 +37,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './checkbox-indicator.component.css',
+  imports: [NgTemplateOutlet],
   host: {
     class: 'cngx-checkbox-indicator',
     'aria-hidden': 'true',
@@ -49,19 +51,26 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     '[class.cngx-checkbox-indicator--lg]': "size() === 'lg'",
   },
   template: `
+    <ng-template #defaultDashGlyph>
+      <span aria-hidden="true" class="cngx-checkbox-indicator__dash">&minus;</span>
+    </ng-template>
+    <ng-template #defaultCheckGlyph>
+      <span aria-hidden="true" class="cngx-checkbox-indicator__check">&#10003;</span>
+    </ng-template>
+
     @if (variant() === 'checkbox') {
       <span class="cngx-checkbox-indicator__box">
         @if (indeterminate()) {
-          <span aria-hidden="true" class="cngx-checkbox-indicator__dash">&minus;</span>
+          <ng-container *ngTemplateOutlet="dashGlyph() ?? defaultDashGlyph" />
         } @else if (checked()) {
-          <span aria-hidden="true" class="cngx-checkbox-indicator__check">&#10003;</span>
+          <ng-container *ngTemplateOutlet="checkGlyph() ?? defaultCheckGlyph" />
         }
       </span>
     } @else {
       @if (indeterminate()) {
-        <span aria-hidden="true" class="cngx-checkbox-indicator__dash">&minus;</span>
+        <ng-container *ngTemplateOutlet="dashGlyph() ?? defaultDashGlyph" />
       } @else if (checked()) {
-        <span aria-hidden="true" class="cngx-checkbox-indicator__check">&#10003;</span>
+        <ng-container *ngTemplateOutlet="checkGlyph() ?? defaultCheckGlyph" />
       }
     }
   `,
@@ -93,4 +102,25 @@ export class CngxCheckboxIndicator {
 
   /** Size preset. Maps to a `--cngx-checkbox-size` custom property. */
   readonly size = input<'sm' | 'md' | 'lg'>('md');
+
+  /**
+   * Consumer-supplied template for the check glyph. When `null` (default),
+   * the built-in `<span class="cngx-checkbox-indicator__check">&#10003;</span>`
+   * is rendered. When set, the consumer template replaces the glyph span
+   * entirely — the `__check` class is NOT applied to the custom content
+   * (consumers own the styling of their replacement).
+   *
+   * Convention-compatible with `*cngxSelectCheck` / `*cngxSelectOptionLabel`:
+   * pass a `TemplateRef<void>` obtained via `#myGlyphTpl`. Useful for
+   * `CngxTreeCheckboxHeader` or other consumers that need a custom glyph
+   * without forking the atom.
+   */
+  readonly checkGlyph = input<TemplateRef<void> | null>(null);
+
+  /**
+   * Consumer-supplied template for the indeterminate dash glyph. Mirrors
+   * {@link checkGlyph} — defaults to the built-in
+   * `<span class="cngx-checkbox-indicator__dash">&minus;</span>`.
+   */
+  readonly dashGlyph = input<TemplateRef<void> | null>(null);
 }
