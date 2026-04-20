@@ -7,6 +7,7 @@ import {
   viewChildren,
 } from '@angular/core';
 
+import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
@@ -47,7 +48,7 @@ import type { CngxSelectOptionDef } from '../option.model';
   exportAs: 'cngxSelectPanel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxOption, NgTemplateOutlet],
+  imports: [CngxOption, CngxCheckboxIndicator, NgTemplateOutlet],
   host: {
     class: 'cngx-select-panel-host',
   },
@@ -189,17 +190,48 @@ import type { CngxSelectOptionDef } from '../option.model';
         [class.cngx-select__option--selected]="host.isSelected(opt)"
         [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
       >
-        @if (host.resolvedShowSelectionIndicator()) {
+        @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.checkTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt) }" />
-          } @else if (host.isSelected(opt)) {
-            <span aria-hidden="true" class="cngx-select__check">&#10003;</span>
+            <ng-container *ngTemplateOutlet="tpl; context: {
+              $implicit: opt,
+              option: opt,
+              selected: host.isSelected(opt),
+              indeterminate: host.isIndeterminate(opt),
+              variant: host.resolvedSelectionIndicatorVariant(),
+              position: 'before'
+            }" />
+          } @else {
+            <cngx-checkbox-indicator
+              class="cngx-select__check"
+              [variant]="host.resolvedSelectionIndicatorVariant()"
+              [checked]="host.isSelected(opt)"
+              [indeterminate]="host.isIndeterminate(opt)"
+            />
           }
         }
         @if (host.optionLabelTpl(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: isHighlighted(opt) }" />
         } @else {
           {{ opt.label }}
+        }
+        @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
+          @if (host.checkTpl(); as tpl) {
+            <ng-container *ngTemplateOutlet="tpl; context: {
+              $implicit: opt,
+              option: opt,
+              selected: host.isSelected(opt),
+              indeterminate: host.isIndeterminate(opt),
+              variant: host.resolvedSelectionIndicatorVariant(),
+              position: 'after'
+            }" />
+          } @else {
+            <cngx-checkbox-indicator
+              class="cngx-select__check"
+              [variant]="host.resolvedSelectionIndicatorVariant()"
+              [checked]="host.isSelected(opt)"
+              [indeterminate]="host.isIndeterminate(opt)"
+            />
+          }
         }
         @if (host.isCommittingOption(opt)) {
           @if (host.optionPendingTpl(); as tpl) {

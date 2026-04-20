@@ -73,6 +73,15 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly panelWidthCss: Signal<string | null>;
   readonly resolvedListboxLabel: Signal<string>;
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
+  /**
+   * Concrete indicator variant after `instance > config > 'auto'` cascade.
+   * Panel binds to `<cngx-checkbox-indicator [variant]="…">`.
+   */
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  /**
+   * Indicator position relative to the label inside a panel option row.
+   */
+  readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;
 
@@ -105,6 +114,13 @@ export interface CngxSelectPanelHost<T = unknown> {
   isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
     item is CngxSelectOptionGroupDef<T>;
   isSelected(opt: CngxSelectOptionDef<T>): boolean;
+  /**
+   * Partial-selection test for an option. Always `false` in flat
+   * (multi / combobox) panels today; tree-select consumers wire a
+   * `childrenFn` into the selection controller and this reports the
+   * real `some-but-not-all-descendants-selected` state.
+   */
+  isIndeterminate(opt: CngxSelectOptionDef<T>): boolean;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   handleRetry(): void;
 }

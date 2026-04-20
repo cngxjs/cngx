@@ -281,6 +281,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+  readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
@@ -421,6 +423,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       commitAction: this.commitAction,
       panelOpen: this.panelOpen,
       errorState: this.errorState,
+      multi: computed(() => false),
+      currentSelection: this.value,
+      selectionIndicatorPosition: this.selectionIndicatorPosition,
+      selectionIndicatorVariant: this.selectionIndicatorVariant,
     },
     {
       announceChanges: this.announceChanges,
@@ -442,6 +448,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+    this.core.resolvedSelectionIndicatorVariant;
+  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+    this.core.resolvedSelectionIndicatorPosition;
   /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
   /** @internal */ protected readonly triggerAria = this.core.triggerAria;
   /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
@@ -514,11 +524,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    const v = this.value();
-    if (v === undefined || v === null) {
-      return false;
-    }
-    return this.compareWith()(opt.value, v);
+    return this.core.isSelected(opt.value);
+  }
+
+  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isIndeterminate(opt.value);
   }
 
   protected isEmpty(): boolean {

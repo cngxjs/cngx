@@ -1,6 +1,11 @@
 import { computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 
-import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_SELECTION_CONTROLLER_FACTORY,
+  type AsyncStatus,
+  type CngxAsyncState,
+  type SelectionController,
+} from '@cngx/core/utils';
 import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
 
 import {
@@ -107,6 +112,35 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly filter?: Signal<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
   >;
+
+  /**
+   * `true` when the component stores a list of selected values (multi,
+   * combobox); `false` for single-select. Drives the cascade that
+   * resolves `'auto'` for {@link CngxSelectCoreDeps.selectionIndicatorVariant}
+   * and routes {@link CngxSelectCore.isSelected} to the selection
+   * controller vs. a scalar compareWith check.
+   */
+  readonly multi: Signal<boolean>;
+
+  /**
+   * Current selection snapshot. Single: `T | undefined`. Multi/Combobox:
+   * `readonly T[]`. The core discriminates by `multi()` before reading —
+   * the runtime shape always matches.
+   */
+  readonly currentSelection: Signal<T | undefined | readonly T[]>;
+
+  /**
+   * Writable selection array — only read in multi-mode. Used to
+   * instantiate the shared {@link SelectionController}. Single-select
+   * components pass `undefined`.
+   */
+  readonly multiValues?: WritableSignal<T[]>;
+
+  /** Per-instance override for `selectionIndicatorPosition`. `null` → inherit config. */
+  readonly selectionIndicatorPosition: Signal<'before' | 'after' | null>;
+
+  /** Per-instance override for `selectionIndicatorVariant`. `null` → inherit config. */
+  readonly selectionIndicatorVariant: Signal<'auto' | 'checkbox' | 'checkmark' | null>;
 }
 
 /**
@@ -150,6 +184,17 @@ export interface CngxSelectCore<T, TCommit> {
   readonly resolvedListboxLabel: Signal<string>;
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
   readonly resolvedShowCaret: Signal<boolean>;
+  /**
+   * Resolved concrete variant after the `instance > config > 'auto'`
+   * cascade. `'auto'` resolves to `'checkbox'` in multi-mode, `'checkmark'`
+   * in single-mode. Panel consumers bind this directly to
+   * `<cngx-checkbox-indicator [variant]="…">`.
+   */
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  /**
+   * Resolved position after the `instance > config > 'before'` cascade.
+   */
+  readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly describedBy: Signal<string | null>;
   readonly ariaInvalid: Signal<boolean | null>;
   readonly ariaBusy: Signal<boolean | null>;
@@ -160,6 +205,32 @@ export interface CngxSelectCore<T, TCommit> {
 
   // ── Derived disabled / empty ───────────────────────────────────────
   readonly disabled: Signal<boolean>;
+
+  // ── Selection ──────────────────────────────────────────────────────
+  /**
+   * Mode-agnostic membership test. The panel always calls this — it
+   * never branches on `multi()`. Single mode reads `currentSelection`
+   * via `compareWith`; multi mode delegates to the
+   * {@link SelectionController} fast path (identity) with a
+   * `compareWith` fallback for non-default comparators.
+   */
+  isSelected(value: T): boolean;
+  /**
+   * Partial-selection test. `true` when the value represents a group
+   * whose descendants are partially selected. Delegates to
+   * {@link SelectionController.isIndeterminate} — for multi / combobox
+   * without a `childrenFn` it is always `false`. Future tree-select
+   * consumers supply `childrenFn` and this propagates automatically.
+   */
+  isIndeterminate(value: T): boolean;
+  /**
+   * Shared selection controller — `null` for single-select. Exposed as
+   * an escape hatch for consumers building custom panels or advanced
+   * behaviours (e.g. row-level Select-All in a future grid). The
+   * controller's membership check is identity-based — consumers with a
+   * custom `compareWith` should prefer {@link isSelected}.
+   */
+  readonly selection: Signal<SelectionController<T> | null>;
 
   // ── Commit infrastructure ──────────────────────────────────────────
   readonly commitController: CngxCommitController<TCommit>;
@@ -422,6 +493,59 @@ export function createSelectCore<T, TCommit>(
 
   const resolvedShowCaret = computed<boolean>(() => !deps.hideCaret());
 
+  const resolvedSelectionIndicatorPosition = computed<'before' | 'after'>(
+    () => deps.selectionIndicatorPosition() ?? config.selectionIndicatorPosition,
+  );
+
+  const resolvedSelectionIndicatorVariant = computed<'checkbox' | 'checkmark'>(() => {
+    const resolved = deps.selectionIndicatorVariant() ?? config.selectionIndicatorVariant;
+    if (resolved === 'auto') {
+      return deps.multi() ? 'checkbox' : 'checkmark';
+    }
+    return resolved;
+  });
+
+  // ── Selection ──────────────────────────────────────────────────────
+  // Controller is instantiated once, eagerly, when multiValues is supplied
+  // (i.e. the component is a multi-select or combobox). Single-select
+  // passes no multiValues → controller stays null. The `selection` signal
+  // is a constant readonly view — no computed needed, no closure-mutation
+  // side effect inside a computed.
+  //
+  // Factory resolved via CNGX_SELECTION_CONTROLLER_FACTORY (DI token,
+  // `providedIn: 'root'`) so consumers can swap the engine app-wide —
+  // same override surface as CNGX_SELECT_COMMIT_CONTROLLER_FACTORY.
+  const selectionFactory = inject(CNGX_SELECTION_CONTROLLER_FACTORY);
+  const controllerInstance: SelectionController<T> | null = deps.multiValues
+    ? selectionFactory<T>(deps.multiValues)
+    : null;
+  const selection = signal<SelectionController<T> | null>(controllerInstance).asReadonly();
+
+  function isSelected(value: T): boolean {
+    const eq = deps.compareWith();
+    if (deps.multi()) {
+      // Multi / Combobox. Controller fast path only valid for identity-
+      // based compareWith — fall back to an O(n) scan for custom eqs so
+      // `(a, b) => a.id === b.id` keeps working exactly like before.
+      if (controllerInstance && (eq as unknown) === cngxSelectDefaultCompare) {
+        return controllerInstance.isSelected(value)();
+      }
+      const values = (deps.currentSelection() as readonly T[] | undefined) ?? [];
+      return values.some((v) => eq(v, value));
+    }
+    const current = deps.currentSelection() as T | undefined;
+    if (current === undefined || current === null) {
+      return false;
+    }
+    return eq(current, value);
+  }
+
+  function isIndeterminate(value: T): boolean {
+    // Flat selection (no childrenFn wired through) → controller always
+    // returns the shared Signal<false> constant. Reading () here is cheap.
+    return controllerInstance?.isIndeterminate(value)() ?? false;
+  }
+
   const describedBy = computed(() => presenter?.describedBy() ?? null);
   const ariaInvalid = computed<boolean | null>(() =>
     deps.errorState() ? true : null,
@@ -604,6 +728,8 @@ export function createSelectCore<T, TCommit>(
     resolvedListboxLabel,
     resolvedShowSelectionIndicator,
     resolvedShowCaret,
+    resolvedSelectionIndicatorVariant,
+    resolvedSelectionIndicatorPosition,
     describedBy,
     ariaInvalid,
     ariaBusy,
@@ -612,6 +738,9 @@ export function createSelectCore<T, TCommit>(
     effectiveTabIndex,
     triggerAria,
     disabled,
+    isSelected,
+    isIndeterminate,
+    selection,
     commitController,
     commitState,
     isCommitting,

@@ -10,7 +10,29 @@ import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.mod
 export interface CngxSelectCheckContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
   readonly option: CngxSelectOptionDef<T>;
+  /** Whether the option is currently selected. */
   readonly selected: boolean;
+  /**
+   * Partial-selection state — `true` when the option represents a group
+   * whose descendants are only partially selected. Always `false` for
+   * flat (multi / combobox) panels today; future tree-select consumers
+   * receive the real value without touching the template.
+   */
+  readonly indeterminate: boolean;
+  /**
+   * Concrete indicator variant resolved by the cascade (per-instance
+   * input > `provideSelectConfig(withSelectionIndicatorVariant(...))` >
+   * `'auto'` → `'checkbox'` in multi, `'checkmark'` in single).
+   * Consumers overriding the slot mirror the surrounding panel's styling
+   * by reading this flag.
+   */
+  readonly variant: 'checkbox' | 'checkmark';
+  /**
+   * Which slot the template is being rendered in — `'before'` or
+   * `'after'` the label. A single `*cngxSelectCheck` template can
+   * produce different markup per position by branching on this field.
+   */
+  readonly position: 'before' | 'after';
 }
 
 /**

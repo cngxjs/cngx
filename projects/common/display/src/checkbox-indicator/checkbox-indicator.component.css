@@ -1,0 +1,71 @@
+/*
+ * checkbox-indicator.component.css — visual skin for the two variants.
+ *
+ * Structural concerns only: host layout, box frame, glyph sizing, modifier
+ * classes for variant / state / size. Thematic values are `--cngx-checkbox-*`
+ * custom properties with sensible fallbacks; consumers override at :root or
+ * per-component without forking.
+ *
+ * The `.cngx-select__check` legacy alias (used in forms/select panels) is
+ * applied from the consumer side (class binding on the host) — this file
+ * knows nothing about it.
+ */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+  color: var(--cngx-checkbox-color, currentColor);
+  flex: 0 0 auto;
+}
+
+:host(.cngx-checkbox-indicator--sm) {
+  --cngx-checkbox-size: 0.875em;
+}
+:host(.cngx-checkbox-indicator--md) {
+  --cngx-checkbox-size: 1em;
+}
+:host(.cngx-checkbox-indicator--lg) {
+  --cngx-checkbox-size: 1.25em;
+}
+
+.cngx-checkbox-indicator__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-checkbox-size, 1em);
+  height: var(--cngx-checkbox-size, 1em);
+  border: var(--cngx-checkbox-border, 1.5px solid currentColor);
+  border-radius: var(--cngx-checkbox-radius, 0.125rem);
+  background: var(--cngx-checkbox-bg, transparent);
+  color: inherit;
+  line-height: 1;
+}
+
+:host(.cngx-checkbox-indicator--checked) .cngx-checkbox-indicator__box,
+:host(.cngx-checkbox-indicator--indeterminate) .cngx-checkbox-indicator__box {
+  background: var(--cngx-checkbox-checked-bg, var(--cngx-focus-ring, #1976d2));
+  border-color: var(--cngx-checkbox-checked-bg, var(--cngx-focus-ring, #1976d2));
+  color: var(--cngx-checkbox-checked-color, #fff);
+}
+
+:host(.cngx-checkbox-indicator--disabled) {
+  opacity: var(--cngx-checkbox-disabled-opacity, 0.5);
+}
+
+.cngx-checkbox-indicator__check,
+.cngx-checkbox-indicator__dash {
+  font-size: calc(var(--cngx-checkbox-size, 1em) * 0.75);
+  line-height: 1;
+  font-weight: 700;
+  user-select: none;
+}
+
+/* checkmark variant — bare glyph, no box. Honour the checked colour directly. */
+:host(.cngx-checkbox-indicator--checkmark) .cngx-checkbox-indicator__check,
+:host(.cngx-checkbox-indicator--checkmark) .cngx-checkbox-indicator__dash {
+  color: var(--cngx-checkbox-color, var(--cngx-focus-ring, #1976d2));
+  font-size: var(--cngx-checkbox-size, 1em);
+}

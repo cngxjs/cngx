@@ -13,3 +13,10 @@ export {
 } from './src/build-async-state-view';
 export { createTransitionTracker, type StatusTransition } from './src/transition-tracker';
 export { CNGX_STATEFUL, type CngxStateful } from './src/stateful';
+export {
+  CNGX_SELECTION_CONTROLLER_FACTORY,
+  createSelectionController,
+  type CngxSelectionControllerFactory,
+  type SelectionController,
+  type SelectionControllerOptions,
+} from './src/selection-controller';

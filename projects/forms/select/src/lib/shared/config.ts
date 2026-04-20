@@ -102,6 +102,27 @@ export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
+/**
+ * Where the selection indicator (checkbox / checkmark glyph) sits relative
+ * to the option label inside a panel row.
+ *
+ * @category interactive
+ */
+export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
+
+/**
+ * Visual form of the per-option selection indicator.
+ *
+ * - `'auto'` resolves to `'checkbox'` in multi-select / combobox panels and
+ *   to `'checkmark'` in single-select panels. Matches what most consumers
+ *   expect without having to set it per-component.
+ * - `'checkbox'` — always render a bordered boxed checkbox.
+ * - `'checkmark'` — always render a bare checkmark glyph.
+ *
+ * @category interactive
+ */
+export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark';
+
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -126,6 +147,17 @@ export interface CngxSelectConfig {
   readonly typeaheadWhileClosed?: boolean;
   /** Whether the default selected-indicator (checkmark) is shown at all. */
   readonly showSelectionIndicator?: boolean;
+  /**
+   * Position of the per-option selection indicator relative to the label
+   * inside a panel row. Defaults to `'before'`.
+   */
+  readonly selectionIndicatorPosition?: CngxSelectSelectionIndicatorPosition;
+  /**
+   * Visual form of the per-option selection indicator. `'auto'` picks
+   * `'checkbox'` for multi-select / combobox and `'checkmark'` for
+   * single-select. Defaults to `'auto'`.
+   */
+  readonly selectionIndicatorVariant?: CngxSelectSelectionIndicatorVariant;
   /** Whether the default trigger caret (▾) is shown at all. */
   readonly showCaret?: boolean;
   /** Focus-restore to trigger on panel close. */
@@ -185,6 +217,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
   showSelectionIndicator: true,
+  selectionIndicatorPosition: 'before',
+  selectionIndicatorVariant: 'auto',
   showCaret: true,
   restoreFocus: true,
   dismissOn: 'both',
@@ -341,6 +375,31 @@ export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeat
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
+}
+
+/**
+ * Position of the per-option selection indicator inside a panel row.
+ * Defaults to `'before'`.
+ *
+ * @category interactive
+ */
+export function withSelectionIndicatorPosition(
+  position: CngxSelectSelectionIndicatorPosition,
+): CngxSelectConfigFeature {
+  return feature({ selectionIndicatorPosition: position });
+}
+
+/**
+ * Visual form of the per-option selection indicator — `'auto'` (default),
+ * `'checkbox'`, or `'checkmark'`. `'auto'` resolves to `'checkbox'` for
+ * multi-select / combobox and `'checkmark'` for single-select.
+ *
+ * @category interactive
+ */
+export function withSelectionIndicatorVariant(
+  variant: CngxSelectSelectionIndicatorVariant,
+): CngxSelectConfigFeature {
+  return feature({ selectionIndicatorVariant: variant });
 }
 
 /**
