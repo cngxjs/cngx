@@ -37,6 +37,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import {
+  createArrayCommitHandler,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
 import {
@@ -530,7 +534,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
   /** Currently selected options. */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
@@ -592,11 +596,40 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit state (delegated) ───────────────────────────────────────
 
-  private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
+
+  /**
+   * Commit-flow handler — owns the commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, and live-region announcements.
+   * Shared with `CngxCombobox` via `shared/array-commit-handler.ts`.
+   * Consumer retains emission of selection-change payloads via the
+   * finalize callbacks (value-shape-specific).
+   */
+  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    getLastCommitted: () => this.lastCommittedValues,
+    onToggleFinalize: (option, isNowSelected) => this.finalizeToggle(option, isNowSelected),
+    onClearFinalize: (previous, finalValues) => {
+      this.cleared.emit();
+      this.selectionChange.emit({
+        source: this,
+        values: finalValues,
+        added: [],
+        removed: previous,
+        option: null,
+        action: 'clear',
+      });
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+  });
 
   /** @internal */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
@@ -654,7 +687,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         }
         const action = this.commitAction();
         if (action) {
-          this.beginCommit(next, previous, opt, action);
+          this.commitHandler.beginToggle(next, previous, opt, action);
         }
       },
       onActivate: (_value, opt) => {
@@ -750,7 +783,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set(next);
       }
-      this.beginCommit(next, previous, opt, action);
+      this.commitHandler.beginToggle(next, previous, opt, action);
       return;
     }
     this.values.set(next);
@@ -776,7 +809,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set([]);
       }
-      this.beginCommitClear(previous, action);
+      this.commitHandler.beginClear(previous, action);
       return;
     }
     this.values.set([]);
@@ -869,7 +902,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set(next);
       }
-      this.beginCommit(next, previous, opt, action);
+      this.commitHandler.beginToggle(next, previous, opt, action);
       return;
     }
     this.values.set(next);
@@ -887,87 +920,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       action: 'toggle',
     });
     this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
-  }
-
-  private beginCommit(
-    next: T[],
-    previous: T[],
-    opt: CngxSelectOptionDef<T>,
-    action: CngxSelectCommitAction<T[]>,
-  ): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        const isNowSelected = finalValues.some((v) => this.compareWith()(v, opt.value));
-        this.togglingOption.set(null);
-        this.finalizeToggle(opt, isNowSelected);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  private beginCommitClear(previous: T[], action: CngxSelectCommitAction<T[]>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, [], previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? [];
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        this.togglingOption.set(null);
-        this.cleared.emit();
-        this.selectionChange.emit({
-          source: this,
-          values: finalValues,
-          added: [],
-          removed: previous,
-          option: null,
-          action: 'clear',
-        });
-        this.core.announce(null, 'removed', finalValues.length, true);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    const opt = this.togglingOption();
-    if (opt === null) {
-      this.beginCommitClear(this.lastCommittedValues, action);
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValues, opt, action);
   }
 }
 

@@ -166,3 +166,12 @@ export {
   type DisplayBinding,
   type DisplayBindingOptions,
 } from './src/lib/shared/display-binding';
+
+// ── Array commit handler (multi-select / combobox) ────────────────────
+export {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  createArrayCommitHandler,
+  type ArrayCommitHandler,
+  type ArrayCommitHandlerOptions,
+  type CngxArrayCommitHandlerFactory,
+} from './src/lib/shared/array-commit-handler';
