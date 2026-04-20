@@ -38,7 +38,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
-import { createDisplayBinding, type DisplayBinding } from '../shared/display-binding';
+import {
+  CNGX_DISPLAY_BINDING_FACTORY,
+  type DisplayBinding,
+} from '../shared/display-binding';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
@@ -516,9 +519,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * Display binding — owns the value ↔ input-text reconciliation cycle
    * (including `writingFromValue` flag, skipInitial-aware
    * `searchTermChange` forwarding, and the imperative
-   * `writeFromValue` seed). See `shared/display-binding.ts`.
+   * `writeFromValue` seed). Resolved via `CNGX_DISPLAY_BINDING_FACTORY`
+   * so consumers can wrap the default with telemetry / audit logging /
+   * alternative search-term reset policies without forking the
+   * component.
    */
-  private readonly display: DisplayBinding<T> = createDisplayBinding<T>({
+  private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.displayWith,
     focused: this.focusedState,

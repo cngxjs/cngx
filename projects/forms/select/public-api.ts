@@ -165,7 +165,9 @@ export {
 
 // ── Display binding (scalar value ↔ input text) ───────────────────────
 export {
+  CNGX_DISPLAY_BINDING_FACTORY,
   createDisplayBinding,
+  type CngxDisplayBindingFactory,
   type DisplayBinding,
   type DisplayBindingOptions,
 } from './src/lib/shared/display-binding';

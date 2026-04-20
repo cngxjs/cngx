@@ -1,4 +1,11 @@
-import { effect, signal, untracked, type ElementRef, type Signal } from '@angular/core';
+import {
+  effect,
+  InjectionToken,
+  signal,
+  untracked,
+  type ElementRef,
+  type Signal,
+} from '@angular/core';
 
 import type { CngxListboxSearch } from '@cngx/common/interactive';
 
@@ -137,3 +144,35 @@ export function createDisplayBinding<T>(
     isWritingFromValue: writingFlag.asReadonly(),
   };
 }
+
+/**
+ * Factory-signature type — mirrors {@link createDisplayBinding} so
+ * DI-overrides match the exact shape of the default.
+ *
+ * @category interactive
+ */
+export type CngxDisplayBindingFactory = <T>(
+  opts: DisplayBindingOptions<T>,
+) => DisplayBinding<T>;
+
+/**
+ * DI token resolving the factory used to instantiate a
+ * {@link DisplayBinding}. Defaults to {@link createDisplayBinding};
+ * override app-wide via `providers: [{ provide: CNGX_DISPLAY_BINDING_FACTORY, useValue: customFactory }]`
+ * or per-component via `viewProviders` to wrap the default with
+ * telemetry, custom formatting, or an alternative search-term reset
+ * policy without forking `CngxTypeahead` or any future scalar
+ * autocomplete component.
+ *
+ * Symmetrical to `CNGX_SELECTION_CONTROLLER_FACTORY` /
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` /
+ * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` — same override pattern, applied
+ * at the input-text-binding level.
+ *
+ * @category interactive
+ */
+export const CNGX_DISPLAY_BINDING_FACTORY =
+  new InjectionToken<CngxDisplayBindingFactory>('CngxDisplayBindingFactory', {
+    providedIn: 'root',
+    factory: () => createDisplayBinding,
+  });
