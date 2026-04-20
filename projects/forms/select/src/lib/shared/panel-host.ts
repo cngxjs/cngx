@@ -1,16 +1,8 @@
-import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
+import { InjectionToken, type Signal } from '@angular/core';
 
 import type {
-  CngxSelectCheckContext,
   CngxSelectCommitErrorContext,
-  CngxSelectEmptyContext,
   CngxSelectErrorContext,
-  CngxSelectLoadingContext,
-  CngxSelectOptgroupContext,
-  CngxSelectOptionErrorContext,
-  CngxSelectOptionLabelContext,
-  CngxSelectOptionPendingContext,
-  CngxSelectRefreshingContext,
 } from './template-slots';
 import type {
   CngxSelectCommitErrorDisplay,
@@ -24,6 +16,7 @@ import type {
   CngxSelectOptionGroupDef,
   CngxSelectOptionsInput,
 } from './option.model';
+import type { CngxSelectTemplateRegistry } from './template-registry';
 import type { AsyncView } from '@cngx/common/data';
 
 /**
@@ -85,17 +78,14 @@ export interface CngxSelectPanelHost<T = unknown> {
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;
 
-  // ── Resolved templates (instance > config.templates > library default) ─
-  readonly checkTpl: Signal<TemplateRef<CngxSelectCheckContext<T>> | null>;
-  readonly optgroupTpl: Signal<TemplateRef<CngxSelectOptgroupContext<T>> | null>;
-  readonly emptyTpl: Signal<TemplateRef<CngxSelectEmptyContext> | null>;
-  readonly loadingTpl: Signal<TemplateRef<CngxSelectLoadingContext> | null>;
-  readonly refreshingTpl: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
-  readonly errorTpl: Signal<TemplateRef<CngxSelectErrorContext> | null>;
-  readonly commitErrorTpl: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
-  readonly optionLabelTpl: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
-  readonly optionPendingTpl: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
-  readonly optionErrorTpl: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
+  /**
+   * Resolved template-slot registry (instance-projected directive →
+   * `CNGX_SELECT_CONFIG.templates.*` → library default). The panel reads
+   * `host.tpl.check()`, `host.tpl.empty()`, etc. The variant builds this
+   * bundle once via `createTemplateRegistry(...)`; the panel stays free
+   * of cascade logic.
+   */
+  readonly tpl: CngxSelectTemplateRegistry<T>;
   /**
    * Latest commit error surfaced inline on the selected option row.
    * `null` when no commit is in error or `commitErrorDisplay !== 'inline'`.

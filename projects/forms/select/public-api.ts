@@ -182,3 +182,10 @@ export {
   type ArrayCommitHandlerOptions,
   type CngxArrayCommitHandlerFactory,
 } from './src/lib/shared/array-commit-handler';
+
+// ── Shared template-slot registry ─────────────────────────────────────
+export {
+  createTemplateRegistry,
+  type CngxSelectTemplateRegistry,
+  type CngxSelectTemplateRegistryQueries,
+} from './src/lib/shared/template-registry';

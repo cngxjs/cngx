@@ -61,7 +61,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { resolveTemplate } from '../shared/resolve-template';
+import { createTemplateRegistry } from '../shared/template-registry';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -160,9 +160,9 @@ export interface CngxTypeaheadChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <div class="cngx-typeahead__trigger" (click)="handleWrapperClick()">
-        @if (inputPrefixTpl(); as tpl) {
+        @if (inputPrefixTpl(); as prefixTpl) {
           <span class="cngx-typeahead__prefix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />
           </span>
         }
         <input
@@ -199,17 +199,17 @@ export interface CngxTypeaheadChange<T = unknown> {
           (focus)="handleFocus()"
           (blur)="handleBlur()"
         />
-        @if (inputSuffixTpl(); as tpl) {
+        @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-typeahead__suffix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
           </span>
         }
         @if (clearable() && value() !== undefined && !disabled()) {
-          @if (clearButtonTpl(); as tpl) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
             <span class="cngx-typeahead__clear-slot" (click)="$event.stopPropagation()">
               <ng-container
                 *ngTemplateOutlet="
-                  tpl;
+                  clearBtnTpl;
                   context: { $implicit: clearCallback, clear: clearCallback, disabled: disabled() }
                 "
               />
@@ -230,8 +230,8 @@ export interface CngxTypeaheadChange<T = unknown> {
           }
         }
         @if (resolvedShowCaret()) {
-          @if (caretTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }" />
+          @if (tpl.caret(); as caretT) {
+            <ng-container *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }" />
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-typeahead__caret">
               <ng-container *ngTemplateOutlet="glyph" />
@@ -361,19 +361,22 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
-  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly tpl = createTemplateRegistry<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
   /** @internal */ protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
   );

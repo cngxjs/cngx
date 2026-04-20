@@ -60,6 +60,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { createTemplateRegistry } from '../shared/template-registry';
 import { resolveTemplate } from '../shared/resolve-template';
 import {
   cngxSelectDefaultCompare,
@@ -182,15 +183,15 @@ export interface CngxSelectChange<T = unknown> {
       (keydown)="handleTriggerKeydown($event)"
     >
       <span class="cngx-select__label">
-        @if (triggerLabelTpl(); as tpl) {
+        @if (triggerLabelTpl(); as triggerTpl) {
           @if (!isEmpty()) {
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                triggerTpl;
                 context: { $implicit: selectedOption(), selected: selectedOption() }
               "
             />
-          } @else if (placeholderTpl(); as phTpl) {
+          } @else if (tpl.placeholder(); as phTpl) {
             <ng-container
               *ngTemplateOutlet="
                 phTpl;
@@ -201,10 +202,10 @@ export interface CngxSelectChange<T = unknown> {
             {{ placeholder() || label() }}
           }
         } @else if (isEmpty()) {
-          @if (placeholderTpl(); as tpl) {
+          @if (tpl.placeholder(); as phTpl) {
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                phTpl;
                 context: { $implicit: placeholder(), placeholder: placeholder() }
               "
             />
@@ -216,11 +217,11 @@ export interface CngxSelectChange<T = unknown> {
         }
       </span>
       @if (clearable() && !isEmpty() && !disabled()) {
-        @if (clearButtonTpl(); as tpl) {
+        @if (tpl.clearButton(); as clearBtnTpl) {
           <span class="cngx-select__clear-slot" (click)="$event.stopPropagation()">
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                clearBtnTpl;
                 context: {
                   $implicit: clearCallback,
                   clear: clearCallback,
@@ -245,9 +246,9 @@ export interface CngxSelectChange<T = unknown> {
         }
       }
       @if (resolvedShowCaret()) {
-        @if (caretTpl(); as tpl) {
+        @if (tpl.caret(); as caretT) {
           <ng-container
-            *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
+            *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
           />
         } @else if (caretGlyph(); as glyph) {
           <span aria-hidden="true" class="cngx-select__caret">
@@ -385,22 +386,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template refs ─────────────────────────────────────────
+  // ── Resolved template-slot registry ────────────────────────────────
 
-  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /** @internal */ protected readonly triggerLabelTpl = resolveTemplate(this.triggerLabelDirective, 'triggerLabel');
-  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly tpl = createTemplateRegistry<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
+  /**
+   * Variant-specific trigger label override. Stays inline because
+   * `CngxSelectTriggerLabel` has a `CngxSelectOptionDef<T>` context that
+   * multi/combobox variants replace with array-shaped contexts.
+   *
+   * @internal
+   */
+  protected readonly triggerLabelTpl = resolveTemplate(
+    this.triggerLabelDirective,
+    'triggerLabel',
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 

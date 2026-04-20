@@ -55,7 +55,7 @@ import type { CngxSelectOptionDef } from '../option.model';
   template: `
     @switch (host.activeView()) {
       @case ('skeleton') {
-        @if (host.loadingTpl(); as tpl) {
+        @if (host.tpl.loading(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl" />
         } @else {
           @switch (host.loadingVariant()) {
@@ -81,21 +81,21 @@ import type { CngxSelectOptionDef } from '../option.model';
         }
       }
       @case ('empty') {
-        @if (host.emptyTpl(); as tpl) {
+        @if (host.tpl.empty(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl" />
         } @else {
           <div class="cngx-select__empty">No Options</div>
         }
       }
       @case ('none') {
-        @if (host.emptyTpl(); as tpl) {
+        @if (host.tpl.empty(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl" />
         } @else {
           <div class="cngx-select__empty">No Options</div>
         }
       }
       @case ('error') {
-        @if (host.errorTpl(); as tpl) {
+        @if (host.tpl.error(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
         } @else {
           <div class="cngx-select__error" role="alert">
@@ -108,7 +108,7 @@ import type { CngxSelectOptionDef } from '../option.model';
       }
       @default {
         @if (host.showInlineError()) {
-          @if (host.errorTpl(); as tpl) {
+          @if (host.tpl.error(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
           } @else {
             <div class="cngx-select__error cngx-select__error--inline" role="alert">
@@ -120,7 +120,7 @@ import type { CngxSelectOptionDef } from '../option.model';
           }
         }
         @if (host.showCommitError() && host.commitErrorDisplay() === 'banner') {
-          @if (host.commitErrorTpl(); as tpl) {
+          @if (host.tpl.commitError(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
           } @else {
             <div class="cngx-select__commit-error" role="alert">
@@ -132,7 +132,7 @@ import type { CngxSelectOptionDef } from '../option.model';
           }
         }
         @if (host.showRefreshIndicator()) {
-          @if (host.refreshingTpl(); as tpl) {
+          @if (host.tpl.refreshing(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl" />
           } @else {
             @switch (host.refreshingVariant()) {
@@ -158,7 +158,7 @@ import type { CngxSelectOptionDef } from '../option.model';
         @for (item of host.effectiveOptions(); track $index) {
           @if (host.isGroup(item)) {
             <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
-              @if (host.optgroupTpl(); as tpl) {
+              @if (host.tpl.optgroup(); as tpl) {
                 <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
               } @else {
                 <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
@@ -191,7 +191,7 @@ import type { CngxSelectOptionDef } from '../option.model';
         [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
-          @if (host.checkTpl(); as tpl) {
+          @if (host.tpl.check(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: {
               $implicit: opt,
               option: opt,
@@ -209,13 +209,13 @@ import type { CngxSelectOptionDef } from '../option.model';
             />
           }
         }
-        @if (host.optionLabelTpl(); as tpl) {
+        @if (host.tpl.optionLabel(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, selected: host.isSelected(opt), highlighted: isHighlighted(opt) }" />
         } @else {
           {{ opt.label }}
         }
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
-          @if (host.checkTpl(); as tpl) {
+          @if (host.tpl.check(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: {
               $implicit: opt,
               option: opt,
@@ -234,13 +234,13 @@ import type { CngxSelectOptionDef } from '../option.model';
           }
         }
         @if (host.isCommittingOption(opt)) {
-          @if (host.optionPendingTpl(); as tpl) {
+          @if (host.tpl.optionPending(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt }" />
           } @else {
             <span aria-hidden="true" class="cngx-select__option-spinner"></span>
           }
         } @else if (host.commitErrorDisplay() === 'inline' && host.showCommitError() && host.isSelected(opt)) {
-          @if (host.optionErrorTpl(); as tpl) {
+          @if (host.tpl.optionError(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: { $implicit: opt, option: opt, error: host.commitErrorValue() }" />
           } @else {
             <span aria-hidden="true" class="cngx-select__option-error">!</span>

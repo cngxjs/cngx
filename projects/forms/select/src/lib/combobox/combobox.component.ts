@@ -63,7 +63,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { resolveTemplate } from '../shared/resolve-template';
+import { createTemplateRegistry } from '../shared/template-registry';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -180,11 +180,11 @@ export interface CngxComboboxChange<T = unknown> {
         [attr.aria-disabled]="aria.disabled"
         (click)="handleWrapperClick($event)"
       >
-        @if (triggerLabelTpl(); as tpl) {
+        @if (triggerLabelTpl(); as triggerTpl) {
           <span class="cngx-select__chip-list cngx-combobox__trigger-label">
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                triggerTpl;
                 context: {
                   $implicit: selectedOptions(),
                   selected: selectedOptions(),
@@ -207,9 +207,9 @@ export interface CngxComboboxChange<T = unknown> {
             }
           </span>
         }
-        @if (inputPrefixTpl(); as tpl) {
+        @if (inputPrefixTpl(); as prefixTpl) {
           <span class="cngx-combobox__prefix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />
           </span>
         }
         <input
@@ -247,17 +247,17 @@ export interface CngxComboboxChange<T = unknown> {
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
         />
-        @if (inputSuffixTpl(); as tpl) {
+        @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-combobox__suffix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
           </span>
         }
         @if (clearable() && !isEmpty() && !disabled()) {
-          @if (clearButtonTpl(); as tpl) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
             <span class="cngx-combobox__clear-slot" (click)="$event.stopPropagation()">
               <ng-container
                 *ngTemplateOutlet="
-                  tpl;
+                  clearBtnTpl;
                   context: {
                     $implicit: clearAllCallback,
                     clear: clearAllCallback,
@@ -282,9 +282,9 @@ export interface CngxComboboxChange<T = unknown> {
           }
         }
         @if (resolvedShowCaret()) {
-          @if (caretTpl(); as tpl) {
+          @if (tpl.caret(); as caretT) {
             <ng-container
-              *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
+              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
             />
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-combobox__caret">
@@ -509,38 +509,28 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
-  // ── Resolved template refs ─────────────────────────────────────────
+  // ── Resolved template-slot registry ────────────────────────────────
 
   /** @internal */
-  protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */
-  protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */
-  protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */
-  protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */
-  protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */
-  protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
+  protected readonly tpl = createTemplateRegistry<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
   /** Combobox-specific trigger-label slot. @internal */
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxComboboxTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
-  /** @internal */
-  protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */
-  protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */
-  protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */
-  protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */
-  protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */
-  protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */
-  protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
