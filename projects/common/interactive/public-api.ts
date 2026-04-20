@@ -26,6 +26,13 @@ export { CngxNavLink } from './src/nav/nav-link.directive';
 export { CngxNavBadge, type NavBadgeVariant } from './src/nav/nav-badge.directive';
 export { CngxDisclosure } from './src/nav/disclosure.directive';
 export { CngxExpandable } from './src/expandable/expandable.directive';
+export {
+  CNGX_TREE_CONTROLLER_FACTORY,
+  createTreeController,
+  type CngxTreeController,
+  type CngxTreeControllerFactory,
+  type CngxTreeControllerOptions,
+} from './src/tree-controller/tree-controller';
 export { withRetry, type RetryConfig, type RetryState } from './src/retry/with-retry';
 export { optimistic, type OptimisticState } from './src/optimistic/optimistic';
 export { CngxLongPress } from './src/gestures/long-press.directive';
