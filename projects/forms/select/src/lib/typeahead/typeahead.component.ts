@@ -257,7 +257,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** When `true` (default), blur without a valid pick resets the input text to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
-  readonly searchDebounceMs = input<number>(300);
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);

@@ -343,8 +343,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Custom matcher used by the inline `CngxListboxSearch`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
 
-  /** Debounce for search term updates, in milliseconds. */
-  readonly searchDebounceMs = input<number>(300);
+  /** Debounce for search term updates, in milliseconds. Defaults to `typeaheadDebounceInterval` from the resolved select config (300ms). */
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
 
   /** Suppress the first `searchTermChange` emission (hydrate-time `''`). */
   readonly skipInitial = input<boolean>(false);

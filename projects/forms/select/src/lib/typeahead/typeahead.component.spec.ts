@@ -9,6 +9,7 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
+import { provideSelectConfig, withTypeaheadDebounce } from '../shared/config';
 
 type User = { readonly id: number; readonly name: string };
 
@@ -303,5 +304,40 @@ describe('CngxTypeahead — clearOnBlur', () => {
     input.blur();
     flush(fixture);
     expect(input.value).toBe('Alice');
+  });
+});
+
+// ── Config cascade — searchDebounceMs honors typeaheadDebounceInterval ─
+
+describe('CngxTypeahead — searchDebounceMs config integration', () => {
+  @Component({
+    template: `<cngx-typeahead [options]="options" />`,
+    imports: [CngxTypeahead],
+  })
+  class ConfigHost {
+    readonly options: CngxSelectOptionsInput<string> = [{ value: 'a', label: 'A' }];
+  }
+
+  beforeEach(() => polyfillPopover());
+
+  it('default searchDebounceMs is pulled from CNGX_SELECT_CONFIG (300ms when unset)', () => {
+    TestBed.configureTestingModule({ imports: [ConfigHost] });
+    const fixture = TestBed.createComponent(ConfigHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    expect(typeahead.searchDebounceMs()).toBe(300);
+  });
+
+  it('app-scope provideSelectConfig(withTypeaheadDebounce(ms)) overrides the default', () => {
+    TestBed.configureTestingModule({
+      imports: [ConfigHost],
+      providers: [provideSelectConfig(withTypeaheadDebounce(500))],
+    });
+    const fixture = TestBed.createComponent(ConfigHost);
+    flush(fixture);
+    const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
+      .componentInstance as CngxTypeahead<string>;
+    expect(typeahead.searchDebounceMs()).toBe(500);
   });
 });
