@@ -11,7 +11,12 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListboxSearch } from '@cngx/common/interactive';
 
-import { createDisplayBinding, type DisplayBinding } from './display-binding';
+import {
+  CNGX_DISPLAY_BINDING_FACTORY,
+  createDisplayBinding,
+  type CngxDisplayBindingFactory,
+  type DisplayBinding,
+} from './display-binding';
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
@@ -114,5 +119,46 @@ describe('createDisplayBinding', () => {
     const host = fixture.componentInstance;
     host.binding.writeFromValue('eve');
     expect(host.binding.isWritingFromValue()).toBe(true);
+  });
+});
+
+// ── CNGX_DISPLAY_BINDING_FACTORY DI token ──────────────────────────────
+
+describe('CNGX_DISPLAY_BINDING_FACTORY', () => {
+  it('default injection resolves to createDisplayBinding', () => {
+    TestBed.configureTestingModule({});
+    const factory = TestBed.runInInjectionContext(() =>
+      TestBed.inject(CNGX_DISPLAY_BINDING_FACTORY),
+    );
+    expect(factory).toBe(createDisplayBinding);
+  });
+
+  it('can be overridden via DI — consumer-supplied factory is returned from the token', () => {
+    const calls: string[] = [];
+    const wrappingFactory: CngxDisplayBindingFactory = <U>(
+      opts: Parameters<typeof createDisplayBinding<U>>[0],
+    ): DisplayBinding<U> => {
+      const inner = createDisplayBinding<U>(opts);
+      return {
+        writeFromValue(v): void {
+          calls.push(`write:${String(v)}`);
+          inner.writeFromValue(v);
+        },
+        isWritingFromValue: inner.isWritingFromValue,
+      };
+    };
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_DISPLAY_BINDING_FACTORY, useValue: wrappingFactory },
+      ],
+    });
+    const factory = TestBed.runInInjectionContext(() =>
+      TestBed.inject(CNGX_DISPLAY_BINDING_FACTORY),
+    );
+    expect(factory).toBe(wrappingFactory);
+    // Log still empty — nobody invoked the factory yet; the override is
+    // wired but dormant until a component resolves it (CngxTypeahead does).
+    expect(calls).toEqual([]);
   });
 });

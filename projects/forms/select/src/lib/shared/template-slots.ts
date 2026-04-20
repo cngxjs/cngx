@@ -581,3 +581,63 @@ export class CngxComboboxTriggerLabel<T = unknown> {
   readonly templateRef =
     inject<TemplateRef<CngxComboboxTriggerLabelContext<T>>>(TemplateRef);
 }
+
+/**
+ * Context provided to the input-prefix / input-suffix slot templates.
+ * Reflects the live reactive state so a consumer-authored icon can
+ * dim / rotate / swap based on focus + panel visibility without
+ * re-deriving those flags from the component's protected surface.
+ *
+ * @category interactive
+ */
+export interface CngxSelectInputSlotContext {
+  readonly disabled: boolean;
+  readonly focused: boolean;
+  readonly panelOpen: boolean;
+}
+
+/**
+ * Slot projected *before* the focusable `<input>` inside the trigger —
+ * used for leading icons (search glyph, currency prefix, loading
+ * spinner). Renders on `CngxTypeahead` and `CngxCombobox` only; the
+ * button-triggered variants (`CngxSelect`, `CngxMultiSelect`) have no
+ * input slot to attach to.
+ *
+ * @example
+ * ```html
+ * <cngx-typeahead [options]="users">
+ *   <ng-template cngxSelectInputPrefix let-focused="focused">
+ *     <svg class="lupe" [class.active]="focused" />
+ *   </ng-template>
+ * </cngx-typeahead>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectInputPrefix]',
+  standalone: true,
+  exportAs: 'cngxSelectInputPrefix',
+})
+export class CngxSelectInputPrefix {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+}
+
+/**
+ * Slot projected *after* the focusable `<input>`, before the clear
+ * button and caret. Typical consumers: trailing loading-spinner, unit
+ * suffix label, chevron adornment. Context matches
+ * {@link CngxSelectInputPrefix}.
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectInputSuffix]',
+  standalone: true,
+  exportAs: 'cngxSelectInputSuffix',
+})
+export class CngxSelectInputSuffix {
+  readonly templateRef =
+    inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+}

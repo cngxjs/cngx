@@ -37,6 +37,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import {
+  createArrayCommitHandler,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
 import {
@@ -95,6 +99,14 @@ import {
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
   readonly values: readonly T[];
+  /**
+   * Values before the change was committed. Populated from the pre-
+   * toggle snapshot in the AD-activation callback, from the commit-
+   * controller's rollback target on success, and from the pre-clear
+   * array in the clear path. Plural name to disambiguate from the
+   * scalar `previousValue` on `CngxSelectChange` / `CngxTypeaheadChange`.
+   */
+  readonly previousValues?: readonly T[];
   readonly added: readonly T[];
   readonly removed: readonly T[];
   readonly option: CngxSelectOptionDef<T> | null;
@@ -153,6 +165,7 @@ export interface CngxMultiSelectChange<T = unknown> {
         custom chip-close slots) which would be invalid nested buttons
         inside a <button>. WAI-ARIA 1.2 pattern for multi-value comboboxes.
       -->
+      @let aria = triggerAria();
       <div
         #triggerBtn
         class="cngx-multi-select__trigger"
@@ -163,15 +176,15 @@ export interface CngxMultiSelectChange<T = unknown> {
         [popover]="pop"
         [closeOnSelect]="false"
         [attr.tabindex]="effectiveTabIndex()"
-        [attr.aria-label]="triggerAria().label"
-        [attr.aria-labelledby]="triggerAria().labelledBy"
-        [attr.aria-describedby]="triggerAria().describedBy"
-        [attr.aria-errormessage]="triggerAria().errorMessage"
-        [attr.aria-expanded]="triggerAria().expanded"
-        [attr.aria-disabled]="triggerAria().disabled"
-        [attr.aria-invalid]="triggerAria().invalid"
-        [attr.aria-required]="triggerAria().required"
-        [attr.aria-busy]="triggerAria().busy"
+        [attr.aria-label]="aria.label"
+        [attr.aria-labelledby]="aria.labelledBy"
+        [attr.aria-describedby]="aria.describedBy"
+        [attr.aria-errormessage]="aria.errorMessage"
+        [attr.aria-expanded]="aria.expanded"
+        [attr.aria-disabled]="aria.disabled"
+        [attr.aria-invalid]="aria.invalid"
+        [attr.aria-required]="aria.required"
+        [attr.aria-busy]="aria.busy"
         (click)="handleTriggerClick()"
         (focus)="handleFocus()"
         (blur)="handleBlur()"
@@ -249,7 +262,11 @@ export interface CngxMultiSelectChange<T = unknown> {
               [attr.aria-label]="clearButtonAriaLabel()"
               (click)="handleClearAllClick($event)"
             >
-              ✕
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
             </button>
           }
         }
@@ -258,6 +275,10 @@ export interface CngxMultiSelectChange<T = unknown> {
             <ng-container
               *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
             />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-multi-select__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
           } @else {
             <span aria-hidden="true" class="cngx-multi-select__caret">&#9662;</span>
           }
@@ -315,6 +336,19 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
   readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear-all button
+   * without forking the button frame or ARIA wiring. When
+   * `*cngxSelectClearButton` is projected, the projected template takes
+   * full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>('Auswahl zurücksetzen');
   readonly chipRemoveAriaLabel = input<string>('Entfernen');
@@ -530,11 +564,32 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
-  /** Currently selected options. */
+  /**
+   * Currently selected options. Structurally compared by `.value`
+   * under `compareWith` so a fresh OptionDef reference carrying the
+   * same values does not cascade re-renders on consumer bindings.
+   */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   // ── Multi-selection state ──────────────────────────────────────────
@@ -592,11 +647,42 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit state (delegated) ───────────────────────────────────────
 
-  private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
+
+  /**
+   * Commit-flow handler — owns the commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, and live-region announcements.
+   * Shared with `CngxCombobox` via `shared/array-commit-handler.ts`.
+   * Consumer retains emission of selection-change payloads via the
+   * finalize callbacks (value-shape-specific).
+   */
+  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    getLastCommitted: () => this.lastCommittedValues,
+    onToggleFinalize: (option, isNowSelected) =>
+      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) => {
+      this.cleared.emit();
+      this.selectionChange.emit({
+        source: this,
+        values: finalValues,
+        previousValues: previous,
+        added: [],
+        removed: previous,
+        option: null,
+        action: 'clear',
+      });
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+  });
 
   /** @internal */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
@@ -654,12 +740,21 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         }
         const action = this.commitAction();
         if (action) {
-          this.beginCommit(next, previous, opt, action);
+          this.commitHandler.beginToggle(next, previous, opt, action);
         }
       },
       onActivate: (_value, opt) => {
+        // Values have already been mutated by the listbox. Reconstruct
+        // the pre-toggle snapshot by inverting the change:
+        //   currentSelected=true  → opt was added    → previous = current \ {opt}
+        //   currentSelected=false → opt was removed  → previous = current ∪ {opt}
         const currentSelected = this.isSelected(opt);
-        this.finalizeToggle(opt, currentSelected);
+        const current = this.values();
+        const eq = this.compareWith();
+        const previousValues = currentSelected
+          ? current.filter((v) => !eq(v, opt.value))
+          : [...current, opt.value];
+        this.finalizeToggle(opt, currentSelected, previousValues);
       },
     });
 
@@ -750,11 +845,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set(next);
       }
-      this.beginCommit(next, previous, opt, action);
+      this.commitHandler.beginToggle(next, previous, opt, action);
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, false);
+    this.finalizeToggle(opt, false, previous);
   }
 
   /** @internal */
@@ -776,7 +871,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set([]);
       }
-      this.beginCommitClear(previous, action);
+      this.commitHandler.beginClear(previous, action);
       return;
     }
     this.values.set([]);
@@ -784,6 +879,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({
       source: this,
       values: [],
+      previousValues: previous,
       added: [],
       removed: previous,
       option: null,
@@ -869,105 +965,29 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set(next);
       }
-      this.beginCommit(next, previous, opt, action);
+      this.commitHandler.beginToggle(next, previous, opt, action);
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, !wasSelected);
+    this.finalizeToggle(opt, !wasSelected, previous);
   }
 
-  private finalizeToggle(opt: CngxSelectOptionDef<T>, isNowSelected: boolean): void {
+  private finalizeToggle(
+    opt: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previousValues: readonly T[] = [],
+  ): void {
     this.optionToggled.emit({ option: opt, added: isNowSelected });
     this.selectionChange.emit({
       source: this,
       values: this.values(),
+      previousValues,
       added: isNowSelected ? [opt.value] : [],
       removed: isNowSelected ? [] : [opt.value],
       option: opt,
       action: 'toggle',
     });
     this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
-  }
-
-  private beginCommit(
-    next: T[],
-    previous: T[],
-    opt: CngxSelectOptionDef<T>,
-    action: CngxSelectCommitAction<T[]>,
-  ): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        const isNowSelected = finalValues.some((v) => this.compareWith()(v, opt.value));
-        this.togglingOption.set(null);
-        this.finalizeToggle(opt, isNowSelected);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  private beginCommitClear(previous: T[], action: CngxSelectCommitAction<T[]>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, [], previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? [];
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        this.togglingOption.set(null);
-        this.cleared.emit();
-        this.selectionChange.emit({
-          source: this,
-          values: finalValues,
-          added: [],
-          removed: previous,
-          option: null,
-          action: 'clear',
-        });
-        this.core.announce(null, 'removed', finalValues.length, true);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    const opt = this.togglingOption();
-    if (opt === null) {
-      this.beginCommitClear(this.lastCommittedValues, action);
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValues, opt, action);
   }
 }
 

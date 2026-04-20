@@ -14,6 +14,7 @@ import {
   untracked,
   viewChild,
   type ElementRef,
+  type TemplateRef,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
@@ -91,6 +92,16 @@ import {
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
   readonly value: T | undefined;
+  /**
+   * Value before the change was committed. `undefined` both when the
+   * previous state was empty and (for back-compat) on the narrow paths
+   * where no snapshot was captured. Consumers implementing
+   * undo/redo, audit logging, or commit-error recovery UIs can rely on
+   * this being populated for every emission from the commit-flow
+   * (success + error paths) and from the direct activation / clear
+   * paths.
+   */
+  readonly previousValue?: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
@@ -145,6 +156,7 @@ export interface CngxSelectChange<T = unknown> {
       be an invalid nested button inside a <button>. WAI-ARIA 1.2
       combobox pattern.
     -->
+    @let aria = triggerAria();
     <div
       #triggerBtn
       class="cngx-select__trigger"
@@ -155,15 +167,15 @@ export interface CngxSelectChange<T = unknown> {
       [popover]="pop"
       [closeOnSelect]="true"
       [attr.tabindex]="effectiveTabIndex()"
-      [attr.aria-label]="triggerAria().label"
-      [attr.aria-labelledby]="triggerAria().labelledBy"
-      [attr.aria-describedby]="triggerAria().describedBy"
-      [attr.aria-errormessage]="triggerAria().errorMessage"
-      [attr.aria-expanded]="triggerAria().expanded"
-      [attr.aria-disabled]="triggerAria().disabled"
-      [attr.aria-invalid]="triggerAria().invalid"
-      [attr.aria-required]="triggerAria().required"
-      [attr.aria-busy]="triggerAria().busy"
+      [attr.aria-label]="aria.label"
+      [attr.aria-labelledby]="aria.labelledBy"
+      [attr.aria-describedby]="aria.describedBy"
+      [attr.aria-errormessage]="aria.errorMessage"
+      [attr.aria-expanded]="aria.expanded"
+      [attr.aria-disabled]="aria.disabled"
+      [attr.aria-invalid]="aria.invalid"
+      [attr.aria-required]="aria.required"
+      [attr.aria-busy]="aria.busy"
       (click)="handleTriggerClick()"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
@@ -224,7 +236,11 @@ export interface CngxSelectChange<T = unknown> {
             [attr.aria-label]="clearButtonAriaLabel()"
             (click)="handleClearClick($event)"
           >
-            ✕
+            @if (clearGlyph(); as glyph) {
+              <ng-container *ngTemplateOutlet="glyph" />
+            } @else {
+              <span aria-hidden="true">✕</span>
+            }
           </button>
         }
       }
@@ -233,6 +249,10 @@ export interface CngxSelectChange<T = unknown> {
           <ng-container
             *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
           />
+        } @else if (caretGlyph(); as glyph) {
+          <span aria-hidden="true" class="cngx-select__caret">
+            <ng-container *ngTemplateOutlet="glyph" />
+          </span>
         } @else {
           <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
         }
@@ -290,6 +310,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
   readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear button
+   * while keeping the button frame, ARIA wiring, and click handler
+   * intact. When `*cngxSelectClearButton` is projected, the projected
+   * template takes full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
   readonly loading = input<boolean>(false);
@@ -494,7 +527,28 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
 
   /** Currently selected option, resolved against `options`. */
-  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
+  /**
+   * Currently selected option, resolved against `options`. Structurally
+   * compared — two OptionDefs with the same `.value` under `compareWith`
+   * are considered equal, so downstream `@let selected = selected()` or
+   * `[selected]=selected()` bindings don't cascade re-renders when the
+   * upstream options array is re-emitted with a fresh OptionDef
+   * reference for the same value (common with server-driven options).
+   */
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(
+    () => this.selectedOption(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
+      },
+    },
+  );
 
   /** Human-readable label displayed on the trigger. */
   readonly triggerValue = computed<string>(() => this.triggerText());
@@ -589,7 +643,20 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           this.beginCommit(intended, previous, action);
         }
       },
-      onActivate: (intended) => this.finalizeSelection(intended),
+      onActivate: (intended) => {
+        // Capture previous BEFORE the listbox's internal activation
+        // subscriber mutates our value via the [(value)] binding. We're
+        // running inside the dispatcher's untracked() block, and RxJS
+        // Subject subscribers fire in registration order — the listbox
+        // (subscribed during its own constructor) runs before us, so by
+        // the time we're here the value MAY already be the new one.
+        // Reading untracked(value) snapshots whatever has propagated.
+        // If the snapshot equals intended, consumers see
+        // `previousValue === value` — semantically "no change detected"
+        // which is a valid honest report.
+        const previous = untracked(() => this.value());
+        this.finalizeSelection(intended, previous);
+      },
     });
 
     // Panel open/close lifecycle events.
@@ -654,13 +721,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal — emit outputs + announcer for a picked value. */
-  private finalizeSelection(value: T | undefined): void {
+  private finalizeSelection(value: T | undefined, previousValue: T | undefined): void {
     const eq = this.compareWith();
     const opt =
       value === undefined
         ? null
         : (this.flatOptions().find((o) => eq(o.value, value)) ?? null);
-    this.selectionChange.emit({ source: this, value, option: opt });
+    this.selectionChange.emit({ source: this, value, previousValue, option: opt });
     this.optionSelected.emit(opt);
     this.core.announce(opt, 'added', opt ? 1 : 0, false);
   }
@@ -689,7 +756,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
           pop.hide();
         }
         this.togglingOption.set(null);
-        this.finalizeSelection(committed);
+        this.finalizeSelection(committed, previous);
       },
       onError: (err, rollbackTo) => {
         this.stateChange.emit('error');
@@ -725,7 +792,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       return;
     }
     this.value.set(undefined);
-    this.selectionChange.emit({ source: this, value: undefined, option: null });
+    this.selectionChange.emit({
+      source: this,
+      value: undefined,
+      previousValue: current,
+      option: null,
+    });
     this.optionSelected.emit(null);
     this.core.announce(null, 'removed', 0, false);
   };
@@ -761,10 +833,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         const candidate = this.typeaheadController.matchFromIndex(key, currentIdx);
         if (candidate) {
           event.preventDefault();
+          const previous = v;
           this.value.set(candidate.value);
           this.selectionChange.emit({
             source: this,
             value: candidate.value,
+            previousValue: previous,
             option: candidate,
           });
           this.optionSelected.emit(candidate);

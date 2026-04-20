@@ -1,4 +1,4 @@
-import { Component, signal, type WritableSignal } from '@angular/core';
+import { Component, signal, viewChild, type TemplateRef, type WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,6 +10,7 @@ import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
 import { provideSelectConfig, withTypeaheadDebounce } from '../shared/config';
+import { CngxSelectInputPrefix, CngxSelectInputSuffix } from '../shared/template-slots';
 
 type User = { readonly id: number; readonly name: string };
 
@@ -229,6 +230,20 @@ describe('CngxTypeahead — standalone', () => {
     const { typeahead } = setup();
     expect(typeahead.errorState()).toBe(false);
   });
+
+  it('selectionChange clearCallback emits previousValue = prior value', () => {
+    const { fixture, host, typeahead } = setup();
+    host.value.set({ id: 2, name: 'Bob' });
+    flush(fixture);
+    const events: Array<{ value: { name: string } | undefined; previousValue?: { name: string } | undefined }> = [];
+    typeahead.selectionChange.subscribe((e) =>
+      events.push({ value: e.value, previousValue: e.previousValue }),
+    );
+    (typeahead as unknown as { clearCallback: () => void }).clearCallback();
+    flush(fixture);
+    expect(events.at(-1)?.value).toBeUndefined();
+    expect(events.at(-1)?.previousValue?.name).toBe('Bob');
+  });
 });
 
 // ── Form-field integration ─────────────────────────────────────────────
@@ -339,5 +354,114 @@ describe('CngxTypeahead — searchDebounceMs config integration', () => {
     const typeahead = fixture.debugElement.query(By.directive(CngxTypeahead))
       .componentInstance as CngxTypeahead<string>;
     expect(typeahead.searchDebounceMs()).toBe(500);
+  });
+});
+
+// ── Glyph-slot & input-prefix/suffix pattern ────────────────────────────
+
+describe('CngxTypeahead — glyph inputs + input prefix/suffix', () => {
+  @Component({
+    template: `
+      <ng-template #myClear><span data-custom="clear">🗑</span></ng-template>
+      <ng-template #myCaret><span data-custom="caret">⮟</span></ng-template>
+      <cngx-typeahead
+        [options]="options"
+        [clearable]="true"
+        [clearGlyph]="activeClear()"
+        [caretGlyph]="activeCaret()"
+        [(value)]="value"
+      />
+    `,
+    imports: [CngxTypeahead],
+  })
+  class GlyphHost {
+    readonly options = USERS;
+    readonly clearTpl = viewChild.required<TemplateRef<void>>('myClear');
+    readonly caretTpl = viewChild.required<TemplateRef<void>>('myCaret');
+    readonly activeClear: WritableSignal<TemplateRef<void> | null> = signal(null);
+    readonly activeCaret: WritableSignal<TemplateRef<void> | null> = signal(null);
+    readonly value: WritableSignal<User | undefined> = signal({ id: 1, name: 'Alice' });
+  }
+
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [GlyphHost] });
+  });
+
+  it('default clear button renders the built-in ✕ glyph', () => {
+    const fixture = TestBed.createComponent(GlyphHost);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    expect(clearBtn.textContent?.trim()).toBe('✕');
+    expect(clearBtn.querySelector('[data-custom="clear"]')).toBeNull();
+  });
+
+  it('[clearGlyph] replaces the built-in ✕ while keeping the button frame + aria-label', () => {
+    const fixture = TestBed.createComponent(GlyphHost);
+    flush(fixture);
+    fixture.componentInstance.activeClear.set(fixture.componentInstance.clearTpl());
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    expect(clearBtn.querySelector('[data-custom="clear"]')).not.toBeNull();
+    expect(clearBtn.textContent?.trim()).toBe('🗑');
+    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+  });
+
+  it('[caretGlyph] replaces the built-in ▾ inside the caret span', () => {
+    const fixture = TestBed.createComponent(GlyphHost);
+    flush(fixture);
+    fixture.componentInstance.activeCaret.set(fixture.componentInstance.caretTpl());
+    flush(fixture);
+    const caret = fixture.nativeElement.querySelector('.cngx-typeahead__caret') as HTMLElement;
+    expect(caret.querySelector('[data-custom="caret"]')).not.toBeNull();
+  });
+
+  it('resetting glyph input to null restores the built-in glyph', () => {
+    const fixture = TestBed.createComponent(GlyphHost);
+    flush(fixture);
+    fixture.componentInstance.activeClear.set(fixture.componentInstance.clearTpl());
+    flush(fixture);
+    fixture.componentInstance.activeClear.set(null);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
+    expect(clearBtn.querySelector('[data-custom="clear"]')).toBeNull();
+    expect(clearBtn.textContent?.trim()).toBe('✕');
+  });
+
+  @Component({
+    template: `
+      <cngx-typeahead [options]="options">
+        <ng-template cngxSelectInputPrefix let-focused="focused">
+          <span data-slot="prefix" [attr.data-focused]="focused">P</span>
+        </ng-template>
+        <ng-template cngxSelectInputSuffix let-disabled="disabled">
+          <span data-slot="suffix" [attr.data-disabled]="disabled">S</span>
+        </ng-template>
+      </cngx-typeahead>
+    `,
+    imports: [CngxTypeahead, CngxSelectInputPrefix, CngxSelectInputSuffix],
+  })
+  class SlotHost {
+    readonly options: CngxSelectOptionsInput<User> = USERS;
+  }
+
+  it('*cngxSelectInputPrefix / *cngxSelectInputSuffix project around the input with the reactive slot context', () => {
+    TestBed.configureTestingModule({ imports: [SlotHost] });
+    const fixture = TestBed.createComponent(SlotHost);
+    flush(fixture);
+    const prefixContent = fixture.nativeElement.querySelector('[data-slot="prefix"]') as HTMLElement;
+    const suffixContent = fixture.nativeElement.querySelector('[data-slot="suffix"]') as HTMLElement;
+    expect(prefixContent).not.toBeNull();
+    expect(suffixContent).not.toBeNull();
+    expect(prefixContent.textContent).toBe('P');
+    expect(suffixContent.textContent).toBe('S');
+    // Wrapper spans are direct children of the trigger; the projected
+    // templates live inside those spans.
+    const prefixWrapper = fixture.nativeElement.querySelector('.cngx-typeahead__prefix') as HTMLElement;
+    const suffixWrapper = fixture.nativeElement.querySelector('.cngx-typeahead__suffix') as HTMLElement;
+    const input = fixture.nativeElement.querySelector('input.cngx-typeahead__input') as HTMLElement;
+    const children = Array.from(input.parentElement!.children);
+    expect(children.indexOf(prefixWrapper)).toBeLessThan(children.indexOf(input));
+    expect(children.indexOf(suffixWrapper)).toBeGreaterThan(children.indexOf(input));
   });
 });

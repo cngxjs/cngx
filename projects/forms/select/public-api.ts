@@ -112,6 +112,8 @@ export {
   CngxMultiSelectChip,
   CngxMultiSelectTriggerLabel,
   CngxComboboxTriggerLabel,
+  CngxSelectInputPrefix,
+  CngxSelectInputSuffix,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -129,6 +131,7 @@ export {
   type CngxMultiSelectChipContext,
   type CngxMultiSelectTriggerLabelContext,
   type CngxComboboxTriggerLabelContext,
+  type CngxSelectInputSlotContext,
 } from './src/lib/shared/template-slots';
 
 // ── Commit-controller DI factory ──────────────────────────────────────
@@ -162,7 +165,18 @@ export {
 
 // ── Display binding (scalar value ↔ input text) ───────────────────────
 export {
+  CNGX_DISPLAY_BINDING_FACTORY,
   createDisplayBinding,
+  type CngxDisplayBindingFactory,
   type DisplayBinding,
   type DisplayBindingOptions,
 } from './src/lib/shared/display-binding';
+
+// ── Array commit handler (multi-select / combobox) ────────────────────
+export {
+  CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
+  createArrayCommitHandler,
+  type ArrayCommitHandler,
+  type ArrayCommitHandlerOptions,
+  type CngxArrayCommitHandlerFactory,
+} from './src/lib/shared/array-commit-handler';

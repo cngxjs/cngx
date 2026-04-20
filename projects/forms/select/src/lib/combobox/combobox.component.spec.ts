@@ -154,6 +154,7 @@ describe('CngxCombobox — skeleton', () => {
     const change = fixture.componentInstance.lastChange();
     expect(change!.action).toBe('clear');
     expect(change!.removed).toEqual(['red', 'green']);
+    expect(change!.previousValues).toEqual(['red', 'green']);
   });
 
   it('isSelected uses the map fast-path with the default comparator', () => {

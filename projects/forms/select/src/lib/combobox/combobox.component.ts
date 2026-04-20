@@ -39,6 +39,10 @@ import {
 } from '@cngx/forms/field';
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import {
+  createArrayCommitHandler,
+  type ArrayCommitHandler,
+} from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
@@ -74,6 +78,8 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectInputPrefix,
+  CngxSelectInputSuffix,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
@@ -81,6 +87,7 @@ import {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  type CngxSelectInputSlotContext,
 } from '../shared/template-slots';
 
 /**
@@ -91,6 +98,14 @@ import {
 export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
   readonly values: readonly T[];
+  /**
+   * Values before the change was committed. Populated on the
+   * commit-success path, the direct-pick/removal/clear paths, and the
+   * Backspace-on-empty chip-remove path. Plural name matches
+   * `CngxMultiSelectChange.previousValues` so consumer templates can
+   * share change-event shapes.
+   */
+  readonly previousValues?: readonly T[];
   readonly added: readonly T[];
   readonly removed: readonly T[];
   readonly option: CngxSelectOptionDef<T> | null;
@@ -156,12 +171,13 @@ export interface CngxComboboxChange<T = unknown> {
         carries role="group" so AT reads the chip-strip + input as one
         widget. Chip × buttons are valid siblings of the input.
       -->
+      @let aria = triggerAria();
       <div
         class="cngx-combobox__trigger"
         role="group"
-        [attr.aria-label]="triggerAria().label"
-        [attr.aria-labelledby]="triggerAria().labelledBy"
-        [attr.aria-disabled]="triggerAria().disabled"
+        [attr.aria-label]="aria.label"
+        [attr.aria-labelledby]="aria.labelledBy"
+        [attr.aria-disabled]="aria.disabled"
         (click)="handleWrapperClick($event)"
       >
         @if (triggerLabelTpl(); as tpl) {
@@ -191,6 +207,11 @@ export interface CngxComboboxChange<T = unknown> {
             }
           </span>
         }
+        @if (inputPrefixTpl(); as tpl) {
+          <span class="cngx-combobox__prefix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         <input
           #searchInput="cngxListboxSearch"
           #inputEl
@@ -213,19 +234,24 @@ export interface CngxComboboxChange<T = unknown> {
           [placeholder]="effectivePlaceholder()"
           [attr.id]="resolvedId() || null"
           [attr.tabindex]="effectiveTabIndex()"
-          [attr.aria-expanded]="triggerAria().expanded"
+          [attr.aria-expanded]="aria.expanded"
           [attr.aria-controls]="pop.id()"
           [attr.aria-autocomplete]="'list'"
           [attr.aria-activedescendant]="activeId()"
-          [attr.aria-describedby]="triggerAria().describedBy"
-          [attr.aria-errormessage]="triggerAria().errorMessage"
-          [attr.aria-invalid]="triggerAria().invalid"
-          [attr.aria-required]="triggerAria().required"
-          [attr.aria-busy]="triggerAria().busy"
+          [attr.aria-describedby]="aria.describedBy"
+          [attr.aria-errormessage]="aria.errorMessage"
+          [attr.aria-invalid]="aria.invalid"
+          [attr.aria-required]="aria.required"
+          [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
         />
+        @if (inputSuffixTpl(); as tpl) {
+          <span class="cngx-combobox__suffix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         @if (clearable() && !isEmpty() && !disabled()) {
           @if (clearButtonTpl(); as tpl) {
             <span class="cngx-combobox__clear-slot" (click)="$event.stopPropagation()">
@@ -247,7 +273,11 @@ export interface CngxComboboxChange<T = unknown> {
               [attr.aria-label]="clearButtonAriaLabel()"
               (click)="handleClearAllClick($event)"
             >
-              ✕
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
             </button>
           }
         }
@@ -256,6 +286,10 @@ export interface CngxComboboxChange<T = unknown> {
             <ng-container
               *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
             />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-combobox__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
           } @else {
             <span aria-hidden="true" class="cngx-combobox__caret">&#9662;</span>
           }
@@ -361,6 +395,19 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Hide the default dropdown caret glyph. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear-all button
+   * without forking the button frame or ARIA wiring. When
+   * `*cngxSelectClearButton` is projected, the projected template takes
+   * full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
+
   /** Render a clear-all button when at least one value is selected. */
   readonly clearable = input<boolean>(false);
 
@@ -455,6 +502,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
     CngxSelectOptionError,
   );
+  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
   // ── Resolved template refs ─────────────────────────────────────────
 
@@ -488,6 +537,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
   /** @internal */
   protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputPrefixDirective()?.templateRef ?? null,
+  );
+  /** @internal */
+  protected readonly inputSuffixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputSuffixDirective()?.templateRef ?? null,
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -627,6 +684,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
+  /** @internal — reactive context for the input prefix/suffix template outlets. */
+  protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
+    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    {
+      equal: (a, b) =>
+        a.disabled === b.disabled &&
+        a.focused === b.focused &&
+        a.panelOpen === b.panelOpen,
+    },
+  );
+
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
@@ -637,11 +705,32 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal — errorContext signal (wired once with the retry handler). */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal — commitErrorContext signal (wired once with retry handler). */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
-  /** Currently selected options (public). */
+  /**
+   * Currently selected options (public). Structurally compared by
+   * `.value` under `compareWith` so fresh OptionDef references carrying
+   * the same values do not cascade re-renders on consumer bindings.
+   */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   /** @internal */
@@ -712,7 +801,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit state (delegated helpers) ───────────────────────────────
 
-  private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
@@ -720,6 +808,36 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** Tracks whether the first `searchTermChange` emission has been processed. */
   private readonly hasEmittedInitial = signal(false);
+
+  /**
+   * Commit-flow handler — owns commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, and live-region announcements.
+   * Shared with `CngxMultiSelect` via `shared/array-commit-handler.ts`.
+   */
+  private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
+    values: this.values,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    getLastCommitted: () => this.lastCommittedValues,
+    onToggleFinalize: (option, isNowSelected) =>
+      this.finalizeToggle(option, isNowSelected, this.lastCommittedValues),
+    onClearFinalize: (previous, finalValues) => {
+      this.cleared.emit();
+      this.selectionChange.emit({
+        source: this,
+        values: finalValues,
+        previousValues: previous,
+        added: [],
+        removed: previous,
+        option: null,
+        action: 'clear',
+      });
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+  });
 
   /** @internal — `optionLabelTpl`/option-row uses this via panel-host. */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
@@ -797,12 +915,19 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         }
         const action = this.commitAction();
         if (action) {
-          this.beginCommit(next, previous, opt, action);
+          this.commitHandler.beginToggle(next, previous, opt, action);
         }
       },
       onActivate: (_value, opt) => {
+        // Listbox has already mutated values — reconstruct the pre-
+        // toggle snapshot by inverting the change.
         const currentSelected = this.isSelected(opt);
-        this.finalizeToggle(opt, currentSelected);
+        const current = this.values();
+        const eq = this.compareWith();
+        const previousValues = currentSelected
+          ? current.filter((v) => !eq(v, opt.value))
+          : [...current, opt.value];
+        this.finalizeToggle(opt, currentSelected, previousValues);
       },
     });
 
@@ -930,11 +1055,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set(next);
       }
-      this.beginCommit(next, previous, opt, action);
+      this.commitHandler.beginToggle(next, previous, opt, action);
       return;
     }
     this.values.set(next);
-    this.finalizeToggle(opt, false);
+    this.finalizeToggle(opt, false, previous);
   }
 
   /** @internal */
@@ -956,7 +1081,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       if (this.commitMode() === 'optimistic') {
         this.values.set([]);
       }
-      this.beginCommitClear(previous, action);
+      this.commitHandler.beginClear(previous, action);
       return;
     }
     this.values.set([]);
@@ -964,6 +1089,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.selectionChange.emit({
       source: this,
       values: [],
+      previousValues: previous,
       added: [],
       removed: previous,
       option: null,
@@ -985,99 +1111,22 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit orchestration ───────────────────────────────────────────
 
-  private finalizeToggle(opt: CngxSelectOptionDef<T>, isNowSelected: boolean): void {
+  private finalizeToggle(
+    opt: CngxSelectOptionDef<T>,
+    isNowSelected: boolean,
+    previousValues: readonly T[] = [],
+  ): void {
     this.optionToggled.emit({ option: opt, added: isNowSelected });
     this.selectionChange.emit({
       source: this,
       values: this.values(),
+      previousValues,
       added: isNowSelected ? [opt.value] : [],
       removed: isNowSelected ? [] : [opt.value],
       option: opt,
       action: 'toggle',
     });
     this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
-  }
-
-  private beginCommit(
-    next: T[],
-    previous: T[],
-    opt: CngxSelectOptionDef<T>,
-    action: CngxSelectCommitAction<T[]>,
-  ): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, next, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? next;
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        const isNowSelected = finalValues.some((v) => this.compareWith()(v, opt.value));
-        this.togglingOption.set(null);
-        this.finalizeToggle(opt, isNowSelected);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  private beginCommitClear(previous: T[], action: CngxSelectCommitAction<T[]>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, [], previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValues = committed ?? [];
-        if (!sameArrayContents(this.values(), finalValues, this.compareWith())) {
-          this.values.set([...finalValues]);
-        }
-        this.togglingOption.set(null);
-        this.cleared.emit();
-        this.selectionChange.emit({
-          source: this,
-          values: finalValues,
-          added: [],
-          removed: previous,
-          option: null,
-          action: 'clear',
-        });
-        this.core.announce(null, 'removed', finalValues.length, true);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          if (!sameArrayContents(this.values(), rollbackTo ?? [], this.compareWith())) {
-            this.values.set([...(rollbackTo ?? [])]);
-          }
-        }
-        this.core.announce(null, 'removed', this.values().length, true);
-      },
-    });
-  }
-
-  /** @internal — replay the last failed commit. */
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    const opt = this.togglingOption();
-    if (opt === null) {
-      this.beginCommitClear(this.lastCommittedValues, action);
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValues, opt, action);
   }
 }
 
