@@ -30,9 +30,10 @@ import { CngxSelectPanel } from '../shared/panel/panel.component';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormFieldPresenter,
-  type CngxFieldRef,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
+
+import { createFieldSync } from '../shared/field-sync';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
@@ -599,35 +600,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Field → Select: mirror bound field value into our model signal.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef: CngxFieldRef = presenter.fieldState();
-      const fieldValue: unknown = fieldRef.value();
-      const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
-      const current: unknown = untracked(() => this.value());
-      if (!eq(current, fieldValue)) {
-        this.value.set(fieldValue as T | undefined);
-      }
-    });
-
-    // Select → Field: push selection back into bound field.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const selectValue: unknown = this.value();
-      const current: unknown = untracked(() => fieldRef.value());
-      const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
-      if (eq(current, selectValue)) {
-        return;
-      }
-      writeFieldValue(fieldRef, selectValue);
+    // Bidirectional sync with the bound form field (if any).
+    createFieldSync<T | undefined>({
+      componentValue: this.value,
+      valueEquals: (a, b) =>
+        (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
+      coerceFromField: (x) => x as T | undefined,
     });
   }
 
@@ -835,13 +813,3 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 }
 
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signalLike = fieldRef.value as unknown;
-  if (
-    typeof signalLike === 'function' &&
-    'set' in signalLike &&
-    typeof (signalLike as { set: unknown }).set === 'function'
-  ) {
-    (signalLike as { set: (v: unknown) => void }).set(value);
-  }
-}

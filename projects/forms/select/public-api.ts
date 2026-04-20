@@ -135,3 +135,9 @@ export {
   type CngxCommitBeginHandlers,
   createCommitController,
 } from './src/lib/shared/commit-controller';
+
+// ── Field sync factory ────────────────────────────────────────────────
+export {
+  createFieldSync,
+  type FieldSyncOptions,
+} from './src/lib/shared/field-sync';

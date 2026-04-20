@@ -35,10 +35,11 @@ import { CngxSelectPanel } from '../shared/panel/panel.component';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormFieldPresenter,
-  type CngxFieldRef,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { sameArrayContents } from '../shared/compare';
+import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -825,39 +826,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Field → Combobox: mirror bound field value into our model.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef: CngxFieldRef = presenter.fieldState();
-      const fieldValue = fieldRef.value();
-      const arr = Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
-      untracked(() => {
-        const current = this.values();
-        if (!sameArrayContents(current, arr, this.compareWith())) {
-          this.values.set([...arr]);
-        }
-      });
-    });
-
-    // Combobox → Field: push selection back into bound field.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const next = this.values();
-      untracked(() => {
-        const current = fieldRef.value();
-        const currentArr = Array.isArray(current) ? (current as T[]) : [];
-        if (sameArrayContents(currentArr, next, this.compareWith())) {
-          return;
-        }
-        writeFieldValue(fieldRef, [...next]);
-      });
+    // Bidirectional sync with the bound form field (if any).
+    createFieldSync<T[]>({
+      componentValue: this.values,
+      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      coerceFromField: (x) => (Array.isArray(x) ? ([...(x as T[])]) : []),
+      toFieldValue: (v) => [...v],
     });
 
     // Term → searchTermChange output (with [skipInitial] guard).
@@ -1111,32 +1085,3 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 }
 
-function sameArrayContents<T>(
-  a: readonly T[],
-  b: readonly T[],
-  eq: CngxSelectCompareFn<T>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (!eq(a[i], b[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signalLike = fieldRef.value as unknown;
-  if (
-    typeof signalLike === 'function' &&
-    'set' in signalLike &&
-    typeof (signalLike as { set: unknown }).set === 'function'
-  ) {
-    (signalLike as { set: (v: unknown) => void }).set(value);
-  }
-}
