@@ -17,6 +17,7 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from '../shared/commit-action.types';
+import { provideSelectConfig, withAriaLabels } from '../shared/config';
 import {
   CngxMultiSelectChip,
   CngxMultiSelectTriggerLabel,
@@ -885,6 +886,119 @@ describe('CngxMultiSelect — form-field integration', () => {
     (options[1] as HTMLElement).click();
     flush(fixture);
     expect(fixture.componentInstance.ref.value()).toEqual(['red', 'green']);
+  });
+});
+
+// ── Phase 3: withAriaLabels integration ────────────────────────────────
+
+describe('CngxMultiSelect — withAriaLabels config override', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  @Component({
+    template: `
+      <cngx-multi-select
+        [label]="'Tags'"
+        [options]="options"
+        [clearable]="true"
+        [(values)]="values"
+      />
+    `,
+    imports: [CngxMultiSelect],
+  })
+  class LabelHost {
+    readonly options = OPTIONS;
+    readonly values = signal<string[]>(['red', 'green']);
+  }
+
+  it('defaults remain German when no withAriaLabels is provided', () => {
+    const fixture = TestBed.createComponent(LabelHost);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    ) as HTMLElement;
+    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+    const chipRemove = fixture.nativeElement.querySelector(
+      '.cngx-chip__remove',
+    ) as HTMLElement;
+    // `removeAriaLabel + ': ' + opt.label` composition — prefix comes from config.
+    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Entfernen:/);
+  });
+
+  it('withAriaLabels({ clearButton, chipRemove }) overrides both labels app-wide', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(
+          withAriaLabels({
+            clearButton: 'Clear selection',
+            chipRemove: 'Remove',
+          }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(LabelHost);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    ) as HTMLElement;
+    expect(clearBtn.getAttribute('aria-label')).toBe('Clear selection');
+    const chipRemove = fixture.nativeElement.querySelector(
+      '.cngx-chip__remove',
+    ) as HTMLElement;
+    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
+  });
+
+  it('partial override preserves non-overridden German default', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(withAriaLabels({ chipRemove: 'Remove' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(LabelHost);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    ) as HTMLElement;
+    // clearButton not overridden → variant fallback kicks in.
+    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+    const chipRemove = fixture.nativeElement.querySelector(
+      '.cngx-chip__remove',
+    ) as HTMLElement;
+    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
+  });
+
+  it('per-instance [clearButtonAriaLabel] still wins over withAriaLabels', () => {
+    @Component({
+      template: `
+        <cngx-multi-select
+          [label]="'Tags'"
+          [options]="options"
+          [clearable]="true"
+          [clearButtonAriaLabel]="'Instance-level label'"
+          [(values)]="values"
+        />
+      `,
+      imports: [CngxMultiSelect],
+    })
+    class InstanceOverrideHost {
+      readonly options = OPTIONS;
+      readonly values = signal<string[]>(['red']);
+    }
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideSelectConfig(withAriaLabels({ clearButton: 'Config-level label' })),
+      ],
+    });
+    const fixture = TestBed.createComponent(InstanceOverrideHost);
+    flush(fixture);
+    const clearBtn = fixture.nativeElement.querySelector(
+      '.cngx-multi-select__clear-all',
+    ) as HTMLElement;
+    expect(clearBtn.getAttribute('aria-label')).toBe('Instance-level label');
   });
 });
 

@@ -60,7 +60,13 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { resolveTemplate } from '../shared/resolve-template';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -182,15 +188,15 @@ export interface CngxSelectChange<T = unknown> {
       (keydown)="handleTriggerKeydown($event)"
     >
       <span class="cngx-select__label">
-        @if (triggerLabelTpl(); as tpl) {
+        @if (triggerLabelTpl(); as triggerTpl) {
           @if (!isEmpty()) {
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                triggerTpl;
                 context: { $implicit: selectedOption(), selected: selectedOption() }
               "
             />
-          } @else if (placeholderTpl(); as phTpl) {
+          } @else if (tpl.placeholder(); as phTpl) {
             <ng-container
               *ngTemplateOutlet="
                 phTpl;
@@ -201,10 +207,10 @@ export interface CngxSelectChange<T = unknown> {
             {{ placeholder() || label() }}
           }
         } @else if (isEmpty()) {
-          @if (placeholderTpl(); as tpl) {
+          @if (tpl.placeholder(); as phTpl) {
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                phTpl;
                 context: { $implicit: placeholder(), placeholder: placeholder() }
               "
             />
@@ -216,11 +222,11 @@ export interface CngxSelectChange<T = unknown> {
         }
       </span>
       @if (clearable() && !isEmpty() && !disabled()) {
-        @if (clearButtonTpl(); as tpl) {
+        @if (tpl.clearButton(); as clearBtnTpl) {
           <span class="cngx-select__clear-slot" (click)="$event.stopPropagation()">
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                clearBtnTpl;
                 context: {
                   $implicit: clearCallback,
                   clear: clearCallback,
@@ -245,9 +251,9 @@ export interface CngxSelectChange<T = unknown> {
         }
       }
       @if (resolvedShowCaret()) {
-        @if (caretTpl(); as tpl) {
+        @if (tpl.caret(); as caretT) {
           <ng-container
-            *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
+            *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
           />
         } @else if (caretGlyph(); as glyph) {
           <span aria-hidden="true" class="cngx-select__caret">
@@ -287,6 +293,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
+  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
+    kind: 'verbose',
+    severity: 'assertive',
+  });
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
@@ -324,7 +334,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl entfernen',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -383,22 +395,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template refs ─────────────────────────────────────────
+  // ── Resolved template-slot registry ────────────────────────────────
 
-  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /** @internal */ protected readonly triggerLabelTpl = resolveTemplate(this.triggerLabelDirective, 'triggerLabel');
-  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
+  /**
+   * Variant-specific trigger label override. Stays inline because
+   * `CngxSelectTriggerLabel` has a `CngxSelectOptionDef<T>` context that
+   * multi/combobox variants replace with array-shaped contexts.
+   *
+   * @internal
+   */
+  protected readonly triggerLabelTpl = resolveTemplate(
+    this.triggerLabelDirective,
+    'triggerLabel',
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -420,8 +445,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -579,6 +604,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.errorAnnouncePolicy,
+  });
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValue: T | undefined = undefined;
@@ -764,7 +798,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
         if (!Object.is(this.value(), rollbackTo)) {
           this.value.set(rollbackTo);
         }
-        this.announcer.announce(this.core.commitErrorMessage(err), 'assertive');
+        this.announceCommitError(err);
       },
     });
   }
@@ -804,7 +838,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
     if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
       this.open();
     }
@@ -812,7 +846,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
 

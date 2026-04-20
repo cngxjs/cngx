@@ -51,6 +51,7 @@ export {
   CNGX_SELECT_CONFIG,
   type CngxSelectConfig,
   type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
   type CngxSelectConfigFeature,
   type CngxSelectTemplateContexts,
   type CngxSelectLoadingVariant,
@@ -71,6 +72,7 @@ export {
   withDismissOn,
   withOpenOn,
   withAnnouncer,
+  withAriaLabels,
   withLoadingVariant,
   withSkeletonRowCount,
   withRefreshingVariant,
@@ -180,3 +182,30 @@ export {
   type ArrayCommitHandlerOptions,
   type CngxArrayCommitHandlerFactory,
 } from './src/lib/shared/array-commit-handler';
+
+// ── Shared template-slot registry ─────────────────────────────────────
+export {
+  CNGX_TEMPLATE_REGISTRY_FACTORY,
+  createTemplateRegistry,
+  type CngxSelectTemplateRegistry,
+  type CngxSelectTemplateRegistryQueries,
+  type CngxTemplateRegistryFactory,
+} from './src/lib/shared/template-registry';
+
+// ── Scalar commit-error announce policy ───────────────────────────────
+export {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  createCommitErrorAnnouncer,
+  type CngxCommitErrorAnnouncePolicy,
+  type CngxCommitErrorAnnounceDeps,
+  type CngxCommitErrorAnnouncerOptions,
+  type CngxCommitErrorAnnouncerFactory,
+} from './src/lib/shared/commit-error-announcer';
+
+// ── Shared trigger focus state ────────────────────────────────────────
+export {
+  CNGX_TRIGGER_FOCUS_FACTORY,
+  createTriggerFocusState,
+  type CngxTriggerFocusState,
+  type CngxTriggerFocusFactory,
+} from './src/lib/shared/trigger-focus';

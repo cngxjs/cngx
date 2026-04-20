@@ -123,6 +123,33 @@ export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark';
 
+/**
+ * App-wide overrides for the standard ARIA labels used by the select family.
+ *
+ * All keys are optional — a missing key falls back to the variant's built-in
+ * German default (so omitting `withAriaLabels(...)` is guaranteed to be
+ * back-compatible). Per-instance inputs (`[clearButtonAriaLabel]`,
+ * `[chipRemoveAriaLabel]`) still win over whatever is configured here.
+ *
+ * @category interactive
+ */
+export interface CngxSelectAriaLabels {
+  /**
+   * ARIA label for the built-in clear button. Applied to all variants
+   * that render the clear affordance (single, multi, combobox, typeahead).
+   *
+   * Variant fallback when unset:
+   * - single-select → `'Auswahl entfernen'`
+   * - multi / combobox / typeahead → `'Auswahl zurücksetzen'`
+   */
+  readonly clearButton?: string;
+  /**
+   * ARIA label for the per-chip remove button in multi-select and combobox.
+   * Variant fallback when unset: `'Entfernen'`.
+   */
+  readonly chipRemove?: string;
+}
+
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -169,6 +196,12 @@ export interface CngxSelectConfig {
   /** Live-region announcer config. */
   readonly announcer?: CngxSelectAnnouncerConfig;
   /**
+   * App-wide ARIA label overrides — avoids hardcoded German strings on
+   * every consumer. Partial — omit a key to keep the variant's built-in
+   * default. Per-instance input still wins.
+   */
+  readonly ariaLabels?: CngxSelectAriaLabels;
+  /**
    * Default template overrides (applied when a component instance doesn't
    * project its own). Each slot carries the same typed context a
    * per-instance `*cngxSelect*` directive would receive — so the
@@ -200,13 +233,14 @@ export interface CngxSelectConfig {
  * @internal
  */
 export const CNGX_SELECT_DEFAULTS: Required<
-  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer'>
+  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels'>
 > & {
   readonly panelClass: string | readonly string[];
   readonly templates: Required<NonNullable<CngxSelectConfig['templates']>>;
   readonly announcer: Required<Omit<CngxSelectAnnouncerConfig, 'format'>> & {
     readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
   };
+  readonly ariaLabels: CngxSelectAriaLabels;
 } = {
   panelWidth: 'trigger',
   loadingVariant: 'spinner',
@@ -263,6 +297,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionPending: null,
     optionError: null,
   },
+  ariaLabels: {},
 };
 
 /**
@@ -448,6 +483,32 @@ export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConf
 }
 
 /**
+ * App-wide ARIA label overrides — avoids hardcoded German strings on
+ * every consumer. Partial: omit a key to keep the variant's built-in
+ * fallback. Per-instance `[clearButtonAriaLabel]` / `[chipRemoveAriaLabel]`
+ * inputs still win over this configuration.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     provideSelectConfig(
+ *       withAriaLabels({
+ *         clearButton: 'Clear selection',
+ *         chipRemove: 'Remove',
+ *       }),
+ *     ),
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFeature {
+  return feature({ ariaLabels: labels });
+}
+
+/**
  * App-wide defaults for all Select-family components.
  *
  * Composable via feature functions (`withPanelWidth`, `withTypeaheadDebounce`,
@@ -463,12 +524,19 @@ export function provideSelectConfig(
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
   for (const f of features) {
-    Object.assign(merged, f.config);
-    if (f.config.announcer) {
-      merged.announcer = { ...merged.announcer, ...f.config.announcer };
+    // Pull deep-merged keys out before the flat Object.assign so
+    // subsequent features with partial `announcer` / `templates` /
+    // `ariaLabels` don't blow away earlier keys.
+    const { announcer, templates, ariaLabels, ...flat } = f.config;
+    Object.assign(merged, flat);
+    if (announcer) {
+      merged.announcer = { ...merged.announcer, ...announcer };
     }
-    if (f.config.templates) {
-      merged.templates = { ...merged.templates, ...f.config.templates };
+    if (templates) {
+      merged.templates = { ...merged.templates, ...templates };
+    }
+    if (ariaLabels) {
+      merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
     }
   }
   return makeEnvironmentProviders([
@@ -498,12 +566,19 @@ export function provideSelectConfigAt(
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
   for (const f of features) {
-    Object.assign(merged, f.config);
-    if (f.config.announcer) {
-      merged.announcer = { ...merged.announcer, ...f.config.announcer };
+    // Pull deep-merged keys out before the flat Object.assign so
+    // subsequent features with partial `announcer` / `templates` /
+    // `ariaLabels` don't blow away earlier keys.
+    const { announcer, templates, ariaLabels, ...flat } = f.config;
+    Object.assign(merged, flat);
+    if (announcer) {
+      merged.announcer = { ...merged.announcer, ...announcer };
     }
-    if (f.config.templates) {
-      merged.templates = { ...merged.templates, ...f.config.templates };
+    if (templates) {
+      merged.templates = { ...merged.templates, ...templates };
+    }
+    if (ariaLabels) {
+      merged.ariaLabels = { ...merged.ariaLabels, ...ariaLabels };
     }
   }
   return [{ provide: CNGX_SELECT_CONFIG, useValue: merged }];

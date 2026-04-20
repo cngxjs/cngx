@@ -61,7 +61,13 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { resolveTemplate } from '../shared/resolve-template';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -160,9 +166,9 @@ export interface CngxTypeaheadChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <div class="cngx-typeahead__trigger" (click)="handleWrapperClick()">
-        @if (inputPrefixTpl(); as tpl) {
+        @if (inputPrefixTpl(); as prefixTpl) {
           <span class="cngx-typeahead__prefix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />
           </span>
         }
         <input
@@ -199,17 +205,17 @@ export interface CngxTypeaheadChange<T = unknown> {
           (focus)="handleFocus()"
           (blur)="handleBlur()"
         />
-        @if (inputSuffixTpl(); as tpl) {
+        @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-typeahead__suffix" (click)="$event.stopPropagation()">
-            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+            <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
           </span>
         }
         @if (clearable() && value() !== undefined && !disabled()) {
-          @if (clearButtonTpl(); as tpl) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
             <span class="cngx-typeahead__clear-slot" (click)="$event.stopPropagation()">
               <ng-container
                 *ngTemplateOutlet="
-                  tpl;
+                  clearBtnTpl;
                   context: { $implicit: clearCallback, clear: clearCallback, disabled: disabled() }
                 "
               />
@@ -230,8 +236,8 @@ export interface CngxTypeaheadChange<T = unknown> {
           }
         }
         @if (resolvedShowCaret()) {
-          @if (caretTpl(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }" />
+          @if (tpl.caret(); as caretT) {
+            <ng-container *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }" />
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-typeahead__caret">
               <ng-container *ngTemplateOutlet="glyph" />
@@ -298,7 +304,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>('Auswahl zurücksetzen');
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+  );
   /**
    * Replaces the built-in `✕` glyph inside the default clear button
    * while keeping the button frame, ARIA wiring, and click handler
@@ -359,19 +367,22 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
-  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
-  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
-  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
   /** @internal */ protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,
   );
@@ -393,8 +404,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.value() === undefined);
 
   /** @internal */
@@ -542,6 +553,19 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
+  private readonly announcer = inject(CngxSelectAnnouncer);
+  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
+    kind: 'soft',
+  });
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.errorAnnouncePolicy,
+  });
   private lastCommittedValue: T | undefined = undefined;
   /**
    * Display binding — owns the value ↔ input-text reconciliation cycle
@@ -555,7 +579,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.displayWith,
-    focused: this.focusedState,
+    focused: this.focusState.focused,
     inputEl: this.inputEl,
     searchRef: this.searchInputRef,
     searchTerm: this.searchTerm,
@@ -721,11 +745,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   };
 
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
   }
 
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
     // clearOnBlur: if the current input text doesn't match `displayWith(value)`,
     // snap back. Disable by setting `[clearOnBlur]="false"`.
@@ -780,7 +804,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
           }
           this.display.writeFromValue(rollback);
         }
-        this.core.announce(null, 'removed', 0, false);
+        this.announceCommitError(err);
       },
     });
   }

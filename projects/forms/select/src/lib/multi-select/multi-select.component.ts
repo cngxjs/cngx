@@ -10,7 +10,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   type ElementRef,
@@ -65,7 +64,8 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { resolveTemplate } from '../shared/resolve-template';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -192,10 +192,10 @@ export interface CngxMultiSelectChange<T = unknown> {
       >
         <span class="cngx-select__chip-list">
           @if (isEmpty()) {
-            @if (placeholderTpl(); as tpl) {
+            @if (tpl.placeholder(); as phTpl) {
               <ng-container
                 *ngTemplateOutlet="
-                  tpl;
+                  phTpl;
                   context: { $implicit: placeholder(), placeholder: placeholder() }
                 "
               />
@@ -204,10 +204,10 @@ export interface CngxMultiSelectChange<T = unknown> {
                 {{ placeholder() || label() }}
               </span>
             }
-          } @else if (triggerLabelTpl(); as tpl) {
+          } @else if (triggerLabelTpl(); as triggerTpl) {
             <ng-container
               *ngTemplateOutlet="
-                tpl;
+                triggerTpl;
                 context: {
                   $implicit: selectedOptions(),
                   selected: selectedOptions(),
@@ -218,10 +218,10 @@ export interface CngxMultiSelectChange<T = unknown> {
             />
           } @else {
             @for (opt of selectedOptions(); track opt.value) {
-              @if (chipTpl(); as tpl) {
+              @if (chipTpl(); as chipT) {
                 <ng-container
                   *ngTemplateOutlet="
-                    tpl;
+                    chipT;
                     context: {
                       $implicit: opt,
                       option: opt,
@@ -242,11 +242,11 @@ export interface CngxMultiSelectChange<T = unknown> {
           }
         </span>
         @if (clearable() && !isEmpty() && !disabled()) {
-          @if (clearButtonTpl(); as tpl) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
             <span class="cngx-multi-select__clear-slot" (click)="$event.stopPropagation()">
               <ng-container
                 *ngTemplateOutlet="
-                  tpl;
+                  clearBtnTpl;
                   context: {
                     $implicit: clearAllCallback,
                     clear: clearAllCallback,
@@ -271,9 +271,9 @@ export interface CngxMultiSelectChange<T = unknown> {
           }
         }
         @if (resolvedShowCaret()) {
-          @if (caretTpl(); as tpl) {
+          @if (tpl.caret(); as caretT) {
             <ng-container
-              *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
+              *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }"
             />
           } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-multi-select__caret">
@@ -350,8 +350,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>('Auswahl zurücksetzen');
-  readonly chipRemoveAriaLabel = input<string>('Entfernen');
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+  );
+  readonly chipRemoveAriaLabel = input<string>(
+    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -415,29 +419,32 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template refs ─────────────────────────────────────────
+  // ── Resolved template-slot registry ────────────────────────────────
 
-  /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
-  /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
-  /** @internal */ protected readonly optgroupTpl = resolveTemplate(this.optgroupDirective, 'optgroup');
-  /** @internal */ protected readonly placeholderTpl = resolveTemplate(this.placeholderDirective, 'placeholder');
-  /** @internal */ protected readonly emptyTpl = resolveTemplate(this.emptyDirective, 'empty');
-  /** @internal */ protected readonly loadingTpl = resolveTemplate(this.loadingDirective, 'loading');
+  /** @internal */
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
   /** Multi-specific trigger-label — replaces chip strip. @internal */
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxMultiSelectTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
-  /** @internal */ protected readonly optionLabelTpl = resolveTemplate(this.optionLabelDirective, 'optionLabel');
-  /** @internal */ protected readonly errorTpl = resolveTemplate(this.errorDirective, 'error');
-  /** @internal */ protected readonly refreshingTpl = resolveTemplate(this.refreshingDirective, 'refreshing');
-  /** @internal */ protected readonly commitErrorTpl = resolveTemplate(this.commitErrorDirective, 'commitError');
   /** Per-chip override. @internal */
   protected readonly chipTpl = computed<TemplateRef<CngxMultiSelectChipContext<T>> | null>(
     () => this.chipDirective()?.templateRef ?? null,
   );
-  /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
-  /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
-  /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -459,8 +466,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
-  private readonly focusedState = signal(false);
-  readonly focused = this.focusedState.asReadonly();
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => this.isEmpty());
 
@@ -890,7 +897,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
     if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
       this.open();
     }
@@ -898,7 +905,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
 
