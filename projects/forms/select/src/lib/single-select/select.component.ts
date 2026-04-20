@@ -146,6 +146,7 @@ export interface CngxSelectChange<T = unknown> {
       be an invalid nested button inside a <button>. WAI-ARIA 1.2
       combobox pattern.
     -->
+    @let aria = triggerAria();
     <div
       #triggerBtn
       class="cngx-select__trigger"
@@ -156,15 +157,15 @@ export interface CngxSelectChange<T = unknown> {
       [popover]="pop"
       [closeOnSelect]="true"
       [attr.tabindex]="effectiveTabIndex()"
-      [attr.aria-label]="triggerAria().label"
-      [attr.aria-labelledby]="triggerAria().labelledBy"
-      [attr.aria-describedby]="triggerAria().describedBy"
-      [attr.aria-errormessage]="triggerAria().errorMessage"
-      [attr.aria-expanded]="triggerAria().expanded"
-      [attr.aria-disabled]="triggerAria().disabled"
-      [attr.aria-invalid]="triggerAria().invalid"
-      [attr.aria-required]="triggerAria().required"
-      [attr.aria-busy]="triggerAria().busy"
+      [attr.aria-label]="aria.label"
+      [attr.aria-labelledby]="aria.labelledBy"
+      [attr.aria-describedby]="aria.describedBy"
+      [attr.aria-errormessage]="aria.errorMessage"
+      [attr.aria-expanded]="aria.expanded"
+      [attr.aria-disabled]="aria.disabled"
+      [attr.aria-invalid]="aria.invalid"
+      [attr.aria-required]="aria.required"
+      [attr.aria-busy]="aria.busy"
       (click)="handleTriggerClick()"
       (focus)="handleFocus()"
       (blur)="handleBlur()"
@@ -516,7 +517,28 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
 
   /** Currently selected option, resolved against `options`. */
-  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => this.selectedOption());
+  /**
+   * Currently selected option, resolved against `options`. Structurally
+   * compared — two OptionDefs with the same `.value` under `compareWith`
+   * are considered equal, so downstream `@let selected = selected()` or
+   * `[selected]=selected()` bindings don't cascade re-renders when the
+   * upstream options array is re-emitted with a fresh OptionDef
+   * reference for the same value (common with server-driven options).
+   */
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(
+    () => this.selectedOption(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
+      },
+    },
+  );
 
   /** Human-readable label displayed on the trigger. */
   readonly triggerValue = computed<string>(() => this.triggerText());

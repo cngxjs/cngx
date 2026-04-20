@@ -163,12 +163,13 @@ export interface CngxComboboxChange<T = unknown> {
         carries role="group" so AT reads the chip-strip + input as one
         widget. Chip × buttons are valid siblings of the input.
       -->
+      @let aria = triggerAria();
       <div
         class="cngx-combobox__trigger"
         role="group"
-        [attr.aria-label]="triggerAria().label"
-        [attr.aria-labelledby]="triggerAria().labelledBy"
-        [attr.aria-disabled]="triggerAria().disabled"
+        [attr.aria-label]="aria.label"
+        [attr.aria-labelledby]="aria.labelledBy"
+        [attr.aria-disabled]="aria.disabled"
         (click)="handleWrapperClick($event)"
       >
         @if (triggerLabelTpl(); as tpl) {
@@ -225,15 +226,15 @@ export interface CngxComboboxChange<T = unknown> {
           [placeholder]="effectivePlaceholder()"
           [attr.id]="resolvedId() || null"
           [attr.tabindex]="effectiveTabIndex()"
-          [attr.aria-expanded]="triggerAria().expanded"
+          [attr.aria-expanded]="aria.expanded"
           [attr.aria-controls]="pop.id()"
           [attr.aria-autocomplete]="'list'"
           [attr.aria-activedescendant]="activeId()"
-          [attr.aria-describedby]="triggerAria().describedBy"
-          [attr.aria-errormessage]="triggerAria().errorMessage"
-          [attr.aria-invalid]="triggerAria().invalid"
-          [attr.aria-required]="triggerAria().required"
-          [attr.aria-busy]="triggerAria().busy"
+          [attr.aria-describedby]="aria.describedBy"
+          [attr.aria-errormessage]="aria.errorMessage"
+          [attr.aria-invalid]="aria.invalid"
+          [attr.aria-required]="aria.required"
+          [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
@@ -698,9 +699,30 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal — commitErrorContext signal (wired once with retry handler). */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
-  /** Currently selected options (public). */
+  /**
+   * Currently selected options (public). Structurally compared by
+   * `.value` under `compareWith` so fresh OptionDef references carrying
+   * the same values do not cascade re-renders on consumer bindings.
+   */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   /** @internal */

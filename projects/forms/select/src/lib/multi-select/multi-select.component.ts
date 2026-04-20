@@ -157,6 +157,7 @@ export interface CngxMultiSelectChange<T = unknown> {
         custom chip-close slots) which would be invalid nested buttons
         inside a <button>. WAI-ARIA 1.2 pattern for multi-value comboboxes.
       -->
+      @let aria = triggerAria();
       <div
         #triggerBtn
         class="cngx-multi-select__trigger"
@@ -167,15 +168,15 @@ export interface CngxMultiSelectChange<T = unknown> {
         [popover]="pop"
         [closeOnSelect]="false"
         [attr.tabindex]="effectiveTabIndex()"
-        [attr.aria-label]="triggerAria().label"
-        [attr.aria-labelledby]="triggerAria().labelledBy"
-        [attr.aria-describedby]="triggerAria().describedBy"
-        [attr.aria-errormessage]="triggerAria().errorMessage"
-        [attr.aria-expanded]="triggerAria().expanded"
-        [attr.aria-disabled]="triggerAria().disabled"
-        [attr.aria-invalid]="triggerAria().invalid"
-        [attr.aria-required]="triggerAria().required"
-        [attr.aria-busy]="triggerAria().busy"
+        [attr.aria-label]="aria.label"
+        [attr.aria-labelledby]="aria.labelledBy"
+        [attr.aria-describedby]="aria.describedBy"
+        [attr.aria-errormessage]="aria.errorMessage"
+        [attr.aria-expanded]="aria.expanded"
+        [attr.aria-disabled]="aria.disabled"
+        [attr.aria-invalid]="aria.invalid"
+        [attr.aria-required]="aria.required"
+        [attr.aria-busy]="aria.busy"
         (click)="handleTriggerClick()"
         (focus)="handleFocus()"
         (blur)="handleBlur()"
@@ -557,9 +558,30 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
-  /** Currently selected options. */
+  /**
+   * Currently selected options. Structurally compared by `.value`
+   * under `compareWith` so a fresh OptionDef reference carrying the
+   * same values does not cascade re-renders on consumer bindings.
+   */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   // ── Multi-selection state ──────────────────────────────────────────

@@ -144,6 +144,7 @@ export interface CngxTypeaheadChange<T = unknown> {
     '[attr.aria-readonly]': 'ariaReadonly()',
   },
   template: `
+    @let aria = triggerAria();
     <div
       class="cngx-typeahead__root"
       cngxClickOutside
@@ -178,15 +179,15 @@ export interface CngxTypeaheadChange<T = unknown> {
           [placeholder]="placeholder()"
           [attr.id]="resolvedId() || null"
           [attr.tabindex]="effectiveTabIndex()"
-          [attr.aria-expanded]="triggerAria().expanded"
+          [attr.aria-expanded]="aria.expanded"
           [attr.aria-controls]="pop.id()"
           [attr.aria-autocomplete]="'list'"
           [attr.aria-activedescendant]="activeId()"
-          [attr.aria-describedby]="triggerAria().describedBy"
-          [attr.aria-errormessage]="triggerAria().errorMessage"
-          [attr.aria-invalid]="triggerAria().invalid"
-          [attr.aria-required]="triggerAria().required"
-          [attr.aria-busy]="triggerAria().busy"
+          [attr.aria-describedby]="aria.describedBy"
+          [attr.aria-errormessage]="aria.errorMessage"
+          [attr.aria-invalid]="aria.invalid"
+          [attr.aria-required]="aria.required"
+          [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
         />
@@ -491,19 +492,38 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
 
-  /** Currently selected option, resolved against `options`. */
-  readonly selected = computed<CngxSelectOptionDef<T> | null>(() => {
-    const v = this.value();
-    if (v === undefined || v === null) {
-      return null;
-    }
-    const map = this.core.valueToOptionMap();
-    if (map) {
-      return map.get(v as unknown) ?? null;
-    }
-    const eq = this.compareWith();
-    return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
-  });
+  /**
+   * Currently selected option, resolved against `options`. Structurally
+   * compared — a fresh OptionDef reference carrying the same `.value`
+   * under `compareWith` is treated as equal, so downstream consumer
+   * bindings don't re-render when the options array is re-emitted for
+   * an unchanged selection (server-driven refetch).
+   */
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(
+    () => {
+      const v = this.value();
+      if (v === undefined || v === null) {
+        return null;
+      }
+      const map = this.core.valueToOptionMap();
+      if (map) {
+        return map.get(v as unknown) ?? null;
+      }
+      const eq = this.compareWith();
+      return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
+      },
+    },
+  );
 
   /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
