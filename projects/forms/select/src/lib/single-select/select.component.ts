@@ -14,6 +14,7 @@ import {
   untracked,
   viewChild,
   type ElementRef,
+  type TemplateRef,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
@@ -224,7 +225,11 @@ export interface CngxSelectChange<T = unknown> {
             [attr.aria-label]="clearButtonAriaLabel()"
             (click)="handleClearClick($event)"
           >
-            ✕
+            @if (clearGlyph(); as glyph) {
+              <ng-container *ngTemplateOutlet="glyph" />
+            } @else {
+              <span aria-hidden="true">✕</span>
+            }
           </button>
         }
       }
@@ -233,6 +238,10 @@ export interface CngxSelectChange<T = unknown> {
           <ng-container
             *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
           />
+        } @else if (caretGlyph(); as glyph) {
+          <span aria-hidden="true" class="cngx-select__caret">
+            <ng-container *ngTemplateOutlet="glyph" />
+          </span>
         } @else {
           <span aria-hidden="true" class="cngx-select__caret">&#9662;</span>
         }
@@ -290,6 +299,19 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
   readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
+
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear button
+   * while keeping the button frame, ARIA wiring, and click handler
+   * intact. When `*cngxSelectClearButton` is projected, the projected
+   * template takes full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
   readonly loading = input<boolean>(false);

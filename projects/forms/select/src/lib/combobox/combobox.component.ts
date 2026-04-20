@@ -78,6 +78,8 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectInputPrefix,
+  CngxSelectInputSuffix,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
@@ -85,6 +87,7 @@ import {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  type CngxSelectInputSlotContext,
 } from '../shared/template-slots';
 
 /**
@@ -195,6 +198,11 @@ export interface CngxComboboxChange<T = unknown> {
             }
           </span>
         }
+        @if (inputPrefixTpl(); as tpl) {
+          <span class="cngx-combobox__prefix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         <input
           #searchInput="cngxListboxSearch"
           #inputEl
@@ -230,6 +238,11 @@ export interface CngxComboboxChange<T = unknown> {
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
         />
+        @if (inputSuffixTpl(); as tpl) {
+          <span class="cngx-combobox__suffix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         @if (clearable() && !isEmpty() && !disabled()) {
           @if (clearButtonTpl(); as tpl) {
             <span class="cngx-combobox__clear-slot" (click)="$event.stopPropagation()">
@@ -251,7 +264,11 @@ export interface CngxComboboxChange<T = unknown> {
               [attr.aria-label]="clearButtonAriaLabel()"
               (click)="handleClearAllClick($event)"
             >
-              ✕
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
             </button>
           }
         }
@@ -260,6 +277,10 @@ export interface CngxComboboxChange<T = unknown> {
             <ng-container
               *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }"
             />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-combobox__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
           } @else {
             <span aria-hidden="true" class="cngx-combobox__caret">&#9662;</span>
           }
@@ -365,6 +386,19 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Hide the default dropdown caret glyph. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear-all button
+   * without forking the button frame or ARIA wiring. When
+   * `*cngxSelectClearButton` is projected, the projected template takes
+   * full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
+
   /** Render a clear-all button when at least one value is selected. */
   readonly clearable = input<boolean>(false);
 
@@ -459,6 +493,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
     CngxSelectOptionError,
   );
+  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
   // ── Resolved template refs ─────────────────────────────────────────
 
@@ -492,6 +528,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
   /** @internal */
   protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */
+  protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputPrefixDirective()?.templateRef ?? null,
+  );
+  /** @internal */
+  protected readonly inputSuffixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputSuffixDirective()?.templateRef ?? null,
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -630,6 +674,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
+
+  /** @internal — reactive context for the input prefix/suffix template outlets. */
+  protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
+    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    {
+      equal: (a, b) =>
+        a.disabled === b.disabled &&
+        a.focused === b.focused &&
+        a.panelOpen === b.panelOpen,
+    },
+  );
 
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;

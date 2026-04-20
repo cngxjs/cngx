@@ -15,6 +15,7 @@ import {
   viewChild,
   type ElementRef,
   type Signal,
+  type TemplateRef,
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type CngxAsyncState, type AsyncStatus } from '@cngx/core/utils';
@@ -70,6 +71,8 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectInputPrefix,
+  CngxSelectInputSuffix,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
@@ -77,6 +80,7 @@ import {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  type CngxSelectInputSlotContext,
 } from '../shared/template-slots';
 
 /**
@@ -144,6 +148,11 @@ export interface CngxTypeaheadChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <div class="cngx-typeahead__trigger" (click)="handleWrapperClick()">
+        @if (inputPrefixTpl(); as tpl) {
+          <span class="cngx-typeahead__prefix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         <input
           #searchInput="cngxListboxSearch"
           #inputEl
@@ -178,6 +187,11 @@ export interface CngxTypeaheadChange<T = unknown> {
           (focus)="handleFocus()"
           (blur)="handleBlur()"
         />
+        @if (inputSuffixTpl(); as tpl) {
+          <span class="cngx-typeahead__suffix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="tpl; context: inputSlotContext()" />
+          </span>
+        }
         @if (clearable() && value() !== undefined && !disabled()) {
           @if (clearButtonTpl(); as tpl) {
             <span class="cngx-typeahead__clear-slot" (click)="$event.stopPropagation()">
@@ -195,13 +209,21 @@ export interface CngxTypeaheadChange<T = unknown> {
               [attr.aria-label]="clearButtonAriaLabel()"
               (click)="handleClearClick($event)"
             >
-              ✕
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
             </button>
           }
         }
         @if (resolvedShowCaret()) {
           @if (caretTpl(); as tpl) {
             <ng-container *ngTemplateOutlet="tpl; context: { $implicit: panelOpen(), open: panelOpen() }" />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-typeahead__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
           } @else {
             <span aria-hidden="true" class="cngx-typeahead__caret">&#9662;</span>
           }
@@ -265,6 +287,19 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>('Auswahl zurücksetzen');
+  /**
+   * Replaces the built-in `✕` glyph inside the default clear button
+   * while keeping the button frame, ARIA wiring, and click handler
+   * intact. When `*cngxSelectClearButton` is also projected, the
+   * projected template takes full precedence and this input is ignored.
+   */
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the built-in `▾` caret glyph while keeping the wrapping
+   * span semantics (aria-hidden, class). When `*cngxSelectCaret` is
+   * projected, it takes full precedence and this input is ignored.
+   */
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
@@ -309,6 +344,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
   /** @internal */ protected readonly checkTpl = resolveTemplate(this.checkDirective, 'check');
   /** @internal */ protected readonly caretTpl = resolveTemplate(this.caretDirective, 'caret');
@@ -323,6 +360,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly clearButtonTpl = resolveTemplate(this.clearButtonDirective, 'clearButton');
   /** @internal */ protected readonly optionPendingTpl = resolveTemplate(this.optionPendingDirective, 'optionPending');
   /** @internal */ protected readonly optionErrorTpl = resolveTemplate(this.optionErrorDirective, 'optionError');
+  /** @internal */ protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputPrefixDirective()?.templateRef ?? null,
+  );
+  /** @internal */ protected readonly inputSuffixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputSuffixDirective()?.templateRef ?? null,
+  );
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -425,6 +468,17 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
+
+  /** @internal — reactive context for the input prefix/suffix template outlets. */
+  protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
+    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    {
+      equal: (a, b) =>
+        a.disabled === b.disabled &&
+        a.focused === b.focused &&
+        a.panelOpen === b.panelOpen,
+    },
+  );
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
   readonly commitErrorValue = this.core.commitErrorValue;
