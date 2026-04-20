@@ -35,10 +35,12 @@ import { CngxSelectPanel } from '../shared/panel/panel.component';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormFieldPresenter,
-  type CngxFieldRef,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { sameArrayContents } from '../shared/compare';
+import { createFieldSync } from '../shared/field-sync';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -341,8 +343,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Custom matcher used by the inline `CngxListboxSearch`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
 
-  /** Debounce for search term updates, in milliseconds. */
-  readonly searchDebounceMs = input<number>(300);
+  /** Debounce for search term updates, in milliseconds. Defaults to `typeaheadDebounceInterval` from the resolved select config (300ms). */
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
 
   /** Suppress the first `searchTermChange` emission (hydrate-time `''`). */
   readonly skipInitial = input<boolean>(false);
@@ -775,38 +777,33 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     });
 
     // Bridge AD-activations into user-selection outputs and commit flow.
-    effect((onCleanup) => {
-      const lb = this.listboxRef();
-      if (!lb) {
-        return;
-      }
-      const sub = lb.ad.activated.subscribe((raw: unknown) => {
-        untracked(() => {
-          const toggledValue = raw as T;
-          const opt = this.core.findOption(toggledValue);
-          if (!opt) {
-            return;
-          }
-          const action = this.commitAction();
-          if (action) {
-            const previous = [...this.values()];
-            const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-            const next = wasSelected
-              ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-              : [...previous, toggledValue];
-            this.lastCommittedValues = previous;
-            this.togglingOption.set(opt);
-            if (this.commitMode() === 'optimistic') {
-              this.values.set(next);
-            }
-            this.beginCommit(next, previous, opt, action);
-            return;
-          }
-          const currentSelected = this.isSelected(opt);
-          this.finalizeToggle(opt, currentSelected);
-        });
-      });
-      onCleanup(() => sub.unsubscribe());
+    // Lifecycle + routing live in `createADActivationDispatcher`;
+    // array-shape toggle logic stays here.
+    createADActivationDispatcher<T, T[]>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      closeOnSelect: false,
+      commitAction: this.commitAction,
+      onCommit: (toggledValue, opt) => {
+        const previous = [...this.values()];
+        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
+        const next = wasSelected
+          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
+          : [...previous, toggledValue];
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.values.set(next);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.beginCommit(next, previous, opt, action);
+        }
+      },
+      onActivate: (_value, opt) => {
+        const currentSelected = this.isSelected(opt);
+        this.finalizeToggle(opt, currentSelected);
+      },
     });
 
     // Panel open/close lifecycle events.
@@ -825,39 +822,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Field → Combobox: mirror bound field value into our model.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef: CngxFieldRef = presenter.fieldState();
-      const fieldValue = fieldRef.value();
-      const arr = Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
-      untracked(() => {
-        const current = this.values();
-        if (!sameArrayContents(current, arr, this.compareWith())) {
-          this.values.set([...arr]);
-        }
-      });
-    });
-
-    // Combobox → Field: push selection back into bound field.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const next = this.values();
-      untracked(() => {
-        const current = fieldRef.value();
-        const currentArr = Array.isArray(current) ? (current as T[]) : [];
-        if (sameArrayContents(currentArr, next, this.compareWith())) {
-          return;
-        }
-        writeFieldValue(fieldRef, [...next]);
-      });
+    // Bidirectional sync with the bound form field (if any).
+    createFieldSync<T[]>({
+      componentValue: this.values,
+      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      coerceFromField: (x) => (Array.isArray(x) ? ([...(x as T[])]) : []),
+      toFieldValue: (v) => [...v],
     });
 
     // Term → searchTermChange output (with [skipInitial] guard).
@@ -1111,32 +1081,3 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 }
 
-function sameArrayContents<T>(
-  a: readonly T[],
-  b: readonly T[],
-  eq: CngxSelectCompareFn<T>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (!eq(a[i], b[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signalLike = fieldRef.value as unknown;
-  if (
-    typeof signalLike === 'function' &&
-    'set' in signalLike &&
-    typeof (signalLike as { set: unknown }).set === 'function'
-  ) {
-    (signalLike as { set: (v: unknown) => void }).set(value);
-  }
-}

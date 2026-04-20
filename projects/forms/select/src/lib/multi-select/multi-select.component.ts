@@ -33,10 +33,16 @@ import { CngxSelectPanel } from '../shared/panel/panel.component';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormFieldPresenter,
-  type CngxFieldRef,
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { sameArrayContents } from '../shared/compare';
+import { createFieldSync } from '../shared/field-sync';
+import {
+  createTypeaheadController,
+  resolvePageJumpTarget,
+} from '../shared/typeahead-controller';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -501,6 +507,19 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
+  /**
+   * Keyboard typeahead engine — shared with the rest of the select
+   * family via `@cngx/forms/select/shared/typeahead-controller`.
+   * Buffered multi-char resolve + disabled-skip are identical to single
+   * select; the match-to-action wiring below is multi-specific (toggle).
+   */
+  private readonly typeaheadController = createTypeaheadController<T>({
+    options: this.flatOptions,
+    compareWith: this.compareWith,
+    debounceMs: this.typeaheadDebounceInterval,
+    disabled: this.disabled,
+  });
+
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
@@ -615,38 +634,33 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     });
 
     // Bridge AD-activations into user-selection outputs and commit flow.
-    effect((onCleanup) => {
-      const lb = this.listboxRef();
-      if (!lb) {
-        return;
-      }
-      const sub = lb.ad.activated.subscribe((raw: unknown) => {
-        untracked(() => {
-          const toggledValue = raw as T;
-          const opt = this.core.findOption(toggledValue);
-          if (!opt) {
-            return;
-          }
-          const action = this.commitAction();
-          if (action) {
-            const previous = [...this.values()];
-            const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
-            const next = wasSelected
-              ? previous.filter((v) => !this.compareWith()(v, toggledValue))
-              : [...previous, toggledValue];
-            this.lastCommittedValues = previous;
-            this.togglingOption.set(opt);
-            if (this.commitMode() === 'optimistic') {
-              this.values.set(next);
-            }
-            this.beginCommit(next, previous, opt, action);
-            return;
-          }
-          const currentSelected = this.isSelected(opt);
-          this.finalizeToggle(opt, currentSelected);
-        });
-      });
-      onCleanup(() => sub.unsubscribe());
+    // Lifecycle + routing live in `createADActivationDispatcher`;
+    // array-shape toggle logic stays here.
+    createADActivationDispatcher<T, T[]>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      closeOnSelect: false,
+      commitAction: this.commitAction,
+      onCommit: (toggledValue, opt) => {
+        const previous = [...this.values()];
+        const wasSelected = previous.some((v) => this.compareWith()(v, toggledValue));
+        const next = wasSelected
+          ? previous.filter((v) => !this.compareWith()(v, toggledValue))
+          : [...previous, toggledValue];
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.values.set(next);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.beginCommit(next, previous, opt, action);
+        }
+      },
+      onActivate: (_value, opt) => {
+        const currentSelected = this.isSelected(opt);
+        this.finalizeToggle(opt, currentSelected);
+      },
     });
 
     // Panel open/close lifecycle events.
@@ -665,39 +679,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       });
     });
 
-    // Field → MultiSelect: mirror bound field value into our model.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef: CngxFieldRef = presenter.fieldState();
-      const fieldValue = fieldRef.value();
-      const arr = Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
-      untracked(() => {
-        const current = this.values();
-        if (!sameArrayContents(current, arr, this.compareWith())) {
-          this.values.set([...arr]);
-        }
-      });
-    });
-
-    // MultiSelect → Field.
-    effect(() => {
-      const presenter = this.presenter;
-      if (!presenter) {
-        return;
-      }
-      const fieldRef = presenter.fieldState();
-      const next = this.values();
-      untracked(() => {
-        const current = fieldRef.value();
-        const currentArr = Array.isArray(current) ? (current as T[]) : [];
-        if (sameArrayContents(currentArr, next, this.compareWith())) {
-          return;
-        }
-        writeFieldValue(fieldRef, [...next]);
-      });
+    // Bidirectional sync with the bound form field (if any).
+    createFieldSync<T[]>({
+      componentValue: this.values,
+      valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
+      coerceFromField: (x) => (Array.isArray(x) ? ([...(x as T[])]) : []),
+      toFieldValue: (v) => [...v],
     });
   }
 
@@ -821,26 +808,27 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
-    // Typeahead-while-closed — toggle first matching option without opening.
+    // Typeahead-while-closed — toggle first matching option via the
+    // shared typeahead controller (multi-char buffering + disabled skip).
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
-        event.preventDefault();
-        const flat = this.flatOptions();
-        const lower = key.toLowerCase();
-        for (const candidate of flat) {
-          if (candidate.disabled) {
-            continue;
-          }
-          if (candidate.label.toLowerCase().startsWith(lower)) {
-            this.toggleOptionByUser(candidate);
-            return;
-          }
+        const candidate = this.typeaheadController.matchFromIndex(key, -1);
+        if (candidate) {
+          event.preventDefault();
+          this.toggleOptionByUser(candidate);
+          // Multi-select toggle semantics: every keystroke should map to
+          // an independent toggle. Reset the buffer so a repeated key
+          // toggles the same option back off instead of accumulating
+          // ('rr' would match nothing). Single-select keeps buffering
+          // because its advance-on-repeat is the desired jump behaviour.
+          this.typeaheadController.clearBuffer();
+          return;
         }
       }
     }
 
-    // PageUp / PageDown — open + jump ±10.
+    // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       const lb = this.listboxRef();
@@ -852,31 +840,16 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         pop.show();
       }
       const options = lb.options();
-      const total = options.length;
-      if (total === 0) {
-        return;
-      }
       const ad = lb.ad;
-      const direction = event.key === 'PageDown' ? 1 : -1;
-      const step = 10 * direction;
       const currentId = ad.activeId();
       const currentIdx = options.findIndex((o) => o.id === currentId);
-      let target = Math.max(0, Math.min(total - 1, (currentIdx < 0 ? 0 : currentIdx) + step));
-      while (isOptionDisabled(options[target]) && target > 0 && target < total - 1) {
-        target += direction;
+      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
+      const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
+        isOptionDisabled(o),
+      );
+      if (target !== null) {
+        ad.highlightByIndex(target);
       }
-      if (isOptionDisabled(options[target])) {
-        let probe = target - direction;
-        while (probe >= 0 && probe < total && isOptionDisabled(options[probe])) {
-          probe -= direction;
-        }
-        if (probe >= 0 && probe < total) {
-          target = probe;
-        } else {
-          return;
-        }
-      }
-      ad.highlightByIndex(target);
     }
   }
 
@@ -998,32 +971,3 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 }
 
-function sameArrayContents<T>(
-  a: readonly T[],
-  b: readonly T[],
-  eq: CngxSelectCompareFn<T>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (!eq(a[i], b[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
-  const signalLike = fieldRef.value as unknown;
-  if (
-    typeof signalLike === 'function' &&
-    'set' in signalLike &&
-    typeof (signalLike as { set: unknown }).set === 'function'
-  ) {
-    (signalLike as { set: (v: unknown) => void }).set(value);
-  }
-}

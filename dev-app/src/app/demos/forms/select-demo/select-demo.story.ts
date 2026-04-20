@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
     'CngxSelect',
     'CngxMultiSelect',
     'CngxCombobox',
+    'CngxTypeahead',
     'CngxSelectCheck',
     'CngxSelectCaret',
     'CngxSelectOptgroup',
@@ -39,7 +40,7 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -238,6 +239,34 @@ export const STORY: DemoSpec = {
     }
     return of(intended).pipe(delay(800));
   };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
   `,
   sections: [
     {
@@ -971,6 +1000,45 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — single-value async autocomplete',
+      subtitle:
+        'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> — type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.',
+      imports: ['CngxTypeahead'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadValue"
+    (searchTermChange)="handleTypeaheadSearch($event)"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — bound to a typed form field',
+      subtitle:
+        'Wrapped in <code>&lt;cngx-form-field&gt;</code>. The typeahead binds to the <code>Field&lt;T&gt;</code> via <code>createFieldSync</code> — bidirectional sync with the form value, ARIA wiring inherited from the field-presenter.',
+      imports: ['CngxTypeahead', 'CngxFormField'],
+      template: `
+  <cngx-form-field [field]="typeaheadColorField">
+    <cngx-typeahead
+      [label]="'Farbe'"
+      [options]="typeaheadColorOptions"
+      [clearable]="true"
+      placeholder="Farbe eingeben…"
+    />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
   </div>`,
     },
   ],

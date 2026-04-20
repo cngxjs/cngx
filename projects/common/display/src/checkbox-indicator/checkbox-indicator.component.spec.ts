@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -177,5 +177,83 @@ describe('CngxCheckboxIndicator', () => {
     flush(fixture);
     const host = hostEl(fixture);
     expect(() => host.click()).not.toThrow();
+  });
+
+  describe('glyph slots', () => {
+    @Component({
+      template: `
+        <ng-template #customCheck>
+          <span class="custom-glyph" data-custom="check">*</span>
+        </ng-template>
+        <ng-template #customDash>
+          <span class="custom-glyph" data-custom="dash">~</span>
+        </ng-template>
+        <cngx-checkbox-indicator
+          [variant]="variant()"
+          [checked]="checked()"
+          [indeterminate]="indeterminate()"
+          [checkGlyph]="activeCheckGlyph()"
+          [dashGlyph]="activeDashGlyph()"
+        />
+      `,
+      imports: [CngxCheckboxIndicator],
+    })
+    class GlyphHost {
+      readonly checkTpl = viewChild.required<TemplateRef<void>>('customCheck');
+      readonly dashTpl = viewChild.required<TemplateRef<void>>('customDash');
+      readonly variant = signal<'checkbox' | 'checkmark'>('checkbox');
+      readonly checked = signal<boolean>(false);
+      readonly indeterminate = signal<boolean>(false);
+      readonly activeCheckGlyph = signal<TemplateRef<void> | null>(null);
+      readonly activeDashGlyph = signal<TemplateRef<void> | null>(null);
+    }
+
+    it('default (no checkGlyph input) renders the built-in .__check glyph', () => {
+      const fixture = TestBed.createComponent(GlyphHost);
+      fixture.componentInstance.checked.set(true);
+      flush(fixture);
+      const host = hostEl(fixture);
+      expect(host.querySelector('.cngx-checkbox-indicator__check')).not.toBeNull();
+      expect(host.querySelector('[data-custom="check"]')).toBeNull();
+    });
+
+    it('[checkGlyph] template replaces the built-in glyph', () => {
+      const fixture = TestBed.createComponent(GlyphHost);
+      fixture.componentInstance.checked.set(true);
+      fixture.componentInstance.activeCheckGlyph.set(fixture.componentInstance.checkTpl());
+      flush(fixture);
+      const host = hostEl(fixture);
+      expect(host.querySelector('.cngx-checkbox-indicator__check')).toBeNull();
+      const custom = host.querySelector('[data-custom="check"]');
+      expect(custom).not.toBeNull();
+      expect(custom?.textContent).toBe('*');
+    });
+
+    it('[dashGlyph] template replaces the built-in dash when indeterminate', () => {
+      const fixture = TestBed.createComponent(GlyphHost);
+      fixture.componentInstance.indeterminate.set(true);
+      fixture.componentInstance.activeDashGlyph.set(fixture.componentInstance.dashTpl());
+      flush(fixture);
+      const host = hostEl(fixture);
+      expect(host.querySelector('.cngx-checkbox-indicator__dash')).toBeNull();
+      const custom = host.querySelector('[data-custom="dash"]');
+      expect(custom).not.toBeNull();
+      expect(custom?.textContent).toBe('~');
+    });
+
+    it('resetting the glyph input to null restores the default glyph', () => {
+      const fixture = TestBed.createComponent(GlyphHost);
+      fixture.componentInstance.checked.set(true);
+      fixture.componentInstance.activeCheckGlyph.set(fixture.componentInstance.checkTpl());
+      flush(fixture);
+      let host = hostEl(fixture);
+      expect(host.querySelector('[data-custom="check"]')).not.toBeNull();
+
+      fixture.componentInstance.activeCheckGlyph.set(null);
+      flush(fixture);
+      host = hostEl(fixture);
+      expect(host.querySelector('[data-custom="check"]')).toBeNull();
+      expect(host.querySelector('.cngx-checkbox-indicator__check')).not.toBeNull();
+    });
   });
 });

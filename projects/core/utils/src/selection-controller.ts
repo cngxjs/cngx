@@ -25,6 +25,19 @@ export interface SelectionControllerOptions<T> {
    * `Signal<false>` constant (no per-value allocation).
    */
   readonly childrenFn?: (value: T) => readonly T[];
+  /**
+   * Optional cap on the per-value `isSelected` / `isIndeterminate` signal
+   * cache. Default: unlimited — preserves the signal-identity guarantee
+   * (`isSelected(v) === isSelected(v)` always holds for the lifetime of the
+   * controller).
+   *
+   * When set, the caches FIFO-evict their oldest entries as soon as the
+   * size exceeds `cacheLimit`. After eviction, a re-queried value receives
+   * a NEW signal instance (values are equivalent; references differ).
+   * Set this only at grid / tree scale (10k+ rows) where memory retention
+   * matters more than reference stability.
+   */
+  readonly cacheLimit?: number;
 }
 
 /**
@@ -73,7 +86,24 @@ export interface SelectionController<T> {
   clear(): void;
   /** Replace selection with the given values (copied). */
   set(values: readonly T[]): void;
+  /**
+   * Release retained per-value signal caches. Post-destroy
+   * `isSelected(v)` / `isIndeterminate(v)` return a shared
+   * `Signal<false>` no-op (identity-stable across all calls) so existing
+   * bindings keep working without further memory retention. Writes
+   * (`select`, `deselect`, `toggle`, `toggleAll`, `clear`, `set`) still
+   * mutate `values` but do not repopulate the caches. Idempotent.
+   */
+  destroy(): void;
 }
+
+/**
+ * Shared post-destroy fallback signal. A single allocation reused across
+ * every destroyed controller and every queried value so that destruction
+ * retains O(1) memory no matter how many bindings are still observing the
+ * controller.
+ */
+const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
 
 /**
  * Create a signal-based selection engine that reads and writes an external
@@ -98,6 +128,8 @@ export function createSelectionController<T>(
 ): SelectionController<T> {
   const keyFn = options?.keyFn ?? ((v: T) => v as unknown);
   const childrenFn = options?.childrenFn;
+  const cacheLimit = options?.cacheLimit;
+  let destroyed = false;
 
   // Membership Map — rebuilds only when values() identity changes.
   const membership = computed<Map<unknown, true>>(() => {
@@ -130,12 +162,26 @@ export function createSelectionController<T>(
 
   // Per-value isSelected cache — stable signal identity per key.
   const selectedCache = new Map<unknown, Signal<boolean>>();
+  const evictOldest = (map: Map<unknown, Signal<boolean>>): void => {
+    if (cacheLimit === undefined || map.size <= cacheLimit) {
+      return;
+    }
+    // Map preserves insertion order — first key is the oldest entry.
+    const oldest = map.keys().next();
+    if (!oldest.done) {
+      map.delete(oldest.value);
+    }
+  };
   const isSelected = (value: T): Signal<boolean> => {
+    if (destroyed) {
+      return POST_DESTROY_FALSE;
+    }
     const key = keyFn(value);
     let sig = selectedCache.get(key);
     if (!sig) {
       sig = computed(() => membership().has(key));
       selectedCache.set(key, sig);
+      evictOldest(selectedCache);
     }
     return sig;
   };
@@ -144,6 +190,9 @@ export function createSelectionController<T>(
   const FALSE = signal(false).asReadonly();
   const indeterminateCache = new Map<unknown, Signal<boolean>>();
   const isIndeterminate = (value: T): Signal<boolean> => {
+    if (destroyed) {
+      return POST_DESTROY_FALSE;
+    }
     if (!childrenFn) {
       return FALSE;
     }
@@ -178,6 +227,7 @@ export function createSelectionController<T>(
         return sel > 0 && sel < descendants.length;
       });
       indeterminateCache.set(key, sig);
+      evictOldest(indeterminateCache);
     }
     return sig;
   };
@@ -230,6 +280,14 @@ export function createSelectionController<T>(
   const setFn = (vs: readonly T[]): void => {
     values.set([...vs]);
   };
+  const destroy = (): void => {
+    if (destroyed) {
+      return;
+    }
+    destroyed = true;
+    selectedCache.clear();
+    indeterminateCache.clear();
+  };
 
   return {
     selected,
@@ -244,6 +302,7 @@ export function createSelectionController<T>(
     toggleAll,
     clear,
     set: setFn,
+    destroy,
   };
 }
 

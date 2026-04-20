@@ -23,6 +23,10 @@ export {
   CngxCombobox,
   type CngxComboboxChange,
 } from './src/lib/combobox/combobox.component';
+export {
+  CngxTypeahead,
+  type CngxTypeaheadChange,
+} from './src/lib/typeahead/typeahead.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
@@ -135,3 +139,30 @@ export {
   type CngxCommitBeginHandlers,
   createCommitController,
 } from './src/lib/shared/commit-controller';
+
+// ── Field sync factory ────────────────────────────────────────────────
+export {
+  createFieldSync,
+  type FieldSyncOptions,
+} from './src/lib/shared/field-sync';
+
+// ── ActiveDescendant activation dispatcher ────────────────────────────
+export {
+  createADActivationDispatcher,
+  type ADActivationDispatcherOptions,
+} from './src/lib/shared/ad-activation-dispatcher';
+
+// ── Keyboard typeahead controller + page-jump helper ──────────────────
+export {
+  createTypeaheadController,
+  resolvePageJumpTarget,
+  type TypeaheadController,
+  type TypeaheadControllerOptions,
+} from './src/lib/shared/typeahead-controller';
+
+// ── Display binding (scalar value ↔ input text) ───────────────────────
+export {
+  createDisplayBinding,
+  type DisplayBinding,
+  type DisplayBindingOptions,
+} from './src/lib/shared/display-binding';

@@ -1,4 +1,11 @@
-import { computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
@@ -520,6 +527,13 @@ export function createSelectCore<T, TCommit>(
     ? selectionFactory<T>(deps.multiValues)
     : null;
   const selection = signal<SelectionController<T> | null>(controllerInstance).asReadonly();
+  // Release the controller's per-value signal caches when the host
+  // component tears down. Post-destroy reads flip to a shared
+  // `Signal<false>` no-op (see selection-controller.ts), so late bindings
+  // on lingering references stay safe.
+  if (controllerInstance) {
+    inject(DestroyRef).onDestroy(() => controllerInstance.destroy());
+  }
 
   function isSelected(value: T): boolean {
     const eq = deps.compareWith();

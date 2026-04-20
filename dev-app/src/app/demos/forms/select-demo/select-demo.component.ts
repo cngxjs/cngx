@@ -9,7 +9,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -45,12 +45,13 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     CngxCombobox,
     CngxSelectClearButton,
     CngxComboboxTriggerLabel,
+    CngxTypeahead,
   ],
   template: `
     <app-doc-shell title="Select"
       description="CngxSelect — native-feeling single-select dropdown with template overrides, optgroups, clearable, loading, and full mat-select API parity."
       overview="<p><code>&lt;cngx-select&gt;</code> composes <code>CngxListboxTrigger</code> + <code>CngxPopover</code> + <code>CngxListbox</code> into a native-feeling dropdown. Single-select only — for multi use <code>CngxMultiSelect</code>.</p><p>Provides <code>CNGX_FORM_FIELD_CONTROL</code> directly, full <code>mat-select</code> parity (<code>open</code>/<code>close</code>/<code>toggle</code>/<code>focus</code>, <code>panelOpen</code>/<code>selected</code>/<code>triggerValue</code> signals, <code>selectionChange</code>/<code>openedChange</code>/<code>opened</code>/<code>closed</code> outputs, <code>[panelWidth]</code>, <code>[panelClass]</code>, <code>[tabIndex]</code>, <code>[aria-label]</code>, <code>[compareWith]</code>, <code>[required]</code>).</p><p>Template overrides per-instance: <code>*cngxSelectCheck</code>, <code>*cngxSelectCaret</code>, <code>*cngxSelectOptgroup</code>, <code>*cngxSelectPlaceholder</code>, <code>*cngxSelectEmpty</code>, <code>*cngxSelectLoading</code>, <code>*cngxSelectTriggerLabel</code>, <code>*cngxSelectOptionLabel</code>. Globally via <code>provideSelectConfig(withSelectionIndicator(false), withPanelWidth('trigger'), ...)</code>.</p><p>Live-region announcements on every selection change (configurable).</p>"
-      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'CngxComboboxTriggerLabel', 'provideSelectConfig']">
+      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxTypeahead', 'CngxSelectCheck', 'CngxSelectCaret', 'CngxSelectOptgroup', 'CngxSelectEmpty', 'CngxSelectLoading', 'CngxSelectTriggerLabel', 'CngxSelectOptionLabel', 'CngxComboboxTriggerLabel', 'provideSelectConfig']">
       <app-example-card title="Standalone"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -726,6 +727,43 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
   </div>
       </app-example-card>
+      <app-example-card title="Typeahead — single-value async autocomplete"
+        [subtitle]="_s30"
+        [sourceHtml]="_srcHtml30"
+        [sourceTs]="_srcTs30">
+        
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadValue"
+    (searchTermChange)="handleTypeaheadSearch($event)"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Typeahead — bound to a typed form field"
+        [subtitle]="_s31"
+        [sourceHtml]="_srcHtml31"
+        [sourceTs]="_srcTs31">
+        
+  <cngx-form-field [field]="typeaheadColorField">
+    <cngx-typeahead
+      [label]="'Farbe'"
+      [options]="typeaheadColorOptions"
+      [clearable]="true"
+      placeholder="Farbe eingeben…"
+    />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -760,6 +798,8 @@ export class SelectDemoComponent {
   protected readonly _s27 = 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.';
   protected readonly _s28 = 'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.';
   protected readonly _s29 = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).';
+  protected readonly _s30 = 'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> — type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.';
+  protected readonly _s31 = 'Wrapped in <code>&lt;cngx-form-field&gt;</code>. The typeahead binds to the <code>Field&lt;T&gt;</code> via <code>createFieldSync</code> — bidirectional sync with the form value, ARIA wiring inherited from the field-presenter.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -776,7 +816,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -974,7 +1014,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml1 = `<cngx-select
     [label]="'Declarative (broken)'"
     [(value)]="declarativeValue"
@@ -999,7 +1067,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1197,7 +1265,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml2 = `<button type="button"
           class="chip"
           [cngxPopoverTrigger]="myPop"
@@ -1233,7 +1329,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1431,7 +1527,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml3 = `<cngx-select
     [label]="'Priorität'"
     [options]="priorities"
@@ -1446,7 +1570,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1644,7 +1768,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml4 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -1659,7 +1811,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -1857,7 +2009,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml5 = `<cngx-select
     [label]="'Gewerk'"
     [options]="richOptions"
@@ -1877,7 +2057,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2075,7 +2255,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml6 = `<cngx-select
     [label]="'Async'"
     [options]="loadingOptions"
@@ -2097,7 +2305,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2295,7 +2503,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml7 = `<cngx-select
     [label]="'Sprache'"
     [state]="asyncState"
@@ -2327,7 +2563,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2525,7 +2761,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml8 = `<cngx-select
     [label]="'Farbe (commit)'"
     [options]="colors"
@@ -2560,7 +2824,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2758,7 +3022,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml9 = `<cngx-select
     [label]="'Sprache'"
     [state]="variantState"
@@ -2786,7 +3078,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -2984,7 +3276,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml10 = `<cngx-select
     [label]="'Sprache'"
     [state]="variantState"
@@ -3011,7 +3331,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3209,7 +3529,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml11 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -3233,7 +3581,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3431,7 +3779,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml12 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -3449,7 +3825,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3647,7 +4023,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml13 = `<cngx-select
     [label]="'Gewerk'"
     [options]="richOptions"
@@ -3667,7 +4071,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -3865,7 +4269,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml14 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -3882,7 +4314,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4080,7 +4512,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml15 = `<cngx-select
     [label]="'Item'"
     [options]="manyOptions"
@@ -4096,7 +4556,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4294,7 +4754,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml16 = `<button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
     {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
   </button>
@@ -4315,7 +4803,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4513,7 +5001,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml17 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
@@ -4532,7 +5048,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4730,7 +5246,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml18 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
@@ -4745,7 +5289,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -4943,7 +5487,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml19 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -4959,7 +5531,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5157,7 +5729,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml20 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -5173,7 +5773,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5371,7 +5971,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml21 = `<cngx-multi-select
     [label]="'Themen'"
     [state]="multiAsyncState"
@@ -5391,7 +6019,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5589,7 +6217,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml22 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
             [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -5623,7 +6279,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -5821,7 +6477,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml23 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -5845,7 +6529,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -6043,7 +6727,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml24 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -6065,7 +6777,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -6263,7 +6975,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml25 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -6279,7 +7019,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -6477,7 +7217,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml26 = `<cngx-combobox
     [label]="'Themen'"
     [state]="comboAsyncState"
@@ -6500,7 +7268,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -6698,7 +7466,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml27 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
             [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -6732,7 +7528,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -6930,7 +7726,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml28 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -6952,7 +7776,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -7150,7 +7974,35 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
   protected readonly _srcHtml29 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -7176,7 +8028,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
@@ -7374,7 +8226,60 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
       return throwError(() => new Error('Server offline')).pipe(delay(800));
     }
     return of(intended).pipe(delay(800));
-  };`;
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly _srcHtml30 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadValue"
+    (searchTermChange)="handleTypeaheadSearch($event)"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs30 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
 
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
@@ -7568,5 +8473,497 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly _srcHtml31 = `<cngx-form-field [field]="typeaheadColorField">
+    <cngx-typeahead
+      [label]="'Farbe'"
+      [options]="typeaheadColorOptions"
+      [clearable]="true"
+      placeholder="Farbe eingeben…"
+    />
+  </cngx-form-field>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs31 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
   
 }
