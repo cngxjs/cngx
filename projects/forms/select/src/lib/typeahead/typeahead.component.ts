@@ -298,7 +298,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>('Auswahl zurücksetzen');
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+  );
   /**
    * Replaces the built-in `✕` glyph inside the default clear button
    * while keeping the button frame, ARIA wiring, and click handler

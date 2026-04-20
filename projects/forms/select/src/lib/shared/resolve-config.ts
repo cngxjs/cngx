@@ -14,8 +14,12 @@ import {
  * @internal
  */
 export function resolveSelectConfig(): Required<
-  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer'>
-> & Pick<typeof CNGX_SELECT_DEFAULTS, 'panelClass' | 'templates' | 'announcer'> {
+  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels'>
+> &
+  Pick<
+    typeof CNGX_SELECT_DEFAULTS,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels'
+  > {
   const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
   return {
     panelWidth: user.panelWidth ?? CNGX_SELECT_DEFAULTS.panelWidth,
@@ -46,6 +50,10 @@ export function resolveSelectConfig(): Required<
     templates: {
       ...CNGX_SELECT_DEFAULTS.templates,
       ...user.templates,
+    },
+    ariaLabels: {
+      ...CNGX_SELECT_DEFAULTS.ariaLabels,
+      ...user.ariaLabels,
     },
   };
 }

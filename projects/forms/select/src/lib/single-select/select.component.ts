@@ -324,7 +324,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
-  readonly clearButtonAriaLabel = input<string>('Auswahl entfernen');
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl entfernen',
+  );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
