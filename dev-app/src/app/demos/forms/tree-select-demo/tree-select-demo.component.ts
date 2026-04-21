@@ -28,6 +28,15 @@ import { ORG_TREE, type Employee } from '../../../fixtures/employees-tree.fixtur
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
+  <div class="kbd-hint">
+    <strong>Keyboard:</strong>
+    <span><kbd>Space</kbd> / <kbd>↓</kbd> / <kbd>Enter</kbd> open</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+    <span><kbd>→</kbd> expand</span>
+    <span><kbd>←</kbd> collapse</span>
+    <span><kbd>Enter</kbd> / <kbd>Space</kbd> select</span>
+    <span><kbd>Esc</kbd> close</span>
+  </div>
   <cngx-tree-select
     [nodes]="orgTree"
     [nodeIdFn]="orgIdFn"
@@ -249,7 +258,16 @@ export class TreeSelectDemoComponent {
   protected readonly _s3 = 'Project a <code>*cngxTreeSelectNode</code> template to swap the default row markup. The context delivers the full <code>FlatTreeNode</code>, all reactive flags, and two pre-bound callbacks: <code>toggleExpand()</code> routes through the controller, <code>handleSelect()</code> routes through the cascade + commit flow.';
   protected readonly _s4 = '<code>[commitAction]</code> turns every toggle into an async write. <code>optimistic</code> updates <code>values()</code> immediately and rolls back if the action rejects; <code>pessimistic</code> defers the visible change until the write resolves. Supersede semantics — a second toggle while the first is in-flight cancels the first\'s outcome callbacks.';
   protected readonly _s5 = 'Three-level fan-out: 10 roots × 10 branches × 100 leaves = 10,110 flat nodes. Open the panel; expand a root; scroll. Flatten + visibleNodes recomputes + rendering stay in the 16ms frame budget thanks to structural-equal computeds in the controller and memoised slot context + O(1) indexes in the panel.';
-  protected readonly _srcHtml0 = `<cngx-tree-select
+  protected readonly _srcHtml0 = `<div class="kbd-hint">
+    <strong>Keyboard:</strong>
+    <span><kbd>Space</kbd> / <kbd>↓</kbd> / <kbd>Enter</kbd> open</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+    <span><kbd>→</kbd> expand</span>
+    <span><kbd>←</kbd> collapse</span>
+    <span><kbd>Enter</kbd> / <kbd>Space</kbd> select</span>
+    <span><kbd>Esc</kbd> close</span>
+  </div>
+  <cngx-tree-select
     [nodes]="orgTree"
     [nodeIdFn]="orgIdFn"
     [labelFn]="orgLabelFn"

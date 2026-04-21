@@ -26,7 +26,6 @@ export const STORY: DemoSpec = {
     "import { CngxExpandable, createTreeController, CngxHierarchicalNav, createTreeAdItems, type CngxTreeController as TreeCtrl } from '@cngx/common/interactive';",
     "import { CngxActiveDescendant } from '@cngx/common/a11y';",
     "import { createSelectionController, type SelectionController } from '@cngx/core/utils';",
-    "import { TestBed } from '@angular/core/testing';",
     "import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';",
     "interface Task { readonly id: string; readonly name: string; }",
   ],
@@ -62,51 +61,41 @@ export const STORY: DemoSpec = {
   }
 
   // Section 2 — bare tree-controller, no keyboard, no selection
-  protected readonly ctrlPlain: TreeCtrl<Task> = TestBed.runInInjectionContext(() =>
-    createTreeController<Task>({
-      nodes: signal(this.projectTree),
-      nodeIdFn: (v) => v.id,
-      labelFn: (v) => v.name,
-      initiallyExpanded: ['p'],
-    }),
-  );
+  protected readonly ctrlPlain: TreeCtrl<Task> = createTreeController<Task>({
+    nodes: signal(this.projectTree),
+    nodeIdFn: (v) => v.id,
+    labelFn: (v) => v.name,
+    initiallyExpanded: ['p'],
+  });
 
   // Section 3 — tree-controller + AD + HierarchicalNav keyboard
-  protected readonly ctrlKbd: TreeCtrl<Task> = TestBed.runInInjectionContext(() =>
-    createTreeController<Task>({
-      nodes: signal(this.projectTree),
-      nodeIdFn: (v) => v.id,
-      labelFn: (v) => v.name,
-      initiallyExpanded: 'all',
-    }),
-  );
-  protected readonly kbdAdItems = TestBed.runInInjectionContext(() =>
-    createTreeAdItems(this.ctrlKbd),
-  );
+  protected readonly ctrlKbd: TreeCtrl<Task> = createTreeController<Task>({
+    nodes: signal(this.projectTree),
+    nodeIdFn: (v) => v.id,
+    labelFn: (v) => v.name,
+    initiallyExpanded: 'all',
+  });
+  protected readonly kbdAdItems = createTreeAdItems(this.ctrlKbd);
 
   // Section 4 — cascade selection
-  protected readonly ctrlSel: TreeCtrl<Task> = TestBed.runInInjectionContext(() =>
-    createTreeController<Task>({
-      nodes: signal(this.projectTree),
-      nodeIdFn: (v) => v.id,
-      labelFn: (v) => v.name,
-      keyFn: (v) => v.id,
-      initiallyExpanded: 'all',
-    }),
-  );
+  protected readonly ctrlSel: TreeCtrl<Task> = createTreeController<Task>({
+    nodes: signal(this.projectTree),
+    nodeIdFn: (v) => v.id,
+    labelFn: (v) => v.name,
+    keyFn: (v) => v.id,
+    initiallyExpanded: 'all',
+  });
   protected readonly selValues = signal<Task[]>([
     { id: 'p-design-wires', name: 'Wireframes' },
   ]);
-  protected readonly selection: SelectionController<Task> = TestBed.runInInjectionContext(
-    () =>
-      createSelectionController<Task>(this.selValues, {
-        keyFn: (v) => v.id,
-        childrenFn: (v) => this.ctrlSel.childrenOfValue(v),
-      }),
+  protected readonly selection: SelectionController<Task> = createSelectionController<Task>(
+    this.selValues,
+    {
+      keyFn: (v) => v.id,
+      childrenFn: (v) => this.ctrlSel.childrenOfValue(v),
+    },
   );
-  protected readonly selAdItems = TestBed.runInInjectionContext(() =>
-    createTreeAdItems(this.ctrlSel),
-  );
+  protected readonly selAdItems = createTreeAdItems(this.ctrlSel);
   protected cascadeToggle(node: FlatTreeNode<Task>): void {
     const value = node.value;
     const wasSelected = this.selection.isSelected(value)();
@@ -208,6 +197,14 @@ export const STORY: DemoSpec = {
         'Typing matches a row by label. Exactly the same wiring <code>CngxTreeSelect</code> uses.',
       imports: ['CngxActiveDescendant', 'CngxHierarchicalNav'],
       template: `
+  <div class="kbd-hint">
+    <strong>Keyboard:</strong>
+    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+    <span><kbd>Home</kbd>/<kbd>End</kbd> first/last</span>
+    <span><kbd>→</kbd> expand / first child</span>
+    <span><kbd>←</kbd> collapse / parent</span>
+    <span>type letters for typeahead</span>
+  </div>
   <div
     role="tree"
     cngxActiveDescendant
@@ -258,6 +255,14 @@ export const STORY: DemoSpec = {
         'carry <code>aria-selected</code>; partially-selected parents render a <code>◐</code> indicator.',
       imports: ['CngxActiveDescendant', 'CngxHierarchicalNav'],
       template: `
+  <div class="kbd-hint">
+    <strong>Keyboard:</strong>
+    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+    <span><kbd>→</kbd> expand</span>
+    <span><kbd>←</kbd> collapse</span>
+    <span><kbd>Enter</kbd> / <kbd>Space</kbd> cascade-toggle</span>
+    <span>type letters for typeahead</span>
+  </div>
   <div
     role="tree"
     aria-multiselectable="true"

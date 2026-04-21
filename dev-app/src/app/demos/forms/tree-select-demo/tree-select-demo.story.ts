@@ -113,6 +113,15 @@ export const STORY: DemoSpec = {
         'flip a leaf and watch the branch indicator change.',
       imports: ['CngxTreeSelect'],
       template: `
+  <div class="kbd-hint">
+    <strong>Keyboard:</strong>
+    <span><kbd>Space</kbd> / <kbd>↓</kbd> / <kbd>Enter</kbd> open</span>
+    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+    <span><kbd>→</kbd> expand</span>
+    <span><kbd>←</kbd> collapse</span>
+    <span><kbd>Enter</kbd> / <kbd>Space</kbd> select</span>
+    <span><kbd>Esc</kbd> close</span>
+  </div>
   <cngx-tree-select
     [nodes]="orgTree"
     [nodeIdFn]="orgIdFn"
