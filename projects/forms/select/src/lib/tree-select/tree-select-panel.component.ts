@@ -2,7 +2,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
@@ -140,33 +139,71 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected readonly adItems = createTreeAdItems(this.host.treeController);
 
   /**
-   * Cached `node.id → toggleExpand` and `node.id → handleSelect`
-   * closures for the slot context. Built once per panel instance so
-   * passing the context into `ngTemplateOutlet` doesn't thrash the
-   * slot template's input-identity on every re-derivation of the
-   * visible node list.
+   * Per-node memoization. Two purposes:
    *
-   * Context objects themselves stay fresh per @for iteration — the
-   * template outlet re-binds them, but the closures inside are stable.
+   * - **Closure identity**: `toggleExpand` and `handleSelect` are stable
+   *   across re-derivations so the slot template's outlet sees the same
+   *   function references on every trigger.
+   * - **Context identity**: `nodeContext(node)` returns the SAME
+   *   context object when the node's reactive flags (expanded /
+   *   selected / indeterminate) and the underlying `FlatTreeNode` ref
+   *   haven't changed. `ngTemplateOutlet` compares context by reference
+   *   and rebinds the embedded view whenever the ref changes — caching
+   *   stops the outlet thrashing every change-detection cycle even for
+   *   rows whose state hasn't changed.
+   *
+   * Entries live for the panel's lifetime; the panel is scoped to a
+   * single popover open → GC picks up the whole closure on popover
+   * close.
    */
+  private readonly contextCache = new Map<
+    string,
+    {
+      readonly node: FlatTreeNode<T>;
+      readonly expanded: boolean;
+      readonly selected: boolean;
+      readonly indeterminate: boolean;
+      readonly context: CngxTreeSelectNodeContext<T>;
+    }
+  >();
   private readonly toggleById = new Map<string, () => void>();
   private readonly selectByValue = new WeakMap<object, () => void>();
 
   protected nodeContext(node: FlatTreeNode<T>): CngxTreeSelectNodeContext<T> {
-    const toggleExpand = this.getToggleExpand(node.id);
-    const handleSelect = this.getHandleSelect(node);
-    return {
+    const expanded = this.host.treeController.isExpanded(node.id)();
+    const selected = this.host.isSelected(node.value);
+    const indeterminate = this.host.isIndeterminate(node.value);
+
+    const cached = this.contextCache.get(node.id);
+    if (
+      cached?.node === node &&
+      cached?.expanded === expanded &&
+      cached?.selected === selected &&
+      cached?.indeterminate === indeterminate
+    ) {
+      return cached.context;
+    }
+
+    const context: CngxTreeSelectNodeContext<T> = {
       $implicit: node,
       node,
       depth: node.depth,
-      expanded: this.host.treeController.isExpanded(node.id)(),
+      expanded,
       hasChildren: node.hasChildren,
-      selected: this.host.isSelected(node.value),
-      indeterminate: this.host.isIndeterminate(node.value),
+      selected,
+      indeterminate,
       disabled: node.disabled,
-      toggleExpand,
-      handleSelect,
+      toggleExpand: this.getToggleExpand(node.id),
+      handleSelect: this.getHandleSelect(node),
     };
+    this.contextCache.set(node.id, {
+      node,
+      expanded,
+      selected,
+      indeterminate,
+      context,
+    });
+    return context;
   }
 
   private getToggleExpand(id: string): () => void {
@@ -213,14 +250,4 @@ export class CngxTreeSelectPanel<T = unknown> {
     }
     this.host.handleSelect(node);
   }
-
-  /**
-   * Cached memoization hook used by the @for template — exposes the
-   * controller's visible-nodes signal for the `track` expression
-   * without forcing the template to chain method calls. Not strictly
-   * required but keeps the template tight.
-   */
-  protected readonly visibleNodes = computed(() =>
-    this.host.treeController.visibleNodes(),
-  );
 }
