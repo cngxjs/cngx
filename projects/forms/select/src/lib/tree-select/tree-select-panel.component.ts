@@ -102,26 +102,41 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
               (click)="!node.disabled && host.handleSelect(node)"
             >
               @if (node.hasChildren) {
+                @let isOpen = host.treeController.isExpanded(node.id)();
                 <button
                   type="button"
                   class="cngx-tree-select__twisty"
-                  [class.cngx-tree-select__twisty--open]="
-                    host.treeController.isExpanded(node.id)()
-                  "
+                  [class.cngx-tree-select__twisty--open]="isOpen"
                   tabindex="-1"
                   [attr.aria-label]="
-                    host.treeController.isExpanded(node.id)()
-                      ? 'Collapse'
-                      : 'Expand'
+                    isOpen ? host.twistyCollapseLabel() : host.twistyExpandLabel()
                   "
                   (click)="toggleExpand($event, node)"
-                >▸</button>
+                >
+                  @if (isOpen) {
+                    @if (host.twistyOpenGlyph(); as glyph) {
+                      <ng-container *ngTemplateOutlet="glyph" />
+                    } @else if (host.twistyGlyph(); as glyph) {
+                      <ng-container *ngTemplateOutlet="glyph" />
+                    } @else {
+                      <span aria-hidden="true">▸</span>
+                    }
+                  } @else {
+                    @if (host.twistyGlyph(); as glyph) {
+                      <ng-container *ngTemplateOutlet="glyph" />
+                    } @else {
+                      <span aria-hidden="true">▸</span>
+                    }
+                  }
+                </button>
               } @else {
                 <span aria-hidden="true" class="cngx-tree-select__twisty-spacer"></span>
               }
               <cngx-checkbox-indicator
                 [checked]="host.isSelected(node.value)"
                 [indeterminate]="host.isIndeterminate(node.value)"
+                [checkGlyph]="host.checkGlyph()"
+                [dashGlyph]="host.dashGlyph()"
               />
               <span class="cngx-tree-select__label">{{ node.label }}</span>
             </div>

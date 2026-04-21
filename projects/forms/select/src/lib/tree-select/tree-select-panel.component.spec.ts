@@ -121,6 +121,14 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly selected = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
   readonly panelOpen = signal(true).asReadonly();
+  // Glyph overrides + i18n labels — null / default literals keep the
+  // harness on the built-in node-row visuals.
+  readonly twistyGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly twistyOpenGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly checkGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly dashGlyph = signal<TemplateRef<void> | null>(null).asReadonly();
+  readonly twistyExpandLabel = signal('Expand').asReadonly();
+  readonly twistyCollapseLabel = signal('Collapse').asReadonly();
   close(): void {
     /* no-op in the spec harness */
   }

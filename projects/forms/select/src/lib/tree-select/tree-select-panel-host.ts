@@ -35,6 +35,24 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * signal it receives.
    */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null>;
+  /**
+   * Fine-grained glyph overrides for the default node-row. Only
+   * consulted when no `*cngxTreeSelectNode` is projected — consumer
+   * templates override directly. Pairs with the flat-family's
+   * `clearGlyph` / `caretGlyph` pattern for minimal, no-fork glyph
+   * swaps.
+   */
+  readonly twistyGlyph: Signal<TemplateRef<void> | null>;
+  readonly twistyOpenGlyph: Signal<TemplateRef<void> | null>;
+  readonly checkGlyph: Signal<TemplateRef<void> | null>;
+  readonly dashGlyph: Signal<TemplateRef<void> | null>;
+  /**
+   * Localised aria-labels for the twisty expand/collapse button.
+   * Falls back to English defaults ('Expand' / 'Collapse') when
+   * unset.
+   */
+  readonly twistyExpandLabel: Signal<string>;
+  readonly twistyCollapseLabel: Signal<string>;
   /** Whether this node's value is currently selected. */
   isSelected(value: T): boolean;
   /** Whether this node's value is partially selected via cascade descendants. */

@@ -189,7 +189,7 @@ export interface CngxTreeSelectChange<T = unknown> {
         class="cngx-tree-select__trigger"
         role="combobox"
         [cngxPopoverTrigger]="pop"
-        [haspopup]="'listbox'"
+        [haspopup]="'tree'"
         [attr.tabindex]="effectiveTabIndex()"
         [attr.aria-label]="aria.label"
         [attr.aria-labelledby]="aria.labelledBy"
@@ -358,6 +358,35 @@ export class CngxTreeSelect<T = unknown>
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Replaces the default `▸` twisty glyph in the panel's default node
+   * row. Applied to both collapsed and expanded states unless
+   * `twistyOpenGlyph` is also set. Ignored when `*cngxTreeSelectNode`
+   * is projected — custom row owns its own glyph.
+   */
+  readonly twistyGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Optional override for the expanded-state twisty glyph. Falls back
+   * to `twistyGlyph` when unset, then to the built-in `▸` (rotated via
+   * CSS). Use this when the expand/collapse glyphs are semantically
+   * different shapes rather than a rotated single shape.
+   */
+  readonly twistyOpenGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Forwarded to `<cngx-checkbox-indicator [checkGlyph]>` on the
+   * default node row. Custom node templates can read the slot context's
+   * `selected` flag and render their own checkmark.
+   */
+  readonly checkGlyph = input<TemplateRef<void> | null>(null);
+  /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
+  readonly dashGlyph = input<TemplateRef<void> | null>(null);
+  /**
+   * Localised aria-labels for the twisty expand/collapse button in the
+   * default node row. Falls back to English defaults. Ignored when
+   * `*cngxTreeSelectNode` is projected.
+   */
+  readonly twistyExpandLabel = input<string>('Expand');
+  readonly twistyCollapseLabel = input<string>('Collapse');
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
     this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
@@ -683,11 +712,30 @@ export class CngxTreeSelect<T = unknown>
 
   // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
 
+  /**
+   * Stable retry closure — bound once so the memoised `errorContext`
+   * computed below stays reference-stable; only `error` / `$implicit`
+   * carry real CD variance.
+   */
+  private readonly errorRetryBound: () => void = () => this.handleRetry();
+
   /** @internal */
-  readonly errorContext = computed<CngxSelectErrorContext>(() => {
-    const err = this.state()?.error() ?? null;
-    return { $implicit: err, error: err, retry: () => this.handleRetry() };
-  });
+  readonly errorContext = computed<CngxSelectErrorContext>(
+    () => {
+      const err = this.state()?.error() ?? null;
+      return { $implicit: err, error: err, retry: this.errorRetryBound };
+    },
+    {
+      // Structural-equal on `error` + identity-check the stable retry
+      // closure — identical error reads stop thrashing the outlet that
+      // renders the retry banner. Parallel pattern to `commitErrorContext`.
+      equal: (a, b) =>
+        a === b ||
+        (Object.is(a.error, b.error) &&
+          Object.is(a.$implicit, b.$implicit) &&
+          a.retry === b.retry),
+    },
+  );
 
   // Stable retry closure — re-creating it per CD cycle churns any
   // `*ngTemplateOutlet` that consumes the commit-error context. Bound
