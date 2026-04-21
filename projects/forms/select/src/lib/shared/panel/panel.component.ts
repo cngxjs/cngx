@@ -10,13 +10,17 @@ import {
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { CngxOption } from '@cngx/common/interactive';
 
+import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
 import type { CngxSelectOptionDef } from '../option.model';
 
 /**
- * Panel body sub-component — renders the dropdown's inner switch: the
- * four loading variants, the empty/error states, the refresh indicator,
- * the inline/commit-error banners, and the grouped/flat option loop.
+ * Panel body sub-component for the flat (non-tree) select family —
+ * renders the grouped/flat option loop inside the shared
+ * `<cngx-select-panel-shell>` frame. The shell owns the loading /
+ * empty / error / refreshing / commit-error surfaces; this component
+ * only contributes the options rendering that's specific to a flat
+ * listbox.
  *
  * **Why this is a separate component.**
  * Inlining the whole panel in `CngxSelect`'s template pushed it past
@@ -48,131 +52,29 @@ import type { CngxSelectOptionDef } from '../option.model';
   exportAs: 'cngxSelectPanel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxOption, CngxCheckboxIndicator, NgTemplateOutlet],
+  imports: [CngxOption, CngxCheckboxIndicator, CngxSelectPanelShell, NgTemplateOutlet],
   host: {
     class: 'cngx-select-panel-host',
   },
   template: `
-    @switch (host.activeView()) {
-      @case ('skeleton') {
-        @if (host.tpl.loading(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
-        } @else {
-          @switch (host.loadingVariant()) {
-            @case ('spinner') {
-              <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" aria-label="Loading">
-                <div aria-hidden="true" class="cngx-select__spinner"></div>
-              </div>
+    <cngx-select-panel-shell>
+      @for (item of host.effectiveOptions(); track $index) {
+        @if (host.isGroup(item)) {
+          <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
+            @if (host.tpl.optgroup(); as tpl) {
+              <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
+            } @else {
+              <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
             }
-            @case ('bar') {
-              <div class="cngx-select__loading-bar" role="status" aria-live="polite" aria-label="Loading"></div>
+            @for (opt of item.children; track opt.value) {
+              <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled }" />
             }
-            @case ('text') {
-              <div class="cngx-select__loading" role="status" aria-live="polite">Loading…</div>
-            }
-            @default {
-              <div class="cngx-select__skeleton" role="status" aria-live="polite" aria-label="Loading">
-                @for (i of host.skeletonIndices(); track i) {
-                  <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
-                }
-              </div>
-            }
-          }
-        }
-      }
-      @case ('empty') {
-        @if (host.tpl.empty(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
-        } @else {
-          <div class="cngx-select__empty">No Options</div>
-        }
-      }
-      @case ('none') {
-        @if (host.tpl.empty(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
-        } @else {
-          <div class="cngx-select__empty">No Options</div>
-        }
-      }
-      @case ('error') {
-        @if (host.tpl.error(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
-        } @else {
-          <div class="cngx-select__error" role="alert">
-            <span class="cngx-select__error-message">Loading failed</span>
-            <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              Retry
-            </button>
           </div>
+        } @else {
+          <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: item, groupDisabled: false }" />
         }
       }
-      @default {
-        @if (host.showInlineError()) {
-          @if (host.tpl.error(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
-          } @else {
-            <div class="cngx-select__error cngx-select__error--inline" role="alert">
-              <span class="cngx-select__error-message">Aktualisieren fehlgeschlagen</span>
-              <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-                Nochmal versuchen
-              </button>
-            </div>
-          }
-        }
-        @if (host.showCommitError() && host.commitErrorDisplay() === 'banner') {
-          @if (host.tpl.commitError(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
-          } @else {
-            <div class="cngx-select__commit-error" role="alert">
-              <span class="cngx-select__error-message">Speichern fehlgeschlagen</span>
-              <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
-                Nochmal versuchen
-              </button>
-            </div>
-          }
-        }
-        @if (host.showRefreshIndicator()) {
-          @if (host.tpl.refreshing(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl" />
-          } @else {
-            @switch (host.refreshingVariant()) {
-              @case ('none') { <!-- suppressed --> }
-              @case ('spinner') {
-                <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" aria-label="Refreshing">
-                  <div aria-hidden="true" class="cngx-select__spinner"></div>
-                </div>
-              }
-              @case ('dots') {
-                <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" aria-label="Refreshing">
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
-                </div>
-              }
-              @default {
-                <div class="cngx-select__refreshing" role="status" aria-live="polite" aria-label="Refreshing"></div>
-              }
-            }
-          }
-        }
-        @for (item of host.effectiveOptions(); track $index) {
-          @if (host.isGroup(item)) {
-            <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
-              @if (host.tpl.optgroup(); as tpl) {
-                <ng-container *ngTemplateOutlet="tpl; context: { $implicit: item, group: item }" />
-              } @else {
-                <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
-              }
-              @for (opt of item.children; track opt.value) {
-                <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled }" />
-              }
-            </div>
-          } @else {
-            <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: item, groupDisabled: false }" />
-          }
-        }
-      }
-    }
+    </cngx-select-panel-shell>
 
     <!--
       Reusable option-row template — used for both grouped children and
