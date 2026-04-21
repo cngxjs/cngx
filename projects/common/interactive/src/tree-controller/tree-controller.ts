@@ -1,5 +1,6 @@
 import {
   computed,
+  inject,
   InjectionToken,
   signal,
   type Signal,
@@ -12,6 +13,7 @@ import {
   flattenTree,
   isNodeVisible,
 } from '@cngx/utils';
+import { CNGX_TREE_CONFIG } from './tree-config';
 
 /**
  * Configuration for {@link createTreeController}.
@@ -31,20 +33,37 @@ export interface CngxTreeControllerOptions<T> {
   /** Source tree — the controller re-derives on every change. */
   readonly nodes: Signal<readonly CngxTreeNode<T>[]>;
   /**
-   * Derives a stable id per flat node. **Required** — must survive
-   * re-ordering and filtering of the source tree. Use a domain id
-   * (`(v) => v.id`) rather than a positional fallback.
+   * Derives a stable id per flat node — must survive re-ordering and
+   * filtering of the source tree. Use a domain id (`(v) => v.id`)
+   * rather than a positional fallback.
+   *
+   * Resolution: per-options > app-wide `provideTreeConfig` default >
+   * dev-mode error. At least one source must provide the function.
    */
-  readonly nodeIdFn: (value: T, path: readonly number[]) => string;
-  /** Visible label. Defaults to `String(value)`. */
+  readonly nodeIdFn?: (value: T, path: readonly number[]) => string;
+  /**
+   * Visible label. Defaults (in resolution order): per-options >
+   * `provideTreeConfig` default > `String(value)`.
+   */
   readonly labelFn?: (value: T) => string;
-  /** Membership key for value-based lookups. Defaults to the value itself. */
+  /**
+   * Membership key. Defaults (in resolution order): per-options >
+   * `provideTreeConfig` default > identity.
+   */
   readonly keyFn?: (value: T) => unknown;
   /**
-   * Initial expansion. Evaluated once at construction; later tree changes
-   * do not re-apply. Re-trigger via `expandAll()` if needed.
+   * Initial expansion. Resolution: per-options >
+   * `provideTreeConfig.defaultInitiallyExpanded` > `'none'`.
+   * Evaluated once at construction; later tree changes do not re-apply.
+   * Re-trigger via `expandAll()` if needed.
    */
   readonly initiallyExpanded?: 'all' | 'none' | readonly string[];
+  /**
+   * Bound the `isExpanded(id)` signal cache. Default: unlimited.
+   * Resolution: per-options > `provideTreeConfig.cacheLimit` >
+   * unlimited. See {@link CngxTreeConfig.cacheLimit} for trade-offs.
+   */
+  readonly cacheLimit?: number;
 }
 
 /**
@@ -208,10 +227,29 @@ interface TreeIndexes<T> {
 export function createTreeController<T>(
   opts: CngxTreeControllerOptions<T>,
 ): CngxTreeController<T> {
-  const { nodes, nodeIdFn, labelFn, initiallyExpanded } = opts;
-  const keyFn = opts.keyFn ?? ((v: T) => v as unknown);
+  const { nodes } = opts;
+  const config = inject(CNGX_TREE_CONFIG, { optional: true }) ?? {};
 
-  const flatNodes = computed(() => flattenTree(nodes(), nodeIdFn, labelFn), {
+  // Resolution: per-options > provideTreeConfig default > library default.
+  const resolvedNodeIdFn = opts.nodeIdFn
+    ?? (config.defaultNodeIdFn as ((v: T, path: readonly number[]) => string) | undefined);
+  if (!resolvedNodeIdFn) {
+    throw new Error(
+      'createTreeController: `nodeIdFn` is required. Provide it via ' +
+        'CngxTreeControllerOptions.nodeIdFn or app-wide through ' +
+        '`provideTreeConfig(withDefaultNodeIdFn(...))`.',
+    );
+  }
+  const resolvedLabelFn = opts.labelFn
+    ?? (config.defaultLabelFn as ((v: T) => string) | undefined);
+  const resolvedKeyFn: (v: T) => unknown =
+    opts.keyFn ?? (config.defaultKeyFn as ((v: T) => unknown) | undefined) ?? ((v: T) => v as unknown);
+  const resolvedInitiallyExpanded = opts.initiallyExpanded ?? config.defaultInitiallyExpanded;
+  const resolvedCacheLimit = opts.cacheLimit ?? config.cacheLimit;
+
+  const keyFn = resolvedKeyFn;
+
+  const flatNodes = computed(() => flattenTree(nodes(), resolvedNodeIdFn, resolvedLabelFn), {
     equal: flatEq,
   });
 
@@ -251,11 +289,11 @@ export function createTreeController<T>(
   // is mistakenly called from an outer reactive context, this read must not
   // leak `flatNodes` / `nodes` into that context's dependency graph.
   const initialSet = untracked(() => {
-    if (initiallyExpanded === 'all') {
+    if (resolvedInitiallyExpanded === 'all') {
       return collectExpandAllIds();
     }
-    if (Array.isArray(initiallyExpanded)) {
-      return new Set(initiallyExpanded);
+    if (Array.isArray(resolvedInitiallyExpanded)) {
+      return new Set(resolvedInitiallyExpanded);
     }
     return new Set<string>();
   });
@@ -268,8 +306,27 @@ export function createTreeController<T>(
     { equal: flatEq },
   );
 
+  // `Map` preserves insertion order → FIFO eviction when `cacheLimit`
+  // is set. Without a limit the cache grows unbounded over the
+  // controller's lifetime (bounded by unique-id count in practice).
+  // Re-inserting an existing key via `set` does NOT re-order the entry
+  // in modern JS engines, which keeps the eviction order predictable
+  // (oldest-inserted, not least-recently-used).
   const expandedCache = new Map<string, Signal<boolean>>();
   let destroyed = false;
+
+  const evictOldestIfOverLimit = (): void => {
+    if (resolvedCacheLimit === undefined) {
+      return;
+    }
+    while (expandedCache.size > resolvedCacheLimit) {
+      const oldestKey = expandedCache.keys().next().value;
+      if (oldestKey === undefined) {
+        return;
+      }
+      expandedCache.delete(oldestKey);
+    }
+  };
 
   const isExpanded = (id: string): Signal<boolean> => {
     if (destroyed) {
@@ -279,6 +336,7 @@ export function createTreeController<T>(
     if (!sig) {
       sig = computed(() => expandedIds().has(id));
       expandedCache.set(id, sig);
+      evictOldestIfOverLimit();
     }
     return sig;
   };

@@ -34,7 +34,27 @@ export {
   type CngxTreeControllerOptions,
 } from './src/tree-controller/tree-controller';
 export { createTreeAdItems } from './src/tree-controller/tree-ad-items';
+export {
+  CNGX_TREE_CONFIG,
+  injectTreeConfig,
+  provideTreeConfig,
+  provideTreeConfigAt,
+  withDefaultInitiallyExpanded,
+  withDefaultKeyFn,
+  withDefaultLabelFn,
+  withDefaultNodeIdFn,
+  withTreeCacheLimit,
+  type CngxTreeConfig,
+  type CngxTreeConfigFeature,
+} from './src/tree-controller/tree-config';
 export { CngxHierarchicalNav } from './src/hierarchical-nav/hierarchical-nav.directive';
+export {
+  CNGX_HIERARCHICAL_NAV_STRATEGY,
+  createW3CTreeStrategy,
+  type CngxHierarchicalNavAction,
+  type CngxHierarchicalNavContext,
+  type CngxHierarchicalNavStrategy,
+} from './src/hierarchical-nav/hierarchical-nav-strategy';
 export { withRetry, type RetryConfig, type RetryState } from './src/retry/with-retry';
 export { optimistic, type OptimisticState } from './src/optimistic/optimistic';
 export { CngxLongPress } from './src/gestures/long-press.directive';

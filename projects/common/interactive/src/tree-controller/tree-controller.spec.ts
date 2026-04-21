@@ -154,6 +154,34 @@ describe('createTreeController — derivation contract', () => {
     expect(ctrl.expandedIds()).toBe(emptySnapshot);
   });
 
+  it('findByValue resolves via the same keyFn that backs selection membership', () => {
+    const ctrl = makeController();
+    expect(ctrl.findByValue({ id: 'a2a', name: 'Alpha-2-a' })?.id).toBe('a2a');
+    expect(ctrl.findByValue({ id: 'a2a', name: 'wrong-name' })?.id).toBe('a2a');
+    expect(ctrl.findByValue({ id: 'ghost', name: '?' })).toBeUndefined();
+  });
+
+  it('cacheLimit FIFO-evicts the oldest isExpanded entry once size exceeds the bound', () => {
+    const nodes = signal(makeTree());
+    const ctrl = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({
+        nodes,
+        nodeIdFn: (v) => v.id,
+        cacheLimit: 2,
+      }),
+    );
+    const s1 = ctrl.isExpanded('a');
+    const s2 = ctrl.isExpanded('a1');
+    expect(ctrl.isExpanded('a')).toBe(s1); // still cached
+    const s3 = ctrl.isExpanded('a2'); // evicts 'a'
+    expect(ctrl.isExpanded('a1')).toBe(s2);
+    expect(ctrl.isExpanded('a2')).toBe(s3);
+    // 'a' re-queried → fresh Signal instance (values identical, ref differs)
+    const s1Again = ctrl.isExpanded('a');
+    expect(s1Again).not.toBe(s1);
+    expect(s1Again()).toBe(s1());
+  });
+
   // Perf follow-up: `childrenOfValue` / `descendantsOfValue` allocate a
   // fresh array per call. SelectionController's `isIndeterminate` cascade
   // walk triggers O(descendants) allocations per recompute. Benchmark slot
