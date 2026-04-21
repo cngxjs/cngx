@@ -27,6 +27,22 @@ export {
   CngxTypeahead,
   type CngxTypeaheadChange,
 } from './src/lib/typeahead/typeahead.component';
+export { CngxTreeSelectNode } from './src/lib/tree-select/tree-select-node.directive';
+export { CngxTreeSelectChip } from './src/lib/tree-select/tree-select-chip.directive';
+export { CngxTreeSelectTriggerLabel } from './src/lib/tree-select/tree-select-trigger-label.directive';
+export {
+  type CngxTreeNode,
+  type CngxTreeSelectAction,
+  type CngxTreeSelectChipContext,
+  type CngxTreeSelectNodeContext,
+  type CngxTreeSelectTriggerLabelContext,
+  type CngxTreeSelectedItem,
+  type FlatTreeNode,
+} from './src/lib/tree-select/tree-select.model';
+export {
+  CngxTreeSelect,
+  type CngxTreeSelectChange,
+} from './src/lib/tree-select/tree-select.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"

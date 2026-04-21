@@ -45,7 +45,7 @@ import {
 } from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
-import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -154,6 +154,7 @@ export interface CngxComboboxChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxCombobox },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxCombobox },
   ],
   host: {
     '[id]': 'resolvedId()',

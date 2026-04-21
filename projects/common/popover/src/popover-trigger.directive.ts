@@ -39,8 +39,14 @@ export class CngxPopoverTrigger {
     alias: 'cngxPopoverTrigger',
   });
 
-  /** ARIA haspopup value. Adjust to match the popover's role. */
-  readonly haspopup = input<'dialog' | 'listbox' | 'menu' | 'true'>('true');
+  /**
+   * ARIA haspopup value. Adjust to match the popover's role. Accepts
+   * the W3C-spec values for all supported popup-container roles:
+   * `'dialog'` for dialog popups, `'listbox'` for single/multi select
+   * panels, `'menu'` for menu surfaces, `'tree'` for treeview popups
+   * (CngxTreeSelect), or `'true'` when the role isn't meaningful.
+   */
+  readonly haspopup = input<'dialog' | 'listbox' | 'menu' | 'tree' | 'true'>('true');
 
   protected readonly cssAnchorName = computed(() =>
     SUPPORTS_ANCHOR ? `--cngx-pop-${this.popoverRef().id()}` : null,

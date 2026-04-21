@@ -773,3 +773,33 @@ cngx-divider,
   display: inline-block;
   margin-inline-start: 6px;
 }
+
+// Keyboard-hint strip — used by the tree-primitives and tree-select demos
+// to make the available keyboard shortcuts visible.
+.kbd-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+  background: rgb(25 118 210 / 0.08);
+  border: 1px solid rgb(25 118 210 / 0.25);
+  border-radius: 0.375rem;
+  color: #0d47a1;
+}
+.kbd-hint > strong { font-weight: 600; }
+.kbd-hint > span { display: inline-flex; align-items: center; gap: 0.25rem; }
+.kbd-hint kbd {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: #0d47a1;
+  background: #fff;
+  border: 1px solid rgb(25 118 210 / 0.35);
+  border-radius: 0.2rem;
+  box-shadow: 0 1px 0 rgb(25 118 210 / 0.2);
+}

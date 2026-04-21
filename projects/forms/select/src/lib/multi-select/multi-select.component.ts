@@ -46,7 +46,7 @@ import {
   createTypeaheadController,
   resolvePageJumpTarget,
 } from '../shared/typeahead-controller';
-import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -147,6 +147,7 @@ export interface CngxMultiSelectChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxMultiSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxMultiSelect },
   ],
   host: {
     '[id]': 'resolvedId()',

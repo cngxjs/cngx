@@ -1,0 +1,226 @@
+import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { type CngxTreeNode } from '@cngx/utils';
+import { describe, expect, it } from 'vitest';
+import { createTreeController } from './tree-controller';
+
+interface Row {
+  readonly id: string;
+  readonly name: string;
+}
+
+function makeTree(): CngxTreeNode<Row>[] {
+  return [
+    {
+      value: { id: 'a', name: 'Alpha' },
+      children: [
+        { value: { id: 'a1', name: 'Alpha-1' } },
+        {
+          value: { id: 'a2', name: 'Alpha-2' },
+          children: [{ value: { id: 'a2a', name: 'Alpha-2-a' } }],
+        },
+      ],
+    },
+    { value: { id: 'b', name: 'Bravo' } },
+  ];
+}
+
+function makeController(tree = makeTree()) {
+  const nodes = signal(tree);
+  return TestBed.runInInjectionContext(() =>
+    createTreeController<Row>({
+      nodes,
+      nodeIdFn: (v) => v.id,
+      labelFn: (v) => v.name,
+      keyFn: (v) => v.id,
+    }),
+  );
+}
+
+describe('createTreeController — derivation contract', () => {
+  it('flattens DFS with stable ids and exposes node backref per FlatTreeNode', () => {
+    const ctrl = makeController();
+    const flat = ctrl.flatNodes();
+    expect(flat.map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
+    // Backref shortcuts consumer walks (cascade-select, custom decorators).
+    expect(flat[0].node.value.id).toBe('a');
+    expect(flat[2].node.children?.[0].value.id).toBe('a2a');
+  });
+
+  it('hides descendants of collapsed ancestors', () => {
+    const ctrl = makeController();
+    expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'b']);
+    ctrl.expand('a');
+    expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'b']);
+    ctrl.expand('a2');
+    expect(ctrl.visibleNodes().map((n) => n.id)).toEqual(['a', 'a1', 'a2', 'a2a', 'b']);
+  });
+
+  it('isExpanded(id) returns a stable Signal instance per id', () => {
+    const ctrl = makeController();
+    const s1 = ctrl.isExpanded('a');
+    const s2 = ctrl.isExpanded('a');
+    expect(s1).toBe(s2);
+    expect(s1()).toBe(false);
+    ctrl.toggle('a');
+    expect(s1()).toBe(true);
+  });
+
+  it('exposes value-based lookups for selection childrenFn + cascade-select', () => {
+    const ctrl = makeController();
+    const a: Row = { id: 'a', name: 'Alpha' };
+    expect(ctrl.childrenOfValue(a).map((v) => v.id)).toEqual(['a1', 'a2']);
+    expect(ctrl.descendantsOfValue(a).map((v) => v.id)).toEqual(['a1', 'a2', 'a2a']);
+  });
+
+  it('expandAll collects every parent id; collapseAll clears; toggle flips', () => {
+    const ctrl = makeController();
+    ctrl.expandAll();
+    expect([...ctrl.expandedIds()].sort()).toEqual(['a', 'a2']);
+    ctrl.collapseAll();
+    expect(ctrl.expandedIds().size).toBe(0);
+    ctrl.toggle('a');
+    expect(ctrl.expandedIds().has('a')).toBe(true);
+    ctrl.toggle('a');
+    expect(ctrl.expandedIds().has('a')).toBe(false);
+  });
+
+  it('findById / parentOf / firstChildOf navigate the flat projection', () => {
+    const ctrl = makeController();
+    expect(ctrl.findById('a2a')?.label).toBe('Alpha-2-a');
+    expect(ctrl.findById('missing')).toBeUndefined();
+    expect(ctrl.parentOf('a2a')?.id).toBe('a2');
+    expect(ctrl.parentOf('a')).toBeUndefined();
+    expect(ctrl.firstChildOf('a')?.id).toBe('a1');
+    expect(ctrl.firstChildOf('b')).toBeUndefined();
+  });
+
+  it('initiallyExpanded seeds the set; "all" expands every parent', () => {
+    const nodes = signal(makeTree());
+    const ctrlA = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({
+        nodes,
+        nodeIdFn: (v) => v.id,
+        initiallyExpanded: 'all',
+      }),
+    );
+    expect([...ctrlA.expandedIds()].sort()).toEqual(['a', 'a2']);
+
+    const ctrlB = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({
+        nodes,
+        nodeIdFn: (v) => v.id,
+        initiallyExpanded: ['a'],
+      }),
+    );
+    expect([...ctrlB.expandedIds()]).toEqual(['a']);
+  });
+
+  it('destroy() is a soft release: cache frozen for NEW queries, existing bindings live', () => {
+    const ctrl = makeController();
+    ctrl.expand('a');
+    const live = ctrl.isExpanded('a');
+    expect(live()).toBe(true);
+
+    ctrl.destroy();
+
+    // New queries receive the shared POST_DESTROY_FALSE constant.
+    const post = ctrl.isExpanded('a');
+    expect(post).not.toBe(live);
+    expect(post()).toBe(false);
+
+    // Existing binding keeps working because `expandedIds` is still live.
+    // Post-destroy mutations propagate to it (SelectionController parity).
+    ctrl.collapse('a');
+    expect(live()).toBe(false);
+    ctrl.expand('a');
+    expect(live()).toBe(true);
+
+    // idempotent
+    ctrl.destroy();
+  });
+
+  it('expandAll() / collapseAll() are no-ops when the set is already at the target', () => {
+    const ctrl = makeController();
+    ctrl.expandAll();
+    const snapshot = ctrl.expandedIds();
+    ctrl.expandAll();
+    // Same reference — no signal write happened.
+    expect(ctrl.expandedIds()).toBe(snapshot);
+
+    ctrl.collapseAll();
+    const emptySnapshot = ctrl.expandedIds();
+    ctrl.collapseAll();
+    expect(ctrl.expandedIds()).toBe(emptySnapshot);
+  });
+
+  it('findByValue resolves via the same keyFn that backs selection membership', () => {
+    const ctrl = makeController();
+    expect(ctrl.findByValue({ id: 'a2a', name: 'Alpha-2-a' })?.id).toBe('a2a');
+    expect(ctrl.findByValue({ id: 'a2a', name: 'wrong-name' })?.id).toBe('a2a');
+    expect(ctrl.findByValue({ id: 'ghost', name: '?' })).toBeUndefined();
+  });
+
+  it('cacheLimit FIFO-evicts the oldest isExpanded entry once size exceeds the bound', () => {
+    const nodes = signal(makeTree());
+    const ctrl = TestBed.runInInjectionContext(() =>
+      createTreeController<Row>({
+        nodes,
+        nodeIdFn: (v) => v.id,
+        cacheLimit: 2,
+      }),
+    );
+    const s1 = ctrl.isExpanded('a');
+    const s2 = ctrl.isExpanded('a1');
+    expect(ctrl.isExpanded('a')).toBe(s1); // still cached
+    const s3 = ctrl.isExpanded('a2'); // evicts 'a'
+    expect(ctrl.isExpanded('a1')).toBe(s2);
+    expect(ctrl.isExpanded('a2')).toBe(s3);
+    // 'a' re-queried → fresh Signal instance (values identical, ref differs)
+    const s1Again = ctrl.isExpanded('a');
+    expect(s1Again).not.toBe(s1);
+    expect(s1Again()).toBe(s1());
+  });
+
+  // Perf follow-up: `childrenOfValue` / `descendantsOfValue` allocate a
+  // fresh array per call. SelectionController's `isIndeterminate` cascade
+  // walk triggers O(descendants) allocations per recompute. Benchmark slot
+  // reserved — fill in when the 10k demo (Commit 10) gives us a realistic
+  // cascade scenario to measure against.
+  it.todo('perf baseline — childrenOfValue allocation during cascade isIndeterminate walk');
+  it.todo('perf baseline — descendantsOfValue allocation on wide-subtree cascade toggle');
+
+  it('10k-node flatten + visibleNodes stays well under 16ms budget', () => {
+    // Three-level fan-out: 10 × 10 × 100 = 10_000
+    const tree: CngxTreeNode<Row>[] = [];
+    for (let a = 0; a < 10; a++) {
+      const aChildren: CngxTreeNode<Row>[] = [];
+      for (let b = 0; b < 10; b++) {
+        const bChildren: CngxTreeNode<Row>[] = [];
+        for (let c = 0; c < 100; c++) {
+          bChildren.push({ value: { id: `${a}.${b}.${c}`, name: `${a}-${b}-${c}` } });
+        }
+        aChildren.push({
+          value: { id: `${a}.${b}`, name: `${a}-${b}` },
+          children: bChildren,
+        });
+      }
+      tree.push({ value: { id: `${a}`, name: `${a}` }, children: aChildren });
+    }
+    const ctrl = makeController(tree);
+
+    const t0 = performance.now();
+    const flat = ctrl.flatNodes();
+    const t1 = performance.now();
+    expect(flat.length).toBe(10_110); // 10 + 100 + 10_000
+    expect(t1 - t0).toBeLessThan(16);
+
+    // Fully expanded: visible = all 10_110
+    ctrl.expandAll();
+    const t2 = performance.now();
+    const vis = ctrl.visibleNodes();
+    const t3 = performance.now();
+    expect(vis.length).toBe(10_110);
+    expect(t3 - t2).toBeLessThan(16);
+  });
+});
