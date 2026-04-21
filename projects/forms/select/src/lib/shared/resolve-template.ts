@@ -51,7 +51,7 @@ type TemplateKey = keyof NonNullable<CngxSelectConfig['templates']>;
  *
  * @example
  * ```ts
- * protected readonly checkTpl = resolveTemplate(
+ * protected readonly checkTpl = injectResolvedTemplate(
  *   contentChild<CngxSelectCheck<T>>(CngxSelectCheck),
  *   'check',
  * );
@@ -59,7 +59,7 @@ type TemplateKey = keyof NonNullable<CngxSelectConfig['templates']>;
  *
  * @internal
  */
-export function resolveTemplate<Ctx>(
+export function injectResolvedTemplate<Ctx>(
   directive: Signal<TemplateRefHolder<Ctx> | undefined>,
   configKey: TemplateKey,
 ): Signal<TemplateRef<Ctx> | null> {
@@ -76,3 +76,16 @@ export function resolveTemplate<Ctx>(
     return global ?? null;
   });
 }
+
+/**
+ * Legacy name for {@link injectResolvedTemplate}. Kept as a re-export so
+ * existing internal callers keep compiling; new call sites — including
+ * the upcoming tree-select panel slots — should use the `inject*`
+ * prefix that matches the rest of the cngx factory/injection surface
+ * (`injectSelectConfig`, `injectSelectAnnouncer`, …).
+ *
+ * @deprecated Prefer `injectResolvedTemplate`. This alias is a
+ * zero-cost re-export — same function, same semantics.
+ * @internal
+ */
+export const resolveTemplate = injectResolvedTemplate;
