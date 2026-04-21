@@ -2,8 +2,36 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTreeSelect } from './tree-select.component';
+
+// jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
+function polyfillPopover(): void {
+  const proto = HTMLElement.prototype as unknown as {
+    showPopover?: () => void;
+    hidePopover?: () => void;
+    togglePopover?: (force?: boolean) => boolean;
+  };
+  if (typeof proto.showPopover !== 'function') {
+    proto.showPopover = function (this: HTMLElement) {
+      this.dispatchEvent(new Event('beforetoggle', { bubbles: false }));
+      this.setAttribute('data-popover-open', 'true');
+      this.dispatchEvent(new Event('toggle', { bubbles: false }));
+    };
+    proto.hidePopover = function (this: HTMLElement) {
+      this.removeAttribute('data-popover-open');
+      this.dispatchEvent(new Event('toggle', { bubbles: false }));
+    };
+    proto.togglePopover = function (this: HTMLElement) {
+      if (this.hasAttribute('data-popover-open')) {
+        (this as HTMLElement & { hidePopover: () => void }).hidePopover();
+        return false;
+      }
+      (this as HTMLElement & { showPopover: () => void }).showPopover();
+      return true;
+    };
+  }
+}
 
 interface Row {
   readonly id: string;
@@ -62,6 +90,8 @@ function setup() {
 }
 
 describe('CngxTreeSelect', () => {
+  beforeAll(() => polyfillPopover());
+
   let f: ReturnType<typeof setup>;
   beforeEach(() => {
     f = setup();
@@ -214,6 +244,33 @@ describe('CngxTreeSelect', () => {
     f.fixture.detectChanges();
     expect(f.tree.selected().map((s) => s.label)).toEqual(['Alpha-1', 'Alpha-2']);
     expect(f.root.querySelectorAll('.cngx-chip').length).toBe(2);
+  });
+
+  it('ArrowDown / Enter / Space / ArrowUp on the trigger opens the panel when closed', () => {
+    const trigger = f.root.querySelector<HTMLElement>('[role="combobox"]')!;
+    expect(f.tree.panelOpen()).toBe(false);
+
+    for (const key of ['ArrowDown', 'Enter', ' ', 'ArrowUp']) {
+      trigger.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+      );
+      f.fixture.detectChanges();
+      expect(f.tree.panelOpen()).toBe(true);
+      f.tree.close();
+      f.fixture.detectChanges();
+    }
+  });
+
+  it('Escape on the trigger closes the panel when open', () => {
+    f.tree.open();
+    f.fixture.detectChanges();
+    expect(f.tree.panelOpen()).toBe(true);
+    const trigger = f.root.querySelector<HTMLElement>('[role="combobox"]')!;
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    );
+    f.fixture.detectChanges();
+    expect(f.tree.panelOpen()).toBe(false);
   });
 
   it('disabled blocks handleSelect and the trigger click', () => {

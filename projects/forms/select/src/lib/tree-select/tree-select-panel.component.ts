@@ -2,7 +2,11 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   inject,
+  untracked,
+  viewChild,
+  type ElementRef,
 } from '@angular/core';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import {
@@ -60,14 +64,17 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
   template: `
     <cngx-select-panel-shell>
       <div
+        #treeContainer
         role="tree"
         aria-multiselectable="true"
         cngxActiveDescendant
         #ad="cngxActiveDescendant"
         [items]="adItems()"
+        [autoHighlightFirst]="true"
         [cngxHierarchicalNav]="host.treeController"
         (keydown.enter)="handleActivate($event, ad)"
         (keydown.space)="handleActivate($event, ad)"
+        (keydown.escape)="handleEscape($event)"
         tabindex="0"
         class="cngx-tree-select__tree"
       >
@@ -129,6 +136,26 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected readonly host = inject(
     CNGX_TREE_SELECT_PANEL_HOST,
   ) as CngxTreeSelectPanelHost<T>;
+
+  private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
+
+  constructor() {
+    // Focus the tree container when the popover opens. The AD directive
+    // reacts to keyboard events only when its host element has DOM focus;
+    // without this effect the trigger keeps focus and arrow keys don't
+    // reach the tree. Transitions are observed on the host's panelOpen
+    // signal and focus is wrapped in `untracked` so it stays a pure
+    // imperative side effect.
+    effect(() => {
+      const open = this.host.panelOpen();
+      if (!open) {
+        return;
+      }
+      untracked(() => {
+        queueMicrotask(() => this.treeContainer()?.nativeElement.focus());
+      });
+    });
+  }
 
   /**
    * Passthrough of visible-nodes into the AD's item shape. Built via
@@ -249,5 +276,10 @@ export class CngxTreeSelectPanel<T = unknown> {
       return;
     }
     this.host.handleSelect(node);
+  }
+
+  protected handleEscape(event: Event): void {
+    event.preventDefault();
+    this.host.close();
   }
 }

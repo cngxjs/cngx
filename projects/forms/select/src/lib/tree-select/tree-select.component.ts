@@ -191,6 +191,7 @@ export interface CngxTreeSelectChange<T = unknown> {
         (click)="handleTriggerClick()"
         (focus)="handleFocus()"
         (blur)="handleBlur()"
+        (keydown)="handleTriggerKeydown($event)"
       >
         <span class="cngx-select__chip-list">
           @if (isEmpty()) {
@@ -906,6 +907,32 @@ export class CngxTreeSelect<T = unknown>
       return;
     }
     this.toggle();
+  }
+
+  /**
+   * Combobox-style keyboard on the trigger. ArrowDown / ArrowUp / Enter
+   * / Space open the panel when closed (the panel's own AD takes over
+   * once focus transfers). Escape closes the panel when open. Matches
+   * WAI-ARIA 1.2 combobox trigger behaviour.
+   *
+   * @internal
+   */
+  protected handleTriggerKeydown(event: KeyboardEvent): void {
+    if (this.disabled()) {
+      return;
+    }
+    const key = event.key;
+    if (this.panelOpen()) {
+      if (key === 'Escape') {
+        event.preventDefault();
+        this.close();
+      }
+      return;
+    }
+    if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Enter' || key === ' ') {
+      event.preventDefault();
+      this.open();
+    }
   }
 
   /** @internal */

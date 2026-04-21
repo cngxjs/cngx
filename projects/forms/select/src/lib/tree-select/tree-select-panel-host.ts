@@ -23,6 +23,12 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
   /** Signal-native tree controller. Owns expansion state + indexes. */
   readonly treeController: CngxTreeController<T>;
   /**
+   * Whether the enclosing popover is visible. Panel observes it to
+   * transfer focus into the tree container on open and to skip idle
+   * work while closed.
+   */
+  readonly panelOpen: Signal<boolean>;
+  /**
    * Resolved `*cngxTreeSelectNode` template (instance content-child →
    * `null` library-default). The tree component runs the
    * `injectResolvedTemplate` cascade; the panel only renders whatever
@@ -40,6 +46,8 @@ export interface CngxTreeSelectPanelHost<T = unknown> {
    * surrounding `CngxTreeSelect`.
    */
   handleSelect(node: FlatTreeNode<T>): void;
+  /** Close the enclosing popover (Escape key inside the panel). */
+  close(): void;
 }
 
 /**

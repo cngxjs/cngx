@@ -115,6 +115,10 @@ class TreeHost implements CngxTreeSelectPanelHost<Row> {
   readonly nodes = signal(makeTree());
   readonly selected = signal<Set<string>>(new Set());
   readonly useSlot = signal(false);
+  readonly panelOpen = signal(true).asReadonly();
+  close(): void {
+    /* no-op in the spec harness */
+  }
 
   readonly treeController: CngxTreeController<Row> = TestBed.runInInjectionContext(
     () =>
