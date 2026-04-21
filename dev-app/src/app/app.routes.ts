@@ -250,6 +250,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/swipe-dismiss-demo/swipe-dismiss-demo.component').then((m) => m.SwipeDismissDemoComponent),
       },
       {
+        path: 'interactive/tree-primitives',
+        loadComponent: () =>
+          import('./demos/common/interactive/tree-primitives-demo/tree-primitives-demo.component').then((m) => m.TreePrimitivesDemoComponent),
+      },
+      {
         path: 'layout/backdrop',
         loadComponent: () =>
           import('./demos/common/layout/backdrop-demo/backdrop-demo.component').then((m) => m.BackdropDemoComponent),
