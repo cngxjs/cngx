@@ -20,6 +20,10 @@ export {
   type CngxMultiSelectChange,
 } from './src/lib/multi-select/multi-select.component';
 export {
+  CngxReorderableMultiSelect,
+  type CngxReorderableMultiSelectChange,
+} from './src/lib/reorderable-multi-select/reorderable-multi-select.component';
+export {
   CngxCombobox,
   type CngxComboboxChange,
 } from './src/lib/combobox/combobox.component';

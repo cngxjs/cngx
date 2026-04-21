@@ -270,6 +270,65 @@
   min-width: 0;
 }
 
+/* ── Reorderable chip strip (layout + drag feedback) ──────────────── */
+
+/*
+ * Rules used by CngxReorderableMultiSelect and any future reorder-aware
+ * chip surface (e.g. tag-input with user-defined ordering). The
+ * structural parts live in select-base so the same ghost/handle look
+ * is available without a per-variant skin rewrite; every colour,
+ * shadow, and opacity is a `--cngx-select-chip-*` custom property with
+ * a sensible fallback default, consumer-overridable at :root or
+ * component level.
+ */
+
+.cngx-select__chip-list--reordering {
+  user-select: none;
+  cursor: grabbing;
+}
+
+.cngx-select__chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-chip-wrap-gap, 0.25rem);
+  position: relative;
+  border-radius: var(--cngx-select-chip-wrap-radius, 0.25rem);
+}
+
+.cngx-select__chip-wrap:focus-visible {
+  outline: 2px solid var(--cngx-focus-ring, #1976d2);
+  outline-offset: 2px;
+}
+
+.cngx-select__chip-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--cngx-select-chip-handle-color, var(--cngx-muted, #757575));
+  font-size: var(--cngx-select-chip-handle-size, 0.75rem);
+  line-height: 1;
+  user-select: none;
+  padding: 0 0.125rem;
+}
+
+.cngx-select__chip-handle:active,
+.cngx-select__chip-list--reordering .cngx-select__chip-handle {
+  cursor: grabbing;
+}
+
+.cngx-select__chip--dragging {
+  opacity: var(--cngx-select-chip-drag-opacity, 0.45);
+  box-shadow: var(--cngx-select-chip-drag-shadow, 0 4px 12px rgba(0, 0, 0, 0.18));
+  z-index: 2;
+}
+
+.cngx-select__chip--drag-over {
+  outline: 2px dashed var(--cngx-select-chip-drop-outline, var(--cngx-focus-ring, #1976d2));
+  outline-offset: 2px;
+  border-radius: var(--cngx-select-chip-wrap-radius, 0.25rem);
+}
+
 /* ── Panel-level error surfaces ───────────────────────────────────── */
 
 .cngx-select__error {
