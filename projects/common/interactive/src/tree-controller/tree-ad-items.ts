@@ -3,8 +3,8 @@ import { type ActiveDescendantItem } from '@cngx/common/a11y';
 import { type CngxTreeController } from './tree-controller';
 
 function adEq(
-  a: readonly ActiveDescendantItem[],
-  b: readonly ActiveDescendantItem[],
+  a: ActiveDescendantItem[],
+  b: ActiveDescendantItem[],
 ): boolean {
   if (a === b) {
     return true;
@@ -42,7 +42,7 @@ function adEq(
  */
 export function createTreeAdItems<T>(
   ctrl: CngxTreeController<T>,
-): Signal<readonly ActiveDescendantItem[]> {
+): Signal<ActiveDescendantItem[]> {
   return computed(
     () =>
       ctrl.visibleNodes().map<ActiveDescendantItem>((n) => ({
