@@ -397,6 +397,11 @@ export const routes: Routes = [
           import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
       },
       {
+        path: 'tree-select',
+        loadComponent: () =>
+          import('./demos/forms/tree-select-demo/tree-select-demo.component').then((m) => m.TreeSelectDemoComponent),
+      },
+      {
         path: 'utilities',
         loadComponent: () =>
           import('./demos/forms/utilities-demo/utilities-demo.component').then((m) => m.UtilitiesDemoComponent),

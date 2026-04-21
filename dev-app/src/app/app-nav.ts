@@ -97,6 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Numeric', path: 'forms/numeric' },
       { label: 'OTP', path: 'forms/otp' },
       { label: 'Select', path: 'forms/select' },
+      { label: 'Tree Select', path: 'forms/tree-select' },
       { label: 'Utilities', path: 'forms/utilities' },
     ],
   },
