@@ -397,10 +397,6 @@ export class CngxTreeSelect<T = unknown>
 
   // ── Controllers ───────────────────────────────────────────────────
 
-  private readonly nodesSignal: Signal<readonly CngxTreeNode<T>[]> = computed(
-    () => this.nodes(),
-  );
-
   /**
    * Signal-native tree controller. Exposed for the tree panel host.
    *
@@ -410,7 +406,7 @@ export class CngxTreeSelect<T = unknown>
    * defers the read to first use.
    */
   readonly treeController: CngxTreeController<T> = inject(CNGX_TREE_CONTROLLER_FACTORY)<T>({
-    nodes: this.nodesSignal,
+    nodes: this.nodes,
     nodeIdFn: (v, path) => this.nodeIdFn()(v, path),
     labelFn: (v) => (this.labelFn() ?? ((x: T) => String(x)))(v),
     keyFn: (v) => (this.keyFn() ?? ((x: T) => x as unknown))(v),
@@ -437,15 +433,20 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Minimal `CngxSelectCore`-shaped surface that `createArrayCommitHandler`
-   * reads (`commitController`, `togglingOption`, `announce`). Tree-select
-   * doesn't use the full select-core (no flat-option model); this adapter
-   * lets the shared commit handler stay unchanged.
+   * reads (only `commitController`, `togglingOption`, `announce`).
+   * Tree-select drives toggle + cascade through `dispatchValueChange`
+   * directly; the shared handler is only reused for the clear-all path,
+   * which is option-def-agnostic. `togglingOption` is typed honestly —
+   * the handler's clear flow calls `.set(null)` on success; that null
+   * write is the slot's only runtime use.
+   * Live-region announce is stubbed to a no-op for MVP; the announcer
+   * integration lands with the demo commit.
    */
-  private readonly commitCore = {
+  private readonly commitCore: Parameters<typeof createArrayCommitHandler<T>>[0]['core'] = {
     commitController: this.commitControllerInstance,
-    togglingOption: signal<never>(null as never),
-    announce: (_opt: unknown, _action: string, _count: number, _multi: boolean): void => {
-      // No-op MVP — live-region announcer integration lands in a follow-up.
+    togglingOption: signal(null),
+    announce: () => {
+      // no-op — see JSDoc above
     },
   } as unknown as Parameters<typeof createArrayCommitHandler<T>>[0]['core'];
 
