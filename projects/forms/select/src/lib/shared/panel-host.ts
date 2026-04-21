@@ -1,8 +1,11 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
 import type {
   CngxSelectCommitErrorContext,
+  CngxSelectEmptyContext,
   CngxSelectErrorContext,
+  CngxSelectLoadingContext,
+  CngxSelectRefreshingContext,
 } from './template-slots';
 import type {
   CngxSelectCommitErrorDisplay,
@@ -20,106 +23,103 @@ import type { CngxSelectTemplateRegistry } from './template-registry';
 import type { AsyncView } from '@cngx/common/data';
 
 /**
- * Minimal contract the panel sub-component needs from its select parent.
- *
- * **Why this interface exists.**
- * The panel body is a non-trivial piece of template (options loop,
- * variant-switched loading indicator, commit-error banner, refreshing
- * overlay, error state) that we extracted into a dedicated sub-component
- * to keep `CngxSelect`'s main template under 100 lines.
- *
- * The sub-component could have `inject(CngxSelect)` directly, but that
- * creates a cyclic type dependency between `select.component.ts` and the
- * panel file. Routing the panel's access through an injection token
- * decouples the two files: the panel depends on a stable,
- * purposefully-minimal surface, not on the entire `CngxSelect` class.
- *
- * **Template-slot signals carry resolved `TemplateRef`s, not directive
- * wrappers.** Each variant owns a 3-step cascade (instance-projected
- * directive → global `CNGX_SELECT_CONFIG.templates.*` → library default)
- * and exposes only the final `TemplateRef | null`. The panel stays free
- * of cascade logic.
- *
- * If you reshape `CngxSelect`, you'll see the breakage on this interface
- * before the panel's template — which is where you want it.
+ * The five template slots the shared `CngxSelectPanelShell` renders.
+ * Everything else on `CngxSelectTemplateRegistry` is option-loop-specific
+ * and stays off this narrow shape so value-shape-agnostic consumers
+ * (notably `CngxTreeSelect`) never have to stub missing slots.
  *
  * @internal
  */
-export interface CngxSelectPanelHost<T = unknown> {
-  // ── Derived panel view ────────────────────────────────────────────
+export interface CngxSelectPanelShellTemplates<T = unknown> {
+  readonly loading: Signal<TemplateRef<CngxSelectLoadingContext> | null>;
+  readonly empty: Signal<TemplateRef<CngxSelectEmptyContext> | null>;
+  readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
+  readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
+  readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
+}
+
+/**
+ * Minimal contract consumed by `CngxSelectPanelShell` — the async-view
+ * switch, the five shell-rendered template slots, and the error / retry
+ * callbacks. Split out from the option-loop-specific surface so
+ * value-shape-agnostic consumers (tree-select, any future grid / card
+ * variant) can stay free of the stub-field boilerplate that the flat
+ * `CngxSelectPanelHost` demands.
+ *
+ * All five shipped select-family components provide this token alongside
+ * the full {@link CngxSelectPanelHost} token; `CngxTreeSelect` provides
+ * ONLY this narrower surface (plus `CNGX_TREE_SELECT_PANEL_HOST`).
+ *
+ * @internal
+ */
+export interface CngxSelectPanelViewHost<T = unknown> {
   readonly activeView: Signal<AsyncView>;
-  readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
-  readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly skeletonIndices: Signal<number[]>;
   readonly showInlineError: Signal<boolean>;
   readonly showCommitError: Signal<boolean>;
   readonly showRefreshIndicator: Signal<boolean>;
   readonly errorContext: Signal<CngxSelectErrorContext>;
   readonly commitErrorContext: Signal<CngxSelectCommitErrorContext<T>>;
-
-  // ── Input / config signals ────────────────────────────────────────
-  readonly loading: Signal<boolean>;
   readonly loadingVariant: Signal<CngxSelectLoadingVariant>;
   readonly refreshingVariant: Signal<CngxSelectRefreshingVariant>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
-  readonly panelClassList: Signal<string | readonly string[] | null>;
-  readonly panelWidthCss: Signal<string | null>;
-  readonly resolvedListboxLabel: Signal<string>;
-  readonly resolvedShowSelectionIndicator: Signal<boolean>;
-  /**
-   * Concrete indicator variant after `instance > config > 'auto'` cascade.
-   * Panel binds to `<cngx-checkbox-indicator [variant]="…">`.
-   */
-  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
-  /**
-   * Indicator position relative to the label inside a panel option row.
-   */
-  readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
-  readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
-  readonly externalActivation: Signal<boolean>;
-
-  /**
-   * Resolved template-slot registry (instance-projected directive →
-   * `CNGX_SELECT_CONFIG.templates.*` → library default). The panel reads
-   * `host.tpl.check()`, `host.tpl.empty()`, etc. The variant builds this
-   * bundle once via `createTemplateRegistry(...)`; the panel stays free
-   * of cascade logic.
-   */
-  readonly tpl: CngxSelectTemplateRegistry<T>;
-  /**
-   * Latest commit error surfaced inline on the selected option row.
-   * `null` when no commit is in error or `commitErrorDisplay !== 'inline'`.
-   */
-  readonly commitErrorValue: Signal<unknown>;
-
-  // ── Active-descendant highlight (for options template context) ────
-  /**
-   * DOM id of the currently highlighted option inside the inner listbox,
-   * or `null` when nothing is highlighted. Lets the panel compute
-   * `highlighted` per option without injecting the listbox directly.
-   */
-  readonly activeId: Signal<string | null>;
-
-  // ── Imperative helpers ────────────────────────────────────────────
-  isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
-    item is CngxSelectOptionGroupDef<T>;
-  isSelected(opt: CngxSelectOptionDef<T>): boolean;
-  /**
-   * Partial-selection test for an option. Always `false` in flat
-   * (multi / combobox) panels today; tree-select consumers wire a
-   * `childrenFn` into the selection controller and this reports the
-   * real `some-but-not-all-descendants-selected` state.
-   */
-  isIndeterminate(opt: CngxSelectOptionDef<T>): boolean;
-  isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
+  readonly tpl: CngxSelectPanelShellTemplates<T>;
   handleRetry(): void;
 }
 
 /**
- * Injection token for the panel-host contract. Provided by `CngxSelect`
- * (and `CngxMultiSelect` / future `CngxCombobox`) via `useExisting`.
- * The panel sub-component injects this token — never the concrete
- * `CngxSelect` class — so the two files stay decoupled.
+ * Injection token for the shell's narrow contract. Provided by every
+ * select-family variant via `useExisting`. `CngxSelectPanelShell` injects
+ * this token — never the full {@link CngxSelectPanelHost} — so tree /
+ * future non-option-loop variants stay clean.
+ *
+ * @internal
+ */
+export const CNGX_SELECT_PANEL_VIEW_HOST = new InjectionToken<CngxSelectPanelViewHost>(
+  'CNGX_SELECT_PANEL_VIEW_HOST',
+);
+
+/**
+ * Full panel-host contract for the option-loop panel (`CngxSelectPanel`).
+ * Extends {@link CngxSelectPanelViewHost} with every field the option
+ * row-rendering path reads: options input, selection state, indicator
+ * resolution, listbox comparator, AD active id, commit-error value for
+ * the per-row inline glyph, outer-panel class/width.
+ *
+ * `CngxTreeSelect` does NOT implement this — it uses `CngxTreeSelectPanel`
+ * which renders treeitem rows instead of option rows.
+ *
+ * @internal
+ */
+export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHost<T> {
+  readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
+  readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
+  readonly loading: Signal<boolean>;
+  readonly panelClassList: Signal<string | readonly string[] | null>;
+  readonly panelWidthCss: Signal<string | null>;
+  readonly resolvedListboxLabel: Signal<string>;
+  readonly resolvedShowSelectionIndicator: Signal<boolean>;
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
+  readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
+  readonly externalActivation: Signal<boolean>;
+  /** Override parent `tpl` with the full 13-slot registry. */
+  readonly tpl: CngxSelectTemplateRegistry<T>;
+  readonly commitErrorValue: Signal<unknown>;
+  readonly activeId: Signal<string | null>;
+  isGroup(item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>):
+    item is CngxSelectOptionGroupDef<T>;
+  isSelected(opt: CngxSelectOptionDef<T>): boolean;
+  isIndeterminate(opt: CngxSelectOptionDef<T>): boolean;
+  isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
+}
+
+/**
+ * Injection token for the full option-loop panel-host contract. Provided
+ * by `CngxSelect` / `CngxMultiSelect` / `CngxCombobox` / `CngxTypeahead`
+ * via `useExisting`. `CngxSelectPanel` injects this token.
+ * `CngxTreeSelect` does NOT provide it (it uses the narrower view-host
+ * + its own tree-specific token).
  *
  * @internal
  */

@@ -42,7 +42,7 @@ import {
 } from '../shared/typeahead-controller';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
-import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -143,6 +143,7 @@ export interface CngxSelectChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxSelect },
   ],
   host: {
     '[id]': 'resolvedId()',

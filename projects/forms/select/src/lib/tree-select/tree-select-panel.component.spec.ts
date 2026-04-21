@@ -13,7 +13,11 @@ import {
 } from '@cngx/common/interactive';
 import type { CngxTreeNode, FlatTreeNode } from '@cngx/utils';
 import { describe, expect, it } from 'vitest';
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../shared/panel-host';
+import {
+  CNGX_SELECT_PANEL_HOST,
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelHost,
+} from '../shared/panel-host';
 import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
@@ -100,6 +104,7 @@ function makeShellHost(): CngxSelectPanelHost {
   imports: [CngxTreeSelectPanel, CngxTreeSelectNode],
   providers: [
     { provide: CNGX_SELECT_PANEL_HOST, useFactory: makeShellHost },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useFactory: makeShellHost },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: TreeHost },
   ],
   template: `

@@ -1,6 +1,9 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
+import {
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelViewHost,
+} from '../panel-host';
 
 /**
  * Panel frame shared by every variant in the select family — owns the
@@ -139,5 +142,5 @@ import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host'
   `,
 })
 export class CngxSelectPanelShell<T = unknown> {
-  protected readonly host = inject(CNGX_SELECT_PANEL_HOST) as CngxSelectPanelHost<T>;
+  protected readonly host = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
 }

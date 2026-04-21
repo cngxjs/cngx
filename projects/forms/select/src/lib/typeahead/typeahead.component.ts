@@ -43,7 +43,7 @@ import {
   type DisplayBinding,
 } from '../shared/display-binding';
 import { createFieldSync } from '../shared/field-sync';
-import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
@@ -152,6 +152,7 @@ export interface CngxTypeaheadChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxTypeahead },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTypeahead },
   ],
   host: {
     '[id]': 'resolvedId()',

@@ -118,6 +118,13 @@ export interface CngxTreeController<T> {
   expandAll(): void;
   collapseAll(): void;
   findById(id: string): FlatTreeNode<T> | undefined;
+  /**
+   * O(1) lookup of the flat projection for a value, using the same
+   * `keyFn` that backs selection membership. Returns `undefined` when
+   * the value is not in the current tree (stale selection, swapped
+   * source, etc.). Prefer this over a linear scan of `flatNodes()`.
+   */
+  findByValue(value: T): FlatTreeNode<T> | undefined;
   parentOf(id: string): FlatTreeNode<T> | undefined;
   firstChildOf(id: string): FlatTreeNode<T> | undefined;
   /**
@@ -193,7 +200,8 @@ function flatEq<T>(
 
 interface TreeIndexes<T> {
   readonly byId: ReadonlyMap<string, FlatTreeNode<T>>;
-  readonly byValue: ReadonlyMap<unknown, CngxTreeNode<T>>;
+  /** `keyFn(value)` → flat-projected node. Source `CngxTreeNode` is reachable via `.node`. */
+  readonly byValue: ReadonlyMap<unknown, FlatTreeNode<T>>;
   readonly firstChildById: ReadonlyMap<string, FlatTreeNode<T>>;
 }
 
@@ -213,11 +221,11 @@ export function createTreeController<T>(
   // scan in firstChildOf is gone.
   const indexes = computed<TreeIndexes<T>>(() => {
     const byId = new Map<string, FlatTreeNode<T>>();
-    const byValue = new Map<unknown, CngxTreeNode<T>>();
+    const byValue = new Map<unknown, FlatTreeNode<T>>();
     const firstChildById = new Map<string, FlatTreeNode<T>>();
     for (const n of flatNodes()) {
       byId.set(n.id, n);
-      byValue.set(keyFn(n.value), n.node);
+      byValue.set(keyFn(n.value), n);
       const pids = n.parentIds;
       if (pids.length > 0) {
         const parentId = pids[pids.length - 1];
@@ -276,18 +284,21 @@ export function createTreeController<T>(
   };
 
   const childrenOfValue = (v: T): T[] => {
-    const node = indexes().byValue.get(keyFn(v));
-    const children = node?.children ?? [];
+    const flat = indexes().byValue.get(keyFn(v));
+    const children = flat?.node.children ?? [];
     return children.map((c) => c.value);
   };
 
   const descendantsOfValue = (v: T): T[] => {
-    const node = indexes().byValue.get(keyFn(v));
-    return node ? collectDescendantValues(node) : [];
+    const flat = indexes().byValue.get(keyFn(v));
+    return flat ? collectDescendantValues(flat.node) : [];
   };
 
   const findById = (id: string): FlatTreeNode<T> | undefined =>
     indexes().byId.get(id);
+
+  const findByValue = (v: T): FlatTreeNode<T> | undefined =>
+    indexes().byValue.get(keyFn(v));
 
   const parentOf = (id: string): FlatTreeNode<T> | undefined => {
     const byId = indexes().byId;
@@ -389,6 +400,7 @@ export function createTreeController<T>(
     expandAll,
     collapseAll,
     findById,
+    findByValue,
     parentOf,
     firstChildOf,
     destroy,

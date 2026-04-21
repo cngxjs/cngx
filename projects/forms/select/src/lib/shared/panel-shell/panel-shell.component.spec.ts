@@ -4,7 +4,11 @@ import { type AsyncView } from '@cngx/common/data';
 import { describe, expect, it, vi } from 'vitest';
 import type { CngxSelectCommitErrorDisplay } from '../commit-action.types';
 import type { CngxSelectLoadingVariant, CngxSelectRefreshingVariant } from '../config';
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
+import {
+  CNGX_SELECT_PANEL_HOST,
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelHost,
+} from '../panel-host';
 import { CngxSelectPanelShell } from './panel-shell.component';
 
 /**
@@ -121,7 +125,10 @@ class TestHost {}
 function setup() {
   const { host, controls } = createMockHost();
   TestBed.configureTestingModule({
-    providers: [{ provide: CNGX_SELECT_PANEL_HOST, useValue: host }],
+    providers: [
+      { provide: CNGX_SELECT_PANEL_HOST, useValue: host },
+      { provide: CNGX_SELECT_PANEL_VIEW_HOST, useValue: host },
+    ],
   });
   const fixture = TestBed.createComponent(TestHost);
   fixture.detectChanges();

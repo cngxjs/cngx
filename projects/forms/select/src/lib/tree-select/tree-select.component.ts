@@ -55,7 +55,11 @@ import {
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import { createFieldSync } from '../shared/field-sync';
-import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../shared/panel-host';
+import {
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelShellTemplates,
+  type CngxSelectPanelViewHost,
+} from '../shared/panel-host';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { injectResolvedTemplate } from '../shared/resolve-template';
@@ -151,7 +155,7 @@ export interface CngxTreeSelectChange<T = unknown> {
         return { state: self.commitState };
       },
     },
-    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxTreeSelect },
     { provide: CNGX_TREE_SELECT_PANEL_HOST, useExisting: CngxTreeSelect },
   ],
   host: {
@@ -277,7 +281,7 @@ export interface CngxTreeSelectChange<T = unknown> {
   styleUrls: ['../shared/select-base.css', './tree-select.component.css'],
 })
 export class CngxTreeSelect<T = unknown>
-  implements CngxFormFieldControl, CngxSelectPanelHost<T>, CngxTreeSelectPanelHost<T>
+  implements CngxFormFieldControl, CngxSelectPanelViewHost<T>, CngxTreeSelectPanelHost<T>
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
@@ -509,12 +513,12 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */ readonly resolvedId = computed<string>(
     () => this.idInput() ?? this.autoId,
   );
-  /** @internal */
-  readonly panelClassList = computed<string | readonly string[] | null>(
+  /** @internal — own template only; outer popover panel class binding. */
+  protected readonly panelClassList = computed<string | readonly string[] | null>(
     () => this.panelClass(),
   );
-  /** @internal */
-  readonly panelWidthCss = computed<string | null>(() => {
+  /** @internal — own template only; outer popover panel width binding. */
+  protected readonly panelWidthCss = computed<string | null>(() => {
     const w = this.panelWidth();
     if (w === null || w === undefined) {
       return null;
@@ -524,7 +528,6 @@ export class CngxTreeSelect<T = unknown>
     }
     return `${w}px`;
   });
-  /** @internal */ readonly resolvedListboxLabel = computed<string>(() => this.label());
   /** @internal */
   readonly ariaReadonly = computed<boolean | null>(() =>
     this.presenter?.readonly() ? true : null,
@@ -567,86 +570,62 @@ export class CngxTreeSelect<T = unknown>
   );
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
-  // ── CngxSelectPanelHost surface (for the shell) ───────────────────
+  // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
 
-  /**
-   * Shell-required fields that have no meaning in the tree world get
-   * sensible empty defaults so the shell template's branches behave
-   * (empty/error/content paths) without a null-check explosion.
-   *
-   * @internal
-   */
-  readonly effectiveOptions = computed(() => [] as never[]);
-  /** @internal */ readonly flatOptions = computed(() => [] as never[]);
   /** @internal */
   readonly errorContext = computed<CngxSelectErrorContext>(() => {
     const err = this.state()?.error() ?? null;
     return { $implicit: err, error: err, retry: () => this.handleRetry() };
   });
+
+  // Stable retry closure — re-creating it per CD cycle churns any
+  // `*ngTemplateOutlet` that consumes the commit-error context. Bound
+  // once here so the memoised computed below stays reference-stable
+  // while only the `error` field carries real CD variance.
+  private readonly commitRetryBound: () => void = () => this.commitHandler.retryLast();
+
   /** @internal */
-  readonly commitErrorContext = computed<CngxSelectCommitErrorContext<T>>(() => {
-    const err = this.commitState.error();
-    return {
-      $implicit: err,
-      error: err,
+  readonly commitErrorContext = computed<CngxSelectCommitErrorContext<T>>(
+    () => ({
+      $implicit: this.commitState.error(),
+      error: this.commitState.error(),
       option: null,
-      retry: () => this.commitHandler.retryLast(),
-    };
-  });
-  /** @internal */
-  readonly tpl = {
-    check: computed(() => null),
-    caret: this.caretTpl,
-    optgroup: computed(() => null),
-    placeholder: this.placeholderTpl,
-    empty: computed(() => this.emptyDir()?.templateRef ?? null),
+      retry: this.commitRetryBound,
+    }),
+    {
+      equal: (a, b) =>
+        a === b ||
+        (Object.is(a.error, b.error) &&
+          Object.is(a.$implicit, b.$implicit) &&
+          a.retry === b.retry &&
+          a.option === b.option),
+    },
+  );
+
+  /**
+   * Narrow 5-slot bundle the shell reads. Tree-select has no flat
+   * option-loop, so no `check` / `optgroup` / `optionLabel` etc. —
+   * the `CngxSelectPanelShellTemplates` interface is a strict
+   * superset of the shell's needs.
+   *
+   * @internal
+   */
+  readonly tpl: CngxSelectPanelShellTemplates<T> = {
     loading: computed(() => this.loadingDir()?.templateRef ?? null),
-    optionLabel: computed(() => null),
+    empty: computed(() => this.emptyDir()?.templateRef ?? null),
     error: this.errorTpl,
     refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
     commitError: this.commitErrorTpl,
-    clearButton: this.clearButtonTpl,
-    optionPending: computed(() => null),
-    optionError: computed(() => null),
-  } as unknown as CngxSelectPanelHost<T>['tpl'];
-  /** @internal */ readonly commitErrorValue = computed<unknown>(
-    () => this.commitState.error(),
-  );
-  /** @internal */ readonly activeId = computed<string | null>(() => null);
-  /** @internal */ readonly resolvedShowSelectionIndicator = computed<boolean>(() => true);
-  /** @internal */ readonly resolvedSelectionIndicatorVariant = computed<'checkbox' | 'checkmark'>(
-    () => 'checkbox',
-  );
-  /** @internal */ readonly resolvedSelectionIndicatorPosition = computed<'before' | 'after'>(
-    () => 'before',
-  );
-  /** @internal */ readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
-    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
-  );
-  /** @internal */ readonly externalActivation = computed<boolean>(() => false);
+  };
+
   /** @internal */
   readonly showCommitError = computed<boolean>(() => this.commitState.status() === 'error');
 
-  isGroup(_item: unknown): _item is never {
-    return false;
-  }
-  /**
-   * Satisfies both `CngxSelectPanelHost.isSelected(opt)` (option-def
-   * argument) and `CngxTreeSelectPanelHost.isSelected(value)` (raw T).
-   * In tree mode the flat option-loop is never rendered, so the
-   * option-def overload is unreachable — still required for the type
-   * system.
-   */
-  isSelected(x: T | { readonly value: T }): boolean {
-    const value = unwrapValue<T>(x);
+  isSelected(value: T): boolean {
     return this.selection.isSelected(value)();
   }
-  isIndeterminate(x: T | { readonly value: T }): boolean {
-    const value = unwrapValue<T>(x);
+  isIndeterminate(value: T): boolean {
     return this.selection.isIndeterminate(value)();
-  }
-  isCommittingOption(_opt: unknown): boolean {
-    return false;
   }
   handleRetry(): void {
     const fn = this.retryFn();
@@ -1034,23 +1013,14 @@ export class CngxTreeSelect<T = unknown>
     if (fn) {
       return fn(value);
     }
-    // Fallback: recover the label from the tree's flat projection. One
-    // linear scan per selection-change is bounded by tree size.
-    for (const n of this.treeController.flatNodes()) {
-      if (this.membersEqual(n.value, value)) {
-        return n.label;
-      }
-    }
-    return String(value);
+    // O(1) lookup via the tree-controller's value index. Eliminates the
+    // former N·M linear scan inside `selected()` that quadratic'd on
+    // wide selections over deep trees.
+    return this.treeController.findByValue(value)?.label ?? String(value);
   }
 
   private flatNodeForValue(value: T): FlatTreeNode<T> | null {
-    for (const n of this.treeController.flatNodes()) {
-      if (this.membersEqual(n.value, value)) {
-        return n;
-      }
-    }
-    return null;
+    return this.treeController.findByValue(value) ?? null;
   }
 
   private emitChange(change: Omit<CngxTreeSelectChange<T>, 'source'>): void {
@@ -1066,16 +1036,4 @@ function dedup<T>(arr: readonly T[], eq: (a: T, b: T) => boolean): T[] {
     }
   }
   return out;
-}
-
-function unwrapValue<T>(x: T | { readonly value: T }): T {
-  if (
-    typeof x === 'object' &&
-    x !== null &&
-    'value' in x &&
-    'label' in (x as Record<string, unknown>)
-  ) {
-    return (x as { readonly value: T }).value;
-  }
-  return x as T;
 }
