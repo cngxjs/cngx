@@ -34,6 +34,10 @@ export {
   type CngxTreeSelectNodeContext,
   type FlatTreeNode,
 } from './src/lib/tree-select/tree-select.model';
+export {
+  CngxTreeSelect,
+  type CngxTreeSelectChange,
+} from './src/lib/tree-select/tree-select.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"

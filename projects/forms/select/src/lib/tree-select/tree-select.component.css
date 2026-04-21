@@ -1,0 +1,56 @@
+:host {
+  display: inline-block;
+  min-width: var(--cngx-tree-select-min-width, 10rem);
+}
+
+.cngx-tree-select__root {
+  position: relative;
+  width: 100%;
+}
+
+.cngx-tree-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--cngx-tree-select-trigger-gap, 0.5rem);
+  min-height: var(--cngx-tree-select-trigger-height, 2.5rem);
+  padding: var(--cngx-tree-select-trigger-padding, 0.25rem 0.5rem);
+  border: var(--cngx-tree-select-trigger-border, 1px solid rgb(0 0 0 / 0.2));
+  border-radius: var(--cngx-tree-select-trigger-radius, 0.375rem);
+  background: var(--cngx-tree-select-trigger-bg, transparent);
+  cursor: pointer;
+  outline: none;
+}
+
+.cngx-tree-select__trigger:focus-visible {
+  outline: var(--cngx-tree-select-focus-ring, 2px solid rgb(25 118 210 / 0.8));
+  outline-offset: 1px;
+}
+
+.cngx-tree-select__trigger[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: var(--cngx-tree-select-disabled-opacity, 0.5);
+}
+
+.cngx-tree-select__placeholder {
+  color: var(--cngx-tree-select-placeholder-color, rgb(0 0 0 / 0.5));
+}
+
+.cngx-tree-select__clear-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--cngx-tree-select-clear-size, 1.25rem);
+  block-size: var(--cngx-tree-select-clear-size, 1.25rem);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--cngx-tree-select-clear-color, inherit);
+  cursor: pointer;
+}
+
+.cngx-tree-select__caret {
+  display: inline-flex;
+  align-items: center;
+  color: var(--cngx-tree-select-caret-color, inherit);
+  margin-inline-start: auto;
+}
