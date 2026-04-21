@@ -397,6 +397,11 @@ export const routes: Routes = [
           import('./demos/forms/otp-demo/otp-demo.component').then((m) => m.OtpDemoComponent),
       },
       {
+        path: 'reorderable-multi-select',
+        loadComponent: () =>
+          import('./demos/forms/reorderable-multi-select-demo/reorderable-multi-select-demo.component').then((m) => m.ReorderableMultiSelectDemoComponent),
+      },
+      {
         path: 'select',
         loadComponent: () =>
           import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
