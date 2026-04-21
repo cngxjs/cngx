@@ -26,6 +26,51 @@ export type { CngxTreeNode, FlatTreeNode };
 export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
 
 /**
+ * Resolved selection entry surfaced to the trigger's chip strip + to
+ * consumer-authored chip / trigger-label slots. Carries a display
+ * label alongside the raw domain value so custom markup never has to
+ * call back into `labelFn`.
+ *
+ * @category interactive
+ */
+export interface CngxTreeSelectedItem<T = unknown> {
+  readonly value: T;
+  readonly label: string;
+}
+
+/**
+ * Context for `*cngxTreeSelectChip` — per-chip override for the default
+ * `<cngx-chip>` pill. Mirrors `CngxMultiSelectChipContext` shape-wise so
+ * consumer snippets can share across the two variants.
+ *
+ * @category interactive
+ */
+export interface CngxTreeSelectChipContext<T = unknown> {
+  readonly $implicit: CngxTreeSelectedItem<T>;
+  readonly option: CngxTreeSelectedItem<T>;
+  /**
+   * Commit-aware removal callback. Routes through the component's
+   * single-toggle flow (no cascade, even when `[cascadeChildren]` is
+   * on — chip × represents exactly one explicit value).
+   */
+  readonly remove: () => void;
+}
+
+/**
+ * Context for `*cngxTreeSelectTriggerLabel` — replaces the entire chip
+ * strip with consumer markup. Mirrors the flat-family trigger-label
+ * context so `"3 selected"` style summaries can share templates.
+ *
+ * @category interactive
+ */
+export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
+  readonly $implicit: readonly CngxTreeSelectedItem<T>[];
+  readonly selected: readonly CngxTreeSelectedItem<T>[];
+  readonly values: readonly T[];
+  readonly count: number;
+}
+
+/**
  * Context surfaced to consumer-authored `*cngxTreeSelectNode`
  * templates. Receives the flat-projected node plus the reactive
  * derivations the panel uses internally (selected, indeterminate,

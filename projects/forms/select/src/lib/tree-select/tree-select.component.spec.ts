@@ -4,6 +4,8 @@ import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxTreeSelect } from './tree-select.component';
+import { CngxTreeSelectChip } from './tree-select-chip.directive';
+import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -271,6 +273,80 @@ describe('CngxTreeSelect', () => {
     );
     f.fixture.detectChanges();
     expect(f.tree.panelOpen()).toBe(false);
+  });
+
+  it('*cngxTreeSelectChip overrides the default chip-pill per chip', () => {
+    @Component({
+      imports: [CngxTreeSelect, CngxTreeSelectChip],
+      template: `
+        <cngx-tree-select
+          [nodes]="nodes"
+          [nodeIdFn]="idFn"
+          [labelFn]="labelFn"
+          [keyFn]="keyFn"
+          [(values)]="values"
+        >
+          <ng-template cngxTreeSelectChip let-opt let-remove="remove">
+            <span class="custom-chip" [attr.data-id]="opt.value.id">
+              {{ opt.label }}<button type="button" (click)="remove()">x</button>
+            </span>
+          </ng-template>
+        </cngx-tree-select>
+      `,
+    })
+    class ChipHost {
+      readonly nodes = tree();
+      readonly values = signal<Row[]>([
+        { id: 'a1', name: 'Alpha-1' },
+        { id: 'a2', name: 'Alpha-2' },
+      ]);
+      readonly idFn = (v: Row): string => v.id;
+      readonly labelFn = (v: Row): string => v.name;
+      readonly keyFn = (v: Row): unknown => v.id;
+    }
+    const fx = TestBed.createComponent(ChipHost);
+    fx.detectChanges();
+    const root = fx.nativeElement as HTMLElement;
+    expect(root.querySelectorAll('.custom-chip').length).toBe(2);
+    expect(root.querySelector('.cngx-chip')).toBeNull();
+    // The slot's `remove` callback still routes through the commit flow.
+    root.querySelector<HTMLElement>('.custom-chip[data-id="a1"] button')!.click();
+    fx.detectChanges();
+    expect(fx.componentInstance.values().map((v) => v.id)).toEqual(['a2']);
+  });
+
+  it('*cngxTreeSelectTriggerLabel replaces the whole chip strip', () => {
+    @Component({
+      imports: [CngxTreeSelect, CngxTreeSelectTriggerLabel],
+      template: `
+        <cngx-tree-select
+          [nodes]="nodes"
+          [nodeIdFn]="idFn"
+          [labelFn]="labelFn"
+          [keyFn]="keyFn"
+          [(values)]="values"
+        >
+          <ng-template cngxTreeSelectTriggerLabel let-items let-count="count">
+            <span class="summary">{{ count }} picked</span>
+          </ng-template>
+        </cngx-tree-select>
+      `,
+    })
+    class SummaryHost {
+      readonly nodes = tree();
+      readonly values = signal<Row[]>([
+        { id: 'a', name: 'Alpha' },
+        { id: 'b', name: 'Bravo' },
+      ]);
+      readonly idFn = (v: Row): string => v.id;
+      readonly labelFn = (v: Row): string => v.name;
+      readonly keyFn = (v: Row): unknown => v.id;
+    }
+    const fx = TestBed.createComponent(SummaryHost);
+    fx.detectChanges();
+    const root = fx.nativeElement as HTMLElement;
+    expect(root.querySelector('.summary')?.textContent).toBe('2 picked');
+    expect(root.querySelector('.cngx-chip')).toBeNull();
   });
 
   it('disabled blocks handleSelect and the trigger click', () => {

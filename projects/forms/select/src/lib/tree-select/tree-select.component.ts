@@ -33,6 +33,9 @@ import {
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import type { CngxSelectAnnouncerConfig } from '../shared/config';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormFieldPresenter,
@@ -79,7 +82,9 @@ import {
   type CngxSelectPlaceholderContext,
 } from '../shared/template-slots';
 import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/select-core';
+import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectNode } from './tree-select-node.directive';
+import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
 import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
@@ -87,7 +92,10 @@ import {
 import { CngxTreeSelectPanel } from './tree-select-panel.component';
 import type {
   CngxTreeSelectAction,
+  CngxTreeSelectChipContext,
   CngxTreeSelectNodeContext,
+  CngxTreeSelectTriggerLabelContext,
+  CngxTreeSelectedItem,
 } from './tree-select.model';
 
 /**
@@ -211,15 +219,40 @@ export interface CngxTreeSelectChange<T = unknown> {
                 {{ placeholder() || label() }}
               </span>
             }
+          } @else if (triggerLabelTpl(); as labelTpl) {
+            <ng-container
+              *ngTemplateOutlet="
+                labelTpl;
+                context: {
+                  $implicit: selected(),
+                  selected: selected(),
+                  values: values(),
+                  count: selected().length
+                }
+              "
+            />
           } @else {
             @for (opt of selected(); track keyFnInternal()(opt.value)) {
-              <cngx-chip
-                [removable]="!disabled()"
-                [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
-                (remove)="handleChipRemoveClick($event, opt)"
-              >
-                {{ opt.label }}
-              </cngx-chip>
+              @if (chipTpl(); as chipT) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    chipT;
+                    context: {
+                      $implicit: opt,
+                      option: opt,
+                      remove: chipRemoveFor(opt)
+                    }
+                  "
+                />
+              } @else {
+                <cngx-chip
+                  [removable]="!disabled()"
+                  [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+                  (remove)="handleChipRemoveClick($event, opt)"
+                >
+                  {{ opt.label }}
+                </cngx-chip>
+              }
             }
           }
         </span>
@@ -345,6 +378,8 @@ export class CngxTreeSelect<T = unknown>
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
     this.config.commitErrorDisplay,
   );
+  readonly announceChanges = input<boolean | null>(null);
+  readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
   // ── Outputs ────────────────────────────────────────────────────────
 
@@ -368,6 +403,10 @@ export class CngxTreeSelect<T = unknown>
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
+  private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
+  private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
+    CngxTreeSelectTriggerLabel,
+  );
 
   // ── Resolved template refs ────────────────────────────────────────
 
@@ -394,6 +433,14 @@ export class CngxTreeSelect<T = unknown>
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null> = computed(
     () => this.nodeDir()?.templateRef ?? null,
   );
+  /** @internal — per-chip override in the trigger strip. */
+  protected readonly chipTpl = computed<TemplateRef<CngxTreeSelectChipContext<T>> | null>(
+    () => this.chipDir()?.templateRef ?? null,
+  );
+  /** @internal — whole-strip override in the trigger. Mutually exclusive with chipTpl. */
+  protected readonly triggerLabelTpl = computed<
+    TemplateRef<CngxTreeSelectTriggerLabelContext<T>> | null
+  >(() => this.triggerLabelDir()?.templateRef ?? null);
 
   // ── View children ─────────────────────────────────────────────────
 
@@ -436,22 +483,62 @@ export class CngxTreeSelect<T = unknown>
     CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   )<T[]>();
 
+  /** Shared live-region announcer. Same instance as the flat family. */
+  private readonly announcer = inject(CngxSelectAnnouncer);
+
   /**
-   * Minimal `CngxSelectCore`-shaped surface that `createArrayCommitHandler`
-   * reads (only `commitController`, `togglingOption`, `announce`).
-   * Tree-select drives toggle + cascade through `dispatchValueChange`
-   * directly; the shared handler is only reused for the clear-all path,
-   * which is option-def-agnostic. `togglingOption` is typed honestly —
-   * the handler's clear flow calls `.set(null)` on success; that null
-   * write is the slot's only runtime use.
-   * Live-region announce is stubbed to a no-op for MVP; the announcer
-   * integration lands with the demo commit.
+   * Emit an action-aware message through the root live region. Gated
+   * by the per-instance `[announceChanges]` input → config fallback →
+   * library default (`true`). The message is produced by
+   * `[announceTemplate]` or the global config's format function.
+   */
+  private announce(
+    item: CngxTreeSelectedItem<T> | null,
+    action: 'added' | 'removed',
+    count: number,
+  ): void {
+    const announcerConfig = this.config.announcer;
+    const perInstance = this.announceChanges();
+    const enabled = perInstance ?? announcerConfig.enabled ?? true;
+    if (!enabled) {
+      return;
+    }
+    const format = this.announceTemplate() ?? announcerConfig.format;
+    const label = this.label();
+    const aria = this.ariaLabel();
+    let fieldLabel = 'Auswahl';
+    if (label.length > 0) {
+      fieldLabel = label;
+    } else if (aria && aria.length > 0) {
+      fieldLabel = aria;
+    }
+    const message = format({
+      selectedLabel: item?.label ?? null,
+      fieldLabel,
+      multi: true,
+      action,
+      count,
+    });
+    this.announcer.announce(message, announcerConfig.politeness);
+  }
+
+  /**
+   * Minimal `CngxSelectCore`-shaped surface for
+   * `createArrayCommitHandler` (only reads `commitController`,
+   * `togglingOption`, `announce`). Tree-select drives toggle + cascade
+   * through `dispatchValueChange` directly; the shared handler is only
+   * reused for the clear-all path. `togglingOption` typed honestly —
+   * the clear-flow calls `.set(null)` on success, that null write is
+   * the slot's only runtime use. `announce` now delegates to the real
+   * live-region announcer above.
    */
   private readonly commitCore: Parameters<typeof createArrayCommitHandler<T>>[0]['core'] = {
     commitController: this.commitControllerInstance,
     togglingOption: signal(null),
-    announce: () => {
-      // no-op — see JSDoc above
+    announce: (_opt: unknown, action: 'added' | 'removed', count: number): void => {
+      // beginClear passes `null` as option + 'removed'. Translate to the
+      // tree-shaped announce helper.
+      this.announce(null, action, count);
     },
   } as unknown as Parameters<typeof createArrayCommitHandler<T>>[0]['core'];
 
@@ -537,24 +624,48 @@ export class CngxTreeSelect<T = unknown>
     () => this.popoverRef()?.isVisible() ?? false,
   );
 
-  private readonly focusedState = signal<boolean>(false);
+  /**
+   * DI-resolved focus state. Using the factory token keeps tree-select
+   * on the same override surface as the rest of the family (app-wide
+   * focus telemetry / controlled-from-outside focus / test doubles
+   * all apply uniformly).
+   */
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
 
-  /** Aggregated ARIA projection for the trigger. */
-  protected readonly triggerAria = computed(() => {
-    const describedBy = this.presenter?.describedBy() ?? null;
-    const errorMessage = this.errorState() ? describedBy : null;
-    return {
-      label: this.ariaLabel() ?? (this.ariaLabelledBy() ? null : this.label() || null),
-      labelledBy: this.ariaLabelledBy(),
-      describedBy,
-      errorMessage,
-      expanded: String(this.panelOpen()),
-      disabled: this.disabled() ? 'true' : null,
-      invalid: this.errorState() ? 'true' : null,
-      required: this.requiredInput() ? 'true' : null,
-      busy: this.isCommitting() || this.loading() ? 'true' : null,
-    };
-  });
+  /**
+   * Aggregated ARIA projection for the trigger. Structural-equal on
+   * every field so `@let aria = triggerAria()` bindings don't churn
+   * when an unrelated state changes elsewhere.
+   */
+  protected readonly triggerAria = computed(
+    () => {
+      const describedBy = this.presenter?.describedBy() ?? null;
+      const errorMessage = this.errorState() ? describedBy : null;
+      return {
+        label: this.ariaLabel() ?? (this.ariaLabelledBy() ? null : this.label() || null),
+        labelledBy: this.ariaLabelledBy(),
+        describedBy,
+        errorMessage,
+        expanded: String(this.panelOpen()),
+        disabled: this.disabled() ? 'true' : null,
+        invalid: this.errorState() ? 'true' : null,
+        required: this.requiredInput() ? 'true' : null,
+        busy: this.isCommitting() || this.loading() ? 'true' : null,
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.label === b.label &&
+        a.labelledBy === b.labelledBy &&
+        a.describedBy === b.describedBy &&
+        a.errorMessage === b.errorMessage &&
+        a.expanded === b.expanded &&
+        a.disabled === b.disabled &&
+        a.invalid === b.invalid &&
+        a.required === b.required &&
+        a.busy === b.busy,
+    },
+  );
 
   /** @internal */ readonly effectiveTabIndex = computed<number>(() =>
     this.disabled() ? -1 : this.tabIndex(),
@@ -563,7 +674,7 @@ export class CngxTreeSelect<T = unknown>
   // ── CngxFormFieldControl implementation ───────────────────────────
 
   readonly id = computed<string>(() => this.resolvedId());
-  readonly focused: Signal<boolean> = this.focusedState.asReadonly();
+  readonly focused: Signal<boolean> = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.isEmpty());
   readonly disabled = computed<boolean>(
     () => this.disabledInput() || (this.presenter?.disabled() ?? false),
@@ -652,20 +763,41 @@ export class CngxTreeSelect<T = unknown>
   /**
    * Resolved option-like defs of the current selection — each entry has
    * `value` + `label` so chip rendering and consumer read-back both
-   * work with a stable shape.
+   * work with a stable shape. Uses a structural equal-fn (length +
+   * pairwise `compareWith` on value + label-string equality) so chip-
+   * strip `@for` bindings and consumer `selected()` reads don't
+   * cascade-rerender when `values()` emits the same logical set with
+   * fresh references (e.g. after a server refetch).
    */
-  readonly selected = computed<{ readonly value: T; readonly label: string }[]>(
+  readonly selected = computed<readonly CngxTreeSelectedItem<T>[]>(
     () => {
       const vals = this.values();
       if (vals.length === 0) {
         return [];
       }
-      const out: { readonly value: T; readonly label: string }[] = [];
+      const out: CngxTreeSelectedItem<T>[] = [];
       const label = this.resolveLabel.bind(this);
       for (const v of vals) {
         out.push({ value: v, label: label(v) });
       }
       return out;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        const eq = this.compareWith();
+        for (let i = 0; i < a.length; i++) {
+          if (!eq(a[i].value, b[i].value) || a[i].label !== b[i].label) {
+            return false;
+          }
+        }
+        return true;
+      },
     },
   );
 
@@ -820,6 +952,13 @@ export class CngxTreeSelect<T = unknown>
     },
   ): void {
     const action = this.commitAction();
+    // Announce selector: single-toggle reports the node's label +
+    // direction; cascade-toggle has many added/removed, so we announce
+    // null-label with the actions's count (the format function's
+    // `selectedLabel: null` path is designed for this).
+    const announceLabel = meta.action === 'toggle' ? meta.node.label : null;
+    const announceAction: 'added' | 'removed' =
+      meta.added.length > 0 ? 'added' : 'removed';
     if (!action) {
       this.values.set(next);
       this.emitChange({
@@ -830,6 +969,11 @@ export class CngxTreeSelect<T = unknown>
         node: meta.node,
         action: meta.action,
       });
+      this.announce(
+        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
+        announceAction,
+        next.length,
+      );
       return;
     }
 
@@ -847,6 +991,11 @@ export class CngxTreeSelect<T = unknown>
         node: meta.node,
         action: meta.action,
       });
+      this.announce(
+        announceLabel ? { value: meta.node.value, label: announceLabel } : null,
+        announceAction,
+        next.length,
+      );
     }
     this.stateChange.emit('pending');
     this.commitControllerInstance.begin(action, next, previous, {
@@ -866,6 +1015,11 @@ export class CngxTreeSelect<T = unknown>
             node: meta.node,
             action: meta.action,
           });
+          this.announce(
+            announceLabel ? { value: meta.node.value, label: announceLabel } : null,
+            announceAction,
+            finalValues.length,
+          );
         }
       },
       onError: (err, rollbackTo) => {
@@ -925,23 +1079,50 @@ export class CngxTreeSelect<T = unknown>
   /** @internal */
   protected handleChipRemoveClick(
     event: Event,
-    opt: { readonly value: T; readonly label: string },
+    opt: CngxTreeSelectedItem<T>,
   ): void {
     event.stopPropagation();
+    this.removeSelectedItem(opt);
+  }
+
+  /**
+   * WeakMap of stable `remove` closures keyed on the selected-item
+   * reference. `selected()`'s structural-equal returns the same array
+   * ref (and therefore the same item refs) across CD cycles when the
+   * selection didn't change, so the cache hit rate stays high and the
+   * chip-slot outlet doesn't thrash on closure identity.
+   */
+  private readonly chipRemoveCache = new WeakMap<object, () => void>();
+
+  /** @internal — stable remove callback for `*cngxTreeSelectChip` context. */
+  protected chipRemoveFor(opt: CngxTreeSelectedItem<T>): () => void {
+    const key = opt as unknown as object;
+    let cached = this.chipRemoveCache.get(key);
+    if (!cached) {
+      cached = () => this.removeSelectedItem(opt);
+      this.chipRemoveCache.set(key, cached);
+    }
+    return cached;
+  }
+
+  /**
+   * Shared removal path for chip × (default pill) + the `remove`
+   * callback passed into `*cngxTreeSelectChip`. Non-cascade single-
+   * deselect regardless of `cascadeChildren` — the consumer explicitly
+   * removed ONE chip representing ONE value. Cascade would surprise-
+   * remove invisible descendants the user never picked as chips.
+   */
+  private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
     if (this.disabled()) {
       return;
     }
-    // Chip ✕ is a non-cascade single-deselect regardless of
-    // `cascadeChildren` — the consumer explicitly removed ONE chip
-    // representing ONE value. Cascade would surprise-remove invisible
-    // descendants the user never picked as chips.
     const node = this.flatNodeForValue(opt.value);
     if (node) {
       this.singleToggle(node);
       return;
     }
-    // Fallback: value not present in the tree (stale selection). Just
-    // strip it from `values` without routing through the tree.
+    // Fallback: value not present in the tree (stale selection). Strip
+    // it from `values` without routing through the tree.
     const previous = untracked(() => [...this.values()]);
     const next = previous.filter((v) => !this.membersEqual(v, opt.value));
     this.values.set(next);
@@ -953,6 +1134,7 @@ export class CngxTreeSelect<T = unknown>
       node: null,
       action: 'toggle',
     });
+    this.announce({ value: opt.value, label: opt.label }, 'removed', next.length);
   }
 
   /** @internal — exposed for the `*cngxSelectClearButton` slot. */
@@ -980,6 +1162,7 @@ export class CngxTreeSelect<T = unknown>
       node: null,
       action: 'clear',
     });
+    this.announce(null, 'removed', 0);
   };
 
   /** @internal */
@@ -990,7 +1173,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal */
   protected handleFocus(): void {
-    this.focusedState.set(true);
+    this.focusState.markFocused();
     if (this.config.openOn === 'focus' || this.config.openOn === 'click+focus') {
       this.open();
     }
@@ -998,7 +1181,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal */
   protected handleBlur(): void {
-    this.focusedState.set(false);
+    this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
 
