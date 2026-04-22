@@ -132,6 +132,22 @@ export class CngxReorder<T = unknown> {
    */
   readonly itemSelector = input<string>('[data-reorder-index]');
 
+  /**
+   * Optional escape-hatch selector for drag targets. When set and the
+   * `pointerdown` target matches `ignoreSelector` (via `closest`), the
+   * gesture is dropped — useful when the whole item is draggable but
+   * interactive children (close buttons, inline edit fields, menu
+   * triggers) must keep their own click semantics. Applied after
+   * `handleSelector`, so the two can overlap: e.g.
+   * `handleSelector = '[data-reorder-index]'` +
+   * `ignoreSelector = 'button, a, [contenteditable]'` yields
+   * whole-row drag with interactive child exemptions.
+   *
+   * `null` (default) disables the filter — the `handleSelector` alone
+   * decides whether a drag starts.
+   */
+  readonly ignoreSelector = input<string | null>(null);
+
   /** Modifier key required for keyboard-driven reorder. Defaults to `'ctrl'`. */
   readonly keyboardModifier = input<CngxReorderModifier>('ctrl');
 
@@ -199,6 +215,13 @@ export class CngxReorder<T = unknown> {
         filter((e) => e.button === 0),
         map((event): PointerStart | null => {
           const target = event.target as Element | null;
+          // Escape hatch: interactive children of the item (close
+          // buttons, menu triggers, inline edit fields) keep their own
+          // click semantics even when the whole row is drag-enabled.
+          const ignore = this.ignoreSelector();
+          if (ignore && target?.closest(ignore)) {
+            return null;
+          }
           const handleEl = target?.closest(this.handleSelector()) ?? null;
           if (!handleEl) {
             return null;

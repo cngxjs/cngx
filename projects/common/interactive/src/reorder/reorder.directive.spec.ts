@@ -265,3 +265,100 @@ describe('CngxReorder', () => {
     expect(host.reorders).toHaveLength(0);
   });
 });
+
+describe('CngxReorder — ignoreSelector', () => {
+  @Component({
+    template: `
+      <ul
+        class="list"
+        [cngxReorder]="valuesSignal"
+        handleSelector="[data-reorder-index]"
+        ignoreSelector="button, [data-protected]"
+        (reordered)="handleReorder($event)"
+      >
+        @for (item of values(); track item.id; let i = $index) {
+          <li class="item" [attr.data-reorder-index]="i">
+            <button type="button" class="protected-btn">✕</button>
+            <span data-protected>noop zone</span>
+            <span class="body">{{ item.label }}</span>
+          </li>
+        }
+      </ul>
+    `,
+    imports: [CngxReorder],
+  })
+  class IgnoreHost {
+    readonly values = signal<readonly Item[]>(ITEMS);
+    readonly valuesSignal: Signal<readonly Item[]> = this.values.asReadonly();
+    readonly reorders: CngxReorderEvent<Item>[] = [];
+    handleReorder(e: CngxReorderEvent<Item>): void {
+      this.reorders.push(e);
+      this.values.set(e.next.slice());
+    }
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ imports: [IgnoreHost] });
+  });
+
+  function proto() {
+    return Document.prototype as unknown as {
+      elementFromPoint?: (x: number, y: number) => Element | null;
+    };
+  }
+
+  it('drags when the pointer hits the item body (whole-row drag)', () => {
+    const fixture = TestBed.createComponent(IgnoreHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const body = root.querySelector<HTMLElement>(
+      '[data-reorder-index="0"] .body',
+    );
+    const drop = root.querySelector<HTMLElement>('[data-reorder-index="2"]');
+    body!.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        pointerId: 1,
+        button: 0,
+      }),
+    );
+    const original = proto().elementFromPoint;
+    proto().elementFromPoint = () => drop!;
+    try {
+      document.dispatchEvent(
+        new PointerEvent('pointermove', { bubbles: true, pointerId: 1 }),
+      );
+    } finally {
+      if (original) {
+        proto().elementFromPoint = original;
+      } else {
+        delete proto().elementFromPoint;
+      }
+    }
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }),
+    );
+    expect(fixture.componentInstance.reorders).toHaveLength(1);
+    expect(fixture.componentInstance.reorders[0].toIndex).toBe(2);
+  });
+
+  it('skips the drag when the pointer hits an ignoreSelector match', () => {
+    const fixture = TestBed.createComponent(IgnoreHost);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const btn = root.querySelector<HTMLElement>(
+      '[data-reorder-index="0"] .protected-btn',
+    );
+    btn!.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        pointerId: 1,
+        button: 0,
+      }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }),
+    );
+    expect(fixture.componentInstance.reorders).toHaveLength(0);
+  });
+});

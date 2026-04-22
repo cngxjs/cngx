@@ -100,10 +100,13 @@ function chipAt(root: HTMLElement, index: number): HTMLElement {
 }
 
 function handleOf(chip: HTMLElement): HTMLElement {
-  const h = chip.querySelector<HTMLElement>('[cngxReorderHandle]');
-  if (!h) {
-    throw new Error('no drag-handle in chip');
-  }
+  // The ⠇⠇ grip is a visual hint only (pointer-events: none); the
+  // whole chip wrap is drag-enabled. This helper returns the grip
+  // element for tests that want to cover the "user grabs the grip"
+  // path specifically — fallback to the chip body when no grip is
+  // rendered (e.g. disabled or custom-chip consumers).
+  const h =
+    chip.querySelector<HTMLElement>('.cngx-select__chip-handle') ?? chip;
   return h;
 }
 
@@ -175,12 +178,14 @@ beforeEach(() => {
 });
 
 describe('CngxReorderableMultiSelect — pointer reorder', () => {
-  it('drag-right via pointer writes reordered values and fires reordered output', () => {
+  it('drag-right via pointer on the chip body writes reordered values', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    pointerDown(handleOf(chipAt(root, 0)));
+    // Whole-chip draggable: pointerdown can land anywhere in the
+    // chip wrapper, not just on the ⠇⠇ grip.
+    pointerDown(chipAt(root, 0));
     pointerMoveOver(chipAt(root, 2));
     pointerUp();
     flush(fixture);
@@ -194,17 +199,36 @@ describe('CngxReorderableMultiSelect — pointer reorder', () => {
     expect(reorder?.previousValues).toEqual(['a', 'b', 'c', 'd']);
   });
 
-  it('pointerdown without a drag-handle is a no-op', () => {
+  it('drag also works when the pointer grabs the ⠇⠇ grip specifically', () => {
     const fixture = TestBed.createComponent(Host);
     flush(fixture);
     const root = fixture.nativeElement as HTMLElement;
 
-    // Fire on the chip wrapper body itself, not the handle.
-    pointerDown(chipAt(root, 0));
+    pointerDown(handleOf(chipAt(root, 3)));
+    pointerMoveOver(chipAt(root, 1));
+    pointerUp();
+    flush(fixture);
+
+    expect(fixture.componentInstance.values()).toEqual(['a', 'd', 'b', 'c']);
+  });
+
+  it('pointerdown on the chip ✕ remove button does not start a drag (ignoreSelector)', () => {
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
+      '.cngx-chip__remove',
+    );
+    expect(removeBtn).not.toBeNull();
+
+    pointerDown(removeBtn!);
     pointerMoveOver(chipAt(root, 2));
     pointerUp();
     flush(fixture);
 
+    // No drag started — values untouched, and the remove-button's own
+    // click handler (if fired by the pointerup→click sequence in a
+    // real browser) stays owned by the chip.
     expect(fixture.componentInstance.values()).toEqual(['a', 'b', 'c', 'd']);
     expect(fixture.componentInstance.lastReorder()).toBeNull();
   });

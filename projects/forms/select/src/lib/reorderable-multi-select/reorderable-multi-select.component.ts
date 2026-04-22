@@ -213,6 +213,8 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
           [cngxReorder]="valuesSignal"
           [disabled]="reorderDisabled()"
           [keyboardModifier]="reorderKeyboardModifier()"
+          handleSelector="[data-reorder-index]"
+          ignoreSelector="button, a, input, [contenteditable], [cngxChipClose]"
           #reorderDir="cngxReorder"
           (reordered)="handleReorder($event)"
           (keydown)="handleStripKeydown($event)"
@@ -258,7 +260,6 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
               >
                 <span
                   class="cngx-select__chip-handle"
-                  cngxReorderHandle
                   aria-hidden="true"
                 >
                   @if (chipDragHandleTpl(); as handleT) {
