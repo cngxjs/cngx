@@ -11,7 +11,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   type ElementRef,
@@ -23,6 +22,7 @@ import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core
 
 import { CngxChip } from '@cngx/common/display';
 import {
+  CNGX_CHIP_STRIP_ROVING_FACTORY,
   CngxClickOutside,
   CngxListbox,
   CngxListboxTrigger,
@@ -68,6 +68,8 @@ import {
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
+import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -368,6 +370,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
 export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
+  private readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
   // ── Inputs (shared with CngxMultiSelect) ───────────────────────────
@@ -422,25 +425,33 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * Modifier key required for keyboard-driven reorder moves. Plain arrow
    * keys keep their default meaning (roving focus across chips); only
    * modifier + arrow emits a reorder. Forwarded to the inner
-   * {@link CngxReorder} directive.
+   * {@link CngxReorder} directive. Default comes from
+   * `provideReorderableSelectConfig(withReorderKeyboardModifier(...))`
+   * — fall-through when neither is set: `'ctrl'`.
    */
-  readonly reorderKeyboardModifier = input<CngxReorderModifier>('ctrl');
+  readonly reorderKeyboardModifier = input<CngxReorderModifier>(
+    this.reorderableConfig.keyboardModifier,
+  );
 
   /**
    * ARIA label for the chip-strip region. Announced by screen readers
    * when the user tabs into the strip so they understand they're
-   * entering a reorderable widget.
+   * entering a reorderable widget. Default cascades through
+   * `provideReorderableSelectConfig(withReorderAriaLabel(...))`.
    */
-  readonly reorderAriaLabel = input<string>('Reihenfolge ändern mit Strg+Pfeiltasten');
+  readonly reorderAriaLabel = input<string>(this.reorderableConfig.ariaLabel);
 
   /**
    * Custom drag-handle glyph. When projected, replaces the default
    * six-dot grip `⋮⋮` rendered before each chip body. Consumer owns
    * icon choice and ARIA — the handle span stays `aria-hidden="true"`
    * because the semantic move is owned by the chip wrapper's keyboard
-   * handler + the directive, not the handle itself.
+   * handler + the directive, not the handle itself. Default cascades
+   * through `provideReorderableSelectConfig(withDefaultDragHandle(...))`.
    */
-  readonly chipDragHandle = input<TemplateRef<void> | null>(null);
+  readonly chipDragHandle = input<TemplateRef<void> | null>(
+    this.reorderableConfig.dragHandle,
+  );
 
   // ── Outputs ────────────────────────────────────────────────────────
 
@@ -754,26 +765,46 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly valuesSignal: Signal<readonly T[]> = this.values.asReadonly();
 
   /**
-   * Index of the chip currently owning the strip's `tabindex="0"`.
-   * Manual roving-tabindex: unlike `CngxRovingTabindex`, no host
-   * `(keydown)` listener — that would double-fire with `CngxReorder`
-   * on modifier + arrow. Plain arrows are handled by
-   * {@link handleStripKeydown}, modifier + arrow by CngxReorder itself.
+   * Container host for the chip-strip roving controller's element
+   * lookups. Read lazily — the `viewChild()` signal is `undefined`
+   * until the first render completes, which is fine because the
+   * controller only reads it inside `focusAt()` at user-event time.
    */
-  private readonly activeChipIndexState = signal<number>(0);
+  private readonly stripContainer = computed<HTMLElement | null>(
+    () => this.triggerBtn()?.nativeElement ?? null,
+  );
+
+  /**
+   * Chip-strip focus controller. Owns the `activeChipIndex` signal, the
+   * plain-arrow keydown handler, and the count-shrink clamp. Swap-able
+   * via `CNGX_CHIP_STRIP_ROVING_FACTORY` without forking the component.
+   */
+  private readonly chipStripRoving = inject(CNGX_CHIP_STRIP_ROVING_FACTORY)({
+    count: computed(() => this.selectedOptions().length),
+    container: this.stripContainer,
+  });
+
   /** @internal */
-  protected readonly activeChipIndex = this.activeChipIndexState.asReadonly();
+  protected readonly activeChipIndex = this.chipStripRoving.activeIndex;
 
   /**
    * Pointer / keyboard reorder is suppressed while a commit is in
-   * flight (pessimistic freeze) or when the component is disabled. Plan
-   * §2 locked decision: no per-chip spinners — the whole strip freezes
-   * because reorders are sub-second and freeze is clearer than mid-
-   * gesture visual noise.
+   * flight (pessimistic freeze — default) or when the component is
+   * disabled. App-wide `provideReorderableSelectConfig(withReorderStripFreeze(false))`
+   * opts out of the freeze so consecutive reorders supersede any
+   * in-flight commit via the commit-controller's built-in race
+   * handling. Plan §2 locked the freeze default — reorders are
+   * sub-second and a freeze is clearer than mid-gesture visual noise.
    */
-  protected readonly reorderDisabled = computed<boolean>(
-    () => this.disabled() || this.isCommitting(),
-  );
+  protected readonly reorderDisabled = computed<boolean>(() => {
+    if (this.disabled()) {
+      return true;
+    }
+    if (this.reorderableConfig.freezeStripOnCommit && this.isCommitting()) {
+      return true;
+    }
+    return false;
+  });
 
   // ── Panel-host surface ─────────────────────────────────────────────
 
@@ -857,21 +888,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       });
     });
 
-    // Clamp activeChipIndex when selection shrinks (e.g. after clear
-    // or after the last chip is removed). Derivation from values()
-    // instead of a manual post-delete hook keeps the write co-located
-    // with the read.
-    effect(() => {
-      const len = this.values().length;
-      untracked(() => {
-        const current = this.activeChipIndexState();
-        if (len === 0) {
-          this.activeChipIndexState.set(0);
-        } else if (current >= len) {
-          this.activeChipIndexState.set(len - 1);
-        }
-      });
-    });
+    // Activeindex clamp on count shrink is owned by the chip-strip
+    // roving controller (installed via `CNGX_CHIP_STRIP_ROVING_FACTORY`).
 
     createFieldSync<T[]>({
       componentValue: this.values,
@@ -1042,54 +1060,25 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   // ── Chip-strip roving + reorder glue ───────────────────────────────
 
-  /** @internal */
+  /**
+   * Chip-wrapper `(focus)` delegate — keeps the roving controller in
+   * sync when the user Tabs into the strip or clicks a chip directly.
+   *
+   * @internal
+   */
   protected handleChipFocus(index: number): void {
-    this.activeChipIndexState.set(index);
+    this.chipStripRoving.markFocused(index);
   }
 
   /**
-   * Roving-tabindex keyboard handler for the chip strip. Plain
-   * arrow / Home / End move focus between chips without mutating the
-   * selection. Events that carry any of `Ctrl` / `Alt` / `Meta` are
-   * delegated to `CngxReorder` (which emits `(reordered)`).
+   * Chip-strip keydown delegate. Delegates to the roving controller
+   * which handles plain arrow / Home / End (modifier-pressed events
+   * are ignored so the paired `CngxReorder` owns that gesture).
    *
    * @internal
    */
   protected handleStripKeydown(event: KeyboardEvent): void {
-    if (event.ctrlKey || event.altKey || event.metaKey) {
-      // Modifier + arrow is owned by CngxReorder. Let it through.
-      return;
-    }
-    const count = this.selectedOptions().length;
-    if (count === 0) {
-      return;
-    }
-    let nextIdx: number;
-    switch (event.key) {
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        nextIdx = Math.max(0, this.activeChipIndexState() - 1);
-        break;
-      case 'ArrowRight':
-      case 'ArrowDown':
-        nextIdx = Math.min(count - 1, this.activeChipIndexState() + 1);
-        break;
-      case 'Home':
-        nextIdx = 0;
-        break;
-      case 'End':
-        nextIdx = count - 1;
-        break;
-      default:
-        return;
-    }
-    if (nextIdx === this.activeChipIndexState()) {
-      event.preventDefault();
-      return;
-    }
-    event.preventDefault();
-    this.activeChipIndexState.set(nextIdx);
-    this.focusChipAt(nextIdx);
+    this.chipStripRoving.handleKeydown(event);
   }
 
   /** @internal */
@@ -1104,22 +1093,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     }
     const movedValue = previous[fromIndex];
     const opt = this.core.findOption(movedValue);
-    this.dispatchReorder([...next], previous, fromIndex, toIndex, opt);
+    this.reorderCommit.dispatch([...next], previous, fromIndex, toIndex, opt);
 
     // Keep focus on the moved chip in its new position. Runs after the
     // next render so the DOM reflects the updated @for ordering before
-    // we probe for the [data-reorder-index=toIndex] wrapper.
-    this.activeChipIndexState.set(toIndex);
-    afterNextRender(() => this.focusChipAt(toIndex), { injector: this.injector });
-  }
-
-  private focusChipAt(index: number): void {
-    const root = this.triggerBtn()?.nativeElement;
-    if (!root) {
-      return;
-    }
-    const el = root.querySelector<HTMLElement>(`[data-reorder-index="${index}"]`);
-    el?.focus();
+    // the roving controller probes for the [data-reorder-index=toIndex]
+    // wrapper. `setActive` updates the index synchronously (bindings
+    // reflect tabindex='0' on the right chip even before focus moves).
+    this.chipStripRoving.setActive(toIndex);
+    afterNextRender(
+      () => this.chipStripRoving.focusAt(toIndex),
+      { injector: this.injector },
+    );
   }
 
   // ── Commit orchestration (toggle) ──────────────────────────────────
@@ -1166,87 +1151,41 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   // ── Commit orchestration (reorder) ─────────────────────────────────
 
   /**
-   * Unified reorder dispatch. Bypasses `createArrayCommitHandler.beginToggle`
+   * Reorder-commit handler. Bypasses `createArrayCommitHandler.beginToggle`
    * — its `sameArrayContents` guard would skip the write because reorder
-   * preserves membership — and talks to the commit controller directly.
-   * Mirrors the `CngxTreeSelect.dispatchValueChange` pattern for shape
-   * parity across the family.
+   * preserves membership — and drives the commit controller directly.
+   * Instantiated via `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so enterprise
+   * consumers can swap in retry-with-backoff, offline queues, or audit
+   * logging without forking the component.
    */
-  private dispatchReorder(
-    next: T[],
-    previous: T[],
-    fromIndex: number,
-    toIndex: number,
-    option: CngxSelectOptionDef<T> | null,
-  ): void {
-    const action = this.commitAction();
-
-    if (!action) {
-      this.values.set(next);
-      this.emitReorderChange(next, previous, option, fromIndex, toIndex);
-      this.announceReorder(option, fromIndex, toIndex, next.length);
-      return;
-    }
-
-    this.lastCommittedValues = [...previous];
-    if (this.commitMode() === 'optimistic') {
-      this.values.set(next);
-      this.emitReorderChange(next, previous, option, fromIndex, toIndex);
-      this.announceReorder(option, fromIndex, toIndex, next.length);
-    }
-    this.stateChange.emit('pending');
-    this.core.commitController.begin(action, next, [...previous], {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const final = committed ?? next;
-        // Reorder-aware write: always apply, regardless of
-        // `sameArrayContents` — a server canonicalization may have
-        // reordered differently from the optimistic next.
-        this.values.set([...final]);
-        this.lastCommittedValues = [...final];
-        if (this.commitMode() === 'pessimistic') {
-          this.emitReorderChange(final, previous, option, fromIndex, toIndex);
-          this.announceReorder(option, fromIndex, toIndex, final.length);
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (this.commitMode() === 'optimistic') {
-          this.values.set([...(rollbackTo ?? previous)]);
-        }
-      },
-    });
-  }
-
-  private emitReorderChange(
-    values: readonly T[],
-    previous: readonly T[],
-    option: CngxSelectOptionDef<T> | null,
-    fromIndex: number,
-    toIndex: number,
-  ): void {
-    const change: CngxReorderableMultiSelectChange<T> = {
-      source: this,
-      values,
-      previousValues: previous,
-      added: [],
-      removed: [],
-      option,
-      action: 'reorder',
-      fromIndex,
-      toIndex,
-    };
-    this.selectionChange.emit(change);
-    this.reordered.emit(change);
-  }
-
-  private announceReorder(
-    option: CngxSelectOptionDef<T> | null,
-    fromIndex: number,
-    toIndex: number,
-    count: number,
-  ): void {
-    this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
-  }
+  private readonly reorderCommit = inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
+    values: this.values,
+    commitMode: this.commitMode,
+    commitAction: this.commitAction,
+    commitController: this.core.commitController,
+    getLastCommitted: () => this.lastCommittedValues,
+    setLastCommitted: (v) => {
+      this.lastCommittedValues = [...v];
+    },
+    onReorder: (values, previous, option, fromIndex, toIndex) => {
+      const change: CngxReorderableMultiSelectChange<T> = {
+        source: this,
+        values,
+        previousValues: previous,
+        added: [],
+        removed: [],
+        option,
+        action: 'reorder',
+        fromIndex,
+        toIndex,
+      };
+      this.selectionChange.emit(change);
+      this.reordered.emit(change);
+    },
+    onAnnounce: (option, fromIndex, toIndex, count) => {
+      this.core.announce(option, 'reordered', count, true, fromIndex, toIndex);
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+  });
 }

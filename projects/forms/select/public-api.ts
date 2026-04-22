@@ -24,6 +24,24 @@ export {
   type CngxReorderableMultiSelectChange,
 } from './src/lib/reorderable-multi-select/reorderable-multi-select.component';
 export {
+  CNGX_REORDER_COMMIT_HANDLER_FACTORY,
+  createReorderCommitHandler,
+  type CngxReorderCommitHandlerFactory,
+  type ReorderCommitHandler,
+  type ReorderCommitHandlerOptions,
+} from './src/lib/shared/reorder-commit-handler';
+export {
+  CNGX_REORDERABLE_SELECT_CONFIG,
+  provideReorderableSelectConfig,
+  provideReorderableSelectConfigAt,
+  withDefaultDragHandle,
+  withReorderAriaLabel,
+  withReorderKeyboardModifier,
+  withReorderStripFreeze,
+  type CngxReorderableSelectConfig,
+  type CngxReorderableSelectConfigFeature,
+} from './src/lib/shared/reorderable-select-config';
+export {
   CngxCombobox,
   type CngxComboboxChange,
 } from './src/lib/combobox/combobox.component';
