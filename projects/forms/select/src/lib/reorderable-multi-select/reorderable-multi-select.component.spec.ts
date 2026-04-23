@@ -397,6 +397,39 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
     const [message] = spy.mock.calls.at(-1) ?? [];
     expect(String(message)).toMatch(/verschoben/);
   });
+
+  it('keydown on a chip does not bubble to the trigger\'s combobox handler', () => {
+    // Regression: pressing Enter on the focused ✕ used to bubble to
+    // CngxListboxTrigger.handleKeyDown, which opened the popover AND
+    // swallowed the native Enter→click synthesis (chip stayed, panel
+    // opened). The chip strip now stops propagation for keydowns
+    // originating inside a chip-wrap.
+    const fixture = TestBed.createComponent(Host);
+    flush(fixture);
+    const root = fixture.nativeElement as HTMLElement;
+    const removeBtn = chipAt(root, 0).querySelector<HTMLElement>(
+      '.cngx-chip__remove',
+    );
+    expect(removeBtn).not.toBeNull();
+    let triggerSawKeydown = false;
+    const trigger = root.querySelector<HTMLElement>('[role="combobox"]');
+    trigger!.addEventListener(
+      'keydown',
+      () => {
+        triggerSawKeydown = true;
+      },
+      false,
+    );
+    removeBtn!.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'Enter',
+        code: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(triggerSawKeydown).toBe(false);
+  });
 });
 
 describe('CngxReorderableMultiSelect — selection preservation', () => {

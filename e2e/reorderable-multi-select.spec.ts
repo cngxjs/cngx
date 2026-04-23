@@ -142,24 +142,29 @@ test.describe('CngxReorderableMultiSelect demo', () => {
     await expect(strip).not.toHaveAttribute('aria-disabled', 'true');
   });
 
-  test('custom drag-handle template replaces the default six-dot grip', async ({
+  test('custom drag-handle template adds an opt-in glyph (default = no grip)', async ({
     page,
   }) => {
     await page.goto(ROUTE);
-    const section = card(page, 'Custom drag-handle');
-    // Demo seeds three recipients — wait for Angular to render the
-    // chip strip before asserting DOM shape (count() takes a snapshot
-    // with no auto-retry, so the assertion has to be on a locator
-    // that auto-polls).
-    const chipWraps = section.locator('.cngx-select__chip-wrap');
-    await expect(chipWraps).toHaveCount(3);
-    // The custom template projects an ≡ glyph inside the grip span.
-    // Assert the custom markup is rendered and the default six-dot
-    // grip ⠇⠇ (U+2847 pair) is absent.
-    const customGrips = section.locator('.cngx-select__chip-handle span');
-    await expect(customGrips).toHaveCount(3);
-    await expect(section).toContainText('\u2261'); // ≡
-    await expect(section).not.toContainText('\u2847\u2847'); // ⠇⠇
+    // Default chip strip in the basic card has NO grip glyph — the ✕
+    // hover state is the only divider between drag and remove.
+    const basicSection = card(page, 'Basic — drag chips');
+    await expect(
+      basicSection.locator('.cngx-select__chip-wrap'),
+    ).toHaveCount(3);
+    await expect(
+      basicSection.locator('.cngx-select__chip-handle'),
+    ).toHaveCount(0);
+
+    // Opt-in card projects a [chipDragHandle] template — grips appear.
+    const customSection = card(page, 'Optional drag-handle');
+    await expect(
+      customSection.locator('.cngx-select__chip-wrap'),
+    ).toHaveCount(3);
+    await expect(
+      customSection.locator('.cngx-select__chip-handle'),
+    ).toHaveCount(3);
+    await expect(customSection).toContainText('\u2261'); // ≡
   });
 
   test('reorder fires a live-region announcement with "verschoben"', async ({

@@ -29,7 +29,7 @@ import { delay, of, throwError } from 'rxjs';
   <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open the panel and select 3–5 recipients.</span>
-    <span>Drag any chip's <kbd>⋮⋮</kbd> handle to reorder.</span>
+    <span>Drag any chip — anywhere outside the ✕ button.</span>
   </div>
 
   <cngx-reorderable-multi-select
@@ -132,7 +132,7 @@ import { delay, of, throwError } from 'rxjs';
     }
   </div>
       </app-example-card>
-      <app-example-card title="Custom drag-handle glyph"
+      <app-example-card title="Optional drag-handle glyph"
         [subtitle]="_s3"
         [sourceHtml]="_srcHtml3"
         [sourceTs]="_srcTs3">
@@ -193,12 +193,12 @@ export class ReorderableMultiSelectDemoComponent {
   protected readonly _s0 = 'Grab the six-dot handle on any chip and drop it elsewhere in the strip. Order is written back into <code>[(values)]</code> — the signal is the single source of truth, everything else derives from it.';
   protected readonly _s1 = 'Tab into the chip strip, then press <kbd>Ctrl</kbd>+<kbd>→</kbd> or <kbd>Ctrl</kbd>+<kbd>←</kbd> to reorder the focused chip. <kbd>Ctrl</kbd>+<kbd>Home</kbd> / <kbd>End</kbd> jump the chip to the strip extremes. Plain <kbd>←</kbd>/<kbd>→</kbd> keep moving focus without mutating the selection.';
   protected readonly _s2 = 'Each reorder hits the commit action. Optimistic applies immediately and rolls back on error; pessimistic freezes the whole strip until the write succeeds. Consecutive reorders supersede any in-flight commit — the state machine is shared with the rest of the select family.';
-  protected readonly _s3 = 'Project a <code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input to replace the default <kbd>⋮⋮</kbd> grip. The handle span stays <code>aria-hidden="true"</code> — the semantic reorder is still owned by the chip wrapper\'s keyboard handler plus <code>CngxReorder</code>.';
+  protected readonly _s3 = 'By default no grip glyph renders — the whole chip is the drag surface and the ✕ button\'s hover state visually divides "drag here" from "remove here". Project a <code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input to add a custom glyph back when your design language calls for one. The slot stays <code>aria-hidden="true"</code> — the semantic reorder is owned by the chip wrapper\'s keyboard handler plus <code>CngxReorder</code>.';
   protected readonly _s4 = 'Component starts with five selected teams. The <code>(reordered)</code> output fires every time a drag or keyboard move settles on a new position, carrying <code>fromIndex</code> / <code>toIndex</code> / the moved <code>option</code>. <code>(selectionChange)</code> fires with the same payload under <code>action: \'reorder\'</code>.';
   protected readonly _srcHtml0 = `<div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open the panel and select 3–5 recipients.</span>
-    <span>Drag any chip's <kbd>⋮⋮</kbd> handle to reorder.</span>
+    <span>Drag any chip — anywhere outside the ✕ button.</span>
   </div>
 
   <cngx-reorderable-multi-select

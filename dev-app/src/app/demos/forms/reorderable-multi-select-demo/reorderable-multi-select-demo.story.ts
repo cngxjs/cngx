@@ -114,7 +114,7 @@ export const STORY: DemoSpec = {
   <div class="kbd-hint">
     <strong>Try it:</strong>
     <span>Open the panel and select 3–5 recipients.</span>
-    <span>Drag any chip's <kbd>⋮⋮</kbd> handle to reorder.</span>
+    <span>Drag any chip — anywhere outside the ✕ button.</span>
   </div>
 
   <cngx-reorderable-multi-select
@@ -224,12 +224,14 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: 'Custom drag-handle glyph',
+      title: 'Optional drag-handle glyph',
       subtitle:
-        'Project a <code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input ' +
-        'to replace the default <kbd>⋮⋮</kbd> grip. The handle span stays <code>aria-hidden="true"</code> — ' +
-        'the semantic reorder is still owned by the chip wrapper\'s keyboard handler plus ' +
-        '<code>CngxReorder</code>.',
+        'By default no grip glyph renders — the whole chip is the drag surface and the ✕ button\'s ' +
+        'hover state visually divides "drag here" from "remove here". Project a ' +
+        '<code>TemplateRef&lt;void&gt;</code> through the <code>[chipDragHandle]</code> input to add a ' +
+        'custom glyph back when your design language calls for one. The slot stays ' +
+        '<code>aria-hidden="true"</code> — the semantic reorder is owned by the chip wrapper\'s ' +
+        'keyboard handler plus <code>CngxReorder</code>.',
       imports: ['CngxReorderableMultiSelect'],
       template: `
   <cngx-reorderable-multi-select

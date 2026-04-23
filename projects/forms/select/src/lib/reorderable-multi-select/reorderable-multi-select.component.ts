@@ -259,16 +259,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                 (focus)="handleChipFocus(i)"
                 (click)="$event.stopPropagation()"
               >
-                <span
-                  class="cngx-select__chip-handle"
-                  aria-hidden="true"
-                >
-                  @if (chipDragHandleTpl(); as handleT) {
+                @if (chipDragHandleTpl(); as handleT) {
+                  <span class="cngx-select__chip-handle" aria-hidden="true">
                     <ng-container *ngTemplateOutlet="handleT" />
-                  } @else {
-                    <span>&#10247;&#10247;</span>
-                  }
-                </span>
+                  </span>
+                }
                 @if (chipTpl(); as chipT) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -1073,13 +1068,29 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /**
-   * Chip-strip keydown delegate. Delegates to the roving controller
-   * which handles plain arrow / Home / End (modifier-pressed events
-   * are ignored so the paired `CngxReorder` owns that gesture).
+   * Chip-strip keydown delegate. Two responsibilities:
+   *
+   *  1. Stop propagation for any keydown originating inside a chip
+   *     wrap. The chip strip owns its own keyboard semantics (roving
+   *     + reorder + per-chip interactive children like the ✕ remove
+   *     button). Without the stop, Enter / Space on the focused ✕
+   *     bubbles to the trigger's `CngxListboxTrigger.handleKeyDown`,
+   *     which opens the popover AND swallows the native Enter→click
+   *     synthesis the `<button>` would have done — chip stays, popover
+   *     opens. The trigger's combobox keyboard is meant for when
+   *     focus sits on the trigger itself, not on a chip child.
+   *
+   *  2. Forward to the roving controller, which handles plain arrow /
+   *     Home / End (modifier-pressed events are ignored so the paired
+   *     `CngxReorder` owns that gesture).
    *
    * @internal
    */
   protected handleStripKeydown(event: KeyboardEvent): void {
+    const target = event.target as Element | null;
+    if (target?.closest('[data-reorder-index]')) {
+      event.stopPropagation();
+    }
     this.chipStripRoving.handleKeydown(event);
   }
 
