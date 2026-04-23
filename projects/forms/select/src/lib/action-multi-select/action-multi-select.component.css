@@ -1,0 +1,139 @@
+/*
+ * action-multi-select.component.css — CngxActionMultiSelect trigger skin.
+ *
+ * Structural parts (panel frame, option rows, chip strip, loading
+ * variants, error surfaces) come from `shared/select-base.css`. This
+ * file owns the trigger-specific bits: role="group" wrapper, inline
+ * input as focusable element, clear-all button, caret glyph.
+ *
+ * Tokens cascade to `--cngx-combobox-*` then `--cngx-select-*` so a
+ * consumer that themes either ancestor sees this variant themed too.
+ */
+
+:host {
+  display: inline-block;
+  position: relative;
+  font: inherit;
+  min-width: var(
+    --cngx-action-multi-select-min-width,
+    var(--cngx-combobox-min-width, var(--cngx-select-min-width, 12rem))
+  );
+}
+
+.cngx-action-multi-select__root {
+  display: contents;
+}
+
+.cngx-action-multi-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(
+    --cngx-action-multi-select-gap,
+    var(--cngx-combobox-gap, var(--cngx-select-gap, 0.375rem))
+  );
+  width: 100%;
+  padding: var(
+    --cngx-action-multi-select-padding,
+    var(--cngx-combobox-padding, var(--cngx-select-padding, 0.25rem 0.375rem))
+  );
+  border: var(
+    --cngx-action-multi-select-border,
+    var(--cngx-combobox-border, var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4)))
+  );
+  border-radius: var(
+    --cngx-action-multi-select-radius,
+    var(--cngx-combobox-radius, var(--cngx-select-radius, 0.25rem))
+  );
+  background: var(
+    --cngx-action-multi-select-bg,
+    var(--cngx-combobox-bg, var(--cngx-select-bg, transparent))
+  );
+  color: var(
+    --cngx-action-multi-select-color,
+    var(--cngx-combobox-color, var(--cngx-select-color, inherit))
+  );
+  font: inherit;
+  cursor: text;
+  min-height: var(
+    --cngx-action-multi-select-min-height,
+    var(--cngx-combobox-min-height, 2.25rem)
+  );
+  flex-wrap: nowrap;
+}
+
+.cngx-action-multi-select__trigger:focus-within {
+  outline: var(
+    --cngx-action-multi-select-focus-outline,
+    var(--cngx-combobox-focus-outline, var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2)))
+  );
+  outline-offset: var(
+    --cngx-action-multi-select-focus-offset,
+    var(--cngx-combobox-focus-offset, var(--cngx-select-focus-offset, 2px))
+  );
+}
+
+.cngx-action-multi-select__trigger[aria-disabled='true'] {
+  opacity: var(
+    --cngx-action-multi-select-disabled-opacity,
+    var(--cngx-combobox-disabled-opacity, var(--cngx-select-disabled-opacity, 0.5))
+  );
+  cursor: not-allowed;
+}
+
+.cngx-action-multi-select__input {
+  flex: 1 1 var(--cngx-action-multi-select-input-flex-basis, 4rem);
+  min-width: var(--cngx-action-multi-select-input-min-width, 4rem);
+  appearance: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.cngx-action-multi-select__input:disabled {
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.cngx-action-multi-select__input::placeholder {
+  opacity: var(--cngx-action-multi-select-placeholder-opacity, 0.7);
+  color: inherit;
+}
+
+.cngx-action-multi-select__trigger-label {
+  flex: 0 1 auto;
+}
+
+.cngx-action-multi-select__clear-all {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font: inherit;
+  opacity: var(
+    --cngx-action-multi-select-clear-opacity,
+    var(--cngx-combobox-clear-opacity, 0.6)
+  );
+}
+
+.cngx-action-multi-select__clear-all:hover {
+  opacity: 1;
+}
+
+.cngx-action-multi-select__clear-all:focus-visible {
+  outline: 2px solid var(--cngx-focus-ring, #1976d2);
+  border-radius: 0.125rem;
+}
+
+.cngx-action-multi-select__caret {
+  flex: 0 0 auto;
+  opacity: 0.7;
+  pointer-events: none;
+}

@@ -1,4 +1,4 @@
-import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
+import { InjectionToken, type Signal } from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
 
@@ -13,15 +13,23 @@ import type { CngxSelectOptionDef } from './option.model';
  * (except through the `quickCreateAction` signal input) so consumers
  * keep tight ownership of the reactive surface.
  *
+ * The factory is value-shape-agnostic: it never writes a component's
+ * primary value slot itself (single-`T` vs `T[]`). The consumer's
+ * {@link CreateCommitHandlerOptions.onCreated} callback performs the
+ * semantic write (single: `value.set(option.value)`; multi: append to
+ * `values`) together with `selectionChange` + `created` emissions, so
+ * CngxActionSelect and CngxActionMultiSelect share the same factory
+ * without branching.
+ *
+ * The `Prev` generic carries the previous-snapshot shape each
+ * consumer captures before dispatching (single: `T | undefined`;
+ * multi: `readonly T[]`) so `onCreated` receives a typed previous
+ * payload ready to splat into the `previousValue(s)` field of the
+ * variant's change event.
+ *
  * @category interactive
  */
-export interface CreateCommitHandlerOptions<T> {
-  /**
-   * Primary value signal. On success the handler writes the
-   * server-returned `T` so the newly-created item becomes the current
-   * single-value selection.
-   */
-  readonly value: WritableSignal<T | undefined>;
+export interface CreateCommitHandlerOptions<T, Prev = unknown> {
   /**
    * Active create action. Read per dispatch so a swap mid-flight
    * supersedes cleanly — the commit controller owns the supersede
@@ -50,10 +58,17 @@ export interface CreateCommitHandlerOptions<T> {
    * dispatch so the consumer can flip the input without a re-bind.
    */
   readonly closeOnSuccess: Signal<boolean>;
-  /** Emit the semantic `'create'` change-event payload. */
+  /**
+   * Emit the semantic `'create'` change-event payload AND write the
+   * component's primary value slot. The handler fires this after it
+   * has patched `localItemsBuffer` and reset the action-bridge dirty
+   * flag, so consumer callbacks can freely invoke
+   * `selectionChange.emit(...)` without racing their own downstream
+   * state.
+   */
   readonly onCreated: (
     created: CngxSelectOptionDef<T>,
-    previousValue: T | undefined,
+    previousSnapshot: Prev,
   ) => void;
   /** Announce the `'created'` delta through the select-family live region. */
   readonly onAnnounce: (option: CngxSelectOptionDef<T>) => void;
@@ -71,18 +86,24 @@ export interface CreateCommitHandlerOptions<T> {
 }
 
 /**
- * API returned from {@link createCreateCommitHandler}.
+ * API returned from {@link createCreateCommitHandler}. `T` is a
+ * phantom marker so consumers type the handler as
+ * `CreateCommitHandler<Tag, readonly Tag[]>` rather than
+ * `CreateCommitHandler<unknown, readonly Tag[]>` — it constrains the
+ * factory call-site even though the public shape only mentions `Prev`.
  *
  * @category interactive
  */
-export interface CreateCommitHandler<T> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface CreateCommitHandler<T, Prev = unknown> {
   /**
    * Run a quick-create through the commit flow. Pessimistic: the
    * handler keeps the panel open, flips the commit controller to
    * `pending` (which drives the `isPending` flag inside the slot
-   * context), and on success patches `localItemsBuffer` + writes
-   * `value` + announces + conditionally closes. On error the
-   * commit-error surface fires; `value` is not touched.
+   * context), and on success patches `localItemsBuffer` + fires
+   * `onCreated` (where the consumer writes its primary value slot) +
+   * announces + conditionally closes. On error the commit-error
+   * surface fires; the consumer's value slot is not touched.
    *
    * **Accepted deviation from plan** (master §3 Commit 5): the plan
    * described an "optimistic add to localItems before commit" path.
@@ -91,23 +112,27 @@ export interface CreateCommitHandler<T> {
    * Pessimistic + `isPending` feedback delivers the same perceived
    * immediacy for the common case.
    *
-   * @param draft          Drafted item carrying at least a `label`.
-   * @param searchTerm     Live search term at dispatch time.
-   * @param previousValue  Value to restore if a later dispatch
-   *                       supersedes this one via the commit controller.
+   * @param draft             Drafted item carrying at least a `label`.
+   * @param searchTerm        Live search term at dispatch time.
+   * @param previousSnapshot  Consumer-captured snapshot (single:
+   *                          `T | undefined`; multi: `readonly T[]`)
+   *                          forwarded to `onCreated` unchanged so
+   *                          the consumer can emit a typed
+   *                          `previousValue(s)` on its change event.
    */
   dispatch(
     draft: { readonly label: string },
     searchTerm: string,
-    previousValue: T | undefined,
+    previousSnapshot: Prev,
   ): void;
 }
 
 /**
  * Plain factory for the quick-create commit flow. Extracted from
- * `CngxActionSelect` so enterprise consumers can swap in
- * retry-with-backoff, offline-queue, or telemetry wrappers without
- * forking the component. Mirrors the shape of
+ * `CngxActionSelect` (Commit 5) and reused by `CngxActionMultiSelect`
+ * (Commit 6). Enterprise consumers can swap in retry-with-backoff,
+ * offline-queue, or telemetry wrappers without forking either
+ * component. Mirrors the shape of
  * {@link /projects/forms/select/src/lib/shared/reorder-commit-handler.ts
  * createReorderCommitHandler} — two separate factories because create
  * and reorder have fundamentally different value-shape contracts
@@ -115,13 +140,13 @@ export interface CreateCommitHandler<T> {
  *
  * @category interactive
  */
-export function createCreateCommitHandler<T>(
-  opts: CreateCommitHandlerOptions<T>,
-): CreateCommitHandler<T> {
+export function createCreateCommitHandler<T, Prev = unknown>(
+  opts: CreateCommitHandlerOptions<T, Prev>,
+): CreateCommitHandler<T, Prev> {
   function dispatch(
     draft: { readonly label: string },
     searchTerm: string,
-    previousValue: T | undefined,
+    previousSnapshot: Prev,
   ): void {
     const action = opts.quickCreateAction();
     if (!action) {
@@ -137,7 +162,7 @@ export function createCreateCommitHandler<T>(
       action(searchTerm, draft);
 
     opts.onStateChange('pending');
-    opts.commitController.begin(adapted, undefined, previousValue, {
+    opts.commitController.begin(adapted, undefined, undefined, {
       onSuccess: (committed) => {
         opts.onStateChange('success');
         if (committed === undefined) {
@@ -148,9 +173,8 @@ export function createCreateCommitHandler<T>(
           label: draft.label,
         };
         opts.localItemsBuffer.patch(option);
-        opts.value.set(committed);
         opts.onResetDirty();
-        opts.onCreated(option, previousValue);
+        opts.onCreated(option, previousSnapshot);
         opts.onAnnounce(option);
         if (opts.closeOnSuccess()) {
           opts.onClose();
@@ -159,9 +183,9 @@ export function createCreateCommitHandler<T>(
       onError: (err) => {
         opts.onStateChange('error');
         opts.onError(err);
-        // Pessimistic: value was never touched — no rollback needed.
-        // The dirty flag stays raised so the consumer can retry from
-        // the still-open slot.
+        // Pessimistic: no rollback — the consumer's value slot was
+        // never written by the handler. The dirty flag stays raised so
+        // the consumer can retry from the still-open slot.
       },
     });
   }
@@ -174,9 +198,9 @@ export function createCreateCommitHandler<T>(
  *
  * @category interactive
  */
-export type CngxCreateCommitHandlerFactory = <T>(
-  opts: CreateCommitHandlerOptions<T>,
-) => CreateCommitHandler<T>;
+export type CngxCreateCommitHandlerFactory = <T, Prev = unknown>(
+  opts: CreateCommitHandlerOptions<T, Prev>,
+) => CreateCommitHandler<T, Prev>;
 
 /**
  * DI token resolving the factory used to instantiate a

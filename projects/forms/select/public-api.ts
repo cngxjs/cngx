@@ -54,6 +54,10 @@ export {
   type CngxActionSelectChange,
 } from './src/lib/action-select/action-select.component';
 export {
+  CngxActionMultiSelect,
+  type CngxActionMultiSelectChange,
+} from './src/lib/action-multi-select/action-multi-select.component';
+export {
   CNGX_CREATE_COMMIT_HANDLER_FACTORY,
   createCreateCommitHandler,
   type CngxCreateCommitHandlerFactory,
