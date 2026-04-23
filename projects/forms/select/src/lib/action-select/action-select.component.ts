@@ -328,7 +328,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * via the input for large option lists where filtering every
    * keystroke is measurably slow.
    */
-  readonly searchDebounceMs = input<number>(0);
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);

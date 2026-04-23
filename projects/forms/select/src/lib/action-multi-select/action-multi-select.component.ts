@@ -371,7 +371,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   /** Debounce for the inline search. Defaults to `0` — instant feedback in the action slot. */
-  readonly searchDebounceMs = input<number>(0);
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
