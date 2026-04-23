@@ -154,6 +154,7 @@ export {
   CngxComboboxTriggerLabel,
   CngxSelectInputPrefix,
   CngxSelectInputSuffix,
+  CngxSelectAction,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -172,6 +173,7 @@ export {
   type CngxMultiSelectTriggerLabelContext,
   type CngxComboboxTriggerLabelContext,
   type CngxSelectInputSlotContext,
+  type CngxSelectActionContext,
 } from './src/lib/shared/template-slots';
 
 // ── Commit-controller DI factory ──────────────────────────────────────

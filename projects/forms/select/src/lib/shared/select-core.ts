@@ -279,12 +279,15 @@ export interface CngxSelectCore<T, TCommit> {
    *
    * `'reordered'` carries optional `fromIndex` / `toIndex` so a
    * consumer's `announceTemplate` can speak the positional delta.
-   * Existing `'added' | 'removed'` callers keep their four-argument
-   * signature untouched — the extra parameters are optional.
+   * `'created'` is emitted by the action-select organisms after a
+   * successful inline `quickCreateAction` commit — the default
+   * formatter reads it as "erstellt und ausgewählt". Existing
+   * `'added' | 'removed'` callers keep their four-argument signature
+   * untouched — the extra parameters are optional.
    */
   announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered',
+    action: 'added' | 'removed' | 'reordered' | 'created',
     count: number,
     multi: boolean,
     fromIndex?: number,
@@ -703,7 +706,7 @@ export function createSelectCore<T, TCommit>(
 
   function announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered',
+    action: 'added' | 'removed' | 'reordered' | 'created',
     count: number,
     multi: boolean,
     fromIndex?: number,

@@ -592,6 +592,37 @@ export class CngxComboboxTriggerLabel<T = unknown> {
 }
 
 /**
+ * Context for the inline-action slot projected into the panel by
+ * `*cngxSelectAction`. Used by `CngxActionSelect` / `CngxActionMultiSelect`
+ * and opt-in on every other select-family variant — consumer authors
+ * an inline "create", "filter", "manage tags" workflow that runs
+ * without closing the panel.
+ *
+ * `$implicit` is the live search term so a minimal template can read
+ * `let-term`; the named `searchTerm` alias lets templates that also
+ * need other context fields stay self-documenting. `close()` shuts the
+ * panel (honours the variant's existing restore-focus behaviour).
+ * `commit()` fires the bound `quickCreateAction` with an optional draft
+ * label — omitted, it defaults to `{ label: searchTerm }`. `setDirty`
+ * plus the `dirty` flag drive the panel's dismiss-guard protocol: a
+ * dirty action intercepts Escape and click-outside so in-progress
+ * workflows aren't lost. `isPending` mirrors the commit controller's
+ * live state so a custom button can show a spinner without re-injecting
+ * the controller.
+ *
+ * @category interactive
+ */
+export interface CngxSelectActionContext {
+  readonly $implicit: string;
+  readonly searchTerm: string;
+  readonly close: () => void;
+  readonly commit: (draft?: { label: string }) => void;
+  readonly isPending: boolean;
+  readonly setDirty: (value: boolean) => void;
+  readonly dirty: boolean;
+}
+
+/**
  * Context provided to the input-prefix / input-suffix slot templates.
  * Reflects the live reactive state so a consumer-authored icon can
  * dim / rotate / swap based on focus + panel visibility without
@@ -649,4 +680,41 @@ export class CngxSelectInputPrefix {
 export class CngxSelectInputSuffix {
   readonly templateRef =
     inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+}
+
+/**
+ * Slot projected inside the panel to host an inline workflow — "create
+ * a new tag from the current search term", "manage recipients", "pick
+ * a colour". Rendered in `top`, `bottom`, or `both` positions via the
+ * variant's `actionPosition` input. Context carries the live
+ * `searchTerm`, a `close()` callback, a `commit()` wrapper that fires
+ * the bound `quickCreateAction`, plus `dirty` / `setDirty` for the
+ * panel's dismiss-guard protocol.
+ *
+ * Zero visual default — the panel renders the consumer template
+ * verbatim, letting the action strip look native to the surrounding
+ * design (compact link, full button, split menu, mini-form).
+ *
+ * @example
+ * ```html
+ * <cngx-action-select [options]="tags" [(value)]="current"
+ *                     [quickCreateAction]="createTag">
+ *   <ng-template cngxSelectAction let-term let-commit="commit"
+ *                let-pending="isPending">
+ *     <button (click)="commit()" [disabled]="pending || !term">
+ *       + „{{ term }}" anlegen
+ *     </button>
+ *   </ng-template>
+ * </cngx-action-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectAction]',
+  standalone: true,
+  exportAs: 'cngxSelectAction',
+})
+export class CngxSelectAction {
+  readonly templateRef = inject<TemplateRef<CngxSelectActionContext>>(TemplateRef);
 }

@@ -8,6 +8,7 @@ import {
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type {
+  CngxSelectActionContext,
   CngxSelectCaretContext,
   CngxSelectCheckContext,
   CngxSelectClearButtonContext,
@@ -47,6 +48,7 @@ export interface CngxSelectTemplateContexts {
   readonly clearButton?: CngxSelectClearButtonContext;
   readonly optionPending?: CngxSelectOptionPendingContext;
   readonly optionError?: CngxSelectOptionErrorContext;
+  readonly action?: CngxSelectActionContext;
 }
 
 /**
@@ -72,12 +74,18 @@ export interface CngxSelectAnnouncerConfig {
    * chip changes position without gaining or losing membership. The
    * optional `fromIndex` / `toIndex` pair describes the move; overrides
    * that don't care about reorder can leave them unread.
+   *
+   * `'created'` is emitted by `CngxActionSelect` / `CngxActionMultiSelect`
+   * after the bound `quickCreateAction` commit resolves — the just-
+   * created item is both added to the panel and marked as selected.
+   * Consumers who don't care about inline creation can leave the branch
+   * unhandled; the library default handles it.
    */
   readonly format?: (input: {
     readonly selectedLabel: string | null;
     readonly fieldLabel: string;
     readonly multi: boolean;
-    readonly action?: 'added' | 'removed' | 'reordered';
+    readonly action?: 'added' | 'removed' | 'reordered' | 'created';
     readonly count?: number;
     readonly fromIndex?: number;
     readonly toIndex?: number;
@@ -231,6 +239,7 @@ export interface CngxSelectConfig {
     readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
     readonly optionPending?: TemplateRef<CngxSelectOptionPendingContext> | null;
     readonly optionError?: TemplateRef<CngxSelectOptionErrorContext> | null;
+    readonly action?: TemplateRef<CngxSelectActionContext> | null;
   };
 }
 
@@ -268,6 +277,18 @@ export const CNGX_SELECT_DEFAULTS: Required<
     enabled: true,
     politeness: 'polite',
     format: ({ selectedLabel, fieldLabel, multi, action, count, toIndex }): string => {
+      // `'created'` path (inline quick-create via `CngxActionSelect` /
+      // `CngxActionMultiSelect`) reads identically in single + multi —
+      // the item was just created AND picked in the same commit, so the
+      // standard "gewählt" / "hinzugefügt" verbs would mis-describe the
+      // delta. Handled before the multi branch so both cardinalities
+      // share the same sentence shape.
+      if (action === 'created') {
+        if (selectedLabel == null) {
+          return `${fieldLabel}: erstellt`;
+        }
+        return `${fieldLabel}: ${selectedLabel} erstellt und ausgewählt`;
+      }
       if (!multi) {
         if (selectedLabel == null) {
           return `${fieldLabel}: Auswahl geleert`;
@@ -313,6 +334,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     clearButton: null,
     optionPending: null,
     optionError: null,
+    action: null,
   },
   ariaLabels: {},
 };

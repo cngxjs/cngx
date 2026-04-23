@@ -133,6 +133,42 @@ describe('default announcer format — reordered action', () => {
   });
 });
 
+describe("default announcer format — created action", () => {
+  it("speaks 'erstellt und ausgewählt' for single-select when a label is supplied", () => {
+    const config = resolveIn([]);
+    const message = config.announcer.format({
+      selectedLabel: 'Violett',
+      fieldLabel: 'Farbe',
+      multi: false,
+      action: 'created',
+    });
+    expect(message).toBe('Farbe: Violett erstellt und ausgewählt');
+  });
+
+  it("speaks the same sentence for multi-select ('created' short-circuits the multi branch)", () => {
+    const config = resolveIn([]);
+    const message = config.announcer.format({
+      selectedLabel: 'Design',
+      fieldLabel: 'Themen',
+      multi: true,
+      action: 'created',
+      count: 5,
+    });
+    expect(message).toBe('Themen: Design erstellt und ausgewählt');
+  });
+
+  it('falls back to a labelless "erstellt" sentence when no label is available', () => {
+    const config = resolveIn([]);
+    const message = config.announcer.format({
+      selectedLabel: null,
+      fieldLabel: 'Farbe',
+      multi: false,
+      action: 'created',
+    });
+    expect(message).toBe('Farbe: erstellt');
+  });
+});
+
 describe('CngxMultiSelectChipContext — optional index', () => {
   it('accepts contexts without an index (CngxMultiSelect back-compat)', () => {
     const opt: CngxSelectOptionDef<string> = { value: 'a', label: 'A' };

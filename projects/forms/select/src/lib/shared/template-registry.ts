@@ -1,7 +1,9 @@
-import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
+import { InjectionToken, signal, type Signal, type TemplateRef } from '@angular/core';
 
 import { resolveTemplate } from './resolve-template';
 import type {
+  CngxSelectAction,
+  CngxSelectActionContext,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectClearButton,
@@ -63,6 +65,14 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
   readonly optionPending: Signal<CngxSelectOptionPending<T> | undefined>;
   readonly optionError: Signal<CngxSelectOptionError<T> | undefined>;
+  /**
+   * Optional — variants that don't host an inline-action workflow omit
+   * this query entirely, and the cascade still resolves
+   * `CNGX_SELECT_CONFIG.templates.action` as the config-level fallback.
+   * The new action-select organisms declare the `contentChild` and
+   * pass it in; every other variant stays source-compatible.
+   */
+  readonly action?: Signal<CngxSelectAction | undefined>;
 }
 
 /**
@@ -90,6 +100,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly clearButton: Signal<TemplateRef<CngxSelectClearButtonContext> | null>;
   readonly optionPending: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
   readonly optionError: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
+  readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
 }
 
 /**
@@ -128,6 +139,17 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  *
  * @category interactive
  */
+/**
+ * Stable empty-signal used as the `action` query fallback for variants
+ * that don't host an inline-action workflow. Keeps the cascade call
+ * shape uniform — the config-level `templates.action` fallback still
+ * resolves via `resolveTemplate`, so an app-wide `provideSelectConfig(
+ * withAction(...))` still reaches every panel.
+ *
+ * @internal
+ */
+const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
+
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
@@ -145,6 +167,7 @@ export function createTemplateRegistry<T = unknown>(
     clearButton: resolveTemplate(queries.clearButton, 'clearButton'),
     optionPending: resolveTemplate(queries.optionPending, 'optionPending'),
     optionError: resolveTemplate(queries.optionError, 'optionError'),
+    action: resolveTemplate(queries.action ?? NO_ACTION_DIRECTIVE, 'action'),
   };
 }
 
