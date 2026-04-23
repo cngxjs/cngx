@@ -75,6 +75,10 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  type ScalarCommitHandler,
+} from '../shared/scalar-commit-handler';
+import {
   cngxSelectDefaultCompare,
   createSelectCore,
   type CngxSelectCompareFn,
@@ -671,7 +675,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.scalarHandler.retryLast(),
+  );
 
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
@@ -811,12 +817,12 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
         }
         const action = this.commitAction();
         if (action) {
-          this.beginCommit(intended, previous, action);
+          this.scalarHandler.beginCommit(intended, previous, action);
         }
       },
       onActivate: (intended, opt) => {
         const previous = untracked(() => this.value());
-        this.finalizeSelection(intended, opt, previous);
+        this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
@@ -1020,68 +1026,42 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit / selection finalize ────────────────────────────────────
 
-  private finalizeSelection(
-    intended: T,
-    option: CngxSelectOptionDef<T>,
-    previousValue: T | undefined,
-  ): void {
-    this.value.set(intended);
-    this.display.writeFromValue(intended);
-    this.selectionChange.emit({
-      source: this,
-      value: intended,
-      previousValue,
-      option,
-      action: 'select',
-    });
-    this.core.announce(option, 'added', 1, false);
-  }
-
-  private beginCommit(intended: T, previous: T | undefined, action: CngxSelectCommitAction<T>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, intended, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValue = committed ?? intended;
-        if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), finalValue)) {
-          this.value.set(finalValue);
-        }
-        this.togglingOption.set(null);
-        const opt = this.core.findOption(finalValue);
-        this.display.writeFromValue(finalValue);
-        if (opt) {
-          this.selectionChange.emit({
-            source: this,
-            value: finalValue,
-            previousValue: previous,
-            option: opt,
-            action: 'select',
-          });
-          this.core.announce(opt, 'added', 1, false);
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          const rollback = rollbackTo ?? undefined;
-          if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), rollback)) {
-            this.value.set(rollback);
-          }
-          this.display.writeFromValue(rollback);
-        }
-        this.announceCommitError(err);
-      },
-    });
-  }
-
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValue, action);
-  }
+  /**
+   * Shared scalar-commit factory. Owns the full `beginCommit` /
+   * `finalizeSelection` / `retryLast` triad the component previously
+   * carried inline. Wired with variant-specific callbacks:
+   *
+   *   - `onCommitFinalize` emits `selectionChange({ action: 'select' })`
+   *     and routes through `core.announce(..., 'added', 1, false)`.
+   *   - `onCommitError` delegates to the scalar commit-error announcer
+   *     (`soft` policy for this component — matches `CngxTypeahead`).
+   *   - `onValueWrite` mirrors the committed value into the input-text
+   *     display so the trigger `<input>` stays in sync with `value()`.
+   *
+   * @internal
+   */
+  private readonly scalarHandler: ScalarCommitHandler<T> = inject(
+    CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    getLastCommitted: () => this.lastCommittedValue,
+    onCommitFinalize: (option, finalValue, previousValue) => {
+      this.selectionChange.emit({
+        source: this,
+        value: finalValue,
+        previousValue,
+        option,
+        action: 'select',
+      });
+      this.core.announce(option, 'added', 1, false);
+    },
+    onCommitError: (err) => this.announceCommitError(err),
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+    onValueWrite: (v) => this.display.writeFromValue(v),
+  });
 }

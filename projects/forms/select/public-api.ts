@@ -277,6 +277,15 @@ export {
   type CngxArrayCommitHandlerFactory,
 } from './src/lib/shared/array-commit-handler';
 
+// ── Scalar commit handler (action-select / planned: single + typeahead) ─
+export {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  createScalarCommitHandler,
+  type CngxScalarCommitHandlerFactory,
+  type ScalarCommitHandler,
+  type ScalarCommitHandlerOptions,
+} from './src/lib/shared/scalar-commit-handler';
+
 // ── Shared template-slot registry ─────────────────────────────────────
 export {
   CNGX_TEMPLATE_REGISTRY_FACTORY,
