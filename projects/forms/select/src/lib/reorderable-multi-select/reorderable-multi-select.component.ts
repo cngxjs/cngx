@@ -210,6 +210,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
           [class.cngx-select__chip-list--reordering]="reorderDir.dragging()"
           role="group"
           [attr.aria-label]="reorderAriaLabel()"
+          [attr.aria-disabled]="reorderDisabled() ? 'true' : null"
           [cngxReorder]="valuesSignal"
           [disabled]="reorderDisabled()"
           [keyboardModifier]="reorderKeyboardModifier()"

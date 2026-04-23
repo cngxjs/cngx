@@ -1,5 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import {
+  DestroyRef,
   Directive,
   ElementRef,
   afterNextRender,
@@ -187,6 +188,7 @@ export class CngxReorder<T = unknown> {
   private readonly hostEl = inject(ElementRef<HTMLElement>)
     .nativeElement as HTMLElement;
   private readonly doc = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     this.wirePointer();
@@ -298,6 +300,17 @@ export class CngxReorder<T = unknown> {
                       this.emitMove(from, to);
                     }
                   }
+                  // Swallow the `click` the browser synthesises from
+                  // the mousedown → mouseup pair that framed this
+                  // gesture. Without this, dragging a chip inside an
+                  // outer listener (e.g. a combobox trigger's
+                  // (click)="open()") would toggle the popover
+                  // alongside the reorder, because the click's target
+                  // is the common ancestor of mousedown/mouseup — not
+                  // a descendant that any child-side `stopPropagation`
+                  // could filter. One-shot, capture-phase, document-
+                  // wide, removed after the first event.
+                  this.installClickSuppressor();
                 }),
               ),
             ),
@@ -439,5 +452,39 @@ export class CngxReorder<T = unknown> {
     const [item] = copy.splice(from, 1);
     copy.splice(to, 0, item);
     return copy;
+  }
+
+  /**
+   * Install a one-shot capture-phase listener that cancels the next
+   * synthetic `click` (the one browsers derive from the mousedown →
+   * mouseup pair that framed the drag gesture). The listener removes
+   * itself after the first event, after a short watchdog timeout if
+   * no click ever fires (browsers skip the click when mouse travel
+   * exceeds the platform drag threshold), and on directive destroy
+   * so test fixtures never leak a document-level handler across
+   * iterations.
+   */
+  private installClickSuppressor(): void {
+    let cleaned = false;
+    const handler = (event: Event): void => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      cleanup();
+    };
+    const cleanup = (): void => {
+      if (cleaned) {
+        return;
+      }
+      cleaned = true;
+      this.doc.removeEventListener('click', handler, true);
+      clearTimeout(watchdog);
+    };
+    this.doc.addEventListener('click', handler, true);
+    // Browsers dispatch the click synchronously after pointerup;
+    // 50ms covers queuing quirks without lingering past the user's
+    // next real click.
+    const watchdog = setTimeout(cleanup, 50);
+    this.destroyRef.onDestroy(cleanup);
   }
 }
