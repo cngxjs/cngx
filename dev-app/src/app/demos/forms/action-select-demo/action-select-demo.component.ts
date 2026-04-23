@@ -249,8 +249,8 @@ import { delay, of, throwError } from 'rxjs';
           @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
         </div>
         <input
+          #dirtyInput
           type="text"
-          [value]="dirtyDescription()"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
           placeholder="Beschreibung (optional)…"
           style="
@@ -264,7 +264,7 @@ import { delay, of, throwError } from 'rxjs';
         <div style="display:flex; gap:.5rem; justify-content:flex-end">
           <button
             type="button"
-            (click)="handleDirtyCancel(setDirty)"
+            (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
             style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
           >
             Cancel
@@ -788,8 +788,8 @@ import { delay, of, throwError } from 'rxjs';
           @if (dirty) { <span style="color:var(--cngx-primary,#1976d2)">· ungespeichert</span> }
         </div>
         <input
+          #dirtyInput
           type="text"
-          [value]="dirtyDescription()"
           (input)="handleDirtyInput($any($event.target).value, setDirty)"
           placeholder="Beschreibung (optional)…"
           style="
@@ -803,7 +803,7 @@ import { delay, of, throwError } from 'rxjs';
         <div style="display:flex; gap:.5rem; justify-content:flex-end">
           <button
             type="button"
-            (click)="handleDirtyCancel(setDirty)"
+            (click)="handleDirtyCancel(setDirty); dirtyInput.value = ''"
             style="padding:.35rem .75rem; border:1px solid var(--cngx-border, #cbd5e1); border-radius:.25rem; background:transparent; cursor:pointer; font:inherit"
           >
             Cancel

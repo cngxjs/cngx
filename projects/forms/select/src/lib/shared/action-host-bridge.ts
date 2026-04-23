@@ -1,4 +1,11 @@
-import { computed, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  type Signal,
+} from '@angular/core';
 
 import {
   resolveActionSelectConfig,
@@ -158,6 +165,32 @@ export function createActionHostBridge(
     }
     return dirty();
   });
+
+  // Capture-phase Escape intercept on the variant's host element. Must
+  // live on the variant root (not the shell) because the trigger input
+  // is a sibling of the popover — Escape from the input would otherwise
+  // never reach a panel-level listener. Attached via DestroyRef so the
+  // handler is torn down when the component is removed.
+  const hostEl = inject(ElementRef<HTMLElement>, { optional: true });
+  const destroyRef = inject(DestroyRef, { optional: true });
+  if (hostEl && destroyRef) {
+    const el = hostEl.nativeElement as HTMLElement;
+    const handler = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      if (!dirty()) {
+        return;
+      }
+      cancelFn();
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    el.addEventListener('keydown', handler, { capture: true });
+    destroyRef.onDestroy(() => {
+      el.removeEventListener('keydown', handler, { capture: true });
+    });
+  }
 
   return {
     dirty: dirty.asReadonly(),

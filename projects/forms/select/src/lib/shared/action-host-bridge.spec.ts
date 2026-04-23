@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -6,7 +6,11 @@ import {
   CNGX_ACTION_SELECT_CONFIG,
   type CngxActionFocusTrapBehavior,
 } from './action-select-config';
-import { createActionHostBridge } from './action-host-bridge';
+import {
+  createActionHostBridge,
+  type ActionHostBridge,
+  type ActionHostBridgeOptions,
+} from './action-host-bridge';
 
 function makeBridge(
   options: Parameters<typeof createActionHostBridge>[0],
@@ -15,6 +19,33 @@ function makeBridge(
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({ providers: providers as never[] });
   return TestBed.runInInjectionContext(() => createActionHostBridge(options));
+}
+
+/**
+ * Build a bridge inside a real component so the bridge's Escape-
+ * intercept listener attaches to a real ElementRef. Returns the bridge
+ * + the host element so tests can dispatch events on either the host
+ * or a child.
+ */
+function mountBridge(options: ActionHostBridgeOptions): {
+  bridge: ActionHostBridge;
+  hostEl: HTMLElement;
+} {
+  @Component({
+    selector: 'bridge-host',
+    template: '<input type="text" data-test="inner-input" />',
+  })
+  class BridgeHost {
+    readonly bridge = createActionHostBridge(options);
+  }
+  TestBed.resetTestingModule();
+  TestBed.configureTestingModule({ imports: [BridgeHost] });
+  const fixture = TestBed.createComponent(BridgeHost);
+  fixture.detectChanges();
+  return {
+    bridge: fixture.componentInstance.bridge,
+    hostEl: fixture.nativeElement as HTMLElement,
+  };
 }
 
 describe('createActionHostBridge', () => {
@@ -51,6 +82,45 @@ describe('createActionHostBridge', () => {
     expect(dirty.shouldTrapFocus()).toBe(false); // default behavior 'dirty', dirty=false
     dirty.callbacks().setDirty(true);
     expect(dirty.shouldTrapFocus()).toBe(true);
+  });
+
+  it('intercepts Escape on the host element when dirty and invokes cancel()', () => {
+    const cancel = vi.fn();
+    const { bridge, hostEl } = mountBridge({ close: () => undefined, cancel });
+    bridge.callbacks().setDirty(true);
+
+    // Event from a child (simulates Escape pressed in a deep focus-child,
+    // e.g. the trigger's <input> OR an action-slot form field).
+    const inner = hostEl.querySelector('[data-test="inner-input"]') as HTMLElement;
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    const preventSpy = vi.spyOn(event, 'preventDefault');
+    const stopSpy = vi.spyOn(event, 'stopImmediatePropagation');
+    inner.dispatchEvent(event);
+
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(preventSpy).toHaveBeenCalled();
+    expect(stopSpy).toHaveBeenCalled();
+  });
+
+  it('lets Escape pass through when not dirty', () => {
+    const cancel = vi.fn();
+    const { hostEl } = mountBridge({ close: () => undefined, cancel });
+
+    const inner = hostEl.querySelector('[data-test="inner-input"]') as HTMLElement;
+    const event = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    const preventSpy = vi.spyOn(event, 'preventDefault');
+    inner.dispatchEvent(event);
+
+    expect(cancel).not.toHaveBeenCalled();
+    expect(preventSpy).not.toHaveBeenCalled();
   });
 
   it('keeps the callbacks reference stable across dirty flips and churns only when isPending changes', () => {

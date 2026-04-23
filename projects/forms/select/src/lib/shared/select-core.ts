@@ -189,6 +189,19 @@ export interface CngxSelectCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly valueToOptionMap: Signal<Map<unknown, CngxSelectOptionDef<T>> | null>;
+  /**
+   * Flat view of the merged-but-unfiltered options (server options +
+   * `localItems` buffer). Unlike {@link flatOptions}, this is NOT
+   * affected by the consumer's inline search-term filter — used by the
+   * combobox-family chip strip (and `CngxActionMultiSelect`) so chips
+   * for selected values stay visible even when the panel's search
+   * filter temporarily hides the matching option from the listbox.
+   *
+   * For single-value variants without a filter, this aliases
+   * `flatOptions`. Always fold-safe — `selectedOptions` computeds can
+   * use it uniformly.
+   */
+  readonly unfilteredFlatOptions: Signal<CngxSelectOptionDef<T>[]>;
 
   // ── Panel view ─────────────────────────────────────────────────────
   readonly activeView: Signal<AsyncView>;
@@ -343,38 +356,55 @@ export function createSelectCore<T, TCommit>(
   );
 
   // ── Option model ────────────────────────────────────────────────────
-  const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
+
+  /**
+   * Pre-filter merge of server options + `localItems` buffer. Exposed
+   * through the core as `unfilteredFlatOptions` (via flatten) so
+   * chip-strip consumers (combobox, action-multi-select) can look up
+   * selected options without the inline search-filter hiding chips
+   * for values that don't match the current term.
+   */
+  const mergedOptions = computed<CngxSelectOptionsInput<T>>(() => {
     const s = deps.state();
     const all = s?.data() ?? deps.options();
-    // Pre-filter merge: persistent local quick-create items fold onto
-    // the server-provided options, dedup by compareWith. Empty buffer
-    // short-circuits to the identity-stable `all` reference.
     const local = deps.localItems?.() ?? [];
-    const merged = local.length > 0
+    return local.length > 0
       ? mergeLocalItems(all, local, deps.compareWith())
       : all;
+  });
+
+  const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
+    const merged = mergedOptions();
     const f = deps.filter?.();
     return f ? f(merged) : merged;
   });
 
+  const flatOptionsEqual = (
+    a: CngxSelectOptionDef<T>[],
+    b: CngxSelectOptionDef<T>[],
+  ): boolean => {
+    if (a === b) {
+      return true;
+    }
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!Object.is(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   const flatOptions = computed<CngxSelectOptionDef<T>[]>(
     () => flattenSelectOptions(effectiveOptions()),
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (!Object.is(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
+    { equal: flatOptionsEqual },
+  );
+
+  const unfilteredFlatOptions = computed<CngxSelectOptionDef<T>[]>(
+    () => flattenSelectOptions(mergedOptions()),
+    { equal: flatOptionsEqual },
   );
 
   const valueToOptionMap = computed<Map<unknown, CngxSelectOptionDef<T>> | null>(
@@ -764,6 +794,7 @@ export function createSelectCore<T, TCommit>(
   return {
     effectiveOptions,
     flatOptions,
+    unfilteredFlatOptions,
     valueToOptionMap,
     activeView,
     showRefreshIndicator,

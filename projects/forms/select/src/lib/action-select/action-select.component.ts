@@ -81,6 +81,7 @@ import {
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
+  CngxSelectAction,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectClearButton,
@@ -227,7 +228,8 @@ export interface CngxActionSelectChange<T = unknown> {
           [attr.aria-required]="aria.required"
           [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
-          (blur)="handleBlur()"
+          (blur)="handleBlur($event)"
+          (keydown.enter)="handleTriggerEnter($event)"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-action-select__suffix" (click)="$event.stopPropagation()">
@@ -319,7 +321,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   readonly clearOnBlur = input<boolean>(true);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  /**
+   * Debounce for the inline search. Defaults to `0` for the action-
+   * select organisms — quick-create UX benefits from instant feedback
+   * so the slot template's `let-term` reflects every keystroke. Raise
+   * via the input for large option lists where filtering every
+   * keystroke is measurably slow.
+   */
+  readonly searchDebounceMs = input<number>(0);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
@@ -411,6 +420,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
+  private readonly actionDirective = contentChild<CngxSelectAction>(CngxSelectAction);
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -427,6 +437,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     clearButton: this.clearButtonDirective,
     optionPending: this.optionPendingDirective,
     optionError: this.optionErrorDirective,
+    action: this.actionDirective,
   });
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
@@ -505,6 +516,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+  /**
+   * View-host signal the shared panel shell reads when building the
+   * `*cngxSelectAction` context's `$implicit` + `searchTerm` fields.
+   * Exposes the component's live search term so the slot template's
+   * `let-term` binding reflects what the user is typing in real time.
+   *
+   * @internal
+   */
+  readonly actionSearchTerm = this.searchTerm;
   // The `actionPosition` input signal itself satisfies
   // `CngxSelectPanelViewHost.actionPosition?: Signal<...>` — no computed
   // wrapper needed, `InputSignal<T>` is a `Signal<T>`.
@@ -817,11 +837,41 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    *
    * @internal
    */
+  /**
+   * Enter on the trigger input. When the listbox has no active item
+   * AND a quickCreateAction is bound AND the user has typed something,
+   * Enter fires the create flow — natural "type a new value, press
+   * Enter to add it" keyboard UX. If there IS an active item,
+   * CngxListboxTrigger's own Enter handler already activated it and
+   * this path is a no-op.
+   *
+   * @internal
+   */
+  protected handleTriggerEnter(event: Event): void {
+    const ad = this.listboxRef()?.ad;
+    if (ad?.activeItem()) {
+      return;
+    }
+    if (!this.quickCreateAction()) {
+      return;
+    }
+    const rawInput = this.inputEl()?.nativeElement.value ?? '';
+    const term = this.searchTerm() || rawInput;
+    if (term === '') {
+      return;
+    }
+    event.preventDefault();
+    this.handleActionCommit();
+  }
+
   private handleActionCommit(draft?: { label: string }): void {
-    const term = this.searchTerm();
+    // Fall back to the raw input value when the debounced `searchTerm`
+    // hasn't caught up yet — a fast typist pressing the Create button
+    // within the debounce window otherwise triggers a silent no-op.
+    const rawInput = this.inputEl()?.nativeElement.value ?? '';
+    const term = this.searchTerm() || rawInput;
     const effective = draft ?? { label: term };
     if (effective.label === '') {
-      // Silently drop — a meaningful quick-create must carry a label.
       return;
     }
     const previous = this.value();
@@ -884,12 +934,36 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.focusState.markFocused();
   }
 
-  protected handleBlur(): void {
+  protected handleBlur(event?: FocusEvent): void {
     this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
-    if (this.clearOnBlur()) {
-      this.display.writeFromValue(this.value());
+    if (!this.clearOnBlur()) {
+      return;
     }
+    // Skip the clear-on-blur write when focus is moving INSIDE the
+    // component (e.g. clicking an action-slot button or the clear
+    // button). Otherwise the input wipe races the click handler: the
+    // blur fires first, writes `displayWith(value)` (or empty if no
+    // value yet), and by the time the click handler runs the raw
+    // input is already gone — `commit()` silently drops because the
+    // draft label is empty.
+    const related = event?.relatedTarget as HTMLElement | null;
+    if (related && this.isWithinComponent(related)) {
+      return;
+    }
+    this.display.writeFromValue(this.value());
+  }
+
+  /**
+   * True when the given element is a descendant of the component's
+   * root (includes the popover panel + its action-slot template).
+   *
+   * @internal
+   */
+  private isWithinComponent(el: HTMLElement): boolean {
+    const inputNode = this.inputEl()?.nativeElement as HTMLElement | undefined;
+    const root = inputNode?.closest('.cngx-action-select__root');
+    return !!root && root.contains(el);
   }
 
   // ── Commit / selection finalize ────────────────────────────────────

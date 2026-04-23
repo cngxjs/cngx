@@ -267,6 +267,18 @@ export class CngxActiveDescendant {
   /* ---------------- Keyboard handler ---------------- */
 
   protected handleKeydown(event: KeyboardEvent): void {
+    // Skip events that originate from editable descendants (form inputs
+    // inside an action slot, a search field below the options, etc.).
+    // The AD host element itself stays handled — `target === currentTarget`
+    // still takes the normal path. Without this guard, every printable
+    // key typed into a descendant `<input>` would fire AD's typeahead
+    // branch, `event.preventDefault()` fires, and the keystroke never
+    // reaches the input the user is actually typing into.
+    const target = event.target as HTMLElement | null;
+    if (target && target !== event.currentTarget && isEditableTarget(target)) {
+      return;
+    }
+
     const key = event.key;
 
     if (this.isNavKey(key)) {
@@ -476,6 +488,37 @@ function handleToItem(handle: CngxAdItemHandle): ActiveDescendantItem {
 
 function isPrintableChar(key: string): boolean {
   return key.length === 1 && /\S/.exec(key) !== null;
+}
+
+/**
+ * True when the element would capture text input natively — a text
+ * `<input>`, `<textarea>`, or any `contenteditable` host. Read-only /
+ * button-type inputs (submit, radio, checkbox) are NOT editable; AD's
+ * keyboard navigation still applies when focus lands on them.
+ */
+function isEditableTarget(el: HTMLElement): boolean {
+  if (el.isContentEditable) {
+    return true;
+  }
+  const tag = el.tagName;
+  if (tag === 'TEXTAREA') {
+    return true;
+  }
+  if (tag === 'INPUT') {
+    const type = (el as HTMLInputElement).type.toLowerCase();
+    return (
+      type !== 'button' &&
+      type !== 'submit' &&
+      type !== 'reset' &&
+      type !== 'checkbox' &&
+      type !== 'radio' &&
+      type !== 'range' &&
+      type !== 'color' &&
+      type !== 'file' &&
+      type !== 'image'
+    );
+  }
+  return false;
 }
 
 function cssEscape(id: string): string {

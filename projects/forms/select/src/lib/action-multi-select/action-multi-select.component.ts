@@ -83,6 +83,7 @@ import {
   type CngxComboboxTriggerLabelContext,
   CngxMultiSelectChip,
   type CngxMultiSelectChipContext,
+  CngxSelectAction,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectClearButton,
@@ -271,6 +272,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
           (focus)="handleFocus()"
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
+          (keydown.enter)="handleTriggerEnter($event)"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-action-multi-select__suffix" (click)="$event.stopPropagation()">
@@ -368,7 +370,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
-  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  /** Debounce for the inline search. Defaults to `0` — instant feedback in the action slot. */
+  readonly searchDebounceMs = input<number>(0);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
@@ -466,6 +469,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
+  private readonly actionDirective = contentChild<CngxSelectAction>(CngxSelectAction);
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -482,6 +486,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     clearButton: this.clearButtonDirective,
     optionPending: this.optionPendingDirective,
     optionError: this.optionErrorDirective,
+    action: this.actionDirective,
   });
   /** @internal */
   protected readonly triggerLabelTpl = computed<
@@ -571,6 +576,13 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+  /**
+   * View-host signal the shared panel shell reads when building the
+   * `*cngxSelectAction` context's `$implicit` + `searchTerm` fields.
+   *
+   * @internal
+   */
+  readonly actionSearchTerm = this.searchTerm;
 
   // ── Core (stateless signal graph) ──────────────────────────────────
 
@@ -719,20 +731,13 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       if (vals.length === 0) {
         return [];
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        const out: CngxSelectOptionDef<T>[] = [];
-        for (const v of vals) {
-          const match = map.get(v as unknown);
-          if (match) {
-            out.push(match);
-          }
-        }
-        return out;
-      }
+      // Chip strip must look up selected values against the UNFILTERED
+      // option merge — if the user has typed a filter term that hides
+      // previously-picked values from the panel listbox, the chips
+      // should still render.
       const eq = this.compareWith();
       const out: CngxSelectOptionDef<T>[] = [];
-      const flat = this.flatOptions();
+      const flat = this.core.unfilteredFlatOptions();
       for (const v of vals) {
         const match = flat.find((o) => eq(o.value, v));
         if (match) {
@@ -812,6 +817,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       // definition, freshly materialised).
       const next = [...previousValues, option.value];
       this.values.set(next);
+      // Clear the inline search so the user can immediately type the
+      // next term. Mirrors tag-input UX — every successful "add" wipes
+      // the input. For single-value (`CngxActionSelect`), the input
+      // instead shows `displayWith(value)` to reflect the selection.
+      this.searchInputRef()?.clear();
       this.optionToggled.emit({ option, added: true });
       this.selectionChange.emit({
         source: this,
@@ -974,8 +984,37 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    *
    * @internal
    */
+  /**
+   * Enter on the trigger input fires the quick-create flow when the
+   * listbox has no active option AND a quickCreateAction is bound AND
+   * the user has typed something. Natural tag-input keyboard UX —
+   * type the new tag name, press Enter, a chip appears.
+   *
+   * @internal
+   */
+  protected handleTriggerEnter(event: Event): void {
+    const ad = this.listboxRef()?.ad;
+    if (ad?.activeItem()) {
+      return;
+    }
+    if (!this.quickCreateAction()) {
+      return;
+    }
+    const rawInput = this.inputEl()?.nativeElement.value ?? '';
+    const term = this.searchTerm() || rawInput;
+    if (term === '') {
+      return;
+    }
+    event.preventDefault();
+    this.handleActionCommit();
+  }
+
   private handleActionCommit(draft?: { label: string }): void {
-    const term = this.searchTerm();
+    // Fall back to the raw input value when the debounced `searchTerm`
+    // hasn't caught up yet — fast clicks within the debounce window
+    // would otherwise silent-drop.
+    const rawInput = this.inputEl()?.nativeElement.value ?? '';
+    const term = this.searchTerm() || rawInput;
     const effective = draft ?? { label: term };
     if (effective.label === '') {
       return;

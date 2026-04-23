@@ -794,20 +794,13 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       if (vals.length === 0) {
         return [];
       }
-      const map = this.core.valueToOptionMap();
-      if (map) {
-        const out: CngxSelectOptionDef<T>[] = [];
-        for (const v of vals) {
-          const match = map.get(v as unknown);
-          if (match) {
-            out.push(match);
-          }
-        }
-        return out;
-      }
+      // Look up selected values against the UNFILTERED option merge so
+      // chips for previously-picked values remain visible when the
+      // inline search term temporarily hides the matching option from
+      // the listbox.
       const eq = this.compareWith();
       const out: CngxSelectOptionDef<T>[] = [];
-      const flat = this.flatOptions();
+      const flat = this.core.unfilteredFlatOptions();
       for (const v of vals) {
         const match = flat.find((o) => eq(o.value, v));
         if (match) {

@@ -408,61 +408,9 @@ describe('CngxSelectPanelShell — action slot', () => {
     expect(shellEl.isConnected).toBe(true);
   });
 
-  it('intercepts Escape and invokes cancel() when actionDirty() is true', () => {
-    const { fixture, controls } = setupAction();
-    controls.dirty.set(true);
-    const cancel = vi.fn();
-    controls.callbacks.set({
-      close: vi.fn(),
-      commit: vi.fn(),
-      isPending: false,
-      setDirty: vi.fn(),
-      cancel,
-    });
-    fixture.detectChanges();
-    const shellEl = fixture.nativeElement.querySelector(
-      'cngx-select-panel-shell',
-    ) as HTMLElement;
-
-    const event = new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true,
-    });
-    const preventSpy = vi.spyOn(event, 'preventDefault');
-    const stopSpy = vi.spyOn(event, 'stopImmediatePropagation');
-    shellEl.dispatchEvent(event);
-
-    expect(cancel).toHaveBeenCalledTimes(1);
-    expect(preventSpy).toHaveBeenCalled();
-    expect(stopSpy).toHaveBeenCalled();
-  });
-
-  it('lets Escape pass through when actionDirty() is false', () => {
-    const { fixture, controls } = setupAction();
-    // dirty stays false by default
-    const cancel = vi.fn();
-    controls.callbacks.set({
-      close: vi.fn(),
-      commit: vi.fn(),
-      isPending: false,
-      setDirty: vi.fn(),
-      cancel,
-    });
-    fixture.detectChanges();
-    const shellEl = fixture.nativeElement.querySelector(
-      'cngx-select-panel-shell',
-    ) as HTMLElement;
-
-    const event = new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true,
-    });
-    const preventSpy = vi.spyOn(event, 'preventDefault');
-    shellEl.dispatchEvent(event);
-
-    expect(cancel).not.toHaveBeenCalled();
-    expect(preventSpy).not.toHaveBeenCalled();
-  });
+  // Note: Escape-intercept now lives in `createActionHostBridge` (attached to
+  // the variant root) instead of the panel shell — the trigger input is a
+  // sibling of the popover, so a shell-level listener couldn't catch Escape
+  // pressed in the trigger. Bridge-level coverage lives in
+  // `action-host-bridge.spec.ts`.
 });
