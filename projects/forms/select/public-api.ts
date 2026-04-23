@@ -82,7 +82,14 @@ export {
   isCngxSelectOptionGroupDef,
   flattenSelectOptions,
   filterSelectOptions,
+  mergeLocalItems,
 } from './src/lib/shared/option.model';
+
+// ── Local-items buffer (quick-create persistence) ─────────────────────
+export {
+  createLocalItemsBuffer,
+  type LocalItemsBuffer,
+} from './src/lib/shared/local-items-buffer';
 
 // ── Config system ─────────────────────────────────────────────────────
 export {

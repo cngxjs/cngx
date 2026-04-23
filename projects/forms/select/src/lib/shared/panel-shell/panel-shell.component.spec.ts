@@ -95,6 +95,12 @@ function createMockHost(): {
     isSelected: () => false,
     isIndeterminate: () => false,
     isCommittingOption: () => false,
+    patchData: () => {
+      /* stub — panel shell never writes the buffer */
+    },
+    clearLocalItems: () => {
+      /* stub */
+    },
     handleRetry,
   };
 

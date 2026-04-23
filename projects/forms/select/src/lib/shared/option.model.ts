@@ -128,6 +128,52 @@ export function filterSelectOptions<T>(
 }
 
 /**
+ * Merge a persistent local-items buffer on top of server-provided
+ * options, deduped by value via `compareWith`. The input's shape is
+ * preserved — grouped entries stay grouped, locals are appended flat
+ * after every group. Local items that match any provided option
+ * (including group children) are dropped from the local side; the
+ * server's version wins the collision.
+ *
+ * **Why this exists.** The action-select organisms (`CngxActionSelect`
+ * / `CngxActionMultiSelect`) support an inline quick-create workflow:
+ * the consumer presses a button in the panel's action slot, the
+ * committed item is inserted locally (optimistic), then stays visible
+ * across subsequent server refetches until the server catches up —
+ * at which point the dedup drops the local copy silently.
+ *
+ * **Identity guarantee.** When `localItems` is empty the `provided`
+ * array is returned unchanged (reference-stable). Downstream
+ * `effectiveOptions` consumers keep their identity-based equality
+ * short-circuits intact.
+ *
+ * @category interactive
+ */
+export function mergeLocalItems<T>(
+  provided: CngxSelectOptionsInput<T>,
+  localItems: readonly CngxSelectOptionDef<T>[],
+  compareWith: (a: T | undefined, b: T | undefined) => boolean,
+): CngxSelectOptionsInput<T> {
+  if (localItems.length === 0) {
+    return provided;
+  }
+  const providedFlat = flattenSelectOptions(provided);
+  const surviving: CngxSelectOptionDef<T>[] = [];
+  for (const local of localItems) {
+    const alreadyInProvided = providedFlat.some((opt) =>
+      compareWith(opt.value, local.value),
+    );
+    if (!alreadyInProvided) {
+      surviving.push(local);
+    }
+  }
+  if (surviving.length === 0) {
+    return provided;
+  }
+  return [...provided, ...surviving];
+}
+
+/**
  * Uniform "is this option disabled?" check that handles both option shapes
  * transparently.
  *

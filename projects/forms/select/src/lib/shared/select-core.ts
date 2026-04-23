@@ -33,6 +33,7 @@ import { type CngxSelectAnnouncerConfig } from './config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
+  mergeLocalItems,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
@@ -119,6 +120,20 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly filter?: Signal<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
   >;
+
+  /**
+   * Optional persistent local-items buffer merged on top of the
+   * server-provided options **before** the filter overlay runs — the
+   * action-select organisms use this to insert optimistic quick-create
+   * items that survive state refetches and drop out silently once the
+   * server has caught up (via `mergeLocalItems`'s compareWith-based
+   * dedup).
+   *
+   * Variants that don't host inline workflows leave this `undefined`
+   * and the merge is skipped — `effectiveOptions` stays identity-stable
+   * just like it was pre-action-select.
+   */
+  readonly localItems?: Signal<readonly CngxSelectOptionDef<T>[]>;
 
   /**
    * `true` when the component stores a list of selected values (multi,
@@ -331,8 +346,15 @@ export function createSelectCore<T, TCommit>(
   const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
     const s = deps.state();
     const all = s?.data() ?? deps.options();
+    // Pre-filter merge: persistent local quick-create items fold onto
+    // the server-provided options, dedup by compareWith. Empty buffer
+    // short-circuits to the identity-stable `all` reference.
+    const local = deps.localItems?.() ?? [];
+    const merged = local.length > 0
+      ? mergeLocalItems(all, local, deps.compareWith())
+      : all;
     const f = deps.filter?.();
-    return f ? f(all) : all;
+    return f ? f(merged) : merged;
   });
 
   const flatOptions = computed<CngxSelectOptionDef<T>[]>(

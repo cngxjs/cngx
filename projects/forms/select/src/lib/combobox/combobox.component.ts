@@ -45,6 +45,7 @@ import {
 } from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
 import { createFieldSync } from '../shared/field-sync';
+import { createLocalItemsBuffer } from '../shared/local-items-buffer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -604,6 +605,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
+  // ── Local-items buffer (quick-create persistence) ──────────────────
+
+  /** @internal */
+  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
@@ -645,12 +651,34 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       multiValues: this.values,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
     },
     {
       announceChanges: this.announceChanges,
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /**
+   * Append a pre-built option to the component's persistent local
+   * buffer — renders in the next panel emission and silently drops
+   * once the server state includes a matching value. Dedup-guarded
+   * by `compareWith`; duplicate patches are no-ops.
+   *
+   * @category interactive
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer. Idempotent.
+   *
+   * @category interactive
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
 
   // ── Template-facing protected surface (delegates to core) ──────────
 

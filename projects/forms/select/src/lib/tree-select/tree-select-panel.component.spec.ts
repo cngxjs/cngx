@@ -97,6 +97,12 @@ function makeShellHost(): CngxSelectPanelHost {
     isSelected: () => false,
     isIndeterminate: () => false,
     isCommittingOption: () => false,
+    patchData: () => {
+      /* stub */
+    },
+    clearLocalItems: () => {
+      /* stub */
+    },
     handleRetry: () => {},
   };
 }

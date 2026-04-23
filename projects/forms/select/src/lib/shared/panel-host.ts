@@ -112,6 +112,25 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   isSelected(opt: CngxSelectOptionDef<T>): boolean;
   isIndeterminate(opt: CngxSelectOptionDef<T>): boolean;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
+  /**
+   * Append an option to the host's persistent local-items buffer.
+   * Folded onto server-provided options inside
+   * `createSelectCore.effectiveOptions` via `mergeLocalItems`, so the
+   * newly patched item renders in the panel even when no server
+   * refetch has happened yet. The insertion is dedup-guarded: a
+   * second patch with a value already in the buffer (or already
+   * present on the server side) is silently dropped.
+   *
+   * Used by the action-select organisms' quick-create flow from
+   * inside the action-slot template — consumers don't call this
+   * directly on the 5 flat variants today.
+   */
+  patchData(item: CngxSelectOptionDef<T>): void;
+  /**
+   * Reset the local-items buffer to empty. Idempotent — no emit when
+   * already empty.
+   */
+  clearLocalItems(): void;
 }
 
 /**

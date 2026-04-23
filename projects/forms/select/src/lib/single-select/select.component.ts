@@ -36,6 +36,7 @@ import {
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
+import { createLocalItemsBuffer } from '../shared/local-items-buffer';
 import {
   createTypeaheadController,
   resolvePageJumpTarget,
@@ -456,6 +457,18 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
+  // ── Local-items buffer (quick-create persistence) ──────────────────
+
+  /**
+   * Shared append-only buffer for inline-created items. Consumed by
+   * `createSelectCore.effectiveOptions` via `mergeLocalItems` so a
+   * patched option stays visible across server refetches until the
+   * backend catches up. Public mutation methods route through here.
+   *
+   * @internal
+   */
+  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
@@ -492,12 +505,37 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       currentSelection: this.value,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
     },
     {
       announceChanges: this.announceChanges,
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /**
+   * Append a pre-built option to the component's persistent local
+   * buffer. The new option renders in the next panel emission even if
+   * the backing state hasn't refetched; once the server catches up and
+   * includes a matching value, `mergeLocalItems` drops the local copy
+   * silently. Idempotent — duplicate values under the current
+   * `compareWith` are no-ops.
+   *
+   * @category interactive
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer to empty. Idempotent — no-op when the
+   * buffer already held nothing.
+   *
+   * @category interactive
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
 
   // ── Template-facing protected surface (delegates to core) ──────────
 
