@@ -1,12 +1,35 @@
 import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
 import type {
+  CngxSelectActionContext,
   CngxSelectCommitErrorContext,
   CngxSelectEmptyContext,
   CngxSelectErrorContext,
   CngxSelectLoadingContext,
   CngxSelectRefreshingContext,
 } from './template-slots';
+
+/**
+ * Callback bundle passed to the `*cngxSelectAction` slot via the
+ * shared panel-shell context. Lifecycle methods live here (`close`,
+ * `commit`, `setDirty`); `isPending` is the live commit-controller
+ * state inside the bundle so the context stays a single reference
+ * per emission — the shell's action-context computed re-allocates
+ * whenever `isPending` flips, triggering a template-outlet context
+ * refresh.
+ *
+ * Per cngx pillar: derived values (dirty, searchTerm) live as signals
+ * directly on the view-host; this bundle carries only the imperative
+ * surface the slot template invokes from event handlers.
+ *
+ * @internal
+ */
+export interface CngxSelectActionCallbacks {
+  readonly close: () => void;
+  readonly commit: (draft?: { label: string }) => void;
+  readonly isPending: boolean;
+  readonly setDirty: (value: boolean) => void;
+}
 import type {
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
@@ -36,6 +59,14 @@ export interface CngxSelectPanelShellTemplates<T = unknown> {
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
+  /**
+   * Inline action-slot template projected via `*cngxSelectAction`.
+   * Cross-variant: the flat panels, tree panels, and the action-select
+   * organisms all rely on the same shell frame to render it, so the
+   * slot lives on this narrow contract rather than on the option-loop
+   * specific `CngxSelectPanelHost.tpl`.
+   */
+  readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
 }
 
 /**
@@ -65,6 +96,31 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly tpl: CngxSelectPanelShellTemplates<T>;
   handleRetry(): void;
+
+  /**
+   * Optional — live search term piped into the `*cngxSelectAction`
+   * slot's `$implicit` + `searchTerm` context fields. Variants that
+   * host an inline search input (combobox, typeahead, action-select
+   * organisms) forward their own `searchTerm` signal. Button-trigger
+   * variants (select, multi, reorderable) leave this undefined and
+   * the shell falls back to `''`.
+   */
+  readonly actionSearchTerm?: Signal<string>;
+  /**
+   * Optional — dirty flag for the in-flight action workflow. Drives
+   * the dismiss-guard protocol (wired up in Commit 4): Escape and
+   * click-outside are intercepted while `actionDirty()` is `true`.
+   * Variants default-undefined; the shell reads `false`.
+   */
+  readonly actionDirty?: Signal<boolean>;
+  /**
+   * Optional — imperative callbacks exposed to the action slot
+   * (`close`, `commit`, `setDirty`) plus the live `isPending` flag
+   * from the variant's commit controller. Bundled into a single
+   * signal so the shell's context re-emits as one unit when any
+   * element changes.
+   */
+  readonly actionCallbacks?: Signal<CngxSelectActionCallbacks>;
 }
 
 /**

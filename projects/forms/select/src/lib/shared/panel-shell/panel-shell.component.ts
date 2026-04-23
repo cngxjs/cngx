@@ -1,9 +1,50 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
+
+import { CngxFocusTrap } from '@cngx/common/a11y';
+
 import {
   CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectActionCallbacks,
   type CngxSelectPanelViewHost,
 } from '../panel-host';
+import type { CngxSelectActionContext } from '../template-slots';
+
+/**
+ * Position(s) in the default-case stack where the `*cngxSelectAction`
+ * slot is rendered. `'none'` suppresses the slot entirely — useful
+ * when a consumer projects the template for one variant but wants it
+ * hidden on another inside the same view.
+ *
+ * @internal
+ */
+export type CngxSelectPanelActionPosition = 'top' | 'bottom' | 'both' | 'none';
+
+/**
+ * No-op callback bundle used when the view-host leaves
+ * `actionCallbacks` undefined (every button-trigger variant in
+ * Commit 3 — the organisms wire real handlers in Commit 5/6).
+ *
+ * @internal
+ */
+const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
+  close: () => {
+    /* no-op */
+  },
+  commit: () => {
+    /* no-op */
+  },
+  isPending: false,
+  setDirty: () => {
+    /* no-op */
+  },
+});
 
 /**
  * Panel frame shared by every variant in the select family — owns the
@@ -18,9 +59,26 @@ import {
  * everything it needs comes from `CngxSelectPanelHost<T>`.
  *
  * The default-case ordering is intentional: inline-error → commit-error
- * banner → refreshing indicator → projected body. Matches the v0.1
- * panel's visual hierarchy so no migration is required for any of the
- * four shipped variants.
+ * banner → refreshing indicator → action-top → projected body →
+ * action-bottom. Matches the v0.1 panel's visual hierarchy; the action
+ * slots are additive and default to `'bottom'` so pre-existing
+ * consumers see no layout change.
+ *
+ * **Action-slot integration**. When the resolved `host.tpl.action()`
+ * is non-null AND `actionPosition()` is not `'none'`, the shell
+ * renders the projected template at the configured position(s),
+ * passing the {@link CngxSelectActionContext} bundle (live
+ * `searchTerm`, `dirty`, `isPending`, plus the `close` / `commit` /
+ * `setDirty` callbacks) sourced from the view-host. Variants that
+ * don't expose an inline action workflow can leave the view-host
+ * slots undefined — the shell substitutes the `NOOP_ACTION_CALLBACKS`
+ * bundle and `''` search term.
+ *
+ * **Focus-trap**. `CngxFocusTrap` rides on the shell as a host
+ * directive. Its `enabled` input is re-exposed as
+ * `actionFocusTrapEnabled` (default `false`) so the action-select
+ * organisms can bind the dirty-cascade signal from the variant side
+ * in Commit 4 without every shell consumer having to care.
  *
  * @internal
  */
@@ -30,6 +88,12 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet],
+  hostDirectives: [
+    {
+      directive: CngxFocusTrap,
+      inputs: ['enabled: actionFocusTrapEnabled'],
+    },
+  ],
   host: {
     class: 'cngx-select-panel-shell',
   },
@@ -136,11 +200,71 @@ import {
             }
           }
         }
+        @if (showActionTop()) {
+          @if (host.tpl.action(); as tpl) {
+            <div class="cngx-select__action cngx-select__action--top">
+              <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
+            </div>
+          }
+        }
         <ng-content />
+        @if (showActionBottom()) {
+          @if (host.tpl.action(); as tpl) {
+            <div class="cngx-select__action cngx-select__action--bottom">
+              <ng-container *ngTemplateOutlet="tpl; context: actionContext()" />
+            </div>
+          }
+        }
       }
     }
   `,
 })
 export class CngxSelectPanelShell<T = unknown> {
   protected readonly host = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
+
+  /**
+   * Position of the projected `*cngxSelectAction` slot within the
+   * default-case stack. `'top'` renders above the projected body,
+   * `'bottom'` (default) after it, `'both'` at both ends, `'none'`
+   * suppresses the slot even if the consumer projected a template.
+   */
+  readonly actionPosition = input<CngxSelectPanelActionPosition>('bottom');
+
+  /** @internal */
+  protected readonly showActionTop = computed<boolean>(() => {
+    const p = this.actionPosition();
+    return p === 'top' || p === 'both';
+  });
+
+  /** @internal */
+  protected readonly showActionBottom = computed<boolean>(() => {
+    const p = this.actionPosition();
+    return p === 'bottom' || p === 'both';
+  });
+
+  /**
+   * Context emitted to the `*cngxSelectAction` template. Re-computes
+   * whenever `actionSearchTerm` / `actionDirty` / `actionCallbacks`
+   * change on the view-host — the `ngTemplateOutlet` detects the
+   * fresh reference and refreshes embedded-view bindings. Variants
+   * that don't supply the fields fall back to `''`, `false`, and the
+   * frozen no-op bundle respectively, so the shell never crashes
+   * when a consumer projects the slot against a non-action variant.
+   *
+   * @internal
+   */
+  protected readonly actionContext = computed<CngxSelectActionContext>(() => {
+    const searchTerm = this.host.actionSearchTerm?.() ?? '';
+    const dirty = this.host.actionDirty?.() ?? false;
+    const callbacks = this.host.actionCallbacks?.() ?? NOOP_ACTION_CALLBACKS;
+    return {
+      $implicit: searchTerm,
+      searchTerm,
+      close: callbacks.close,
+      commit: callbacks.commit,
+      isPending: callbacks.isPending,
+      setDirty: callbacks.setDirty,
+      dirty,
+    };
+  });
 }

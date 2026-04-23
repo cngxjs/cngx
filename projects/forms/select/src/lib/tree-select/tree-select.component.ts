@@ -775,6 +775,12 @@ export class CngxTreeSelect<T = unknown>
     error: this.errorTpl,
     refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
     commitError: this.commitErrorTpl,
+    // Tree-select doesn't host an inline action slot today (see
+    // master-plan §9 — CngxActionTreeSelect is a separate follow-up).
+    // The shell falls back to "no template" when the computed is null,
+    // so the slot is silently suppressed even if a consumer projects
+    // a stray `*cngxSelectAction` at the cngx-tree-select level.
+    action: signal<null>(null),
   };
 
   /** @internal */
