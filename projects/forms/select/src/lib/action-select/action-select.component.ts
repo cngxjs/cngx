@@ -72,6 +72,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
+import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   cngxSelectDefaultCompare,
@@ -300,6 +301,7 @@ export interface CngxActionSelectChange<T = unknown> {
 export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
+  private readonly actionConfig = resolveActionSelectConfig();
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
@@ -371,13 +373,24 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * UX. Set `false` for long flows where the consumer wants to keep
    * the panel open for confirmation, multi-step wizards, etc.
    */
-  readonly closeOnCreate = input<boolean>(true);
+  readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? true);
+  /**
+   * Whether the organism falls back to the raw `<input>` value when
+   * the debounced `searchTerm` hasn't caught up yet. Default derived
+   * from {@link CngxActionSelectConfig.liveInputFallback} (app-wide
+   * default `true`). Disable when the app owns its own search
+   * pipeline and wants create payloads to derive strictly from the
+   * bound term.
+   */
+  readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
   /**
    * Position of the `*cngxSelectAction` slot within the panel frame.
    * Forwarded through the shared view-host contract into
    * `CngxSelectPanelShell.actionPosition`. Defaults to `'bottom'`.
    */
-  readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>('bottom');
+  readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
+    this.actionConfig.actionPosition,
+  );
 
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
@@ -879,8 +892,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     if (!this.quickCreateAction()) {
       return;
     }
-    const rawInput = this.inputEl()?.nativeElement.value ?? '';
-    const term = this.searchTerm() || rawInput;
+    const term = this.resolveLiveTerm();
     if (term === '') {
       return;
     }
@@ -889,17 +901,33 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   private handleActionCommit(draft?: { label: string }): void {
-    // Fall back to the raw input value when the debounced `searchTerm`
-    // hasn't caught up yet — a fast typist pressing the Create button
-    // within the debounce window otherwise triggers a silent no-op.
-    const rawInput = this.inputEl()?.nativeElement.value ?? '';
-    const term = this.searchTerm() || rawInput;
+    const term = this.resolveLiveTerm();
     const effective = draft ?? { label: term };
     if (effective.label === '') {
       return;
     }
     const previous = this.value();
     this.createHandler.dispatch(effective, term, previous);
+  }
+
+  /**
+   * Live search-term accessor for the create flow. When
+   * `liveInputFallback` is enabled (default) the getter falls back to
+   * the raw `<input>.value` if the debounced `searchTerm` signal
+   * hasn't caught up — prevents a fast typist pressing the Create
+   * button inside the debounce window from triggering a silent
+   * no-op. When disabled the getter returns the bound `searchTerm`
+   * verbatim so consumers owning their own debouncing see fully
+   * predictable create payloads.
+   *
+   * @internal
+   */
+  private resolveLiveTerm(): string {
+    const term = this.searchTerm();
+    if (term !== '' || !this.liveInputFallback()) {
+      return term;
+    }
+    return this.inputEl()?.nativeElement.value ?? '';
   }
 
   // ── Event handlers ─────────────────────────────────────────────────

@@ -118,8 +118,12 @@ export {
   provideActionSelectConfigAt,
   resolveActionSelectConfig,
   withActionAriaLabel,
+  withActionPosition,
+  withCloseOnCreate,
   withFocusTrapBehavior,
+  withLiveInputFallback,
   type CngxActionFocusTrapBehavior,
+  type CngxActionPosition,
   type CngxActionSelectConfig,
   type CngxActionSelectConfigFeature,
 } from './src/lib/shared/action-select-config';

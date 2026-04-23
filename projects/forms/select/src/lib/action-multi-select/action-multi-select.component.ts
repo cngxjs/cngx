@@ -70,6 +70,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
+import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   cngxSelectDefaultCompare,
@@ -351,6 +352,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
 export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
+  private readonly actionConfig = resolveActionSelectConfig();
 
   // ── Inputs (mirror CngxCombobox) ───────────────────────────────────
 
@@ -414,13 +416,22 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * adding without re-opening. Set `true` for confirm-to-create
    * workflows where each create is a discrete transaction.
    */
-  readonly closeOnCreate = input<boolean>(false);
+  readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? false);
+  /**
+   * Whether the organism falls back to the raw `<input>` value when
+   * the debounced `searchTerm` hasn't caught up yet. Default derived
+   * from {@link CngxActionSelectConfig.liveInputFallback} (app-wide
+   * default `true`).
+   */
+  readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
   /**
    * Position of the `*cngxSelectAction` slot within the panel frame.
    * Forwarded through the shared view-host contract into
    * `CngxSelectPanelShell.actionPosition`. Defaults to `'bottom'`.
    */
-  readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>('bottom');
+  readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
+    this.actionConfig.actionPosition,
+  );
 
   /** Two-way multi-value binding. */
   readonly values = model<T[]>([]);
@@ -1024,8 +1035,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     if (!this.quickCreateAction()) {
       return;
     }
-    const rawInput = this.inputEl()?.nativeElement.value ?? '';
-    const term = this.searchTerm() || rawInput;
+    const term = this.resolveLiveTerm();
     if (term === '') {
       return;
     }
@@ -1034,17 +1044,29 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }
 
   private handleActionCommit(draft?: { label: string }): void {
-    // Fall back to the raw input value when the debounced `searchTerm`
-    // hasn't caught up yet — fast clicks within the debounce window
-    // would otherwise silent-drop.
-    const rawInput = this.inputEl()?.nativeElement.value ?? '';
-    const term = this.searchTerm() || rawInput;
+    const term = this.resolveLiveTerm();
     const effective = draft ?? { label: term };
     if (effective.label === '') {
       return;
     }
     const previousValues = [...this.values()];
     this.createHandler.dispatch(effective, term, previousValues);
+  }
+
+  /**
+   * Live search-term accessor for the create flow. See
+   * {@link CngxActionSelect} for the contract — identical behaviour
+   * carried over so both organisms honour the same
+   * `liveInputFallback` config switch.
+   *
+   * @internal
+   */
+  private resolveLiveTerm(): string {
+    const term = this.searchTerm();
+    if (term !== '' || !this.liveInputFallback()) {
+      return term;
+    }
+    return this.inputEl()?.nativeElement.value ?? '';
   }
 
   // ── Event handlers ─────────────────────────────────────────────────
