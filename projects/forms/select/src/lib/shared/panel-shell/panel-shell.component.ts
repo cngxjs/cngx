@@ -2,6 +2,8 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  ElementRef,
   computed,
   inject,
   input,
@@ -42,6 +44,9 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
   },
   isPending: false,
   setDirty: () => {
+    /* no-op */
+  },
+  cancel: () => {
     /* no-op */
   },
 });
@@ -221,6 +226,32 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
 })
 export class CngxSelectPanelShell<T = unknown> {
   protected readonly host = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
+
+  constructor() {
+    const el = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+    // Capture-phase so we intercept Escape BEFORE `CngxListboxTrigger`
+    // (bubble-phase listener on the trigger) can run its close path.
+    // When `actionDirty()` is false the hook is a no-op — Escape falls
+    // through to the trigger's own handler exactly as before.
+    const handler = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+      if (!(this.host.actionDirty?.() ?? false)) {
+        return;
+      }
+      const callbacks = this.host.actionCallbacks?.();
+      if (callbacks) {
+        callbacks.cancel();
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    };
+    el.addEventListener('keydown', handler, { capture: true });
+    inject(DestroyRef).onDestroy(() => {
+      el.removeEventListener('keydown', handler, { capture: true });
+    });
+  }
 
   /**
    * Position of the projected `*cngxSelectAction` slot within the

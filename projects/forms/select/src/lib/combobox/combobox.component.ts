@@ -44,6 +44,7 @@ import {
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
 import { sameArrayContents } from '../shared/compare';
+import { createActionHostBridge } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { createLocalItemsBuffer } from '../shared/local-items-buffer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -610,6 +611,16 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
 
+  // ── Action-slot bridge ──────────────────────────────────────────────
+
+  /** @internal */
+  private readonly actionBridge = createActionHostBridge({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
@@ -1029,6 +1040,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleClickOutside(): void {
+    if (this.actionBridge.shouldBlockDismiss()) {
+      return;
+    }
     const mode = this.config.dismissOn;
     if (mode === 'outside' || mode === 'both') {
       if (this.popoverRef()?.isVisible()) {

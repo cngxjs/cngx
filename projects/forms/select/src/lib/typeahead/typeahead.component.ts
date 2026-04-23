@@ -42,6 +42,7 @@ import {
   CNGX_DISPLAY_BINDING_FACTORY,
   type DisplayBinding,
 } from '../shared/display-binding';
+import { createActionHostBridge } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { createLocalItemsBuffer } from '../shared/local-items-buffer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -439,6 +440,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
 
+  // ── Action-slot bridge ──────────────────────────────────────────────
+
+  /** @internal */
+  private readonly actionBridge = createActionHostBridge({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   private readonly core = createSelectCore<T, T>(
@@ -738,6 +749,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }
 
   protected handleClickOutside(): void {
+    if (this.actionBridge.shouldBlockDismiss()) {
+      return;
+    }
     const mode = this.config.dismissOn;
     if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
       this.close();

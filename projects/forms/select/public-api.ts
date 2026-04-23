@@ -91,6 +91,27 @@ export {
   type LocalItemsBuffer,
 } from './src/lib/shared/local-items-buffer';
 
+// ── Action-slot config + host bridge ──────────────────────────────────
+export {
+  CNGX_ACTION_SELECT_CONFIG,
+  provideActionSelectConfig,
+  provideActionSelectConfigAt,
+  resolveActionSelectConfig,
+  withActionAriaLabel,
+  withFocusTrapBehavior,
+  type CngxActionFocusTrapBehavior,
+  type CngxActionSelectConfig,
+  type CngxActionSelectConfigFeature,
+} from './src/lib/shared/action-select-config';
+export {
+  createActionHostBridge,
+  type ActionHostBridge,
+  type ActionHostBridgeOptions,
+} from './src/lib/shared/action-host-bridge';
+export {
+  type CngxSelectActionCallbacks,
+} from './src/lib/shared/panel-host';
+
 // ── Config system ─────────────────────────────────────────────────────
 export {
   CNGX_SELECT_CONFIG,

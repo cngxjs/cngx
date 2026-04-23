@@ -57,7 +57,9 @@ import type { CngxSelectOptionDef } from '../option.model';
     class: 'cngx-select-panel-host',
   },
   template: `
-    <cngx-select-panel-shell>
+    <cngx-select-panel-shell
+      [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
+    >
       @for (item of host.effectiveOptions(); track $index) {
         @if (host.isGroup(item)) {
           <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">

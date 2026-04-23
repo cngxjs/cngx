@@ -34,6 +34,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createActionHostBridge } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
 import { createLocalItemsBuffer } from '../shared/local-items-buffer';
@@ -469,6 +470,25 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    */
   private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
 
+  // ── Action-slot bridge (dirty-guard + focus-trap policy) ──────────
+
+  /**
+   * Shared action-slot bridge: owns `actionDirty`, the callbacks
+   * bundle the panel shell feeds to `*cngxSelectAction`, and the
+   * config-driven focus-trap policy. Exposed to the shell through
+   * the `CngxSelectPanelViewHost` slots `actionDirty` /
+   * `actionCallbacks` / `actionFocusTrapEnabled` below, and consumed
+   * by the variant's own dismiss-handler guards.
+   *
+   * @internal
+   */
+  private readonly actionBridge = createActionHostBridge({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   /**
@@ -776,6 +796,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleClickOutside(): void {
+    // Action-slot dirty-guard: while the consumer's inline workflow is
+    // unsaved, clicks outside do not dismiss the panel. The shell's
+    // capture-phase Escape hook handles the keyboard parallel.
+    if (this.actionBridge.shouldBlockDismiss()) {
+      return;
+    }
     const mode = this.config.dismissOn;
     if (mode === 'outside' || mode === 'both') {
       if (this.popoverRef()?.isVisible()) {

@@ -29,6 +29,16 @@ export interface CngxSelectActionCallbacks {
   readonly commit: (draft?: { label: string }) => void;
   readonly isPending: boolean;
   readonly setDirty: (value: boolean) => void;
+  /**
+   * Called by the shared panel shell when the user presses Escape
+   * while `actionDirty()` is `true`. Distinct from `close`: `cancel`
+   * lets the action-owner run variant-specific abandon logic (reset
+   * form state, roll back optimistic writes, …) before the slot's
+   * dirty flag flips back to `false`. The default bridge
+   * implementation resets the dirty signal; the action-select
+   * organisms in Commit 5/6 override with real rollback.
+   */
+  readonly cancel: () => void;
 }
 import type {
   CngxSelectCommitErrorDisplay,
@@ -115,12 +125,22 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly actionDirty?: Signal<boolean>;
   /**
    * Optional — imperative callbacks exposed to the action slot
-   * (`close`, `commit`, `setDirty`) plus the live `isPending` flag
-   * from the variant's commit controller. Bundled into a single
-   * signal so the shell's context re-emits as one unit when any
-   * element changes.
+   * (`close`, `commit`, `setDirty`, `cancel`) plus the live
+   * `isPending` flag from the variant's commit controller. Bundled
+   * into a single signal so the shell's context re-emits as one
+   * unit when any element changes.
    */
   readonly actionCallbacks?: Signal<CngxSelectActionCallbacks>;
+  /**
+   * Optional — resolved focus-trap policy signal piped from the
+   * variant's `ActionHostBridge` through to `CngxFocusTrap.enabled`.
+   * Combines `CNGX_ACTION_SELECT_CONFIG.focusTrapBehavior` with the
+   * live dirty flag. Inner panels (`CngxSelectPanel`, `CngxTreeSelectPanel`)
+   * forward this into the shell's `actionFocusTrapEnabled` input;
+   * variants that don't host an action workflow leave this undefined
+   * and the shell defaults the hostDirective input to `false`.
+   */
+  readonly actionFocusTrapEnabled?: Signal<boolean>;
 }
 
 /**
