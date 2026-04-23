@@ -276,12 +276,19 @@ export interface CngxSelectCore<T, TCommit> {
    * Announce a selection change via the global live-region. The core
    * owns the cascade (per-instance input > config > library default);
    * the component only has to pass option / action / count / multi.
+   *
+   * `'reordered'` carries optional `fromIndex` / `toIndex` so a
+   * consumer's `announceTemplate` can speak the positional delta.
+   * Existing `'added' | 'removed'` callers keep their four-argument
+   * signature untouched — the extra parameters are optional.
    */
   announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed',
+    action: 'added' | 'removed' | 'reordered',
     count: number,
     multi: boolean,
+    fromIndex?: number,
+    toIndex?: number,
   ): void;
 }
 
@@ -696,9 +703,11 @@ export function createSelectCore<T, TCommit>(
 
   function announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed',
+    action: 'added' | 'removed' | 'reordered',
     count: number,
     multi: boolean,
+    fromIndex?: number,
+    toIndex?: number,
   ): void {
     const announcerConfig = config.announcer;
     const perInstance = announcerInputs.announceChanges();
@@ -721,6 +730,8 @@ export function createSelectCore<T, TCommit>(
       multi,
       action,
       count,
+      fromIndex,
+      toIndex,
     });
     announcer.announce(message, announcerConfig.politeness);
   }

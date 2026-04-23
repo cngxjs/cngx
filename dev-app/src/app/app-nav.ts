@@ -97,6 +97,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Material', path: 'forms/material' },
       { label: 'Numeric', path: 'forms/numeric' },
       { label: 'OTP', path: 'forms/otp' },
+      { label: 'Reorderable Multi', path: 'forms/reorderable-multi-select' },
       { label: 'Select', path: 'forms/select' },
       { label: 'Tree Select', path: 'forms/tree-select' },
       { label: 'Utilities', path: 'forms/utilities' },

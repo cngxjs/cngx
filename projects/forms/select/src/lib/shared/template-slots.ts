@@ -135,10 +135,18 @@ export interface CngxSelectCommitErrorContext<T = unknown> {
 }
 
 /**
- * Context for the per-chip template in `CngxMultiSelect`. Receives the
- * option the chip represents and a `remove()` callback that removes the
- * value from the current selection (routed through the commit flow if
- * `[commitAction]` is bound).
+ * Context for the per-chip template in `CngxMultiSelect` and
+ * `CngxReorderableMultiSelect`. Receives the option the chip represents
+ * and a `remove()` callback that removes the value from the current
+ * selection (routed through the commit flow if `[commitAction]` is bound).
+ *
+ * `index` is only populated by `CngxReorderableMultiSelect` — it mirrors
+ * the chip's position in the trigger strip so consumer-authored chip
+ * templates can render a drag-handle, position badge, or reorder
+ * affordance without re-deriving the index from the iteration. Plain
+ * `CngxMultiSelect` leaves it `undefined`; the addition is purely
+ * additive (no breaking change to existing `*cngxMultiSelectChip`
+ * overrides).
  *
  * @category interactive
  */
@@ -146,6 +154,7 @@ export interface CngxMultiSelectChipContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
   readonly option: CngxSelectOptionDef<T>;
   readonly remove: () => void;
+  readonly index?: number;
 }
 
 /**

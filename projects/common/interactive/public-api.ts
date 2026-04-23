@@ -59,6 +59,18 @@ export { withRetry, type RetryConfig, type RetryState } from './src/retry/with-r
 export { optimistic, type OptimisticState } from './src/optimistic/optimistic';
 export { CngxLongPress } from './src/gestures/long-press.directive';
 export { CngxSwipeDismiss, type SwipeDirection } from './src/gestures/swipe-dismiss.directive';
+export {
+  CngxReorder,
+  type CngxReorderEvent,
+  type CngxReorderModifier,
+} from './src/reorder/reorder.directive';
+export {
+  CNGX_CHIP_STRIP_ROVING_FACTORY,
+  createChipStripRoving,
+  type CngxChipStripRovingController,
+  type CngxChipStripRovingFactory,
+  type CngxChipStripRovingOptions,
+} from './src/reorder/chip-strip-roving';
 export { CngxKeyboardShortcut } from './src/keyboard/keyboard-shortcut.directive';
 export { CngxSearch } from './src/keyboard/search.directive';
 export { CngxClickOutside } from './src/keyboard/click-outside.directive';

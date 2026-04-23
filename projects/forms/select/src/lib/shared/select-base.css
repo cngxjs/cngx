@@ -270,6 +270,153 @@
   min-width: 0;
 }
 
+/* ── Reorderable chip strip (layout + drag feedback) ──────────────── */
+
+/*
+ * Rules used by CngxReorderableMultiSelect and any future reorder-aware
+ * chip surface (e.g. tag-input with user-defined ordering). The
+ * structural parts live in select-base so the same ghost/handle look
+ * is available without a per-variant skin rewrite; every colour,
+ * shadow, and opacity is a `--cngx-select-chip-*` custom property with
+ * a sensible fallback default, consumer-overridable at :root or
+ * component level.
+ */
+
+.cngx-select__chip-list--reordering {
+  user-select: none;
+  cursor: grabbing;
+}
+
+/*
+ * Whole-chip drag: `cursor: grab` lives on the wrapper so any part of
+ * the chip is an obvious drag surface. `CngxReorder`'s `ignoreSelector`
+ * exempts interactive children (the chip's ✕ button, any projected
+ * button / link / input / [contenteditable]) so their own click
+ * semantics survive. No grip glyph is rendered by default — the ✕'s
+ * own hover affordance is the visual divider between drag and remove.
+ */
+.cngx-select__chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-chip-wrap-gap, 0.25rem);
+  position: relative;
+  border-radius: var(--cngx-select-chip-wrap-radius, 0.25rem);
+  cursor: grab;
+  touch-action: none;
+}
+
+.cngx-select__chip-wrap:active,
+.cngx-select__chip-list--reordering .cngx-select__chip-wrap {
+  cursor: grabbing;
+}
+
+.cngx-select__chip-wrap:focus-visible {
+  outline: 2px solid var(--cngx-focus-ring, #1976d2);
+  outline-offset: 2px;
+}
+
+/*
+ * Interactive children keep their own cursor — prevents the grab
+ * cursor bleeding into e.g. the chip's ✕ remove button.
+ */
+.cngx-select__chip-wrap button,
+.cngx-select__chip-wrap a,
+.cngx-select__chip-wrap [cngxChipClose] {
+  cursor: pointer;
+}
+
+/*
+ * Strong ✕ hover affordance: a subtly tinted circular highlight makes
+ * the remove button's hit-zone visually distinct from the surrounding
+ * drag surface, so users see at a glance "click here to remove,
+ * click anywhere else to drag." Scoped to the reorderable wrap so
+ * vanilla `<cngx-chip>` (in `CngxMultiSelect` etc.) keeps its lighter
+ * opacity-only hover.
+ */
+.cngx-select__chip-wrap .cngx-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--cngx-select-chip-remove-size, 1.25rem);
+  block-size: var(--cngx-select-chip-remove-size, 1.25rem);
+  border-radius: 50%;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.cngx-select__chip-wrap .cngx-chip__remove:hover {
+  background: var(--cngx-select-chip-remove-hover-bg, rgba(0, 0, 0, 0.12));
+  color: var(--cngx-select-chip-remove-hover-color, var(--cngx-error, #b71c1c));
+  opacity: 1;
+}
+.cngx-select__chip-wrap .cngx-chip__remove:active {
+  transform: scale(0.92);
+}
+
+/*
+ * Optional projected drag-handle glyph — only renders when the
+ * consumer passes [chipDragHandle]. `pointer-events: none` so hits
+ * pass through to the wrap's own drag surface.
+ */
+.cngx-select__chip-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cngx-select-chip-handle-color, var(--cngx-muted, #757575));
+  font-size: var(--cngx-select-chip-handle-size, 0.75rem);
+  line-height: 1;
+  user-select: none;
+  padding: 0 0.125rem;
+  pointer-events: none;
+}
+
+/*
+ * Lifted-card style for the chip the user is currently dragging.
+ * Stays opaque (hard to see what you're moving when it's faded), gets
+ * a strong shadow, a tiny scale-up + nudge, and a Trello-style 1deg
+ * tilt — the chip clearly looks "picked up" without a separate
+ * cursor-following ghost element.
+ */
+.cngx-select__chip--dragging {
+  box-shadow: var(--cngx-select-chip-drag-shadow, 0 8px 20px rgba(0, 0, 0, 0.28));
+  background: var(
+    --cngx-select-chip-drag-bg,
+    var(--cngx-chip-bg-strong, var(--cngx-primary, #1976d2))
+  );
+  color: var(--cngx-select-chip-drag-color, var(--cngx-on-primary, #fff));
+  transform: scale(var(--cngx-select-chip-drag-scale, 1.06))
+    rotate(var(--cngx-select-chip-drag-tilt, -1.5deg));
+  z-index: 5;
+  position: relative;
+  transition: box-shadow 80ms ease;
+}
+
+.cngx-select__chip--dragging .cngx-chip,
+.cngx-select__chip--dragging .cngx-chip__remove {
+  background: transparent;
+  color: inherit;
+}
+
+/*
+ * Drop indicator: a vertical bar appearing on the leading edge of
+ * the chip the pointer is currently over. Layout-shift-free (uses
+ * a pseudo-element) and visually distinct from the lifted chip.
+ */
+.cngx-select__chip--drag-over {
+  position: relative;
+}
+.cngx-select__chip--drag-over::before {
+  content: '';
+  position: absolute;
+  inset-block: -2px;
+  inset-inline-start: calc(var(--cngx-select-chip-gap, 0.25rem) * -1 + 1px);
+  inline-size: var(--cngx-select-chip-drop-bar-width, 3px);
+  background: var(
+    --cngx-select-chip-drop-bar-color,
+    var(--cngx-focus-ring, #1976d2)
+  );
+  border-radius: 2px;
+  pointer-events: none;
+}
+
 /* ── Panel-level error surfaces ───────────────────────────────────── */
 
 .cngx-select__error {
