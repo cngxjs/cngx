@@ -68,6 +68,7 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
   template: `
     <cngx-select-panel-shell
       [actionFocusTrapEnabled]="viewHost.actionFocusTrapEnabled?.() ?? false"
+      [actionPosition]="viewHost.actionPosition?.() ?? 'bottom'"
     >
       <div
         #treeContainer

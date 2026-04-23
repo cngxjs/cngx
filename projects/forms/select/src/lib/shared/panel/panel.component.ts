@@ -59,6 +59,7 @@ import type { CngxSelectOptionDef } from '../option.model';
   template: `
     <cngx-select-panel-shell
       [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
+      [actionPosition]="host.actionPosition?.() ?? 'bottom'"
     >
       @for (item of host.effectiveOptions(); track $index) {
         @if (host.isGroup(item)) {

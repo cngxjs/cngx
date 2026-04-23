@@ -1,0 +1,959 @@
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  contentChild,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+  viewChild,
+  type ElementRef,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
+
+import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
+
+import {
+  CngxClickOutside,
+  CngxListbox,
+  CngxListboxSearch,
+  CngxListboxTrigger,
+  type ListboxMatchFn,
+} from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+
+import { CngxSelectPanel } from '../shared/panel/panel.component';
+
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CngxFormFieldPresenter,
+  type CngxFormFieldControl,
+} from '@cngx/forms/field';
+
+import { createActionHostBridge } from '../shared/action-host-bridge';
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitErrorDisplay,
+  CngxSelectCommitMode,
+} from '../shared/commit-action.types';
+import {
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectLoadingVariant,
+  type CngxSelectRefreshingVariant,
+} from '../shared/config';
+import {
+  CNGX_CREATE_COMMIT_HANDLER_FACTORY,
+  type CreateCommitHandler,
+} from '../shared/create-commit-handler';
+import type { CngxSelectCreateAction } from '../shared/create-action.types';
+import {
+  CNGX_DISPLAY_BINDING_FACTORY,
+  type DisplayBinding,
+} from '../shared/display-binding';
+import { createFieldSync } from '../shared/field-sync';
+import { createLocalItemsBuffer } from '../shared/local-items-buffer';
+import {
+  filterSelectOptions,
+  type CngxSelectOptionDef,
+  type CngxSelectOptionGroupDef,
+  type CngxSelectOptionsInput,
+} from '../shared/option.model';
+import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
+import { resolveSelectConfig } from '../shared/resolve-config';
+import {
+  cngxSelectDefaultCompare,
+  createSelectCore,
+  type CngxSelectCompareFn,
+} from '../shared/select-core';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
+import {
+  CngxSelectCaret,
+  CngxSelectCheck,
+  CngxSelectClearButton,
+  CngxSelectCommitError,
+  CngxSelectEmpty,
+  CngxSelectError,
+  CngxSelectInputPrefix,
+  CngxSelectInputSuffix,
+  CngxSelectLoading,
+  CngxSelectOptgroupTemplate,
+  CngxSelectOptionError,
+  CngxSelectOptionLabel,
+  CngxSelectOptionPending,
+  CngxSelectPlaceholder,
+  CngxSelectRefreshing,
+  type CngxSelectInputSlotContext,
+} from '../shared/template-slots';
+
+/**
+ * Change event emitted by {@link CngxActionSelect.selectionChange}.
+ * The `action` discriminant carries the cause of the change: `'select'`
+ * is a normal pick, `'clear'` a reset, `'create'` a successful inline
+ * quick-create via the `*cngxSelectAction` slot.
+ *
+ * @category interactive
+ */
+export interface CngxActionSelectChange<T = unknown> {
+  readonly source: CngxActionSelect<T>;
+  readonly value: T | undefined;
+  readonly previousValue?: T | undefined;
+  readonly option: CngxSelectOptionDef<T> | null;
+  readonly action: 'select' | 'clear' | 'create';
+}
+
+/**
+ * Single-value autocomplete with inline quick-create. Seventh sibling
+ * of the select family after `CngxSelect` (single),
+ * `CngxMultiSelect` (multi), `CngxCombobox` (multi-chip),
+ * `CngxTypeahead` (single async), `CngxTreeSelect` (tree-multi), and
+ * `CngxReorderableMultiSelect` (multi + reorder).
+ *
+ * Mirrors {@link /projects/forms/select/src/lib/typeahead/typeahead.component.ts
+ * CngxTypeahead}'s input surface (inline `<input role="combobox">` with
+ * `aria-autocomplete="list"`, `displayWith`, `clearOnBlur`, the
+ * `*cngxSelectAction` slot integrates through the shared action-host
+ * bridge: the consumer projects a template into the panel, and when
+ * the user fires its `commit()` callback the bound
+ * {@link CngxSelectCreateAction} materialises a new `T` through the
+ * commit controller. On success the handler patches the persistent
+ * local buffer with `{ value, label }` — the item stays visible across
+ * state refetches until the server has picked it up — writes `value`,
+ * announces `'created'`, and optionally closes the panel.
+ *
+ * Commit semantics are pessimistic: the panel stays open while the
+ * handler runs, `isPending` flips in the slot context so a
+ * consumer-authored button can render a spinner, and on error the
+ * default commit-error banner surfaces above the options. True
+ * optimistic UX (insert-before-commit with temp-value) requires a
+ * consumer-supplied `tempValueFactory` — deferred to a follow-up per
+ * `.internal/architektur/action-select-master-plan.md` §3 Commit 5.
+ *
+ * Dismiss-guard protocol — Escape and click-outside are intercepted
+ * while `actionDirty()` is `true`. A consumer-authored slot flips the
+ * flag via the context's `setDirty(true)` callback; the shell-level
+ * Escape handler fires `cancel()` (which resets dirty) so the panel
+ * does not dismiss mid-workflow.
+ *
+ * @category interactive
+ */
+@Component({
+  selector: 'cngx-action-select',
+  exportAs: 'cngxActionSelect',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CngxClickOutside,
+    CngxListbox,
+    CngxListboxSearch,
+    CngxListboxTrigger,
+    CngxPopover,
+    CngxPopoverTrigger,
+    CngxSelectPanel,
+    NgTemplateOutlet,
+  ],
+  providers: [
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxActionSelect },
+    {
+      provide: CNGX_STATEFUL,
+      useFactory: (): { readonly state: CngxAsyncState<unknown> } => {
+        const self = inject(CngxActionSelect);
+        return { state: self.commitState };
+      },
+    },
+    { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxActionSelect },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxActionSelect },
+  ],
+  host: {
+    '[id]': 'resolvedId()',
+    '[attr.aria-readonly]': 'ariaReadonly()',
+  },
+  template: `
+    @let aria = triggerAria();
+    <div
+      class="cngx-action-select__root"
+      cngxClickOutside
+      [enabled]="panelOpen()"
+      (clickOutside)="handleClickOutside()"
+    >
+      <div class="cngx-action-select__trigger" (click)="handleWrapperClick()">
+        @if (inputPrefixTpl(); as prefixTpl) {
+          <span class="cngx-action-select__prefix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="prefixTpl; context: inputSlotContext()" />
+          </span>
+        }
+        <input
+          #searchInput="cngxListboxSearch"
+          #inputEl
+          cngxListboxSearch
+          type="text"
+          class="cngx-action-select__input"
+          role="combobox"
+          autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          [matchFn]="effectiveMatchFn()"
+          [debounceMs]="searchDebounceMs()"
+          [cngxPopoverTrigger]="pop"
+          [haspopup]="'listbox'"
+          [cngxListboxTrigger]="lb"
+          [popover]="pop"
+          [closeOnSelect]="true"
+          [disabled]="disabled()"
+          [placeholder]="placeholder()"
+          [attr.id]="resolvedId() || null"
+          [attr.tabindex]="effectiveTabIndex()"
+          [attr.aria-expanded]="aria.expanded"
+          [attr.aria-controls]="pop.id()"
+          [attr.aria-autocomplete]="'list'"
+          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-describedby]="aria.describedBy"
+          [attr.aria-errormessage]="aria.errorMessage"
+          [attr.aria-invalid]="aria.invalid"
+          [attr.aria-required]="aria.required"
+          [attr.aria-busy]="aria.busy"
+          (focus)="handleFocus()"
+          (blur)="handleBlur()"
+        />
+        @if (inputSuffixTpl(); as suffixTpl) {
+          <span class="cngx-action-select__suffix" (click)="$event.stopPropagation()">
+            <ng-container *ngTemplateOutlet="suffixTpl; context: inputSlotContext()" />
+          </span>
+        }
+        @if (clearable() && value() !== undefined && !disabled()) {
+          @if (tpl.clearButton(); as clearBtnTpl) {
+            <span class="cngx-action-select__clear-slot" (click)="$event.stopPropagation()">
+              <ng-container
+                *ngTemplateOutlet="
+                  clearBtnTpl;
+                  context: { $implicit: clearCallback, clear: clearCallback, disabled: disabled() }
+                "
+              />
+            </span>
+          } @else {
+            <button
+              type="button"
+              class="cngx-action-select__clear"
+              [attr.aria-label]="clearButtonAriaLabel()"
+              (click)="handleClearClick($event)"
+            >
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">✕</span>
+              }
+            </button>
+          }
+        }
+        @if (resolvedShowCaret()) {
+          @if (tpl.caret(); as caretT) {
+            <ng-container *ngTemplateOutlet="caretT; context: { $implicit: panelOpen(), open: panelOpen() }" />
+          } @else if (caretGlyph(); as glyph) {
+            <span aria-hidden="true" class="cngx-action-select__caret">
+              <ng-container *ngTemplateOutlet="glyph" />
+            </span>
+          } @else {
+            <span aria-hidden="true" class="cngx-action-select__caret">&#9662;</span>
+          }
+        }
+      </div>
+      <div
+        cngxPopover
+        #pop="cngxPopover"
+        placement="bottom"
+        class="cngx-select__panel"
+        [class]="panelClassList()"
+        [style.--cngx-select-panel-min-width]="panelWidthCss()"
+      >
+        <div
+          cngxListbox
+          #lb="cngxListbox"
+          [label]="resolvedListboxLabel()"
+          [compareWith]="listboxCompareWith()"
+          [externalActivation]="externalActivation()"
+          [explicitOptions]="panelRef.options()"
+          [items]="panelRef.items()"
+        >
+          <cngx-select-panel #panelRef="cngxSelectPanel" />
+        </div>
+      </div>
+    </div>
+  `,
+  styleUrls: ['../shared/select-base.css', './action-select.component.css'],
+})
+export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
+  private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly config = resolveSelectConfig();
+
+  // ── Inputs ─────────────────────────────────────────────────────────
+
+  readonly label = input<string>('');
+  readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
+  readonly placeholder = input<string>('');
+  readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
+  readonly requiredInput = input<boolean>(false, { alias: 'required' });
+  readonly compareWith = input<CngxSelectCompareFn<T>>(
+    cngxSelectDefaultCompare as CngxSelectCompareFn<T>,
+  );
+  readonly idInput = input<string | null>(null, { alias: 'id' });
+  readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  readonly ariaLabelledBy = input<string | null>(null, { alias: 'aria-labelledby' });
+  readonly tabIndex = input<number>(0);
+  readonly autofocus = input<boolean>(false);
+  readonly panelClass = input<string | readonly string[] | null>(null);
+  readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  readonly displayWith = input<(value: T) => string>((v) => String(v));
+  readonly clearOnBlur = input<boolean>(true);
+  readonly searchMatchFn = input<ListboxMatchFn | null>(null);
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+  readonly skipInitial = input<boolean>(false);
+  readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
+  readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
+  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
+  readonly hideCaret = input<boolean>(!this.config.showCaret);
+  readonly clearable = input<boolean>(false);
+  readonly clearButtonAriaLabel = input<string>(
+    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+  );
+  readonly clearGlyph = input<TemplateRef<void> | null>(null);
+  readonly caretGlyph = input<TemplateRef<void> | null>(null);
+  readonly loading = input<boolean>(false);
+  readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
+  readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
+  readonly refreshingVariant = input<CngxSelectRefreshingVariant>(this.config.refreshingVariant);
+  readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
+  readonly retryFn = input<(() => void) | null>(null);
+  readonly commitAction = input<CngxSelectCommitAction<T> | null>(null);
+  readonly commitMode = input<CngxSelectCommitMode>('optimistic');
+  readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
+    this.config.commitErrorDisplay,
+  );
+  readonly announceChanges = input<boolean | null>(null);
+  readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+
+  // ── Action-select specific inputs ──────────────────────────────────
+
+  /**
+   * Quick-create handler fired by the slot template's `commit()`
+   * callback. Receives the live `searchTerm` plus the drafted
+   * `{ label }` and resolves to a newly-materialised `T`. `null`
+   * (default) disables the create path — the slot template may still
+   * render (as a branding cue, static CTA, etc.), and clicking its
+   * commit callback becomes a silent no-op.
+   */
+  readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
+  /**
+   * Whether a successful create closes the panel. Defaults to `true` —
+   * single-value pick-and-create semantics mirror ordinary selection
+   * UX. Set `false` for long flows where the consumer wants to keep
+   * the panel open for confirmation, multi-step wizards, etc.
+   */
+  readonly closeOnCreate = input<boolean>(true);
+  /**
+   * Position of the `*cngxSelectAction` slot within the panel frame.
+   * Forwarded through the shared view-host contract into
+   * `CngxSelectPanelShell.actionPosition`. Defaults to `'bottom'`.
+   */
+  readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>('bottom');
+
+  /** Two-way single-value binding. */
+  readonly value = model<T | undefined>(undefined);
+
+  // ── Outputs ────────────────────────────────────────────────────────
+
+  readonly selectionChange = output<CngxActionSelectChange<T>>();
+  readonly openedChange = output<boolean>();
+  readonly opened = output<void>();
+  readonly closed = output<void>();
+  readonly cleared = output<void>();
+  readonly retry = output<void>();
+  readonly commitError = output<unknown>();
+  readonly stateChange = output<AsyncStatus>();
+  readonly searchTermChange = output<string>();
+  /**
+   * Dedicated channel for successful quick-creates. Fires after
+   * `selectionChange` with the same option payload so consumers that
+   * only care about create events can bind `(created)` without
+   * branching on `action === 'create'`.
+   */
+  readonly created = output<CngxSelectOptionDef<T>>();
+
+  // ── Content-child directive queries ────────────────────────────────
+
+  private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
+  private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  private readonly optgroupDirective = contentChild<CngxSelectOptgroupTemplate<T>>(
+    CngxSelectOptgroupTemplate,
+  );
+  private readonly placeholderDirective = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
+  private readonly emptyDirective = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
+  private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
+  private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
+  private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
+  private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
+  private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(CngxSelectOptionPending);
+  private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(CngxSelectOptionError);
+  private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
+  private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
+
+  /** @internal */
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDirective,
+    caret: this.caretDirective,
+    optgroup: this.optgroupDirective,
+    placeholder: this.placeholderDirective,
+    empty: this.emptyDirective,
+    loading: this.loadingDirective,
+    optionLabel: this.optionLabelDirective,
+    error: this.errorDirective,
+    refreshing: this.refreshingDirective,
+    commitError: this.commitErrorDirective,
+    clearButton: this.clearButtonDirective,
+    optionPending: this.optionPendingDirective,
+    optionError: this.optionErrorDirective,
+  });
+  /** @internal */
+  protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputPrefixDirective()?.templateRef ?? null,
+  );
+  /** @internal */
+  protected readonly inputSuffixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
+    () => this.inputSuffixDirective()?.templateRef ?? null,
+  );
+
+  // ── ViewChildren ───────────────────────────────────────────────────
+
+  private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
+  private readonly searchInputRef = viewChild(CngxListboxSearch);
+  private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
+  private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
+
+  readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
+  readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
+  readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
+
+  // ── CngxFormFieldControl ───────────────────────────────────────────
+
+  readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
+  private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
+  /** @internal */ readonly focused = this.focusState.focused;
+  readonly empty = computed<boolean>(() => this.value() === undefined);
+
+  /** @internal */
+  protected readonly effectiveMatchFn = computed<ListboxMatchFn>(
+    () =>
+      this.searchMatchFn() ??
+      ((option, term) => {
+        if (term === '') {
+          return true;
+        }
+        return option.label.toLowerCase().includes(term.toLowerCase());
+      }),
+  );
+
+  /** Filter overlay applied by `createSelectCore` when the search term is non-empty. */
+  private readonly filter = computed<
+    ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
+  >(() => {
+    const term = this.searchTerm();
+    if (term === '') {
+      return null;
+    }
+    const matcher = this.effectiveMatchFn();
+    return (all) => filterSelectOptions(all, term, matcher);
+  });
+
+  // ── Local-items buffer (quick-create persistence) ──────────────────
+
+  /** @internal */
+  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+
+  // ── Action-slot bridge (routes the commit callback to create) ──────
+
+  /**
+   * The bridge's `isPending` tracks the commit controller so the slot
+   * template's `isPending` context flag reflects the live create
+   * state. Ties the UX feedback (button spinner, disabled state) to
+   * the same state-machine that drives the commit-error banner.
+   *
+   * @internal
+   */
+  private readonly actionBridge = createActionHostBridge({
+    close: () => this.close(),
+    // `commit` is rebound post-construction once `createHandler` exists.
+    // A proper closure captures `this` immediately here; the real
+    // dispatch runs once `createHandler` is assigned below.
+    commit: (draft) => this.handleActionCommit(draft),
+    isPending: computed(() => this.core.isCommitting()),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+  // The `actionPosition` input signal itself satisfies
+  // `CngxSelectPanelViewHost.actionPosition?: Signal<...>` — no computed
+  // wrapper needed, `InputSignal<T>` is a `Signal<T>`.
+
+  // ── Core (stateless signal graph) ──────────────────────────────────
+
+  private readonly core = createSelectCore<T, T>(
+    {
+      label: this.label,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+      placeholder: this.placeholder,
+      idInput: this.idInput,
+      disabledInput: this.disabledInput,
+      requiredInput: this.requiredInput,
+      tabIndex: this.tabIndex,
+      options: this.options,
+      state: this.state,
+      loading: this.loading,
+      compareWith: this.compareWith,
+      skeletonRowCount: this.skeletonRowCount,
+      panelClass: this.panelClass,
+      panelWidth: this.panelWidth,
+      hideSelectionIndicator: this.hideSelectionIndicator,
+      hideCaret: this.hideCaret,
+      commitErrorDisplay: this.commitErrorDisplay,
+      commitAction: this.commitAction,
+      panelOpen: this.panelOpen,
+      errorState: this.errorState,
+      filter: this.filter,
+      multi: computed(() => false),
+      currentSelection: this.value,
+      selectionIndicatorPosition: this.selectionIndicatorPosition,
+      selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
+    },
+    {
+      announceChanges: this.announceChanges,
+      announceTemplate: this.announceTemplate,
+    },
+  );
+
+  /**
+   * Append a pre-built option to the component's persistent local
+   * buffer. Used internally by the create-commit handler; exposed
+   * publicly so consumers can pre-seed the buffer with recently-used
+   * items, "add to history" workflows, etc.
+   *
+   * @category interactive
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer. Idempotent.
+   *
+   * @category interactive
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
+
+  // ── Template-facing protected surface ──────────────────────────────
+
+  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */ protected readonly activeView = this.core.activeView;
+  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+    this.core.resolvedShowSelectionIndicator;
+  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+    this.core.resolvedSelectionIndicatorVariant;
+  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+    this.core.resolvedSelectionIndicatorPosition;
+  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+
+  readonly disabled = this.core.disabled;
+  readonly id = computed<string>(() => this.core.resolvedId() ?? '');
+
+  /** @internal */
+  protected readonly inputSlotContext = computed<CngxSelectInputSlotContext>(
+    () => ({ disabled: this.disabled(), focused: this.focused(), panelOpen: this.panelOpen() }),
+    {
+      equal: (a, b) =>
+        a.disabled === b.disabled &&
+        a.focused === b.focused &&
+        a.panelOpen === b.panelOpen,
+    },
+  );
+
+  readonly commitState = this.core.commitState;
+  readonly isCommitting = this.core.isCommitting;
+  /** @internal */ readonly commitErrorValue = this.core.commitErrorValue;
+
+  /** @internal */
+  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+  /** @internal */
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+
+  readonly selected = computed<CngxSelectOptionDef<T> | null>(
+    () => {
+      const v = this.value();
+      if (v === undefined || v === null) {
+        return null;
+      }
+      const map = this.core.valueToOptionMap();
+      if (map) {
+        return map.get(v as unknown) ?? null;
+      }
+      const eq = this.compareWith();
+      return this.flatOptions().find((o) => eq(o.value, v)) ?? null;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        return (this.compareWith() as CngxSelectCompareFn<unknown>)(a.value, b.value);
+      },
+    },
+  );
+
+  /** @internal */
+  protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
+    () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
+  );
+
+  // ── Single-selection state (commit + rollback) ─────────────────────
+
+  private readonly commitController = this.core.commitController;
+  private readonly togglingOption = this.core.togglingOption;
+  private readonly announcer = inject(CngxSelectAnnouncer);
+  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.errorAnnouncePolicy,
+  });
+  private lastCommittedValue: T | undefined = undefined;
+  private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
+    value: this.value,
+    displayWith: this.displayWith,
+    focused: this.focusState.focused,
+    inputEl: this.inputEl,
+    searchRef: this.searchInputRef,
+    searchTerm: this.searchTerm,
+    skipInitial: this.skipInitial,
+    onUserSearchTerm: (term) => this.searchTermChange.emit(term),
+  });
+
+  // ── Create-commit handler ──────────────────────────────────────────
+
+  private readonly createHandler: CreateCommitHandler<T> = inject(
+    CNGX_CREATE_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    quickCreateAction: this.quickCreateAction,
+    commitController: this.commitController,
+    localItemsBuffer: this.localItemsBuffer,
+    closeOnSuccess: this.closeOnCreate,
+    onCreated: (option, previousValue) => {
+      this.display.writeFromValue(option.value);
+      this.selectionChange.emit({
+        source: this,
+        value: option.value,
+        previousValue,
+        option,
+        action: 'create',
+      });
+      this.created.emit(option);
+    },
+    onAnnounce: (option) => {
+      this.core.announce(option, 'created', 1, false);
+    },
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+    onClose: () => this.close(),
+    onResetDirty: () => this.actionBridge.reset(),
+  });
+
+  /** @internal */
+  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isCommittingOption(opt);
+  }
+
+  protected isGroup(
+    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
+  ): item is CngxSelectOptionGroupDef<T> {
+    return this.core.isGroup(item);
+  }
+
+  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isSelected(opt.value);
+  }
+
+  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
+    return this.core.isIndeterminate(opt.value);
+  }
+
+  protected isEmpty(): boolean {
+    return this.value() === undefined;
+  }
+
+  constructor() {
+    this.lastCommittedValue = untracked(() => this.value());
+
+    afterNextRender(() => {
+      if (this.autofocus()) {
+        this.focus();
+      }
+      this.display.writeFromValue(this.value());
+    });
+
+    createADActivationDispatcher<T, T>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      popoverRef: this.popoverRef,
+      closeOnSelect: true,
+      commitAction: this.commitAction,
+      onCommit: (intended, opt) => {
+        const previous = this.value();
+        this.lastCommittedValue = previous;
+        this.togglingOption.set(opt);
+        if (this.commitMode() === 'optimistic') {
+          this.value.set(intended);
+        }
+        const action = this.commitAction();
+        if (action) {
+          this.beginCommit(intended, previous, action);
+        }
+      },
+      onActivate: (intended, opt) => {
+        const previous = untracked(() => this.value());
+        this.finalizeSelection(intended, opt, previous);
+      },
+    });
+
+    effect(() => {
+      const open = this.panelOpen();
+      untracked(() => {
+        this.openedChange.emit(open);
+        if (open) {
+          this.opened.emit();
+        } else {
+          this.closed.emit();
+          if (this.config.restoreFocus) {
+            queueMicrotask(() => this.inputEl()?.nativeElement.focus());
+          }
+        }
+      });
+    });
+
+    createFieldSync<T | undefined>({
+      componentValue: this.value,
+      valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
+      coerceFromField: (x) => x as T | undefined,
+    });
+
+    // Auto-open panel on typing — same pattern as CngxTypeahead.
+    effect(() => {
+      const term = this.searchTerm();
+      untracked(() => {
+        if (
+          term !== '' &&
+          !this.panelOpen() &&
+          !this.disabled() &&
+          !this.display.isWritingFromValue()
+        ) {
+          this.open();
+        }
+      });
+    });
+  }
+
+  // ── Public API ─────────────────────────────────────────────────────
+
+  open(): void { this.popoverRef()?.show(); }
+  close(): void { this.popoverRef()?.hide(); }
+  toggle(): void { this.popoverRef()?.toggle(); }
+  focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
+
+  // ── Action-slot commit routing ─────────────────────────────────────
+
+  /**
+   * Entry point invoked by the action-slot template's `commit()`
+   * callback. Resolves an effective draft (falling back to the live
+   * `searchTerm` when the consumer omits one) and dispatches through
+   * the shared create-commit handler.
+   *
+   * @internal
+   */
+  private handleActionCommit(draft?: { label: string }): void {
+    const term = this.searchTerm();
+    const effective = draft ?? { label: term };
+    if (effective.label === '') {
+      // Silently drop — a meaningful quick-create must carry a label.
+      return;
+    }
+    const previous = this.value();
+    this.createHandler.dispatch(effective, term, previous);
+  }
+
+  // ── Event handlers ─────────────────────────────────────────────────
+
+  protected handleWrapperClick(): void {
+    if (this.disabled()) {
+      return;
+    }
+    this.focus();
+    if (!this.panelOpen()) {
+      this.open();
+    }
+  }
+
+  protected handleClickOutside(): void {
+    if (this.actionBridge.shouldBlockDismiss()) {
+      return;
+    }
+    const mode = this.config.dismissOn;
+    if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
+      this.close();
+    }
+  }
+
+  protected handleRetry(): void {
+    const fn = this.retryFn();
+    if (fn) { fn(); }
+    this.retry.emit();
+  }
+
+  protected handleClearClick(event: Event): void {
+    event.stopPropagation();
+    this.clearCallback();
+  }
+
+  /** @internal */
+  protected readonly clearCallback: () => void = () => {
+    const current = this.value();
+    if (current === undefined) {
+      return;
+    }
+    this.value.set(undefined);
+    this.display.writeFromValue(undefined);
+    this.cleared.emit();
+    this.selectionChange.emit({
+      source: this,
+      value: undefined,
+      previousValue: current,
+      option: null,
+      action: 'clear',
+    });
+    this.core.announce(null, 'removed', 0, false);
+  };
+
+  protected handleFocus(): void {
+    this.focusState.markFocused();
+  }
+
+  protected handleBlur(): void {
+    this.focusState.markBlurred();
+    this.presenter?.fieldState().markAsTouched();
+    if (this.clearOnBlur()) {
+      this.display.writeFromValue(this.value());
+    }
+  }
+
+  // ── Commit / selection finalize ────────────────────────────────────
+
+  private finalizeSelection(
+    intended: T,
+    option: CngxSelectOptionDef<T>,
+    previousValue: T | undefined,
+  ): void {
+    this.value.set(intended);
+    this.display.writeFromValue(intended);
+    this.selectionChange.emit({
+      source: this,
+      value: intended,
+      previousValue,
+      option,
+      action: 'select',
+    });
+    this.core.announce(option, 'added', 1, false);
+  }
+
+  private beginCommit(intended: T, previous: T | undefined, action: CngxSelectCommitAction<T>): void {
+    this.stateChange.emit('pending');
+    const mode = this.commitMode();
+    this.commitController.begin(action, intended, previous, {
+      onSuccess: (committed) => {
+        this.stateChange.emit('success');
+        const finalValue = committed ?? intended;
+        if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), finalValue)) {
+          this.value.set(finalValue);
+        }
+        this.togglingOption.set(null);
+        const opt = this.core.findOption(finalValue);
+        this.display.writeFromValue(finalValue);
+        if (opt) {
+          this.selectionChange.emit({
+            source: this,
+            value: finalValue,
+            previousValue: previous,
+            option: opt,
+            action: 'select',
+          });
+          this.core.announce(opt, 'added', 1, false);
+        }
+      },
+      onError: (err, rollbackTo) => {
+        this.stateChange.emit('error');
+        this.commitError.emit(err);
+        if (mode === 'optimistic') {
+          const rollback = rollbackTo ?? undefined;
+          if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), rollback)) {
+            this.value.set(rollback);
+          }
+          this.display.writeFromValue(rollback);
+        }
+        this.announceCommitError(err);
+      },
+    });
+  }
+
+  private retryCommit(): void {
+    const intendedNext = this.commitController.intendedValue();
+    const action = this.commitAction();
+    if (!action || intendedNext === undefined) {
+      return;
+    }
+    this.beginCommit(intendedNext, this.lastCommittedValue, action);
+  }
+}

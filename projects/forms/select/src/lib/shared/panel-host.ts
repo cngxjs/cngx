@@ -141,6 +141,15 @@ export interface CngxSelectPanelViewHost<T = unknown> {
    * and the shell defaults the hostDirective input to `false`.
    */
   readonly actionFocusTrapEnabled?: Signal<boolean>;
+  /**
+   * Optional — where the `*cngxSelectAction` slot renders inside the
+   * shared panel frame. Inner panels forward this into the shell's
+   * `actionPosition` input. Variants that don't host an action
+   * workflow leave this undefined; the shell's default `'bottom'`
+   * applies. Action-select organisms expose an `actionPosition` input
+   * on their own public API and project the resolved signal here.
+   */
+  readonly actionPosition?: Signal<'top' | 'bottom' | 'both' | 'none'>;
 }
 
 /**

@@ -49,6 +49,20 @@ export {
   CngxTypeahead,
   type CngxTypeaheadChange,
 } from './src/lib/typeahead/typeahead.component';
+export {
+  CngxActionSelect,
+  type CngxActionSelectChange,
+} from './src/lib/action-select/action-select.component';
+export {
+  CNGX_CREATE_COMMIT_HANDLER_FACTORY,
+  createCreateCommitHandler,
+  type CngxCreateCommitHandlerFactory,
+  type CreateCommitHandler,
+  type CreateCommitHandlerOptions,
+} from './src/lib/shared/create-commit-handler';
+export {
+  type CngxSelectCreateAction,
+} from './src/lib/shared/create-action.types';
 export { CngxTreeSelectNode } from './src/lib/tree-select/tree-select-node.directive';
 export { CngxTreeSelectChip } from './src/lib/tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './src/lib/tree-select/tree-select-trigger-label.directive';
