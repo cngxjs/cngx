@@ -236,6 +236,7 @@ function createActionHost(): {
     isPending: false,
     setDirty: vi.fn(),
     cancel: vi.fn(),
+    retry: vi.fn(),
   });
   // The mock's tpl bundle defaults `action` to `nullTpl`; override here
   // with a writable ref so the fixture can splice in the real
@@ -371,6 +372,7 @@ describe('CngxSelectPanelShell — action slot', () => {
       isPending: true,
       setDirty: vi.fn(),
       cancel: vi.fn(),
+      retry: vi.fn(),
     });
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;

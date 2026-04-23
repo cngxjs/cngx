@@ -573,6 +573,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
     commit: (draft) => this.handleActionCommit(draft),
+    retry: () => this.createHandler.retryLast(),
     isPending: computed(() => this.createCommitController.isCommitting()),
   });
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
@@ -585,6 +586,27 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    * @internal
    */
   readonly actionSearchTerm = this.searchTerm;
+  /**
+   * View-host signal feeding the action context's `error` + `hasError`
+   * fields. Multi-select uses a dedicated `createCommitController<T>`
+   * for the quick-create lifecycle (independent of the array-typed
+   * toggle/clear controller on `core.commitController`), so the
+   * action-slot error surface reflects create failures only — toggle
+   * errors still flow through the shell's own commit-error banner.
+   *
+   * @internal
+   */
+  readonly actionError = computed<unknown>(() =>
+    this.createCommitController.state.error(),
+  );
+  /**
+   * View-host signal feeding the action context's `value` field —
+   * forwards the component's live values array so in-panel mini-forms
+   * can read the current selection without re-injecting.
+   *
+   * @internal
+   */
+  readonly actionValue = computed<unknown>(() => this.values());
 
   // ── Core (stateless signal graph) ──────────────────────────────────
 

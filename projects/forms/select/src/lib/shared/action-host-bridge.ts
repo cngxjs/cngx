@@ -89,6 +89,16 @@ export interface ActionHostBridgeOptions {
    * can drive the cascade without app-level providers.
    */
   readonly focusTrapBehavior?: Signal<CngxActionFocusTrapBehavior>;
+  /**
+   * Optional retry hook. The action-select organisms bind
+   * `() => createHandler.retryLast()` so the slot template's `retry`
+   * context field re-dispatches the last create through the same
+   * supersede-safe pipeline. Variants without a quick-create
+   * lifecycle leave this undefined and the bridge substitutes a
+   * no-op — the `retry` context field is still callable, it just
+   * does nothing.
+   */
+  readonly retry?: () => void;
 }
 
 /**
@@ -127,6 +137,11 @@ export function createActionHostBridge(
     ((_draft?: { label: string }): void => {
       /* no-op — variants without quick-create leave this disabled */
     });
+  const retryFn =
+    options.retry ??
+    ((): void => {
+      /* no-op — variants without quick-create leave this disabled */
+    });
   const setDirtyFn = (value: boolean): void => {
     if (dirty() !== value) {
       dirty.set(value);
@@ -145,10 +160,11 @@ export function createActionHostBridge(
       isPending: isPending?.() ?? false,
       setDirty: setDirtyFn,
       cancel: cancelFn,
+      retry: retryFn,
     }),
     {
       // Every ref inside the bundle except `isPending` is stable for
-      // the lifetime of the bridge — `close`/`commit`/`setDirty`/`cancel`
+      // the lifetime of the bridge — `close`/`commit`/`setDirty`/`cancel`/`retry`
       // are captured closures. Pinning the identity to `isPending`
       // prevents spurious template-outlet context churn on every CD
       // cycle while still propagating commit-state flips correctly.

@@ -620,6 +620,40 @@ export interface CngxSelectActionContext {
   readonly isPending: boolean;
   readonly setDirty: (value: boolean) => void;
   readonly dirty: boolean;
+  /**
+   * Re-dispatch the most recent quick-create with the last captured
+   * draft + search term + previous-value snapshot. No-op when the
+   * component never dispatched a create, or when the action workflow
+   * doesn't own a create lifecycle (the 5 flat variants). Lets an
+   * action-slot template render a "Retry" button wired to the same
+   * supersede-safe path the initial commit ran through, without the
+   * consumer having to re-source the draft from its own form state.
+   */
+  readonly retry: () => void;
+  /**
+   * Live commit-error surface. Mirrors the variant's commit-controller
+   * error signal — `null` when no error is latched (idle, pending,
+   * success). Consumers read `error` to render a custom inline error
+   * message in the slot alongside the retry affordance.
+   */
+  readonly error: unknown;
+  /**
+   * `true` when `error !== null`. Convenience flag so templates can
+   * gate a UI branch without repeating the null-check — mirrors the
+   * shell's `host.showCommitError()` derivation but scoped to the
+   * inline action workflow.
+   */
+  readonly hasError: boolean;
+  /**
+   * The variant's current primary value, type-erased to `unknown`.
+   * Single-value variants (`CngxActionSelect`) forward `value()`;
+   * multi-value variants (`CngxActionMultiSelect`) forward `values()`.
+   * Lets an action-slot template read the live selection without
+   * re-injecting the component — useful for "add to selected" hints,
+   * draft labels that reference the current selection, or in-panel
+   * mini-forms that pre-populate fields from `value`.
+   */
+  readonly value: unknown;
 }
 
 /**

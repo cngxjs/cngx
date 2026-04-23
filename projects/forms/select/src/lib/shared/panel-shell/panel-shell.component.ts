@@ -47,6 +47,9 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
   cancel: () => {
     /* no-op */
   },
+  retry: () => {
+    /* no-op */
+  },
 });
 
 /**
@@ -260,6 +263,8 @@ export class CngxSelectPanelShell<T = unknown> {
     const searchTerm = this.host.actionSearchTerm?.() ?? '';
     const dirty = this.host.actionDirty?.() ?? false;
     const callbacks = this.host.actionCallbacks?.() ?? NOOP_ACTION_CALLBACKS;
+    const error = this.host.actionError?.() ?? null;
+    const value = this.host.actionValue?.() ?? null;
     return {
       $implicit: searchTerm,
       searchTerm,
@@ -268,6 +273,10 @@ export class CngxSelectPanelShell<T = unknown> {
       isPending: callbacks.isPending,
       setDirty: callbacks.setDirty,
       dirty,
+      retry: callbacks.retry,
+      error,
+      hasError: error !== null,
+      value,
     };
   });
 }

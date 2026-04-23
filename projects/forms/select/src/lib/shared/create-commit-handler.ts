@@ -125,6 +125,23 @@ export interface CreateCommitHandler<T, Prev = unknown> {
     searchTerm: string,
     previousSnapshot: Prev,
   ): void;
+  /**
+   * Re-dispatch the most recent {@link dispatch} call with the exact
+   * draft, search term, and previous-value snapshot captured on that
+   * original invocation. Routes through the same commit-controller
+   * `begin(...)` path so supersede semantics apply — a stale retry
+   * invoked after the consumer has moved on to a fresh commit is
+   * superseded cleanly without touching the new pipeline. No-op when
+   * the handler has never been dispatched (no cached triple to
+   * replay).
+   *
+   * Exposed as the `retry` callback on {@link CngxSelectActionCallbacks}
+   * via the action-host bridge — consumer templates read
+   * `*cngxSelectAction`'s `retry` context field and call it from a
+   * "Nochmal versuchen" button without re-sourcing the draft from
+   * their own form state.
+   */
+  retryLast(): void;
 }
 
 /**
@@ -143,6 +160,18 @@ export interface CreateCommitHandler<T, Prev = unknown> {
 export function createCreateCommitHandler<T, Prev = unknown>(
   opts: CreateCommitHandlerOptions<T, Prev>,
 ): CreateCommitHandler<T, Prev> {
+  // Cache of the most recent dispatch payload so `retryLast()` can
+  // replay it without the consumer re-sourcing the draft. Reset on
+  // every fresh dispatch so a retry after a subsequent (different)
+  // dispatch replays the latest attempt, not a stale earlier one.
+  let lastDispatch:
+    | {
+        readonly draft: { readonly label: string };
+        readonly searchTerm: string;
+        readonly previousSnapshot: Prev;
+      }
+    | null = null;
+
   function dispatch(
     draft: { readonly label: string },
     searchTerm: string,
@@ -152,6 +181,8 @@ export function createCreateCommitHandler<T, Prev = unknown>(
     if (!action) {
       return;
     }
+
+    lastDispatch = { draft, searchTerm, previousSnapshot };
 
     // Adapt the create-action signature to CngxSelectCommitAction<T> so
     // the shared commit controller's state-machine drives the lifecycle
@@ -190,7 +221,15 @@ export function createCreateCommitHandler<T, Prev = unknown>(
     });
   }
 
-  return { dispatch };
+  function retryLast(): void {
+    if (lastDispatch === null) {
+      return;
+    }
+    const { draft, searchTerm, previousSnapshot } = lastDispatch;
+    dispatch(draft, searchTerm, previousSnapshot);
+  }
+
+  return { dispatch, retryLast };
 }
 
 /**

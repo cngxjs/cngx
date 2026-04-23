@@ -39,6 +39,14 @@ export interface CngxSelectActionCallbacks {
    * organisms in Commit 5/6 override with real rollback.
    */
   readonly cancel: () => void;
+  /**
+   * Re-dispatch the most recent commit (quick-create or otherwise)
+   * with the variant's last-captured payload. Routed through the
+   * same commit controller so supersede semantics apply unchanged.
+   * The default bridge implementation is a no-op — the action-select
+   * organisms override with `createHandler.retryLast()`.
+   */
+  readonly retry: () => void;
 }
 import type {
   CngxSelectCommitErrorDisplay,
@@ -150,6 +158,27 @@ export interface CngxSelectPanelViewHost<T = unknown> {
    * on their own public API and project the resolved signal here.
    */
   readonly actionPosition?: Signal<'top' | 'bottom' | 'both' | 'none'>;
+  /**
+   * Optional — live commit-error for the action workflow. Surfaced
+   * into the `*cngxSelectAction` slot's `error` + `hasError` context
+   * fields so consumer templates can render a custom inline error
+   * next to the slot's retry affordance. Variants without a
+   * dedicated action-commit controller leave this undefined and the
+   * shell substitutes `null`. Distinct from `commitErrorContext`
+   * (which drives the shell's own error banner for toggle/clear
+   * commits) — the two surfaces can co-exist without interfering.
+   */
+  readonly actionError?: Signal<unknown>;
+  /**
+   * Optional — the variant's current primary value, type-erased.
+   * Action-select organisms forward their single `value()`;
+   * action-multi-select forwards the `values()` array. Button-trigger
+   * variants leave this undefined (consumer uses `view-child` access
+   * instead) and the shell falls back to `null`. Never triggers any
+   * panel-shell derivation; it's forwarded into the action context
+   * verbatim so consumer templates can read the live selection.
+   */
+  readonly actionValue?: Signal<unknown>;
 }
 
 /**

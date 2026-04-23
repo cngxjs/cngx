@@ -509,10 +509,13 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
-    // `commit` is rebound post-construction once `createHandler` exists.
-    // A proper closure captures `this` immediately here; the real
-    // dispatch runs once `createHandler` is assigned below.
+    // `commit` + `retry` both route through methods that resolve
+    // `createHandler` lazily. The handler is declared further down in
+    // field-init order, so the closures capture `this` here and hit
+    // the real handler at call time — well after construction
+    // completes.
     commit: (draft) => this.handleActionCommit(draft),
+    retry: () => this.createHandler.retryLast(),
     isPending: computed(() => this.core.isCommitting()),
   });
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
@@ -527,6 +530,25 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * @internal
    */
   readonly actionSearchTerm = this.searchTerm;
+  /**
+   * View-host signal feeding the action context's `error` + `hasError`
+   * fields. Single-select shares one commit controller across both
+   * the optional `[commitAction]` path and the inline quick-create
+   * path, so `core.commitErrorValue` covers both surfaces — the
+   * template's `error` context reflects whichever error was latched
+   * last.
+   *
+   * @internal
+   */
+  readonly actionError = computed<unknown>(() => this.core.commitErrorValue());
+  /**
+   * View-host signal feeding the action context's `value` field —
+   * forwards the component's live scalar selection so in-panel
+   * mini-forms can read the current pick without re-injecting.
+   *
+   * @internal
+   */
+  readonly actionValue = computed<unknown>(() => this.value());
   // The `actionPosition` input signal itself satisfies
   // `CngxSelectPanelViewHost.actionPosition?: Signal<...>` — no computed
   // wrapper needed, `InputSignal<T>` is a `Signal<T>`.
