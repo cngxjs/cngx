@@ -2,6 +2,7 @@ import {
   computed,
   DestroyRef,
   ElementRef,
+  InjectionToken,
   inject,
   signal,
   type Signal,
@@ -200,3 +201,55 @@ export function createActionHostBridge(
     reset: resetFn,
   };
 }
+
+/**
+ * Factory signature matching {@link createActionHostBridge} — used by
+ * {@link CNGX_ACTION_HOST_BRIDGE_FACTORY} for DI-swappable bridge
+ * implementations.
+ *
+ * @category interactive
+ */
+export type CngxActionHostBridgeFactory = (
+  options: ActionHostBridgeOptions,
+) => ActionHostBridge;
+
+/**
+ * DI token resolving the factory used to instantiate an
+ * {@link ActionHostBridge}. Defaults to {@link createActionHostBridge};
+ * override app-wide via `providers` or per-component via `viewProviders`
+ * to wrap the dirty-state, Escape intercept, or focus-trap policy with
+ * telemetry, audit logging, offline-queue persistence, or any other
+ * enterprise concern — without forking either action-select organism.
+ *
+ * Symmetrical to the other select-family factory tokens
+ * (`CNGX_CREATE_COMMIT_HANDLER_FACTORY`, `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`,
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`, `CNGX_DISPLAY_BINDING_FACTORY`,
+ * …) — same layering level, complementary contract (dirty-guard +
+ * action-slot wiring instead of commit lifecycle).
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     {
+ *       provide: CNGX_ACTION_HOST_BRIDGE_FACTORY,
+ *       useValue: (opts) => {
+ *         const bridge = createActionHostBridge(opts);
+ *         // Wrap bridge.callbacks() to log every dirty transition.
+ *         return bridge;
+ *       },
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export const CNGX_ACTION_HOST_BRIDGE_FACTORY =
+  new InjectionToken<CngxActionHostBridgeFactory>(
+    'CngxActionHostBridgeFactory',
+    {
+      providedIn: 'root',
+      factory: () => createActionHostBridge,
+    },
+  );

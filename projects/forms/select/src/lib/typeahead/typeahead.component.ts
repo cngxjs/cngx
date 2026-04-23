@@ -42,9 +42,9 @@ import {
   CNGX_DISPLAY_BINDING_FACTORY,
   type DisplayBinding,
 } from '../shared/display-binding';
-import { createActionHostBridge } from '../shared/action-host-bridge';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
-import { createLocalItemsBuffer } from '../shared/local-items-buffer';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -438,12 +438,14 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   // ── Local-items buffer (quick-create persistence) ──────────────────
 
   /** @internal */
-  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
 
   // ── Action-slot bridge ──────────────────────────────────────────────
 
   /** @internal */
-  private readonly actionBridge = createActionHostBridge({
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
   });
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;

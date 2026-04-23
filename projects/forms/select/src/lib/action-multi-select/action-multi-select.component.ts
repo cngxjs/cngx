@@ -38,7 +38,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-import { createActionHostBridge } from '../shared/action-host-bridge';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import {
   createArrayCommitHandler,
@@ -62,7 +62,7 @@ import {
 } from '../shared/create-commit-handler';
 import type { CngxSelectCreateAction } from '../shared/create-action.types';
 import { createFieldSync } from '../shared/field-sync';
-import { createLocalItemsBuffer } from '../shared/local-items-buffer';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -549,7 +549,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   // ── Local-items buffer ─────────────────────────────────────────────
 
   /** @internal */
-  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
 
   // ── Action-slot bridge (commit routes through create handler) ──────
 
@@ -568,7 +570,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly createCommitController = inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<T>();
 
   /** @internal */
-  private readonly actionBridge = createActionHostBridge({
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
     commit: (draft) => this.handleActionCommit(draft),
     isPending: computed(() => this.createCommitController.isCommitting()),

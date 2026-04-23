@@ -1,4 +1,4 @@
-import { signal, type Signal } from '@angular/core';
+import { InjectionToken, signal, type Signal } from '@angular/core';
 
 import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
@@ -67,3 +67,55 @@ export function createLocalItemsBuffer<T>(
     },
   };
 }
+
+/**
+ * Factory signature matching {@link createLocalItemsBuffer} — used by
+ * {@link CNGX_LOCAL_ITEMS_BUFFER_FACTORY} for DI-swappable buffer
+ * implementations.
+ *
+ * @category interactive
+ */
+export type CngxLocalItemsBufferFactory = <T>(
+  compareWith: Signal<CngxSelectCompareFn<T>>,
+) => LocalItemsBuffer<T>;
+
+/**
+ * DI token resolving the factory used to instantiate a
+ * {@link LocalItemsBuffer}. Defaults to {@link createLocalItemsBuffer};
+ * override to wrap patches with audit logging, backend-sync mirroring,
+ * localStorage persistence, or any other enterprise data-lifecycle
+ * concern without forking the select-family variants.
+ *
+ * Symmetrical to `CNGX_ACTION_HOST_BRIDGE_FACTORY` /
+ * `CNGX_CREATE_COMMIT_HANDLER_FACTORY` — same factory-swap contract,
+ * complementary layer (persistence vs. commit vs. UX guard).
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     {
+ *       provide: CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
+ *       useValue: <T>(compareWith) => {
+ *         const buf = createLocalItemsBuffer<T>(compareWith);
+ *         return {
+ *           items: buf.items,
+ *           patch(item) { auditLog('patch', item); buf.patch(item); },
+ *           clear() { auditLog('clear'); buf.clear(); },
+ *         };
+ *       },
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export const CNGX_LOCAL_ITEMS_BUFFER_FACTORY =
+  new InjectionToken<CngxLocalItemsBufferFactory>(
+    'CngxLocalItemsBufferFactory',
+    {
+      providedIn: 'root',
+      factory: () => createLocalItemsBuffer,
+    },
+  );

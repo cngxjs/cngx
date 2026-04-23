@@ -37,7 +37,7 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-import { createActionHostBridge } from '../shared/action-host-bridge';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
@@ -64,7 +64,7 @@ import {
   type DisplayBinding,
 } from '../shared/display-binding';
 import { createFieldSync } from '../shared/field-sync';
-import { createLocalItemsBuffer } from '../shared/local-items-buffer';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -493,7 +493,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   // ── Local-items buffer (quick-create persistence) ──────────────────
 
   /** @internal */
-  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
 
   // ── Action-slot bridge (routes the commit callback to create) ──────
 
@@ -505,7 +507,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    *
    * @internal
    */
-  private readonly actionBridge = createActionHostBridge({
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
     // `commit` is rebound post-construction once `createHandler` exists.
     // A proper closure captures `this` immediately here; the real

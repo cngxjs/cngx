@@ -34,10 +34,10 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
-import { createActionHostBridge } from '../shared/action-host-bridge';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
-import { createLocalItemsBuffer } from '../shared/local-items-buffer';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
   createTypeaheadController,
   resolvePageJumpTarget,
@@ -468,7 +468,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    *
    * @internal
    */
-  private readonly localItemsBuffer = createLocalItemsBuffer<T>(this.compareWith);
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
 
   // ── Action-slot bridge (dirty-guard + focus-trap policy) ──────────
 
@@ -482,7 +484,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    *
    * @internal
    */
-  private readonly actionBridge = createActionHostBridge({
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
   });
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;

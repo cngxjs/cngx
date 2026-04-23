@@ -105,7 +105,9 @@ export {
 
 // ── Local-items buffer (quick-create persistence) ─────────────────────
 export {
+  CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
   createLocalItemsBuffer,
+  type CngxLocalItemsBufferFactory,
   type LocalItemsBuffer,
 } from './src/lib/shared/local-items-buffer';
 
@@ -122,9 +124,11 @@ export {
   type CngxActionSelectConfigFeature,
 } from './src/lib/shared/action-select-config';
 export {
+  CNGX_ACTION_HOST_BRIDGE_FACTORY,
   createActionHostBridge,
   type ActionHostBridge,
   type ActionHostBridgeOptions,
+  type CngxActionHostBridgeFactory,
 } from './src/lib/shared/action-host-bridge';
 export {
   type CngxSelectActionCallbacks,
