@@ -88,6 +88,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: '@cngx/forms',
     items: [
+      { label: 'Action Multi', path: 'forms/action-multi-select' },
+      { label: 'Action Select', path: 'forms/action-select' },
       { label: 'Autosize', path: 'forms/autosize' },
       { label: 'Form Field', path: 'forms/field' },
       { label: 'File Drop', path: 'forms/file-drop' },
