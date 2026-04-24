@@ -735,7 +735,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   // ── Single-selection state (commit + rollback) ─────────────────────
 
   private readonly commitController = this.core.commitController;
-  private readonly togglingOption = this.core.togglingOption;
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
@@ -749,7 +748,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     // config + per-instance override both flow through identically.
     policy: this.commitErrorAnnouncePolicy,
   });
-  private lastCommittedValue: T | undefined = undefined;
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
     displayWith: this.displayWith,
@@ -817,8 +815,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    this.lastCommittedValue = untracked(() => this.value());
-
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -832,18 +828,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       popoverRef: this.popoverRef,
       closeOnSelect: true,
       commitAction: this.commitAction,
-      onCommit: (intended, opt) => {
-        const previous = this.value();
-        this.lastCommittedValue = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.value.set(intended);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.scalarHandler.beginCommit(intended, previous, action);
-        }
-      },
+      onCommit: (intended, opt) => this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
         const previous = untracked(() => this.value());
         this.scalarHandler.finalizeSelection(intended, opt, previous);
@@ -1077,7 +1062,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     commitMode: this.commitMode,
     core: this.core,
     commitAction: this.commitAction,
-    getLastCommitted: () => this.lastCommittedValue,
     onCommitFinalize: (option, finalValue, previousValue) => {
       this.selectionChange.emit({
         source: this,

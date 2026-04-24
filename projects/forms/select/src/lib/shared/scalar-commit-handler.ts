@@ -1,4 +1,9 @@
-import { InjectionToken, type Signal, type WritableSignal } from '@angular/core';
+import {
+  InjectionToken,
+  untracked,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
 
@@ -29,12 +34,6 @@ export interface ScalarCommitHandlerOptions<T> {
   readonly core: CngxSelectCore<T, T>;
   /** Current commit action. Used by `retryLast` to replay. */
   readonly commitAction: Signal<CngxSelectCommitAction<T> | null>;
-  /**
-   * Last successfully committed snapshot. Consumer owns this field and
-   * updates it *before* invoking `beginCommit` so `retryLast` can replay
-   * against the correct rollback target.
-   */
-  readonly getLastCommitted: () => T | undefined;
   /**
    * Called after a successful commit OR after a `finalizeSelection`
    * (non-commit path). Consumer emits the variant's change-event
@@ -90,6 +89,16 @@ export interface ScalarCommitHandler<T> {
     action: CngxSelectCommitAction<T>,
   ): void;
   /**
+   * Dispatch a commit from an AD-activation event. Absorbs the
+   * `previous = value(); togglingOption.set(opt); optimistic write;
+   * beginCommit` orchestration that every scalar `onCommit` callback
+   * in the `createADActivationDispatcher` options used to inline
+   * identically. When no `commitAction` is bound the method is a
+   * no-op — the consumer should wire `onActivate` to
+   * `finalizeSelection` for the non-commit path.
+   */
+  dispatchFromActivation(intended: T, option: CngxSelectOptionDef<T>): void;
+  /**
    * Finalize a non-commit selection (no `commitAction` bound). Writes
    * the component's primary value, mirrors into input text when
    * `onValueWrite` is wired, then invokes `onCommitFinalize` for the
@@ -104,8 +113,10 @@ export interface ScalarCommitHandler<T> {
   ): void;
   /**
    * Replay the last failed commit. Reads `commitController.intendedValue()`
-   * + `commitAction()` + `getLastCommitted()`. No-op when the
-   * preconditions are unmet (no action bound, nothing intended).
+   * + `commitAction()` + the handler's internal last-committed snapshot
+   * (updated on every `beginCommit` / `dispatchFromActivation` call).
+   * No-op when the preconditions are unmet (no action bound, nothing
+   * intended).
    */
   retryLast(): void;
 }
@@ -152,6 +163,12 @@ export function createScalarCommitHandler<T>(
   const commitController = opts.core.commitController;
   const togglingOption = opts.core.togglingOption;
 
+  // Rollback target for a commit in flight. Seeded from the current
+  // value (`untracked` — the handler is constructed inside an injection
+  // context and shouldn't register the initial read as a reactive dep)
+  // and refreshed on every `beginCommit` / `dispatchFromActivation`.
+  let lastCommitted: T | undefined = untracked(() => opts.value());
+
   const reconcileValue = (target: T | undefined): void => {
     const eq = opts.compareWith() as CngxSelectCompareFn<unknown>;
     if (!eq(opts.value(), target)) {
@@ -178,6 +195,7 @@ export function createScalarCommitHandler<T>(
     previous: T | undefined,
     action: CngxSelectCommitAction<T>,
   ): void => {
+    lastCommitted = previous;
     opts.onStateChange('pending');
     const mode = opts.commitMode();
     commitController.begin(action, intended, previous, {
@@ -205,16 +223,37 @@ export function createScalarCommitHandler<T>(
     });
   };
 
+  const dispatchFromActivation = (
+    intended: T,
+    option: CngxSelectOptionDef<T>,
+  ): void => {
+    const previous = opts.value();
+    togglingOption.set(option);
+    if (opts.commitMode() === 'optimistic') {
+      opts.value.set(intended);
+    }
+    const action = opts.commitAction();
+    if (!action) {
+      // No action bound → the AD dispatcher will also fire `onActivate`
+      // and the consumer's `finalizeSelection` path handles the write.
+      // Keep lastCommitted in sync anyway so a later retry after a
+      // commit-path configuration has something sensible to replay.
+      lastCommitted = previous;
+      return;
+    }
+    beginCommit(intended, previous, action);
+  };
+
   const retryLast = (): void => {
     const intendedNext = commitController.intendedValue();
     const action = opts.commitAction();
     if (!action || intendedNext === undefined) {
       return;
     }
-    beginCommit(intendedNext as T, opts.getLastCommitted(), action);
+    beginCommit(intendedNext as T, lastCommitted, action);
   };
 
-  return { beginCommit, finalizeSelection, retryLast };
+  return { beginCommit, dispatchFromActivation, finalizeSelection, retryLast };
 }
 
 /**
