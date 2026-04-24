@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';
+import { SelectVirtualComboDemoWrapper } from './select-virtual-combo-wrapper.component';
 import type { CngxSelectOptionDef } from '@cngx/forms/select';
 
 @Component({
@@ -15,13 +16,14 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
     ExampleCardComponent,
     DocShellComponent,
     SelectVirtualDemoWrapper,
+    SelectVirtualComboDemoWrapper,
   ],
   template: `
     <app-doc-shell title="Select — Virtualized"
-      description="10,000-option <code>&lt;cngx-select&gt;</code> via <code>CNGX_PANEL_RENDERER_FACTORY</code> + in-house <code>injectRecycler</code>. Only ~20 option rows in the DOM at any time."
-      overview="<p>The select family renders every option into the DOM by default — fine up to ~500 options, degrades beyond. The <code>CNGX_PANEL_RENDERER_FACTORY</code> token is the opt-in extension point for virtualisation.</p><p>The demo wraps <code>&lt;cngx-select&gt;</code> in a thin component that:</p><ol><li>Creates a <code>CngxRecycler</code> via <code>injectRecycler({ scrollElement: &quot;.cngx-select__panel&quot;, ... })</code></li><li>Provides <code>CNGX_PANEL_RENDERER_FACTORY</code> as <code>createRecyclerPanelRendererFactory(this.recycler)</code> via <code>viewProviders</code></li></ol><p>The select itself handles the AD-virtual-scroll bridge internally — arrow navigation past the rendered window triggers <code>recycler.scrollToIndex()</code>; <code>aria-activedescendant</code> follows the rendered range as it scrolls into view.</p><p>Each option row gets <code>aria-setsize=&quot;10000&quot;</code> + <code>aria-posinset</code> for the absolute position, so AT reads &quot;5 of 10000&quot; correctly.</p>"
-      [apiComponents]="['CngxSelect', 'CNGX_PANEL_RENDERER_FACTORY', 'createRecyclerPanelRendererFactory', 'injectRecycler', 'connectRecyclerToActiveDescendant']">
-      <app-example-card title="10,000 options via recycler — only ~20 rendered"
+      description="10,000-option virtualisation for every select-family variant via <code>provideSelectConfig(withVirtualization())</code> + the in-house <code>injectRecycler</code>. No consumer wrapper needed."
+      overview="<p>The select family renders every option into the DOM by default — fine up to ~500 options, degrades beyond. <code>CngxSelectConfig.virtualization</code> (app-wide via <code>provideSelectConfig(withVirtualization())</code>, feature-scoped via <code>provideSelectConfigAt</code>) opts in every variant — <code>&lt;cngx-select&gt;</code>, <code>&lt;cngx-multi-select&gt;</code>, <code>&lt;cngx-combobox&gt;</code>, <code>&lt;cngx-typeahead&gt;</code>, <code>&lt;cngx-reorderable-multi-select&gt;</code>, <code>&lt;cngx-action-select&gt;</code>, <code>&lt;cngx-action-multi-select&gt;</code> — to the in-house recycler.</p><p>The variant itself owns the wire-up (<code>setupVirtualization</code> helper): injects the recycler against its own popover as scroll container, binds <code>[virtualCount]</code> on the listbox so <code>CngxActiveDescendant</code> treats the window as a virtual list, and wires the AD → recycler scroll bridge so arrow navigation past the rendered window calls <code>recycler.scrollToIndex()</code>.</p><p>Each option row gets <code>aria-setsize=&quot;10000&quot;</code> + <code>aria-posinset</code> so AT reads &quot;5 of 10000&quot; correctly. The consumer-level <code>CNGX_PANEL_RENDERER_FACTORY</code> still wins as a full escape hatch for CDK viewport / third-party / server-side paging.</p><p>CngxTreeSelect does NOT virtualise — tree semantics (expand/collapse mid-scroll, per-level aria-setsize, scrollToIndex requiring ancestor-expansion) are tracked as separate work.</p>"
+      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'withVirtualization', 'provideSelectConfig', 'CNGX_PANEL_RENDERER_FACTORY', 'createRecyclerPanelRendererFactory', 'injectRecycler', 'connectRecyclerToActiveDescendant']">
+      <app-example-card title="10,000 options — CngxSelect via withVirtualization()"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
@@ -38,10 +40,26 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
     <div class="event-row"><span class="event-label">Total options</span><span class="event-value">{{ hugeDataset.length }}</span></div>
   </div>
       </app-example-card>
-      <app-example-card title="Same wrapper with only 20 options"
+      <app-example-card title="Same wire-up on CngxCombobox — multi-select with live filter"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
+        
+  <cngx-demo-virtual-combo
+    [label]="'10,000 items (combobox)'"
+    [options]="hugeDataset"
+    [(values)]="comboValues"
+    placeholder="Type to filter…"
+    data-testid="virtual-combobox"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Selected</span><span class="event-value">{{ comboValues().length }} chips</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Same wrapper with only 20 options"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <cngx-demo-virtual-select
     [label]="'Small list'"
@@ -58,8 +76,9 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
   `,
 })
 export class SelectVirtualDemoComponent {
-  protected readonly _s0 = 'Open the panel and inspect the DOM. The option row count is roughly <code>floor(max-height / estimateSize) + overscan × 2</code> — ~20 rows for the default 16rem panel + 32 px estimated row height + 6 overscan. The rest of the 10,000 items are spacer height.';
-  protected readonly _s1 = 'With 20 items × 32 px estimated height the content exceeds the panel\'s 16rem viewport — the recycler still windows (~8 visible + overscan). <code>aria-setsize</code> reports the full 20; the window slides on scroll. The identity shortcut only kicks in when the viewport exceeds the total content height.';
+  protected readonly _s0 = 'The wrapper adds a single <code>provideSelectConfigAt(withVirtualization({ estimateSize: 32, overscan: 6 }))</code> in <code>viewProviders</code> — no manual <code>injectRecycler</code> call, no custom factory. Open the panel and inspect the DOM: ~14 rows rendered out of 10,000, spacer divs before/after, <code>aria-setsize="10000"</code> on each row.';
+  protected readonly _s1 = 'Identical config, different variant. Type to filter — the recycler tracks the filtered totalCount live. Arrow keys past the rendered window trigger <code>scrollToIndex</code> via the AD bridge.';
+  protected readonly _s2 = 'With 20 items × 32 px estimated height the content exceeds the panel\'s 16rem viewport — the recycler still windows (~14 visible + overscan). <code>aria-setsize</code> reports the full 20; the window slides on scroll. The identity shortcut only kicks in when the viewport exceeds the total content height.';
   protected readonly _srcHtml0 = `<cngx-demo-virtual-select
     [label]="'10,000 items'"
     [options]="hugeDataset"
@@ -72,6 +91,7 @@ export class SelectVirtualDemoComponent {
     <div class="event-row"><span class="event-label">Total options</span><span class="event-value">{{ hugeDataset.length }}</span></div>
   </div>`;
   protected readonly _srcTs0 = `import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';
+import { SelectVirtualComboDemoWrapper } from './select-virtual-combo-wrapper.component';
 import type { CngxSelectOptionDef } from '@cngx/forms/select';
 
 
@@ -81,9 +101,34 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
   );
 
   protected readonly largeValue = signal<string | undefined>(undefined);
+  protected readonly comboValues = signal<string[]>([]);
   protected readonly smallValue = signal<string | undefined>(undefined);
   protected readonly smallDataset: CngxSelectOptionDef<string>[] = this.hugeDataset.slice(0, 20);`;
-  protected readonly _srcHtml1 = `<cngx-demo-virtual-select
+  protected readonly _srcHtml1 = `<cngx-demo-virtual-combo
+    [label]="'10,000 items (combobox)'"
+    [options]="hugeDataset"
+    [(values)]="comboValues"
+    placeholder="Type to filter…"
+    data-testid="virtual-combobox"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Selected</span><span class="event-value">{{ comboValues().length }} chips</span></div>
+  </div>`;
+  protected readonly _srcTs1 = `import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';
+import { SelectVirtualComboDemoWrapper } from './select-virtual-combo-wrapper.component';
+import type { CngxSelectOptionDef } from '@cngx/forms/select';
+
+
+  protected readonly hugeDataset: CngxSelectOptionDef<string>[] = Array.from(
+    { length: 10000 },
+    (_, i) => ({ value: 'id-' + i, label: 'Item #' + (i + 1).toString().padStart(5, '0') }),
+  );
+
+  protected readonly largeValue = signal<string | undefined>(undefined);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly smallValue = signal<string | undefined>(undefined);
+  protected readonly smallDataset: CngxSelectOptionDef<string>[] = this.hugeDataset.slice(0, 20);`;
+  protected readonly _srcHtml2 = `<cngx-demo-virtual-select
     [label]="'Small list'"
     [options]="smallDataset"
     [(value)]="smallValue"
@@ -93,7 +138,8 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Selected</span><span class="event-value">{{ smallValue() ?? '—' }}</span></div>
   </div>`;
-  protected readonly _srcTs1 = `import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';
+  protected readonly _srcTs2 = `import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';
+import { SelectVirtualComboDemoWrapper } from './select-virtual-combo-wrapper.component';
 import type { CngxSelectOptionDef } from '@cngx/forms/select';
 
 
@@ -103,6 +149,7 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
   );
 
   protected readonly largeValue = signal<string | undefined>(undefined);
+  protected readonly comboValues = signal<string[]>([]);
   protected readonly smallValue = signal<string | undefined>(undefined);
   protected readonly smallDataset: CngxSelectOptionDef<string>[] = this.hugeDataset.slice(0, 20);`;
 
@@ -112,6 +159,7 @@ import type { CngxSelectOptionDef } from '@cngx/forms/select';
   );
 
   protected readonly largeValue = signal<string | undefined>(undefined);
+  protected readonly comboValues = signal<string[]>([]);
   protected readonly smallValue = signal<string | undefined>(undefined);
   protected readonly smallDataset: CngxSelectOptionDef<string>[] = this.hugeDataset.slice(0, 20);
   

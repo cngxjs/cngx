@@ -319,6 +319,16 @@ export class CngxTreeSelect<T = unknown>
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
+
+  // Tree virtualisation is intentionally not wired via
+  // `CngxSelectConfig.virtualization` yet. Tree semantics — dynamic
+  // expand/collapse changes visible count mid-scroll, `aria-setsize`
+  // is per-level (not flat), and `scrollToIndex(42)` on a collapsed
+  // ancestor needs to expand the path first — don't map cleanly onto
+  // the flat-list recycler integration the rest of the family uses.
+  // A proper tree-recycler design is tracked as follow-up work; until
+  // then, `<cngx-tree-select>` renders every node regardless of the
+  // app-wide config entry.
   private readonly autoId = nextUid('cngx-tree-select');
 
   // ── Inputs ─────────────────────────────────────────────────────────

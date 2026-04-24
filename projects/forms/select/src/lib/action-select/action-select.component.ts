@@ -73,6 +73,8 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { handlePageJumpKey } from '../shared/page-jump-handler';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -238,6 +240,7 @@ export interface CngxActionSelectChange<T = unknown> {
           (focus)="handleFocus()"
           (blur)="handleBlur($event)"
           (keydown.enter)="handleTriggerEnter($event)"
+          (keydown)="handleInputKeydown($event)"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-action-select__suffix" (click)="$event.stopPropagation()">
@@ -297,6 +300,7 @@ export interface CngxActionSelectChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
         </div>
@@ -721,6 +725,18 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.scalarHandler.retryLast(),
   );
 
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
       const v = this.value();
@@ -910,6 +926,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     }
     event.preventDefault();
     this.handleActionCommit();
+  }
+
+  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  protected handleInputKeydown(event: KeyboardEvent): void {
+    handlePageJumpKey(event, {
+      listbox: this.listboxRef(),
+      popover: this.popoverRef(),
+    });
   }
 
   private handleActionCommit(draft?: { label: string }): void {

@@ -94,18 +94,19 @@ export function createScrollObserver(
   });
 
   // If the element wasn't found on the first effect run (before DOM is ready),
-  // retry after the next render cycle. afterNextRender fires once per call —
-  // the effect will re-run via retryTick and either find the element or stay dormant.
-  if (typeof elementRef === 'string') {
-    afterNextRender(() => {
-      // untracked: afterNextRender may run in the same microtask as the effect.
-      // Reading elementState() without untracked could create an unintended dependency
-      // in whatever reactive context is active.
-      if (untracked(() => elementState()) == null) {
-        retryTick.update((v) => v + 1);
-      }
-    });
-  }
+  // retry after the next render cycle. Fires for ALL input shapes — string
+  // selectors resolve lazily via `querySelector`, but `ElementRef` from a
+  // `viewChild` also starts out with `nativeElement == null` until Angular
+  // resolves the query. `HTMLElement` inputs that are non-null at call time
+  // short-circuit on the first effect run so the retry is a no-op.
+  afterNextRender(() => {
+    // untracked: afterNextRender may run in the same microtask as the effect.
+    // Reading elementState() without untracked could create an unintended dependency
+    // in whatever reactive context is active.
+    if (untracked(() => elementState()) == null) {
+      retryTick.update((v) => v + 1);
+    }
+  });
 
   // Additional cleanup via DestroyRef as safety net
   destroyRef.onDestroy(() => {

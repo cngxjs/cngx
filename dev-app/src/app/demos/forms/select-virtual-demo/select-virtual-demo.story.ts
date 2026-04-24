@@ -5,9 +5,13 @@ export const STORY: DemoSpec = {
   navLabel: 'Select (virtual)',
   navCategory: 'field',
   description:
-    '10,000-option <code>&lt;cngx-select&gt;</code> via <code>CNGX_PANEL_RENDERER_FACTORY</code> + in-house <code>injectRecycler</code>. Only ~20 option rows in the DOM at any time.',
+    '10,000-option virtualisation for every select-family variant via <code>provideSelectConfig(withVirtualization())</code> + the in-house <code>injectRecycler</code>. No consumer wrapper needed.',
   apiComponents: [
     'CngxSelect',
+    'CngxMultiSelect',
+    'CngxCombobox',
+    'withVirtualization',
+    'provideSelectConfig',
     'CNGX_PANEL_RENDERER_FACTORY',
     'createRecyclerPanelRendererFactory',
     'injectRecycler',
@@ -15,16 +19,13 @@ export const STORY: DemoSpec = {
   ],
   overview:
     '<p>The select family renders every option into the DOM by default — fine up to ~500 options, degrades beyond. ' +
-    'The <code>CNGX_PANEL_RENDERER_FACTORY</code> token is the opt-in extension point for virtualisation.</p>' +
-    '<p>The demo wraps <code>&lt;cngx-select&gt;</code> in a thin component that:</p>' +
-    '<ol>' +
-    '<li>Creates a <code>CngxRecycler</code> via <code>injectRecycler({ scrollElement: ".cngx-select__panel", ... })</code></li>' +
-    '<li>Provides <code>CNGX_PANEL_RENDERER_FACTORY</code> as <code>createRecyclerPanelRendererFactory(this.recycler)</code> via <code>viewProviders</code></li>' +
-    '</ol>' +
-    '<p>The select itself handles the AD-virtual-scroll bridge internally — arrow navigation past the rendered window triggers <code>recycler.scrollToIndex()</code>; <code>aria-activedescendant</code> follows the rendered range as it scrolls into view.</p>' +
-    '<p>Each option row gets <code>aria-setsize="10000"</code> + <code>aria-posinset</code> for the absolute position, so AT reads "5 of 10000" correctly.</p>',
+    '<code>CngxSelectConfig.virtualization</code> (app-wide via <code>provideSelectConfig(withVirtualization())</code>, feature-scoped via <code>provideSelectConfigAt</code>) opts in every variant — <code>&lt;cngx-select&gt;</code>, <code>&lt;cngx-multi-select&gt;</code>, <code>&lt;cngx-combobox&gt;</code>, <code>&lt;cngx-typeahead&gt;</code>, <code>&lt;cngx-reorderable-multi-select&gt;</code>, <code>&lt;cngx-action-select&gt;</code>, <code>&lt;cngx-action-multi-select&gt;</code> — to the in-house recycler.</p>' +
+    '<p>The variant itself owns the wire-up (<code>setupVirtualization</code> helper): injects the recycler against its own popover as scroll container, binds <code>[virtualCount]</code> on the listbox so <code>CngxActiveDescendant</code> treats the window as a virtual list, and wires the AD → recycler scroll bridge so arrow navigation past the rendered window calls <code>recycler.scrollToIndex()</code>.</p>' +
+    '<p>Each option row gets <code>aria-setsize="10000"</code> + <code>aria-posinset</code> so AT reads "5 of 10000" correctly. The consumer-level <code>CNGX_PANEL_RENDERER_FACTORY</code> still wins as a full escape hatch for CDK viewport / third-party / server-side paging.</p>' +
+    '<p>CngxTreeSelect does NOT virtualise — tree semantics (expand/collapse mid-scroll, per-level aria-setsize, scrollToIndex requiring ancestor-expansion) are tracked as separate work.</p>',
   moduleImports: [
     "import { SelectVirtualDemoWrapper } from './select-virtual-wrapper.component';",
+    "import { SelectVirtualComboDemoWrapper } from './select-virtual-combo-wrapper.component';",
     "import type { CngxSelectOptionDef } from '@cngx/forms/select';",
   ],
   setup: `
@@ -34,14 +35,15 @@ export const STORY: DemoSpec = {
   );
 
   protected readonly largeValue = signal<string | undefined>(undefined);
+  protected readonly comboValues = signal<string[]>([]);
   protected readonly smallValue = signal<string | undefined>(undefined);
   protected readonly smallDataset: CngxSelectOptionDef<string>[] = this.hugeDataset.slice(0, 20);
   `,
   sections: [
     {
-      title: '10,000 options via recycler — only ~20 rendered',
+      title: '10,000 options — CngxSelect via withVirtualization()',
       subtitle:
-        'Open the panel and inspect the DOM. The option row count is roughly <code>floor(max-height / estimateSize) + overscan × 2</code> — ~20 rows for the default 16rem panel + 32 px estimated row height + 6 overscan. The rest of the 10,000 items are spacer height.',
+        'The wrapper adds a single <code>provideSelectConfigAt(withVirtualization({ estimateSize: 32, overscan: 6 }))</code> in <code>viewProviders</code> — no manual <code>injectRecycler</code> call, no custom factory. Open the panel and inspect the DOM: ~14 rows rendered out of 10,000, spacer divs before/after, <code>aria-setsize="10000"</code> on each row.',
       imports: ['SelectVirtualDemoWrapper'],
       template: `
   <cngx-demo-virtual-select
@@ -57,9 +59,26 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
+      title: 'Same wire-up on CngxCombobox — multi-select with live filter',
+      subtitle:
+        'Identical config, different variant. Type to filter — the recycler tracks the filtered totalCount live. Arrow keys past the rendered window trigger <code>scrollToIndex</code> via the AD bridge.',
+      imports: ['SelectVirtualComboDemoWrapper'],
+      template: `
+  <cngx-demo-virtual-combo
+    [label]="'10,000 items (combobox)'"
+    [options]="hugeDataset"
+    [(values)]="comboValues"
+    placeholder="Type to filter…"
+    data-testid="virtual-combobox"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Selected</span><span class="event-value">{{ comboValues().length }} chips</span></div>
+  </div>`,
+    },
+    {
       title: 'Same wrapper with only 20 options',
       subtitle:
-        'With 20 items × 32 px estimated height the content exceeds the panel\'s 16rem viewport — the recycler still windows (~8 visible + overscan). <code>aria-setsize</code> reports the full 20; the window slides on scroll. The identity shortcut only kicks in when the viewport exceeds the total content height.',
+        'With 20 items × 32 px estimated height the content exceeds the panel\'s 16rem viewport — the recycler still windows (~14 visible + overscan). <code>aria-setsize</code> reports the full 20; the window slides on scroll. The identity shortcut only kicks in when the viewport exceeds the total content height.',
       imports: ['SelectVirtualDemoWrapper'],
       template: `
   <cngx-demo-virtual-select

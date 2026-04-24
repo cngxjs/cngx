@@ -178,6 +178,8 @@ export {
   withInputMode,
   withMaxVisibleChips,
   withPopoverPlacement,
+  withVirtualization,
+  type CngxSelectVirtualizationConfig,
 } from './src/lib/shared/config';
 
 // ── Commit action types ───────────────────────────────────────────────

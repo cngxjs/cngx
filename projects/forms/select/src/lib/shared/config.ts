@@ -169,6 +169,33 @@ export interface CngxSelectAriaLabels {
 }
 
 /**
+ * Tuning parameters for the built-in recycler-backed virtualiser.
+ * Every field is optional; omitted keys use the defaults shown below.
+ * Consumers who need different knobs (custom scrollElement, per-index
+ * estimateSize function, grid layout) bypass this and provide
+ * `CNGX_PANEL_RENDERER_FACTORY` directly.
+ *
+ * @category interactive
+ */
+export interface CngxSelectVirtualizationConfig {
+  /** Estimated item height in px. Default `32`. */
+  readonly estimateSize?: number;
+  /** Rows rendered outside the viewport for smoother scroll. Default `5`. */
+  readonly overscan?: number;
+  /**
+   * Minimum option count below which virtualisation is skipped
+   * (identity rendering). Useful when the same config applies to
+   * selects of wildly varying sizes. `0` (default) always
+   * virtualises when the config is present.
+   */
+  readonly threshold?: number;
+  /** Passed verbatim to `injectRecycler.scrollDebounce`. Default `16` ms. */
+  readonly scrollDebounce?: number;
+  /** Passed verbatim to `injectRecycler.skeletonDelay`. Default `0`. */
+  readonly skeletonDelay?: number;
+}
+
+/**
  * Visible fallback labels the shared `CngxSelectPanelShell` renders
  * when the consumer hasn't projected a custom template for the
  * corresponding view slot (`*cngxSelectLoading`, `*cngxSelectEmpty`,
@@ -309,6 +336,27 @@ export interface CngxSelectConfig {
    */
   readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate';
   /**
+   * Opt-in virtualisation for every select-family variant in the
+   * config's scope. When present, the variant internally wires a
+   * {@link /projects/common/data/src/recycler/recycler.ts injectRecycler}
+   * against its own popover scroll container — no consumer wrapper
+   * component, no `CNGX_PANEL_RENDERER_FACTORY` override needed for
+   * the common case. Provider-cascaded like every other config key:
+   *
+   * - App-wide: `provideSelectConfig(withVirtualization({ estimateSize: 36 }))`
+   *   — every `<cngx-select>` etc. virtualises.
+   * - Component-scoped: `viewProviders: [...provideSelectConfigAt(withVirtualization())]`
+   *   — only the selects inside this scope virtualise.
+   * - Default (absent / undefined): identity rendering, every option
+   *   in the DOM.
+   *
+   * Consumers who need fully custom virtualisation (CDK viewport,
+   * server-side paging, third-party libs) still provide
+   * `CNGX_PANEL_RENDERER_FACTORY` directly — that token wins over
+   * the config-driven recycler.
+   */
+  readonly virtualization?: CngxSelectVirtualizationConfig | null;
+  /**
    * When `chipOverflow === 'truncate'`, the maximum number of chips
    * rendered before the `+N weitere` badge appears. Values ≤ 0 are
    * coerced to `1` (the badge alone never makes sense). Defaults to
@@ -445,6 +493,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     | null,
   chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate',
   maxVisibleChips: 3,
+  virtualization: null as CngxSelectVirtualizationConfig | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -689,6 +738,35 @@ export function withChipOverflow(
  */
 export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
   return feature({ maxVisibleChips: Math.max(1, count) });
+}
+
+/**
+ * Opt in to recycler-backed virtualisation for every select-family
+ * variant in this config's scope. Pass an object to tune
+ * `estimateSize` / `overscan` / `threshold` / `scrollDebounce` /
+ * `skeletonDelay`, or pass `{}` / `true` for the defaults. Pass
+ * `null` (default) to fall back to identity rendering.
+ *
+ * Per-component override via `provideSelectConfigAt` in viewProviders.
+ * Custom virtualisation pipelines (CDK viewport, third-party, server-
+ * side paging) bypass this and provide `CNGX_PANEL_RENDERER_FACTORY`
+ * directly.
+ *
+ * @example
+ * ```ts
+ * provideSelectConfig(
+ *   withVirtualization({ estimateSize: 36, overscan: 8, threshold: 500 }),
+ * )
+ * ```
+ *
+ * @category interactive
+ */
+export function withVirtualization(
+  config: CngxSelectVirtualizationConfig | boolean = true,
+): CngxSelectConfigFeature {
+  const resolved =
+    config === false ? null : config === true ? {} : config;
+  return feature({ virtualization: resolved });
 }
 
 /**

@@ -16,10 +16,20 @@ function panelOf(section: Locator): Locator {
   return section.locator('cngx-demo-virtual-select .cngx-select__panel').first();
 }
 
+function comboTriggerOf(section: Locator): Locator {
+  return section
+    .locator('cngx-demo-virtual-combo cngx-combobox [role="combobox"]')
+    .first();
+}
+
+function comboPanelOf(section: Locator): Locator {
+  return section.locator('cngx-demo-virtual-combo .cngx-select__panel').first();
+}
+
 test.describe('CngxSelect — virtualized panel', () => {
   test('only a window of option rows is in the DOM for a 10k dataset', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options via recycler');
+    const section = card(page, '10,000 options — CngxSelect');
     const trigger = triggerOf(section);
 
     await trigger.click();
@@ -37,7 +47,7 @@ test.describe('CngxSelect — virtualized panel', () => {
 
   test('option rows carry aria-setsize = 10000 + valid aria-posinset', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options via recycler');
+    const section = card(page, '10,000 options — CngxSelect');
     const trigger = triggerOf(section);
 
     await trigger.click();
@@ -56,7 +66,7 @@ test.describe('CngxSelect — virtualized panel', () => {
 
   test('scrolling the panel surfaces a different window', async ({ page }) => {
     await page.goto(ROUTE);
-    const section = card(page, '10,000 options via recycler');
+    const section = card(page, '10,000 options — CngxSelect');
     const trigger = triggerOf(section);
     await trigger.click();
     const panel = panelOf(section);
@@ -73,6 +83,24 @@ test.describe('CngxSelect — virtualized panel', () => {
     const firstAfter = await panel.locator('.cngx-select__option').first().textContent();
     expect(firstAfter).not.toBe(firstBefore);
     expect(firstAfter).toMatch(/Item #0[3-9]\d{3}|Item #1\d{4}/);
+  });
+
+  test('CngxCombobox picks up the same withVirtualization() config', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Same wire-up on CngxCombobox');
+    const trigger = comboTriggerOf(section);
+
+    await trigger.click();
+    const panel = comboPanelOf(section);
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('.cngx-select__option').first()).toBeVisible();
+
+    const count = await panel.locator('.cngx-select__option').count();
+    expect(count).toBeGreaterThan(0);
+    expect(count).toBeLessThan(80);
+    await expect(
+      panel.locator('.cngx-select__option').first(),
+    ).toHaveAttribute('aria-setsize', '10000');
   });
 
   test('small-list section still virtualizes (viewport < content)', async ({ page }) => {

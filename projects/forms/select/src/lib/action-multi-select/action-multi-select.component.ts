@@ -72,6 +72,8 @@ import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/p
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { handlePageJumpKey } from '../shared/page-jump-handler';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
@@ -286,6 +288,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
           (blur)="handleBlur()"
           (backspaceOnEmpty)="removeLastChip()"
           (keydown.enter)="handleTriggerEnter($event)"
+          (keydown)="handleInputKeydown($event)"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-action-multi-select__suffix" (click)="$event.stopPropagation()">
@@ -352,6 +355,7 @@ export interface CngxActionMultiSelectChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
           [(selectedValues)]="values"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
@@ -766,6 +770,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T[]>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
     {
@@ -1075,6 +1091,14 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     }
     event.preventDefault();
     this.handleActionCommit();
+  }
+
+  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  protected handleInputKeydown(event: KeyboardEvent): void {
+    handlePageJumpKey(event, {
+      listbox: this.listboxRef(),
+      popover: this.popoverRef(),
+    });
   }
 
   private handleActionCommit(draft?: { label: string }): void {

@@ -43,6 +43,10 @@ export function resolveSelectConfig(): Required<
       user.maxVisibleChips !== undefined && user.maxVisibleChips > 0
         ? user.maxVisibleChips
         : CNGX_SELECT_DEFAULTS.maxVisibleChips,
+    virtualization:
+      user.virtualization === undefined
+        ? CNGX_SELECT_DEFAULTS.virtualization
+        : user.virtualization,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

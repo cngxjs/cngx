@@ -60,6 +60,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -72,6 +73,7 @@ import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-ha
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -210,6 +212,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
         <span
           class="cngx-select__chip-list"
           [class.cngx-select__chip-list--reordering]="reorderDir.dragging()"
+          [attr.data-overflow]="effectiveChipOverflow()"
           role="group"
           [attr.aria-label]="reorderAriaLabel()"
           [attr.aria-disabled]="reorderDisabled() ? 'true' : null"
@@ -354,6 +357,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
           [(selectedValues)]="values"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
@@ -394,6 +398,16 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * wins over {@link CngxSelectConfig.popoverPlacement}.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Chip-strip overflow strategy. Reorderable enforces that all
+   * chips remain in the DOM (drag-reorder requires it) — a
+   * `'truncate'` value is silently downgraded to `'scroll-x'` via
+   * {@link effectiveChipOverflow}. `'wrap'` (default) and
+   * `'scroll-x'` pass through unchanged.
+   */
+  readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
+    this.config.chipOverflow,
+  );
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
@@ -700,6 +714,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.commitHandler.retryLast(),
   );
 
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T[]>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
     {
@@ -840,6 +866,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * handling. Plan §2 locked the freeze default — reorders are
    * sub-second and a freeze is clearer than mid-gesture visual noise.
    */
+  /**
+   * Effective overflow mode after safety downgrade —
+   * `'truncate'` is unsafe for drag-reorder (hidden chips break
+   * `cngxReorder`'s DOM-scan) so it always becomes `'scroll-x'`.
+   * Pass `'wrap'` or `'scroll-x'` unchanged.
+   *
+   * @internal
+   */
+  protected readonly effectiveChipOverflow = computed<
+    'wrap' | 'scroll-x'
+  >(() => {
+    const mode = this.chipOverflow();
+    return mode === 'truncate' ? 'scroll-x' : mode;
+  });
+
   protected readonly reorderDisabled = computed<boolean>(() => {
     if (this.disabled()) {
       return true;

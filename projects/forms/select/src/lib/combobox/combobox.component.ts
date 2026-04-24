@@ -65,6 +65,8 @@ import {
 } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { handlePageJumpKey } from '../shared/page-jump-handler';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
@@ -261,6 +263,7 @@ export interface CngxComboboxChange<T = unknown> {
           [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
+          (keydown)="handleInputKeydown($event)"
           (backspaceOnEmpty)="removeLastChip()"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
@@ -328,6 +331,7 @@ export interface CngxComboboxChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
           [(selectedValues)]="values"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
@@ -783,6 +787,18 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal — commitErrorContext signal (wired once with retry handler). */
   protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.commitHandler.retryLast());
 
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T[]>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
+
   /**
    * Currently selected options (public). Structurally compared by
    * `.value` under `compareWith` so fresh OptionDef references carrying
@@ -1162,6 +1178,14 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected handleBlur(): void {
     this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
+  }
+
+  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  protected handleInputKeydown(event: KeyboardEvent): void {
+    handlePageJumpKey(event, {
+      listbox: this.listboxRef(),
+      popover: this.popoverRef(),
+    });
   }
 
   // ── Commit orchestration ───────────────────────────────────────────
