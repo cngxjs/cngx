@@ -118,6 +118,7 @@ export {
   provideActionSelectConfigAt,
   resolveActionSelectConfig,
   withActionAriaLabel,
+  withActionPopoverPlacement,
   withActionPosition,
   withCloseOnCreate,
   withFocusTrapBehavior,

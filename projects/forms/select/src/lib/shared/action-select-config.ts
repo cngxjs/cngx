@@ -6,6 +6,8 @@ import {
   type Provider,
 } from '@angular/core';
 
+import type { PopoverPlacement } from '@cngx/common/popover';
+
 /**
  * Policy for when `CngxFocusTrap` activates on the shared panel
  * shell while an inline `*cngxSelectAction` workflow is in flight:
@@ -86,6 +88,21 @@ export interface CngxActionSelectConfig {
    * keep the behaviour predictable.
    */
   readonly liveInputFallback?: boolean;
+  /**
+   * Default placement of the action-organism popover panel relative
+   * to the trigger. Mirrors the hardcoded `placement="bottom"` the
+   * shipped organisms used before this key existed. Apps with a
+   * top-opening design language (e.g. the action floats a docked
+   * sheet above the trigger) set `'top'` here and every
+   * `CngxActionSelect` / `CngxActionMultiSelect` follows.
+   *
+   * Defaults to `'bottom'`. Only the action organisms read this key
+   * today — the flat select-family variants keep their own hardcoded
+   * placement because re-configuring those is already possible via
+   * the primitive `<div cngxPopover placement="…">` inside the
+   * template overlay a consumer would project.
+   */
+  readonly popoverPlacement?: PopoverPlacement;
 }
 
 /**
@@ -102,6 +119,7 @@ export const CNGX_ACTION_SELECT_DEFAULTS: Required<CngxActionSelectConfig> = {
   closeOnCreate: null,
   actionPosition: 'bottom',
   liveInputFallback: true,
+  popoverPlacement: 'bottom',
 };
 
 /**
@@ -194,6 +212,19 @@ export function withLiveInputFallback(
 }
 
 /**
+ * Override the default popover-placement for the action organisms.
+ * Accepts any `PopoverPlacement` the primitive `cngxPopover` directive
+ * understands (`'top'`, `'top-start'`, `'bottom-end'`, `'right'`, …).
+ *
+ * @category interactive
+ */
+export function withActionPopoverPlacement(
+  placement: PopoverPlacement,
+): CngxActionSelectConfigFeature {
+  return feature({ popoverPlacement: placement });
+}
+
+/**
  * App-wide defaults for the action-select plumbing. Composable via
  * the `with*` helpers. Component-scoped overrides
  * (`provideActionSelectConfigAt`) win.
@@ -268,5 +299,7 @@ export function resolveActionSelectConfig(): Required<CngxActionSelectConfig> {
     actionPosition: user.actionPosition ?? CNGX_ACTION_SELECT_DEFAULTS.actionPosition,
     liveInputFallback:
       user.liveInputFallback ?? CNGX_ACTION_SELECT_DEFAULTS.liveInputFallback,
+    popoverPlacement:
+      user.popoverPlacement ?? CNGX_ACTION_SELECT_DEFAULTS.popoverPlacement,
   };
 }

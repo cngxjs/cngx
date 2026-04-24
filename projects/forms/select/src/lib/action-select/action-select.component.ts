@@ -26,7 +26,7 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -280,7 +280,7 @@ export interface CngxActionSelectChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -407,6 +407,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
     this.actionConfig.actionPosition,
+  );
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxActionSelectConfig.popoverPlacement} — app
+   * default `'bottom'` if neither is set. Accepts any `PopoverPlacement`
+   * the `cngxPopover` directive understands.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(
+    this.actionConfig.popoverPlacement,
   );
 
   /** Two-way single-value binding. */
