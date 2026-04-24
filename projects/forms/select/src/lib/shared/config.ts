@@ -168,6 +168,47 @@ export interface CngxSelectAriaLabels {
   readonly chipRemove?: string;
 }
 
+/**
+ * Visible fallback labels the shared `CngxSelectPanelShell` renders
+ * when the consumer hasn't projected a custom template for the
+ * corresponding view slot (`*cngxSelectLoading`, `*cngxSelectEmpty`,
+ * `*cngxSelectError`, `*cngxSelectCommitError`). Every key is optional
+ * — a missing key keeps the library default (mixed DE/EN, preserved
+ * from day one). Apps that ship an `<cngx-select>` against a non-DE,
+ * non-EN locale override the full bundle via
+ * `provideSelectConfig(withFallbackLabels({ ... }))` OR per-slot.
+ *
+ * Per-instance template projection still wins — a slot with a custom
+ * `TemplateRef` never reaches the fallback path.
+ *
+ * @category interactive
+ */
+export interface CngxSelectFallbackLabels {
+  /** Fallback body when `loadingVariant === 'text'`. Default `'Loading…'`. */
+  readonly loading?: string;
+  /** Fallback body for the `empty` / `none` async views. Default `'No Options'`. */
+  readonly empty?: string;
+  /** Fallback message for the first-load error case. Default `'Loading failed'`. */
+  readonly loadFailed?: string;
+  /** Fallback retry-button label for the first-load error. Default `'Retry'`. */
+  readonly loadFailedRetry?: string;
+  /**
+   * Fallback message for the inline refresh error (options stale + a
+   * refresh attempt failed). Default `'Aktualisieren fehlgeschlagen'`.
+   */
+  readonly refreshFailed?: string;
+  /** Fallback retry-button label for the inline refresh error. Default `'Nochmal versuchen'`. */
+  readonly refreshFailedRetry?: string;
+  /**
+   * Fallback message for the commit-error banner (fires when a
+   * bound `[commitAction]` rejects with `commitErrorDisplay === 'banner'`).
+   * Default `'Speichern fehlgeschlagen'`.
+   */
+  readonly commitFailed?: string;
+  /** Fallback retry-button label for the commit-error banner. Default `'Nochmal versuchen'`. */
+  readonly commitFailedRetry?: string;
+}
+
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -254,6 +295,16 @@ export interface CngxSelectConfig {
    */
   readonly ariaLabels?: CngxSelectAriaLabels;
   /**
+   * App-wide visible-label overrides for the shared panel-shell's
+   * async-view fallback UI (loading text, empty body, load/refresh/
+   * commit error messages + retry button labels). See
+   * {@link CngxSelectFallbackLabels} for the key list + library
+   * defaults. Partial — omit a key to keep the default. Per-instance
+   * `*cngxSelectLoading` / `*cngxSelectEmpty` / `*cngxSelectError` /
+   * `*cngxSelectCommitError` template projection still wins.
+   */
+  readonly fallbackLabels?: CngxSelectFallbackLabels;
+  /**
    * Default template overrides (applied when a component instance doesn't
    * project its own). Each slot carries the same typed context a
    * per-instance `*cngxSelect*` directive would receive — so the
@@ -286,7 +337,10 @@ export interface CngxSelectConfig {
  * @internal
  */
 export const CNGX_SELECT_DEFAULTS: Required<
-  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels'>
+  Omit<
+    CngxSelectConfig,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
+  >
 > & {
   readonly panelClass: string | readonly string[];
   readonly templates: Required<NonNullable<CngxSelectConfig['templates']>>;
@@ -294,6 +348,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     readonly format: NonNullable<CngxSelectAnnouncerConfig['format']>;
   };
   readonly ariaLabels: CngxSelectAriaLabels;
+  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
 } = {
   panelWidth: 'trigger',
   loadingVariant: 'spinner',
@@ -376,6 +431,16 @@ export const CNGX_SELECT_DEFAULTS: Required<
     action: null,
   },
   ariaLabels: {},
+  fallbackLabels: {
+    loading: 'Loading…',
+    empty: 'No Options',
+    loadFailed: 'Loading failed',
+    loadFailedRetry: 'Retry',
+    refreshFailed: 'Aktualisieren fehlgeschlagen',
+    refreshFailedRetry: 'Nochmal versuchen',
+    commitFailed: 'Speichern fehlgeschlagen',
+    commitFailedRetry: 'Nochmal versuchen',
+  },
 };
 
 /**
@@ -484,6 +549,36 @@ export function withPopoverPlacement(
   placement: PopoverPlacement,
 ): CngxSelectConfigFeature {
   return feature({ popoverPlacement: placement });
+}
+
+/**
+ * App-wide overrides for the panel-shell's visible fallback labels
+ * (loading text, empty body, load/refresh/commit error messages +
+ * retry button labels). Partial — omit a key to keep the library
+ * default. Per-instance template projection (e.g. `*cngxSelectError`)
+ * still wins over any config entry here.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(App, {
+ *   providers: [
+ *     provideSelectConfig(
+ *       withFallbackLabels({
+ *         loadFailed: 'Échec du chargement',
+ *         loadFailedRetry: 'Réessayer',
+ *         empty: 'Aucune option',
+ *       }),
+ *     ),
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export function withFallbackLabels(
+  labels: CngxSelectFallbackLabels,
+): CngxSelectConfigFeature {
+  return feature({ fallbackLabels: labels });
 }
 
 /**

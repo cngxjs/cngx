@@ -662,6 +662,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =

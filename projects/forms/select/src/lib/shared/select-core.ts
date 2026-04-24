@@ -29,7 +29,10 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
-import { type CngxSelectAnnouncerConfig } from './config';
+import {
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectFallbackLabels,
+} from './config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
@@ -210,6 +213,15 @@ export interface CngxSelectCore<T, TCommit> {
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
+  /**
+   * Resolved panel-shell fallback labels — library defaults merged
+   * with the app's `CngxSelectConfig.fallbackLabels`. The shell reads
+   * these when no custom template is projected for the corresponding
+   * async view. Plain object (not a signal) because the underlying
+   * config is resolved per-injector at component construction and
+   * never mutates — same lifecycle contract as `panelClass`.
+   */
+  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
 
   // ── ARIA / identity ────────────────────────────────────────────────
   readonly resolvedId: Signal<string>;
@@ -802,6 +814,7 @@ export function createSelectCore<T, TCommit>(
     skeletonIndices,
     panelClassList,
     panelWidthCss,
+    fallbackLabels: config.fallbackLabels,
     resolvedId,
     resolvedAriaLabel,
     resolvedAriaLabelledBy,

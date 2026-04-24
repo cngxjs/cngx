@@ -146,6 +146,7 @@ export {
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
   type CngxSelectConfigFeature,
+  type CngxSelectFallbackLabels,
   type CngxSelectTemplateContexts,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
@@ -171,6 +172,7 @@ export {
   withRefreshingVariant,
   withCommitErrorDisplay,
   withCommitErrorAnnouncePolicy,
+  withFallbackLabels,
   withPopoverPlacement,
 } from './src/lib/shared/config';
 

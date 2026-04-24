@@ -126,7 +126,7 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
               <div class="cngx-select__loading-bar" role="status" aria-live="polite" aria-label="Loading"></div>
             }
             @case ('text') {
-              <div class="cngx-select__loading" role="status" aria-live="polite">Loading…</div>
+              <div class="cngx-select__loading" role="status" aria-live="polite">{{ host.fallbackLabels.loading }}</div>
             }
             @default {
               <div class="cngx-select__skeleton" role="status" aria-live="polite" aria-label="Loading">
@@ -142,14 +142,14 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
         @if (host.tpl.empty(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          <div class="cngx-select__empty">No Options</div>
+          <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
         }
       }
       @case ('none') {
         @if (host.tpl.empty(); as tpl) {
           <ng-container *ngTemplateOutlet="tpl" />
         } @else {
-          <div class="cngx-select__empty">No Options</div>
+          <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
         }
       }
       @case ('error') {
@@ -157,9 +157,9 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
           <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
         } @else {
           <div class="cngx-select__error" role="alert">
-            <span class="cngx-select__error-message">Loading failed</span>
+            <span class="cngx-select__error-message">{{ host.fallbackLabels.loadFailed }}</span>
             <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              Retry
+              {{ host.fallbackLabels.loadFailedRetry }}
             </button>
           </div>
         }
@@ -170,9 +170,9 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
             <ng-container *ngTemplateOutlet="tpl; context: host.errorContext()" />
           } @else {
             <div class="cngx-select__error cngx-select__error--inline" role="alert">
-              <span class="cngx-select__error-message">Aktualisieren fehlgeschlagen</span>
+              <span class="cngx-select__error-message">{{ host.fallbackLabels.refreshFailed }}</span>
               <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-                Nochmal versuchen
+                {{ host.fallbackLabels.refreshFailedRetry }}
               </button>
             </div>
           }
@@ -182,9 +182,9 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
             <ng-container *ngTemplateOutlet="tpl; context: host.commitErrorContext()" />
           } @else {
             <div class="cngx-select__commit-error" role="alert">
-              <span class="cngx-select__error-message">Speichern fehlgeschlagen</span>
+              <span class="cngx-select__error-message">{{ host.fallbackLabels.commitFailed }}</span>
               <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
-                Nochmal versuchen
+                {{ host.fallbackLabels.commitFailedRetry }}
               </button>
             </div>
           }

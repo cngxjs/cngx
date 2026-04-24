@@ -14,11 +14,14 @@ import {
  * @internal
  */
 export function resolveSelectConfig(): Required<
-  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels'>
+  Omit<
+    CngxSelectConfig,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
+  >
 > &
   Pick<
     typeof CNGX_SELECT_DEFAULTS,
-    'panelClass' | 'templates' | 'announcer' | 'ariaLabels'
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
   > {
   const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
   return {
@@ -57,6 +60,10 @@ export function resolveSelectConfig(): Required<
     ariaLabels: {
       ...CNGX_SELECT_DEFAULTS.ariaLabels,
       ...user.ariaLabels,
+    },
+    fallbackLabels: {
+      ...CNGX_SELECT_DEFAULTS.fallbackLabels,
+      ...user.fallbackLabels,
     },
   };
 }

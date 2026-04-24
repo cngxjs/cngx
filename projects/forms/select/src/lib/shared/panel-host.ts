@@ -52,6 +52,7 @@ import type {
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
 import type {
+  CngxSelectFallbackLabels,
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
 } from './config';
@@ -113,6 +114,15 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly refreshingVariant: Signal<CngxSelectRefreshingVariant>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly tpl: CngxSelectPanelShellTemplates<T>;
+  /**
+   * Resolved panel-shell fallback labels — every key non-optional,
+   * library defaults applied where the consumer's config is silent.
+   * The shell renders `host.fallbackLabels.loading` / `.empty` /
+   * `.loadFailed` / `.loadFailedRetry` / `.refreshFailed` /
+   * `.refreshFailedRetry` / `.commitFailed` / `.commitFailedRetry`
+   * when no custom template is projected for the corresponding slot.
+   */
+  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
   handleRetry(): void;
 
   /**

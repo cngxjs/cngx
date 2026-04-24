@@ -715,6 +715,9 @@ export class CngxTreeSelect<T = unknown>
   );
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
+  /** @internal — panel-shell fallback labels (i18n). */
+  readonly fallbackLabels = this.config.fallbackLabels;
+
   // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
 
   /**
