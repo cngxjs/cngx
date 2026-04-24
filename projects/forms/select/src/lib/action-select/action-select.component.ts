@@ -13,7 +13,7 @@ import {
   signal,
   untracked,
   viewChild,
-  type ElementRef,
+  ElementRef,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -304,6 +304,7 @@ export interface CngxActionSelectChange<T = unknown> {
 })
 export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly config = resolveSelectConfig();
   private readonly actionConfig = resolveActionSelectConfig();
 
@@ -1014,14 +1015,19 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * True when the given element is a descendant of the component's
-   * root (includes the popover panel + its action-slot template).
+   * host element (includes the popover panel + its action-slot
+   * template, because `<div cngxPopover>` lives inside the host
+   * template even when rendered in the browser's top-layer — `contains`
+   * follows the DOM tree, not the rendering tree).
+   *
+   * Uses the injected host `ElementRef` rather than a `closest()`
+   * query against a hardcoded CSS class so re-skinning the wrapper
+   * doesn't silently break the blur-guard behaviour.
    *
    * @internal
    */
   private isWithinComponent(el: HTMLElement): boolean {
-    const inputNode = this.inputEl()?.nativeElement as HTMLElement | undefined;
-    const root = inputNode?.closest('.cngx-action-select__root');
-    return !!root && root.contains(el);
+    return this.hostEl.nativeElement.contains(el);
   }
 
   // ── Commit / selection finalize ────────────────────────────────────
