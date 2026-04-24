@@ -12,7 +12,12 @@ import { CngxOption } from '@cngx/common/interactive';
 
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
-import type { CngxSelectOptionDef } from '../option.model';
+import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../option.model';
+import {
+  CNGX_PANEL_RENDERER_FACTORY,
+  type PanelRenderer,
+} from '../panel-renderer';
+import { isCngxSelectOptionGroupDef } from '../option.model';
 
 /**
  * Panel body sub-component for the flat (non-tree) select family —
@@ -61,7 +66,7 @@ import type { CngxSelectOptionDef } from '../option.model';
       [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
       [actionPosition]="host.actionPosition?.() ?? 'bottom'"
     >
-      @for (item of host.effectiveOptions(); track $index) {
+      @for (item of renderItems(); track $index) {
         @if (host.isGroup(item)) {
           <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
             @if (host.tpl.optgroup(); as tpl) {
@@ -165,6 +170,48 @@ export class CngxSelectPanel<T = unknown> {
    * sub-component needs.
    */
   protected readonly host = inject(CNGX_SELECT_PANEL_HOST) as CngxSelectPanelHost<T>;
+
+  /**
+   * Consumer-swappable renderer that decides which options enter the
+   * DOM. Defaults to identity (every flat option rendered) via
+   * {@link CNGX_PANEL_RENDERER_FACTORY}. Virtualising renderers swap
+   * this token via `providers` / `viewProviders` to return a
+   * contiguous scroll-window slice of `flatOptions`.
+   *
+   * Grouped options (`CngxSelectOptionGroupDef`) currently bypass the
+   * renderer and render in full — windowing across group boundaries
+   * is ambiguous (a half-rendered group header is UX-weird) and the
+   * family's grouped use-cases tend to be small curated lists rather
+   * than 10k+ records. Flat options run through the renderer
+   * transparently.
+   *
+   * @internal
+   */
+  protected readonly renderer: PanelRenderer<T> = inject(
+    CNGX_PANEL_RENDERER_FACTORY,
+  )<T>({ flatOptions: this.host.flatOptions });
+
+  /**
+   * Items iterated by the template. Grouped paths use
+   * `effectiveOptions` verbatim (groups stay intact for correct
+   * aria-setsize + aria-posinset per group); flat paths use the
+   * renderer's windowed output so virtualisation kicks in
+   * transparently when the consumer provides a custom renderer.
+   *
+   * @internal
+   */
+  protected readonly renderItems = computed<
+    (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[]
+  >(() => {
+    const effective = this.host.effectiveOptions();
+    // If any item is a group, route through `effectiveOptions` as-is —
+    // virtualising renderers deliberately don't touch grouped lists.
+    const hasGroup = effective.some(isCngxSelectOptionGroupDef);
+    if (hasGroup) {
+      return [...effective];
+    }
+    return [...this.renderer.renderOptions()];
+  });
 
   /**
    * All `CngxOption` instances rendered in this panel's view. Exposed

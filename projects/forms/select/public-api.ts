@@ -339,6 +339,15 @@ export {
   type PanelLifecycleEmitterOptions,
 } from './src/lib/shared/panel-lifecycle-emitter';
 
+// ── Shared panel renderer (virtualisation extension point) ───────────
+export {
+  CNGX_PANEL_RENDERER_FACTORY,
+  createIdentityPanelRenderer,
+  type CngxPanelRendererFactory,
+  type PanelRenderer,
+  type PanelRendererInput,
+} from './src/lib/shared/panel-renderer';
+
 // ── Shared search-term effects ────────────────────────────────────────
 export {
   CNGX_SEARCH_EFFECTS_FACTORY,
