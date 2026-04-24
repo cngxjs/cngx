@@ -318,6 +318,15 @@ export {
   type CngxTriggerFocusFactory,
 } from './src/lib/shared/trigger-focus';
 
+// ── Shared dismiss handler ────────────────────────────────────────────
+export {
+  CNGX_DISMISS_HANDLER_FACTORY,
+  createDismissHandler,
+  type CngxDismissHandlerFactory,
+  type DismissHandler,
+  type DismissHandlerOptions,
+} from './src/lib/shared/dismiss-handler';
+
 // ── Shared panel lifecycle emitter ────────────────────────────────────
 export {
   CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY,

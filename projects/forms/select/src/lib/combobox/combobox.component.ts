@@ -63,6 +63,7 @@ import {
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
@@ -1025,17 +1026,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleClickOutside(): void {
-    if (this.actionBridge.shouldBlockDismiss()) {
-      return;
-    }
-    const mode = this.config.dismissOn;
-    if (mode === 'outside' || mode === 'both') {
-      if (this.popoverRef()?.isVisible()) {
-        this.close();
-      }
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleRetry(): void {

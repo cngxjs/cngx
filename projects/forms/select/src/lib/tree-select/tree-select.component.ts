@@ -64,6 +64,7 @@ import {
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { injectResolvedTemplate } from '../shared/resolve-template';
 import {
@@ -1131,12 +1132,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /** @internal */
-  protected handleClickOutside(): void {
-    const mode = this.config.dismissOn;
-    if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
-      this.close();
-    }
-  }
+  /** @internal — click-outside dismissal (no action bridge on tree-select). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleChipRemoveClick(

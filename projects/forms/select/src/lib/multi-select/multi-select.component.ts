@@ -64,6 +64,7 @@ import {
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
@@ -850,17 +851,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /** @internal */
-  protected handleClickOutside(): void {
-    if (this.actionBridge.shouldBlockDismiss()) {
-      return;
-    }
-    const mode = this.config.dismissOn;
-    if (mode === 'outside' || mode === 'both') {
-      if (this.popoverRef()?.isVisible()) {
-        this.close();
-      }
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleRetry(): void {

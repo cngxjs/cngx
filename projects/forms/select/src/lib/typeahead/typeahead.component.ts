@@ -60,6 +60,7 @@ import {
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
@@ -781,15 +782,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  protected handleClickOutside(): void {
-    if (this.actionBridge.shouldBlockDismiss()) {
-      return;
-    }
-    const mode = this.config.dismissOn;
-    if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
-      this.close();
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   protected handleRetry(): void {
     const fn = this.retryFn();

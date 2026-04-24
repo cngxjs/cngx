@@ -59,6 +59,7 @@ import {
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -848,21 +849,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.toggle();
   }
 
-  /** @internal */
-  protected handleClickOutside(): void {
-    // Action-slot dirty-guard: while the consumer's inline workflow is
-    // unsaved, clicks outside do not dismiss the panel. The shell's
-    // capture-phase Escape hook handles the keyboard parallel.
-    if (this.actionBridge.shouldBlockDismiss()) {
-      return;
-    }
-    const mode = this.config.dismissOn;
-    if (mode === 'outside' || mode === 'both') {
-      if (this.popoverRef()?.isVisible()) {
-        this.close();
-      }
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleRetry(): void {
