@@ -1065,7 +1065,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
         option,
         action: 'select',
       });
-      this.core.announce(option, 'added', 1, false);
+      this.core.announce(option, 'added', option ? 1 : 0, false);
     },
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => this.stateChange.emit(status),

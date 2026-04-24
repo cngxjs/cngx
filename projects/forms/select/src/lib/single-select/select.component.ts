@@ -60,6 +60,10 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  type ScalarCommitHandler,
+} from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { resolveTemplate } from '../shared/resolve-template';
 import {
@@ -622,7 +626,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.scalarHandler.retryLast(),
+  );
 
   /** Currently selected option, resolved against `options`. */
   /**
@@ -675,8 +681,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Commit state (delegated) ───────────────────────────────────────
 
-  private readonly commitController = this.core.commitController;
-  private readonly togglingOption = this.core.togglingOption;
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -687,8 +691,64 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     policy: this.commitErrorAnnouncePolicy,
   });
 
-  /** Rollback target for a commit in flight. */
-  private lastCommittedValue: T | undefined = undefined;
+  /**
+   * Shared scalar commit handler. Owns the beginCommit/finalizeSelection/
+   * retryLast triad that this component previously carried inline. The
+   * per-variant wrinkles (popover close timing, selectionChange +
+   * optionSelected emission, announcer hook) ride the options callbacks:
+   *
+   *   - `onStateChange('pending')` → eager-close popover in optimistic mode
+   *   - `onCommitFinalize(opt, value, previous)` → emit selectionChange +
+   *     optionSelected, announce 'added', and close popover in pessimistic
+   *     mode (idempotent when the AD dispatcher already closed it)
+   *   - `onCommitError` → delegate to scalar-commit-error-announcer
+   *
+   * @internal
+   */
+  private readonly scalarHandler: ScalarCommitHandler<T> = inject(
+    CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    onCommitFinalize: (option, finalValue, previousValue) => {
+      this.selectionChange.emit({
+        source: this,
+        value: finalValue,
+        previousValue,
+        option,
+      });
+      this.optionSelected.emit(option);
+      this.core.announce(option, 'added', option ? 1 : 0, false);
+      // Pessimistic commit → the popover stayed open while pending, so
+      // close it now that the write has committed. The AD dispatcher's
+      // `closeOnSelect: true` already handled the non-commit path, and
+      // calling hide() again is a no-op, so this only fires
+      // meaningfully on commit-success.
+      if (this.commitMode() === 'pessimistic') {
+        const pop = this.popoverRef();
+        if (pop?.isVisible()) {
+          pop.hide();
+        }
+      }
+    },
+    onCommitError: (err) => this.announceCommitError(err),
+    onStateChange: (status) => {
+      this.stateChange.emit(status);
+      // Optimistic commit → close the popover eagerly (matches the
+      // historical beginCommit behaviour prior to scalar-handler
+      // extraction — user sees an instant close + rollback on error).
+      if (status === 'pending' && this.commitMode() === 'optimistic') {
+        const pop = this.popoverRef();
+        if (pop?.isVisible()) {
+          pop.hide();
+        }
+      }
+    },
+    onError: (err) => this.commitError.emit(err),
+  });
 
   /** @internal */
   protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
@@ -717,8 +777,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    this.lastCommittedValue = untracked(() => this.value());
-
     // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
@@ -735,34 +793,21 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       popoverRef: this.popoverRef,
       closeOnSelect: true,
       commitAction: this.commitAction,
-      onCommit: (intended, opt) => {
-        // Listbox is in externalActivation mode — value() is still the
-        // pre-pick value. Capture for rollback, then let the commit flow
-        // mutate value on success.
-        const previous = this.value();
-        this.lastCommittedValue = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.value.set(intended);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.beginCommit(intended, previous, action);
-        }
-      },
-      onActivate: (intended) => {
+      onCommit: (intended, opt) =>
+        this.scalarHandler.dispatchFromActivation(intended, opt),
+      onActivate: (intended, opt) => {
         // Capture previous BEFORE the listbox's internal activation
-        // subscriber mutates our value via the [(value)] binding. We're
-        // running inside the dispatcher's untracked() block, and RxJS
-        // Subject subscribers fire in registration order — the listbox
-        // (subscribed during its own constructor) runs before us, so by
-        // the time we're here the value MAY already be the new one.
-        // Reading untracked(value) snapshots whatever has propagated.
-        // If the snapshot equals intended, consumers see
-        // `previousValue === value` — semantically "no change detected"
-        // which is a valid honest report.
+        // subscriber mutates our value via the [(value)] binding.
+        // We're running inside the dispatcher's untracked() block, and
+        // RxJS Subject subscribers fire in registration order — the
+        // listbox (subscribed during its own constructor) runs before
+        // us, so by the time we're here the value MAY already be the
+        // new one. Reading untracked(value) snapshots whatever has
+        // propagated. If the snapshot equals intended, consumers see
+        // `previousValue === value` — semantically "no change
+        // detected" which is a valid honest report.
         const previous = untracked(() => this.value());
-        this.finalizeSelection(intended, previous);
+        this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
@@ -825,65 +870,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       fn();
     }
     this.retry.emit();
-  }
-
-  /** @internal — emit outputs + announcer for a picked value. */
-  private finalizeSelection(value: T | undefined, previousValue: T | undefined): void {
-    const eq = this.compareWith();
-    const opt =
-      value === undefined
-        ? null
-        : (this.flatOptions().find((o) => eq(o.value, value)) ?? null);
-    this.selectionChange.emit({ source: this, value, previousValue, option: opt });
-    this.optionSelected.emit(opt);
-    this.core.announce(opt, 'added', opt ? 1 : 0, false);
-  }
-
-  /** @internal — start a commit. */
-  private beginCommit(
-    intended: T | undefined,
-    previous: T | undefined,
-    action: CngxSelectCommitAction<T>,
-  ): void {
-    this.stateChange.emit('pending');
-
-    const mode = this.commitMode();
-    const pop = this.popoverRef();
-    if (mode === 'optimistic' && pop?.isVisible()) {
-      pop.hide();
-    }
-
-    this.commitController.begin(action, intended, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        if (!Object.is(committed, this.value())) {
-          this.value.set(committed);
-        }
-        if (mode === 'pessimistic' && pop?.isVisible()) {
-          pop.hide();
-        }
-        this.togglingOption.set(null);
-        this.finalizeSelection(committed, previous);
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (!Object.is(this.value(), rollbackTo)) {
-          this.value.set(rollbackTo);
-        }
-        this.announceCommitError(err);
-      },
-    });
-  }
-
-  /** @internal — replay the last failed commit. */
-  private retryCommit(): void {
-    const intended = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action) {
-      return;
-    }
-    this.beginCommit(intended, this.lastCommittedValue, action);
   }
 
   /** @internal */

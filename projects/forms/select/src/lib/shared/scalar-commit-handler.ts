@@ -41,10 +41,20 @@ export interface ScalarCommitHandlerOptions<T> {
    * — the factory stays agnostic to both shapes so `CngxSelect`,
    * `CngxTypeahead`, and `CngxActionSelect` can share this factory
    * without harmonising their change-event interfaces.
+   *
+   * `option` may be `null` on the commit-success path when the final
+   * value isn't represented in `flatOptions()` — this happens when a
+   * server commit returns a value not in the currently-loaded option
+   * set, or on the clear path (`value === undefined`). Consumers that
+   * care emit `option: null` on the change event; consumers that
+   * don't (action-select variants that always resolve the option from
+   * the AD activation) can ignore the null case because their
+   * {@link ScalarCommitHandler.finalizeSelection} call site always
+   * passes a non-null option.
    */
   readonly onCommitFinalize: (
-    option: CngxSelectOptionDef<T>,
-    finalValue: T,
+    option: CngxSelectOptionDef<T> | null,
+    finalValue: T | undefined,
     previousValue: T | undefined,
   ) => void;
   /**
@@ -205,10 +215,19 @@ export function createScalarCommitHandler<T>(
         reconcileValue(finalValue);
         togglingOption.set(null);
         mirrorWrite(finalValue);
-        const opt = opts.core.findOption(finalValue);
-        if (opt) {
-          opts.onCommitFinalize(opt, finalValue, previous);
-        }
+        // `finalValue` can theoretically be undefined if the server
+        // returns undefined and `intended` was also undefined — not
+        // expected from the standard commit flow, but the `committed
+        // ?? intended` chain inherits that nullability from the
+        // controller's return type. Forward the null option to the
+        // consumer unconditionally — the action-select variants' own
+        // onCommitFinalize implementations treat null as "skip" via
+        // their action-discriminant checks; CngxSelect-style variants
+        // that emit-on-null get the semantically correct "cleared"
+        // behaviour for free.
+        const opt =
+          finalValue === undefined ? null : opts.core.findOption(finalValue);
+        opts.onCommitFinalize(opt, finalValue, previous);
       },
       onError: (err, rollbackTo) => {
         opts.onStateChange('error');

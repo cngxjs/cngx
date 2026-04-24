@@ -62,6 +62,10 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  type ScalarCommitHandler,
+} from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
@@ -566,7 +570,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.scalarHandler.retryLast(),
+  );
 
   /**
    * Currently selected option, resolved against `options`. Structurally
@@ -608,8 +614,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   // ── Single-selection state (commit + rollback) ─────────────────────
 
-  private readonly commitController = this.core.commitController;
-  private readonly togglingOption = this.core.togglingOption;
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
@@ -620,7 +624,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
     policy: this.commitErrorAnnouncePolicy,
   });
-  private lastCommittedValue: T | undefined = undefined;
   /**
    * Display binding — owns the value ↔ input-text reconciliation cycle
    * (including `writingFromValue` flag, skipInitial-aware
@@ -639,6 +642,43 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     searchTerm: this.searchTerm,
     skipInitial: this.skipInitial,
     onUserSearchTerm: (term) => this.searchTermChange.emit(term),
+  });
+
+  /**
+   * Shared scalar commit handler. Typeahead-specific wrinkles ride the
+   * callbacks: `onValueWrite` mirrors the committed/rollback value into
+   * the `<input>` via the display binding; `onCommitFinalize` emits
+   * `selectionChange` only when the option resolved (preserves the
+   * pre-extraction behaviour where unknown-value commits silently
+   * dropped the change event — typeahead can't reasonably describe the
+   * pick to AT when the option isn't in the loaded set).
+   *
+   * @internal
+   */
+  private readonly scalarHandler: ScalarCommitHandler<T> = inject(
+    CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    onCommitFinalize: (option, finalValue, previousValue) => {
+      if (option === null || finalValue === undefined) {
+        return;
+      }
+      this.selectionChange.emit({
+        source: this,
+        value: finalValue,
+        previousValue,
+        option,
+      });
+      this.core.announce(option, 'added', 1, false);
+    },
+    onCommitError: (err) => this.announceCommitError(err),
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+    onValueWrite: (v) => this.display.writeFromValue(v),
   });
 
   /** @internal */
@@ -665,8 +705,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    this.lastCommittedValue = untracked(() => this.value());
-
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -683,21 +721,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       popoverRef: this.popoverRef,
       closeOnSelect: true,
       commitAction: this.commitAction,
-      onCommit: (intended, opt) => {
-        const previous = this.value();
-        this.lastCommittedValue = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.value.set(intended);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.beginCommit(intended, previous, action);
-        }
-      },
+      onCommit: (intended, opt) =>
+        this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
         const previous = untracked(() => this.value());
-        this.finalizeSelection(intended, opt, previous);
+        this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
@@ -810,62 +838,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   }
 
   // ── Commit / selection finalize ────────────────────────────────────
-
-  private finalizeSelection(
-    intended: T,
-    option: CngxSelectOptionDef<T>,
-    previousValue: T | undefined,
-  ): void {
-    this.value.set(intended);
-    this.display.writeFromValue(intended);
-    this.selectionChange.emit({ source: this, value: intended, previousValue, option });
-    this.core.announce(option, 'added', 1, false);
-  }
-
-  private beginCommit(intended: T, previous: T | undefined, action: CngxSelectCommitAction<T>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, intended, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValue = committed ?? intended;
-        if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), finalValue)) {
-          this.value.set(finalValue);
-        }
-        this.togglingOption.set(null);
-        const opt = this.core.findOption(finalValue);
-        this.display.writeFromValue(finalValue);
-        if (opt) {
-          this.selectionChange.emit({
-            source: this,
-            value: finalValue,
-            previousValue: previous,
-            option: opt,
-          });
-          this.core.announce(opt, 'added', 1, false);
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          const rollback = rollbackTo ?? undefined;
-          if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), rollback)) {
-            this.value.set(rollback);
-          }
-          this.display.writeFromValue(rollback);
-        }
-        this.announceCommitError(err);
-      },
-    });
-  }
-
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValue, action);
-  }
+  //
+  // beginCommit / finalizeSelection / retryCommit were extracted into
+  // `createScalarCommitHandler` (shared/scalar-commit-handler.ts).
 }
