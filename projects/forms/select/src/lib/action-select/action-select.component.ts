@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
@@ -73,6 +72,7 @@ import {
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -851,19 +851,15 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Auto-open panel on typing — same pattern as CngxTypeahead.
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        if (
-          term !== '' &&
-          !this.panelOpen() &&
-          !this.disabled() &&
-          !this.display.isWritingFromValue()
-        ) {
-          this.open();
-        }
-      });
+    // Search-term effects: auto-open on typing. Same gating as
+    // CngxTypeahead — the display-binding emits searchTermChange via
+    // `onUserSearchTerm`, so the emit path is left undefined here.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      autoOpenGate: () => !this.display.isWritingFromValue(),
     });
   }
 

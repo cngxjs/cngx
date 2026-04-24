@@ -323,3 +323,11 @@ export {
   type CngxPanelLifecycleEmitterFactory,
   type PanelLifecycleEmitterOptions,
 } from './src/lib/shared/panel-lifecycle-emitter';
+
+// ── Shared search-term effects ────────────────────────────────────────
+export {
+  CNGX_SEARCH_EFFECTS_FACTORY,
+  createSearchEffects,
+  type CngxSearchEffectsFactory,
+  type SearchEffectsOptions,
+} from './src/lib/shared/search-effects';

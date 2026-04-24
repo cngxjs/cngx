@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
@@ -72,6 +71,7 @@ import {
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { resolveActionSelectConfig } from '../shared/action-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -983,25 +983,17 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       toFieldValue: (v) => [...v],
     });
 
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        const initial = !this.hasEmittedInitial();
-        this.hasEmittedInitial.set(true);
-        if (initial && this.skipInitial()) {
-          return;
-        }
-        this.searchTermChange.emit(term);
-      });
-    });
-
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        if (term !== '' && !this.panelOpen() && !this.disabled()) {
-          this.open();
-        }
-      });
+    // Search-term effects: skipInitial-gated emit + auto-open on typing.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      emit: {
+        hasEmittedInitial: this.hasEmittedInitial,
+        skipInitial: this.skipInitial,
+        onEmit: (term) => this.searchTermChange.emit(term),
+      },
     });
   }
 

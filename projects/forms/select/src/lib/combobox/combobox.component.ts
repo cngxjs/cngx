@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
@@ -65,6 +64,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -985,27 +985,17 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       toFieldValue: (v) => [...v],
     });
 
-    // Term → searchTermChange output (with [skipInitial] guard).
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        const initial = !this.hasEmittedInitial();
-        this.hasEmittedInitial.set(true);
-        if (initial && this.skipInitial()) {
-          return;
-        }
-        this.searchTermChange.emit(term);
-      });
-    });
-
-    // Term → auto-open panel on typing.
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        if (term !== '' && !this.panelOpen() && !this.disabled()) {
-          this.open();
-        }
-      });
+    // Search-term effects: skipInitial-gated emit + auto-open on typing.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      emit: {
+        hasEmittedInitial: this.hasEmittedInitial,
+        skipInitial: this.skipInitial,
+        onEmit: (term) => this.searchTermChange.emit(term),
+      },
     });
   }
 

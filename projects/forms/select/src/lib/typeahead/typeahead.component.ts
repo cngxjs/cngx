@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
@@ -62,6 +61,7 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -746,22 +746,18 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Auto-open panel on typing — UX convention for autocomplete.
-    // `display.isWritingFromValue` gates library-authored writes
-    // (display-binding seed, commit reconciliation, blur restore)
-    // from triggering the open.
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        if (
-          term !== '' &&
-          !this.panelOpen() &&
-          !this.disabled() &&
-          !this.display.isWritingFromValue()
-        ) {
-          this.open();
-        }
-      });
+    // Search-term effects: auto-open on typing. `autoOpenGate` blocks
+    // the open during library-authored writes (display-binding seed,
+    // commit reconciliation, blur restore) so those internal writes
+    // don't re-open a panel the user just closed. The emit path is
+    // owned by the display binding's `onUserSearchTerm` callback, so
+    // `emit` is deliberately left undefined here.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      autoOpenGate: () => !this.display.isWritingFromValue(),
     });
   }
 
