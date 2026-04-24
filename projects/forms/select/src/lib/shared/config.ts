@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
+import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
 import type {
   CngxSelectActionContext,
   CngxSelectCaretContext,
@@ -181,6 +182,23 @@ export interface CngxSelectConfig {
   readonly refreshingVariant?: CngxSelectRefreshingVariant;
   /** Default surface for `commitAction` errors: banner, inline, or none. */
   readonly commitErrorDisplay?: CngxSelectCommitErrorDisplay;
+  /**
+   * Default live-region policy used when a scalar-commit fails. Every
+   * scalar variant (`CngxSelect`, `CngxTypeahead`, `CngxActionSelect`)
+   * feeds this through `createCommitErrorAnnouncer` so assistive tech
+   * reads either the full error message ({@link CngxCommitErrorAnnouncePolicy}
+   * `kind: 'verbose'`) or a soft "selection removed" sentence
+   * (`kind: 'soft'`).
+   *
+   * Library default **`null`** — each variant applies its own shipped
+   * baseline (`CngxSelect` → verbose/assertive, `CngxTypeahead` +
+   * `CngxActionSelect` → soft). Setting a concrete policy here forces
+   * every scalar variant to adopt it; per-instance
+   * `[commitErrorAnnouncePolicy]` still wins. Array-commit variants
+   * (multi / combobox / reorderable / action-multi) announce through
+   * their shared "removed" formatter path and don't read this key.
+   */
+  readonly commitErrorAnnouncePolicy?: CngxCommitErrorAnnouncePolicy | null;
   /** Class(es) applied to the panel root for theming. */
   readonly panelClass?: string | readonly string[];
   /** Typeahead buffer reset window in ms. */
@@ -263,6 +281,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   skeletonRowCount: 3,
   refreshingVariant: 'bar',
   commitErrorDisplay: 'banner',
+  commitErrorAnnouncePolicy: null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -410,6 +429,23 @@ export function withCommitErrorDisplay(
   display: CngxSelectCommitErrorDisplay,
 ): CngxSelectConfigFeature {
   return feature({ commitErrorDisplay: display });
+}
+
+/**
+ * Override the scalar-commit error-announce policy app-wide. Forces
+ * `CngxSelect` / `CngxTypeahead` / `CngxActionSelect` to adopt the
+ * supplied policy as their baseline. Pass `null` to restore each
+ * variant's shipped default (`CngxSelect` verbose/assertive,
+ * `CngxTypeahead` + `CngxActionSelect` soft).
+ *
+ * Per-instance `[commitErrorAnnouncePolicy]` input still wins.
+ *
+ * @category interactive
+ */
+export function withCommitErrorAnnouncePolicy(
+  policy: CngxCommitErrorAnnouncePolicy | null,
+): CngxSelectConfigFeature {
+  return feature({ commitErrorAnnouncePolicy: policy });
 }
 
 /**

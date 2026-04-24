@@ -10,7 +10,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   ElementRef,
@@ -357,6 +356,19 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly commitMode = input<CngxSelectCommitMode>('optimistic');
   readonly commitErrorDisplay = input<CngxSelectCommitErrorDisplay>(
     this.config.commitErrorDisplay,
+  );
+  /**
+   * Scalar-commit error-announce policy. Controls whether a failing
+   * commit reads the verbatim error message (`'verbose'`) or a soft
+   * "selection removed" sentence (`'soft'`). Defaults from
+   * {@link CngxSelectConfig.commitErrorAnnouncePolicy} — app-wide
+   * default is verbose/assertive; this variant historically announced
+   * `'soft'` so its per-instance default stays `'soft'` to preserve
+   * back-compat. Override per instance when destructive create flows
+   * warrant the louder read.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
@@ -716,7 +728,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
   private readonly announcer = inject(CngxSelectAnnouncer);
-  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({ kind: 'soft' });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -724,7 +735,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },
-    policy: this.errorAnnouncePolicy,
+    // The input's default mirrors this variant's historical `'soft'`
+    // baseline; the announcer reads the live input signal, so app-wide
+    // config + per-instance override both flow through identically.
+    policy: this.commitErrorAnnouncePolicy,
   });
   private lastCommittedValue: T | undefined = undefined;
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({

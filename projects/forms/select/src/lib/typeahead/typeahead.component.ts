@@ -10,7 +10,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   type ElementRef,
@@ -336,6 +335,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Scalar-commit error-announce policy. Per-instance input wins over
+   * {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when neither
+   * is set, the variant's shipped default of `{ kind: 'soft' }`
+   * applies (typeahead UX shouldn't interrupt the user's free-text
+   * flow with assertive reads on commit rollback).
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
+  );
 
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
@@ -596,9 +605,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly commitController = this.core.commitController;
   private readonly togglingOption = this.core.togglingOption;
   private readonly announcer = inject(CngxSelectAnnouncer);
-  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
-    kind: 'soft',
-  });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -606,7 +612,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },
-    policy: this.errorAnnouncePolicy,
+    policy: this.commitErrorAnnouncePolicy,
   });
   private lastCommittedValue: T | undefined = undefined;
   /**

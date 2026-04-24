@@ -10,7 +10,6 @@ import {
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   type ElementRef,
@@ -296,10 +295,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
-  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
-    kind: 'verbose',
-    severity: 'assertive',
-  });
 
   // ── Inputs ─────────────────────────────────────────────────────────
 
@@ -353,6 +348,17 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Scalar-commit error-announce policy. Controls whether a failing
+   * commit reads the verbatim error message (`'verbose'`) or a soft
+   * "selection removed" sentence (`'soft'`). Per-instance input wins
+   * over {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when
+   * neither is set, the variant's shipped default of
+   * `{ kind: 'verbose', severity: 'assertive' }` applies.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
+  );
   readonly value = model<T | undefined>(undefined);
 
   // ── Outputs ────────────────────────────────────────────────────────
@@ -672,7 +678,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },
-    policy: this.errorAnnouncePolicy,
+    policy: this.commitErrorAnnouncePolicy,
   });
 
   /** Rollback target for a commit in flight. */

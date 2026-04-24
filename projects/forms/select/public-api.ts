@@ -169,6 +169,7 @@ export {
   withSkeletonRowCount,
   withRefreshingVariant,
   withCommitErrorDisplay,
+  withCommitErrorAnnouncePolicy,
 } from './src/lib/shared/config';
 
 // ── Commit action types ───────────────────────────────────────────────

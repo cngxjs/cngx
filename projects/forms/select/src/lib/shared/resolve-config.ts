@@ -27,6 +27,8 @@ export function resolveSelectConfig(): Required<
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
     refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,
     commitErrorDisplay: user.commitErrorDisplay ?? CNGX_SELECT_DEFAULTS.commitErrorDisplay,
+    commitErrorAnnouncePolicy:
+      user.commitErrorAnnouncePolicy ?? CNGX_SELECT_DEFAULTS.commitErrorAnnouncePolicy,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,
