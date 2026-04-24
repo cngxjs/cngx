@@ -358,3 +358,22 @@ export {
   type CngxSearchEffectsFactory,
   type SearchEffectsOptions,
 } from './src/lib/shared/search-effects';
+
+// ── Shared chip-removal handler ───────────────────────────────────────
+export {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  createChipRemovalHandler,
+  type CngxChipRemovableItem,
+  type CngxChipRemovalHandler,
+  type CngxChipRemovalHandlerFactory,
+  type CngxChipRemovalHandlerOptions,
+} from './src/lib/shared/chip-removal-handler';
+
+// ── Shared flat-listbox keyboard-nav strategy ─────────────────────────
+export {
+  CNGX_FLAT_NAV_STRATEGY,
+  createDefaultFlatNavStrategy,
+  type CngxFlatNavAction,
+  type CngxFlatNavContext,
+  type CngxFlatNavStrategy,
+} from './src/lib/shared/flat-nav-strategy';
