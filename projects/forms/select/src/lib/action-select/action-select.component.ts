@@ -49,6 +49,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -212,6 +213,8 @@ export interface CngxActionSelectChange<T = unknown> {
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
+          [attr.inputmode]="inputMode()"
+          [attr.enterkeyhint]="enterKeyHint()"
           [matchFn]="effectiveMatchFn()"
           [debounceMs]="searchDebounceMs()"
           [cngxPopoverTrigger]="pop"
@@ -417,6 +420,21 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    */
   readonly popoverPlacement = input<PopoverPlacement>(
     this.actionConfig.popoverPlacement,
+  );
+  /**
+   * Mobile `inputmode` attribute. Defaults from
+   * {@link CngxSelectConfig.inputMode} (`'search'`).
+   */
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
+    this.config.inputMode,
+  );
+  /**
+   * Mobile `enterkeyhint` attribute. Defaults to `'go'` (ActionSelect
+   * Enter routes to quick-create when no AD item is active). App-wide
+   * config wins when non-null.
+   */
+  readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
+    this.config.enterKeyHint ?? 'go',
   );
 
   /** Two-way single-value binding. */

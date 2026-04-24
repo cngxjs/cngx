@@ -243,6 +243,53 @@ export interface CngxSelectConfig {
    */
   readonly popoverPlacement?: PopoverPlacement;
   /**
+   * Default `inputmode` attribute for the input-trigger variants
+   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
+   * `CngxActionMultiSelect`). Tells the browser — especially iOS /
+   * Android — which virtual keyboard layout to show. Defaults to
+   * `'search'` because all four variants' inline inputs function as
+   * search-filters over the panel's options. Override to `'text'`
+   * for apps where the input doubles as free-form text entry, or to
+   * `'email'` / `'url'` / `'tel'` / `'numeric'` / `'decimal'` for
+   * typed value lookups.
+   *
+   * Per-instance `[inputMode]` input wins. Button-trigger variants
+   * (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
+   * `CngxTreeSelect`) don't read this key — they have no `<input>`.
+   */
+  readonly inputMode?:
+    | 'search'
+    | 'text'
+    | 'email'
+    | 'url'
+    | 'tel'
+    | 'numeric'
+    | 'decimal'
+    | 'none';
+  /**
+   * Default `enterkeyhint` attribute for the input-trigger variants.
+   * Tells the browser which action-label to render on the virtual
+   * keyboard's Enter key — `'search'`, `'go'`, `'done'`, etc.
+   *
+   * Library defaults per variant when unset:
+   * - `CngxTypeahead` → `'done'` (Enter commits + closes)
+   * - `CngxCombobox` → `'enter'` (Enter toggles without closing)
+   * - `CngxActionSelect` → `'go'` (Enter fires quick-create)
+   * - `CngxActionMultiSelect` → `'enter'` (Enter appends a chip)
+   *
+   * A non-null value here forces the hint across every variant;
+   * per-instance `[enterKeyHint]` still wins.
+   */
+  readonly enterKeyHint?:
+    | 'enter'
+    | 'done'
+    | 'go'
+    | 'next'
+    | 'previous'
+    | 'search'
+    | 'send'
+    | null;
+  /**
    * Default live-region policy used when a scalar-commit fails. Every
    * scalar variant (`CngxSelect`, `CngxTypeahead`, `CngxActionSelect`)
    * feeds this through `createCommitErrorAnnouncer` so assistive tech
@@ -357,6 +404,19 @@ export const CNGX_SELECT_DEFAULTS: Required<
   commitErrorDisplay: 'banner',
   commitErrorAnnouncePolicy: null,
   popoverPlacement: 'bottom',
+  inputMode: 'search',
+  // `null` lets each input-trigger variant apply its own enterkeyhint
+  // baseline when the app config is silent. Explicit string forces the
+  // hint across every variant.
+  enterKeyHint: null as
+    | 'enter'
+    | 'done'
+    | 'go'
+    | 'next'
+    | 'previous'
+    | 'search'
+    | 'send'
+    | null,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -549,6 +609,34 @@ export function withPopoverPlacement(
   placement: PopoverPlacement,
 ): CngxSelectConfigFeature {
   return feature({ popoverPlacement: placement });
+}
+
+/**
+ * Override the default `inputmode` attribute for every input-trigger
+ * variant. Library default is `'search'`. See
+ * {@link CngxSelectConfig.inputMode} for the full enum.
+ *
+ * @category interactive
+ */
+export function withInputMode(
+  mode: NonNullable<CngxSelectConfig['inputMode']>,
+): CngxSelectConfigFeature {
+  return feature({ inputMode: mode });
+}
+
+/**
+ * Force the `enterkeyhint` attribute across every input-trigger
+ * variant. Pass `null` (default) to restore each variant's
+ * enterkeyhint baseline:
+ * `CngxTypeahead` → `'done'`, `CngxCombobox` → `'enter'`,
+ * `CngxActionSelect` → `'go'`, `CngxActionMultiSelect` → `'enter'`.
+ *
+ * @category interactive
+ */
+export function withEnterKeyHint(
+  hint: NonNullable<CngxSelectConfig['enterKeyHint']> | null,
+): CngxSelectConfigFeature {
+  return feature({ enterKeyHint: hint });
 }
 
 /**

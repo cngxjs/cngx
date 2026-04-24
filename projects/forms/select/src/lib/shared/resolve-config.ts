@@ -33,6 +33,11 @@ export function resolveSelectConfig(): Required<
     commitErrorAnnouncePolicy:
       user.commitErrorAnnouncePolicy ?? CNGX_SELECT_DEFAULTS.commitErrorAnnouncePolicy,
     popoverPlacement: user.popoverPlacement ?? CNGX_SELECT_DEFAULTS.popoverPlacement,
+    inputMode: user.inputMode ?? CNGX_SELECT_DEFAULTS.inputMode,
+    enterKeyHint:
+      user.enterKeyHint === undefined
+        ? CNGX_SELECT_DEFAULTS.enterKeyHint
+        : user.enterKeyHint,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

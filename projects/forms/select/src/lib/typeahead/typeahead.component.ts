@@ -51,6 +51,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -189,6 +190,8 @@ export interface CngxTypeaheadChange<T = unknown> {
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
+          [attr.inputmode]="inputMode()"
+          [attr.enterkeyhint]="enterKeyHint()"
           [matchFn]="effectiveMatchFn()"
           [debounceMs]="searchDebounceMs()"
           [cngxPopoverTrigger]="pop"
@@ -304,6 +307,21 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * wins over {@link CngxSelectConfig.popoverPlacement}.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Mobile `inputmode` attribute. Defaults from
+   * {@link CngxSelectConfig.inputMode} (`'search'`).
+   */
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
+    this.config.inputMode,
+  );
+  /**
+   * Mobile `enterkeyhint` attribute. Defaults to `'done'` (Typeahead
+   * commits Enter + closes the panel). App-wide config wins when
+   * non-null.
+   */
+  readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
+    this.config.enterKeyHint ?? 'done',
+  );
   /** Formatter from value to input text. Defaults to `String(v)`. */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a valid pick resets the input text to `displayWith(value())`. */

@@ -54,6 +54,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -228,6 +229,8 @@ export interface CngxComboboxChange<T = unknown> {
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
+          [attr.inputmode]="inputMode()"
+          [attr.enterkeyhint]="enterKeyHint()"
           [matchFn]="effectiveMatchFn()"
           [debounceMs]="searchDebounceMs()"
           [cngxPopoverTrigger]="pop"
@@ -377,6 +380,21 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * wins over {@link CngxSelectConfig.popoverPlacement}.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Mobile `inputmode` attribute. Defaults from
+   * {@link CngxSelectConfig.inputMode} (`'search'`).
+   */
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
+    this.config.inputMode,
+  );
+  /**
+   * Mobile `enterkeyhint` attribute. Defaults to `'enter'` (Combobox
+   * commits Enter without closing the panel). App-wide config wins
+   * when non-null.
+   */
+  readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
+    this.config.enterKeyHint ?? 'enter',
+  );
 
   /**
    * Whether activating an option closes the panel. Defaults to `false`

@@ -51,6 +51,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -251,6 +252,8 @@ export interface CngxActionMultiSelectChange<T = unknown> {
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
+          [attr.inputmode]="inputMode()"
+          [attr.enterkeyhint]="enterKeyHint()"
           [matchFn]="effectiveMatchFn()"
           [debounceMs]="searchDebounceMs()"
           [cngxPopoverTrigger]="pop"
@@ -440,6 +443,21 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
    */
   readonly popoverPlacement = input<PopoverPlacement>(
     this.actionConfig.popoverPlacement,
+  );
+  /**
+   * Mobile `inputmode` attribute. Defaults from
+   * {@link CngxSelectConfig.inputMode} (`'search'`).
+   */
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
+    this.config.inputMode,
+  );
+  /**
+   * Mobile `enterkeyhint` attribute. Defaults to `'enter'` (ActionMulti
+   * Enter appends a chip without closing the panel). App-wide config
+   * wins when non-null.
+   */
+  readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
+    this.config.enterKeyHint ?? 'enter',
   );
 
   /** Two-way multi-value binding. */
