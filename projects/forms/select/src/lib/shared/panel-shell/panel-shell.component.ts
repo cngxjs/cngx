@@ -259,24 +259,46 @@ export class CngxSelectPanelShell<T = unknown> {
    *
    * @internal
    */
-  protected readonly actionContext = computed<CngxSelectActionContext>(() => {
-    const searchTerm = this.host.actionSearchTerm?.() ?? '';
-    const dirty = this.host.actionDirty?.() ?? false;
-    const callbacks = this.host.actionCallbacks?.() ?? NOOP_ACTION_CALLBACKS;
-    const error = this.host.actionError?.() ?? null;
-    const value = this.host.actionValue?.() ?? null;
-    return {
-      $implicit: searchTerm,
-      searchTerm,
-      close: callbacks.close,
-      commit: callbacks.commit,
-      isPending: callbacks.isPending,
-      setDirty: callbacks.setDirty,
-      dirty,
-      retry: callbacks.retry,
-      error,
-      hasError: error !== null,
-      value,
-    };
-  });
+  protected readonly actionContext = computed<CngxSelectActionContext>(
+    () => {
+      const searchTerm = this.host.actionSearchTerm?.() ?? '';
+      const dirty = this.host.actionDirty?.() ?? false;
+      const callbacks = this.host.actionCallbacks?.() ?? NOOP_ACTION_CALLBACKS;
+      const error = this.host.actionError?.() ?? null;
+      const value = this.host.actionValue?.() ?? null;
+      return {
+        $implicit: searchTerm,
+        searchTerm,
+        close: callbacks.close,
+        commit: callbacks.commit,
+        isPending: callbacks.isPending,
+        setDirty: callbacks.setDirty,
+        dirty,
+        retry: callbacks.retry,
+        error,
+        hasError: error !== null,
+        value,
+      };
+    },
+    {
+      // Structural equal — match the family's pattern (inputSlotContext,
+      // core.selected, bridge.callbacks all have one). The callback refs
+      // inside the bundle are already stable across re-computes because
+      // `bridge.callbacks` pins its own identity to `isPending`, so
+      // comparing the 5 reactive fields + `searchTerm` + `dirty` covers
+      // every semantic change. Suppresses per-keystroke template-outlet
+      // rebinds when an action-slot template only reads a subset of the
+      // context (e.g. just `isPending`).
+      equal: (a, b) =>
+        a.searchTerm === b.searchTerm &&
+        a.dirty === b.dirty &&
+        a.isPending === b.isPending &&
+        a.error === b.error &&
+        a.value === b.value &&
+        a.close === b.close &&
+        a.commit === b.commit &&
+        a.setDirty === b.setDirty &&
+        a.retry === b.retry,
+    },
+  );
 }
