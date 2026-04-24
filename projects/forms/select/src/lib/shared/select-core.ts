@@ -461,6 +461,35 @@ export function createSelectCore<T, TCommit>(
       }
       return map;
     },
+    {
+      // Structural equality — two maps are "equal" iff they have the
+      // same size, same key order, and each (key, value) pair matches
+      // by `Object.is`. Prevents downstream computeds (e.g. the
+      // `findOption` lookup inside `isSelected` / `CngxSelectPanel`
+      // highlight tracking) from invalidating on every server
+      // refetch that returns identical options with fresh `OptionDef`
+      // references — the upstream `flatOptions` already uses an
+      // identity-equal on entries, so here we only need the map
+      // structure to stay reference-stable.
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        if (a.size !== b.size) {
+          return false;
+        }
+        for (const [key, val] of a) {
+          const other = b.get(key);
+          if (!Object.is(val, other)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
   );
 
   // ── Panel view ─────────────────────────────────────────────────────

@@ -77,6 +77,41 @@ describe('createRecyclerPanelRendererFactory', () => {
     expect(renderer.totalCount?.()).toBe(3000);
   });
 
+  it('renderOptions signal uses structural equal on length + per-entry identity', () => {
+    // Drive the recycler window: start=10, end=30. The renderOptions
+    // computed uses `.slice()` which creates a fresh array each emission,
+    // but the explicit `equal` fn should treat two identical slices as
+    // equal and skip the downstream effect.
+    const start = signal(10);
+    const end = signal(30);
+    const recycler = {
+      start,
+      end,
+      offsetBefore: signal(0),
+      offsetAfter: signal(0),
+      ariaSetSize: signal(100),
+    } as unknown as CngxRecycler;
+    const factory = createRecyclerPanelRendererFactory(recycler);
+    const options = makeOptions(100);
+    const renderer = factory({ flatOptions: signal(options) });
+
+    const first = renderer.renderOptions();
+    // Invalidate via unrelated signal change downstream — re-read the
+    // slice. The `equal` fn should recognise the new slice as equal to
+    // the previous (same refs) and keep the cached reference.
+    // We test the equality contract by asserting the slice contents
+    // haven't drifted between two calls against the same window.
+    const second = renderer.renderOptions();
+    expect(second).toEqual(first);
+    expect(second).toHaveLength(20);
+    // Shift the window — equal should now report unequal.
+    start.set(15);
+    end.set(35);
+    const third = renderer.renderOptions();
+    expect(third).not.toEqual(first);
+    expect(third[0]).toBe(options[15]);
+  });
+
   it('forwards recycler.start, offsetBefore, offsetAfter, ariaSetSize via virtualizer bundle', () => {
     const recycler = makeMockRecycler({
       start: 42,

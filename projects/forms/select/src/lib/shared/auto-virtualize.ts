@@ -79,10 +79,31 @@ export function createAutoPanelRenderer<T>(opts: {
   // a single wiring — its internal signals (offsetBefore etc.) just
   // return zero while identity mode is active.
   return {
-    renderOptions: computed<readonly CngxSelectOptionDef<T>[]>(() =>
-      opts.flatOptions().length < threshold
-        ? opts.flatOptions()
-        : recyclerRenderer.renderOptions(),
+    renderOptions: computed<readonly CngxSelectOptionDef<T>[]>(
+      () =>
+        opts.flatOptions().length < threshold
+          ? opts.flatOptions()
+          : recyclerRenderer.renderOptions(),
+      {
+        // Structural equality on length + per-entry identity. Matches
+        // the recycler-renderer's equality so the threshold-gated
+        // wrapper doesn't cascade re-renders when the inner signal
+        // returned an identical slice.
+        equal: (a, b) => {
+          if (a === b) {
+            return true;
+          }
+          if (a.length !== b.length) {
+            return false;
+          }
+          for (let i = 0; i < a.length; i++) {
+            if (!Object.is(a[i], b[i])) {
+              return false;
+            }
+          }
+          return true;
+        },
+      },
     ),
     totalCount: recyclerRenderer.totalCount,
     virtualizer: recyclerRenderer.virtualizer,

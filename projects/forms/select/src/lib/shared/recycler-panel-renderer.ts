@@ -66,20 +66,43 @@ export function createRecyclerPanelRendererFactory(
   recycler: CngxRecycler,
 ): CngxPanelRendererFactory {
   return <T>(input: PanelRendererInput<T>): PanelRenderer<T> => {
-    const renderOptions = computed<readonly CngxSelectOptionDef<T>[]>(() => {
-      const all = input.flatOptions();
-      const start = recycler.start();
-      const end = recycler.end();
-      if (start === 0 && end >= all.length) {
-        // Shortcut — the recycler hasn't narrowed the window (e.g.
-        // viewport larger than content). Return the source array
-        // verbatim so identity-based equal functions upstream stay
-        // stable and `renderOptions` doesn't slice-allocate each
-        // emission.
-        return all;
-      }
-      return all.slice(start, Math.min(end, all.length));
-    });
+    const renderOptions = computed<readonly CngxSelectOptionDef<T>[]>(
+      () => {
+        const all = input.flatOptions();
+        const start = recycler.start();
+        const end = recycler.end();
+        if (start === 0 && end >= all.length) {
+          // Shortcut — the recycler hasn't narrowed the window (e.g.
+          // viewport larger than content). Return the source array
+          // verbatim so identity-based equal functions upstream stay
+          // stable and `renderOptions` doesn't slice-allocate each
+          // emission.
+          return all;
+        }
+        return all.slice(start, Math.min(end, all.length));
+      },
+      {
+        // Structural equality on length + per-entry identity. Prevents
+        // `@for` track-by thrash + downstream panel re-renders when the
+        // window stays stable across unrelated signal updates (e.g.
+        // `aria-setsize` shifts but the visible slice doesn't move).
+        // Matches the contract documented on `PanelRenderer.renderOptions`.
+        equal: (a, b) => {
+          if (a === b) {
+            return true;
+          }
+          if (a.length !== b.length) {
+            return false;
+          }
+          for (let i = 0; i < a.length; i++) {
+            if (!Object.is(a[i], b[i])) {
+              return false;
+            }
+          }
+          return true;
+        },
+      },
+    );
 
     const totalCount = computed<number>(() => input.flatOptions().length);
 
