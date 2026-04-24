@@ -66,7 +66,6 @@ import {
 import {
   isOptionDisabled,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
@@ -852,28 +851,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   // ── Panel-host surface ─────────────────────────────────────────────
-
-  protected isGroup(
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ): item is CngxSelectOptionGroupDef<T> {
-    return this.core.isGroup(item);
-  }
-
-  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isSelected(opt.value);
-  }
-
-  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isIndeterminate(opt.value);
-  }
+  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
-  }
-
-  /** @internal */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isCommittingOption(opt);
   }
 
   constructor() {

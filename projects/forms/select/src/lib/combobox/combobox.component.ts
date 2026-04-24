@@ -60,7 +60,6 @@ import {
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
@@ -877,26 +876,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     onError: (err) => this.commitError.emit(err),
   });
 
-  /** @internal — `optionLabelTpl`/option-row uses this via panel-host. */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isCommittingOption(opt);
-  }
-
   // ── Panel-host surface forwarding ──────────────────────────────────
-
-  protected isGroup(
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ): item is CngxSelectOptionGroupDef<T> {
-    return this.core.isGroup(item);
-  }
-
-  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isSelected(opt.value);
-  }
-
-  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isIndeterminate(opt.value);
-  }
+  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;

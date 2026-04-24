@@ -311,6 +311,19 @@ export interface CngxSelectCore<T, TCommit> {
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /**
+   * Pre-bundled pass-through helpers the four shipped panel-hosting
+   * variants expose on their `CngxSelectPanelHost` contract
+   * (`isGroup`, `isSelected`, `isIndeterminate`, `isCommittingOption`).
+   * Every variant used to redeclare four identical 2-line protected
+   * methods delegating to the core — the bundle lets them spread these
+   * into the class as a single field. Mirrors the factory style of
+   * `SelectionController` / `TypeaheadController` — method identities
+   * stay stable for the lifetime of the core instance, safe to pass
+   * through `@Input` or bind into `ngTemplateOutlet` context without
+   * churning embedded views.
+   */
+  readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
 
   /**
    * Announce a selection change via the global live-region. The core
@@ -333,6 +346,23 @@ export interface CngxSelectCore<T, TCommit> {
     fromIndex?: number,
     toIndex?: number,
   ): void;
+}
+
+/**
+ * Bound method bundle exposed on {@link CngxSelectCore.panelHostAdapter}
+ * for pass-through into each variant's `CngxSelectPanelHost` contract.
+ * Methods are bound at factory-call time and stable thereafter — safe
+ * to spread into a class via `= this.core.panelHostAdapter.xxx`.
+ *
+ * @category interactive
+ */
+export interface CngxSelectPanelHostAdapter<T> {
+  readonly isGroup: (
+    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
+  ) => item is CngxSelectOptionGroupDef<T>;
+  readonly isSelected: (opt: CngxSelectOptionDef<T>) => boolean;
+  readonly isIndeterminate: (opt: CngxSelectOptionDef<T>) => boolean;
+  readonly isCommittingOption: (opt: CngxSelectOptionDef<T>) => boolean;
 }
 
 /**
@@ -768,6 +798,19 @@ export function createSelectCore<T, TCommit>(
       : `${labelText}: Speichern fehlgeschlagen`;
   }
 
+  // Pass-through bundle — methods bound once to the core's own
+  // isSelected / isIndeterminate (both of which take `value: T`, so
+  // the adapter unwraps `opt.value`) and the existing isGroup /
+  // isCommittingOption (already opt-shaped). Stable identities for
+  // the lifetime of the core — safe to destructure into a class
+  // field.
+  const panelHostAdapter: CngxSelectPanelHostAdapter<T> = {
+    isGroup,
+    isSelected: (opt) => isSelected(opt.value),
+    isIndeterminate: (opt) => isIndeterminate(opt.value),
+    isCommittingOption,
+  };
+
   function announce(
     option: CngxSelectOptionDef<T> | null,
     action: 'added' | 'removed' | 'reordered' | 'created',
@@ -849,6 +892,7 @@ export function createSelectCore<T, TCommit>(
     findOption,
     commitErrorMessage,
     announce,
+    panelHostAdapter,
   };
 }
 

@@ -65,7 +65,6 @@ import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -889,24 +888,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     onResetDirty: () => this.actionBridge.reset(),
   });
 
-  /** @internal */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isCommittingOption(opt);
-  }
-
-  protected isGroup(
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ): item is CngxSelectOptionGroupDef<T> {
-    return this.core.isGroup(item);
-  }
-
-  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isSelected(opt.value);
-  }
-
-  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isIndeterminate(opt.value);
-  }
+  // ── Panel-host surface forwarding ──────────────────────────────────
+  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
