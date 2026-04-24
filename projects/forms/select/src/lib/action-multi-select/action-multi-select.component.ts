@@ -215,8 +215,11 @@ export interface CngxActionMultiSelectChange<T = unknown> {
             />
           </span>
         } @else if (!isEmpty()) {
-          <span class="cngx-select__chip-list">
-            @for (opt of selectedOptions(); track opt.value) {
+          <span
+            class="cngx-select__chip-list"
+            [attr.data-overflow]="chipOverflow()"
+          >
+            @for (opt of visibleSelected(); track opt.value) {
               @if (chipTpl(); as tpl) {
                 <ng-container
                   *ngTemplateOutlet="
@@ -233,6 +236,11 @@ export interface CngxActionMultiSelectChange<T = unknown> {
                   {{ opt.label }}
                 </cngx-chip>
               }
+            }
+            @if (overflowBadgeCount() > 0) {
+              <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+                +{{ overflowBadgeCount() }}
+              </span>
             }
           </span>
         }
@@ -459,6 +467,12 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'enter',
   );
+  /** Chip-strip overflow strategy. See {@link CngxSelectConfig.chipOverflow}. */
+  readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
+    this.config.chipOverflow,
+  );
+  /** Max chips in `'truncate'` mode. Default from config. */
+  readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
   /** Two-way multi-value binding. */
   readonly values = model<T[]>([]);
@@ -787,6 +801,25 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   );
 
   // ── Multi-selection state ──────────────────────────────────────────
+
+  /** @internal — chip subset + overflow badge count (see CngxMultiSelect). */
+  protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
+    const all = this.selectedOptions();
+    if (this.chipOverflow() !== 'truncate') {
+      return all;
+    }
+    const cap = Math.max(1, this.maxVisibleChips());
+    return all.length <= cap ? all : all.slice(0, cap);
+  });
+  /** @internal */
+  protected readonly overflowBadgeCount = computed<number>(() => {
+    if (this.chipOverflow() !== 'truncate') {
+      return 0;
+    }
+    const total = this.selectedOptions().length;
+    const cap = Math.max(1, this.maxVisibleChips());
+    return total > cap ? total - cap : 0;
+  });
 
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {

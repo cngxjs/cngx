@@ -290,6 +290,32 @@ export interface CngxSelectConfig {
     | 'send'
     | null;
   /**
+   * Layout strategy for the chip strip inside multi-value triggers
+   * (`CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect`,
+   * `CngxActionMultiSelect`, `CngxTreeSelect`). Controls what happens
+   * when a consumer's value bag outgrows the trigger's natural width.
+   *
+   * - `'wrap'` (default, historical behaviour): chips wrap to new
+   *   lines, trigger grows unbounded vertically.
+   * - `'scroll-x'`: chips stay on one row, overflow horizontally
+   *   scrollable. Preserves trigger height at any value-count.
+   * - `'truncate'`: render the first `maxVisibleChips` chips then a
+   *   `+N weitere` badge. Keeps the trigger compact; consumer owns
+   *   the full selection via the panel or a `*cngxMultiSelectTriggerLabel`
+   *   override.
+   *
+   * Per-instance `[chipOverflow]` input still wins. Single-value
+   * variants don't read this key.
+   */
+  readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate';
+  /**
+   * When `chipOverflow === 'truncate'`, the maximum number of chips
+   * rendered before the `+N weitere` badge appears. Values ≤ 0 are
+   * coerced to `1` (the badge alone never makes sense). Defaults to
+   * `3`. Per-instance `[maxVisibleChips]` input still wins.
+   */
+  readonly maxVisibleChips?: number;
+  /**
    * Default live-region policy used when a scalar-commit fails. Every
    * scalar variant (`CngxSelect`, `CngxTypeahead`, `CngxActionSelect`)
    * feeds this through `createCommitErrorAnnouncer` so assistive tech
@@ -417,6 +443,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
     | 'search'
     | 'send'
     | null,
+  chipOverflow: 'wrap' as 'wrap' | 'scroll-x' | 'truncate',
+  maxVisibleChips: 3,
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -637,6 +665,30 @@ export function withEnterKeyHint(
   hint: NonNullable<CngxSelectConfig['enterKeyHint']> | null,
 ): CngxSelectConfigFeature {
   return feature({ enterKeyHint: hint });
+}
+
+/**
+ * Override the chip-strip overflow strategy for every multi-value
+ * variant. See {@link CngxSelectConfig.chipOverflow} for the three
+ * modes (`'wrap'` | `'scroll-x'` | `'truncate'`). Defaults to
+ * `'wrap'`.
+ *
+ * @category interactive
+ */
+export function withChipOverflow(
+  mode: NonNullable<CngxSelectConfig['chipOverflow']>,
+): CngxSelectConfigFeature {
+  return feature({ chipOverflow: mode });
+}
+
+/**
+ * Override the `maxVisibleChips` threshold for `chipOverflow: 'truncate'`
+ * mode. Values ≤ 0 are coerced to `1`. Defaults to `3`.
+ *
+ * @category interactive
+ */
+export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
+  return feature({ maxVisibleChips: Math.max(1, count) });
 }
 
 /**

@@ -172,9 +172,11 @@ export {
   withRefreshingVariant,
   withCommitErrorDisplay,
   withCommitErrorAnnouncePolicy,
+  withChipOverflow,
   withEnterKeyHint,
   withFallbackLabels,
   withInputMode,
+  withMaxVisibleChips,
   withPopoverPlacement,
 } from './src/lib/shared/config';
 

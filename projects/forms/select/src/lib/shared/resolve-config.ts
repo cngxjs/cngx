@@ -38,6 +38,11 @@ export function resolveSelectConfig(): Required<
       user.enterKeyHint === undefined
         ? CNGX_SELECT_DEFAULTS.enterKeyHint
         : user.enterKeyHint,
+    chipOverflow: user.chipOverflow ?? CNGX_SELECT_DEFAULTS.chipOverflow,
+    maxVisibleChips:
+      user.maxVisibleChips !== undefined && user.maxVisibleChips > 0
+        ? user.maxVisibleChips
+        : CNGX_SELECT_DEFAULTS.maxVisibleChips,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

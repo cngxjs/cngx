@@ -55,6 +55,7 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
@@ -193,7 +194,10 @@ export interface CngxMultiSelectChange<T = unknown> {
         (blur)="handleBlur()"
         (keydown)="handleTriggerKeydown($event)"
       >
-        <span class="cngx-select__chip-list">
+        <span
+          class="cngx-select__chip-list"
+          [attr.data-overflow]="chipOverflow()"
+        >
           @if (isEmpty()) {
             @if (tpl.placeholder(); as phTpl) {
               <ng-container
@@ -220,7 +224,7 @@ export interface CngxMultiSelectChange<T = unknown> {
               "
             />
           } @else {
-            @for (opt of selectedOptions(); track opt.value) {
+            @for (opt of visibleSelected(); track opt.value) {
               @if (chipTpl(); as chipT) {
                 <ng-container
                   *ngTemplateOutlet="
@@ -241,6 +245,11 @@ export interface CngxMultiSelectChange<T = unknown> {
                   {{ opt.label }}
                 </cngx-chip>
               }
+            }
+            @if (overflowBadgeCount() > 0) {
+              <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
+                +{{ overflowBadgeCount() }}
+              </span>
             }
           }
         </span>
@@ -339,6 +348,18 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * wins over {@link CngxSelectConfig.popoverPlacement}.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Chip-strip overflow strategy. See {@link CngxSelectConfig.chipOverflow}.
+   * Per-instance input wins over app-wide config (default `'wrap'`).
+   */
+  readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
+    this.config.chipOverflow,
+  );
+  /**
+   * Max chips rendered in `'truncate'` mode before the `+N weitere`
+   * badge. Defaults to `CngxSelectConfig.maxVisibleChips` (app default `3`).
+   */
+  readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
@@ -654,6 +675,40 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * `flatOptions()`. Uses the core's O(1) map fast-path when
    * compareWith is the default.
    */
+  /**
+   * Chip subset rendered into the trigger strip. In `'wrap'` /
+   * `'scroll-x'` modes identical to {@link selectedOptions} — layout
+   * divergence happens purely in CSS via `data-overflow`. In
+   * `'truncate'` mode, the first `maxVisibleChips()` entries; the
+   * remainder feeds {@link overflowBadgeCount}.
+   *
+   * @internal
+   */
+  protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
+    const all = this.selectedOptions();
+    if (this.chipOverflow() !== 'truncate') {
+      return all;
+    }
+    const cap = Math.max(1, this.maxVisibleChips());
+    return all.length <= cap ? all : all.slice(0, cap);
+  });
+
+  /**
+   * Count of selected options hidden by `'truncate'` mode. Zero in
+   * `'wrap'` / `'scroll-x'` — keeps the badge binding a single
+   * numeric expression with no mode-switch branch in the template.
+   *
+   * @internal
+   */
+  protected readonly overflowBadgeCount = computed<number>(() => {
+    if (this.chipOverflow() !== 'truncate') {
+      return 0;
+    }
+    const total = this.selectedOptions().length;
+    const cap = Math.max(1, this.maxVisibleChips());
+    return total > cap ? total - cap : 0;
+  });
+
   protected readonly selectedOptions = computed<CngxSelectOptionDef<T>[]>(
     () => {
       const vals = this.values();
