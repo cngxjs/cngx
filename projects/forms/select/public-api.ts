@@ -347,6 +347,7 @@ export {
   type PanelRenderer,
   type PanelRendererInput,
 } from './src/lib/shared/panel-renderer';
+export { createRecyclerPanelRendererFactory } from './src/lib/shared/recycler-panel-renderer';
 
 // ── Shared search-term effects ────────────────────────────────────────
 export {

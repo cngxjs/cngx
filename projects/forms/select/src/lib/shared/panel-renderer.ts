@@ -47,6 +47,27 @@ export interface PanelRenderer<T> {
    * count) so assistive tech reads "5 of 3000", not "5 of 20".
    */
   readonly totalCount?: Signal<number>;
+  /**
+   * Optional — spacer + absolute-index metadata the panel reads when
+   * a virtualising renderer is wired. Identity renderers leave this
+   * undefined; the panel falls back to non-virtualised rendering
+   * (no spacer divs, `data-cngx-recycle-index` not set).
+   *
+   * Virtualising implementations (e.g. {@link /projects/forms/select/src/lib/shared/recycler-panel-renderer.ts
+   * createRecyclerPanelRendererFactory}) emit:
+   * - `startIndex()` — absolute index of the first rendered item,
+   *   so `data-cngx-recycle-index` can be bound as `startIndex + i`
+   *   on each option row. The recycler's size-cache relies on this
+   *   attribute.
+   * - `offsetBefore()` / `offsetAfter()` — pixel heights of the
+   *   empty spacer divs before/after the rendered window so the
+   *   native scrollbar shows the full scroll extent.
+   */
+  readonly virtualizer?: {
+    readonly startIndex: Signal<number>;
+    readonly offsetBefore: Signal<number>;
+    readonly offsetAfter: Signal<number>;
+  };
 }
 
 /**

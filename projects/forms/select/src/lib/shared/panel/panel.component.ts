@@ -66,6 +66,9 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
       [actionFocusTrapEnabled]="host.actionFocusTrapEnabled?.() ?? false"
       [actionPosition]="host.actionPosition?.() ?? 'bottom'"
     >
+      @if (virtualizer(); as v) {
+        <div aria-hidden="true" [style.height.px]="v.offsetBefore()"></div>
+      }
       @for (item of renderItems(); track $index) {
         @if (host.isGroup(item)) {
           <div class="cngx-select__group" role="group" [attr.aria-label]="item.label">
@@ -75,12 +78,21 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
               <div class="cngx-select__group-header" aria-hidden="true">{{ item.label }}</div>
             }
             @for (opt of item.children; track opt.value) {
-              <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled }" />
+              <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: opt, groupDisabled: !!item.disabled, virtualIndex: null }" />
             }
           </div>
         } @else {
-          <ng-container *ngTemplateOutlet="optionRow; context: { $implicit: item, groupDisabled: false }" />
+          <ng-container
+            *ngTemplateOutlet="optionRow; context: {
+              $implicit: item,
+              groupDisabled: false,
+              virtualIndex: virtualizer() ? virtualizer()!.startIndex() + $index : null
+            }"
+          />
         }
+      }
+      @if (virtualizer(); as v) {
+        <div aria-hidden="true" [style.height.px]="v.offsetAfter()"></div>
       }
     </cngx-select-panel-shell>
 
@@ -91,7 +103,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
       glyph. Keeps the grouped/flat paths from diverging when option-row
       concerns evolve.
     -->
-    <ng-template #optionRow let-opt let-groupDisabled="groupDisabled">
+    <ng-template #optionRow let-opt let-groupDisabled="groupDisabled" let-virtualIndex="virtualIndex">
       <div
         cngxOption
         [value]="opt.value"
@@ -99,6 +111,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
         class="cngx-select__option"
         [class.cngx-select__option--selected]="host.isSelected(opt)"
         [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
+        [attr.data-cngx-recycle-index]="virtualIndex"
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.tpl.check(); as tpl) {
@@ -190,6 +203,17 @@ export class CngxSelectPanel<T = unknown> {
   protected readonly renderer: PanelRenderer<T> = inject(
     CNGX_PANEL_RENDERER_FACTORY,
   )<T>({ flatOptions: this.host.flatOptions });
+
+  /**
+   * Virtualiser metadata the template reads to emit spacer divs +
+   * `data-cngx-recycle-index` attributes on each rendered option.
+   * `null` when the renderer hasn't opted in (identity default) —
+   * the template paths gate on this to keep non-virtualised markup
+   * byte-identical to before the extension point landed.
+   *
+   * @internal
+   */
+  protected readonly virtualizer = computed(() => this.renderer.virtualizer ?? null);
 
   /**
    * Items iterated by the template. Grouped paths use
