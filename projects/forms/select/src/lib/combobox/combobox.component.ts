@@ -66,6 +66,7 @@ import {
 } from '../shared/option.model';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
@@ -962,19 +963,13 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     });
 
     // Panel open/close lifecycle events.
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.inputEl()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.inputEl,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     // Bidirectional sync with the bound form field (if any).

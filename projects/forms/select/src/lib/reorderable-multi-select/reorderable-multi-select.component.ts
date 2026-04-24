@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   Injector,
   input,
@@ -74,6 +73,7 @@ import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-ha
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
@@ -911,19 +911,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
 
     // Open / close lifecycle + focus restore.
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.triggerBtn()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.triggerBtn,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     // Activeindex clamp on count shrink is owned by the chip-strip

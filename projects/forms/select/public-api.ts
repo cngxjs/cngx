@@ -314,3 +314,11 @@ export {
   type CngxTriggerFocusState,
   type CngxTriggerFocusFactory,
 } from './src/lib/shared/trigger-focus';
+
+// ── Shared panel lifecycle emitter ────────────────────────────────────
+export {
+  CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY,
+  createPanelLifecycleEmitter,
+  type CngxPanelLifecycleEmitterFactory,
+  type PanelLifecycleEmitterOptions,
+} from './src/lib/shared/panel-lifecycle-emitter';

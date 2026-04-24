@@ -68,6 +68,7 @@ import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
 } from '../shared/commit-error-announcer';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
@@ -696,19 +697,13 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     });
 
     // Panel open/close lifecycle.
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.inputEl()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.inputEl,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     // Field↔Component bidirectional sync.
