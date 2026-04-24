@@ -417,6 +417,11 @@ export const routes: Routes = [
           import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
       },
       {
+        path: 'select-virtual',
+        loadComponent: () =>
+          import('./demos/forms/select-virtual-demo/select-virtual-demo.component').then((m) => m.SelectVirtualDemoComponent),
+      },
+      {
         path: 'tree-select',
         loadComponent: () =>
           import('./demos/forms/tree-select-demo/tree-select-demo.component').then((m) => m.TreeSelectDemoComponent),

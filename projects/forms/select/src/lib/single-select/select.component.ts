@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   contentChild,
+  effect,
   inject,
   input,
   model,
@@ -60,6 +61,10 @@ import {
 } from '../shared/option.model';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import {
+  CNGX_PANEL_RENDERER_FACTORY,
+  type PanelRenderer,
+} from '../shared/panel-renderer';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
@@ -286,6 +291,7 @@ export interface CngxSelectChange<T = unknown> {
         [externalActivation]="externalActivation()"
         [explicitOptions]="panelRef.options()"
         [items]="panelRef.items()"
+        [virtualCount]="virtualItemCount()"
         [(value)]="value"
       >
         <cngx-select-panel #panelRef="cngxSelectPanel" />
@@ -586,6 +592,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
   /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
+
+  /**
+   * Panel renderer — usually identity (every option in DOM); swapped
+   * via {@link CNGX_PANEL_RENDERER_FACTORY} providers when a consumer
+   * wires virtualisation. Built here (not in the inner
+   * `CngxSelectPanel`) so the component can:
+   *   - bind `[virtualCount]` on the listbox (AD treats the item
+   *     space as the full virtual count, not the windowed subset)
+   *   - wire the AD → recycler scroll bridge when a virtualiser is
+   *     present
+   * and forward the same renderer instance to the panel via
+   * `CngxSelectPanelHost.panelRenderer`.
+   *
+   * @internal
+   */
+  readonly panelRenderer: PanelRenderer<T> = inject(CNGX_PANEL_RENDERER_FACTORY)<T>({
+    flatOptions: this.core.flatOptions,
+  });
+
+  /**
+   * Total item count for AD's virtual-mode navigation. `undefined`
+   * in the identity path (AD falls back to `resolvedItems.length`).
+   *
+   * @internal
+   */
+  protected readonly virtualItemCount = computed<number | undefined>(() => {
+    const total = this.panelRenderer.totalCount?.();
+    return this.panelRenderer.virtualizer !== undefined ? total : undefined;
+  });
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
@@ -770,6 +805,29 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       if (this.autofocus()) {
         this.focus();
       }
+    });
+
+    // Virtualisation bridge — when the consumer wires a virtualising
+    // renderer (via CNGX_PANEL_RENDERER_FACTORY), we watch the
+    // listbox's internal CngxActiveDescendant for `pendingHighlight`
+    // (the target index AD wants to highlight but which is not in
+    // the rendered window) and ask the renderer to scroll it in. AD
+    // auto-clears its pending state when the target enters range, so
+    // no explicit clear is needed here.
+    effect(() => {
+      const v = this.panelRenderer.virtualizer;
+      if (!v) {
+        return;
+      }
+      const lb = this.listboxRef();
+      if (!lb) {
+        return;
+      }
+      const target = lb.ad.pendingHighlight();
+      if (target == null) {
+        return;
+      }
+      untracked(() => v.scrollToIndex(target));
     });
 
     // Bridge AD activations into popover-close, selectionChange output,

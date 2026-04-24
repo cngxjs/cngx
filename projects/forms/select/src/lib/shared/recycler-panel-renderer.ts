@@ -90,6 +90,8 @@ export function createRecyclerPanelRendererFactory(
         startIndex: recycler.start,
         offsetBefore: recycler.offsetBefore,
         offsetAfter: recycler.offsetAfter,
+        setsize: recycler.ariaSetSize,
+        scrollToIndex: (i) => recycler.scrollToIndex(i),
       },
     };
   };

@@ -57,16 +57,30 @@ export interface PanelRenderer<T> {
    * createRecyclerPanelRendererFactory}) emit:
    * - `startIndex()` — absolute index of the first rendered item,
    *   so `data-cngx-recycle-index` can be bound as `startIndex + i`
-   *   on each option row. The recycler's size-cache relies on this
-   *   attribute.
+   *   on each option row (the recycler's focus-tracking reads this
+   *   attribute via `closest('[data-cngx-recycle-index]')`).
    * - `offsetBefore()` / `offsetAfter()` — pixel heights of the
    *   empty spacer divs before/after the rendered window so the
    *   native scrollbar shows the full scroll extent.
+   * - `setsize()` — total item count for `aria-setsize` on each
+   *   rendered row (so AT reads "5 of 10000", not "5 of 20"). The
+   *   panel computes `aria-posinset` as `startIndex + i + 1` for
+   *   each row.
    */
   readonly virtualizer?: {
     readonly startIndex: Signal<number>;
     readonly offsetBefore: Signal<number>;
     readonly offsetAfter: Signal<number>;
+    readonly setsize: Signal<number>;
+    /**
+     * Imperative scroll helper the variant uses to bring an absolute
+     * item index into the rendered window — typically invoked when
+     * `CngxActiveDescendant`'s `pendingHighlight` fires because the
+     * user arrow-navigated past the current window. Recycler-backed
+     * renderers forward this to `recycler.scrollToIndex`; bespoke
+     * virtualising renderers wire their own scroll strategy.
+     */
+    readonly scrollToIndex: (index: number) => void;
   };
 }
 

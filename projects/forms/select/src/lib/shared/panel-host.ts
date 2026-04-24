@@ -56,6 +56,7 @@ import type {
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
 } from './config';
+import type { PanelRenderer as PanelRendererForHost } from './panel-renderer';
 import type {
   CngxSelectOptionDef,
   CngxSelectOptionGroupDef,
@@ -216,6 +217,18 @@ export const CNGX_SELECT_PANEL_VIEW_HOST = new InjectionToken<CngxSelectPanelVie
  * @internal
  */
 export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHost<T> {
+  /**
+   * Optional pre-built renderer. When provided, `CngxSelectPanel`
+   * reuses it instead of re-invoking `CNGX_PANEL_RENDERER_FACTORY` —
+   * avoiding duplicate renderer state and letting the host wire
+   * consumer-level hooks (AD bridge for virtualisation, telemetry, …)
+   * against the same instance the panel renders from. Optional for
+   * back-compat: hosts that don't need to inspect the renderer
+   * leave this undefined and the panel creates its own.
+   *
+   * @internal
+   */
+  readonly panelRenderer?: PanelRendererForHost<T>;
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly loading: Signal<boolean>;

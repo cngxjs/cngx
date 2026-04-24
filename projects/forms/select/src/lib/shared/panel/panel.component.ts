@@ -112,6 +112,8 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
         [class.cngx-select__option--selected]="host.isSelected(opt)"
         [class.cngx-select__option--pending]="host.isCommittingOption(opt)"
         [attr.data-cngx-recycle-index]="virtualIndex"
+        [attr.aria-setsize]="virtualIndex !== null ? virtualizer()?.setsize() : null"
+        [attr.aria-posinset]="virtualIndex !== null ? virtualIndex + 1 : null"
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.tpl.check(); as tpl) {
@@ -200,9 +202,9 @@ export class CngxSelectPanel<T = unknown> {
    *
    * @internal
    */
-  protected readonly renderer: PanelRenderer<T> = inject(
-    CNGX_PANEL_RENDERER_FACTORY,
-  )<T>({ flatOptions: this.host.flatOptions });
+  protected readonly renderer: PanelRenderer<T> =
+    this.host.panelRenderer ??
+    inject(CNGX_PANEL_RENDERER_FACTORY)<T>({ flatOptions: this.host.flatOptions });
 
   /**
    * Virtualiser metadata the template reads to emit spacer divs +
