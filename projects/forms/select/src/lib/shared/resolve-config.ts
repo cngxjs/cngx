@@ -29,6 +29,7 @@ export function resolveSelectConfig(): Required<
     commitErrorDisplay: user.commitErrorDisplay ?? CNGX_SELECT_DEFAULTS.commitErrorDisplay,
     commitErrorAnnouncePolicy:
       user.commitErrorAnnouncePolicy ?? CNGX_SELECT_DEFAULTS.commitErrorAnnouncePolicy,
+    popoverPlacement: user.popoverPlacement ?? CNGX_SELECT_DEFAULTS.popoverPlacement,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,

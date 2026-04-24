@@ -26,7 +26,7 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -253,7 +253,7 @@ export interface CngxTypeaheadChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -295,6 +295,11 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   /** Formatter from value to input text. Defaults to `String(v)`. */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a valid pick resets the input text to `displayWith(value())`. */

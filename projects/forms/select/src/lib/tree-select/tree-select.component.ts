@@ -24,7 +24,7 @@ import {
   CNGX_TREE_CONTROLLER_FACTORY,
   type CngxTreeController,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
@@ -302,7 +302,7 @@ export interface CngxTreeSelectChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -355,6 +355,11 @@ export class CngxTreeSelect<T = unknown>
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);

@@ -28,7 +28,7 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -303,7 +303,7 @@ export interface CngxComboboxChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -372,6 +372,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** Panel width strategy. */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
 
   /**
    * Whether activating an option closes the panel. Defaults to `false`

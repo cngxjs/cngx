@@ -171,6 +171,7 @@ export {
   withRefreshingVariant,
   withCommitErrorDisplay,
   withCommitErrorAnnouncePolicy,
+  withPopoverPlacement,
 } from './src/lib/shared/config';
 
 // ── Commit action types ───────────────────────────────────────────────

@@ -6,6 +6,8 @@ import {
   makeEnvironmentProviders,
 } from '@angular/core';
 
+import type { PopoverPlacement } from '@cngx/common/popover';
+
 import type { CngxSelectCommitErrorDisplay } from './commit-action.types';
 import type { CngxCommitErrorAnnouncePolicy } from './commit-error-announcer';
 import type {
@@ -183,6 +185,23 @@ export interface CngxSelectConfig {
   /** Default surface for `commitAction` errors: banner, inline, or none. */
   readonly commitErrorDisplay?: CngxSelectCommitErrorDisplay;
   /**
+   * Default placement of the popover panel relative to the trigger for
+   * every flat select-family variant (`CngxSelect`, `CngxMultiSelect`,
+   * `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`,
+   * `CngxTreeSelect`). Accepts the full `PopoverPlacement` union the
+   * `cngxPopover` directive understands (`'top'`, `'top-start'`,
+   * `'bottom-end'`, `'right'`, …). Per-instance `[popoverPlacement]`
+   * input wins over component-scoped `provideSelectConfigAt`, which
+   * wins over app-wide `provideSelectConfig`. Defaults to `'bottom'`.
+   *
+   * The two action organisms read
+   * {@link /projects/forms/select/src/lib/shared/action-select-config.ts
+   * CngxActionSelectConfig.popoverPlacement} instead — kept separate so
+   * an app can open actions above the trigger while keeping the flat
+   * variants below (or vice versa) without per-instance overrides.
+   */
+  readonly popoverPlacement?: PopoverPlacement;
+  /**
    * Default live-region policy used when a scalar-commit fails. Every
    * scalar variant (`CngxSelect`, `CngxTypeahead`, `CngxActionSelect`)
    * feeds this through `createCommitErrorAnnouncer` so assistive tech
@@ -282,6 +301,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   refreshingVariant: 'bar',
   commitErrorDisplay: 'banner',
   commitErrorAnnouncePolicy: null,
+  popoverPlacement: 'bottom',
   panelClass: '',
   typeaheadDebounceInterval: 300,
   typeaheadWhileClosed: true,
@@ -446,6 +466,24 @@ export function withCommitErrorAnnouncePolicy(
   policy: CngxCommitErrorAnnouncePolicy | null,
 ): CngxSelectConfigFeature {
   return feature({ commitErrorAnnouncePolicy: policy });
+}
+
+/**
+ * Default popover placement for every flat select-family variant.
+ * Accepts any `PopoverPlacement` the `cngxPopover` directive
+ * understands. Defaults to `'bottom'`. Per-instance
+ * `[popoverPlacement]` input still wins.
+ *
+ * Action organisms use the sibling `withActionPopoverPlacement` on
+ * `provideActionSelectConfig` so an app can open actions above the
+ * trigger while keeping flat variants below.
+ *
+ * @category interactive
+ */
+export function withPopoverPlacement(
+  placement: PopoverPlacement,
+): CngxSelectConfigFeature {
+  return feature({ popoverPlacement: placement });
 }
 
 /**

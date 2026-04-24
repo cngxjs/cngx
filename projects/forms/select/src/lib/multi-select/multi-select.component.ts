@@ -24,7 +24,7 @@ import {
   CngxListbox,
   CngxListboxTrigger,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -290,7 +290,7 @@ export interface CngxMultiSelectChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -334,6 +334,11 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
