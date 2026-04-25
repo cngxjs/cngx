@@ -365,6 +365,13 @@ export {
   type SearchEffectsOptions,
 } from './src/lib/shared/search-effects';
 
+// ── Unified aggregator across all 3 config surfaces ──────────────────
+export {
+  provideCngxSelect,
+  provideCngxSelectAt,
+  type CngxSelectAggregatorFeature,
+} from './src/lib/shared/provide-cngx-select';
+
 // ── Shared chip-removal handler ───────────────────────────────────────
 export {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,

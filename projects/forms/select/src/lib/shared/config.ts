@@ -644,10 +644,18 @@ export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSele
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;
+  /**
+   * Discriminator consumed by `provideCngxSelect` to dispatch a feature
+   * to the correct provider. Hidden from the public type surface so
+   * existing consumers and the docs site stay unchanged.
+   *
+   * @internal
+   */
+  readonly _target?: 'select';
 }
 
 function feature(config: Partial<CngxSelectConfig>): CngxSelectConfigFeature {
-  return { config };
+  return { config, _target: 'select' };
 }
 
 /**

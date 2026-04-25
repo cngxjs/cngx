@@ -140,12 +140,14 @@ export const CNGX_ACTION_SELECT_CONFIG = new InjectionToken<CngxActionSelectConf
  */
 export interface CngxActionSelectConfigFeature {
   readonly config: Partial<CngxActionSelectConfig>;
+  /** @internal — discriminator for `provideCngxSelect` dispatch. */
+  readonly _target?: 'action';
 }
 
 function feature(
   config: Partial<CngxActionSelectConfig>,
 ): CngxActionSelectConfigFeature {
-  return { config };
+  return { config, _target: 'action' };
 }
 
 /**
