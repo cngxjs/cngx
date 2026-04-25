@@ -450,6 +450,34 @@ export class CngxSelectRetryButton {
 }
 
 /**
+ * Override template for the glyph rendered inside the panel-shell's
+ * loading + refreshing indicators (spinner, bar, dots variants).
+ * Replaces the built-in animated `<div>` body while keeping the
+ * `role="status"` + `aria-live` + `aria-label` wiring on the parent
+ * span. Skeleton variant stays HTML-layout-driven (each row is a
+ * structural element, not a glyph) and ignores this slot.
+ *
+ * @example
+ * ```html
+ * <cngx-select [loading]="true">
+ *   <ng-template cngxSelectLoadingGlyph>
+ *     <my-spinner kind="dots" />
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectLoadingGlyph]',
+  standalone: true,
+  exportAs: 'cngxSelectLoadingGlyph',
+})
+export class CngxSelectLoadingGlyph {
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}
+
+/**
  * Override template for the panel's refreshing indicator (subtle top-bar
  * shown while the bound `[state]`'s status is `'refreshing'` — options stay
  * visible below it).

@@ -103,6 +103,7 @@ function makeShellHost(): CngxSelectPanelHost {
       optionLabel: nullTpl,
       error: nullTpl,
       retryButton: nullTpl,
+      loadingGlyph: nullTpl,
       refreshing: nullTpl,
       commitError: nullTpl,
       clearButton: nullTpl,

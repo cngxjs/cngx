@@ -88,6 +88,13 @@ export interface CngxSelectPanelShellTemplates<T = unknown> {
    */
   readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
   /**
+   * Glyph override projected via `*cngxSelectLoadingGlyph`. Drives the
+   * inner animated body of the spinner / bar / dots loading and
+   * refreshing indicators (skeleton stays HTML-layout-driven). When
+   * `null` the shell renders its built-in CSS-driven glyphs.
+   */
+  readonly loadingGlyph: Signal<TemplateRef<void> | null>;
+  /**
    * Inline action-slot template projected via `*cngxSelectAction`.
    * Cross-variant: the flat panels, tree panels, and the action-select
    * organisms all rely on the same shell frame to render it, so the

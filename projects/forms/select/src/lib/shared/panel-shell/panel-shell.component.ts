@@ -119,11 +119,19 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
           @switch (host.loadingVariant()) {
             @case ('spinner') {
               <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'">
-                <div aria-hidden="true" class="cngx-select__spinner"></div>
+                @if (host.tpl.loadingGlyph(); as glyph) {
+                  <ng-container *ngTemplateOutlet="glyph" />
+                } @else {
+                  <div aria-hidden="true" class="cngx-select__spinner"></div>
+                }
               </div>
             }
             @case ('bar') {
-              <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'"></div>
+              <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Loading options'">
+                @if (host.tpl.loadingGlyph(); as glyph) {
+                  <ng-container *ngTemplateOutlet="glyph" />
+                }
+              </div>
             }
             @case ('text') {
               <div class="cngx-select__loading" role="status" aria-live="polite">{{ host.fallbackLabels.loading }}</div>
@@ -242,18 +250,30 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
               @case ('none') { <!-- suppressed --> }
               @case ('spinner') {
                 <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
-                  <div aria-hidden="true" class="cngx-select__spinner"></div>
+                  @if (host.tpl.loadingGlyph(); as glyph) {
+                    <ng-container *ngTemplateOutlet="glyph" />
+                  } @else {
+                    <div aria-hidden="true" class="cngx-select__spinner"></div>
+                  }
                 </div>
               }
               @case ('dots') {
                 <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
-                  <span aria-hidden="true"></span>
+                  @if (host.tpl.loadingGlyph(); as glyph) {
+                    <ng-container *ngTemplateOutlet="glyph" />
+                  } @else {
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                  }
                 </div>
               }
               @default {
-                <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'"></div>
+                <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Refreshing options'">
+                  @if (host.tpl.loadingGlyph(); as glyph) {
+                    <ng-container *ngTemplateOutlet="glyph" />
+                  }
+                </div>
               }
             }
           }

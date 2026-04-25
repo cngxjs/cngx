@@ -16,6 +16,7 @@ import type {
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
+  CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
   CngxSelectCaretContext,
@@ -63,6 +64,13 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly optionLabel: Signal<CngxSelectOptionLabel<T> | undefined>;
   readonly error: Signal<CngxSelectError | undefined>;
   readonly retryButton: Signal<CngxSelectRetryButton | undefined>;
+  /**
+   * Optional — variants forwarding a `*cngxSelectLoadingGlyph` directive
+   * declare the `contentChild` and pass it in. Variants that omit this
+   * still pick up the config-level `templates.loadingGlyph` fallback via
+   * `resolveTemplate`.
+   */
+  readonly loadingGlyph?: Signal<CngxSelectLoadingGlyph | undefined>;
   readonly refreshing: Signal<CngxSelectRefreshing | undefined>;
   readonly commitError: Signal<CngxSelectCommitError<T> | undefined>;
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
@@ -99,6 +107,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly optionLabel: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
   readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
+  readonly loadingGlyph: Signal<TemplateRef<void> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
   readonly clearButton: Signal<TemplateRef<CngxSelectClearButtonContext> | null>;
@@ -154,6 +163,10 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  */
 const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
 
+/** Stable empty-signal fallback for the optional loadingGlyph query. @internal */
+const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
+  signal(undefined);
+
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
@@ -167,6 +180,10 @@ export function createTemplateRegistry<T = unknown>(
     optionLabel: resolveTemplate(queries.optionLabel, 'optionLabel'),
     error: resolveTemplate(queries.error, 'error'),
     retryButton: resolveTemplate(queries.retryButton, 'retryButton'),
+    loadingGlyph: resolveTemplate(
+      queries.loadingGlyph ?? NO_LOADING_GLYPH_DIRECTIVE,
+      'loadingGlyph',
+    ),
     refreshing: resolveTemplate(queries.refreshing, 'refreshing'),
     commitError: resolveTemplate(queries.commitError, 'commitError'),
     clearButton: resolveTemplate(queries.clearButton, 'clearButton'),

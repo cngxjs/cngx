@@ -811,6 +811,9 @@ export class CngxTreeSelect<T = unknown>
     empty: computed(() => this.emptyDir()?.templateRef ?? null),
     error: this.errorTpl,
     retryButton: this.retryButtonTpl,
+    loadingGlyph: computed<TemplateRef<void> | null>(
+      () => this.config.templates?.loadingGlyph ?? null,
+    ),
     refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
     commitError: this.commitErrorTpl,
     // Tree-select doesn't host an inline action slot today (see

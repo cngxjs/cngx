@@ -210,6 +210,7 @@ export {
   CngxSelectOptionLabel,
   CngxSelectError,
   CngxSelectRetryButton,
+  CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
   CngxSelectCommitError,
   CngxSelectClearButton,

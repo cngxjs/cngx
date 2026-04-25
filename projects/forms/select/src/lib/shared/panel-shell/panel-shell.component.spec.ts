@@ -1,5 +1,6 @@
 import {
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   signal,
   viewChild,
   type TemplateRef,
@@ -109,6 +110,7 @@ function createMockHost(): {
       optionLabel: nullTpl,
       error: nullTpl,
       retryButton: nullTpl,
+      loadingGlyph: nullTpl,
       refreshing: nullTpl,
       commitError: nullTpl,
       clearButton: nullTpl,
@@ -502,5 +504,64 @@ describe('CngxSelectPanelShell — *cngxSelectRetryButton override', () => {
     const root = fixture.nativeElement as HTMLElement;
     expect(root.querySelector('.cngx-select__error-retry')).toBeTruthy();
     expect(root.querySelector('button.my-retry')).toBeNull();
+  });
+});
+
+// ── *cngxSelectLoadingGlyph override ─────────────────────────────────
+
+@Component({
+  imports: [CngxSelectPanelShell],
+  template: `
+    <cngx-select-panel-shell>
+      <div class="projected-body">projected</div>
+    </cngx-select-panel-shell>
+    <ng-template #glyphTpl>
+      <my-spinner data-glyph="custom"></my-spinner>
+    </ng-template>
+  `,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+class GlyphHost {
+  readonly glyphTpl = viewChild<TemplateRef<void>>('glyphTpl');
+}
+
+describe('CngxSelectPanelShell — *cngxSelectLoadingGlyph override', () => {
+  it('replaces the default spinner glyph in the loading view', () => {
+    const { host, controls } = createMockHost();
+    const glyphSlot = signal<TemplateRef<void> | null>(null);
+    const hostWithGlyph: CngxSelectPanelHost = {
+      ...host,
+      tpl: { ...host.tpl, loadingGlyph: glyphSlot } as typeof host.tpl,
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_SELECT_PANEL_HOST, useValue: hostWithGlyph },
+        { provide: CNGX_SELECT_PANEL_VIEW_HOST, useValue: hostWithGlyph },
+      ],
+    });
+    const fixture = TestBed.createComponent(GlyphHost);
+    fixture.detectChanges();
+    const tpl = fixture.componentInstance.glyphTpl();
+    if (!tpl) {
+      throw new Error('glyph template not resolved');
+    }
+    glyphSlot.set(tpl);
+    controls.activeView.set('skeleton');
+    controls.loadingVariant.set('spinner');
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.cngx-select__spinner-wrap')).toBeTruthy();
+    expect(root.querySelector('.cngx-select__spinner')).toBeNull();
+    expect(root.querySelector('my-spinner[data-glyph="custom"]')).toBeTruthy();
+  });
+
+  it('keeps the default CSS-driven spinner when no override is supplied', () => {
+    const { fixture, controls } = setup();
+    controls.activeView.set('skeleton');
+    controls.loadingVariant.set('spinner');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.cngx-select__spinner')).toBeTruthy();
   });
 });

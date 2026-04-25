@@ -48,6 +48,8 @@ export interface CngxSelectTemplateContexts {
   readonly optionLabel?: CngxSelectOptionLabelContext;
   readonly error?: CngxSelectErrorContext;
   readonly retryButton?: CngxSelectRetryButtonContext;
+  /** Glyph rendered inside spinner/bar/dots loading + refreshing indicators (no context). */
+  readonly loadingGlyph?: Record<string, never>;
   readonly refreshing?: CngxSelectRefreshingContext;
   readonly commitError?: CngxSelectCommitErrorContext;
   readonly clearButton?: CngxSelectClearButtonContext;
@@ -480,6 +482,7 @@ export interface CngxSelectConfig {
     readonly optionLabel?: TemplateRef<CngxSelectOptionLabelContext> | null;
     readonly error?: TemplateRef<CngxSelectErrorContext> | null;
     readonly retryButton?: TemplateRef<CngxSelectRetryButtonContext> | null;
+    readonly loadingGlyph?: TemplateRef<void> | null;
     readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
     readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
     readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
@@ -598,6 +601,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionLabel: null,
     error: null,
     retryButton: null,
+    loadingGlyph: null,
     refreshing: null,
     commitError: null,
     clearButton: null,
