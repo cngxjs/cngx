@@ -166,6 +166,40 @@ export interface CngxSelectAriaLabels {
    * Variant fallback when unset: `'Entfernen'`.
    */
   readonly chipRemove?: string;
+  /**
+   * ARIA label for the tree-select twisty button when the node is collapsed.
+   * Default `'Knoten erweitern'`.
+   */
+  readonly treeExpand?: string;
+  /**
+   * ARIA label for the tree-select twisty button when the node is expanded.
+   * Default `'Knoten reduzieren'`.
+   */
+  readonly treeCollapse?: string;
+  /**
+   * ARIA label on the panel-shell loading status region (first-load
+   * spinner / bar / dots / skeleton wrapper). Read by AT when the panel
+   * opens against a pending state. Default `'Lade Optionen'`.
+   */
+  readonly statusLoading?: string;
+  /**
+   * ARIA label on the panel-shell refreshing-indicator (subsequent-load
+   * progress bar / spinner / dots overlay shown while options stay
+   * visible). Default `'Aktualisiere Optionen'`.
+   */
+  readonly statusRefreshing?: string;
+  /**
+   * Last-resort fallback for the `fieldLabel` substituted into the
+   * announcer's `format()` template when neither `[label]` nor
+   * `[aria-label]` are bound. Default `'Auswahl'`.
+   */
+  readonly fieldLabelFallback?: string;
+  /**
+   * Default error message rendered when a `[commitAction]` rejects and
+   * no inline message is supplied by the thrown error. Default
+   * `'Speichern fehlgeschlagen'`.
+   */
+  readonly commitFailedMessage?: string;
 }
 
 /**
@@ -567,7 +601,14 @@ export const CNGX_SELECT_DEFAULTS: Required<
     optionError: null,
     action: null,
   },
-  ariaLabels: {},
+  ariaLabels: {
+    treeExpand: 'Knoten erweitern',
+    treeCollapse: 'Knoten reduzieren',
+    statusLoading: 'Lade Optionen',
+    statusRefreshing: 'Aktualisiere Optionen',
+    fieldLabelFallback: 'Auswahl',
+    commitFailedMessage: 'Speichern fehlgeschlagen',
+  },
   fallbackLabels: {
     loading: 'Loading…',
     empty: 'No Options',
