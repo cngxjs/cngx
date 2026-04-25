@@ -39,6 +39,10 @@ import {
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
+import {
   createArrayCommitHandler,
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
@@ -943,6 +947,28 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     onError: (err) => this.commitError.emit(err),
   });
 
+  /**
+   * Chip-removal handler — disabled-guard + snapshot + filter + commit/
+   * sync branch + WeakMap closure cache. Replaces the inline removeOption
+   * + chipRemoveFor + chipRemoveCache trio. Same factory as `CngxMultiSelect`.
+   */
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
+      values: this.values,
+      disabled: this.disabled,
+      compareWith: this.compareWith,
+      commitAction: this.commitAction,
+      commitMode: this.commitMode,
+      beginCommit: (next, previous, item, action) =>
+        this.commitHandler.beginToggle(next, previous, item, action),
+      onBeforeCommit: (previous, item) => {
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(item);
+      },
+      onSyncFinalize: (item, previous) =>
+        this.finalizeToggle(item, false, previous),
+    });
+
   // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
@@ -953,24 +979,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     return this.values().length === 0;
   }
 
-  /**
-   * WeakMap cache of per-option remove callbacks. Stable closures per
-   * option prevent `ngTemplateOutlet` thrash on template re-renders.
-   */
-  private readonly chipRemoveCache = new WeakMap<
-    CngxSelectOptionDef<T>,
-    () => void
-  >();
-
-  /** @internal — stable `remove()` callback per option for chip slots. */
+  /** @internal — stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    const cached = this.chipRemoveCache.get(opt);
-    if (cached) {
-      return cached;
-    }
-    const fn = (): void => this.removeOption(opt);
-    this.chipRemoveCache.set(opt, fn);
-    return fn;
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   constructor() {
@@ -1096,7 +1107,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
-    this.removeOption(opt);
+    this.chipRemovalHandler.removeByValue(opt);
   }
 
   /**
@@ -1108,29 +1119,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     if (selected.length === 0) {
       return;
     }
-    this.removeOption(selected[selected.length - 1]);
-  }
-
-  /** Shared removal path for chip ✕, Backspace-on-empty, and callback. */
-  private removeOption(opt: CngxSelectOptionDef<T>): void {
-    if (this.disabled()) {
-      return;
-    }
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const next = previous.filter((v) => !eq(v, opt.value));
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.finalizeToggle(opt, false, previous);
+    this.chipRemovalHandler.removeByValue(selected[selected.length - 1]);
   }
 
   /** @internal */
