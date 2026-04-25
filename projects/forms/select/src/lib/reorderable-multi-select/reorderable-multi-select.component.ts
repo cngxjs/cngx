@@ -44,6 +44,10 @@ import {
   createArrayCommitHandler,
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
+import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
 import { sameArrayContents } from '../shared/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
@@ -823,6 +827,29 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     onError: (err) => this.commitError.emit(err),
   });
 
+  /**
+   * Chip-removal handler — same factory as `CngxMultiSelect`/`CngxCombobox`.
+   * Reorder semantics are independent: chip-remove is always a single
+   * deselect (the strip-keyboard handler owns position changes via
+   * `CngxReorder`).
+   */
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
+      values: this.values,
+      disabled: this.disabled,
+      compareWith: this.compareWith,
+      commitAction: this.commitAction,
+      commitMode: this.commitMode,
+      beginCommit: (next, previous, item, action) =>
+        this.commitHandler.beginToggle(next, previous, item, action),
+      onBeforeCommit: (previous, item) => {
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(item);
+      },
+      onSyncFinalize: (item, previous) =>
+        this.finalizeToggle(item, false, previous),
+    });
+
   // ── Reorder-specific state ─────────────────────────────────────────
 
   /**
@@ -1000,33 +1027,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
-    this.removeOption(opt);
+    this.chipRemovalHandler.removeByValue(opt);
   }
 
-  /** @internal */
+  /** @internal — stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    return () => this.removeOption(opt);
-  }
-
-  private removeOption(opt: CngxSelectOptionDef<T>): void {
-    if (this.disabled()) {
-      return;
-    }
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const next = previous.filter((v) => !eq(v, opt.value));
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.finalizeToggle(opt, false, previous);
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   /** @internal */
