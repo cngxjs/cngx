@@ -54,6 +54,7 @@ import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
+import { CNGX_SELECT_GLYPHS } from '../shared/glyphs';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -85,6 +86,7 @@ import {
 } from '../shared/select-core';
 import {
   CngxMultiSelectChip,
+  CngxMultiSelectChipHandle,
   type CngxMultiSelectChipContext,
   CngxMultiSelectTriggerLabel,
   type CngxMultiSelectTriggerLabelContext,
@@ -265,11 +267,13 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                 (focus)="handleChipFocus(i)"
                 (click)="$event.stopPropagation()"
               >
-                @if (chipDragHandleTpl(); as handleT) {
-                  <span class="cngx-select__chip-handle" aria-hidden="true">
+                <span class="cngx-select__chip-handle" aria-hidden="true">
+                  @if (chipDragHandleTpl(); as handleT) {
                     <ng-container *ngTemplateOutlet="handleT" />
-                  </span>
-                }
+                  } @else {
+                    {{ defaultDragHandleGlyph }}
+                  }
+                </span>
                 @if (chipTpl(); as chipT) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -518,6 +522,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     CngxSelectCommitError,
   );
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  /**
+   * Highest-precedence drag-handle slot — wins over `[chipDragHandle]`
+   * Input and the default glyph fallback. See `CngxMultiSelectChipHandle`.
+   */
+  private readonly chipHandleDirective =
+    contentChild<CngxMultiSelectChipHandle>(CngxMultiSelectChipHandle);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
@@ -556,10 +566,20 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.chipDirective()?.templateRef ?? null,
   );
 
-  /** @internal */
+  /**
+   * Resolved drag-handle template — three-stage cascade:
+   *   1. `*cngxMultiSelectChipHandle` directive (highest precedence).
+   *   2. `[chipDragHandle]` Input.
+   *   3. `null` — template renders {@link defaultDragHandleGlyph}.
+   *
+   * @internal
+   */
   protected readonly chipDragHandleTpl = computed<TemplateRef<void> | null>(
-    () => this.chipDragHandle(),
+    () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
   );
+
+  /** @internal — default '⋮⋮' grip rendered when no template is supplied. */
+  protected readonly defaultDragHandleGlyph = CNGX_SELECT_GLYPHS.dragHandle;
 
   // ── ViewChildren ───────────────────────────────────────────────────
 

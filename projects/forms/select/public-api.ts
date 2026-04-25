@@ -215,6 +215,7 @@ export {
   CngxSelectOptionPending,
   CngxSelectOptionError,
   CngxMultiSelectChip,
+  CngxMultiSelectChipHandle,
   CngxMultiSelectTriggerLabel,
   CngxComboboxTriggerLabel,
   CngxSelectInputPrefix,

@@ -452,6 +452,39 @@ export class CngxMultiSelectChip<T = unknown> {
 }
 
 /**
+ * Override template for the drag-handle glyph rendered inside each
+ * reorderable chip. The directive form is the highest-precedence cascade
+ * step in the `CngxReorderableMultiSelect` chip-handle resolution:
+ *
+ *   1. `*cngxMultiSelectChipHandle` directive (this slot) — wins when projected.
+ *   2. `[chipDragHandle]` Input — `TemplateRef<void>` set imperatively.
+ *   3. Default `⋮⋮` glyph from the internal `CNGX_SELECT_GLYPHS.dragHandle`.
+ *
+ * The handle span carrying the rendered template stays
+ * `aria-hidden="true"` — the drag affordance is exposed to AT via the
+ * chip's `[reorderAriaLabel]` instructions, not the glyph itself.
+ *
+ * @example
+ * ```html
+ * <cngx-reorderable-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectChipHandle>
+ *     <svg viewBox="0 0 8 12" width="8" height="12">…dots…</svg>
+ *   </ng-template>
+ * </cngx-reorderable-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectChipHandle]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectChipHandle',
+})
+export class CngxMultiSelectChipHandle {
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}
+
+/**
  * Override template for the whole trigger label in `CngxMultiSelect`.
  * When projected, the default chip strip is suppressed and the consumer
  * owns the trigger's rendering — use this for "3 Themen ausgewählt"
