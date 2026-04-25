@@ -43,6 +43,10 @@ import {
   createArrayCommitHandler,
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
+import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
 import { sameArrayContents } from '../shared/compare';
 import type {
   CngxSelectCommitAction,
@@ -965,20 +969,32 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     return this.values().length === 0;
   }
 
-  private readonly chipRemoveCache = new WeakMap<
-    CngxSelectOptionDef<T>,
-    () => void
-  >();
+  /**
+   * Chip-removal handler — same factory as the rest of the multi-value
+   * family. The action-host is independent of chip-remove (the action
+   * dispatches happen via the action panel, not the chip strip), so
+   * wiring is identical to `CngxMultiSelect`.
+   */
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
+      values: this.values,
+      disabled: this.disabled,
+      compareWith: this.compareWith,
+      commitAction: this.commitAction,
+      commitMode: this.commitMode,
+      beginCommit: (next, previous, item, action) =>
+        this.commitHandler.beginToggle(next, previous, item, action),
+      onBeforeCommit: (previous, item) => {
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(item);
+      },
+      onSyncFinalize: (item, previous) =>
+        this.finalizeToggle(item, false, previous),
+    });
 
-  /** @internal */
+  /** @internal — stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    const cached = this.chipRemoveCache.get(opt);
-    if (cached) {
-      return cached;
-    }
-    const fn = (): void => this.removeOption(opt);
-    this.chipRemoveCache.set(opt, fn);
-    return fn;
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   constructor() {
@@ -1158,7 +1174,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
-    this.removeOption(opt);
+    this.chipRemovalHandler.removeByValue(opt);
   }
 
   /** @internal */
@@ -1167,28 +1183,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     if (selected.length === 0) {
       return;
     }
-    this.removeOption(selected[selected.length - 1]);
-  }
-
-  private removeOption(opt: CngxSelectOptionDef<T>): void {
-    if (this.disabled()) {
-      return;
-    }
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const next = previous.filter((v) => !eq(v, opt.value));
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.finalizeToggle(opt, false, previous);
+    this.chipRemovalHandler.removeByValue(selected[selected.length - 1]);
   }
 
   protected handleClearAllClick(event: Event): void {
