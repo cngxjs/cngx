@@ -267,6 +267,28 @@ export const STORY: DemoSpec = {
   ];
   protected readonly typeaheadColorModel = signal<string>('');
   protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
   `,
   sections: [
     {
@@ -1208,6 +1230,87 @@ export const STORY: DemoSpec = {
   <div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="asyncSetLoading()">Set loading</button>
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — async [state] (load + error + retry)',
+      subtitle:
+        'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.',
+      imports: ['CngxTypeahead'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — [commitAction] with optimistic/pessimistic mode',
+      subtitle:
+        'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.',
+      imports: ['CngxTypeahead'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
+    placeholder="Search by name…"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — *cngxSelectOptionLabel slot override',
+      subtitle:
+        'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.',
+      imports: ['CngxTypeahead', 'CngxSelectOptionLabel'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
   </div>`,
     },
     {

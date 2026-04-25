@@ -935,10 +935,88 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
   </div>
       </app-example-card>
-      <app-example-card title="Slot override: *cngxComboboxChip"
+      <app-example-card title="Typeahead — async [state] (load + error + retry)"
         [subtitle]="_s40"
         [sourceHtml]="_srcHtml40"
         [sourceTs]="_srcTs40">
+        
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
+  </div>
+      </app-example-card>
+      <app-example-card title="Typeahead — [commitAction] with optimistic/pessimistic mode"
+        [subtitle]="_s41"
+        [sourceHtml]="_srcHtml41"
+        [sourceTs]="_srcTs41">
+        
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
+    placeholder="Search by name…"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Typeahead — *cngxSelectOptionLabel slot override"
+        [subtitle]="_s42"
+        [sourceHtml]="_srcHtml42"
+        [sourceTs]="_srcTs42">
+        
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Slot override: *cngxComboboxChip"
+        [subtitle]="_s43"
+        [sourceHtml]="_srcHtml43"
+        [sourceTs]="_srcTs43">
         
   <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
@@ -997,7 +1075,10 @@ export class SelectDemoComponent {
   protected readonly _s37 = 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).';
   protected readonly _s38 = 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.';
   protected readonly _s39 = 'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.';
-  protected readonly _s40 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
+  protected readonly _s40 = 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.';
+  protected readonly _s41 = 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.';
+  protected readonly _s42 = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
+  protected readonly _s43 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -1240,7 +1321,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml1 = `<cngx-select
     [label]="'Declarative (broken)'"
     [(value)]="declarativeValue"
@@ -1491,7 +1594,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml2 = `<button type="button"
           class="chip"
           [cngxPopoverTrigger]="myPop"
@@ -1753,7 +1878,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml3 = `<cngx-select
     [label]="'Priorität'"
     [options]="priorities"
@@ -1994,7 +2141,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml4 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -2235,7 +2404,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml5 = `<cngx-select
     [label]="'Gewerk'"
     [options]="richOptions"
@@ -2481,7 +2672,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml6 = `<cngx-select
     [label]="'Async'"
     [options]="loadingOptions"
@@ -2729,7 +2942,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml7 = `<cngx-select
     [label]="'Sprache'"
     [state]="asyncState"
@@ -2987,7 +3222,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml8 = `<cngx-select
     [label]="'Farbe (commit)'"
     [options]="colors"
@@ -3248,7 +3505,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml9 = `<cngx-select
     [label]="'Sprache'"
     [state]="variantState"
@@ -3502,7 +3781,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml10 = `<cngx-select
     [label]="'Sprache'"
     [state]="variantState"
@@ -3755,7 +4056,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml11 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -4005,7 +4328,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml12 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -4249,7 +4594,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml13 = `<cngx-select
     [label]="'Gewerk'"
     [options]="richOptions"
@@ -4495,7 +4862,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml14 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -4738,7 +5127,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml15 = `<cngx-select
     [label]="'Item'"
     [options]="manyOptions"
@@ -4980,7 +5391,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml16 = `<button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
     {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
   </button>
@@ -5227,7 +5660,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml17 = `<cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
     <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
@@ -5472,7 +5927,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml18 = `<cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
     <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
@@ -5713,7 +6190,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml19 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -5955,7 +6454,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml20 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -6197,7 +6718,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml21 = `<cngx-multi-select
     [label]="'Themen'"
     [state]="multiAsyncState"
@@ -6443,7 +6986,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml22 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
             [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -6703,7 +7268,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml23 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -6953,7 +7540,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml24 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
@@ -7201,7 +7810,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml25 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -7443,7 +8074,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml26 = `<cngx-combobox
     [label]="'Themen'"
     [state]="comboAsyncState"
@@ -7692,7 +8345,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml27 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
             [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -7952,7 +8627,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml28 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -8200,7 +8897,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml29 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
@@ -8452,7 +9171,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml30 = `<cngx-typeahead
     [label]="'User'"
     [options]="typeaheadUsers"
@@ -8698,7 +9439,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml31 = `<cngx-form-field [field]="typeaheadColorField">
     <cngx-typeahead
       [label]="'Farbe'"
@@ -8941,7 +9704,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml32 = `<cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
     <ng-template cngxSelectPlaceholder let-text>
       <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
@@ -9184,7 +9969,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml33 = `<cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
     <ng-template cngxSelectLoading let-retry="retry">
       <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
@@ -9425,7 +10232,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml34 = `<cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
     <ng-template cngxSelectOptgroup let-group>
       <span style="display:inline-flex;align-items:center;gap:0.5rem">
@@ -9668,7 +10497,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml35 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
     <ng-template cngxSelectRefreshing let-previousCount="previousCount">
       <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
@@ -9911,7 +10762,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml36 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -10164,7 +11037,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml37 = `<cngx-select
     [label]="'Farbe'"
     [options]="colors"
@@ -10419,7 +11314,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml38 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
       <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
@@ -10662,7 +11579,29 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
   protected readonly _srcHtml39 = `<cngx-select
     [label]="'Sprache'"
     [options]="asyncOptions"
@@ -10910,18 +11849,43 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
-  protected readonly _srcHtml40 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
-    <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
-        <span aria-hidden="true">#{{ i + 1 }}</span>
-        <strong>{{ opt.label }}</strong>
-        <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
-      </span>
-    </ng-template>
-  </cngx-combobox>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml40 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
   </div>`;
   protected readonly _srcTs40 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -11154,7 +12118,62 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     { value: 'orange', label: 'Orange' },
   ];
   protected readonly typeaheadColorModel = signal<string>('');
-  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));`;
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml41 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
+    placeholder="Search by name…"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs41 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
 
   protected readonly colors: CngxSelectOptionDef<string>[] = [
     { value: 'red', label: 'Rot' },
@@ -11376,5 +12395,813 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   ];
   protected readonly typeaheadColorModel = signal<string>('');
   protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml42 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs42 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml43 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+    <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
+        <span aria-hidden="true">#{{ i + 1 }}</span>
+        <strong>{{ opt.label }}</strong>
+        <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
+      </span>
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs43 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
   
 }
