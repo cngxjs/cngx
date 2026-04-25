@@ -70,23 +70,24 @@ import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controll
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { injectResolvedTemplate } from '../shared/resolve-template';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
+  CngxSelectCheck,
   CngxSelectClearButton,
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
+  CngxSelectOptgroupTemplate,
+  CngxSelectOptionError,
+  CngxSelectOptionLabel,
+  CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectRetryButton,
-  type CngxSelectCaretContext,
-  type CngxSelectClearButtonContext,
   type CngxSelectCommitErrorContext,
   type CngxSelectErrorContext,
-  type CngxSelectPlaceholderContext,
-  type CngxSelectRetryButtonContext,
 } from '../shared/template-slots';
 import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/select-core';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
@@ -447,10 +448,14 @@ export class CngxTreeSelect<T = unknown>
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
 
-  // ── Content-child slot queries ────────────────────────────────────
+  // ── Content-child slot queries (shared family) ────────────────────
 
+  private readonly checkDir = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly caretDir = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  private readonly optgroupDir = contentChild<CngxSelectOptgroupTemplate<T>>(
+    CngxSelectOptgroupTemplate,
+  );
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
@@ -459,38 +464,69 @@ export class CngxTreeSelect<T = unknown>
     contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly optionLabelDir = contentChild<CngxSelectOptionLabel<T>>(
+    CngxSelectOptionLabel,
+  );
+  private readonly optionPendingDir = contentChild<CngxSelectOptionPending<T>>(
+    CngxSelectOptionPending,
+  );
+  private readonly optionErrorDir = contentChild<CngxSelectOptionError<T>>(
+    CngxSelectOptionError,
+  );
+
+  // ── Tree-specific slot queries ────────────────────────────────────
+
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
   private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
     CngxTreeSelectTriggerLabel,
   );
 
-  // ── Resolved template refs ────────────────────────────────────────
+  // ── Resolved template-slot registry ───────────────────────────────
+
+  /**
+   * Shared 13-slot template registry — same factory the flat-family
+   * variants use. Drives the entire `*cngxSelect*` cascade
+   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null)
+   * with one DI-overridable factory call. The option-loop slots
+   * (check, optgroup, optionLabel, optionPending, optionError) are
+   * declared for parity with the flat panels even though tree-select
+   * doesn't render them — projecting them into a `<cngx-tree-select>`
+   * is silently ignored.
+   *
+   * @internal
+   */
+  protected readonly tplRegistry = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDir,
+    caret: this.caretDir,
+    optgroup: this.optgroupDir,
+    placeholder: this.placeholderDir,
+    empty: this.emptyDir,
+    loading: this.loadingDir,
+    optionLabel: this.optionLabelDir,
+    error: this.errorDir,
+    retryButton: this.retryButtonDir,
+    refreshing: this.refreshingDir,
+    commitError: this.commitErrorDir,
+    clearButton: this.clearButtonDir,
+    optionPending: this.optionPendingDir,
+    optionError: this.optionErrorDir,
+  });
+
+  // ── Resolved template-ref aliases (template-binding ergonomics) ──
 
   /** @internal */
-  readonly placeholderTpl = injectResolvedTemplate<CngxSelectPlaceholderContext>(
-    this.placeholderDir,
-    'placeholder',
-  );
+  readonly placeholderTpl = this.tplRegistry.placeholder;
   /** @internal */
-  readonly caretTpl = injectResolvedTemplate<CngxSelectCaretContext>(this.caretDir, 'caret');
+  readonly caretTpl = this.tplRegistry.caret;
   /** @internal */
-  readonly clearButtonTpl = injectResolvedTemplate<CngxSelectClearButtonContext>(
-    this.clearButtonDir,
-    'clearButton',
-  );
+  readonly clearButtonTpl = this.tplRegistry.clearButton;
   /** @internal — exposed for the shell's inline-error branch. */
-  readonly errorTpl = injectResolvedTemplate<CngxSelectErrorContext>(this.errorDir, 'error');
+  readonly errorTpl = this.tplRegistry.error;
   /** @internal — projected via `*cngxSelectRetryButton`. */
-  readonly retryButtonTpl = injectResolvedTemplate<CngxSelectRetryButtonContext>(
-    this.retryButtonDir,
-    'retryButton',
-  );
+  readonly retryButtonTpl = this.tplRegistry.retryButton;
   /** @internal */
-  readonly commitErrorTpl = injectResolvedTemplate<CngxSelectCommitErrorContext<T>>(
-    this.commitErrorDir,
-    'commitError',
-  );
+  readonly commitErrorTpl = this.tplRegistry.commitError;
   /** @internal */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null> = computed(
     () => this.nodeDir()?.templateRef ?? null,
@@ -807,15 +843,13 @@ export class CngxTreeSelect<T = unknown>
    * @internal
    */
   readonly tpl: CngxSelectPanelShellTemplates<T> = {
-    loading: computed(() => this.loadingDir()?.templateRef ?? null),
-    empty: computed(() => this.emptyDir()?.templateRef ?? null),
-    error: this.errorTpl,
-    retryButton: this.retryButtonTpl,
-    loadingGlyph: computed<TemplateRef<void> | null>(
-      () => this.config.templates?.loadingGlyph ?? null,
-    ),
-    refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
-    commitError: this.commitErrorTpl,
+    loading: this.tplRegistry.loading,
+    empty: this.tplRegistry.empty,
+    error: this.tplRegistry.error,
+    retryButton: this.tplRegistry.retryButton,
+    loadingGlyph: this.tplRegistry.loadingGlyph,
+    refreshing: this.tplRegistry.refreshing,
+    commitError: this.tplRegistry.commitError,
     // Tree-select doesn't host an inline action slot today (see
     // master-plan §9 — CngxActionTreeSelect is a separate follow-up).
     // The shell falls back to "no template" when the computed is null,
