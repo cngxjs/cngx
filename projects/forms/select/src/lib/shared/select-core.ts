@@ -833,11 +833,14 @@ export function createSelectCore<T, TCommit>(
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const labelText = label !== '' ? label : (aria ?? 'Auswahl');
+    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Auswahl';
+    const failedMessage =
+      config.ariaLabels.commitFailedMessage ?? 'Speichern fehlgeschlagen';
+    const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail
-      ? `${labelText}: Speichern fehlgeschlagen — ${detail}`
-      : `${labelText}: Speichern fehlgeschlagen`;
+      ? `${labelText}: ${failedMessage} — ${detail}`
+      : `${labelText}: ${failedMessage}`;
   }
 
   // Pass-through bundle — methods bound once to the core's own
@@ -870,7 +873,7 @@ export function createSelectCore<T, TCommit>(
     const format = announcerInputs.announceTemplate() ?? announcerConfig.format;
     const label = deps.label();
     const aria = deps.ariaLabel();
-    let fieldLabel = 'Auswahl';
+    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Auswahl';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
