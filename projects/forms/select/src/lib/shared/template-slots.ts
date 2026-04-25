@@ -201,7 +201,7 @@ export interface CngxSelectOptionErrorContext<T = unknown> {
 /**
  * Context for the trigger-label template in `CngxMultiSelect`. Replaces
  * the default chip strip entirely, letting consumers render a text
- * summary ("3 ausgewählt"), a compact badge + first label, or any other
+ * summary ("3 selected"), a compact badge + first label, or any other
  * custom markup. Receives the fully-resolved option list, the raw
  * values, and the selection count so one template covers every style
  * (plain text, chip+overflow-count, icon group, …) without re-deriving
@@ -219,7 +219,7 @@ export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
 /**
  * Context for the trigger-label template in `CngxCombobox`. Replaces
  * only the chip strip — the search `<input>` stays visible next to it —
- * so consumers can render a compact text summary ("3 Themen ausgewählt")
+ * so consumers can render a compact text summary ("3 topics selected")
  * while keeping type-to-filter interaction. Context shape mirrors
  * {@link CngxMultiSelectTriggerLabelContext} so a single consumer
  * template can cover both components when shared.
@@ -366,8 +366,8 @@ export class CngxSelectOptionLabel<T = unknown> {
  * ```html
  * <cngx-select [state]="colorsState" [retryFn]="reload">
  *   <ng-template cngxSelectError let-error let-retry="retry">
- *     <p>Laden fehlgeschlagen: {{ error }}</p>
- *     <button (click)="retry()">Nochmal versuchen</button>
+ *     <p>Loading failed: {{ error }}</p>
+ *     <button (click)="retry()">Try again</button>
  *   </ng-template>
  * </cngx-select>
  * ```
@@ -408,8 +408,8 @@ export class CngxSelectRefreshing {
  * ```html
  * <cngx-select [commitAction]="saveColor" [(value)]="color">
  *   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
- *     <p>Speichern fehlgeschlagen: {{ error?.message }}</p>
- *     <button (click)="retry()">Nochmal versuchen</button>
+ *     <p>Save failed: {{ error?.message }}</p>
+ *     <button (click)="retry()">Try again</button>
  *   </ng-template>
  * </cngx-select>
  * ```
@@ -487,7 +487,7 @@ export class CngxMultiSelectChipHandle {
 /**
  * Override template for the whole trigger label in `CngxMultiSelect`.
  * When projected, the default chip strip is suppressed and the consumer
- * owns the trigger's rendering — use this for "3 Themen ausgewählt"
+ * owns the trigger's rendering — use this for "3 topics selected"
  * text summaries, for a single pill showing the first value + "+N"
  * counter, or for any other shape that isn't a chip strip.
  *
@@ -499,8 +499,8 @@ export class CngxMultiSelectChipHandle {
  * ```html
  * <cngx-multi-select [options]="tags" [(values)]="picked">
  *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
- *     @if (count === 0) { Wähle Themen }
- *     @else { {{ count }} Themen ausgewählt }
+ *     @if (count === 0) { Pick topics }
+ *     @else { {{ count }} topics selected }
  *   </ng-template>
  * </cngx-multi-select>
  * ```

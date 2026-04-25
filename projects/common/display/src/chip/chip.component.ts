@@ -93,12 +93,12 @@ export class CngxChip {
   readonly id = input<string | null>(null);
 
   /**
-   * A11y label for the close button. Defaults to a generic "Entfernen";
+   * A11y label for the close button. Defaults to a generic "Remove";
    * consumers with option labels on hand should supply something more
-   * specific (e.g. `"Rot entfernen"`) so screen readers know which chip
+   * specific (e.g. `"Remove Red"`) so screen readers know which chip
    * the button removes.
    */
-  readonly removeAriaLabel = input<string>('Entfernen');
+  readonly removeAriaLabel = input<string>('Remove');
 
   /** Fires when the user clicks the close button. */
   readonly remove = output<MouseEvent>();

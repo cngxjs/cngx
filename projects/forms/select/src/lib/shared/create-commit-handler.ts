@@ -138,7 +138,7 @@ export interface CreateCommitHandler<T, Prev = unknown> {
    * Exposed as the `retry` callback on {@link CngxSelectActionCallbacks}
    * via the action-host bridge — consumer templates read
    * `*cngxSelectAction`'s `retry` context field and call it from a
-   * "Nochmal versuchen" button without re-sourcing the draft from
+   * "Try again" button without re-sourcing the draft from
    * their own form state.
    */
   retryLast(): void;

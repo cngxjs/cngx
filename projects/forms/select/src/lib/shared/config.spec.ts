@@ -18,7 +18,7 @@ function resolveIn(providers: unknown[]): ReturnType<typeof resolveSelectConfig>
 }
 
 describe('withAriaLabels', () => {
-  it('resolves to library DE defaults for status/tree/fallback keys when no override is supplied', () => {
+  it('resolves to library EN defaults for status/tree/fallback keys when no override is supplied', () => {
     const config = resolveIn([]);
     // Variant-defaulted keys (clearButton, chipRemove) intentionally
     // stay undefined so per-variant input fallbacks remain authoritative.
@@ -26,36 +26,36 @@ describe('withAriaLabels', () => {
     expect(config.ariaLabels.chipRemove).toBeUndefined();
     // Library-defaulted keys are populated up-front so panel-shell,
     // select-core, and tree-select can read them directly.
-    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
-    expect(config.ariaLabels.treeCollapse).toBe('Knoten reduzieren');
-    expect(config.ariaLabels.statusLoading).toBe('Lade Optionen');
-    expect(config.ariaLabels.statusRefreshing).toBe('Aktualisiere Optionen');
-    expect(config.ariaLabels.fieldLabelFallback).toBe('Auswahl');
-    expect(config.ariaLabels.commitFailedMessage).toBe('Speichern fehlgeschlagen');
+    expect(config.ariaLabels.treeExpand).toBe('Expand node');
+    expect(config.ariaLabels.treeCollapse).toBe('Collapse node');
+    expect(config.ariaLabels.statusLoading).toBe('Loading options');
+    expect(config.ariaLabels.statusRefreshing).toBe('Refreshing options');
+    expect(config.ariaLabels.fieldLabelFallback).toBe('Selection');
+    expect(config.ariaLabels.commitFailedMessage).toBe('Save failed');
   });
 
   it('populates ariaLabels from withAriaLabels feature', () => {
     const config = resolveIn([
       provideSelectConfig(
         withAriaLabels({
-          clearButton: 'Clear selection',
-          chipRemove: 'Remove',
+          clearButton: 'Clear all',
+          chipRemove: 'Delete',
         }),
       ),
     ]);
-    expect(config.ariaLabels.clearButton).toBe('Clear selection');
-    expect(config.ariaLabels.chipRemove).toBe('Remove');
+    expect(config.ariaLabels.clearButton).toBe('Clear all');
+    expect(config.ariaLabels.chipRemove).toBe('Delete');
     // Library defaults preserved for unset keys.
-    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
+    expect(config.ariaLabels.treeExpand).toBe('Expand node');
   });
 
   it('preserves non-overridden keys when partial ariaLabels are supplied', () => {
     const config = resolveIn([
-      provideSelectConfig(withAriaLabels({ chipRemove: 'Remove' })),
+      provideSelectConfig(withAriaLabels({ chipRemove: 'Delete' })),
     ]);
     expect(config.ariaLabels.clearButton).toBeUndefined();
-    expect(config.ariaLabels.chipRemove).toBe('Remove');
-    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
+    expect(config.ariaLabels.chipRemove).toBe('Delete');
+    expect(config.ariaLabels.treeExpand).toBe('Expand node');
   });
 
   it('merges multiple withAriaLabels calls in feature list order', () => {
@@ -67,28 +67,28 @@ describe('withAriaLabels', () => {
     ]);
     expect(config.ariaLabels.clearButton).toBe('Clear');
     expect(config.ariaLabels.chipRemove).toBe('Delete');
-    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
+    expect(config.ariaLabels.treeExpand).toBe('Expand node');
   });
 
-  it('routes new tree/status/fallback keys through the EN locale roundtrip', () => {
+  it('routes tree/status/fallback keys through a DE locale override roundtrip', () => {
     const config = resolveIn([
       provideSelectConfig(
         withAriaLabels({
-          treeExpand: 'Expand node',
-          treeCollapse: 'Collapse node',
-          statusLoading: 'Loading options',
-          statusRefreshing: 'Refreshing options',
-          fieldLabelFallback: 'Selection',
-          commitFailedMessage: 'Save failed',
+          treeExpand: 'Knoten erweitern',
+          treeCollapse: 'Knoten reduzieren',
+          statusLoading: 'Lade Optionen',
+          statusRefreshing: 'Aktualisiere Optionen',
+          fieldLabelFallback: 'Auswahl',
+          commitFailedMessage: 'Speichern fehlgeschlagen',
         }),
       ),
     ]);
-    expect(config.ariaLabels.treeExpand).toBe('Expand node');
-    expect(config.ariaLabels.treeCollapse).toBe('Collapse node');
-    expect(config.ariaLabels.statusLoading).toBe('Loading options');
-    expect(config.ariaLabels.statusRefreshing).toBe('Refreshing options');
-    expect(config.ariaLabels.fieldLabelFallback).toBe('Selection');
-    expect(config.ariaLabels.commitFailedMessage).toBe('Save failed');
+    expect(config.ariaLabels.treeExpand).toBe('Knoten erweitern');
+    expect(config.ariaLabels.treeCollapse).toBe('Knoten reduzieren');
+    expect(config.ariaLabels.statusLoading).toBe('Lade Optionen');
+    expect(config.ariaLabels.statusRefreshing).toBe('Aktualisiere Optionen');
+    expect(config.ariaLabels.fieldLabelFallback).toBe('Auswahl');
+    expect(config.ariaLabels.commitFailedMessage).toBe('Speichern fehlgeschlagen');
   });
 
   it('coexists with other features without bleed (withPanelWidth + withAriaLabels)', () => {
@@ -115,30 +115,30 @@ describe('withAriaLabels', () => {
 });
 
 describe('default announcer format — reordered action', () => {
-  it("speaks the new 1-based position when toIndex is supplied", () => {
+  it('speaks the new 1-based position when toIndex is supplied', () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
       selectedLabel: 'Admins',
-      fieldLabel: 'Empfänger',
+      fieldLabel: 'Recipients',
       multi: true,
       action: 'reordered',
       count: 3,
       fromIndex: 0,
       toIndex: 2,
     });
-    expect(message).toBe('Empfänger: Admins verschoben auf Position 3');
+    expect(message).toBe('Recipients: Admins moved to position 3');
   });
 
-  it("falls back to a positionless message when toIndex is omitted", () => {
+  it('falls back to a positionless message when toIndex is omitted', () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
       selectedLabel: 'Admins',
-      fieldLabel: 'Empfänger',
+      fieldLabel: 'Recipients',
       multi: true,
       action: 'reordered',
       count: 3,
     });
-    expect(message).toBe('Empfänger: Admins verschoben');
+    expect(message).toBe('Recipients: Admins moved');
   });
 
   it('leaves existing added/removed messages unchanged (backward compat)', () => {
@@ -146,56 +146,56 @@ describe('default announcer format — reordered action', () => {
     expect(
       config.announcer.format({
         selectedLabel: 'Red',
-        fieldLabel: 'Farbe',
+        fieldLabel: 'Color',
         multi: true,
         action: 'added',
         count: 1,
       }),
-    ).toBe('Farbe: Red hinzugefügt, 1 ausgewählt');
+    ).toBe('Color: Red added, 1 selected');
     expect(
       config.announcer.format({
         selectedLabel: null,
-        fieldLabel: 'Farbe',
+        fieldLabel: 'Color',
         multi: true,
         action: 'removed',
       }),
-    ).toBe('Farbe: Auswahl geleert');
+    ).toBe('Color: selection cleared');
   });
 });
 
-describe("default announcer format — created action", () => {
-  it("speaks 'erstellt und ausgewählt' for single-select when a label is supplied", () => {
+describe('default announcer format — created action', () => {
+  it("speaks 'created and selected' for single-select when a label is supplied", () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
-      selectedLabel: 'Violett',
-      fieldLabel: 'Farbe',
+      selectedLabel: 'Violet',
+      fieldLabel: 'Color',
       multi: false,
       action: 'created',
     });
-    expect(message).toBe('Farbe: Violett erstellt und ausgewählt');
+    expect(message).toBe('Color: Violet created and selected');
   });
 
   it("speaks the same sentence for multi-select ('created' short-circuits the multi branch)", () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
       selectedLabel: 'Design',
-      fieldLabel: 'Themen',
+      fieldLabel: 'Topics',
       multi: true,
       action: 'created',
       count: 5,
     });
-    expect(message).toBe('Themen: Design erstellt und ausgewählt');
+    expect(message).toBe('Topics: Design created and selected');
   });
 
-  it('falls back to a labelless "erstellt" sentence when no label is available', () => {
+  it("falls back to a labelless 'created' sentence when no label is available", () => {
     const config = resolveIn([]);
     const message = config.announcer.format({
       selectedLabel: null,
-      fieldLabel: 'Farbe',
+      fieldLabel: 'Color',
       multi: false,
       action: 'created',
     });
-    expect(message).toBe('Farbe: erstellt');
+    expect(message).toBe('Color: created');
   });
 });
 

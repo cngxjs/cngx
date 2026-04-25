@@ -406,17 +406,17 @@ export class CngxTreeSelect<T = unknown>
    * `*cngxTreeSelectNode` is projected.
    */
   readonly twistyExpandLabel = input<string>(
-    this.config.ariaLabels?.treeExpand ?? 'Knoten erweitern',
+    this.config.ariaLabels?.treeExpand ?? 'Expand node',
   );
   readonly twistyCollapseLabel = input<string>(
-    this.config.ariaLabels?.treeCollapse ?? 'Knoten reduzieren',
+    this.config.ariaLabels?.treeCollapse ?? 'Collapse node',
   );
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+    this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
@@ -559,7 +559,7 @@ export class CngxTreeSelect<T = unknown>
     const format = this.announceTemplate() ?? announcerConfig.format;
     const label = this.label();
     const aria = this.ariaLabel();
-    let fieldLabel = 'Auswahl';
+    let fieldLabel = this.config.ariaLabels?.fieldLabelFallback ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {

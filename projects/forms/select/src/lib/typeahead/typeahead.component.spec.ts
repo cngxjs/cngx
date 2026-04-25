@@ -404,7 +404,7 @@ describe('CngxTypeahead — glyph inputs + input prefix/suffix', () => {
     const clearBtn = fixture.nativeElement.querySelector('button.cngx-typeahead__clear') as HTMLElement;
     expect(clearBtn.querySelector('[data-custom="clear"]')).not.toBeNull();
     expect(clearBtn.textContent?.trim()).toBe('🗑');
-    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+    expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
   });
 
   it('[caretGlyph] replaces the built-in ▾ inside the caret span', () => {

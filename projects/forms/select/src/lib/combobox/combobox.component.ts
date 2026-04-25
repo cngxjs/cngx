@@ -463,12 +463,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /** A11y label for the clear-all button. */
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
 
   /** A11y label prefix for the per-chip remove button. */
   readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+    this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
 
   /** Display a loading state inside the panel. */

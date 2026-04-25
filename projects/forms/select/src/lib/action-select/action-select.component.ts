@@ -350,7 +350,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);

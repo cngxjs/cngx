@@ -383,10 +383,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+    this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);

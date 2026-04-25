@@ -157,47 +157,47 @@ export interface CngxSelectAriaLabels {
    * that render the clear affordance (single, multi, combobox, typeahead).
    *
    * Variant fallback when unset:
-   * - single-select → `'Auswahl entfernen'`
-   * - multi / combobox / typeahead → `'Auswahl zurücksetzen'`
+   * - single-select → `'Clear selection'`
+   * - multi / combobox / typeahead → `'Reset selection'`
    */
   readonly clearButton?: string;
   /**
    * ARIA label for the per-chip remove button in multi-select and combobox.
-   * Variant fallback when unset: `'Entfernen'`.
+   * Variant fallback when unset: `'Remove'`.
    */
   readonly chipRemove?: string;
   /**
    * ARIA label for the tree-select twisty button when the node is collapsed.
-   * Default `'Knoten erweitern'`.
+   * Default `'Expand node'`.
    */
   readonly treeExpand?: string;
   /**
    * ARIA label for the tree-select twisty button when the node is expanded.
-   * Default `'Knoten reduzieren'`.
+   * Default `'Collapse node'`.
    */
   readonly treeCollapse?: string;
   /**
    * ARIA label on the panel-shell loading status region (first-load
    * spinner / bar / dots / skeleton wrapper). Read by AT when the panel
-   * opens against a pending state. Default `'Lade Optionen'`.
+   * opens against a pending state. Default `'Loading options'`.
    */
   readonly statusLoading?: string;
   /**
    * ARIA label on the panel-shell refreshing-indicator (subsequent-load
    * progress bar / spinner / dots overlay shown while options stay
-   * visible). Default `'Aktualisiere Optionen'`.
+   * visible). Default `'Refreshing options'`.
    */
   readonly statusRefreshing?: string;
   /**
    * Last-resort fallback for the `fieldLabel` substituted into the
    * announcer's `format()` template when neither `[label]` nor
-   * `[aria-label]` are bound. Default `'Auswahl'`.
+   * `[aria-label]` are bound. Default `'Selection'`.
    */
   readonly fieldLabelFallback?: string;
   /**
    * Default error message rendered when a `[commitAction]` rejects and
    * no inline message is supplied by the thrown error. Default
-   * `'Speichern fehlgeschlagen'`.
+   * `'Save failed'`.
    */
   readonly commitFailedMessage?: string;
 }
@@ -255,18 +255,18 @@ export interface CngxSelectFallbackLabels {
   readonly loadFailedRetry?: string;
   /**
    * Fallback message for the inline refresh error (options stale + a
-   * refresh attempt failed). Default `'Aktualisieren fehlgeschlagen'`.
+   * refresh attempt failed). Default `'Refresh failed'`.
    */
   readonly refreshFailed?: string;
-  /** Fallback retry-button label for the inline refresh error. Default `'Nochmal versuchen'`. */
+  /** Fallback retry-button label for the inline refresh error. Default `'Try again'`. */
   readonly refreshFailedRetry?: string;
   /**
    * Fallback message for the commit-error banner (fires when a
    * bound `[commitAction]` rejects with `commitErrorDisplay === 'banner'`).
-   * Default `'Speichern fehlgeschlagen'`.
+   * Default `'Save failed'`.
    */
   readonly commitFailed?: string;
-  /** Fallback retry-button label for the commit-error banner. Default `'Nochmal versuchen'`. */
+  /** Fallback retry-button label for the commit-error banner. Default `'Try again'`. */
   readonly commitFailedRetry?: string;
 }
 
@@ -545,20 +545,20 @@ export const CNGX_SELECT_DEFAULTS: Required<
       // `'created'` path (inline quick-create via `CngxActionSelect` /
       // `CngxActionMultiSelect`) reads identically in single + multi —
       // the item was just created AND picked in the same commit, so the
-      // standard "gewählt" / "hinzugefügt" verbs would mis-describe the
+      // standard "selected" / "added" verbs would mis-describe the
       // delta. Handled before the multi branch so both cardinalities
       // share the same sentence shape.
       if (action === 'created') {
         if (selectedLabel == null) {
-          return `${fieldLabel}: erstellt`;
+          return `${fieldLabel}: created`;
         }
-        return `${fieldLabel}: ${selectedLabel} erstellt und ausgewählt`;
+        return `${fieldLabel}: ${selectedLabel} created and selected`;
       }
       if (!multi) {
         if (selectedLabel == null) {
-          return `${fieldLabel}: Auswahl geleert`;
+          return `${fieldLabel}: selection cleared`;
         }
-        return `${fieldLabel}: ${selectedLabel} gewählt`;
+        return `${fieldLabel}: ${selectedLabel} selected`;
       }
       // Multi-select path: prefer the action + count detail when the
       // caller supplies them — gives AT users the delta ("added" /
@@ -566,20 +566,20 @@ export const CNGX_SELECT_DEFAULTS: Required<
       // or the new position for reorders.
       if (action === 'reordered') {
         if (selectedLabel == null) {
-          return `${fieldLabel}: verschoben`;
+          return `${fieldLabel}: moved`;
         }
         if (typeof toIndex === 'number') {
-          return `${fieldLabel}: ${selectedLabel} verschoben auf Position ${toIndex + 1}`;
+          return `${fieldLabel}: ${selectedLabel} moved to position ${toIndex + 1}`;
         }
-        return `${fieldLabel}: ${selectedLabel} verschoben`;
+        return `${fieldLabel}: ${selectedLabel} moved`;
       }
       if (selectedLabel == null) {
         // Clear-all or last option removed.
-        return `${fieldLabel}: Auswahl geleert`;
+        return `${fieldLabel}: selection cleared`;
       }
-      const verb = action === 'removed' ? 'entfernt' : 'hinzugefügt';
+      const verb = action === 'removed' ? 'removed' : 'added';
       if (typeof count === 'number') {
-        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} ausgewählt`;
+        return `${fieldLabel}: ${selectedLabel} ${verb}, ${count} selected`;
       }
       return `${fieldLabel}: ${selectedLabel} ${verb}`;
     },
@@ -602,22 +602,22 @@ export const CNGX_SELECT_DEFAULTS: Required<
     action: null,
   },
   ariaLabels: {
-    treeExpand: 'Knoten erweitern',
-    treeCollapse: 'Knoten reduzieren',
-    statusLoading: 'Lade Optionen',
-    statusRefreshing: 'Aktualisiere Optionen',
-    fieldLabelFallback: 'Auswahl',
-    commitFailedMessage: 'Speichern fehlgeschlagen',
+    treeExpand: 'Expand node',
+    treeCollapse: 'Collapse node',
+    statusLoading: 'Loading options',
+    statusRefreshing: 'Refreshing options',
+    fieldLabelFallback: 'Selection',
+    commitFailedMessage: 'Save failed',
   },
   fallbackLabels: {
     loading: 'Loading…',
     empty: 'No Options',
     loadFailed: 'Loading failed',
     loadFailedRetry: 'Retry',
-    refreshFailed: 'Aktualisieren fehlgeschlagen',
-    refreshFailedRetry: 'Nochmal versuchen',
-    commitFailed: 'Speichern fehlgeschlagen',
-    commitFailedRetry: 'Nochmal versuchen',
+    refreshFailed: 'Refresh failed',
+    refreshFailedRetry: 'Try again',
+    commitFailed: 'Save failed',
+    commitFailedRetry: 'Try again',
   },
 };
 

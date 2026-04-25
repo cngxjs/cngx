@@ -347,7 +347,7 @@ export interface CngxSelectCore<T, TCommit> {
    * consumer's `announceTemplate` can speak the positional delta.
    * `'created'` is emitted by the action-select organisms after a
    * successful inline `quickCreateAction` commit — the default
-   * formatter reads it as "erstellt und ausgewählt". Existing
+   * formatter reads it as "created and selected". Existing
    * `'added' | 'removed'` callers keep their four-argument signature
    * untouched — the extra parameters are optional.
    */
@@ -833,9 +833,9 @@ export function createSelectCore<T, TCommit>(
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Auswahl';
+    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Selection';
     const failedMessage =
-      config.ariaLabels.commitFailedMessage ?? 'Speichern fehlgeschlagen';
+      config.ariaLabels.commitFailedMessage ?? 'Save failed';
     const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail
@@ -873,7 +873,7 @@ export function createSelectCore<T, TCommit>(
     const format = announcerInputs.announceTemplate() ?? announcerConfig.format;
     const label = deps.label();
     const aria = deps.ariaLabel();
-    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Auswahl';
+    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
