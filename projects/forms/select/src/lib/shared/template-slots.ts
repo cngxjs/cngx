@@ -234,6 +234,20 @@ export interface CngxComboboxTriggerLabelContext<T = unknown> {
 }
 
 /**
+ * Context for the per-chip override template in `CngxCombobox`. Same
+ * shape as {@link CngxMultiSelectChipContext} so a consumer's chip
+ * template can be shared verbatim between multi-select and combobox.
+ *
+ * @category interactive
+ */
+export interface CngxComboboxChipContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly remove: () => void;
+  readonly index: number;
+}
+
+/**
  * Structural-directive wrapper around a `<ng-template>` that supplies the
  * selection-indicator visual for an option. Attach to a template inside a
  * select component to override the default checkmark.
@@ -622,6 +636,36 @@ export class CngxSelectOptionError<T = unknown> {
 export class CngxComboboxTriggerLabel<T = unknown> {
   readonly templateRef =
     inject<TemplateRef<CngxComboboxTriggerLabelContext<T>>>(TemplateRef);
+}
+
+/**
+ * Override template for a per-chip rendering inside `CngxCombobox`'s
+ * trigger. Replaces the built-in pill + ✕ button with consumer-authored
+ * markup. The `remove` callback in the context routes through the
+ * commit flow just like the built-in chip's ✕ does — single deselect,
+ * commit-aware, debounced if `[commitAction]` is bound.
+ *
+ * Mirrors `CngxMultiSelectChip` so a consumer-authored chip template
+ * can be projected into either variant unchanged.
+ *
+ * @example
+ * ```html
+ * <cngx-combobox [options]="tags" [(values)]="picked">
+ *   <ng-template cngxComboboxChip let-opt let-remove="remove">
+ *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
+ *   </ng-template>
+ * </cngx-combobox>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxComboboxChip]',
+  standalone: true,
+  exportAs: 'cngxComboboxChip',
+})
+export class CngxComboboxChip<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxComboboxChipContext<T>>>(TemplateRef);
 }
 
 /**

@@ -81,6 +81,8 @@ import {
   type CngxSelectCompareFn,
 } from '../shared/select-core';
 import {
+  CngxComboboxChip,
+  type CngxComboboxChipContext,
   CngxComboboxTriggerLabel,
   type CngxComboboxTriggerLabelContext,
   CngxSelectCaret,
@@ -211,14 +213,28 @@ export interface CngxComboboxChange<T = unknown> {
             class="cngx-select__chip-list"
             [attr.data-overflow]="chipOverflow()"
           >
-            @for (opt of visibleSelected(); track opt.value) {
-              <cngx-chip
-                [removable]="!disabled()"
-                [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
-                (remove)="handleChipRemoveClick($event, opt)"
-              >
-                {{ opt.label }}
-              </cngx-chip>
+            @for (opt of visibleSelected(); track opt.value; let i = $index) {
+              @if (chipTpl(); as chipT) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    chipT;
+                    context: {
+                      $implicit: opt,
+                      option: opt,
+                      remove: chipRemoveFor(opt),
+                      index: i
+                    }
+                  "
+                />
+              } @else {
+                <cngx-chip
+                  [removable]="!disabled()"
+                  [removeAriaLabel]="chipRemoveAriaLabel() + ': ' + opt.label"
+                  (remove)="handleChipRemoveClick($event, opt)"
+                >
+                  {{ opt.label }}
+                </cngx-chip>
+              }
             }
             @if (overflowBadgeCount() > 0) {
               <span class="cngx-select__chip-overflow-badge" aria-hidden="true">
@@ -539,6 +555,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly triggerLabelDirective = contentChild<CngxComboboxTriggerLabel<T>>(
     CngxComboboxTriggerLabel,
   );
+  private readonly chipDirective = contentChild<CngxComboboxChip<T>>(CngxComboboxChip);
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(
     CngxSelectOptionLabel,
   );
@@ -581,6 +598,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxComboboxTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
+  /** Combobox-specific per-chip slot. @internal */
+  protected readonly chipTpl = computed<TemplateRef<CngxComboboxChipContext<T>> | null>(
+    () => this.chipDirective()?.templateRef ?? null,
+  );
   /** @internal */
   protected readonly inputPrefixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputPrefixDirective()?.templateRef ?? null,

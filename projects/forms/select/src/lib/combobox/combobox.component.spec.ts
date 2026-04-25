@@ -11,6 +11,7 @@ import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
+import { CngxComboboxChip } from '../shared/template-slots';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
@@ -877,5 +878,65 @@ describe('CngxCombobox — a11y', () => {
 
     const nested = fixture.nativeElement.querySelectorAll('button button');
     expect(nested.length).toBe(0);
+  });
+});
+
+// ── *cngxComboboxChip slot ────────────────────────────────────────────
+
+@Component({
+  template: `
+    <cngx-combobox [label]="'Tags'" [options]="options" [(values)]="values">
+      <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
+        <span class="my-combo-tag" [attr.data-index]="i">
+          <span class="my-combo-tag__label">{{ opt.label }}</span>
+          <button type="button" class="my-combo-tag__close" (click)="remove()">×</button>
+        </span>
+      </ng-template>
+    </cngx-combobox>
+  `,
+  imports: [CngxCombobox, CngxComboboxChip],
+})
+class ComboboxChipTemplateHost {
+  readonly options = OPTIONS;
+  readonly values = signal<string[]>(['red', 'green']);
+}
+
+describe('CngxCombobox — *cngxComboboxChip slot', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('renders the chip template override instead of the default <cngx-chip>', () => {
+    const fixture = TestBed.createComponent(ComboboxChipTemplateHost);
+    flush(fixture);
+    const defaults = fixture.nativeElement.querySelectorAll('cngx-chip');
+    const customs = fixture.nativeElement.querySelectorAll('.my-combo-tag');
+    expect(defaults.length).toBe(0);
+    expect(customs.length).toBe(2);
+    expect(customs[0].textContent).toContain('Rot');
+    // index context field is forwarded for positional labels.
+    expect(customs[0].getAttribute('data-index')).toBe('0');
+    expect(customs[1].getAttribute('data-index')).toBe('1');
+  });
+
+  it('chip template remove() callback removes the value via the commit-aware path', () => {
+    const fixture = TestBed.createComponent(ComboboxChipTemplateHost);
+    flush(fixture);
+    const firstClose: HTMLElement =
+      fixture.nativeElement.querySelector('.my-combo-tag__close');
+    firstClose.click();
+    flush(fixture);
+    expect(fixture.componentInstance.values()).toEqual(['green']);
+  });
+
+  it('repeated chipRemoveFor(opt) calls return the same closure (WeakMap identity)', () => {
+    const fixture = TestBed.createComponent(ComboboxChipTemplateHost);
+    flush(fixture);
+    const combo = fixture.debugElement.query(By.directive(CngxCombobox))
+      .componentInstance as CngxCombobox<string> & {
+      chipRemoveFor: (opt: CngxSelectOptionDef<string>) => () => void;
+    };
+    const opt: CngxSelectOptionDef<string> = OPTIONS[0];
+    expect(combo.chipRemoveFor(opt)).toBe(combo.chipRemoveFor(opt));
   });
 });
