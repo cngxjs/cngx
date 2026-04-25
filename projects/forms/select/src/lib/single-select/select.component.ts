@@ -91,6 +91,7 @@ import {
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
   CngxSelectTriggerLabel,
+  type CngxSelectTriggerLabelContext,
 } from '../shared/template-slots';
 
 /**
@@ -198,7 +199,7 @@ export interface CngxSelectChange<T = unknown> {
             <ng-container
               *ngTemplateOutlet="
                 triggerTpl;
-                context: { $implicit: selectedOption(), selected: selectedOption() }
+                context: triggerLabelContext()
               "
             />
           } @else if (tpl.placeholder(); as phTpl) {
@@ -445,6 +446,35 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly triggerLabelTpl = resolveTemplate(
     this.triggerLabelDirective,
     'triggerLabel',
+  );
+
+  /**
+   * Context bound to the `*cngxSelectTriggerLabel` outlet. Carries the
+   * selected option plus live `disabled` / `panelOpen` / `focused`
+   * flags so consumer templates can render state-aware trigger
+   * content (greyed text on disabled, expand-icon flip on open, etc.)
+   * without redundant signal subscriptions.
+   *
+   * @internal
+   */
+  protected readonly triggerLabelContext = computed<
+    CngxSelectTriggerLabelContext<T>
+  >(
+    () => ({
+      $implicit: this.selectedOption(),
+      selected: this.selectedOption(),
+      disabled: this.disabled(),
+      panelOpen: this.panelOpen(),
+      focused: this.focused(),
+    }),
+    {
+      equal: (a, b) =>
+        a.$implicit === b.$implicit &&
+        a.selected === b.selected &&
+        a.disabled === b.disabled &&
+        a.panelOpen === b.panelOpen &&
+        a.focused === b.focused,
+    },
   );
 
   // ── ViewChildren ───────────────────────────────────────────────────

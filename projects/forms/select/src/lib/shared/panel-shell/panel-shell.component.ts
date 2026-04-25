@@ -14,7 +14,12 @@ import {
   type CngxSelectActionCallbacks,
   type CngxSelectPanelViewHost,
 } from '../panel-host';
-import type { CngxSelectActionContext } from '../template-slots';
+import type {
+  CngxSelectActionContext,
+  CngxSelectEmptyContext,
+  CngxSelectLoadingContext,
+  CngxSelectRefreshingContext,
+} from '../template-slots';
 
 /**
  * Position(s) in the default-case stack where the `*cngxSelectAction`
@@ -114,7 +119,7 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
     @switch (host.activeView()) {
       @case ('skeleton') {
         @if (host.tpl.loading(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
+          <ng-container *ngTemplateOutlet="tpl; context: loadingContext()" />
         } @else {
           @switch (host.loadingVariant()) {
             @case ('spinner') {
@@ -148,14 +153,14 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
       }
       @case ('empty') {
         @if (host.tpl.empty(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
+          <ng-container *ngTemplateOutlet="tpl; context: emptyContext()" />
         } @else {
           <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
         }
       }
       @case ('none') {
         @if (host.tpl.empty(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
+          <ng-container *ngTemplateOutlet="tpl; context: emptyContext()" />
         } @else {
           <div class="cngx-select__empty">{{ host.fallbackLabels.empty }}</div>
         }
@@ -244,7 +249,7 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
         }
         @if (host.showRefreshIndicator()) {
           @if (host.tpl.refreshing(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl" />
+            <ng-container *ngTemplateOutlet="tpl; context: refreshingContext()" />
           } @else {
             @switch (host.refreshingVariant()) {
               @case ('none') { <!-- suppressed --> }
@@ -365,5 +370,59 @@ export class CngxSelectPanelShell<T = unknown> {
         a.setDirty === b.setDirty &&
         a.retry === b.retry,
     },
+  );
+
+  /**
+   * Context emitted to the `*cngxSelectEmpty` template. Variants that
+   * don't expose a search term / unfiltered count fall back to safe
+   * defaults so consumer templates never see undefined fields.
+   *
+   * @internal
+   */
+  protected readonly emptyContext = computed<CngxSelectEmptyContext>(
+    () => {
+      const searchTerm = this.host.searchTerm?.() ?? '';
+      const totalCount = this.host.unfilteredCount?.() ?? 0;
+      return {
+        searchTerm,
+        filtered: searchTerm.length > 0,
+        totalCount,
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.searchTerm === b.searchTerm &&
+        a.filtered === b.filtered &&
+        a.totalCount === b.totalCount,
+    },
+  );
+
+  /**
+   * Context emitted to the `*cngxSelectLoading` template. `progress`
+   * is reserved for consumer-driven `[state]` extensions; library
+   * defaults always leave it `undefined`. `retry` is the same handler
+   * the panel-shell wires to its own retry button.
+   *
+   * @internal
+   */
+  protected readonly loadingContext = computed<CngxSelectLoadingContext>(
+    () => ({
+      progress: undefined,
+      retry: this.host.handleRetry.bind(this.host),
+    }),
+    { equal: (a, b) => a.progress === b.progress && a.retry === b.retry },
+  );
+
+  /**
+   * Context emitted to the `*cngxSelectRefreshing` template. Variants
+   * that don't expose a previous-load count fall back to `0`.
+   *
+   * @internal
+   */
+  protected readonly refreshingContext = computed<CngxSelectRefreshingContext>(
+    () => ({
+      previousCount: this.host.previousLoadedCount?.() ?? 0,
+    }),
+    { equal: (a, b) => a.previousCount === b.previousCount },
   );
 }

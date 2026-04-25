@@ -70,14 +70,60 @@ export interface CngxSelectPlaceholderContext {
  *
  * @category interactive
  */
-export type CngxSelectEmptyContext = Record<string, never>;
+/**
+ * Context fields for the empty / no-options template. Additive — existing
+ * consumer templates without `let-` bindings keep working unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectEmptyContext {
+  /**
+   * Live search term that produced the empty result (combobox /
+   * typeahead / action-* variants only). Empty string for button-trigger
+   * variants. Use to render context-aware messaging like
+   * `"No results for {{ searchTerm }}"` or a `Create "{{ searchTerm }}"`
+   * inline-create CTA.
+   */
+  readonly searchTerm: string;
+  /**
+   * `true` when the empty state is the result of a filter (search input
+   * or external filter overlay) rather than an actually empty option
+   * list. Lets consumers distinguish between
+   * `"no matches"` and `"no options at all"`.
+   */
+  readonly filtered: boolean;
+  /**
+   * Total count of unfiltered options. Useful when `filtered === true`
+   * and the consumer wants to render "no matches in N items".
+   */
+  readonly totalCount: number;
+}
 
 /**
  * Context for the loading template.
  *
  * @category interactive
  */
-export type CngxSelectLoadingContext = Record<string, never>;
+/**
+ * Context fields for the loading template. Additive — existing consumer
+ * templates without `let-` bindings keep working unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectLoadingContext {
+  /**
+   * Optional 0–1 progress value if the consumer's `[state]` exposes it
+   * via a custom `CngxAsyncState` extension. Library defaults always
+   * leave this `undefined`.
+   */
+  readonly progress?: number;
+  /**
+   * Imperative retry callback bound by the panel-shell's host. Mirrors
+   * the `error` template's retry — useful when a long-running load
+   * should be cancellable + restartable directly from the loading shell.
+   */
+  readonly retry: () => void;
+}
 
 /**
  * Context for the trigger label template.
@@ -87,6 +133,12 @@ export type CngxSelectLoadingContext = Record<string, never>;
 export interface CngxSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T> | null;
   readonly selected: CngxSelectOptionDef<T> | null;
+  /** Live disabled state of the trigger. Mirrors the variant's `disabled()` signal. */
+  readonly disabled: boolean;
+  /** `true` while the panel is open. */
+  readonly panelOpen: boolean;
+  /** `true` while the trigger holds focus. */
+  readonly focused: boolean;
 }
 
 /**
@@ -144,7 +196,22 @@ export interface CngxSelectRetryButtonContext {
  *
  * @category interactive
  */
-export type CngxSelectRefreshingContext = Record<string, never>;
+/**
+ * Context fields for the refreshing-indicator template. Additive —
+ * existing consumer templates without `let-` bindings keep working
+ * unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectRefreshingContext {
+  /**
+   * Number of options currently visible in the listbox (the count from
+   * the most recent successful load). Lets consumers render context-
+   * aware status messages like `"Refreshing 23 items"` instead of a
+   * generic spinner caption.
+   */
+  readonly previousCount: number;
+}
 
 /**
  * Context for the commit-error template (shown when `[commitAction]`

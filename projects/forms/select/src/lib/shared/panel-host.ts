@@ -140,6 +140,27 @@ export interface CngxSelectPanelViewHost<T = unknown> {
    */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
   /**
+   * Live search term for empty / refreshing contexts (combobox /
+   * typeahead / action-* variants). Button-trigger variants leave
+   * this undefined and the shell substitutes `''`.
+   */
+  readonly searchTerm?: Signal<string>;
+  /**
+   * Unfiltered total option count for the empty context's
+   * `totalCount` field. Variants forward their core's
+   * `unfilteredFlatOptions().length` (or local equivalent for tree).
+   * Optional — when undefined the shell substitutes `0`.
+   */
+  readonly unfilteredCount?: Signal<number>;
+  /**
+   * Last-loaded option count surfaced on the refreshing context.
+   * Variants forward `flatOptions().length` (which freezes during
+   * the refresh tick because the upstream `state` keeps the previous
+   * data while `refreshing`). Optional — when undefined the shell
+   * substitutes `0`.
+   */
+  readonly previousLoadedCount?: Signal<number>;
+  /**
    * Resolved ARIA-label bundle. Every variant forwards its
    * `core.ariaLabels` (which mirrors `CNGX_SELECT_CONFIG.ariaLabels`)
    * so the shell can read `host.ariaLabels.statusLoading` /
