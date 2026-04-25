@@ -405,8 +405,12 @@ export class CngxTreeSelect<T = unknown>
    * default node row. Falls back to English defaults. Ignored when
    * `*cngxTreeSelectNode` is projected.
    */
-  readonly twistyExpandLabel = input<string>('Expand');
-  readonly twistyCollapseLabel = input<string>('Collapse');
+  readonly twistyExpandLabel = input<string>(
+    this.config.ariaLabels?.treeExpand ?? 'Knoten erweitern',
+  );
+  readonly twistyCollapseLabel = input<string>(
+    this.config.ariaLabels?.treeCollapse ?? 'Knoten reduzieren',
+  );
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
     this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
