@@ -1,15 +1,10 @@
 # `@cngx/forms/select` — Architecture
 
-> The eight-component select family — single, multi, combobox, typeahead,
-> tree, reorderable, action-select, action-multi-select. Same commit
-> machinery, same async-state machine, same slot system, eight different
-> value-shape × panel-surface combinations.
+> The eight-component select family — single, multi, combobox, typeahead, tree, reorderable, action-select, action-multi-select.
+> Same commit machinery, same async-state machine, same slot system, eight different value-shape × panel-surface combinations.
 
-This document is the canonical entry point for understanding how the
-family is composed, where to override behaviour, and which variant to
-reach for. For day-to-day API reference (inputs, outputs, signals,
-CSS variables) see the compodoc output (`npm run docs:serve`) or the
-in-source JSDoc.
+This document is the canonical entry point for understanding how the family is composed, where to override behaviour, and which variant to reach for.
+For day-to-day API reference (inputs, outputs, signals, CSS variables) see the compodoc output (`npm run docs:serve`) or the in-source JSDoc.
 
 ---
 
@@ -40,8 +35,7 @@ in-source JSDoc.
 
 ## Mission statement
 
-The select family delivers eight distinct widget shapes against three
-non-negotiable pillars from the cngx codebase philosophy:
+The select family delivers eight distinct widget shapes against three non-negotiable pillars from the cngx codebase philosophy:
 
 1. **Derive over manage** — every reactive value is a `computed()` from
    a single source of truth. No subscription-driven local state, no
@@ -56,38 +50,31 @@ non-negotiable pillars from the cngx codebase philosophy:
    block is a swappable DI factory; every visual element is a
    slot-overrideable template.
 
-The family is **decompose-ready** — every `@Component` is a thin
-declaration delegating to extracted factories so consumers can swap
-implementations without forking.
+The family is **decompose-ready** — every `@Component` is a thin declaration delegating to extracted factories so consumers can swap implementations without forking.
 
 ---
 
 ## The eight variants
 
-| Component | Value shape | Trigger | Panel | ARIA pattern |
-|-|-|-|-|-|
-| `CngxSelect` | `T \| undefined` | `<div role="combobox">` | flat listbox | combobox + listbox |
-| `CngxMultiSelect` | `T[]` | `<div role="combobox">` + chips | flat listbox | combobox + listbox |
-| `CngxCombobox` | `T[]` | `<input role="combobox">` + chips | flat listbox (filtered) | combobox + listbox |
-| `CngxTypeahead` | `T \| undefined` | `<input role="combobox">` | flat listbox (filtered) | combobox + listbox |
-| `CngxTreeSelect` | `T[]` | `<div role="combobox">` + chips | tree (`role="tree"`) | combobox + tree |
-| `CngxReorderableMultiSelect` | `T[]` (ordered) | `<div role="combobox">` + reorderable chips | flat listbox | combobox + listbox |
-| `CngxActionSelect` | `T \| undefined` | `<input>` + action panel | flat listbox + action slot | combobox + listbox |
-| `CngxActionMultiSelect` | `T[]` | `<input>` + chips + action panel | flat listbox + action slot | combobox + listbox |
+| Component                    | Value shape      | Trigger                                     | Panel                      | ARIA pattern       |
+| ---------------------------- | ---------------- | ------------------------------------------- | -------------------------- | ------------------ |
+| `CngxSelect`                 | `T \| undefined` | `<div role="combobox">`                     | flat listbox               | combobox + listbox |
+| `CngxMultiSelect`            | `T[]`            | `<div role="combobox">` + chips             | flat listbox               | combobox + listbox |
+| `CngxCombobox`               | `T[]`            | `<input role="combobox">` + chips           | flat listbox (filtered)    | combobox + listbox |
+| `CngxTypeahead`              | `T \| undefined` | `<input role="combobox">`                   | flat listbox (filtered)    | combobox + listbox |
+| `CngxTreeSelect`             | `T[]`            | `<div role="combobox">` + chips             | tree (`role="tree"`)       | combobox + tree    |
+| `CngxReorderableMultiSelect` | `T[]` (ordered)  | `<div role="combobox">` + reorderable chips | flat listbox               | combobox + listbox |
+| `CngxActionSelect`           | `T \| undefined` | `<input>` + action panel                    | flat listbox + action slot | combobox + listbox |
+| `CngxActionMultiSelect`      | `T[]`            | `<input>` + chips + action panel            | flat listbox + action slot | combobox + listbox |
 
-Each variant provides `CNGX_FORM_FIELD_CONTROL` directly — no bridge
-directive needed. All eight share the same slot directives, the same
-config surface, the same announcer, and the same commit lifecycle.
-What differs is the *value-shape adapter* on top of `createSelectCore`
-and the *trigger-element template*.
+Each variant provides `CNGX_FORM_FIELD_CONTROL` directly — no bridge directive needed. All eight share the same slot directives, the same config surface, the same announcer, and the same commit lifecycle.
+What differs is the _value-shape adapter_ on top of `createSelectCore` and the _trigger-element template_.
 
 ---
 
 ## Layer composition
 
-The family sits at Level 3 of the cngx dependency hierarchy
-(`@cngx/forms`). Each variant composes Level-2 atoms from
-`@cngx/common`:
+The family sits at Level 3 of the cngx dependency hierarchy (`@cngx/forms`). Each variant composes Level-2 atoms from `@cngx/common`:
 
 ```mermaid
 graph TD
@@ -128,10 +115,7 @@ graph TD
   Shared --> CoreUtils
 ```
 
-A variant's `@Component` body is intentionally thin: it owns the
-template (with the variant-specific trigger markup) and the
-value-shape glue, then delegates everything else to the shared
-factories below.
+A variant's `@Component` body is intentionally thin: it owns the template (with the variant-specific trigger markup) and the value-shape glue, then delegates everything else to the shared factories below.
 
 ---
 
@@ -170,9 +154,7 @@ Live walkthrough is at `dev-app/.../select-compare-demo/`.
 
 ### Core factory `createSelectCore`
 
-Every variant instantiates one `CngxSelectCore<T, TCommit>` in its
-field initialiser. The core is a plain factory (no `@Injectable`) that
-returns a bundle of pure-derivation signals every variant needs.
+Every variant instantiates one `CngxSelectCore<T, TCommit>` in its field initialiser. The core is a plain factory (no `@Injectable`) that returns a bundle of pure-derivation signals every variant needs.
 
 ```mermaid
 graph LR
@@ -186,9 +168,7 @@ graph LR
   Core --> Annc["Announcer hook<br/>announce(option, action, count, multi)"]
 ```
 
-The core dispatches to `SelectionController<T>` for multi-mode
-membership tests (identity fast path, custom-comparator fallback) and
-holds the per-instance `commitController` instance.
+The core dispatches to `SelectionController<T>` for multi-mode membership tests (identity fast path, custom-comparator fallback) and holds the per-instance `commitController` instance.
 
 What stays in the variant body:
 
@@ -201,65 +181,60 @@ What stays in the variant body:
 
 ### DI factory tokens (18)
 
-Every shared factory has a corresponding DI token — providers can swap
-the default for telemetry-wrapped, retry-with-backoff, offline-queue,
-or audit-logging variants without forking any component.
+Every shared factory has a corresponding DI token — providers can swap the default for telemetry-wrapped, retry-with-backoff, offline-queue, or audit-logging variants without forking any component.
 
-| Token | Default factory | Concern |
-|-|-|-|
-| `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | `createCommitController` | Async-commit state machine + supersede semantics |
-| `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` | `createArrayCommitHandler` | Multi/Combobox per-toggle + clear-all flow |
-| `CNGX_SCALAR_COMMIT_HANDLER_FACTORY` | `createScalarCommitHandler` | ActionSelect commit flow |
-| `CNGX_REORDER_COMMIT_HANDLER_FACTORY` | `createReorderCommitHandler` | Reorderable position-move commits |
-| `CNGX_CREATE_COMMIT_HANDLER_FACTORY` | `createCreateCommitHandler` | Action-host quick-create commit flow |
-| `CNGX_DISPLAY_BINDING_FACTORY` | `createDisplayBinding` | Typeahead value ↔ input-text binding |
-| `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` | `createCommitErrorAnnouncer` | Scalar commit-error AT announce policy |
-| `CNGX_TRIGGER_FOCUS_FACTORY` | `createTriggerFocusState` | Shared focus-state slot |
-| `CNGX_TEMPLATE_REGISTRY_FACTORY` | `createTemplateRegistry` | Three-stage template-slot cascade |
-| `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY` | `createPanelLifecycleEmitter` | `panelOpen` → outputs + focus restore |
-| `CNGX_SEARCH_EFFECTS_FACTORY` | `createSearchEffects` | `searchTerm` → debounced emit + auto-open |
-| `CNGX_DISMISS_HANDLER_FACTORY` | `createDismissHandler` | Click-outside dismissal (action-dirty-aware) |
-| `CNGX_ACTION_HOST_BRIDGE_FACTORY` | `createActionHostBridge` | Action-host workflow bridge |
-| `CNGX_LOCAL_ITEMS_BUFFER_FACTORY` | `createLocalItemsBuffer` | Quick-create local-items persistence |
-| `CNGX_PANEL_RENDERER_FACTORY` | `createIdentityPanelRenderer` | Panel render strategy (default = identity, opt-in recycler) |
-| `CNGX_SELECTION_CONTROLLER_FACTORY` | `createSelectionController` | Multi-mode membership engine (in `@cngx/core/utils`) |
-| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY` | `createChipRemovalHandler` | Chip ✕ disabled-guard + commit branch + WeakMap closure |
-| `CNGX_FLAT_NAV_STRATEGY` | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy |
+| Token                                   | Default factory                | Concern                                                     |
+| --------------------------------------- | ------------------------------ | ----------------------------------------------------------- |
+| `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` | `createCommitController`       | Async-commit state machine + supersede semantics            |
+| `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`     | `createArrayCommitHandler`     | Multi/Combobox per-toggle + clear-all flow                  |
+| `CNGX_SCALAR_COMMIT_HANDLER_FACTORY`    | `createScalarCommitHandler`    | ActionSelect commit flow                                    |
+| `CNGX_REORDER_COMMIT_HANDLER_FACTORY`   | `createReorderCommitHandler`   | Reorderable position-move commits                           |
+| `CNGX_CREATE_COMMIT_HANDLER_FACTORY`    | `createCreateCommitHandler`    | Action-host quick-create commit flow                        |
+| `CNGX_DISPLAY_BINDING_FACTORY`          | `createDisplayBinding`         | Typeahead value ↔ input-text binding                        |
+| `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY`   | `createCommitErrorAnnouncer`   | Scalar commit-error AT announce policy                      |
+| `CNGX_TRIGGER_FOCUS_FACTORY`            | `createTriggerFocusState`      | Shared focus-state slot                                     |
+| `CNGX_TEMPLATE_REGISTRY_FACTORY`        | `createTemplateRegistry`       | Three-stage template-slot cascade                           |
+| `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`  | `createPanelLifecycleEmitter`  | `panelOpen` → outputs + focus restore                       |
+| `CNGX_SEARCH_EFFECTS_FACTORY`           | `createSearchEffects`          | `searchTerm` → debounced emit + auto-open                   |
+| `CNGX_DISMISS_HANDLER_FACTORY`          | `createDismissHandler`         | Click-outside dismissal (action-dirty-aware)                |
+| `CNGX_ACTION_HOST_BRIDGE_FACTORY`       | `createActionHostBridge`       | Action-host workflow bridge                                 |
+| `CNGX_LOCAL_ITEMS_BUFFER_FACTORY`       | `createLocalItemsBuffer`       | Quick-create local-items persistence                        |
+| `CNGX_PANEL_RENDERER_FACTORY`           | `createIdentityPanelRenderer`  | Panel render strategy (default = identity, opt-in recycler) |
+| `CNGX_SELECTION_CONTROLLER_FACTORY`     | `createSelectionController`    | Multi-mode membership engine (in `@cngx/core/utils`)        |
+| `CNGX_CHIP_REMOVAL_HANDLER_FACTORY`     | `createChipRemovalHandler`     | Chip ✕ disabled-guard + commit branch + WeakMap closure     |
+| `CNGX_FLAT_NAV_STRATEGY`                | `createDefaultFlatNavStrategy` | PageUp/Down + typeahead-while-closed policy                 |
 
-All eighteen tokens are `providedIn: 'root'` with sensible defaults,
-overrideable per-component via `viewProviders`. The override never
-breaks because the factory shape is captured in a `Cngx<Name>Factory`
-type alias — overrides match the exact signature.
+All eighteen tokens are `providedIn: 'root'` with sensible defaults, overrideable per-component via `viewProviders`.
+The override never breaks because the factory shape is captured in a `Cngx<Name>Factory` type alias — overrides match the exact signature.
 
 ---
 
 ## Template slot system
 
-Every visible piece of a select panel has an override slot. The
-slot directives live in `shared/template-slots.ts` and project a
-typed context object so consumer markup can read live state.
+Every visible piece of a select panel has an override slot.
+The slot directives live in `shared/template-slots.ts` and project a typed context object so consumer markup can read live state.
 
 ### The 17 public slots
 
-| Slot directive | Where it renders | Context |
-|-|-|-|
-| `*cngxSelectCheck` | Selection-indicator next to each option | `{ option, selected, indeterminate, variant, position }` |
-| `*cngxSelectCaret` | Trigger caret glyph | `{ open }` |
-| `*cngxSelectOptgroup` | Group-header rows in the listbox | `{ group }` |
-| `*cngxSelectPlaceholder` | Trigger placeholder text | `{ placeholder }` |
-| `*cngxSelectEmpty` | Panel "no options" body | `{ searchTerm, filtered, totalCount }` |
-| `*cngxSelectLoading` | First-load indicator body | `{ progress?, retry }` |
-| `*cngxSelectRefreshing` | Subsequent-load overlay | `{ previousCount }` |
-| `*cngxSelectError` | First-load error banner | `{ error, retry }` |
-| `*cngxSelectCommitError` | Commit-error banner / inline | `{ error, option, retry }` |
-| `*cngxSelectRetryButton` | Retry buttons across all 3 surfaces | `{ retry, error, disabled, label }` |
-| `*cngxSelectLoadingGlyph` | Inner glyph of spinner/bar/dots | `{}` |
-| `*cngxSelectClearButton` | Clear-all button | `{ clear, disabled }` |
-| `*cngxSelectOptionLabel` | Option-row label rendering | `{ option, selected, highlighted }` |
-| `*cngxSelectOptionPending` | Per-row commit-pending glyph | `{ option }` |
-| `*cngxSelectOptionError` | Per-row commit-error glyph | `{ option, error }` |
-| `*cngxSelectAction` | Action panel slot (action-* variants) | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
-| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }` |
+| Slot directive                                      | Where it renders                        | Context                                                                |
+| --------------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------- |
+| `*cngxSelectCheck`                                  | Selection-indicator next to each option | `{ option, selected, indeterminate, variant, position }`               |
+| `*cngxSelectCaret`                                  | Trigger caret glyph                     | `{ open }`                                                             |
+| `*cngxSelectOptgroup`                               | Group-header rows in the listbox        | `{ group }`                                                            |
+| `*cngxSelectPlaceholder`                            | Trigger placeholder text                | `{ placeholder }`                                                      |
+| `*cngxSelectEmpty`                                  | Panel "no options" body                 | `{ searchTerm, filtered, totalCount }`                                 |
+| `*cngxSelectLoading`                                | First-load indicator body               | `{ progress?, retry }`                                                 |
+| `*cngxSelectRefreshing`                             | Subsequent-load overlay                 | `{ previousCount }`                                                    |
+| `*cngxSelectError`                                  | First-load error banner                 | `{ error, retry }`                                                     |
+| `*cngxSelectCommitError`                            | Commit-error banner / inline            | `{ error, option, retry }`                                             |
+| `*cngxSelectRetryButton`                            | Retry buttons across all 3 surfaces     | `{ retry, error, disabled, label }`                                    |
+| `*cngxSelectLoadingGlyph`                           | Inner glyph of spinner/bar/dots         | `{}`                                                                   |
+| `*cngxSelectClearButton`                            | Clear-all button                        | `{ clear, disabled }`                                                  |
+| `*cngxSelectOptionLabel`                            | Option-row label rendering              | `{ option, selected, highlighted }`                                    |
+| `*cngxSelectOptionPending`                          | Per-row commit-pending glyph            | `{ option }`                                                           |
+| `*cngxSelectOptionError`                            | Per-row commit-error glyph              | `{ option, error }`                                                    |
+| `*cngxSelectAction`                                 | Action panel slot (action-\* variants)  | `{ searchTerm, commit, close, isPending, dirty, retry, error, value }` |
+| `*cngxSelectInputPrefix` / `*cngxSelectInputSuffix` | Input adornments (combobox + typeahead) | `{ disabled, focused, panelOpen }`                                     |
 
 Variant-specific slots that complement the shared 17:
 
@@ -305,37 +280,26 @@ sequenceDiagram
 ```
 
 The cascade is `Instance contentChild → CNGX_SELECT_CONFIG.templates.<key> → null`.
-Variant components declare 13 `contentChild` queries inline (Angular's
-AOT compiler requires the call as a direct field initialiser — NG8110
-rejects it from helper functions) and pass them as a bundle to
-`createTemplateRegistry({...})`. The factory wires each query through
-`resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>`
-in one place.
+Variant components declare 13 `contentChild` queries inline (Angular's AOT compiler requires the call as a direct field initialiser — NG8110 rejects it from helper functions) and pass them as a bundle to `createTemplateRegistry {...})`. The factory wires each query through `resolveTemplate` to deliver the resolved `Signal<TemplateRef | null>` in one place.
 
 ### Internal `CNGX_SELECT_GLYPHS` const
 
-Default glyphs for the slots that fall back to a single character
-(`✕ ▾ ▸ ⋮⋮ !`) live in `shared/glyphs.ts` as a plain `as const`
-object. **NOT exported** — the const exists only to absorb internal
-duplicates. Consumers override via:
+Default glyphs for the slots that fall back to a single character (`✕ ▾ ▸ ⋮⋮ !`) live in `shared/glyphs.ts` as a plain `as const` object. **NOT exported** — the const exists only to absorb internal duplicates.
+onsumers override via:
 
 1. `*cngxSelectClearButton` / `*cngxSelectCaret` / `*cngxMultiSelectChipHandle` directives (highest precedence).
 2. `[clearGlyph]` / `[caretGlyph]` / `[chipDragHandle]` Inputs (mid).
 3. `CNGX_SELECT_GLYPHS.<key>` falls back automatically (lowest).
 
-The library deliberately ships no `<cngx-icon>` / `<cngx-button>`
-component — we assume consumers bring their own design system. The
-const stays tree-shakeable; calls drop from the bundle when unused.
+The library deliberately ships no `<cngx-icon>` / `<cngx-button>` component — we assume consumers bring their own design system.
+The const stays tree-shakeable; calls drop from the bundle when unused.
 
 ---
 
 ## Configuration cascade
 
-Three configuration surfaces feed the family. Each is provided by a
-matching `provideXxxConfig(...features)` function plus a `*At`
-component-scoped twin. A unified `provideCngxSelect(...)` aggregator
-dispatches features across all three by inspecting the hidden
-`_target` discriminator on each feature.
+Three configuration surfaces feed the family. Each is provided by a matching `provideXxxConfig(...features)` function plus a `*At` component-scoped twin.
+A unified `provideCngxSelect(...)` aggregator dispatches features across all three by inspecting the hidden `_target` discriminator on each feature.
 
 ```mermaid
 graph TD
@@ -405,9 +369,8 @@ provideCngxSelect(
 
 ## Async state machine
 
-The optional `[state]` input drives the panel view via
-`resolveAsyncView()` from `@cngx/common/data`. The view is a
-discriminated union the panel-shell switches against.
+The optional `[state]` input drives the panel view via `resolveAsyncView()` from `@cngx/common/data`.
+The view is a discriminated union the panel-shell switches against.
 
 ```mermaid
 stateDiagram-v2
@@ -423,29 +386,28 @@ stateDiagram-v2
   success --> [*]
 ```
 
-`activeView()` resolves to one of `'skeleton' | 'content' | 'empty' |
-'none' | 'error' | 'content+error'`. The panel-shell renders:
+`activeView()` resolves to one of `'skeleton' | 'content' | 'empty' | 'none' | 'error' | 'content+error'`.
 
-| `activeView()` | Behaviour |
-|-|-|
-| `'skeleton'` | Full-panel loading body — variant from `loadingVariant` config (skeleton/spinner/bar/text) |
-| `'empty'` / `'none'` | `*cngxSelectEmpty` slot or the configured fallback label |
-| `'error'` (first load) | `*cngxSelectError` slot or the default error banner with retry |
-| `'content+error'` (stale + refresh failed) | Options visible + inline error above |
-| `'content'` + `showRefreshIndicator()` | Options visible + 2px shimmer overlay |
-| `'content'` (no refresh) | Options visible only |
+The panel-shell renders:
 
-Per-instance overrides: `[loading]` (boolean), `[loadingVariant]`,
-`[skeletonRowCount]`, `[refreshingVariant]`, `[retryFn]`. The `(retry)`
-output fires on every retry click, letting consumers re-fetch.
+| `activeView()`                             | Behaviour                                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `'skeleton'`                               | Full-panel loading body — variant from `loadingVariant` config (skeleton/spinner/bar/text) |
+| `'empty'` / `'none'`                       | `*cngxSelectEmpty` slot or the configured fallback label                                   |
+| `'error'` (first load)                     | `*cngxSelectError` slot or the default error banner with retry                             |
+| `'content+error'` (stale + refresh failed) | Options visible + inline error above                                                       |
+| `'content'` + `showRefreshIndicator()`     | Options visible + 2px shimmer overlay                                                      |
+| `'content'` (no refresh)                   | Options visible only                                                                       |
+
+Per-instance overrides: `[loading]` (boolean), `[loadingVariant]`, `[skeletonRowCount]`, `[refreshingVariant]`, `[retryFn]`.
+The `(retry)` output fires on every retry click, letting consumers re-fetch.
 
 ---
 
 ## Commit-action lifecycle
 
-Bind `[commitAction]` to a function returning `Observable | Promise |
-T | undefined` and the family routes user picks through it. Two modes,
-identical state machine.
+Bind `[commitAction]` to a function returning `Observable | Promise | T | undefined` and the family routes user picks through it. T
+wo modes, identical state machine.
 
 ```mermaid
 sequenceDiagram
@@ -493,70 +455,50 @@ callback no-ops. Consecutive picks therefore never race.
 
 **Three error surfaces** controlled by `commitErrorDisplay`:
 
-- `'banner'` (default) — `*cngxSelectCommitError` slot or a default
-  alert banner above the option list.
-- `'inline'` — a per-row `*cngxSelectOptionError` glyph on the failed
-  option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
+- `'banner'` (default) — `*cngxSelectCommitError` slot or a default alert banner above the option list.
+- `'inline'` — a per-row `*cngxSelectOptionError` glyph on the failed option (visual-only, AT feedback via `announcer.announce(..., 'assertive')`).
 - `'none'` — no built-in UI; bridge via `<cngx-toast-on />`,
-  `<cngx-banner-on />`, or any `CNGX_STATEFUL`-aware transition
-  component on the host.
+  `<cngx-banner-on />`, or any `CNGX_STATEFUL`-aware transition component on the host.
 
-The `commitState` signal is exposed via `CNGX_STATEFUL`, so
-transition bridges work with zero additional wiring.
+The `commitState` signal is exposed via `CNGX_STATEFUL`, so transition bridges work with zero additional wiring.
 
 ---
 
 ## A11y model
 
-Each variant follows the appropriate WAI-ARIA pattern. Common
-properties are derived from the same `triggerAria()` projection on
-`createSelectCore`, ensuring identical behaviour across variants.
+Each variant follows the appropriate WAI-ARIA pattern.
+Common properties are derived from the same `triggerAria()` projection on `createSelectCore`, ensuring identical behaviour across variants.
 
-| Variant | Trigger element | ARIA pattern |
-|-|-|-|
-| Single, Multi, TreeSelect, Reorderable | `<div role="combobox">` | combobox + listbox / tree popup |
-| Combobox, Typeahead, Action* | `<input role="combobox" aria-autocomplete="list">` | inline-input combobox |
+| Variant                                | Trigger element                                    | ARIA pattern                    |
+| -------------------------------------- | -------------------------------------------------- | ------------------------------- |
+| Single, Multi, TreeSelect, Reorderable | `<div role="combobox">`                            | combobox + listbox / tree popup |
+| Combobox, Typeahead, Action\*          | `<input role="combobox" aria-autocomplete="list">` | inline-input combobox           |
 
-The `<div role="combobox">` choice on the chip-carrying variants is
-deliberate: WAI-ARIA 1.2 forbids interactive children inside `<button>`
-(chip remove buttons would nest), so a `div` with a click handler
-fronts the combobox semantic.
+The `<div role="combobox">` choice on the chip-carrying variants is deliberate: WAI-ARIA 1.2 forbids interactive children inside `<button>` (chip remove buttons would nest), so a `div` with a click handler fronts the combobox semantic.
 
 **Live ARIA on the trigger** (sourced from `core.triggerAria`):
-`aria-expanded`, `aria-controls`, `aria-disabled`, `aria-invalid`,
-`aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage`.
-All are reactive computeds — they always reflect the current state,
-never go stale.
+`aria-expanded`, `aria-controls`, `aria-disabled`, `aria-invalid`, `aria-required`, `aria-busy`, `aria-describedby`, `aria-errormessage`.
+All are reactive computeds — they always reflect the current state, never go stale.
 
-**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav
-+ Home/End + typeahead) composed with `CngxHierarchicalNav`
-(ArrowLeft/Right collapse-and-traverse) on the same element — no
-double-fire because the two directives own disjoint key sets.
-Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`,
-`aria-setsize`, `aria-expanded` (only on parents), `aria-selected`,
-`aria-disabled`, all reactive.
+**TreeSelect's tree panel** uses `CngxActiveDescendant` (vertical nav)
 
-**Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'`
-and announces every selection change through a global polite live
-region. `CngxSelectAnnouncerConfig.format()` builds the sentence;
-override for custom locales or sentence shapes.
+- Home/End + typeahead) composed with `CngxHierarchicalNav`
+  (ArrowLeft/Right collapse-and-traverse) on the same element — no double-fire because the two directives own disjoint key sets.
+  Per-node `role="treeitem"` carries `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (only on parents), `aria-selected`, `aria-disabled`, all reactive.
+
+**Live region announcer.** `CngxSelectAnnouncer` is `providedIn: 'root'` and announces every selection change through a global polite live region.
+`CngxSelectAnnouncerConfig.format()` builds the sentence; override for custom locales or sentence shapes.
 
 **Focus restoration.** On panel close, focus returns to the trigger.
-This lives in `createPanelLifecycleEmitter` (one factory across all
-variants), wrapped in a `queueMicrotask` so the focus write happens
-after the popover-close DOM mutation settles.
+This lives in `createPanelLifecycleEmitter` (one factory across all variants), wrapped in a `queueMicrotask` so the focus write happens after the popover-close DOM mutation settles.
 
 ---
 
 ## Forms integration
 
-The family is **Signal-Forms-first**. Every variant provides
-`CNGX_FORM_FIELD_CONTROL` directly — drop a `<cngx-XXX>` inside a
-`<cngx-form-field [field]="myField">` and bidirectional sync runs
-through `CngxFormFieldPresenter`.
+The family is **Signal-Forms-first**. Every variant provides `CNGX_FORM_FIELD_CONTROL` directly — drop a `<cngx-XXX>` inside a `<cngx-form-field [field]="myField">` and bidirectional sync runs through `CngxFormFieldPresenter`.
 
-Reactive Forms remain supported via the one-shot `adaptFormControl`
-adapter:
+Reactive Forms remain supported via the one-shot `adaptFormControl` adapter:
 
 ```typescript
 import { adaptFormControl } from '@cngx/forms/field';
@@ -572,23 +514,16 @@ protected readonly rfField = adaptFormControl(
 );
 ```
 
-Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">`
-exactly as for native Signal Forms.
+Then bind the resulting `Field<T>` to `<cngx-form-field [field]="rfField">` exactly as for native Signal Forms.
 
-`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge —
-two `effect()`s install bidirectional `componentValue ↔ field.value()`
-sync, both directions guarded by `valueEquals` to suppress redundant
-writes.
+`createFieldSync` (in `shared/field-sync.ts`) is the shared bridge — two `effect()`s install bidirectional `componentValue ↔ field.value()` sync, both directions guarded by `valueEquals` to suppress redundant writes.
 
 ---
 
 ## Panel-shell + panel split
 
-The shared frame around every variant's panel body is
-`CngxSelectPanelShell` — owns the `activeView()` switch, the loading
-variants, the empty/error states, the refresh indicator, and the
-commit-error banner. The variant projects only the variant-specific
-body (option loop / tree loop) via `<ng-content />`.
+The shared frame around every variant's panel body is `CngxSelectPanelShell` — owns the `activeView()` switch, the loading variants, the empty/error states, the refresh indicator, and the commit-error banner.
+The variant projects only the variant-specific body (option loop / tree loop) via `<ng-content />`.
 
 ```mermaid
 graph TD
@@ -607,69 +542,33 @@ graph TD
   FlatPanel -->|injects| HOST
 ```
 
-`CngxSelectPanelHost<T>` extends `CngxSelectPanelViewHost<T>`. The
-narrower view-host contract is what the shell reads — keeps the shell
-value-shape-agnostic so `CngxTreeSelectPanel` and any future panel
-variant compose uniformly. Tree-select provides BOTH tokens with
-`useExisting: self`.
+`CngxSelectPanelHost<T>` extends `CngxSelectPanelViewHost<T>`.
+The narrower view-host contract is what the shell reads — keeps the shell value-shape-agnostic so `CngxTreeSelectPanel` and any future panel variant compose uniformly.
+Tree-select provides BOTH tokens with `useExisting: self`.
 
 ---
 
 ## Class size and decompose strategy
 
-The `@Component` body of each variant lands between 700 and 1100 LOC
-depending on value-shape complexity. Sub-200-LOC targets are
-structurally unreachable under the locked patterns (no inheritance, no
-abstract base classes — see `feedback_no_service_suffix.md` and the
-project CLAUDE.md). The 18 DI tokens + the slot system ARE the real
-decompose strategy: they eliminate cross-variant duplication and let
-consumers swap implementations.
+The `@Component` body of each variant lands between 700 and 1100 LOC depending on value-shape complexity.
+Sub-200-LOC targets are structurally unreachable under the locked patterns (no inheritance, no abstract base classes.
+The 18 DI tokens + the slot system ARE the real decompose strategy: they eliminate cross-variant duplication and let consumers swap implementations.
 
-**Atomic-decompose contract.** Each variant is decompose-ready
-(see global memory `reference_atomic_decompose.md`):
+**Atomic-decompose contract.** Each variant is decompose-ready:
 
 - Thin `@Component` declaration.
-- `hostDirectives: []` minimal — most variants use only the popover
-  trigger directives.
+- `hostDirectives: []` minimal — most variants use only the popover trigger directives.
 - DI-token contracts for every internal logic block.
-- CSS split: `select-base.css` (structural, family-shared) +
-  `<variant>.component.css` (trigger skin). The schematic can eject
-  the trigger skin into the consumer's project while keeping the base
-  styles linked from the library.
+- CSS split: `select-base.css` (structural, family-shared) +`<variant>.component.css` (trigger skin). The schematic can eject the trigger skin into the consumer's project while keeping the base styles linked from the library.
 
 **What is genuinely variant-specific** and does NOT factor out:
 
 - Trigger template markup (button vs input vs chip-strip-with-input).
 - Public API surface (single `value` vs `values: T[]` vs `treeValues`).
 - AD-activation glue (the activated payload's shape varies).
-- Field-sync wiring (single owns scalar `value`; multi/tree own arrays;
-  typeahead owns `value + display.writeFromValue` integration).
+- Field-sync wiring (single owns scalar `value`; multi/tree own arrays; typeahead owns `value + display.writeFromValue` integration).
 
 Every other concern is shared.
-
----
-
-## Tracked architectural debt
-
-Three accepted-as-is divergences plus one open follow-up live in
-`.internal/architektur/select-family-accepted-debt.md`. Brief summary:
-
-1. **Scalar commit flow divergence (`CngxSelect` ↔ `CngxTypeahead`)** —
-   four semantic differences (popover-close timing, error severity,
-   `display.writeFromValue` integration, `optionSelected` output) that
-   reflect real UX divergence. A scalar twin to `createArrayCommitHandler`
-   was rejected; harmonisation is gated on a v1.0 breaking release or a
-   third scalar consumer.
-2. **Class sizes 700-1100 LOC.** Structural; see decompose strategy
-   above.
-3. **Trigger-label context shape divergence.** Single carries one
-   option, multi/combobox/tree carry an array. Forcing a single shape
-   would degrade the scalar case.
-4. **TreeSelect virtualisation.** Recycler-contract conflict at
-   `tree-select.component.ts:323-331` — `expandedIds` mutations
-   re-shape `visibleNodes` mid-flight, which the recycler can't
-   incrementally consume. Deferred until consumer demand emerges or a
-   tree-aware recycler ships in `@cngx/common/data`.
 
 ---
 
@@ -679,33 +578,23 @@ A few representative extension paths.
 
 **Add a new template slot.**
 
-1. Add the directive class + context interface in
-   `shared/template-slots.ts`.
-2. Add the slot key to `CngxSelectTemplateContexts` and
-   `CNGX_SELECT_DEFAULTS.templates` in `shared/config.ts`.
-3. Add the slot to `CngxSelectTemplateRegistryQueries` +
-   `CngxSelectTemplateRegistry` in `shared/template-registry.ts`,
-   then wire `resolveTemplate(...)` inside `createTemplateRegistry`.
-4. Each variant declares the corresponding `contentChild` and adds
-   the field to the registry call.
-5. Bind the resolved `host.tpl.<slot>()` in the panel template with
-   an `@else` default.
+1. Add the directive class + context interface in `shared/template-slots.ts`.
+2. Add the slot key to `CngxSelectTemplateContexts` and `CNGX_SELECT_DEFAULTS.templates` in `shared/config.ts`.
+3. Add the slot to `CngxSelectTemplateRegistryQueries` + `CngxSelectTemplateRegistry` in `shared/template-registry.ts`, then wire `resolveTemplate(...)` inside `createTemplateRegistry`.
+4. Each variant declares the corresponding `contentChild` and adds the field to the registry call.
+5. Bind the resolved `host.tpl.<slot>()` in the panel template with an `@else` default.
 6. Export the directive + context from `public-api.ts`.
 
 **Add a new ariaLabels key.**
 
-1. Add the optional field on `CngxSelectAriaLabels` in
-   `shared/config.ts`.
+1. Add the optional field on `CngxSelectAriaLabels` in `shared/config.ts`.
 2. Add the English default to `CNGX_SELECT_DEFAULTS.ariaLabels`.
-3. Read it through `config.ariaLabels.<key> ?? '<English fallback>'`
-   at the consumption site (variant or panel-shell).
-4. Update `feedback_en_default_locale.md` is not needed — the EN
-   convention is universal.
+3. Read it through `config.ariaLabels.<key> ?? '<English fallback>'` at the consumption site (variant or panel-shell).
+4. Update `feedback_en_default_locale.md` is not needed — the EN convention is universal.
 
 **Override an internal logic block enterprise-wide.**
 
-1. Implement a custom factory matching the corresponding
-   `Cngx<Name>Factory` type alias.
+1. Implement a custom factory matching the corresponding `Cngx<Name>Factory` type alias.
 2. Provide it at app root:
    ```typescript
    {
@@ -719,25 +608,8 @@ A few representative extension paths.
 
 1. Build the trigger template; pick the appropriate ARIA pattern.
 2. Instantiate `createSelectCore<T, TCommit>` in a field initialiser.
-3. Provide `CNGX_FORM_FIELD_CONTROL` (`useExisting: self`) and
-   `CNGX_STATEFUL` for transition-bridge integration.
-4. Provide `CNGX_SELECT_PANEL_VIEW_HOST` (and `CNGX_SELECT_PANEL_HOST`
-   if the panel is option-loop-shaped); satisfy the contract.
-5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`,
-   `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit
-   handler factory.
-6. Reuse the value-shape glue closest to your variant
-   (`createArrayCommitHandler` for arrays, `createScalarCommitHandler`
-   for singles, `createReorderCommitHandler` for ordered arrays).
+3. Provide `CNGX_FORM_FIELD_CONTROL` (`useExisting: self`) and `CNGX_STATEFUL` for transition-bridge integration.
+4. Provide `CNGX_SELECT_PANEL_VIEW_HOST` (and `CNGX_SELECT_PANEL_HOST` if the panel is option-loop-shaped); satisfy the contract.
+5. Wire `CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY`, `CNGX_TEMPLATE_REGISTRY_FACTORY`, and the appropriate commit handler factory.
+6. Reuse the value-shape glue closest to your variant (`createArrayCommitHandler` for arrays, `createScalarCommitHandler` for singles, `createReorderCommitHandler` for ordered arrays).
 7. Export the component + change-event interface from `public-api.ts`.
-
----
-
-## Further reading
-
-- **API reference**: `npm run docs:serve` (compodoc).
-- **Live demos**: `npm start` then `/select`, `/multi-select`, …, `/select-compare`.
-- **Per-feature deep dives**: `.internal/architektur/` (local-only,
-  not committed): closure plans, accepted-debt register,
-  master-plans for the major variants.
-- **Repository philosophy**: `CLAUDE.md` at the repo root.
