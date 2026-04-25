@@ -1,11 +1,10 @@
 import { signal, type Signal } from '@angular/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ActiveDescendantItem } from '@cngx/common/a11y';
-
 import {
   createDefaultFlatNavStrategy,
   type CngxFlatNavContext,
+  type CngxFlatNavListboxItem,
   type CngxFlatNavStrategy,
 } from './flat-nav-strategy';
 import type { CngxSelectOptionDef } from './option.model';
@@ -23,12 +22,17 @@ function opt(
   return { value, label, disabled };
 }
 
+interface TestItem extends CngxFlatNavListboxItem {
+  readonly id: string;
+  readonly label: string;
+}
+
 function adItem(
   id: string,
   label: string,
   disabled = false,
-): ActiveDescendantItem {
-  return { id, value: label, label, disabled };
+): TestItem {
+  return { id, label, disabled };
 }
 
 function makeController(
@@ -62,7 +66,7 @@ function makeContext(
     opt('Lime'),
     opt('Mango'),
   ];
-  const listboxItems: readonly ActiveDescendantItem[] = options.map((o, i) =>
+  const listboxItems: readonly TestItem[] = options.map((o, i) =>
     adItem(`opt-${i}`, o.label, o.disabled),
   );
   return {

@@ -47,10 +47,8 @@ import { sameArrayContents } from '../shared/compare';
 import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import {
-  createTypeaheadController,
-  resolvePageJumpTarget,
-} from '../shared/typeahead-controller';
+import { createTypeaheadController } from '../shared/typeahead-controller';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -64,7 +62,6 @@ import {
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
-  isOptionDisabled,
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
@@ -636,6 +633,13 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     disabled: this.disabled,
   });
 
+  /**
+   * Flat-nav policy — shared with `CngxSelect` / `CngxReorderableMultiSelect`
+   * via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
+   * closed; the variant only dispatches the resulting action.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
@@ -1010,15 +1014,27 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
-    // Typeahead-while-closed — toggle first matching option via the
-    // shared typeahead controller (multi-char buffering + disabled skip).
+    const lb = this.listboxRef();
+    const pop = this.popoverRef();
+    // Typeahead-while-closed — multi-select toggles first matching option.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
-        const candidate = this.typeaheadController.matchFromIndex(key, -1);
-        if (candidate) {
+        const action = this.flatNavStrategy.onTypeaheadWhileClosed(
+          {
+            options: this.flatOptions(),
+            listboxItems: lb?.options() ?? [],
+            currentFlatIndex: -1,
+            currentListboxIndex: -1,
+            compareWith: this.compareWith(),
+            disabled: this.disabled(),
+            typeaheadController: this.typeaheadController,
+          },
+          key,
+        );
+        if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(candidate);
+          this.toggleOptionByUser(action.option);
           // Multi-select toggle semantics: every keystroke should map to
           // an independent toggle. Reset the buffer so a repeated key
           // toggles the same option back off instead of accumulating
@@ -1033,24 +1049,31 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
-      const lb = this.listboxRef();
-      const pop = this.popoverRef();
       if (!pop || !lb) {
         return;
       }
       if (!pop.isVisible()) {
         pop.show();
       }
-      const options = lb.options();
+      const items = lb.options();
       const ad = lb.ad;
       const currentId = ad.activeId();
-      const currentIdx = options.findIndex((o) => o.id === currentId);
+      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
-        isOptionDisabled(o),
+      const action = this.flatNavStrategy.onPageJump(
+        {
+          options: this.flatOptions(),
+          listboxItems: items,
+          currentFlatIndex: -1,
+          currentListboxIndex,
+          compareWith: this.compareWith(),
+          disabled: this.disabled(),
+          typeaheadController: this.typeaheadController,
+        },
+        direction,
       );
-      if (target !== null) {
-        ad.highlightByIndex(target);
+      if (action.kind === 'highlight') {
+        ad.highlightByIndex(action.index);
       }
     }
   }

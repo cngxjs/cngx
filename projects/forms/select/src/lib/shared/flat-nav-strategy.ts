@@ -1,13 +1,23 @@
 import { InjectionToken } from '@angular/core';
 
-import type { ActiveDescendantItem } from '@cngx/common/a11y';
-
-import type { CngxSelectOptionDef } from './option.model';
+import { isOptionDisabled, type CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
 import {
   resolvePageJumpTarget,
   type TypeaheadController,
 } from './typeahead-controller';
+
+/**
+ * Minimal shape the flat-nav strategy reads from each listbox item.
+ * Both `ActiveDescendantItem` (`disabled?: boolean`) and `CngxOption`
+ * (`disabled` as either a plain bool or a callable signal-getter)
+ * satisfy this constraint via {@link isOptionDisabled}.
+ *
+ * @category interactive
+ */
+export interface CngxFlatNavListboxItem {
+  readonly disabled?: boolean | (() => boolean) | null;
+}
 
 /**
  * Context passed to every {@link CngxFlatNavStrategy} method. Bundles the
@@ -30,14 +40,17 @@ export interface CngxFlatNavContext<T> {
   readonly options: readonly CngxSelectOptionDef<T>[];
 
   /**
-   * Listbox items (`ActiveDescendantItem[]`) as seen by the AD directive
-   * — the PageUp/PageDown target indices refer to THIS array because the
-   * listbox may omit items that `flatOptions` contains (e.g. during
-   * filtered combobox navigation).
+   * Listbox items as seen by the AD directive — the PageUp/PageDown
+   * target indices refer to THIS array because the listbox may omit
+   * items that `flatOptions` contains (e.g. during filtered combobox
+   * navigation).
    *
    * Pass `lb.options()` from the variant's `CngxListbox` viewchild.
+   * Accepts both `ActiveDescendantItem` (typed `disabled?: boolean`)
+   * and `CngxOption` (where `disabled` may be a callable signal) via
+   * the {@link CngxFlatNavListboxItem} shape.
    */
-  readonly listboxItems: readonly ActiveDescendantItem[];
+  readonly listboxItems: readonly CngxFlatNavListboxItem[];
 
   /**
    * Current index inside {@link options} — used for typeahead round-robin
@@ -160,7 +173,7 @@ export function createDefaultFlatNavStrategy(
         ctx.listboxItems,
         ctx.currentListboxIndex,
         direction,
-        (item) => !!item.disabled,
+        (item) => isOptionDisabled(item),
         pageStep,
       );
       if (target === null) {

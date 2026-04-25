@@ -36,10 +36,8 @@ import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
-import {
-  createTypeaheadController,
-  resolvePageJumpTarget,
-} from '../shared/typeahead-controller';
+import { createTypeaheadController } from '../shared/typeahead-controller';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
@@ -54,7 +52,6 @@ import {
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
-  isOptionDisabled,
   type CngxSelectOptionDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
@@ -631,6 +628,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     disabled: this.disabled,
   });
 
+  /**
+   * Flat-nav policy — shared with the multi-value family via
+   * `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
+   * closed; the variant only dispatches the resulting action.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /** Read-only view of the commit lifecycle. */
   readonly commitState = this.core.commitState;
   /** `true` while a commit is in flight. */
@@ -906,31 +910,46 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
-    // Typeahead-while-closed — native <select> parity via shared
-    // typeahead controller.
+    const lb = this.listboxRef();
+    const pop = this.popoverRef();
+
+    // Typeahead-while-closed — native <select> parity. Single-select
+    // uses round-robin from the currently-selected option so repeat-
+    // taps advance through matching options.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
         const eq = this.compareWith();
         const flat = this.flatOptions();
         const v = this.value();
-        const currentIdx =
+        const currentFlatIndex =
           v === undefined || v === null
             ? -1
             : flat.findIndex((o) => eq(o.value, v));
-        const candidate = this.typeaheadController.matchFromIndex(key, currentIdx);
-        if (candidate) {
+        const action = this.flatNavStrategy.onTypeaheadWhileClosed(
+          {
+            options: flat,
+            listboxItems: lb?.options() ?? [],
+            currentFlatIndex,
+            currentListboxIndex: -1,
+            compareWith: eq,
+            disabled: this.disabled(),
+            typeaheadController: this.typeaheadController,
+          },
+          key,
+        );
+        if (action.kind === 'select') {
           event.preventDefault();
           const previous = v;
-          this.value.set(candidate.value);
+          this.value.set(action.option.value);
           this.selectionChange.emit({
             source: this,
-            value: candidate.value,
+            value: action.option.value,
             previousValue: previous,
-            option: candidate,
+            option: action.option,
           });
-          this.optionSelected.emit(candidate);
-          this.core.announce(candidate, 'added', 1, false);
+          this.optionSelected.emit(action.option);
+          this.core.announce(action.option, 'added', 1, false);
           return;
         }
       }
@@ -939,24 +958,31 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
-      const lb = this.listboxRef();
-      const pop = this.popoverRef();
       if (!pop || !lb) {
         return;
       }
       if (!pop.isVisible()) {
         pop.show();
       }
-      const options = lb.options();
+      const items = lb.options();
       const ad = lb.ad;
       const currentId = ad.activeId();
-      const currentIdx = options.findIndex((o) => o.id === currentId);
+      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
-        isOptionDisabled(o),
+      const action = this.flatNavStrategy.onPageJump(
+        {
+          options: this.flatOptions(),
+          listboxItems: items,
+          currentFlatIndex: -1,
+          currentListboxIndex,
+          compareWith: this.compareWith(),
+          disabled: this.disabled(),
+          typeaheadController: this.typeaheadController,
+        },
+        direction,
       );
-      if (target !== null) {
-        ad.highlightByIndex(target);
+      if (action.kind === 'highlight') {
+        ad.highlightByIndex(action.index);
       }
     }
   }
