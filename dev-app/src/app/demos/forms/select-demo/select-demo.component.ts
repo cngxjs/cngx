@@ -935,10 +935,59 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
   </div>
       </app-example-card>
-      <app-example-card title="Typeahead — async [state] (load + error + retry)"
+      <app-example-card title="commitErrorDisplay variants — banner / inline / none"
         [subtitle]="_s40"
         [sourceHtml]="_srcHtml40"
         [sourceTs]="_srcTs40">
+        
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="banner"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="inline"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="none"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    </div>
+  </div>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
+      </app-example-card>
+      <app-example-card title="Typeahead — async [state] (load + error + retry)"
+        [subtitle]="_s41"
+        [sourceHtml]="_srcHtml41"
+        [sourceTs]="_srcTs41">
         
   <cngx-typeahead
     [label]="'User'"
@@ -957,9 +1006,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — [commitAction] with optimistic/pessimistic mode"
-        [subtitle]="_s41"
-        [sourceHtml]="_srcHtml41"
-        [sourceTs]="_srcTs41">
+        [subtitle]="_s42"
+        [sourceHtml]="_srcHtml42"
+        [sourceTs]="_srcTs42">
         
   <cngx-typeahead
     [label]="'User'"
@@ -985,9 +1034,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — *cngxSelectOptionLabel slot override"
-        [subtitle]="_s42"
-        [sourceHtml]="_srcHtml42"
-        [sourceTs]="_srcTs42">
+        [subtitle]="_s43"
+        [sourceHtml]="_srcHtml43"
+        [sourceTs]="_srcTs43">
         
   <cngx-typeahead
     [label]="'User'"
@@ -1014,9 +1063,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxComboboxChip"
-        [subtitle]="_s43"
-        [sourceHtml]="_srcHtml43"
-        [sourceTs]="_srcTs43">
+        [subtitle]="_s44"
+        [sourceHtml]="_srcHtml44"
+        [sourceTs]="_srcTs44">
         
   <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
@@ -1075,10 +1124,11 @@ export class SelectDemoComponent {
   protected readonly _s37 = 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).';
   protected readonly _s38 = 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.';
   protected readonly _s39 = 'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.';
-  protected readonly _s40 = 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.';
-  protected readonly _s41 = 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.';
-  protected readonly _s42 = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
-  protected readonly _s43 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
+  protected readonly _s40 = 'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.';
+  protected readonly _s41 = 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.';
+  protected readonly _s42 = 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.';
+  protected readonly _s43 = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
+  protected readonly _s44 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -11872,20 +11922,48 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml40 = `<cngx-typeahead
-    [label]="'User'"
-    [options]="typeaheadUsers"
-    [compareWith]="typeaheadCompare"
-    [displayWith]="typeaheadDisplay"
-    [state]="typeaheadAsyncState"
-    [clearable]="true"
-    placeholder="Search by name…"
-    [(value)]="typeaheadAsyncValue"
-  />
+  protected readonly _srcHtml40 = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="banner"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="inline"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="none"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    </div>
+  </div>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
-    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
-    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
   </div>`;
   protected readonly _srcTs40 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12146,22 +12224,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
     [displayWith]="typeaheadDisplay"
-    [commitAction]="typeaheadCommitAction"
-    [commitMode]="typeaheadCommitMode()"
-    [(value)]="typeaheadCommitValue"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
     placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
   />
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
-      Mode: {{ typeaheadCommitMode() }}
-    </button>
-    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
-      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
-    </button>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
   </div>`;
   protected readonly _srcTs41 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12422,23 +12493,22 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
     [displayWith]="typeaheadDisplay"
-    [(value)]="typeaheadValue"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
     placeholder="Search by name…"
-  >
-    <ng-template cngxSelectOptionLabel let-opt>
-      <span style="display:flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
-          {{ opt.label.charAt(0) }}
-        </span>
-        <span>
-          <strong>{{ opt.label }}</strong>
-          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
-        </span>
-      </span>
-    </ng-template>
-  </cngx-typeahead>
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs42 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12694,7 +12764,284 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml43 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+  protected readonly _srcHtml43 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs43 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml44 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
       <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
         <span aria-hidden="true">#{{ i + 1 }}</span>
@@ -12706,7 +13053,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
   </div>`;
-  protected readonly _srcTs43 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs44 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';

@@ -1233,6 +1233,56 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
+      title: 'commitErrorDisplay variants — banner / inline / none',
+      subtitle:
+        'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.',
+      imports: ['CngxSelect'],
+      template: `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="banner"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="inline"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="none"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    </div>
+  </div>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>`,
+    },
+    {
       title: 'Typeahead — async [state] (load + error + retry)',
       subtitle:
         'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.',
