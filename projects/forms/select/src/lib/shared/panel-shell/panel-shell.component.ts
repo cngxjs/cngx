@@ -118,18 +118,18 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
         } @else {
           @switch (host.loadingVariant()) {
             @case ('spinner') {
-              <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" aria-label="Loading">
+              <div class="cngx-select__spinner-wrap" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Lade Optionen'">
                 <div aria-hidden="true" class="cngx-select__spinner"></div>
               </div>
             }
             @case ('bar') {
-              <div class="cngx-select__loading-bar" role="status" aria-live="polite" aria-label="Loading"></div>
+              <div class="cngx-select__loading-bar" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Lade Optionen'"></div>
             }
             @case ('text') {
               <div class="cngx-select__loading" role="status" aria-live="polite">{{ host.fallbackLabels.loading }}</div>
             }
             @default {
-              <div class="cngx-select__skeleton" role="status" aria-live="polite" aria-label="Loading">
+              <div class="cngx-select__skeleton" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusLoading ?? 'Lade Optionen'">
                 @for (i of host.skeletonIndices(); track i) {
                   <div aria-hidden="true" class="cngx-select__skeleton-row"></div>
                 }
@@ -196,19 +196,19 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
             @switch (host.refreshingVariant()) {
               @case ('none') { <!-- suppressed --> }
               @case ('spinner') {
-                <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" aria-label="Refreshing">
+                <div class="cngx-select__refreshing-spinner" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Aktualisiere Optionen'">
                   <div aria-hidden="true" class="cngx-select__spinner"></div>
                 </div>
               }
               @case ('dots') {
-                <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" aria-label="Refreshing">
+                <div class="cngx-select__refreshing-dots" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Aktualisiere Optionen'">
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                 </div>
               }
               @default {
-                <div class="cngx-select__refreshing" role="status" aria-live="polite" aria-label="Refreshing"></div>
+                <div class="cngx-select__refreshing" role="status" aria-live="polite" [attr.aria-label]="host.ariaLabels.statusRefreshing ?? 'Aktualisiere Optionen'"></div>
               }
             }
           }

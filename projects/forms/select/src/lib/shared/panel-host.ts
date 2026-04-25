@@ -52,6 +52,7 @@ import type {
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
 import type {
+  CngxSelectAriaLabels,
   CngxSelectFallbackLabels,
   CngxSelectLoadingVariant,
   CngxSelectRefreshingVariant,
@@ -124,6 +125,19 @@ export interface CngxSelectPanelViewHost<T = unknown> {
    * when no custom template is projected for the corresponding slot.
    */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  /**
+   * Resolved ARIA-label bundle. Every variant forwards its
+   * `core.ariaLabels` (which mirrors `CNGX_SELECT_CONFIG.ariaLabels`)
+   * so the shell can read `host.ariaLabels.statusLoading` /
+   * `.statusRefreshing` etc. without re-injecting the config token.
+   *
+   * Keys remain optional — variants that supply per-instance overrides
+   * still apply them outside this bundle (e.g. `[clearButtonAriaLabel]`
+   * input on each chip-carrier). Library DE defaults populate the
+   * status / tree / fallback keys; per-variant cascade applies for the
+   * `clearButton` / `chipRemove` keys.
+   */
+  readonly ariaLabels: CngxSelectAriaLabels;
   handleRetry(): void;
 
   /**

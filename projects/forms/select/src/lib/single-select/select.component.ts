@@ -585,6 +585,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
   /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
 
   /** @internal — full virtualisation wire-up (see setupVirtualization). */
   private readonly virtualSetup = setupVirtualization<T, T>({

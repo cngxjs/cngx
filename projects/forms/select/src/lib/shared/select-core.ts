@@ -31,6 +31,7 @@ import type {
 } from './commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
   type CngxSelectFallbackLabels,
 } from './config';
 import {
@@ -222,6 +223,18 @@ export interface CngxSelectCore<T, TCommit> {
    * never mutates — same lifecycle contract as `panelClass`.
    */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  /**
+   * Resolved ARIA-label bundle (cascaded through `CNGX_SELECT_CONFIG`).
+   * Forwarded by every variant onto its `CngxSelectPanelViewHost` so the
+   * shared panel-shell can read `host.ariaLabels.statusLoading` /
+   * `.statusRefreshing` without reaching back into the config token.
+   * Tree-select also reads `.treeExpand` / `.treeCollapse` for its
+   * twisty button defaults; select-core reads `.fieldLabelFallback` /
+   * `.commitFailedMessage` for the announcer + commit-error fallbacks.
+   * Keys are optional — partial overrides via `withAriaLabels(...)`
+   * leave non-supplied keys at their library DE defaults.
+   */
+  readonly ariaLabels: CngxSelectAriaLabels;
 
   // ── ARIA / identity ────────────────────────────────────────────────
   readonly resolvedId: Signal<string>;
@@ -887,6 +900,7 @@ export function createSelectCore<T, TCommit>(
     panelClassList,
     panelWidthCss,
     fallbackLabels: config.fallbackLabels,
+    ariaLabels: config.ariaLabels,
     resolvedId,
     resolvedAriaLabel,
     resolvedAriaLabelledBy,

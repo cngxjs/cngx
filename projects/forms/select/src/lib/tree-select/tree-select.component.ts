@@ -736,6 +736,7 @@ export class CngxTreeSelect<T = unknown>
 
   /** @internal — panel-shell fallback labels (i18n). */
   readonly fallbackLabels = this.config.fallbackLabels;
+  readonly ariaLabels = this.config.ariaLabels;
 
   // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
 
