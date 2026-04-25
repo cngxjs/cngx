@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   Injector,
   input,
@@ -30,7 +29,7 @@ import {
   type CngxReorderEvent,
   type CngxReorderModifier,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -45,12 +44,17 @@ import {
   createArrayCommitHandler,
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
-import { sameArrayContents } from '../shared/compare';
-import { createFieldSync } from '../shared/field-sync';
 import {
-  createTypeaheadController,
-  resolvePageJumpTarget,
-} from '../shared/typeahead-controller';
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
+import { sameArrayContents } from '../shared/compare';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
+import { createFieldSync } from '../shared/field-sync';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
+import { createTypeaheadController } from '../shared/typeahead-controller';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
+import { CNGX_SELECT_GLYPHS } from '../shared/glyphs';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -59,19 +63,21 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
-  isOptionDisabled,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_REORDER_COMMIT_HANDLER_FACTORY } from '../shared/reorder-commit-handler';
 import { resolveReorderableSelectConfig } from '../shared/reorderable-select-config';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
@@ -80,6 +86,7 @@ import {
 } from '../shared/select-core';
 import {
   CngxMultiSelectChip,
+  CngxMultiSelectChipHandle,
   type CngxMultiSelectChipContext,
   CngxMultiSelectTriggerLabel,
   type CngxMultiSelectTriggerLabelContext,
@@ -89,6 +96,7 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectRetryButton,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
@@ -208,6 +216,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
         <span
           class="cngx-select__chip-list"
           [class.cngx-select__chip-list--reordering]="reorderDir.dragging()"
+          [attr.data-overflow]="effectiveChipOverflow()"
           role="group"
           [attr.aria-label]="reorderAriaLabel()"
           [attr.aria-disabled]="reorderDisabled() ? 'true' : null"
@@ -259,11 +268,13 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
                 (focus)="handleChipFocus(i)"
                 (click)="$event.stopPropagation()"
               >
-                @if (chipDragHandleTpl(); as handleT) {
-                  <span class="cngx-select__chip-handle" aria-hidden="true">
+                <span class="cngx-select__chip-handle" aria-hidden="true">
+                  @if (chipDragHandleTpl(); as handleT) {
                     <ng-container *ngTemplateOutlet="handleT" />
-                  </span>
-                }
+                  } @else {
+                    {{ defaultDragHandleGlyph }}
+                  }
+                </span>
                 @if (chipTpl(); as chipT) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -338,7 +349,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -352,6 +363,7 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
           [(selectedValues)]="values"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
@@ -387,6 +399,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Chip-strip overflow strategy. Reorderable enforces that all
+   * chips remain in the DOM (drag-reorder requires it) — a
+   * `'truncate'` value is silently downgraded to `'scroll-x'` via
+   * {@link effectiveChipOverflow}. `'wrap'` (default) and
+   * `'scroll-x'` pass through unchanged.
+   */
+  readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
+    this.config.chipOverflow,
+  );
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
@@ -396,10 +423,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+    this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
@@ -490,12 +517,20 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     CngxSelectOptionLabel,
   );
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective =
     contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
     CngxSelectCommitError,
   );
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
+  /**
+   * Highest-precedence drag-handle slot — wins over `[chipDragHandle]`
+   * Input and the default glyph fallback. See `CngxMultiSelectChipHandle`.
+   */
+  private readonly chipHandleDirective =
+    contentChild<CngxMultiSelectChipHandle>(CngxMultiSelectChipHandle);
   private readonly clearButtonDirective =
     contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly optionPendingDirective = contentChild<CngxSelectOptionPending<T>>(
@@ -517,6 +552,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     loading: this.loadingDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,
     commitError: this.commitErrorDirective,
     clearButton: this.clearButtonDirective,
@@ -534,10 +570,20 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.chipDirective()?.templateRef ?? null,
   );
 
-  /** @internal */
+  /**
+   * Resolved drag-handle template — three-stage cascade:
+   *   1. `*cngxMultiSelectChipHandle` directive (highest precedence).
+   *   2. `[chipDragHandle]` Input.
+   *   3. `null` — template renders {@link defaultDragHandleGlyph}.
+   *
+   * @internal
+   */
   protected readonly chipDragHandleTpl = computed<TemplateRef<void> | null>(
-    () => this.chipDragHandle(),
+    () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
   );
+
+  /** @internal — default '⋮⋮' grip rendered when no template is supplied. */
+  protected readonly defaultDragHandleGlyph = CNGX_SELECT_GLYPHS.dragHandle;
 
   // ── ViewChildren ───────────────────────────────────────────────────
 
@@ -565,6 +611,23 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
+
+  // ── Local-items buffer (quick-create persistence) ──────────────────
+
+  /** @internal */
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
+
+  // ── Action-slot bridge ──────────────────────────────────────────────
+
+  /** @internal */
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
   // ── Core (stateless signal graph) ──────────────────────────────────
 
@@ -596,12 +659,34 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       multiValues: this.values,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
     },
     {
       announceChanges: this.announceChanges,
       announceTemplate: this.announceTemplate,
     },
   );
+
+  /**
+   * Append a pre-built option to the component's persistent local
+   * buffer — renders in the next panel emission and silently drops
+   * once the server state includes a matching value. Dedup-guarded
+   * by `compareWith`; duplicate patches are no-ops.
+   *
+   * @category interactive
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer. Idempotent.
+   *
+   * @category interactive
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
 
   // ── Template-facing protected surface (delegates to core) ──────────
 
@@ -613,6 +698,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
   /** @internal */ protected readonly panelClassList = this.core.panelClassList;
   /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
   /** @internal */ protected readonly resolvedId = this.core.resolvedId;
   /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
   /** @internal */ protected readonly resolvedShowSelectionIndicator =
@@ -640,6 +727,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     disabled: this.disabled,
   });
 
+  /**
+   * Flat-nav policy — shared with `CngxSelect` / `CngxMultiSelect` via
+   * `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
+   * closed; the variant only dispatches the resulting action.
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   // ── Commit state (shared with the flat family) ─────────────────────
 
   readonly commitState = this.core.commitState;
@@ -652,6 +746,18 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly commitErrorContext = this.core.bindCommitRetry(
     () => this.commitHandler.retryLast(),
   );
+
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T[]>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -750,6 +856,29 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     onError: (err) => this.commitError.emit(err),
   });
 
+  /**
+   * Chip-removal handler — same factory as `CngxMultiSelect`/`CngxCombobox`.
+   * Reorder semantics are independent: chip-remove is always a single
+   * deselect (the strip-keyboard handler owns position changes via
+   * `CngxReorder`).
+   */
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
+      values: this.values,
+      disabled: this.disabled,
+      compareWith: this.compareWith,
+      commitAction: this.commitAction,
+      commitMode: this.commitMode,
+      beginCommit: (next, previous, item, action) =>
+        this.commitHandler.beginToggle(next, previous, item, action),
+      onBeforeCommit: (previous, item) => {
+        this.lastCommittedValues = previous;
+        this.togglingOption.set(item);
+      },
+      onSyncFinalize: (item, previous) =>
+        this.finalizeToggle(item, false, previous),
+    });
+
   // ── Reorder-specific state ─────────────────────────────────────────
 
   /**
@@ -793,6 +922,21 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * handling. Plan §2 locked the freeze default — reorders are
    * sub-second and a freeze is clearer than mid-gesture visual noise.
    */
+  /**
+   * Effective overflow mode after safety downgrade —
+   * `'truncate'` is unsafe for drag-reorder (hidden chips break
+   * `cngxReorder`'s DOM-scan) so it always becomes `'scroll-x'`.
+   * Pass `'wrap'` or `'scroll-x'` unchanged.
+   *
+   * @internal
+   */
+  protected readonly effectiveChipOverflow = computed<
+    'wrap' | 'scroll-x'
+  >(() => {
+    const mode = this.chipOverflow();
+    return mode === 'truncate' ? 'scroll-x' : mode;
+  });
+
   protected readonly reorderDisabled = computed<boolean>(() => {
     if (this.disabled()) {
       return true;
@@ -804,28 +948,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   // ── Panel-host surface ─────────────────────────────────────────────
-
-  protected isGroup(
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ): item is CngxSelectOptionGroupDef<T> {
-    return this.core.isGroup(item);
-  }
-
-  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isSelected(opt.value);
-  }
-
-  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isIndeterminate(opt.value);
-  }
+  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
-  }
-
-  /** @internal */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isCommittingOption(opt);
   }
 
   constructor() {
@@ -870,19 +999,13 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
 
     // Open / close lifecycle + focus restore.
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.triggerBtn()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.triggerBtn,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     // Activeindex clamp on count shrink is owned by the chip-strip
@@ -914,14 +1037,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /** @internal */
-  protected handleClickOutside(): void {
-    const mode = this.config.dismissOn;
-    if (mode === 'outside' || mode === 'both') {
-      if (this.popoverRef()?.isVisible()) {
-        this.close();
-      }
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleRetry(): void {
@@ -935,33 +1056,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */
   protected handleChipRemoveClick(event: Event, opt: CngxSelectOptionDef<T>): void {
     event.stopPropagation();
-    this.removeOption(opt);
+    this.chipRemovalHandler.removeByValue(opt);
   }
 
-  /** @internal */
+  /** @internal — stable per-option `remove()` closure for chip slots. */
   protected chipRemoveFor(opt: CngxSelectOptionDef<T>): () => void {
-    return () => this.removeOption(opt);
-  }
-
-  private removeOption(opt: CngxSelectOptionDef<T>): void {
-    if (this.disabled()) {
-      return;
-    }
-    const action = this.commitAction();
-    const previous = [...this.values()];
-    const eq = this.compareWith();
-    const next = previous.filter((v) => !eq(v, opt.value));
-    if (action) {
-      this.lastCommittedValues = previous;
-      this.togglingOption.set(opt);
-      if (this.commitMode() === 'optimistic') {
-        this.values.set(next);
-      }
-      this.commitHandler.beginToggle(next, previous, opt, action);
-      return;
-    }
-    this.values.set(next);
-    this.finalizeToggle(opt, false, previous);
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   /** @internal */
@@ -1016,14 +1116,28 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   /** @internal */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
+    const lb = this.listboxRef();
+    const pop = this.popoverRef();
+
     // Typeahead-while-closed.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
-        const candidate = this.typeaheadController.matchFromIndex(key, -1);
-        if (candidate) {
+        const action = this.flatNavStrategy.onTypeaheadWhileClosed(
+          {
+            options: this.flatOptions(),
+            listboxItems: lb?.options() ?? [],
+            currentFlatIndex: -1,
+            currentListboxIndex: -1,
+            compareWith: this.compareWith(),
+            disabled: this.disabled(),
+            typeaheadController: this.typeaheadController,
+          },
+          key,
+        );
+        if (action.kind === 'select') {
           event.preventDefault();
-          this.toggleOptionByUser(candidate);
+          this.toggleOptionByUser(action.option);
           this.typeaheadController.clearBuffer();
           return;
         }
@@ -1033,24 +1147,31 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
-      const lb = this.listboxRef();
-      const pop = this.popoverRef();
       if (!pop || !lb) {
         return;
       }
       if (!pop.isVisible()) {
         pop.show();
       }
-      const options = lb.options();
+      const items = lb.options();
       const ad = lb.ad;
       const currentId = ad.activeId();
-      const currentIdx = options.findIndex((o) => o.id === currentId);
+      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
       const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
-      const target = resolvePageJumpTarget(options, currentIdx, direction, (o) =>
-        isOptionDisabled(o),
+      const action = this.flatNavStrategy.onPageJump(
+        {
+          options: this.flatOptions(),
+          listboxItems: items,
+          currentFlatIndex: -1,
+          currentListboxIndex,
+          compareWith: this.compareWith(),
+          disabled: this.disabled(),
+          typeaheadController: this.typeaheadController,
+        },
+        direction,
       );
-      if (target !== null) {
-        ad.highlightByIndex(target);
+      if (action.kind === 'highlight') {
+        ad.highlightByIndex(action.index);
       }
     }
   }

@@ -270,6 +270,61 @@
   min-width: 0;
 }
 
+/* ── Chip-list overflow modes (B3 — chipOverflow config) ─────────── */
+
+/*
+ * `chipOverflow === 'scroll-x'` — chips stay on one row, overflow
+ * scrolls horizontally. Keeps trigger height fixed at any value count.
+ * The chip-list element carries `data-overflow="scroll-x"` so the CSS
+ * override is purely attribute-driven and never interferes with the
+ * default wrap layout when consumers haven't opted in.
+ */
+.cngx-select__chip-list[data-overflow='scroll-x'] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/*
+ * `chipOverflow === 'truncate'` — chips stay on one row, excess hidden
+ * behind an `+N` badge. The badge itself is the consumer's `*cngxMultiSelectChipOverflowBadge`
+ * template OR the built-in default rendered by the variant. `overflow:
+ * hidden` clips the overflow cleanly; `flex-shrink: 0` on chips stops
+ * them from squashing.
+ */
+.cngx-select__chip-list[data-overflow='truncate'] {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.cngx-select__chip-list[data-overflow='truncate'] > cngx-chip,
+.cngx-select__chip-list[data-overflow='scroll-x'] > cngx-chip {
+  flex: 0 0 auto;
+}
+
+/*
+ * `+N weitere` badge for truncate mode. Intentionally minimal — the
+ * consumer theme layer sets colour + radius via `--cngx-select-chip-*`
+ * tokens. aria-hidden because the hidden chips are still reachable
+ * via the panel; the badge is a purely visual affordance.
+ */
+.cngx-select__chip-overflow-badge {
+  flex: 0 0 auto;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+  border-radius: var(--cngx-select-chip-wrap-radius, 999px);
+  background: var(
+    --cngx-select-chip-overflow-badge-bg,
+    var(--cngx-surface-container, rgba(0, 0, 0, 0.08))
+  );
+  color: var(
+    --cngx-select-chip-overflow-badge-color,
+    var(--cngx-text-secondary, rgba(0, 0, 0, 0.6))
+  );
+}
+
 /* ── Reorderable chip strip (layout + drag feedback) ──────────────── */
 
 /*

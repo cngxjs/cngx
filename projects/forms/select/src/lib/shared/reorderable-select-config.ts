@@ -88,12 +88,14 @@ export const CNGX_REORDERABLE_SELECT_CONFIG =
  */
 export interface CngxReorderableSelectConfigFeature {
   readonly config: Partial<CngxReorderableSelectConfig>;
+  /** @internal — discriminator for `provideCngxSelect` dispatch. */
+  readonly _target?: 'reorderable';
 }
 
 function feature(
   config: Partial<CngxReorderableSelectConfig>,
 ): CngxReorderableSelectConfigFeature {
-  return { config };
+  return { config, _target: 'reorderable' };
 }
 
 /**

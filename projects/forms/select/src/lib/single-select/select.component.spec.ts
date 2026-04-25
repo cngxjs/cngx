@@ -261,6 +261,37 @@ describe('CngxSelect — standalone', () => {
     expect(select.triggerValue()).toBe('Rot');
     expect(select.empty()).toBe(false);
   });
+
+  it('blocks handleClickOutside from closing the panel while actionDirty() is true', () => {
+    const { fixture, select, popover } = setup();
+    select.open();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    // Flip the action-slot dirty flag via the bridge's callback bundle —
+    // simulates a consumer-authored *cngxSelectAction template calling
+    // setDirty(true) after the user starts typing in an inline form.
+    select.actionCallbacks().setDirty(true);
+    flush(fixture);
+    expect(select.actionDirty()).toBe(true);
+
+    // `handleClickOutside` is `protected` (template binding) — reach it
+    // directly via bracket access so the guard gets exercised without
+    // depending on CngxClickOutside's document listener, which jsdom
+    // handles inconsistently.
+    type WithGuard = { handleClickOutside(): void };
+    (select as unknown as WithGuard).handleClickOutside();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    // After cancel resets dirty, the same call closes the panel.
+    select.actionCallbacks().cancel();
+    flush(fixture);
+    expect(select.actionDirty()).toBe(false);
+    (select as unknown as WithGuard).handleClickOutside();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(false);
+  });
 });
 
 describe('CngxSelect — standalone a11y', () => {

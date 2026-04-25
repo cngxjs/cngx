@@ -70,14 +70,60 @@ export interface CngxSelectPlaceholderContext {
  *
  * @category interactive
  */
-export type CngxSelectEmptyContext = Record<string, never>;
+/**
+ * Context fields for the empty / no-options template. Additive — existing
+ * consumer templates without `let-` bindings keep working unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectEmptyContext {
+  /**
+   * Live search term that produced the empty result (combobox /
+   * typeahead / action-* variants only). Empty string for button-trigger
+   * variants. Use to render context-aware messaging like
+   * `"No results for {{ searchTerm }}"` or a `Create "{{ searchTerm }}"`
+   * inline-create CTA.
+   */
+  readonly searchTerm: string;
+  /**
+   * `true` when the empty state is the result of a filter (search input
+   * or external filter overlay) rather than an actually empty option
+   * list. Lets consumers distinguish between
+   * `"no matches"` and `"no options at all"`.
+   */
+  readonly filtered: boolean;
+  /**
+   * Total count of unfiltered options. Useful when `filtered === true`
+   * and the consumer wants to render "no matches in N items".
+   */
+  readonly totalCount: number;
+}
 
 /**
  * Context for the loading template.
  *
  * @category interactive
  */
-export type CngxSelectLoadingContext = Record<string, never>;
+/**
+ * Context fields for the loading template. Additive — existing consumer
+ * templates without `let-` bindings keep working unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectLoadingContext {
+  /**
+   * Optional 0–1 progress value if the consumer's `[state]` exposes it
+   * via a custom `CngxAsyncState` extension. Library defaults always
+   * leave this `undefined`.
+   */
+  readonly progress?: number;
+  /**
+   * Imperative retry callback bound by the panel-shell's host. Mirrors
+   * the `error` template's retry — useful when a long-running load
+   * should be cancellable + restartable directly from the loading shell.
+   */
+  readonly retry: () => void;
+}
 
 /**
  * Context for the trigger label template.
@@ -87,6 +133,12 @@ export type CngxSelectLoadingContext = Record<string, never>;
 export interface CngxSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T> | null;
   readonly selected: CngxSelectOptionDef<T> | null;
+  /** Live disabled state of the trigger. Mirrors the variant's `disabled()` signal. */
+  readonly disabled: boolean;
+  /** `true` while the panel is open. */
+  readonly panelOpen: boolean;
+  /** `true` while the trigger holds focus. */
+  readonly focused: boolean;
 }
 
 /**
@@ -113,12 +165,53 @@ export interface CngxSelectErrorContext {
 }
 
 /**
+ * Context for the retry-button override slot. Drives every `Retry` /
+ * `Try again` button rendered by the shared panel-shell (load-error,
+ * inline-refresh-error, commit-error banner). Override this slot to
+ * swap the button shell — the underlying retry routing (re-invoke
+ * `[retryFn]` for load/refresh failures, replay `commitController`
+ * for commit failures) is handled by the panel-shell's host.
+ *
+ * @category interactive
+ */
+export interface CngxSelectRetryButtonContext {
+  readonly $implicit: () => void;
+  /** Imperative retry callback bound by the shell to the appropriate path. */
+  readonly retry: () => void;
+  /** The error that triggered the retry surface (load / refresh / commit). */
+  readonly error: unknown;
+  /** `true` while the shell is mid-retry — disable the override button. */
+  readonly disabled: boolean;
+  /**
+   * Library-default label for the button (`'Retry'`, `'Try again'` for
+   * the refresh path, `'Try again'` for commit-error). Consumers reuse
+   * this directly when they only want to swap the visual frame.
+   */
+  readonly label: string;
+}
+
+/**
  * Context for the refreshing-indicator template (subtle top-bar shown while
  * `state()?.isRefreshing()` — options remain visible in the panel).
  *
  * @category interactive
  */
-export type CngxSelectRefreshingContext = Record<string, never>;
+/**
+ * Context fields for the refreshing-indicator template. Additive —
+ * existing consumer templates without `let-` bindings keep working
+ * unchanged.
+ *
+ * @category interactive
+ */
+export interface CngxSelectRefreshingContext {
+  /**
+   * Number of options currently visible in the listbox (the count from
+   * the most recent successful load). Lets consumers render context-
+   * aware status messages like `"Refreshing 23 items"` instead of a
+   * generic spinner caption.
+   */
+  readonly previousCount: number;
+}
 
 /**
  * Context for the commit-error template (shown when `[commitAction]`
@@ -201,7 +294,7 @@ export interface CngxSelectOptionErrorContext<T = unknown> {
 /**
  * Context for the trigger-label template in `CngxMultiSelect`. Replaces
  * the default chip strip entirely, letting consumers render a text
- * summary ("3 ausgewählt"), a compact badge + first label, or any other
+ * summary ("3 selected"), a compact badge + first label, or any other
  * custom markup. Receives the fully-resolved option list, the raw
  * values, and the selection count so one template covers every style
  * (plain text, chip+overflow-count, icon group, …) without re-deriving
@@ -219,7 +312,7 @@ export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
 /**
  * Context for the trigger-label template in `CngxCombobox`. Replaces
  * only the chip strip — the search `<input>` stays visible next to it —
- * so consumers can render a compact text summary ("3 Themen ausgewählt")
+ * so consumers can render a compact text summary ("3 topics selected")
  * while keeping type-to-filter interaction. Context shape mirrors
  * {@link CngxMultiSelectTriggerLabelContext} so a single consumer
  * template can cover both components when shared.
@@ -231,6 +324,20 @@ export interface CngxComboboxTriggerLabelContext<T = unknown> {
   readonly selected: readonly CngxSelectOptionDef<T>[];
   readonly values: readonly T[];
   readonly count: number;
+}
+
+/**
+ * Context for the per-chip override template in `CngxCombobox`. Same
+ * shape as {@link CngxMultiSelectChipContext} so a consumer's chip
+ * template can be shared verbatim between multi-select and combobox.
+ *
+ * @category interactive
+ */
+export interface CngxComboboxChipContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  readonly remove: () => void;
+  readonly index: number;
 }
 
 /**
@@ -366,8 +473,8 @@ export class CngxSelectOptionLabel<T = unknown> {
  * ```html
  * <cngx-select [state]="colorsState" [retryFn]="reload">
  *   <ng-template cngxSelectError let-error let-retry="retry">
- *     <p>Laden fehlgeschlagen: {{ error }}</p>
- *     <button (click)="retry()">Nochmal versuchen</button>
+ *     <p>Loading failed: {{ error }}</p>
+ *     <button (click)="retry()">Try again</button>
  *   </ng-template>
  * </cngx-select>
  * ```
@@ -381,6 +488,60 @@ export class CngxSelectOptionLabel<T = unknown> {
 })
 export class CngxSelectError {
   readonly templateRef = inject<TemplateRef<CngxSelectErrorContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the retry button rendered by the shared
+ * panel-shell at all three retry surfaces (first-load error,
+ * inline refresh-error, commit-error banner). Use to swap the visual
+ * shell while keeping the panel-shell's wiring + disabled handling.
+ *
+ * @example
+ * ```html
+ * <cngx-select [state]="colorsState" [retryFn]="reload">
+ *   <ng-template cngxSelectRetryButton let-retry let-disabled="disabled" let-label="label">
+ *     <my-button kind="ghost" [disabled]="disabled" (clicked)="retry()">{{ label }}</my-button>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectRetryButton]',
+  standalone: true,
+  exportAs: 'cngxSelectRetryButton',
+})
+export class CngxSelectRetryButton {
+  readonly templateRef = inject<TemplateRef<CngxSelectRetryButtonContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the glyph rendered inside the panel-shell's
+ * loading + refreshing indicators (spinner, bar, dots variants).
+ * Replaces the built-in animated `<div>` body while keeping the
+ * `role="status"` + `aria-live` + `aria-label` wiring on the parent
+ * span. Skeleton variant stays HTML-layout-driven (each row is a
+ * structural element, not a glyph) and ignores this slot.
+ *
+ * @example
+ * ```html
+ * <cngx-select [loading]="true">
+ *   <ng-template cngxSelectLoadingGlyph>
+ *     <my-spinner kind="dots" />
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectLoadingGlyph]',
+  standalone: true,
+  exportAs: 'cngxSelectLoadingGlyph',
+})
+export class CngxSelectLoadingGlyph {
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
 }
 
 /**
@@ -408,8 +569,8 @@ export class CngxSelectRefreshing {
  * ```html
  * <cngx-select [commitAction]="saveColor" [(value)]="color">
  *   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
- *     <p>Speichern fehlgeschlagen: {{ error?.message }}</p>
- *     <button (click)="retry()">Nochmal versuchen</button>
+ *     <p>Save failed: {{ error?.message }}</p>
+ *     <button (click)="retry()">Try again</button>
  *   </ng-template>
  * </cngx-select>
  * ```
@@ -452,9 +613,42 @@ export class CngxMultiSelectChip<T = unknown> {
 }
 
 /**
+ * Override template for the drag-handle glyph rendered inside each
+ * reorderable chip. The directive form is the highest-precedence cascade
+ * step in the `CngxReorderableMultiSelect` chip-handle resolution:
+ *
+ *   1. `*cngxMultiSelectChipHandle` directive (this slot) — wins when projected.
+ *   2. `[chipDragHandle]` Input — `TemplateRef<void>` set imperatively.
+ *   3. Default `⋮⋮` glyph from the internal `CNGX_SELECT_GLYPHS.dragHandle`.
+ *
+ * The handle span carrying the rendered template stays
+ * `aria-hidden="true"` — the drag affordance is exposed to AT via the
+ * chip's `[reorderAriaLabel]` instructions, not the glyph itself.
+ *
+ * @example
+ * ```html
+ * <cngx-reorderable-multi-select [options]="tags" [(values)]="picked">
+ *   <ng-template cngxMultiSelectChipHandle>
+ *     <svg viewBox="0 0 8 12" width="8" height="12">…dots…</svg>
+ *   </ng-template>
+ * </cngx-reorderable-multi-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxMultiSelectChipHandle]',
+  standalone: true,
+  exportAs: 'cngxMultiSelectChipHandle',
+})
+export class CngxMultiSelectChipHandle {
+  readonly templateRef = inject<TemplateRef<void>>(TemplateRef);
+}
+
+/**
  * Override template for the whole trigger label in `CngxMultiSelect`.
  * When projected, the default chip strip is suppressed and the consumer
- * owns the trigger's rendering — use this for "3 Themen ausgewählt"
+ * owns the trigger's rendering — use this for "3 topics selected"
  * text summaries, for a single pill showing the first value + "+N"
  * counter, or for any other shape that isn't a chip strip.
  *
@@ -466,8 +660,8 @@ export class CngxMultiSelectChip<T = unknown> {
  * ```html
  * <cngx-multi-select [options]="tags" [(values)]="picked">
  *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
- *     @if (count === 0) { Wähle Themen }
- *     @else { {{ count }} Themen ausgewählt }
+ *     @if (count === 0) { Pick topics }
+ *     @else { {{ count }} topics selected }
  *   </ng-template>
  * </cngx-multi-select>
  * ```
@@ -592,6 +786,101 @@ export class CngxComboboxTriggerLabel<T = unknown> {
 }
 
 /**
+ * Override template for a per-chip rendering inside `CngxCombobox`'s
+ * trigger. Replaces the built-in pill + ✕ button with consumer-authored
+ * markup. The `remove` callback in the context routes through the
+ * commit flow just like the built-in chip's ✕ does — single deselect,
+ * commit-aware, debounced if `[commitAction]` is bound.
+ *
+ * Mirrors `CngxMultiSelectChip` so a consumer-authored chip template
+ * can be projected into either variant unchanged.
+ *
+ * @example
+ * ```html
+ * <cngx-combobox [options]="tags" [(values)]="picked">
+ *   <ng-template cngxComboboxChip let-opt let-remove="remove">
+ *     <my-tag [color]="opt.meta?.color" (close)="remove()">{{ opt.label }}</my-tag>
+ *   </ng-template>
+ * </cngx-combobox>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxComboboxChip]',
+  standalone: true,
+  exportAs: 'cngxComboboxChip',
+})
+export class CngxComboboxChip<T = unknown> {
+  readonly templateRef = inject<TemplateRef<CngxComboboxChipContext<T>>>(TemplateRef);
+}
+
+/**
+ * Context for the inline-action slot projected into the panel by
+ * `*cngxSelectAction`. Used by `CngxActionSelect` / `CngxActionMultiSelect`
+ * and opt-in on every other select-family variant — consumer authors
+ * an inline "create", "filter", "manage tags" workflow that runs
+ * without closing the panel.
+ *
+ * `$implicit` is the live search term so a minimal template can read
+ * `let-term`; the named `searchTerm` alias lets templates that also
+ * need other context fields stay self-documenting. `close()` shuts the
+ * panel (honours the variant's existing restore-focus behaviour).
+ * `commit()` fires the bound `quickCreateAction` with an optional draft
+ * label — omitted, it defaults to `{ label: searchTerm }`. `setDirty`
+ * plus the `dirty` flag drive the panel's dismiss-guard protocol: a
+ * dirty action intercepts Escape and click-outside so in-progress
+ * workflows aren't lost. `isPending` mirrors the commit controller's
+ * live state so a custom button can show a spinner without re-injecting
+ * the controller.
+ *
+ * @category interactive
+ */
+export interface CngxSelectActionContext {
+  readonly $implicit: string;
+  readonly searchTerm: string;
+  readonly close: () => void;
+  readonly commit: (draft?: { label: string }) => void;
+  readonly isPending: boolean;
+  readonly setDirty: (value: boolean) => void;
+  readonly dirty: boolean;
+  /**
+   * Re-dispatch the most recent quick-create with the last captured
+   * draft + search term + previous-value snapshot. No-op when the
+   * component never dispatched a create, or when the action workflow
+   * doesn't own a create lifecycle (the 5 flat variants). Lets an
+   * action-slot template render a "Retry" button wired to the same
+   * supersede-safe path the initial commit ran through, without the
+   * consumer having to re-source the draft from its own form state.
+   */
+  readonly retry: () => void;
+  /**
+   * Live commit-error surface. Mirrors the variant's commit-controller
+   * error signal — `null` when no error is latched (idle, pending,
+   * success). Consumers read `error` to render a custom inline error
+   * message in the slot alongside the retry affordance.
+   */
+  readonly error: unknown;
+  /**
+   * `true` when `error !== null`. Convenience flag so templates can
+   * gate a UI branch without repeating the null-check — mirrors the
+   * shell's `host.showCommitError()` derivation but scoped to the
+   * inline action workflow.
+   */
+  readonly hasError: boolean;
+  /**
+   * The variant's current primary value, type-erased to `unknown`.
+   * Single-value variants (`CngxActionSelect`) forward `value()`;
+   * multi-value variants (`CngxActionMultiSelect`) forward `values()`.
+   * Lets an action-slot template read the live selection without
+   * re-injecting the component — useful for "add to selected" hints,
+   * draft labels that reference the current selection, or in-panel
+   * mini-forms that pre-populate fields from `value`.
+   */
+  readonly value: unknown;
+}
+
+/**
  * Context provided to the input-prefix / input-suffix slot templates.
  * Reflects the live reactive state so a consumer-authored icon can
  * dim / rotate / swap based on focus + panel visibility without
@@ -649,4 +938,41 @@ export class CngxSelectInputPrefix {
 export class CngxSelectInputSuffix {
   readonly templateRef =
     inject<TemplateRef<CngxSelectInputSlotContext>>(TemplateRef);
+}
+
+/**
+ * Slot projected inside the panel to host an inline workflow — "create
+ * a new tag from the current search term", "manage recipients", "pick
+ * a colour". Rendered in `top`, `bottom`, or `both` positions via the
+ * variant's `actionPosition` input. Context carries the live
+ * `searchTerm`, a `close()` callback, a `commit()` wrapper that fires
+ * the bound `quickCreateAction`, plus `dirty` / `setDirty` for the
+ * panel's dismiss-guard protocol.
+ *
+ * Zero visual default — the panel renders the consumer template
+ * verbatim, letting the action strip look native to the surrounding
+ * design (compact link, full button, split menu, mini-form).
+ *
+ * @example
+ * ```html
+ * <cngx-action-select [options]="tags" [(value)]="current"
+ *                     [quickCreateAction]="createTag">
+ *   <ng-template cngxSelectAction let-term let-commit="commit"
+ *                let-pending="isPending">
+ *     <button (click)="commit()" [disabled]="pending || !term">
+ *       + „{{ term }}" anlegen
+ *     </button>
+ *   </ng-template>
+ * </cngx-action-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectAction]',
+  standalone: true,
+  exportAs: 'cngxSelectAction',
+})
+export class CngxSelectAction {
+  readonly templateRef = inject<TemplateRef<CngxSelectActionContext>>(TemplateRef);
 }

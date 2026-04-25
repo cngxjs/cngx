@@ -20,7 +20,7 @@ import { CngxChip } from './chip.component';
 class Host {
   readonly removable = signal<boolean>(true);
   readonly removeCount = signal<number>(0);
-  ariaLabel = 'Rot entfernen';
+  ariaLabel = 'Remove Red';
   chipId: string | null = null;
 }
 
@@ -64,7 +64,7 @@ describe('CngxChip', () => {
     const btn: HTMLButtonElement = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     );
-    expect(btn.getAttribute('aria-label')).toBe('Rot entfernen');
+    expect(btn.getAttribute('aria-label')).toBe('Remove Red');
   });
 
   it('host element receives an auto-generated id when none is supplied', () => {

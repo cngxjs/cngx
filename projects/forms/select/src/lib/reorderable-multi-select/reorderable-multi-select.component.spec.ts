@@ -395,7 +395,7 @@ describe('CngxReorderableMultiSelect — a11y + surface', () => {
 
     expect(spy).toHaveBeenCalled();
     const [message] = spy.mock.calls.at(-1) ?? [];
-    expect(String(message)).toMatch(/verschoben/);
+    expect(String(message)).toMatch(/moved/);
   });
 
   it('keydown on a chip does not bubble to the trigger\'s combobox handler', () => {

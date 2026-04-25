@@ -29,10 +29,15 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,
 } from './commit-action.types';
-import { type CngxSelectAnnouncerConfig } from './config';
+import {
+  type CngxSelectAnnouncerConfig,
+  type CngxSelectAriaLabels,
+  type CngxSelectFallbackLabels,
+} from './config';
 import {
   flattenSelectOptions,
   isCngxSelectOptionGroupDef,
+  mergeLocalItems,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
@@ -121,6 +126,20 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   >;
 
   /**
+   * Optional persistent local-items buffer merged on top of the
+   * server-provided options **before** the filter overlay runs — the
+   * action-select organisms use this to insert optimistic quick-create
+   * items that survive state refetches and drop out silently once the
+   * server has caught up (via `mergeLocalItems`'s compareWith-based
+   * dedup).
+   *
+   * Variants that don't host inline workflows leave this `undefined`
+   * and the merge is skipped — `effectiveOptions` stays identity-stable
+   * just like it was pre-action-select.
+   */
+  readonly localItems?: Signal<readonly CngxSelectOptionDef<T>[]>;
+
+  /**
    * `true` when the component stores a list of selected values (multi,
    * combobox); `false` for single-select. Drives the cascade that
    * resolves `'auto'` for {@link CngxSelectCoreDeps.selectionIndicatorVariant}
@@ -174,6 +193,19 @@ export interface CngxSelectCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly valueToOptionMap: Signal<Map<unknown, CngxSelectOptionDef<T>> | null>;
+  /**
+   * Flat view of the merged-but-unfiltered options (server options +
+   * `localItems` buffer). Unlike {@link flatOptions}, this is NOT
+   * affected by the consumer's inline search-term filter — used by the
+   * combobox-family chip strip (and `CngxActionMultiSelect`) so chips
+   * for selected values stay visible even when the panel's search
+   * filter temporarily hides the matching option from the listbox.
+   *
+   * For single-value variants without a filter, this aliases
+   * `flatOptions`. Always fold-safe — `selectedOptions` computeds can
+   * use it uniformly.
+   */
+  readonly unfilteredFlatOptions: Signal<CngxSelectOptionDef<T>[]>;
 
   // ── Panel view ─────────────────────────────────────────────────────
   readonly activeView: Signal<AsyncView>;
@@ -182,6 +214,27 @@ export interface CngxSelectCore<T, TCommit> {
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
+  /**
+   * Resolved panel-shell fallback labels — library defaults merged
+   * with the app's `CngxSelectConfig.fallbackLabels`. The shell reads
+   * these when no custom template is projected for the corresponding
+   * async view. Plain object (not a signal) because the underlying
+   * config is resolved per-injector at component construction and
+   * never mutates — same lifecycle contract as `panelClass`.
+   */
+  readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
+  /**
+   * Resolved ARIA-label bundle (cascaded through `CNGX_SELECT_CONFIG`).
+   * Forwarded by every variant onto its `CngxSelectPanelViewHost` so the
+   * shared panel-shell can read `host.ariaLabels.statusLoading` /
+   * `.statusRefreshing` without reaching back into the config token.
+   * Tree-select also reads `.treeExpand` / `.treeCollapse` for its
+   * twisty button defaults; select-core reads `.fieldLabelFallback` /
+   * `.commitFailedMessage` for the announcer + commit-error fallbacks.
+   * Keys are optional — partial overrides via `withAriaLabels(...)`
+   * leave non-supplied keys at their library DE defaults.
+   */
+  readonly ariaLabels: CngxSelectAriaLabels;
 
   // ── ARIA / identity ────────────────────────────────────────────────
   readonly resolvedId: Signal<string>;
@@ -271,6 +324,19 @@ export interface CngxSelectCore<T, TCommit> {
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
+  /**
+   * Pre-bundled pass-through helpers the four shipped panel-hosting
+   * variants expose on their `CngxSelectPanelHost` contract
+   * (`isGroup`, `isSelected`, `isIndeterminate`, `isCommittingOption`).
+   * Every variant used to redeclare four identical 2-line protected
+   * methods delegating to the core — the bundle lets them spread these
+   * into the class as a single field. Mirrors the factory style of
+   * `SelectionController` / `TypeaheadController` — method identities
+   * stay stable for the lifetime of the core instance, safe to pass
+   * through `@Input` or bind into `ngTemplateOutlet` context without
+   * churning embedded views.
+   */
+  readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
 
   /**
    * Announce a selection change via the global live-region. The core
@@ -279,17 +345,37 @@ export interface CngxSelectCore<T, TCommit> {
    *
    * `'reordered'` carries optional `fromIndex` / `toIndex` so a
    * consumer's `announceTemplate` can speak the positional delta.
-   * Existing `'added' | 'removed'` callers keep their four-argument
-   * signature untouched — the extra parameters are optional.
+   * `'created'` is emitted by the action-select organisms after a
+   * successful inline `quickCreateAction` commit — the default
+   * formatter reads it as "created and selected". Existing
+   * `'added' | 'removed'` callers keep their four-argument signature
+   * untouched — the extra parameters are optional.
    */
   announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered',
+    action: 'added' | 'removed' | 'reordered' | 'created',
     count: number,
     multi: boolean,
     fromIndex?: number,
     toIndex?: number,
   ): void;
+}
+
+/**
+ * Bound method bundle exposed on {@link CngxSelectCore.panelHostAdapter}
+ * for pass-through into each variant's `CngxSelectPanelHost` contract.
+ * Methods are bound at factory-call time and stable thereafter — safe
+ * to spread into a class via `= this.core.panelHostAdapter.xxx`.
+ *
+ * @category interactive
+ */
+export interface CngxSelectPanelHostAdapter<T> {
+  readonly isGroup: (
+    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
+  ) => item is CngxSelectOptionGroupDef<T>;
+  readonly isSelected: (opt: CngxSelectOptionDef<T>) => boolean;
+  readonly isIndeterminate: (opt: CngxSelectOptionDef<T>) => boolean;
+  readonly isCommittingOption: (opt: CngxSelectOptionDef<T>) => boolean;
 }
 
 /**
@@ -325,31 +411,55 @@ export function createSelectCore<T, TCommit>(
   );
 
   // ── Option model ────────────────────────────────────────────────────
-  const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
+
+  /**
+   * Pre-filter merge of server options + `localItems` buffer. Exposed
+   * through the core as `unfilteredFlatOptions` (via flatten) so
+   * chip-strip consumers (combobox, action-multi-select) can look up
+   * selected options without the inline search-filter hiding chips
+   * for values that don't match the current term.
+   */
+  const mergedOptions = computed<CngxSelectOptionsInput<T>>(() => {
     const s = deps.state();
     const all = s?.data() ?? deps.options();
-    const f = deps.filter?.();
-    return f ? f(all) : all;
+    const local = deps.localItems?.() ?? [];
+    return local.length > 0
+      ? mergeLocalItems(all, local, deps.compareWith())
+      : all;
   });
+
+  const effectiveOptions = computed<CngxSelectOptionsInput<T>>(() => {
+    const merged = mergedOptions();
+    const f = deps.filter?.();
+    return f ? f(merged) : merged;
+  });
+
+  const flatOptionsEqual = (
+    a: CngxSelectOptionDef<T>[],
+    b: CngxSelectOptionDef<T>[],
+  ): boolean => {
+    if (a === b) {
+      return true;
+    }
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+      if (!Object.is(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const flatOptions = computed<CngxSelectOptionDef<T>[]>(
     () => flattenSelectOptions(effectiveOptions()),
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          if (!Object.is(a[i], b[i])) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
+    { equal: flatOptionsEqual },
+  );
+
+  const unfilteredFlatOptions = computed<CngxSelectOptionDef<T>[]>(
+    () => flattenSelectOptions(mergedOptions()),
+    { equal: flatOptionsEqual },
   );
 
   const valueToOptionMap = computed<Map<unknown, CngxSelectOptionDef<T>> | null>(
@@ -363,6 +473,35 @@ export function createSelectCore<T, TCommit>(
         map.set(opt.value as unknown, opt);
       }
       return map;
+    },
+    {
+      // Structural equality — two maps are "equal" iff they have the
+      // same size, same key order, and each (key, value) pair matches
+      // by `Object.is`. Prevents downstream computeds (e.g. the
+      // `findOption` lookup inside `isSelected` / `CngxSelectPanel`
+      // highlight tracking) from invalidating on every server
+      // refetch that returns identical options with fresh `OptionDef`
+      // references — the upstream `flatOptions` already uses an
+      // identity-equal on entries, so here we only need the map
+      // structure to stay reference-stable.
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a === null || b === null) {
+          return false;
+        }
+        if (a.size !== b.size) {
+          return false;
+        }
+        for (const [key, val] of a) {
+          const other = b.get(key);
+          if (!Object.is(val, other)) {
+            return false;
+          }
+        }
+        return true;
+      },
     },
   );
 
@@ -694,16 +833,32 @@ export function createSelectCore<T, TCommit>(
   function commitErrorMessage(err: unknown): string {
     const label = deps.label();
     const aria = deps.ariaLabel();
-    const labelText = label !== '' ? label : (aria ?? 'Auswahl');
+    const fieldFallback = config.ariaLabels.fieldLabelFallback ?? 'Selection';
+    const failedMessage =
+      config.ariaLabels.commitFailedMessage ?? 'Save failed';
+    const labelText = label !== '' ? label : (aria ?? fieldFallback);
     const detail = err instanceof Error ? err.message : undefined;
     return detail
-      ? `${labelText}: Speichern fehlgeschlagen — ${detail}`
-      : `${labelText}: Speichern fehlgeschlagen`;
+      ? `${labelText}: ${failedMessage} — ${detail}`
+      : `${labelText}: ${failedMessage}`;
   }
+
+  // Pass-through bundle — methods bound once to the core's own
+  // isSelected / isIndeterminate (both of which take `value: T`, so
+  // the adapter unwraps `opt.value`) and the existing isGroup /
+  // isCommittingOption (already opt-shaped). Stable identities for
+  // the lifetime of the core — safe to destructure into a class
+  // field.
+  const panelHostAdapter: CngxSelectPanelHostAdapter<T> = {
+    isGroup,
+    isSelected: (opt) => isSelected(opt.value),
+    isIndeterminate: (opt) => isIndeterminate(opt.value),
+    isCommittingOption,
+  };
 
   function announce(
     option: CngxSelectOptionDef<T> | null,
-    action: 'added' | 'removed' | 'reordered',
+    action: 'added' | 'removed' | 'reordered' | 'created',
     count: number,
     multi: boolean,
     fromIndex?: number,
@@ -718,7 +873,7 @@ export function createSelectCore<T, TCommit>(
     const format = announcerInputs.announceTemplate() ?? announcerConfig.format;
     const label = deps.label();
     const aria = deps.ariaLabel();
-    let fieldLabel = 'Auswahl';
+    let fieldLabel = config.ariaLabels.fieldLabelFallback ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
@@ -739,6 +894,7 @@ export function createSelectCore<T, TCommit>(
   return {
     effectiveOptions,
     flatOptions,
+    unfilteredFlatOptions,
     valueToOptionMap,
     activeView,
     showRefreshIndicator,
@@ -746,6 +902,8 @@ export function createSelectCore<T, TCommit>(
     skeletonIndices,
     panelClassList,
     panelWidthCss,
+    fallbackLabels: config.fallbackLabels,
+    ariaLabels: config.ariaLabels,
     resolvedId,
     resolvedAriaLabel,
     resolvedAriaLabelledBy,
@@ -780,6 +938,7 @@ export function createSelectCore<T, TCommit>(
     findOption,
     commitErrorMessage,
     announce,
+    panelHostAdapter,
   };
 }
 

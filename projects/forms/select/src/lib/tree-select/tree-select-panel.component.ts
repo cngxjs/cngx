@@ -18,6 +18,10 @@ import type { FlatTreeNode } from '@cngx/utils';
 
 import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
 import {
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelViewHost,
+} from '../shared/panel-host';
+import {
   CNGX_TREE_SELECT_PANEL_HOST,
   type CngxTreeSelectPanelHost,
 } from './tree-select-panel-host';
@@ -62,7 +66,10 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
     class: 'cngx-tree-select-panel-host',
   },
   template: `
-    <cngx-select-panel-shell>
+    <cngx-select-panel-shell
+      [actionFocusTrapEnabled]="viewHost.actionFocusTrapEnabled?.() ?? false"
+      [actionPosition]="viewHost.actionPosition?.() ?? 'bottom'"
+    >
       <div
         #treeContainer
         role="tree"
@@ -151,6 +158,18 @@ export class CngxTreeSelectPanel<T = unknown> {
   protected readonly host = inject(
     CNGX_TREE_SELECT_PANEL_HOST,
   ) as CngxTreeSelectPanelHost<T>;
+
+  /**
+   * Narrow view-host slot used only for reading
+   * `actionFocusTrapEnabled` and forwarding it into the shared
+   * panel-shell. Tree-select provides both tokens (`useExisting: self`),
+   * so dual-injecting is free.
+   *
+   * @internal
+   */
+  protected readonly viewHost = inject(
+    CNGX_SELECT_PANEL_VIEW_HOST,
+  ) as CngxSelectPanelViewHost<T>;
 
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
 

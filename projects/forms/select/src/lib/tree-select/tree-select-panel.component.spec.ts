@@ -69,6 +69,24 @@ function makeShellHost(): CngxSelectPanelHost {
     commitErrorDisplay: signal('banner'),
     panelClassList: signal(null),
     panelWidthCss: signal(null),
+    fallbackLabels: {
+      loading: 'Loading…',
+      empty: 'No Options',
+      loadFailed: 'Loading failed',
+      loadFailedRetry: 'Retry',
+      refreshFailed: 'Refresh failed',
+      refreshFailedRetry: 'Try again',
+      commitFailed: 'Save failed',
+      commitFailedRetry: 'Try again',
+    },
+    ariaLabels: {
+      treeExpand: 'Expand node',
+      treeCollapse: 'Collapse node',
+      statusLoading: 'Loading options',
+      statusRefreshing: 'Refreshing options',
+      fieldLabelFallback: 'Selection',
+      commitFailedMessage: 'Save failed',
+    },
     resolvedListboxLabel: signal(''),
     resolvedShowSelectionIndicator: signal(true),
     resolvedSelectionIndicatorVariant: signal('checkbox'),
@@ -84,11 +102,14 @@ function makeShellHost(): CngxSelectPanelHost {
       loading: nullTpl,
       optionLabel: nullTpl,
       error: nullTpl,
+      retryButton: nullTpl,
+      loadingGlyph: nullTpl,
       refreshing: nullTpl,
       commitError: nullTpl,
       clearButton: nullTpl,
       optionPending: nullTpl,
       optionError: nullTpl,
+      action: nullTpl,
     },
     commitErrorValue: signal(null),
     activeId: signal(null),
@@ -96,6 +117,12 @@ function makeShellHost(): CngxSelectPanelHost {
     isSelected: () => false,
     isIndeterminate: () => false,
     isCommittingOption: () => false,
+    patchData: () => {
+      /* stub */
+    },
+    clearLocalItems: () => {
+      /* stub */
+    },
     handleRetry: () => {},
   };
 }

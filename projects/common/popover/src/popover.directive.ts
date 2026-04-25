@@ -105,7 +105,17 @@ function warnMissingPopoverApi(el: HTMLElement): void {
   },
 })
 export class CngxPopover {
-  private readonly elRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  /**
+   * Host ElementRef. Public for consumers that need to pass the
+   * popover's native element to APIs expecting an `ElementRef`
+   * (scroll observers, intersection observers, focus managers, …).
+   * Notable consumer: `injectRecycler({ scrollElement: pop.elementRef })`
+   * for `@cngx/forms/select` virtualisation — the popover IS the
+   * scroll container when `select-base.css`'s `max-height + overflow-y`
+   * rules apply.
+   */
+  readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly elRef = this.elementRef;
   private readonly destroyRef = inject(DestroyRef);
   private readonly doc = inject(DOCUMENT);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });

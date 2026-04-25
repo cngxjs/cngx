@@ -5,12 +5,10 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
   output,
-  signal,
   untracked,
   viewChild,
   type ElementRef,
@@ -27,7 +25,7 @@ import {
   CngxListboxTrigger,
   type ListboxMatchFn,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 
 import { CngxSelectPanel } from '../shared/panel/panel.component';
 
@@ -42,7 +40,9 @@ import {
   CNGX_DISPLAY_BINDING_FACTORY,
   type DisplayBinding,
 } from '../shared/display-binding';
+import { CNGX_ACTION_HOST_BRIDGE_FACTORY } from '../shared/action-host-bridge';
 import { createFieldSync } from '../shared/field-sync';
+import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import { CNGX_SELECT_PANEL_HOST, CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import type {
   CngxSelectCommitAction,
@@ -51,22 +51,31 @@ import type {
 } from '../shared/commit-action.types';
 import {
   type CngxSelectAnnouncerConfig,
+  type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
 } from '../shared/config';
 import {
   filterSelectOptions,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import { handlePageJumpKey } from '../shared/page-jump-handler';
+import { setupVirtualization } from '../shared/setup-virtualization';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
+import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  type ScalarCommitHandler,
+} from '../shared/scalar-commit-handler';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import { CngxSelectAnnouncer } from '../shared/announcer';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
 } from '../shared/commit-error-announcer';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 import {
   cngxSelectDefaultCompare,
@@ -80,6 +89,7 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectRetryButton,
   CngxSelectInputPrefix,
   CngxSelectInputSuffix,
   CngxSelectLoading,
@@ -183,6 +193,8 @@ export interface CngxTypeaheadChange<T = unknown> {
           autocapitalize="off"
           autocorrect="off"
           spellcheck="false"
+          [attr.inputmode]="inputMode()"
+          [attr.enterkeyhint]="enterKeyHint()"
           [matchFn]="effectiveMatchFn()"
           [debounceMs]="searchDebounceMs()"
           [cngxPopoverTrigger]="pop"
@@ -205,6 +217,7 @@ export interface CngxTypeaheadChange<T = unknown> {
           [attr.aria-busy]="aria.busy"
           (focus)="handleFocus()"
           (blur)="handleBlur()"
+          (keydown)="handleInputKeydown($event)"
         />
         @if (inputSuffixTpl(); as suffixTpl) {
           <span class="cngx-typeahead__suffix" (click)="$event.stopPropagation()">
@@ -251,7 +264,7 @@ export interface CngxTypeaheadChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -264,6 +277,7 @@ export interface CngxTypeaheadChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="panelRef.options()"
           [items]="panelRef.items()"
+          [virtualCount]="virtualItemCount()"
         >
           <cngx-select-panel #panelRef="cngxSelectPanel" />
         </div>
@@ -293,6 +307,26 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
+  /**
+   * Mobile `inputmode` attribute. Defaults from
+   * {@link CngxSelectConfig.inputMode} (`'search'`).
+   */
+  readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
+    this.config.inputMode,
+  );
+  /**
+   * Mobile `enterkeyhint` attribute. Defaults to `'done'` (Typeahead
+   * commits Enter + closes the panel). App-wide config wins when
+   * non-null.
+   */
+  readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
+    this.config.enterKeyHint ?? 'done',
+  );
   /** Formatter from value to input text. Defaults to `String(v)`. */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
   /** When `true` (default), blur without a valid pick resets the input text to `displayWith(value())`. */
@@ -306,7 +340,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   /**
    * Replaces the built-in `✕` glyph inside the default clear button
@@ -334,6 +368,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Scalar-commit error-announce policy. Per-instance input wins over
+   * {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when neither
+   * is set, the variant's shipped default of `{ kind: 'soft' }`
+   * applies (typeahead UX shouldn't interrupt the user's free-text
+   * flow with assertive reads on commit rollback).
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
+  );
 
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
@@ -360,6 +404,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
@@ -378,6 +424,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     loading: this.loadingDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,
     commitError: this.commitErrorDirective,
     clearButton: this.clearButtonDirective,
@@ -433,6 +480,23 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
+  // ── Local-items buffer (quick-create persistence) ──────────────────
+
+  /** @internal */
+  private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
+    this.compareWith,
+  );
+
+  // ── Action-slot bridge ──────────────────────────────────────────────
+
+  /** @internal */
+  private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
+    close: () => this.close(),
+  });
+  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+
   // ── Core (stateless signal graph) ──────────────────────────────────
 
   private readonly core = createSelectCore<T, T>(
@@ -463,6 +527,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       currentSelection: this.value,
       selectionIndicatorPosition: this.selectionIndicatorPosition,
       selectionIndicatorVariant: this.selectionIndicatorVariant,
+      localItems: this.localItemsBuffer.items,
     },
     {
       announceChanges: this.announceChanges,
@@ -470,25 +535,69 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
-  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
-  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant = this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition = this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+  /**
+   * Append a pre-built option to the component's persistent local
+   * buffer — renders in the next panel emission and silently drops
+   * once the server state includes a matching value. Dedup-guarded
+   * by `compareWith`; duplicate patches are no-ops.
+   *
+   * @category interactive
+   */
+  patchData(item: CngxSelectOptionDef<T>): void {
+    this.localItemsBuffer.patch(item);
+  }
+
+  /**
+   * Reset the local buffer. Idempotent.
+   *
+   * @category interactive
+   */
+  clearLocalItems(): void {
+    this.localItemsBuffer.clear();
+  }
+
+  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  protected readonly activeView = this.core.activeView;
+  /** @internal */
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator = this.core.resolvedShowSelectionIndicator;
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorVariant = this.core.resolvedSelectionIndicatorVariant;
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorPosition = this.core.resolvedSelectionIndicatorPosition;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
@@ -510,7 +619,21 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
-  protected readonly commitErrorContext = this.core.bindCommitRetry(() => this.retryCommit());
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.scalarHandler.retryLast(),
+  );
+
+  /** @internal — full virtualisation wire-up (see setupVirtualization). */
+  private readonly virtualSetup = setupVirtualization<T, T>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   /**
    * Currently selected option, resolved against `options`. Structurally
@@ -552,12 +675,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   // ── Single-selection state (commit + rollback) ─────────────────────
 
-  private readonly commitController = this.core.commitController;
-  private readonly togglingOption = this.core.togglingOption;
   private readonly announcer = inject(CngxSelectAnnouncer);
-  private readonly errorAnnouncePolicy = signal<CngxCommitErrorAnnouncePolicy>({
-    kind: 'soft',
-  });
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -565,9 +683,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },
-    policy: this.errorAnnouncePolicy,
+    policy: this.commitErrorAnnouncePolicy,
   });
-  private lastCommittedValue: T | undefined = undefined;
   /**
    * Display binding — owns the value ↔ input-text reconciliation cycle
    * (including `writingFromValue` flag, skipInitial-aware
@@ -588,32 +705,58 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     onUserSearchTerm: (term) => this.searchTermChange.emit(term),
   });
 
+  /**
+   * Shared scalar commit handler. Typeahead-specific wrinkles ride the
+   * callbacks: `onValueWrite` mirrors the committed/rollback value into
+   * the `<input>` via the display binding; `onCommitFinalize` emits
+   * `selectionChange` only when the option resolved (preserves the
+   * pre-extraction behaviour where unknown-value commits silently
+   * dropped the change event — typeahead can't reasonably describe the
+   * pick to AT when the option isn't in the loaded set).
+   *
+   * @internal
+   */
+  private readonly scalarHandler: ScalarCommitHandler<T> = inject(
+    CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    onCommitFinalize: (option, finalValue, previousValue) => {
+      if (option === null || finalValue === undefined) {
+        return;
+      }
+      this.selectionChange.emit({
+        source: this,
+        value: finalValue,
+        previousValue,
+        option,
+      });
+      this.core.announce(option, 'added', 1, false);
+    },
+    onCommitError: (err) => this.announceCommitError(err),
+    onStateChange: (status) => this.stateChange.emit(status),
+    onError: (err) => this.commitError.emit(err),
+    onValueWrite: (v) => this.display.writeFromValue(v),
+  });
+
+  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */
-  protected isCommittingOption(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isCommittingOption(opt);
-  }
-
-  protected isGroup(
-    item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
-  ): item is CngxSelectOptionGroupDef<T> {
-    return this.core.isGroup(item);
-  }
-
-  protected isSelected(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isSelected(opt.value);
-  }
-
-  protected isIndeterminate(opt: CngxSelectOptionDef<T>): boolean {
-    return this.core.isIndeterminate(opt.value);
-  }
+  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */
+  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */
+  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */
+  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.value() === undefined;
   }
 
   constructor() {
-    this.lastCommittedValue = untracked(() => this.value());
-
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
@@ -630,38 +773,22 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       popoverRef: this.popoverRef,
       closeOnSelect: true,
       commitAction: this.commitAction,
-      onCommit: (intended, opt) => {
-        const previous = this.value();
-        this.lastCommittedValue = previous;
-        this.togglingOption.set(opt);
-        if (this.commitMode() === 'optimistic') {
-          this.value.set(intended);
-        }
-        const action = this.commitAction();
-        if (action) {
-          this.beginCommit(intended, previous, action);
-        }
-      },
+      onCommit: (intended, opt) =>
+        this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
         const previous = untracked(() => this.value());
-        this.finalizeSelection(intended, opt, previous);
+        this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
     // Panel open/close lifecycle.
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.inputEl()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.inputEl,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     // Field↔Component bidirectional sync.
@@ -671,22 +798,18 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Auto-open panel on typing — UX convention for autocomplete.
-    // `display.isWritingFromValue` gates library-authored writes
-    // (display-binding seed, commit reconciliation, blur restore)
-    // from triggering the open.
-    effect(() => {
-      const term = this.searchTerm();
-      untracked(() => {
-        if (
-          term !== '' &&
-          !this.panelOpen() &&
-          !this.disabled() &&
-          !this.display.isWritingFromValue()
-        ) {
-          this.open();
-        }
-      });
+    // Search-term effects: auto-open on typing. `autoOpenGate` blocks
+    // the open during library-authored writes (display-binding seed,
+    // commit reconciliation, blur restore) so those internal writes
+    // don't re-open a panel the user just closed. The emit path is
+    // owned by the display binding's `onUserSearchTerm` callback, so
+    // `emit` is deliberately left undefined here.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      autoOpenGate: () => !this.display.isWritingFromValue(),
     });
   }
 
@@ -709,12 +832,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  protected handleClickOutside(): void {
-    const mode = this.config.dismissOn;
-    if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
-      this.close();
-    }
-  }
+  /** @internal — click-outside dismissal (action-dirty-guarded). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+    shouldBlockDismiss: this.actionBridge.shouldBlockDismiss,
+  }).handleClickOutside;
 
   protected handleRetry(): void {
     const fn = this.retryFn();
@@ -759,63 +882,16 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  // ── Commit / selection finalize ────────────────────────────────────
-
-  private finalizeSelection(
-    intended: T,
-    option: CngxSelectOptionDef<T>,
-    previousValue: T | undefined,
-  ): void {
-    this.value.set(intended);
-    this.display.writeFromValue(intended);
-    this.selectionChange.emit({ source: this, value: intended, previousValue, option });
-    this.core.announce(option, 'added', 1, false);
-  }
-
-  private beginCommit(intended: T, previous: T | undefined, action: CngxSelectCommitAction<T>): void {
-    this.stateChange.emit('pending');
-    const mode = this.commitMode();
-    this.commitController.begin(action, intended, previous, {
-      onSuccess: (committed) => {
-        this.stateChange.emit('success');
-        const finalValue = committed ?? intended;
-        if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), finalValue)) {
-          this.value.set(finalValue);
-        }
-        this.togglingOption.set(null);
-        const opt = this.core.findOption(finalValue);
-        this.display.writeFromValue(finalValue);
-        if (opt) {
-          this.selectionChange.emit({
-            source: this,
-            value: finalValue,
-            previousValue: previous,
-            option: opt,
-          });
-          this.core.announce(opt, 'added', 1, false);
-        }
-      },
-      onError: (err, rollbackTo) => {
-        this.stateChange.emit('error');
-        this.commitError.emit(err);
-        if (mode === 'optimistic') {
-          const rollback = rollbackTo ?? undefined;
-          if (!(this.compareWith() as CngxSelectCompareFn<unknown>)(this.value(), rollback)) {
-            this.value.set(rollback);
-          }
-          this.display.writeFromValue(rollback);
-        }
-        this.announceCommitError(err);
-      },
+  /** @internal — PageUp/PageDown shared behaviour (±10 option jump). */
+  protected handleInputKeydown(event: KeyboardEvent): void {
+    handlePageJumpKey(event, {
+      listbox: this.listboxRef(),
+      popover: this.popoverRef(),
     });
   }
 
-  private retryCommit(): void {
-    const intendedNext = this.commitController.intendedValue();
-    const action = this.commitAction();
-    if (!action || intendedNext === undefined) {
-      return;
-    }
-    this.beginCommit(intendedNext, this.lastCommittedValue, action);
-  }
+  // ── Commit / selection finalize ────────────────────────────────────
+  //
+  // beginCommit / finalizeSelection / retryCommit were extracted into
+  // `createScalarCommitHandler` (shared/scalar-commit-handler.ts).
 }

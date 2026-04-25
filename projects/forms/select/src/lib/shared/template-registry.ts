@@ -1,7 +1,9 @@
-import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
+import { InjectionToken, signal, type Signal, type TemplateRef } from '@angular/core';
 
 import { resolveTemplate } from './resolve-template';
 import type {
+  CngxSelectAction,
+  CngxSelectActionContext,
   CngxSelectCaret,
   CngxSelectCheck,
   CngxSelectClearButton,
@@ -14,7 +16,9 @@ import type {
   CngxSelectOptionLabel,
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
+  CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
+  CngxSelectRetryButton,
   CngxSelectCaretContext,
   CngxSelectCheckContext,
   CngxSelectClearButtonContext,
@@ -28,6 +32,7 @@ import type {
   CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
+  CngxSelectRetryButtonContext,
 } from './template-slots';
 
 /**
@@ -58,11 +63,27 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly loading: Signal<CngxSelectLoading | undefined>;
   readonly optionLabel: Signal<CngxSelectOptionLabel<T> | undefined>;
   readonly error: Signal<CngxSelectError | undefined>;
+  readonly retryButton: Signal<CngxSelectRetryButton | undefined>;
+  /**
+   * Optional — variants forwarding a `*cngxSelectLoadingGlyph` directive
+   * declare the `contentChild` and pass it in. Variants that omit this
+   * still pick up the config-level `templates.loadingGlyph` fallback via
+   * `resolveTemplate`.
+   */
+  readonly loadingGlyph?: Signal<CngxSelectLoadingGlyph | undefined>;
   readonly refreshing: Signal<CngxSelectRefreshing | undefined>;
   readonly commitError: Signal<CngxSelectCommitError<T> | undefined>;
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
   readonly optionPending: Signal<CngxSelectOptionPending<T> | undefined>;
   readonly optionError: Signal<CngxSelectOptionError<T> | undefined>;
+  /**
+   * Optional — variants that don't host an inline-action workflow omit
+   * this query entirely, and the cascade still resolves
+   * `CNGX_SELECT_CONFIG.templates.action` as the config-level fallback.
+   * The new action-select organisms declare the `contentChild` and
+   * pass it in; every other variant stays source-compatible.
+   */
+  readonly action?: Signal<CngxSelectAction | undefined>;
 }
 
 /**
@@ -85,11 +106,14 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly loading: Signal<TemplateRef<CngxSelectLoadingContext> | null>;
   readonly optionLabel: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
+  readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
+  readonly loadingGlyph: Signal<TemplateRef<void> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
   readonly clearButton: Signal<TemplateRef<CngxSelectClearButtonContext> | null>;
   readonly optionPending: Signal<TemplateRef<CngxSelectOptionPendingContext<T>> | null>;
   readonly optionError: Signal<TemplateRef<CngxSelectOptionErrorContext<T>> | null>;
+  readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
 }
 
 /**
@@ -128,6 +152,21 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  *
  * @category interactive
  */
+/**
+ * Stable empty-signal used as the `action` query fallback for variants
+ * that don't host an inline-action workflow. Keeps the cascade call
+ * shape uniform — the config-level `templates.action` fallback still
+ * resolves via `resolveTemplate`, so an app-wide `provideSelectConfig(
+ * withAction(...))` still reaches every panel.
+ *
+ * @internal
+ */
+const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
+
+/** Stable empty-signal fallback for the optional loadingGlyph query. @internal */
+const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
+  signal(undefined);
+
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
@@ -140,11 +179,17 @@ export function createTemplateRegistry<T = unknown>(
     loading: resolveTemplate(queries.loading, 'loading'),
     optionLabel: resolveTemplate(queries.optionLabel, 'optionLabel'),
     error: resolveTemplate(queries.error, 'error'),
+    retryButton: resolveTemplate(queries.retryButton, 'retryButton'),
+    loadingGlyph: resolveTemplate(
+      queries.loadingGlyph ?? NO_LOADING_GLYPH_DIRECTIVE,
+      'loadingGlyph',
+    ),
     refreshing: resolveTemplate(queries.refreshing, 'refreshing'),
     commitError: resolveTemplate(queries.commitError, 'commitError'),
     clearButton: resolveTemplate(queries.clearButton, 'clearButton'),
     optionPending: resolveTemplate(queries.optionPending, 'optionPending'),
     optionError: resolveTemplate(queries.optionError, 'optionError'),
+    action: resolveTemplate(queries.action ?? NO_ACTION_DIRECTIVE, 'action'),
   };
 }
 

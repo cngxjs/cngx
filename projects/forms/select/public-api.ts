@@ -49,6 +49,24 @@ export {
   CngxTypeahead,
   type CngxTypeaheadChange,
 } from './src/lib/typeahead/typeahead.component';
+export {
+  CngxActionSelect,
+  type CngxActionSelectChange,
+} from './src/lib/action-select/action-select.component';
+export {
+  CngxActionMultiSelect,
+  type CngxActionMultiSelectChange,
+} from './src/lib/action-multi-select/action-multi-select.component';
+export {
+  CNGX_CREATE_COMMIT_HANDLER_FACTORY,
+  createCreateCommitHandler,
+  type CngxCreateCommitHandlerFactory,
+  type CreateCommitHandler,
+  type CreateCommitHandlerOptions,
+} from './src/lib/shared/create-commit-handler';
+export {
+  type CngxSelectCreateAction,
+} from './src/lib/shared/create-action.types';
 export { CngxTreeSelectNode } from './src/lib/tree-select/tree-select-node.directive';
 export { CngxTreeSelectChip } from './src/lib/tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './src/lib/tree-select/tree-select-trigger-label.directive';
@@ -82,7 +100,44 @@ export {
   isCngxSelectOptionGroupDef,
   flattenSelectOptions,
   filterSelectOptions,
+  mergeLocalItems,
 } from './src/lib/shared/option.model';
+
+// ── Local-items buffer (quick-create persistence) ─────────────────────
+export {
+  CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
+  createLocalItemsBuffer,
+  type CngxLocalItemsBufferFactory,
+  type LocalItemsBuffer,
+} from './src/lib/shared/local-items-buffer';
+
+// ── Action-slot config + host bridge ──────────────────────────────────
+export {
+  CNGX_ACTION_SELECT_CONFIG,
+  provideActionSelectConfig,
+  provideActionSelectConfigAt,
+  resolveActionSelectConfig,
+  withActionAriaLabel,
+  withActionPopoverPlacement,
+  withActionPosition,
+  withCloseOnCreate,
+  withFocusTrapBehavior,
+  withLiveInputFallback,
+  type CngxActionFocusTrapBehavior,
+  type CngxActionPosition,
+  type CngxActionSelectConfig,
+  type CngxActionSelectConfigFeature,
+} from './src/lib/shared/action-select-config';
+export {
+  CNGX_ACTION_HOST_BRIDGE_FACTORY,
+  createActionHostBridge,
+  type ActionHostBridge,
+  type ActionHostBridgeOptions,
+  type CngxActionHostBridgeFactory,
+} from './src/lib/shared/action-host-bridge';
+export {
+  type CngxSelectActionCallbacks,
+} from './src/lib/shared/panel-host';
 
 // ── Config system ─────────────────────────────────────────────────────
 export {
@@ -91,6 +146,7 @@ export {
   type CngxSelectAnnouncerConfig,
   type CngxSelectAriaLabels,
   type CngxSelectConfigFeature,
+  type CngxSelectFallbackLabels,
   type CngxSelectTemplateContexts,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
@@ -115,6 +171,15 @@ export {
   withSkeletonRowCount,
   withRefreshingVariant,
   withCommitErrorDisplay,
+  withCommitErrorAnnouncePolicy,
+  withChipOverflow,
+  withEnterKeyHint,
+  withFallbackLabels,
+  withInputMode,
+  withMaxVisibleChips,
+  withPopoverPlacement,
+  withVirtualization,
+  type CngxSelectVirtualizationConfig,
 } from './src/lib/shared/config';
 
 // ── Commit action types ───────────────────────────────────────────────
@@ -144,16 +209,21 @@ export {
   CngxSelectTriggerLabel,
   CngxSelectOptionLabel,
   CngxSelectError,
+  CngxSelectRetryButton,
+  CngxSelectLoadingGlyph,
   CngxSelectRefreshing,
   CngxSelectCommitError,
   CngxSelectClearButton,
   CngxSelectOptionPending,
   CngxSelectOptionError,
   CngxMultiSelectChip,
+  CngxMultiSelectChipHandle,
   CngxMultiSelectTriggerLabel,
+  CngxComboboxChip,
   CngxComboboxTriggerLabel,
   CngxSelectInputPrefix,
   CngxSelectInputSuffix,
+  CngxSelectAction,
   type CngxSelectCheckContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
@@ -163,6 +233,7 @@ export {
   type CngxSelectTriggerLabelContext,
   type CngxSelectOptionLabelContext,
   type CngxSelectErrorContext,
+  type CngxSelectRetryButtonContext,
   type CngxSelectRefreshingContext,
   type CngxSelectCommitErrorContext,
   type CngxSelectClearButtonContext,
@@ -170,8 +241,10 @@ export {
   type CngxSelectOptionErrorContext,
   type CngxMultiSelectChipContext,
   type CngxMultiSelectTriggerLabelContext,
+  type CngxComboboxChipContext,
   type CngxComboboxTriggerLabelContext,
   type CngxSelectInputSlotContext,
+  type CngxSelectActionContext,
 } from './src/lib/shared/template-slots';
 
 // ── Commit-controller DI factory ──────────────────────────────────────
@@ -221,6 +294,15 @@ export {
   type CngxArrayCommitHandlerFactory,
 } from './src/lib/shared/array-commit-handler';
 
+// ── Scalar commit handler (action-select / planned: single + typeahead) ─
+export {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  createScalarCommitHandler,
+  type CngxScalarCommitHandlerFactory,
+  type ScalarCommitHandler,
+  type ScalarCommitHandlerOptions,
+} from './src/lib/shared/scalar-commit-handler';
+
 // ── Shared template-slot registry ─────────────────────────────────────
 export {
   CNGX_TEMPLATE_REGISTRY_FACTORY,
@@ -247,3 +329,64 @@ export {
   type CngxTriggerFocusState,
   type CngxTriggerFocusFactory,
 } from './src/lib/shared/trigger-focus';
+
+// ── Shared dismiss handler ────────────────────────────────────────────
+export {
+  CNGX_DISMISS_HANDLER_FACTORY,
+  createDismissHandler,
+  type CngxDismissHandlerFactory,
+  type DismissHandler,
+  type DismissHandlerOptions,
+} from './src/lib/shared/dismiss-handler';
+
+// ── Shared panel lifecycle emitter ────────────────────────────────────
+export {
+  CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY,
+  createPanelLifecycleEmitter,
+  type CngxPanelLifecycleEmitterFactory,
+  type PanelLifecycleEmitterOptions,
+} from './src/lib/shared/panel-lifecycle-emitter';
+
+// ── Shared panel renderer (virtualisation extension point) ───────────
+export {
+  CNGX_PANEL_RENDERER_FACTORY,
+  createIdentityPanelRenderer,
+  type CngxPanelRendererFactory,
+  type PanelRenderer,
+  type PanelRendererInput,
+} from './src/lib/shared/panel-renderer';
+export { createRecyclerPanelRendererFactory } from './src/lib/shared/recycler-panel-renderer';
+
+// ── Shared search-term effects ────────────────────────────────────────
+export {
+  CNGX_SEARCH_EFFECTS_FACTORY,
+  createSearchEffects,
+  type CngxSearchEffectsFactory,
+  type SearchEffectsOptions,
+} from './src/lib/shared/search-effects';
+
+// ── Unified aggregator across all 3 config surfaces ──────────────────
+export {
+  provideCngxSelect,
+  provideCngxSelectAt,
+  type CngxSelectAggregatorFeature,
+} from './src/lib/shared/provide-cngx-select';
+
+// ── Shared chip-removal handler ───────────────────────────────────────
+export {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  createChipRemovalHandler,
+  type CngxChipRemovableItem,
+  type CngxChipRemovalHandler,
+  type CngxChipRemovalHandlerFactory,
+  type CngxChipRemovalHandlerOptions,
+} from './src/lib/shared/chip-removal-handler';
+
+// ── Shared flat-listbox keyboard-nav strategy ─────────────────────────
+export {
+  CNGX_FLAT_NAV_STRATEGY,
+  createDefaultFlatNavStrategy,
+  type CngxFlatNavAction,
+  type CngxFlatNavContext,
+  type CngxFlatNavStrategy,
+} from './src/lib/shared/flat-nav-strategy';

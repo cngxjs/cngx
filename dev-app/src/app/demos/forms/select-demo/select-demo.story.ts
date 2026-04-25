@@ -40,7 +40,7 @@ export const STORY: DemoSpec = {
     "import { DestroyRef } from '@angular/core';",
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
     "import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';",
     "import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';",
@@ -267,6 +267,28 @@ export const STORY: DemoSpec = {
   ];
   protected readonly typeaheadColorModel = signal<string>('');
   protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
   `,
   sections: [
     {
@@ -1039,6 +1061,325 @@ export const STORY: DemoSpec = {
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectPlaceholder',
+      subtitle:
+        'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.',
+      imports: ['CngxSelect', 'CngxSelectPlaceholder'],
+      template: `
+  <cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
+    <ng-template cngxSelectPlaceholder let-text>
+      <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
+        <span aria-hidden="true">🎨</span>
+        <em>{{ text }}</em>
+      </span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectLoading',
+      subtitle:
+        'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.',
+      imports: ['CngxSelect', 'CngxSelectLoading'],
+      template: `
+  <cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
+    <ng-template cngxSelectLoading let-retry="retry">
+      <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
+        <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
+        <span>Lade verfügbare Sprachen…</span>
+      </div>
+    </ng-template>
+  </cngx-select>
+  <button type="button" class="chip" (click)="toggleLoading()" style="margin-top:8px">{{ loading() ? 'Stop loading' : 'Start loading' }}</button>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectOptgroup',
+      subtitle:
+        'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.',
+      imports: ['CngxSelect', 'CngxSelectOptgroupTemplate'],
+      template: `
+  <cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
+    <ng-template cngxSelectOptgroup let-group>
+      <span style="display:inline-flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
+        <strong>{{ group.label }}</strong>
+      </span>
+    </ng-template>
+  </cngx-select>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectRefreshing',
+      subtitle:
+        'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.',
+      imports: ['CngxSelect', 'CngxSelectRefreshing'],
+      template: `
+  <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <ng-template cngxSelectRefreshing let-previousCount="previousCount">
+      <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
+        🔄 Refreshing {{ previousCount }} options…
+      </div>
+    </ng-template>
+  </cngx-select>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+    <button type="button" class="chip" (click)="asyncSetRefreshing()">Trigger refresh</button>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectCommitError',
+      subtitle:
+        'Replace the panel-shell\'s default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.',
+      imports: ['CngxSelect', 'CngxSelectCommitError'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="commitValue"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    commitErrorDisplay="banner"
+  >
+    <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
+      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
+        <span aria-hidden="true">⚠</span>
+        <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
+        <button type="button" class="chip" (click)="retry()">Replay</button>
+      </div>
+    </ng-template>
+  </cngx-select>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>`,
+    },
+    {
+      title: 'Slot overrides: *cngxSelectOptionPending + *cngxSelectOptionError',
+      subtitle:
+        'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).',
+      imports: ['CngxSelect', 'CngxSelectOptionPending', 'CngxSelectOptionError'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="commitValue"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    commitErrorDisplay="inline"
+  >
+    <ng-template cngxSelectOptionPending let-opt>
+      <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
+    </ng-template>
+    <ng-template cngxSelectOptionError let-opt let-error="error">
+      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
+    </ng-template>
+  </cngx-select>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+    <button type="button" class="chip" (click)="commitMode.set(commitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ commitMode() }}
+    </button>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectRetryButton',
+      subtitle:
+        'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.',
+      imports: ['CngxSelect', 'CngxSelectRetryButton'],
+      template: `
+  <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
+        ↻ {{ label }}
+      </button>
+    </ng-template>
+  </cngx-select>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="asyncSetError()">Trigger load error</button>
+    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxSelectLoadingGlyph',
+      subtitle:
+        'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.',
+      imports: ['CngxSelect', 'CngxSelectLoadingGlyph'],
+      template: `
+  <cngx-select
+    [label]="'Sprache'"
+    [options]="asyncOptions"
+    [(value)]="asyncValue"
+    [state]="asyncState"
+    loadingVariant="spinner"
+    placeholder="Sprache wählen…"
+  >
+    <ng-template cngxSelectLoadingGlyph>
+      <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
+    </ng-template>
+  </cngx-select>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="asyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+  </div>`,
+    },
+    {
+      title: 'commitErrorDisplay variants — banner / inline / none',
+      subtitle:
+        'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.',
+      imports: ['CngxSelect'],
+      template: `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="banner"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="inline"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="none"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    </div>
+  </div>
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — async [state] (load + error + retry)',
+      subtitle:
+        'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.',
+      imports: ['CngxTypeahead'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — [commitAction] with optimistic/pessimistic mode',
+      subtitle:
+        'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.',
+      imports: ['CngxTypeahead'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
+    placeholder="Search by name…"
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Typeahead — *cngxSelectOptionLabel slot override',
+      subtitle:
+        'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.',
+      imports: ['CngxTypeahead', 'CngxSelectOptionLabel'],
+      template: `
+  <cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Slot override: *cngxComboboxChip',
+      subtitle:
+        'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.',
+      imports: ['CngxCombobox', 'CngxComboboxChip'],
+      template: `
+  <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+    <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
+        <span aria-hidden="true">#{{ i + 1 }}</span>
+        <strong>{{ opt.label }}</strong>
+        <button type="button" (click)="remove()" aria-label="Remove" style="background:none;border:none;color:inherit;cursor:pointer;padding:0 2px">×</button>
+      </span>
+    </ng-template>
+  </cngx-combobox>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
   </div>`,
     },
   ],

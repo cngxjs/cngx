@@ -622,8 +622,8 @@ describe('CngxMultiSelect — chip template + announcer', () => {
 
       const msg = captured[captured.length - 1];
       expect(msg).toContain('Rot');
-      expect(msg).toContain('entfernt');
-      expect(msg).toContain('0 ausgewählt');
+      expect(msg).toContain('removed');
+      expect(msg).toContain('0 selected');
     } finally {
       announcer.announce = originalAnnounce;
     }
@@ -912,18 +912,18 @@ describe('CngxMultiSelect — withAriaLabels config override', () => {
     readonly values = signal<string[]>(['red', 'green']);
   }
 
-  it('defaults remain German when no withAriaLabels is provided', () => {
+  it('defaults to English when no withAriaLabels is provided', () => {
     const fixture = TestBed.createComponent(LabelHost);
     flush(fixture);
     const clearBtn = fixture.nativeElement.querySelector(
       '.cngx-multi-select__clear-all',
     ) as HTMLElement;
-    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+    expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
     // `removeAriaLabel + ': ' + opt.label` composition — prefix comes from config.
-    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Entfernen:/);
+    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
   });
 
   it('withAriaLabels({ clearButton, chipRemove }) overrides both labels app-wide', () => {
@@ -950,11 +950,11 @@ describe('CngxMultiSelect — withAriaLabels config override', () => {
     expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
   });
 
-  it('partial override preserves non-overridden German default', () => {
+  it('partial override preserves the non-overridden English default', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
-        provideSelectConfig(withAriaLabels({ chipRemove: 'Remove' })),
+        provideSelectConfig(withAriaLabels({ chipRemove: 'Delete' })),
       ],
     });
     const fixture = TestBed.createComponent(LabelHost);
@@ -963,11 +963,11 @@ describe('CngxMultiSelect — withAriaLabels config override', () => {
       '.cngx-multi-select__clear-all',
     ) as HTMLElement;
     // clearButton not overridden → variant fallback kicks in.
-    expect(clearBtn.getAttribute('aria-label')).toBe('Auswahl zurücksetzen');
+    expect(clearBtn.getAttribute('aria-label')).toBe('Reset selection');
     const chipRemove = fixture.nativeElement.querySelector(
       '.cngx-chip__remove',
     ) as HTMLElement;
-    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Remove:/);
+    expect(chipRemove.getAttribute('aria-label')).toMatch(/^Delete:/);
   });
 
   it('per-instance [clearButtonAriaLabel] still wins over withAriaLabels', () => {

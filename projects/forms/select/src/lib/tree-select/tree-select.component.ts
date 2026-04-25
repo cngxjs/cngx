@@ -5,7 +5,6 @@ import {
   Component,
   computed,
   contentChild,
-  effect,
   inject,
   input,
   model,
@@ -24,7 +23,7 @@ import {
   CNGX_TREE_CONTROLLER_FACTORY,
   type CngxTreeController,
 } from '@cngx/common/interactive';
-import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { CngxPopover, CngxPopoverTrigger, type PopoverPlacement } from '@cngx/common/popover';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   CNGX_STATEFUL,
@@ -48,6 +47,10 @@ import {
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
 import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
+import {
   type CngxSelectCommitAction,
   type CngxSelectCommitErrorDisplay,
   type CngxSelectCommitMode,
@@ -64,22 +67,27 @@ import {
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
+import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
+import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/resolve-config';
-import { injectResolvedTemplate } from '../shared/resolve-template';
+import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
+  CngxSelectCheck,
   CngxSelectClearButton,
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
   CngxSelectLoading,
+  CngxSelectOptgroupTemplate,
+  CngxSelectOptionError,
+  CngxSelectOptionLabel,
+  CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
-  type CngxSelectCaretContext,
-  type CngxSelectClearButtonContext,
+  CngxSelectRetryButton,
   type CngxSelectCommitErrorContext,
   type CngxSelectErrorContext,
-  type CngxSelectPlaceholderContext,
 } from '../shared/template-slots';
 import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/select-core';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
@@ -302,7 +310,7 @@ export interface CngxTreeSelectChange<T = unknown> {
       <div
         cngxPopover
         #pop="cngxPopover"
-        placement="bottom"
+        [placement]="popoverPlacement()"
         class="cngx-select__panel"
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
@@ -318,6 +326,16 @@ export class CngxTreeSelect<T = unknown>
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
+
+  // Tree virtualisation is intentionally not wired via
+  // `CngxSelectConfig.virtualization` yet. Tree semantics — dynamic
+  // expand/collapse changes visible count mid-scroll, `aria-setsize`
+  // is per-level (not flat), and `scrollToIndex(42)` on a collapsed
+  // ancestor needs to expand the path first — don't map cleanly onto
+  // the flat-list recycler integration the rest of the family uses.
+  // A proper tree-recycler design is tracked as follow-up work; until
+  // then, `<cngx-tree-select>` renders every node regardless of the
+  // app-wide config entry.
   private readonly autoId = nextUid('cngx-tree-select');
 
   // ── Inputs ─────────────────────────────────────────────────────────
@@ -355,6 +373,11 @@ export class CngxTreeSelect<T = unknown>
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
+  /**
+   * Popover placement relative to the trigger. Per-instance input
+   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   */
+  readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
@@ -385,14 +408,18 @@ export class CngxTreeSelect<T = unknown>
    * default node row. Falls back to English defaults. Ignored when
    * `*cngxTreeSelectNode` is projected.
    */
-  readonly twistyExpandLabel = input<string>('Expand');
-  readonly twistyCollapseLabel = input<string>('Collapse');
+  readonly twistyExpandLabel = input<string>(
+    this.config.ariaLabels?.treeExpand ?? 'Expand node',
+  );
+  readonly twistyCollapseLabel = input<string>(
+    this.config.ariaLabels?.treeCollapse ?? 'Collapse node',
+  );
   readonly clearable = input<boolean>(false);
   readonly clearButtonAriaLabel = input<string>(
-    this.config.ariaLabels?.clearButton ?? 'Auswahl zurücksetzen',
+    this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   readonly chipRemoveAriaLabel = input<string>(
-    this.config.ariaLabels?.chipRemove ?? 'Entfernen',
+    this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
   readonly loading = input<boolean>(false);
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
@@ -421,43 +448,85 @@ export class CngxTreeSelect<T = unknown>
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
 
-  // ── Content-child slot queries ────────────────────────────────────
+  // ── Content-child slot queries (shared family) ────────────────────
 
+  private readonly checkDir = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
   private readonly caretDir = contentChild<CngxSelectCaret>(CngxSelectCaret);
+  private readonly optgroupDir = contentChild<CngxSelectOptgroupTemplate<T>>(
+    CngxSelectOptgroupTemplate,
+  );
   private readonly clearButtonDir = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDir =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
+  private readonly optionLabelDir = contentChild<CngxSelectOptionLabel<T>>(
+    CngxSelectOptionLabel,
+  );
+  private readonly optionPendingDir = contentChild<CngxSelectOptionPending<T>>(
+    CngxSelectOptionPending,
+  );
+  private readonly optionErrorDir = contentChild<CngxSelectOptionError<T>>(
+    CngxSelectOptionError,
+  );
+
+  // ── Tree-specific slot queries ────────────────────────────────────
+
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
   private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
     CngxTreeSelectTriggerLabel,
   );
 
-  // ── Resolved template refs ────────────────────────────────────────
+  // ── Resolved template-slot registry ───────────────────────────────
+
+  /**
+   * Shared 13-slot template registry — same factory the flat-family
+   * variants use. Drives the entire `*cngxSelect*` cascade
+   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null)
+   * with one DI-overridable factory call. The option-loop slots
+   * (check, optgroup, optionLabel, optionPending, optionError) are
+   * declared for parity with the flat panels even though tree-select
+   * doesn't render them — projecting them into a `<cngx-tree-select>`
+   * is silently ignored.
+   *
+   * @internal
+   */
+  protected readonly tplRegistry = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+    check: this.checkDir,
+    caret: this.caretDir,
+    optgroup: this.optgroupDir,
+    placeholder: this.placeholderDir,
+    empty: this.emptyDir,
+    loading: this.loadingDir,
+    optionLabel: this.optionLabelDir,
+    error: this.errorDir,
+    retryButton: this.retryButtonDir,
+    refreshing: this.refreshingDir,
+    commitError: this.commitErrorDir,
+    clearButton: this.clearButtonDir,
+    optionPending: this.optionPendingDir,
+    optionError: this.optionErrorDir,
+  });
+
+  // ── Resolved template-ref aliases (template-binding ergonomics) ──
 
   /** @internal */
-  readonly placeholderTpl = injectResolvedTemplate<CngxSelectPlaceholderContext>(
-    this.placeholderDir,
-    'placeholder',
-  );
+  readonly placeholderTpl = this.tplRegistry.placeholder;
   /** @internal */
-  readonly caretTpl = injectResolvedTemplate<CngxSelectCaretContext>(this.caretDir, 'caret');
+  readonly caretTpl = this.tplRegistry.caret;
   /** @internal */
-  readonly clearButtonTpl = injectResolvedTemplate<CngxSelectClearButtonContext>(
-    this.clearButtonDir,
-    'clearButton',
-  );
+  readonly clearButtonTpl = this.tplRegistry.clearButton;
   /** @internal — exposed for the shell's inline-error branch. */
-  readonly errorTpl = injectResolvedTemplate<CngxSelectErrorContext>(this.errorDir, 'error');
+  readonly errorTpl = this.tplRegistry.error;
+  /** @internal — projected via `*cngxSelectRetryButton`. */
+  readonly retryButtonTpl = this.tplRegistry.retryButton;
   /** @internal */
-  readonly commitErrorTpl = injectResolvedTemplate<CngxSelectCommitErrorContext<T>>(
-    this.commitErrorDir,
-    'commitError',
-  );
+  readonly commitErrorTpl = this.tplRegistry.commitError;
   /** @internal */
   readonly nodeTpl: Signal<TemplateRef<CngxTreeSelectNodeContext<T>> | null> = computed(
     () => this.nodeDir()?.templateRef ?? null,
@@ -535,7 +604,7 @@ export class CngxTreeSelect<T = unknown>
     const format = this.announceTemplate() ?? announcerConfig.format;
     const label = this.label();
     const aria = this.ariaLabel();
-    let fieldLabel = 'Auswahl';
+    let fieldLabel = this.config.ariaLabels?.fieldLabelFallback ?? 'Selection';
     if (label.length > 0) {
       fieldLabel = label;
     } else if (aria && aria.length > 0) {
@@ -710,6 +779,10 @@ export class CngxTreeSelect<T = unknown>
   );
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
+  /** @internal — panel-shell fallback labels (i18n). */
+  readonly fallbackLabels = this.config.fallbackLabels;
+  readonly ariaLabels = this.config.ariaLabels;
+
   // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
 
   /**
@@ -770,11 +843,19 @@ export class CngxTreeSelect<T = unknown>
    * @internal
    */
   readonly tpl: CngxSelectPanelShellTemplates<T> = {
-    loading: computed(() => this.loadingDir()?.templateRef ?? null),
-    empty: computed(() => this.emptyDir()?.templateRef ?? null),
-    error: this.errorTpl,
-    refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
-    commitError: this.commitErrorTpl,
+    loading: this.tplRegistry.loading,
+    empty: this.tplRegistry.empty,
+    error: this.tplRegistry.error,
+    retryButton: this.tplRegistry.retryButton,
+    loadingGlyph: this.tplRegistry.loadingGlyph,
+    refreshing: this.tplRegistry.refreshing,
+    commitError: this.tplRegistry.commitError,
+    // Tree-select doesn't host an inline action slot today (see
+    // master-plan §9 — CngxActionTreeSelect is a separate follow-up).
+    // The shell falls back to "no template" when the computed is null,
+    // so the slot is silently suppressed even if a consumer projects
+    // a stray `*cngxSelectAction` at the cngx-tree-select level.
+    action: signal<null>(null),
   };
 
   /** @internal */
@@ -881,19 +962,13 @@ export class CngxTreeSelect<T = unknown>
       }
     });
 
-    effect(() => {
-      const open = this.panelOpen();
-      untracked(() => {
-        this.openedChange.emit(open);
-        if (open) {
-          this.opened.emit();
-        } else {
-          this.closed.emit();
-          if (this.config.restoreFocus) {
-            queueMicrotask(() => this.triggerBtn()?.nativeElement.focus());
-          }
-        }
-      });
+    inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
+      panelOpen: this.panelOpen,
+      restoreFocusTarget: this.triggerBtn,
+      restoreFocus: this.config.restoreFocus,
+      openedChange: this.openedChange,
+      opened: this.opened,
+      closed: this.closed,
     });
 
     createFieldSync<T[]>({
@@ -1117,12 +1192,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /** @internal */
-  protected handleClickOutside(): void {
-    const mode = this.config.dismissOn;
-    if ((mode === 'outside' || mode === 'both') && this.popoverRef()?.isVisible()) {
-      this.close();
-    }
-  }
+  /** @internal — click-outside dismissal (no action bridge on tree-select). */
+  protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
+    popoverRef: this.popoverRef,
+    dismissOn: this.config.dismissOn,
+  }).handleClickOutside;
 
   /** @internal */
   protected handleChipRemoveClick(
@@ -1134,23 +1208,29 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * WeakMap of stable `remove` closures keyed on the selected-item
-   * reference. `selected()`'s structural-equal returns the same array
-   * ref (and therefore the same item refs) across CD cycles when the
-   * selection didn't change, so the cache hit rate stays high and the
-   * chip-slot outlet doesn't thrash on closure identity.
+   * Chip-removal handler — uses the `removeOverride` escape hatch so the
+   * factory absorbs the disabled-guard + WeakMap closure cache (so
+   * `selected()` chip-context outlets don't thrash on closure identity)
+   * while the override keeps tree-select's tree-aware mutation path:
+   *
+   *   - in-tree value → `singleToggle(node)` (always single-deselect,
+   *     never cascades, even with `[cascadeChildren]="true"`),
+   *   - stale value (not in tree) → direct values strip + emit + announce.
+   *
+   * The handler's standard sync/commit branches are bypassed because
+   * `dispatchValueChange` (called by `singleToggle`) already owns the
+   * commit-action read, optimistic write, and rollback logic for the
+   * tree world.
    */
-  private readonly chipRemoveCache = new WeakMap<object, () => void>();
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T, CngxTreeSelectedItem<T>>({
+      disabled: this.disabled,
+      removeOverride: (item) => this.removeSelectedItem(item),
+    });
 
   /** @internal — stable remove callback for `*cngxTreeSelectChip` context. */
   protected chipRemoveFor(opt: CngxTreeSelectedItem<T>): () => void {
-    const key = opt as unknown as object;
-    let cached = this.chipRemoveCache.get(key);
-    if (!cached) {
-      cached = () => this.removeSelectedItem(opt);
-      this.chipRemoveCache.set(key, cached);
-    }
-    return cached;
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   /**
@@ -1159,11 +1239,11 @@ export class CngxTreeSelect<T = unknown>
    * deselect regardless of `cascadeChildren` — the consumer explicitly
    * removed ONE chip representing ONE value. Cascade would surprise-
    * remove invisible descendants the user never picked as chips.
+   *
+   * Disabled-guard lives in the handler; this method assumes it's safe
+   * to mutate.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
-    if (this.disabled()) {
-      return;
-    }
     const node = this.flatNodeForValue(opt.value);
     if (node) {
       this.singleToggle(node);

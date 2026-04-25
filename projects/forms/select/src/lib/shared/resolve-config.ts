@@ -14,11 +14,14 @@ import {
  * @internal
  */
 export function resolveSelectConfig(): Required<
-  Omit<CngxSelectConfig, 'panelClass' | 'templates' | 'announcer' | 'ariaLabels'>
+  Omit<
+    CngxSelectConfig,
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
+  >
 > &
   Pick<
     typeof CNGX_SELECT_DEFAULTS,
-    'panelClass' | 'templates' | 'announcer' | 'ariaLabels'
+    'panelClass' | 'templates' | 'announcer' | 'ariaLabels' | 'fallbackLabels'
   > {
   const user = inject(CNGX_SELECT_CONFIG, { optional: true }) ?? {};
   return {
@@ -27,6 +30,23 @@ export function resolveSelectConfig(): Required<
     skeletonRowCount: user.skeletonRowCount ?? CNGX_SELECT_DEFAULTS.skeletonRowCount,
     refreshingVariant: user.refreshingVariant ?? CNGX_SELECT_DEFAULTS.refreshingVariant,
     commitErrorDisplay: user.commitErrorDisplay ?? CNGX_SELECT_DEFAULTS.commitErrorDisplay,
+    commitErrorAnnouncePolicy:
+      user.commitErrorAnnouncePolicy ?? CNGX_SELECT_DEFAULTS.commitErrorAnnouncePolicy,
+    popoverPlacement: user.popoverPlacement ?? CNGX_SELECT_DEFAULTS.popoverPlacement,
+    inputMode: user.inputMode ?? CNGX_SELECT_DEFAULTS.inputMode,
+    enterKeyHint:
+      user.enterKeyHint === undefined
+        ? CNGX_SELECT_DEFAULTS.enterKeyHint
+        : user.enterKeyHint,
+    chipOverflow: user.chipOverflow ?? CNGX_SELECT_DEFAULTS.chipOverflow,
+    maxVisibleChips:
+      user.maxVisibleChips !== undefined && user.maxVisibleChips > 0
+        ? user.maxVisibleChips
+        : CNGX_SELECT_DEFAULTS.maxVisibleChips,
+    virtualization:
+      user.virtualization === undefined
+        ? CNGX_SELECT_DEFAULTS.virtualization
+        : user.virtualization,
     panelClass: user.panelClass ?? CNGX_SELECT_DEFAULTS.panelClass,
     typeaheadDebounceInterval:
       user.typeaheadDebounceInterval ?? CNGX_SELECT_DEFAULTS.typeaheadDebounceInterval,
@@ -54,6 +74,10 @@ export function resolveSelectConfig(): Required<
     ariaLabels: {
       ...CNGX_SELECT_DEFAULTS.ariaLabels,
       ...user.ariaLabels,
+    },
+    fallbackLabels: {
+      ...CNGX_SELECT_DEFAULTS.fallbackLabels,
+      ...user.fallbackLabels,
     },
   };
 }

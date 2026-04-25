@@ -17,7 +17,7 @@ import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
  *   <ng-template cngxTreeSelectTriggerLabel let-selected let-count="count">
  *     @if (count === 0) { <!-- placeholder takes over --> }
  *     @else if (count === 1) { {{ selected[0].label }} }
- *     @else { {{ count }} ausgewählt }
+ *     @else { {{ count }} selected }
  *   </ng-template>
  * </cngx-tree-select>
  * ```

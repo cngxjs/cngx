@@ -352,6 +352,16 @@ export const routes: Routes = [
     path: 'forms',
     children: [
       {
+        path: 'action-multi-select',
+        loadComponent: () =>
+          import('./demos/forms/action-multi-select-demo/action-multi-select-demo.component').then((m) => m.ActionMultiSelectDemoComponent),
+      },
+      {
+        path: 'action-select',
+        loadComponent: () =>
+          import('./demos/forms/action-select-demo/action-select-demo.component').then((m) => m.ActionSelectDemoComponent),
+      },
+      {
         path: 'autosize',
         loadComponent: () =>
           import('./demos/forms/autosize-demo/autosize-demo.component').then((m) => m.AutosizeDemoComponent),
@@ -407,6 +417,16 @@ export const routes: Routes = [
           import('./demos/forms/select-demo/select-demo.component').then((m) => m.SelectDemoComponent),
       },
       {
+        path: 'select-compare',
+        loadComponent: () =>
+          import('./demos/forms/select-compare-demo/select-compare-demo.component').then((m) => m.SelectCompareDemoComponent),
+      },
+      {
+        path: 'select-virtual',
+        loadComponent: () =>
+          import('./demos/forms/select-virtual-demo/select-virtual-demo.component').then((m) => m.SelectVirtualDemoComponent),
+      },
+      {
         path: 'tree-select',
         loadComponent: () =>
           import('./demos/forms/tree-select-demo/tree-select-demo.component').then((m) => m.TreeSelectDemoComponent),
@@ -416,7 +436,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/forms/utilities-demo/utilities-demo.component').then((m) => m.UtilitiesDemoComponent),
       },
-      { path: '', redirectTo: 'autosize', pathMatch: 'full' },
+      { path: '', redirectTo: 'action-multi-select', pathMatch: 'full' },
     ],
   },
   {
