@@ -113,6 +113,32 @@ export interface CngxSelectErrorContext {
 }
 
 /**
+ * Context for the retry-button override slot. Drives every `Retry` /
+ * `Try again` button rendered by the shared panel-shell (load-error,
+ * inline-refresh-error, commit-error banner). Override this slot to
+ * swap the button shell — the underlying retry routing (re-invoke
+ * `[retryFn]` for load/refresh failures, replay `commitController`
+ * for commit failures) is handled by the panel-shell's host.
+ *
+ * @category interactive
+ */
+export interface CngxSelectRetryButtonContext {
+  readonly $implicit: () => void;
+  /** Imperative retry callback bound by the shell to the appropriate path. */
+  readonly retry: () => void;
+  /** The error that triggered the retry surface (load / refresh / commit). */
+  readonly error: unknown;
+  /** `true` while the shell is mid-retry — disable the override button. */
+  readonly disabled: boolean;
+  /**
+   * Library-default label for the button (`'Retry'`, `'Try again'` for
+   * the refresh path, `'Try again'` for commit-error). Consumers reuse
+   * this directly when they only want to swap the visual frame.
+   */
+  readonly label: string;
+}
+
+/**
  * Context for the refreshing-indicator template (subtle top-bar shown while
  * `state()?.isRefreshing()` — options remain visible in the panel).
  *
@@ -395,6 +421,32 @@ export class CngxSelectOptionLabel<T = unknown> {
 })
 export class CngxSelectError {
   readonly templateRef = inject<TemplateRef<CngxSelectErrorContext>>(TemplateRef);
+}
+
+/**
+ * Override template for the retry button rendered by the shared
+ * panel-shell at all three retry surfaces (first-load error,
+ * inline refresh-error, commit-error banner). Use to swap the visual
+ * shell while keeping the panel-shell's wiring + disabled handling.
+ *
+ * @example
+ * ```html
+ * <cngx-select [state]="colorsState" [retryFn]="reload">
+ *   <ng-template cngxSelectRetryButton let-retry let-disabled="disabled" let-label="label">
+ *     <my-button kind="ghost" [disabled]="disabled" (clicked)="retry()">{{ label }}</my-button>
+ *   </ng-template>
+ * </cngx-select>
+ * ```
+ *
+ * @category interactive
+ */
+@Directive({
+  selector: 'ng-template[cngxSelectRetryButton]',
+  standalone: true,
+  exportAs: 'cngxSelectRetryButton',
+})
+export class CngxSelectRetryButton {
+  readonly templateRef = inject<TemplateRef<CngxSelectRetryButtonContext>>(TemplateRef);
 }
 
 /**

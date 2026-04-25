@@ -19,6 +19,7 @@ import type {
   CngxSelectEmptyContext,
   CngxSelectErrorContext,
   CngxSelectLoadingContext,
+  CngxSelectRetryButtonContext,
   CngxSelectOptgroupContext,
   CngxSelectOptionErrorContext,
   CngxSelectOptionLabelContext,
@@ -46,6 +47,7 @@ export interface CngxSelectTemplateContexts {
   readonly triggerLabel?: CngxSelectTriggerLabelContext;
   readonly optionLabel?: CngxSelectOptionLabelContext;
   readonly error?: CngxSelectErrorContext;
+  readonly retryButton?: CngxSelectRetryButtonContext;
   readonly refreshing?: CngxSelectRefreshingContext;
   readonly commitError?: CngxSelectCommitErrorContext;
   readonly clearButton?: CngxSelectClearButtonContext;
@@ -477,6 +479,7 @@ export interface CngxSelectConfig {
     readonly triggerLabel?: TemplateRef<CngxSelectTriggerLabelContext> | null;
     readonly optionLabel?: TemplateRef<CngxSelectOptionLabelContext> | null;
     readonly error?: TemplateRef<CngxSelectErrorContext> | null;
+    readonly retryButton?: TemplateRef<CngxSelectRetryButtonContext> | null;
     readonly refreshing?: TemplateRef<CngxSelectRefreshingContext> | null;
     readonly commitError?: TemplateRef<CngxSelectCommitErrorContext> | null;
     readonly clearButton?: TemplateRef<CngxSelectClearButtonContext> | null;
@@ -594,6 +597,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     triggerLabel: null,
     optionLabel: null,
     error: null,
+    retryButton: null,
     refreshing: null,
     commitError: null,
     clearButton: null,

@@ -80,11 +80,13 @@ import {
   CngxSelectLoading,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  CngxSelectRetryButton,
   type CngxSelectCaretContext,
   type CngxSelectClearButtonContext,
   type CngxSelectCommitErrorContext,
   type CngxSelectErrorContext,
   type CngxSelectPlaceholderContext,
+  type CngxSelectRetryButtonContext,
 } from '../shared/template-slots';
 import { cngxSelectDefaultCompare, type CngxSelectCompareFn } from '../shared/select-core';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
@@ -453,6 +455,8 @@ export class CngxTreeSelect<T = unknown>
   private readonly emptyDir = contentChild<CngxSelectEmpty>(CngxSelectEmpty);
   private readonly loadingDir = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly errorDir = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDir =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDir = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDir = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
@@ -477,6 +481,11 @@ export class CngxTreeSelect<T = unknown>
   );
   /** @internal — exposed for the shell's inline-error branch. */
   readonly errorTpl = injectResolvedTemplate<CngxSelectErrorContext>(this.errorDir, 'error');
+  /** @internal — projected via `*cngxSelectRetryButton`. */
+  readonly retryButtonTpl = injectResolvedTemplate<CngxSelectRetryButtonContext>(
+    this.retryButtonDir,
+    'retryButton',
+  );
   /** @internal */
   readonly commitErrorTpl = injectResolvedTemplate<CngxSelectCommitErrorContext<T>>(
     this.commitErrorDir,
@@ -801,6 +810,7 @@ export class CngxTreeSelect<T = unknown>
     loading: computed(() => this.loadingDir()?.templateRef ?? null),
     empty: computed(() => this.emptyDir()?.templateRef ?? null),
     error: this.errorTpl,
+    retryButton: this.retryButtonTpl,
     refreshing: computed(() => this.refreshingDir()?.templateRef ?? null),
     commitError: this.commitErrorTpl,
     // Tree-select doesn't host an inline action slot today (see

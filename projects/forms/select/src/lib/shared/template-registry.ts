@@ -17,6 +17,7 @@ import type {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  CngxSelectRetryButton,
   CngxSelectCaretContext,
   CngxSelectCheckContext,
   CngxSelectClearButtonContext,
@@ -30,6 +31,7 @@ import type {
   CngxSelectOptionPendingContext,
   CngxSelectPlaceholderContext,
   CngxSelectRefreshingContext,
+  CngxSelectRetryButtonContext,
 } from './template-slots';
 
 /**
@@ -60,6 +62,7 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly loading: Signal<CngxSelectLoading | undefined>;
   readonly optionLabel: Signal<CngxSelectOptionLabel<T> | undefined>;
   readonly error: Signal<CngxSelectError | undefined>;
+  readonly retryButton: Signal<CngxSelectRetryButton | undefined>;
   readonly refreshing: Signal<CngxSelectRefreshing | undefined>;
   readonly commitError: Signal<CngxSelectCommitError<T> | undefined>;
   readonly clearButton: Signal<CngxSelectClearButton | undefined>;
@@ -95,6 +98,7 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly loading: Signal<TemplateRef<CngxSelectLoadingContext> | null>;
   readonly optionLabel: Signal<TemplateRef<CngxSelectOptionLabelContext<T>> | null>;
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
+  readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
   readonly clearButton: Signal<TemplateRef<CngxSelectClearButtonContext> | null>;
@@ -162,6 +166,7 @@ export function createTemplateRegistry<T = unknown>(
     loading: resolveTemplate(queries.loading, 'loading'),
     optionLabel: resolveTemplate(queries.optionLabel, 'optionLabel'),
     error: resolveTemplate(queries.error, 'error'),
+    retryButton: resolveTemplate(queries.retryButton, 'retryButton'),
     refreshing: resolveTemplate(queries.refreshing, 'refreshing'),
     commitError: resolveTemplate(queries.commitError, 'commitError'),
     clearButton: resolveTemplate(queries.clearButton, 'clearButton'),

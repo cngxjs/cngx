@@ -7,6 +7,7 @@ import type {
   CngxSelectErrorContext,
   CngxSelectLoadingContext,
   CngxSelectRefreshingContext,
+  CngxSelectRetryButtonContext,
 } from './template-slots';
 
 /**
@@ -80,6 +81,12 @@ export interface CngxSelectPanelShellTemplates<T = unknown> {
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
+  /**
+   * Retry-button override projected via `*cngxSelectRetryButton`. Drives
+   * the retry affordance at all three error surfaces (load, refresh,
+   * commit) — when null the shell renders its default `<button>`.
+   */
+  readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
   /**
    * Inline action-slot template projected via `*cngxSelectAction`.
    * Cross-variant: the flat panels, tree panels, and the action-select

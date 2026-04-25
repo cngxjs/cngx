@@ -16,6 +16,7 @@ import {
   CngxSelectOptionPending,
   CngxSelectPlaceholder,
   CngxSelectRefreshing,
+  CngxSelectRetryButton,
 } from './template-slots';
 import {
   CNGX_TEMPLATE_REGISTRY_FACTORY,
@@ -47,6 +48,8 @@ class RegistryProbe<T> {
     CngxSelectOptionLabel,
   );
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective =
     contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
@@ -72,6 +75,7 @@ class RegistryProbe<T> {
     loading: this.loadingDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,
     commitError: this.commitErrorDirective,
     clearButton: this.clearButtonDirective,

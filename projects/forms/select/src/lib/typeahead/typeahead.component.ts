@@ -89,6 +89,7 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectRetryButton,
   CngxSelectInputPrefix,
   CngxSelectInputSuffix,
   CngxSelectLoading,
@@ -403,6 +404,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly loadingDirective = contentChild<CngxSelectLoading>(CngxSelectLoading);
   private readonly optionLabelDirective = contentChild<CngxSelectOptionLabel<T>>(CngxSelectOptionLabel);
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective = contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(CngxSelectCommitError);
   private readonly clearButtonDirective = contentChild<CngxSelectClearButton>(CngxSelectClearButton);
@@ -421,6 +424,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     loading: this.loadingDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,
     commitError: this.commitErrorDirective,
     clearButton: this.clearButtonDirective,

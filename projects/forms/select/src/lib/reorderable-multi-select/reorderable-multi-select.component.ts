@@ -96,6 +96,7 @@ import {
   CngxSelectCommitError,
   CngxSelectEmpty,
   CngxSelectError,
+  CngxSelectRetryButton,
   CngxSelectLoading,
   CngxSelectOptgroupTemplate,
   CngxSelectOptionError,
@@ -516,6 +517,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     CngxSelectOptionLabel,
   );
   private readonly errorDirective = contentChild<CngxSelectError>(CngxSelectError);
+  private readonly retryButtonDirective =
+    contentChild<CngxSelectRetryButton>(CngxSelectRetryButton);
   private readonly refreshingDirective =
     contentChild<CngxSelectRefreshing>(CngxSelectRefreshing);
   private readonly commitErrorDirective = contentChild<CngxSelectCommitError<T>>(
@@ -549,6 +552,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     loading: this.loadingDirective,
     optionLabel: this.optionLabelDirective,
     error: this.errorDirective,
+    retryButton: this.retryButtonDirective,
     refreshing: this.refreshingDirective,
     commitError: this.commitErrorDirective,
     clearButton: this.clearButtonDirective,

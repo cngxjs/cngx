@@ -108,6 +108,7 @@ function createMockHost(): {
       loading: nullTpl,
       optionLabel: nullTpl,
       error: nullTpl,
+      retryButton: nullTpl,
       refreshing: nullTpl,
       commitError: nullTpl,
       clearButton: nullTpl,
@@ -433,4 +434,73 @@ describe('CngxSelectPanelShell — action slot', () => {
   // sibling of the popover, so a shell-level listener couldn't catch Escape
   // pressed in the trigger. Bridge-level coverage lives in
   // `action-host-bridge.spec.ts`.
+});
+
+// ── *cngxSelectRetryButton override ──────────────────────────────────
+
+@Component({
+  imports: [CngxSelectPanelShell],
+  template: `
+    <cngx-select-panel-shell>
+      <div class="projected-body">projected</div>
+    </cngx-select-panel-shell>
+    <ng-template #retryTpl let-retry let-label="label" let-disabled="disabled">
+      <button
+        class="my-retry"
+        type="button"
+        [attr.data-disabled]="disabled"
+        (click)="retry()"
+      >
+        {{ label }}
+      </button>
+    </ng-template>
+  `,
+})
+class RetryHost {
+  readonly retryTpl = viewChild<TemplateRef<unknown>>('retryTpl');
+}
+
+describe('CngxSelectPanelShell — *cngxSelectRetryButton override', () => {
+  it('renders the override at the load-error retry surface', () => {
+    const { host, controls } = createMockHost();
+    // The default mock uses ONE shared `nullTpl` signal across every slot;
+    // give retryButton its own writable signal so we can flip just that one.
+    const retrySlot = signal<TemplateRef<unknown> | null>(null);
+    const hostWithRetry: CngxSelectPanelHost = {
+      ...host,
+      tpl: { ...host.tpl, retryButton: retrySlot } as typeof host.tpl,
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: CNGX_SELECT_PANEL_HOST, useValue: hostWithRetry },
+        { provide: CNGX_SELECT_PANEL_VIEW_HOST, useValue: hostWithRetry },
+      ],
+    });
+    const fixture = TestBed.createComponent(RetryHost);
+    fixture.detectChanges();
+    const tpl = fixture.componentInstance.retryTpl();
+    if (!tpl) {
+      throw new Error('retry template not resolved');
+    }
+    retrySlot.set(tpl);
+    controls.activeView.set('error');
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.cngx-select__error-retry')).toBeNull();
+    const custom = root.querySelector<HTMLButtonElement>('button.my-retry');
+    expect(custom).toBeTruthy();
+    expect(custom!.textContent?.trim()).toBe('Retry');
+    custom!.click();
+    expect(controls.handleRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the default <button> when no override is supplied (back-compat)', () => {
+    const { fixture, controls } = setup();
+    controls.activeView.set('error');
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('.cngx-select__error-retry')).toBeTruthy();
+    expect(root.querySelector('button.my-retry')).toBeNull();
+  });
 });

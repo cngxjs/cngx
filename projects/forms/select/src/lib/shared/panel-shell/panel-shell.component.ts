@@ -158,9 +158,24 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
         } @else {
           <div class="cngx-select__error" role="alert">
             <span class="cngx-select__error-message">{{ host.fallbackLabels.loadFailed }}</span>
-            <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-              {{ host.fallbackLabels.loadFailedRetry }}
-            </button>
+            @if (host.tpl.retryButton(); as retryT) {
+              <ng-container
+                *ngTemplateOutlet="
+                  retryT;
+                  context: {
+                    $implicit: host.handleRetry.bind(host),
+                    retry: host.handleRetry.bind(host),
+                    error: host.errorContext().error,
+                    disabled: false,
+                    label: host.fallbackLabels.loadFailedRetry
+                  }
+                "
+              />
+            } @else {
+              <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
+                {{ host.fallbackLabels.loadFailedRetry }}
+              </button>
+            }
           </div>
         }
       }
@@ -171,9 +186,24 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
           } @else {
             <div class="cngx-select__error cngx-select__error--inline" role="alert">
               <span class="cngx-select__error-message">{{ host.fallbackLabels.refreshFailed }}</span>
-              <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
-                {{ host.fallbackLabels.refreshFailedRetry }}
-              </button>
+              @if (host.tpl.retryButton(); as retryT) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    retryT;
+                    context: {
+                      $implicit: host.handleRetry.bind(host),
+                      retry: host.handleRetry.bind(host),
+                      error: host.errorContext().error,
+                      disabled: false,
+                      label: host.fallbackLabels.refreshFailedRetry
+                    }
+                  "
+                />
+              } @else {
+                <button type="button" class="cngx-select__error-retry" (click)="host.handleRetry()">
+                  {{ host.fallbackLabels.refreshFailedRetry }}
+                </button>
+              }
             </div>
           }
         }
@@ -183,9 +213,24 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
           } @else {
             <div class="cngx-select__commit-error" role="alert">
               <span class="cngx-select__error-message">{{ host.fallbackLabels.commitFailed }}</span>
-              <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
-                {{ host.fallbackLabels.commitFailedRetry }}
-              </button>
+              @if (host.tpl.retryButton(); as retryT) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    retryT;
+                    context: {
+                      $implicit: host.commitErrorContext().retry,
+                      retry: host.commitErrorContext().retry,
+                      error: host.commitErrorContext().error,
+                      disabled: false,
+                      label: host.fallbackLabels.commitFailedRetry
+                    }
+                  "
+                />
+              } @else {
+                <button type="button" class="cngx-select__error-retry" (click)="host.commitErrorContext().retry()">
+                  {{ host.fallbackLabels.commitFailedRetry }}
+                </button>
+              }
             </div>
           }
         }
