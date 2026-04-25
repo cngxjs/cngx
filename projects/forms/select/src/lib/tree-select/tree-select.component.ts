@@ -48,6 +48,10 @@ import {
   type ArrayCommitHandler,
 } from '../shared/array-commit-handler';
 import {
+  CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
+  type CngxChipRemovalHandler,
+} from '../shared/chip-removal-handler';
+import {
   type CngxSelectCommitAction,
   type CngxSelectCommitErrorDisplay,
   type CngxSelectCommitMode,
@@ -1158,23 +1162,29 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * WeakMap of stable `remove` closures keyed on the selected-item
-   * reference. `selected()`'s structural-equal returns the same array
-   * ref (and therefore the same item refs) across CD cycles when the
-   * selection didn't change, so the cache hit rate stays high and the
-   * chip-slot outlet doesn't thrash on closure identity.
+   * Chip-removal handler — uses the `removeOverride` escape hatch so the
+   * factory absorbs the disabled-guard + WeakMap closure cache (so
+   * `selected()` chip-context outlets don't thrash on closure identity)
+   * while the override keeps tree-select's tree-aware mutation path:
+   *
+   *   - in-tree value → `singleToggle(node)` (always single-deselect,
+   *     never cascades, even with `[cascadeChildren]="true"`),
+   *   - stale value (not in tree) → direct values strip + emit + announce.
+   *
+   * The handler's standard sync/commit branches are bypassed because
+   * `dispatchValueChange` (called by `singleToggle`) already owns the
+   * commit-action read, optimistic write, and rollback logic for the
+   * tree world.
    */
-  private readonly chipRemoveCache = new WeakMap<object, () => void>();
+  private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> =
+    inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T, CngxTreeSelectedItem<T>>({
+      disabled: this.disabled,
+      removeOverride: (item) => this.removeSelectedItem(item),
+    });
 
   /** @internal — stable remove callback for `*cngxTreeSelectChip` context. */
   protected chipRemoveFor(opt: CngxTreeSelectedItem<T>): () => void {
-    const key = opt as unknown as object;
-    let cached = this.chipRemoveCache.get(key);
-    if (!cached) {
-      cached = () => this.removeSelectedItem(opt);
-      this.chipRemoveCache.set(key, cached);
-    }
-    return cached;
+    return this.chipRemovalHandler.removeFor(opt);
   }
 
   /**
@@ -1183,11 +1193,11 @@ export class CngxTreeSelect<T = unknown>
    * deselect regardless of `cascadeChildren` — the consumer explicitly
    * removed ONE chip representing ONE value. Cascade would surprise-
    * remove invisible descendants the user never picked as chips.
+   *
+   * Disabled-guard lives in the handler; this method assumes it's safe
+   * to mutate.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
-    if (this.disabled()) {
-      return;
-    }
     const node = this.flatNodeForValue(opt.value);
     if (node) {
       this.singleToggle(node);

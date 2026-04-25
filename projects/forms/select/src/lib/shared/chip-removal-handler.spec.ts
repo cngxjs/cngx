@@ -205,6 +205,45 @@ describe('createChipRemovalHandler', () => {
     });
   });
 
+  describe('removeOverride (tree-select escape hatch)', () => {
+    it('replaces the body but keeps the disabled-guard + WeakMap cache', () => {
+      const calls: CngxSelectOptionDef<T>[] = [];
+      const disabled = signal(false);
+      const handler = createChipRemovalHandler<T>({
+        disabled,
+        removeOverride: (item) => calls.push(item),
+      });
+      handler.removeByValue(opt('x'));
+      expect(calls).toEqual([opt('x')]);
+
+      // Disabled-guard still applies.
+      disabled.set(true);
+      handler.removeByValue(opt('y'));
+      expect(calls).toEqual([opt('x')]);
+    });
+
+    it('removeFor returns a stable closure even when removeOverride is set', () => {
+      const handler = createChipRemovalHandler<T>({
+        disabled: signal(false),
+        removeOverride: () => {
+          /* noop */
+        },
+      });
+      const item = opt('a');
+      const fn1 = handler.removeFor(item);
+      const fn2 = handler.removeFor(item);
+      expect(fn1).toBe(fn2);
+    });
+
+    it('throws at construction time when standard fields are missing AND removeOverride is absent', () => {
+      expect(() =>
+        createChipRemovalHandler<T>({
+          disabled: signal(false),
+        } as Parameters<typeof createChipRemovalHandler<T>>[0]),
+      ).toThrow(/Missing required field/);
+    });
+  });
+
   describe('custom item shape (tree-select compatibility)', () => {
     it('accepts items with only .value — label/disabled not required', () => {
       interface TreeItem {

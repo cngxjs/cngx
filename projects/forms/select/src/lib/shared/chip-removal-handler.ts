@@ -48,23 +48,44 @@ export interface CngxChipRemovalHandlerOptions<
   T,
   Item extends CngxChipRemovableItem<T> = CngxSelectOptionDef<T>,
 > {
-  /** Primary value signal — the array from which the chip's value is removed. */
-  readonly values: WritableSignal<T[]>;
   /** When `true`, every `removeByValue(...)` call is a no-op. */
   readonly disabled: Signal<boolean>;
+
+  /**
+   * Optional escape hatch that replaces the entire body after the
+   * disabled-guard. The factory still owns the WeakMap closure cache
+   * (so `removeFor(item)` stays reference-stable across CD cycles)
+   * but skips its own snapshot, filter, and commit/sync branch
+   * dispatch.
+   *
+   * Use when the variant's "remove one value" semantics are
+   * non-trivial — e.g. `CngxTreeSelect`'s chip-remove must always be a
+   * single deselect (never a cascade) regardless of `cascadeChildren`,
+   * AND it has a stale-value fallback path that bypasses the tree
+   * controller. The override absorbs both concerns and keeps the
+   * handler decoupled from tree concepts.
+   *
+   * When set, the standard-body fields (`values`, `compareWith`,
+   * `commitAction`, `commitMode`, `beginCommit`, `onBeforeCommit`,
+   * `onSyncFinalize`) are **ignored** and may be omitted.
+   */
+  readonly removeOverride?: (item: Item) => void;
+
+  // ── Standard-body fields (required unless `removeOverride` is set) ──
+
+  /** Primary value signal — the array from which the chip's value is removed. */
+  readonly values?: WritableSignal<T[]>;
   /** Element-wise equality used to filter the current `values()` array. */
-  readonly compareWith: Signal<CngxSelectCompareFn<T>>;
+  readonly compareWith?: Signal<CngxSelectCompareFn<T>>;
   /** Current commit action. `null` → synchronous path only. */
-  readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
+  readonly commitAction?: Signal<CngxSelectCommitAction<T[]> | null>;
   /** Optimistic vs pessimistic commit UX. Only consulted on the commit branch. */
-  readonly commitMode: Signal<CngxSelectCommitMode>;
+  readonly commitMode?: Signal<CngxSelectCommitMode>;
   /**
    * Variant-specific commit dispatch. Typically wired to
-   * `ArrayCommitHandler.beginToggle`. Tree-select passes a direct
-   * `commitController.begin()` wrapper so the factory stays
-   * shape-agnostic beyond the `T[]` commitment.
+   * `ArrayCommitHandler.beginToggle`.
    */
-  readonly beginCommit: (
+  readonly beginCommit?: (
     next: T[],
     previous: T[],
     item: Item,
@@ -83,7 +104,7 @@ export interface CngxChipRemovalHandlerOptions<
    * change event (`selectionChange`, `optionToggled`, `cleared`) and
    * announces the removal to AT.
    */
-  readonly onSyncFinalize: (item: Item, previous: T[]) => void;
+  readonly onSyncFinalize?: (item: Item, previous: T[]) => void;
 }
 
 /**
@@ -144,24 +165,71 @@ export function createChipRemovalHandler<
 ): CngxChipRemovalHandler<Item> {
   const cache = new WeakMap<object, () => void>();
 
+  // Dev-mode validation — when `removeOverride` is absent, the standard
+  // body fields are required. Throwing here is friendlier than the
+  // `Cannot read properties of undefined` we'd otherwise hit at the
+  // first chip-remove click.
+  if (!opts.removeOverride) {
+    const missing: string[] = [];
+    if (!opts.values) {
+      missing.push('values');
+    }
+    if (!opts.compareWith) {
+      missing.push('compareWith');
+    }
+    if (!opts.commitAction) {
+      missing.push('commitAction');
+    }
+    if (!opts.commitMode) {
+      missing.push('commitMode');
+    }
+    if (!opts.beginCommit) {
+      missing.push('beginCommit');
+    }
+    if (!opts.onSyncFinalize) {
+      missing.push('onSyncFinalize');
+    }
+    if (missing.length > 0) {
+      throw new Error(
+        `[CngxChipRemovalHandler] Missing required field(s): ${missing.join(
+          ', ',
+        )}. Provide them, or pass \`removeOverride\` to bypass the standard body.`,
+      );
+    }
+  }
+
   const removeByValue = (item: Item): void => {
     if (opts.disabled()) {
       return;
     }
-    const previous = [...opts.values()];
-    const eq = opts.compareWith();
-    const next = previous.filter((v) => !eq(v, item.value));
-    const action = opts.commitAction();
-    if (action) {
-      opts.onBeforeCommit?.(previous, item);
-      if (opts.commitMode() === 'optimistic') {
-        opts.values.set(next);
-      }
-      opts.beginCommit(next, previous, item, action);
+    if (opts.removeOverride) {
+      opts.removeOverride(item);
       return;
     }
-    opts.values.set(next);
-    opts.onSyncFinalize(item, previous);
+    // Standard-body fields are guaranteed present by the constructor-
+    // time validation above; the non-null assertions reflect the
+    // discriminated contract on `removeOverride`.
+    const values = opts.values!;
+    const compareWith = opts.compareWith!;
+    const commitAction = opts.commitAction!;
+    const commitMode = opts.commitMode!;
+    const beginCommit = opts.beginCommit!;
+    const onSyncFinalize = opts.onSyncFinalize!;
+
+    const previous = [...values()];
+    const eq = compareWith();
+    const next = previous.filter((v) => !eq(v, item.value));
+    const action = commitAction();
+    if (action) {
+      opts.onBeforeCommit?.(previous, item);
+      if (commitMode() === 'optimistic') {
+        values.set(next);
+      }
+      beginCommit(next, previous, item, action);
+      return;
+    }
+    values.set(next);
+    onSyncFinalize(item, previous);
   };
 
   const removeFor = (item: Item): (() => void) => {
