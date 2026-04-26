@@ -190,7 +190,12 @@ describe('createTreeController — derivation contract', () => {
   it.todo('perf baseline — childrenOfValue allocation during cascade isIndeterminate walk');
   it.todo('perf baseline — descendantsOfValue allocation on wide-subtree cascade toggle');
 
-  it('10k-node flatten + visibleNodes stays well under 16ms budget', () => {
+  // The budget here protects against an order-of-magnitude regression, not a
+  // per-frame guarantee. A strict 16ms (one 60fps frame) was flaky on the
+  // GitHub Actions runner — local hits ~5ms, CI has been observed at 17ms
+  // and 22ms. 50ms still catches anything that would block UI updates while
+  // tolerating noisy shared runners.
+  it('10k-node flatten + visibleNodes stays under 50ms budget', () => {
     // Three-level fan-out: 10 × 10 × 100 = 10_000
     const tree: CngxTreeNode<Row>[] = [];
     for (let a = 0; a < 10; a++) {
@@ -213,7 +218,7 @@ describe('createTreeController — derivation contract', () => {
     const flat = ctrl.flatNodes();
     const t1 = performance.now();
     expect(flat.length).toBe(10_110); // 10 + 100 + 10_000
-    expect(t1 - t0).toBeLessThan(16);
+    expect(t1 - t0).toBeLessThan(50);
 
     // Fully expanded: visible = all 10_110
     ctrl.expandAll();
@@ -221,6 +226,6 @@ describe('createTreeController — derivation contract', () => {
     const vis = ctrl.visibleNodes();
     const t3 = performance.now();
     expect(vis.length).toBe(10_110);
-    expect(t3 - t2).toBeLessThan(16);
+    expect(t3 - t2).toBeLessThan(50);
   });
 });

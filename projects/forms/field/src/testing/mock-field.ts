@@ -1,6 +1,6 @@
 import { signal, type WritableSignal } from '@angular/core';
 import type { ValidationError } from '@angular/forms/signals';
-import type { CngxFieldAccessor, CngxFieldRef } from '../models';
+import type { CngxFieldAccessor, CngxFieldRef } from '@cngx/forms/field';
 
 /**
  * A writable mock of `CngxFieldRef` for testing.
