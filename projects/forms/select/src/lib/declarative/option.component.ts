@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { CNGX_AD_ITEM } from '@cngx/common/a11y';
 import { CngxOption } from '@cngx/common/interactive';
@@ -43,12 +44,22 @@ import { CngxOption } from '@cngx/common/interactive';
   // hostDirective providers don't propagate — re-expose CNGX_AD_ITEM so the
   // enclosing listbox / active-descendant can discover it.
   providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxOption }],
-  template: `<ng-content />`,
+  imports: [NgTemplateOutlet],
+  template: `
+    <ng-content />
+    @let s = option.statusSignal();
+    @if (s !== null && s.tpl !== null) {
+      <span class="cngx-option__status" [attr.data-state]="s.kind">
+        <ng-container *ngTemplateOutlet="s.tpl" />
+      </span>
+    }
+  `,
   styles: `
     :host {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--cngx-option-gap, 0.5rem);
+      justify-content: var(--cngx-option-status-justify, flex-start);
       padding: var(--cngx-select-option-padding, 0.375rem 0.5rem);
       cursor: pointer;
       border-radius: var(--cngx-select-option-radius, 0.125rem);
@@ -60,6 +71,17 @@ import { CngxOption } from '@cngx/common/interactive';
     :host(.cngx-option--highlighted) {
       background: var(--cngx-select-option-highlight-bg, rgba(25, 118, 210, 0.1));
     }
+    .cngx-option__status {
+      margin-inline-start: auto;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+    }
+    :host([hidden]) {
+      display: none;
+    }
   `,
 })
-export class CngxSelectOption {}
+export class CngxSelectOption {
+  protected readonly option = inject(CngxOption, { self: true });
+}
