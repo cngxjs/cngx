@@ -7,7 +7,9 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * it (role="presentation", aria-hidden).
  *
  * **Intended usage:** inside a consumer-assembled listbox (the "compose
- * yourself" path) — NOT as a direct child of `<cngx-select>`.
+ * yourself" path) OR as a direct child of `<cngx-select-shell>`. Direct
+ * use inside the data-mode `<cngx-select>` is still unsupported — that
+ * variant consumes options through `[options]`.
  *
  * @example
  * ```html

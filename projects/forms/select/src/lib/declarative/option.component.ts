@@ -9,9 +9,11 @@ import { CngxOption } from '@cngx/common/interactive';
  * native-feeling `<cngx-option>` tag.
  *
  * **Intended usage:** inside a consumer-assembled listbox (the "compose
- * yourself" path) — NOT as a direct child of `<cngx-select>` (Angular's
- * content-projection scoping would drop the element and prevent AD
- * registration; use `[options]` data-mode with `<cngx-select>` instead).
+ * yourself" path) OR as a direct child of `<cngx-select-shell>` — the
+ * ninth select-family variant builds an explicit option list from the
+ * projected DOM via `CNGX_OPTION_CONTAINER`, sidestepping the
+ * content-projection scoping issue that prevents direct use inside the
+ * data-mode `<cngx-select>` (which still requires `[options]`).
  *
  * Supports the same `[value]`, `[disabled]`, and `[label]` inputs as the
  * underlying atom.
