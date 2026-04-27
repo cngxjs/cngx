@@ -25,8 +25,10 @@ import {
   CngxListbox,
   CngxListboxTrigger,
   CNGX_OPTION_CONTAINER,
+  CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_STATUS_HOST,
   type CngxOption,
+  type CngxOptionFilterHost,
   type CngxOptionGroup,
   type CngxOptionStatus,
   type CngxOptionStatusHost,
@@ -45,6 +47,7 @@ import {
 
 import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
 import { CngxSelectAnnouncer } from '../shared/announcer';
+import { CNGX_FLAT_NAV_STRATEGY } from '../shared/flat-nav-strategy';
 import {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   type CngxCommitErrorAnnouncePolicy,
@@ -79,6 +82,7 @@ import {
   createSelectCore,
   type CngxSelectCompareFn,
 } from '../shared/select-core';
+import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
   CngxSelectCaret,
@@ -155,6 +159,7 @@ export interface CngxSelectShellChange<T = unknown> {
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_OPTION_FILTER_HOST, useExisting: CngxSelectShell },
   ],
   host: {
     '[id]': 'resolvedId()',
@@ -190,6 +195,7 @@ export interface CngxSelectShellChange<T = unknown> {
         (click)="handleTriggerClick()"
         (focus)="handleFocus()"
         (blur)="handleBlur()"
+        (keydown)="handleTriggerKeydown($event)"
       >
         <span class="cngx-select-shell__label">{{ triggerText() }}</span>
         @if (clearable() && !empty() && !disabled()) {
@@ -230,13 +236,41 @@ export interface CngxSelectShellChange<T = unknown> {
           [label]="resolvedListboxLabel()"
           [compareWith]="listboxCompareWith()"
           [externalActivation]="externalActivation()"
-          [explicitOptions]="projectedOptions()"
+          [explicitOptions]="visibleProjectedOptions()"
           [items]="adItems()"
           [(value)]="value"
           (click)="handleProjectedOptionClick($event)"
           (pointerover)="handleProjectedOptionHover($event)"
         >
-          <ng-content />
+          @if (loading()) {
+            @if (tpl.loading(); as loadTpl) {
+              <ng-container *ngTemplateOutlet="loadTpl" />
+            } @else {
+              <div
+                class="cngx-select-shell__placeholder-body"
+                role="status"
+                [attr.aria-label]="ariaLabels.statusLoading ?? 'Loading'"
+              >
+                <span aria-hidden="true">⏳</span>
+              </div>
+            }
+          } @else if (visibleProjectedOptions().length === 0) {
+            @if (tpl.empty(); as emptyTpl) {
+              <ng-container *ngTemplateOutlet="emptyTpl" />
+            } @else {
+              <div class="cngx-select-shell__placeholder-body">
+                {{ fallbackLabels.empty }}
+              </div>
+            }
+          }
+          <div
+            class="cngx-select-shell__content"
+            [class.cngx-select-shell__content--hidden]="
+              loading() || visibleProjectedOptions().length === 0
+            "
+          >
+            <ng-content />
+          </div>
         </div>
       </div>
     </div>
@@ -244,7 +278,7 @@ export interface CngxSelectShellChange<T = unknown> {
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
 })
 export class CngxSelectShell<T = unknown>
-  implements CngxFormFieldControl, CngxOptionStatusHost
+  implements CngxFormFieldControl, CngxOptionStatusHost, CngxOptionFilterHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
@@ -306,6 +340,24 @@ export class CngxSelectShell<T = unknown>
 
   /** Two-way bindable selected value. */
   readonly value = model<T | undefined>(undefined);
+
+  /**
+   * Two-way bindable search term. Drives per-option visibility through
+   * the {@link CngxOptionFilterHost} contract on every projected
+   * `<cngx-option>` AND filters the listbox's AD items so keyboard nav
+   * skips hidden options. Empty string disables the filter.
+   */
+  readonly searchTerm = model<string>('');
+
+  /**
+   * Per-instance match policy. Receives the option's value, its
+   * resolved plain-text label, and the current search term; returns
+   * `true` when the option should remain visible. Defaults to a case-
+   * insensitive substring check on the label.
+   */
+  readonly searchMatchFn = input<
+    ((value: T, label: string, term: string) => boolean) | null
+  >(null);
 
   // ── Outputs ────────────────────────────────────────────────────────
 
@@ -452,16 +504,45 @@ export class CngxSelectShell<T = unknown>
   );
 
   /**
+   * Visible projected options after applying the search filter. Empty
+   * `searchTerm` short-circuits to the unfiltered list — same reference
+   * returned, so the listbox's `[explicitOptions]` binding doesn't
+   * cascade unnecessarily. When a term is active, options whose
+   * `matches(value, label, term)` returns false are dropped — this is
+   * the listbox-nav layer of the filter; the option directive's own
+   * `hidden` computed handles the CSS visibility layer.
+   *
+   * @internal
+   */
+  protected readonly visibleProjectedOptions = computed<readonly CngxOption[]>(
+    () => {
+      const all = this.projectedOptions();
+      const term = this.searchTerm();
+      if (!term) {
+        return all;
+      }
+      return all.filter((opt) =>
+        this.matches(opt.value() as T, opt.label(), term),
+      );
+    },
+    {
+      equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
+    },
+  );
+
+  /**
    * `ActiveDescendantItem[]` projection forwarded to the listbox's AD
    * via the host-directive `[items]` input. Bypasses the AD's own
    * `contentChildren(CNGX_AD_ITEM)` query (which loses content-projected
    * items to authoring-view scoping) — same fix shape as
-   * `[explicitOptions]` above but for the AD layer.
+   * `[explicitOptions]` above but for the AD layer. Uses
+   * {@link visibleProjectedOptions} so hidden options never enter the
+   * keyboard-nav cycle.
    *
    * @internal
    */
   protected readonly adItems = computed<ActiveDescendantItem[]>(() => {
-    const opts = this.projectedOptions();
+    const opts = this.visibleProjectedOptions();
     const items: ActiveDescendantItem[] = [];
     for (const opt of opts) {
       items.push({
@@ -735,6 +816,30 @@ export class CngxSelectShell<T = unknown>
     this.scalarHandler.retryLast(),
   );
 
+  /**
+   * Keyboard typeahead controller — same one CngxSelect uses. Drives
+   * typeahead-while-closed and PageUp/PageDown jump-N via the shared
+   * {@link CNGX_FLAT_NAV_STRATEGY}. The strategy needs the controller's
+   * char-buffer + match-from-index state to advance through repeats.
+   *
+   * @internal
+   */
+  private readonly typeaheadController = createTypeaheadController<T>({
+    options: this.flatOptions,
+    compareWith: this.compareWith,
+    debounceMs: computed(() => this.config.typeaheadDebounceInterval),
+    disabled: this.disabled,
+  });
+
+  /**
+   * Flat-nav policy. Owns the algorithm; the variant just dispatches
+   * the resulting {@link CngxFlatNavAction}. Same factory + token
+   * CngxSelect / CngxMultiSelect / CngxReorderableMultiSelect consume.
+   *
+   * @internal
+   */
+  private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
+
   /** Currently selected option resolved against the derived option model. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => this.selectedOption(),
@@ -804,6 +909,21 @@ export class CngxSelectShell<T = unknown>
   }
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
+  }
+
+  // ── CngxOptionFilterHost — drives per-option visibility from a term ──
+  //
+  // Default policy is case-insensitive substring on the resolved label.
+  // Per-instance `[searchMatchFn]` swaps in custom matching (fuzzy,
+  // server-driven hint, etc.) without changing the host contract.
+
+  /** @internal */
+  matches<TVal>(value: TVal, label: string, term: string): boolean {
+    const fn = this.searchMatchFn();
+    if (fn) {
+      return fn(value as unknown as T, label, term);
+    }
+    return label.toLowerCase().includes(term.toLowerCase());
   }
 
   // ── CngxOptionStatusHost — drives per-option commit pending/error ──
@@ -945,6 +1065,88 @@ export class CngxSelectShell<T = unknown>
       return;
     }
     this.toggle();
+  }
+
+  /**
+   * Trigger-level keyboard handling — typeahead-while-closed (native
+   * `<select>` parity) and PageUp/PageDown jump-N. Both delegate to
+   * {@link flatNavStrategy} so policy stays factored. Mirrors the
+   * `CngxSelect` keydown path verbatim — only the value-shape glue
+   * differs.
+   *
+   * @internal
+   */
+  protected handleTriggerKeydown(event: KeyboardEvent): void {
+    const lb = this.listboxRef();
+    const pop = this.popoverRef();
+
+    if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
+      const key = event.key;
+      if (key.length === 1 && /\S/.exec(key)) {
+        const eq = this.compareWith();
+        const flat = this.flatOptions();
+        const v = this.value();
+        const currentFlatIndex =
+          v === undefined || v === null
+            ? -1
+            : flat.findIndex((o) => eq(o.value, v));
+        const action = this.flatNavStrategy.onTypeaheadWhileClosed(
+          {
+            options: flat,
+            listboxItems: lb?.options() ?? [],
+            currentFlatIndex,
+            currentListboxIndex: -1,
+            compareWith: eq,
+            disabled: this.disabled(),
+            typeaheadController: this.typeaheadController,
+          },
+          key,
+        );
+        if (action.kind === 'select') {
+          event.preventDefault();
+          const previous = v;
+          this.value.set(action.option.value);
+          this.selectionChange.emit({
+            source: this,
+            value: action.option.value,
+            previousValue: previous,
+            option: action.option,
+          });
+          this.core.announce(action.option, 'added', 1, false);
+          return;
+        }
+      }
+    }
+
+    if (event.key === 'PageDown' || event.key === 'PageUp') {
+      event.preventDefault();
+      if (!pop || !lb) {
+        return;
+      }
+      if (!pop.isVisible()) {
+        pop.show();
+      }
+      const items = lb.options();
+      const ad = lb.ad;
+      const currentId = ad.activeId();
+      const currentListboxIndex = items.findIndex((o) => o.id === currentId);
+      const direction: 1 | -1 = event.key === 'PageDown' ? 1 : -1;
+      const action = this.flatNavStrategy.onPageJump(
+        {
+          options: this.flatOptions(),
+          listboxItems: items,
+          currentFlatIndex: -1,
+          currentListboxIndex,
+          compareWith: this.compareWith(),
+          disabled: this.disabled(),
+          typeaheadController: this.typeaheadController,
+        },
+        direction,
+      );
+      if (action.kind === 'highlight') {
+        ad.highlightByIndex(action.index);
+      }
+    }
   }
 
   /**

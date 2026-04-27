@@ -314,6 +314,50 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(labelEl.querySelectorAll('*').length).toBe(0);
   });
 
+  it('searchTerm filters the listbox AD items + visibly hides options', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const shell = shellDe.componentInstance as CngxSelectShell<string>;
+    const lbDe = fixture.debugElement.query(By.directive(CngxListbox));
+    const listbox = lbDe.injector.get(CngxListbox);
+
+    expect(listbox.ad.resolvedItems().length).toBe(3);
+
+    shell.searchTerm.set('Grü');
+    flush(fixture);
+
+    expect(listbox.ad.resolvedItems().length).toBe(1);
+    expect(listbox.ad.resolvedItems()[0].label).toBe('Grün');
+
+    // Clearing the term restores the full set.
+    shell.searchTerm.set('');
+    flush(fixture);
+    expect(listbox.ad.resolvedItems().length).toBe(3);
+  });
+
+  it('typeahead-while-closed commits a value without opening the panel', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    const popoverDe = fixture.debugElement.query(By.directive(CngxPopover));
+    const popover = popoverDe.injector.get(CngxPopover);
+
+    triggerBtn.focus();
+    triggerBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true }));
+    flush(fixture);
+
+    expect(fixture.componentInstance.value()).toBe('green');
+    expect(popover.isVisible()).toBe(false);
+  });
+
   it('clicking the trigger opens the panel and flips aria-expanded', () => {
     const fixture = TestBed.createComponent(FlatHost);
     fixture.detectChanges();
@@ -358,6 +402,65 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     flush(fixture);
 
     expect(fixture.componentInstance.value()).toBe('green');
+  });
+
+  it('renders the empty placeholder body when zero options are projected', () => {
+    @Component({
+      template: `<cngx-select-shell [label]="'Empty'"></cngx-select-shell>`,
+      imports: [CngxSelectShell],
+    })
+    class EmptyHost {}
+
+    const fixture = TestBed.createComponent(EmptyHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    triggerBtn.click();
+    flush(fixture);
+
+    const placeholder = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__placeholder-body',
+    );
+    expect(placeholder).not.toBeNull();
+    // Default fallback text — locale-cascade default is English.
+    expect(placeholder!.textContent).toBeTruthy();
+  });
+
+  it('renders the loading placeholder body when [loading] is true', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'Loading'" [loading]="true">
+          <cngx-option [value]="'a'">A</cngx-option>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption],
+    })
+    class LoadingHost {}
+
+    const fixture = TestBed.createComponent(LoadingHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    triggerBtn.click();
+    flush(fixture);
+
+    const placeholder = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__placeholder-body[role="status"]',
+    );
+    expect(placeholder).not.toBeNull();
+    // Projected options are hidden via the wrapper while loading is true.
+    const contentWrapper = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__content',
+    );
+    expect(contentWrapper.classList.contains('cngx-select-shell__content--hidden')).toBe(true);
   });
 
   it('hovering a projected <cngx-option> highlights it via shell delegation', () => {

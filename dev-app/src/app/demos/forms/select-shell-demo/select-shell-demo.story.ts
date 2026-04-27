@@ -83,6 +83,16 @@ export const STORY: DemoSpec = {
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -345,6 +355,60 @@ export const STORY: DemoSpec = {
     <div class="event-row">
       <span class="event-label">tip</span>
       <span class="event-value">No projected options → empty template renders in the panel.</span>
+    </div>
+  </div>`,
+    },
+    {
+      title: 'Search — filter projected options live',
+      subtitle:
+        'Bind <code>[(searchTerm)]</code> to wire any external <code>&lt;input&gt;</code> into the shell\'s filter ' +
+        'host. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and ' +
+        'computes its own <code>hidden</code> visibility — and the shell drops hidden options from the listbox AD ' +
+        'so keyboard navigation skips them. Default policy is case-insensitive substring on the resolved label; ' +
+        'override per-instance via <code>[searchMatchFn]</code>.',
+      imports: ['CngxSelectShell', 'CngxSelectOption'],
+      template: `
+  <div style="margin-bottom:12px">
+    <input
+      type="search"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+      placeholder="Filter cities…"
+      aria-label="Filter cities"
+      style="
+        width: 100%;
+        padding: .5rem .75rem;
+        border: 1px solid var(--cngx-border, #cbd5e1);
+        border-radius: .25rem;
+        font: inherit;
+      "
+    />
+  </div>
+
+  <cngx-select-shell
+    [label]="'City'"
+    [(value)]="searchValue"
+    [(searchTerm)]="searchTerm"
+    [clearable]="true"
+    placeholder="Pick a city…"
+  >
+    @for (city of cities; track city) {
+      <cngx-option [value]="city">{{ city }}</cngx-option>
+    }
+  </cngx-select-shell>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">searchTerm</span>
+      <span class="event-value">{{ searchTerm() || '(none)' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">value</span>
+      <span class="event-value">{{ searchValue() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">tip</span>
+      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
     </div>
   </div>`,
     },

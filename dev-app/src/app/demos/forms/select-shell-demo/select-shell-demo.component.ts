@@ -239,10 +239,59 @@ import { delay, of, throwError } from 'rxjs';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Custom glyphs — clearGlyph + caretGlyph"
+      <app-example-card title="Search — filter projected options live"
         [subtitle]="_s6"
         [sourceHtml]="_srcHtml6"
         [sourceTs]="_srcTs6">
+        
+  <div style="margin-bottom:12px">
+    <input
+      type="search"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+      placeholder="Filter cities…"
+      aria-label="Filter cities"
+      style="
+        width: 100%;
+        padding: .5rem .75rem;
+        border: 1px solid var(--cngx-border, #cbd5e1);
+        border-radius: .25rem;
+        font: inherit;
+      "
+    />
+  </div>
+
+  <cngx-select-shell
+    [label]="'City'"
+    [(value)]="searchValue"
+    [(searchTerm)]="searchTerm"
+    [clearable]="true"
+    placeholder="Pick a city…"
+  >
+    @for (city of cities; track city) {
+      <cngx-option [value]="city">{{ city }}</cngx-option>
+    }
+  </cngx-select-shell>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">searchTerm</span>
+      <span class="event-value">{{ searchTerm() || '(none)' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">value</span>
+      <span class="event-value">{{ searchValue() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">tip</span>
+      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
+    </div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Custom glyphs — clearGlyph + caretGlyph"
+        [subtitle]="_s7"
+        [sourceHtml]="_srcHtml7"
+        [sourceTs]="_srcTs7">
         
   <ng-template #customClear>
     <span aria-hidden="true" style="font-weight:700; font-family:monospace">×</span>
@@ -272,10 +321,10 @@ import { delay, of, throwError } from 'rxjs';
   </div>
       </app-example-card>
       <app-example-card title="Showcase — every feature combined"
-        [subtitle]="_s7"
-        [sourceHtml]="_srcHtml7"
-        [sourceTs]="_srcTs7"
-        [sourceCss]="_srcCss7">
+        [subtitle]="_s8"
+        [sourceHtml]="_srcHtml8"
+        [sourceTs]="_srcTs8"
+        [sourceCss]="_srcCss8">
         
   <div class="kbd-hint">
     <strong>Try it:</strong>
@@ -350,8 +399,9 @@ export class SelectShellDemoComponent {
   protected readonly _s3 = '<code>adaptFormControl(control, name)</code> bridges a Reactive-Forms <code>FormControl</code> into the shell\'s Signal-Forms-first <code>[field]</code> contract. Bidirectional sync runs through <code>createFieldSync</code> with <code>compareWith</code>-aware equality.';
   protected readonly _s4 = 'Bind <code>[commitAction]</code> + <code>[commitMode]</code>. <strong>Pessimistic</strong> keeps the panel open during the commit so the projected <code>*cngxSelectOptionPending</code> glyph is visible inside the option\'s reserved internal slot; <strong>optimistic</strong> closes the panel immediately and rolls back on error. Toggle <strong>Server fails</strong> to observe the failure path: the failed option carries <code>data-status="error"</code> and the projected <code>*cngxSelectOptionError</code> glyph renders — never alongside user content.';
   protected readonly _s5 = 'Project <code>*cngxSelectEmpty</code> for the no-options state and <code>*cngxSelectPlaceholder</code> for the empty trigger. Toggle <code>[loading]</code> to render the family-shared loading view (spinner / bar / dots / skeleton — configurable via <code>provideSelectConfig(withLoadingVariant(...))</code>).';
-  protected readonly _s6 = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
-  protected readonly _s7 = 'Reactive ARIA, optgroups, divider, async commit (pessimistic so pending is visible), pending + error glyphs, custom caret, custom placeholder, change-event log, keyboard nav (↑↓/Home/End/PageUp/PageDown, typeahead-while-closed), click-outside dismiss, focus restoration on close.';
+  protected readonly _s6 = 'Bind <code>[(searchTerm)]</code> to wire any external <code>&lt;input&gt;</code> into the shell\'s filter host. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and computes its own <code>hidden</code> visibility — and the shell drops hidden options from the listbox AD so keyboard navigation skips them. Default policy is case-insensitive substring on the resolved label; override per-instance via <code>[searchMatchFn]</code>.';
+  protected readonly _s7 = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
+  protected readonly _s8 = 'Reactive ARIA, optgroups, divider, async commit (pessimistic so pending is visible), pending + error glyphs, custom caret, custom placeholder, change-event log, keyboard nav (↑↓/Home/End/PageUp/PageDown, typeahead-while-closed), click-outside dismiss, focus restoration on close.';
   protected readonly _srcHtml0 = `<cngx-select-shell
     [label]="'Farbe'"
     [clearable]="true"
@@ -423,6 +473,16 @@ import { delay, of, throwError } from 'rxjs';
 
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
+
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
 
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
@@ -502,6 +562,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -578,6 +648,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -652,6 +732,16 @@ import { delay, of, throwError } from 'rxjs';
 
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
+
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
 
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
@@ -774,6 +864,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -882,6 +982,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -893,30 +1003,47 @@ import { delay, of, throwError } from 'rxjs';
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`;
-  protected readonly _srcHtml6 = `<ng-template #customClear>
-    <span aria-hidden="true" style="font-weight:700; font-family:monospace">×</span>
-  </ng-template>
-  <ng-template #customCaret>
-    <span aria-hidden="true" style="display:inline-block; transition: transform .15s">⌄</span>
-  </ng-template>
+  protected readonly _srcHtml6 = `<div style="margin-bottom:12px">
+    <input
+      type="search"
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+      placeholder="Filter cities…"
+      aria-label="Filter cities"
+      style="
+        width: 100%;
+        padding: .5rem .75rem;
+        border: 1px solid var(--cngx-border, #cbd5e1);
+        border-radius: .25rem;
+        font: inherit;
+      "
+    />
+  </div>
 
   <cngx-select-shell
-    [label]="'Farbe'"
+    [label]="'City'"
+    [(value)]="searchValue"
+    [(searchTerm)]="searchTerm"
     [clearable]="true"
-    [clearGlyph]="customClear"
-    [caretGlyph]="customCaret"
-    [(value)]="customValue"
-    placeholder="Custom-glyph trigger…"
+    placeholder="Pick a city…"
   >
-    <cngx-option [value]="'red'">Rot</cngx-option>
-    <cngx-option [value]="'green'">Grün</cngx-option>
-    <cngx-option [value]="'blue'">Blau</cngx-option>
+    @for (city of cities; track city) {
+      <cngx-option [value]="city">{{ city }}</cngx-option>
+    }
   </cngx-select-shell>
 
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row">
+      <span class="event-label">searchTerm</span>
+      <span class="event-value">{{ searchTerm() || '(none)' }}</span>
+    </div>
+    <div class="event-row">
       <span class="event-label">value</span>
-      <span class="event-value">{{ customValue() ?? '—' }}</span>
+      <span class="event-value">{{ searchValue() ?? '—' }}</span>
+    </div>
+    <div class="event-row">
+      <span class="event-label">tip</span>
+      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
     </div>
   </div>`;
   protected readonly _srcTs6 = `import { FormControl } from '@angular/forms';
@@ -968,6 +1095,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -979,7 +1116,103 @@ import { delay, of, throwError } from 'rxjs';
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`;
-  protected readonly _srcHtml7 = `<div class="kbd-hint">
+  protected readonly _srcHtml7 = `<ng-template #customClear>
+    <span aria-hidden="true" style="font-weight:700; font-family:monospace">×</span>
+  </ng-template>
+  <ng-template #customCaret>
+    <span aria-hidden="true" style="display:inline-block; transition: transform .15s">⌄</span>
+  </ng-template>
+
+  <cngx-select-shell
+    [label]="'Farbe'"
+    [clearable]="true"
+    [clearGlyph]="customClear"
+    [caretGlyph]="customCaret"
+    [(value)]="customValue"
+    placeholder="Custom-glyph trigger…"
+  >
+    <cngx-option [value]="'red'">Rot</cngx-option>
+    <cngx-option [value]="'green'">Grün</cngx-option>
+    <cngx-option [value]="'blue'">Blau</cngx-option>
+  </cngx-select-shell>
+
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row">
+      <span class="event-label">value</span>
+      <span class="event-value">{{ customValue() ?? '—' }}</span>
+    </div>
+  </div>`;
+  protected readonly _srcTs7 = `import { FormControl } from '@angular/forms';
+import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+
+
+  // Basic — flat options.
+  protected readonly basicValue = signal<string | undefined>(undefined);
+  protected readonly basicLog = signal<string | null>(null);
+  protected handleBasicChange(e: CngxSelectShellChange<string>): void {
+    this.basicLog.set(
+      new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? '—'),
+    );
+  }
+
+  // Grouped — optgroups projected via <cngx-optgroup>.
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+
+  // Rich-content trigger — closed trigger renders plain text from textContent.
+  protected readonly richValue = signal<string | undefined>(undefined);
+
+  // Form-field — Reactive Forms via adaptFormControl.
+  protected readonly rfControl = new FormControl<string | null>('green');
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color');
+
+  // Commit + error — async commit with toggleable failure + commit mode.
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<CngxSelectCommitMode>('pessimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitErrors = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    void intended;
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server rejected the commit')).pipe(delay(1500));
+    }
+    return of(intended).pipe(delay(1500));
+  };
+  protected handleCommitError(err: unknown): void {
+    const msg = err instanceof Error ? err.message : String(err);
+    this.commitErrors.update((l) => [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + msg]);
+  }
+
+  // Empty + loading + state-driven.
+  protected readonly emptyValue = signal<string | undefined>(undefined);
+  protected readonly loadingFlag = signal(false);
+
+  // Custom glyphs.
+  protected readonly customValue = signal<string | undefined>(undefined);
+
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
+  // Showcase — combines all the bells.
+  protected readonly showcaseValue = signal<string | undefined>('design');
+  protected readonly showcaseLog = signal<string[]>([]);
+  protected readonly showcaseAction: CngxSelectCommitAction<string> = (intended) => {
+    return of(intended).pipe(delay(800));
+  };
+  protected handleShowcaseChange(e: CngxSelectShellChange<string>): void {
+    this.showcaseLog.update((l) =>
+      [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
+    );
+  }`;
+  protected readonly _srcHtml8 = `<div class="kbd-hint">
     <strong>Try it:</strong>
     <span>focus the trigger and press a letter (typeahead-while-closed)</span>
     <span>open + use <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>PgUp</kbd> <kbd>PgDn</kbd></span>
@@ -1041,7 +1274,7 @@ import { delay, of, throwError } from 'rxjs';
       </div>
     }
   </div>`;
-  protected readonly _srcTs7 = `import { FormControl } from '@angular/forms';
+  protected readonly _srcTs8 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
 import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
@@ -1090,6 +1323,16 @@ import { delay, of, throwError } from 'rxjs';
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
 
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
+
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');
   protected readonly showcaseLog = signal<string[]>([]);
@@ -1101,7 +1344,7 @@ import { delay, of, throwError } from 'rxjs';
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`;
-  protected readonly _srcCss7 = `.pending-glyph {
+  protected readonly _srcCss8 = `.pending-glyph {
   display: inline-block;
   animation: cngx-spin 1.2s linear infinite;
 }
@@ -1155,6 +1398,16 @@ import { delay, of, throwError } from 'rxjs';
 
   // Custom glyphs.
   protected readonly customValue = signal<string | undefined>(undefined);
+
+  // Search — case-insensitive substring filter via CNGX_OPTION_FILTER_HOST.
+  protected readonly searchValue = signal<string | undefined>(undefined);
+  protected readonly searchTerm = signal<string>('');
+  protected readonly cities = [
+    'Amsterdam', 'Berlin', 'Cologne', 'Dresden', 'Edinburgh', 'Frankfurt',
+    'Geneva', 'Hamburg', 'Innsbruck', 'Jena', 'Krakow', 'Lisbon', 'Madrid',
+    'Munich', 'Nice', 'Oslo', 'Paris', 'Reykjavik', 'Stockholm', 'Tallinn',
+    'Utrecht', 'Vienna', 'Warsaw', 'Zurich',
+  ];
 
   // Showcase — combines all the bells.
   protected readonly showcaseValue = signal<string | undefined>('design');

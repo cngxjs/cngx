@@ -104,3 +104,16 @@
   outline: 2px solid var(--cngx-select-shell-focus-ring, var(--cngx-focus-ring, #1976d2));
   border-radius: 0.125rem;
 }
+
+/* ── Panel placeholder body (empty / loading) ─────────────────────── */
+
+.cngx-select-shell__placeholder-body {
+  padding: var(--cngx-select-shell-placeholder-padding, 0.75rem);
+  text-align: center;
+  opacity: var(--cngx-select-shell-placeholder-opacity, 0.6);
+  font: inherit;
+}
+
+.cngx-select-shell__content--hidden {
+  display: none;
+}
