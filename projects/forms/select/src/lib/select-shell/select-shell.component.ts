@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   contentChildren,
+  effect,
   inject,
   input,
   model,
@@ -232,6 +233,8 @@ export interface CngxSelectShellChange<T = unknown> {
           [explicitOptions]="projectedOptions()"
           [items]="adItems()"
           [(value)]="value"
+          (click)="handleProjectedOptionClick($event)"
+          (pointerover)="handleProjectedOptionHover($event)"
         >
           <ng-content />
         </div>
@@ -896,6 +899,27 @@ export class CngxSelectShell<T = unknown>
         (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
       coerceFromField: (x) => x as T | undefined,
     });
+
+    // Mirror the listbox AD's active-id onto the projected option
+    // elements. Content-projected options inject CngxActiveDescendant
+    // at construction time, when their authoring view has no AD in
+    // scope — `option.isHighlighted` always returns false. The shell
+    // owns the listbox/AD pair, so it can toggle the highlighted class
+    // on the matching DOM element directly. Pillar-2 communication
+    // restored without modifying the Level-2 atom.
+    effect(() => {
+      const activeId = this.listboxRef()?.ad.activeId() ?? null;
+      untracked(() => {
+        const projected = this.projectedOptions();
+        for (const opt of projected) {
+          const el = document.getElementById(opt.id);
+          if (!el) {
+            continue;
+          }
+          el.classList.toggle('cngx-option--highlighted', opt.id === activeId);
+        }
+      });
+    });
   }
 
   // ── Public API (mat-select parity) ─────────────────────────────────
@@ -921,6 +945,76 @@ export class CngxSelectShell<T = unknown>
       return;
     }
     this.toggle();
+  }
+
+  /**
+   * Click delegation for content-projected `<cngx-option>` elements.
+   *
+   * **Why this exists.** The option's own click handler does
+   * `inject(CngxActiveDescendant, { optional: true })` at construction
+   * time. Content-projected options are authored in the consumer's view
+   * scope (outside the listbox in the template tree), so element-injector
+   * walking does not reach the listbox's AD — `this.ad` is null and the
+   * option's click handler short-circuits. Reading the click at the
+   * shell level instead resolves the projected option by `id` and routes
+   * the activation through the listbox's AD directly.
+   *
+   * @internal
+   */
+  protected handleProjectedOptionClick(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
+    const opt = this.findProjectedOptionFromEvent(event);
+    if (!opt || opt.disabled()) {
+      return;
+    }
+    const ad = this.listboxRef()?.ad;
+    if (!ad) {
+      return;
+    }
+    ad.highlightByValue(opt.value());
+    ad.activateCurrent();
+  }
+
+  /**
+   * Hover delegation — same rationale as
+   * {@link handleProjectedOptionClick}. Keeps AD highlight state in sync
+   * with the consumer's pointer for content-projected options that
+   * never see the listbox's AD via DI.
+   *
+   * @internal
+   */
+  protected handleProjectedOptionHover(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
+    const opt = this.findProjectedOptionFromEvent(event);
+    if (!opt || opt.disabled()) {
+      return;
+    }
+    this.listboxRef()?.ad.highlightByValue(opt.value());
+  }
+
+  /**
+   * Resolve the click/hover target back to the `CngxOption` directive
+   * instance via the projected element's stable `id` (set by the option
+   * directive's host binding `[id]="this.id"`). Returns `null` when the
+   * event did not originate inside a projected option.
+   *
+   * @internal
+   */
+  private findProjectedOptionFromEvent(event: Event): CngxOption | null {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return null;
+    }
+    const optionEl = target.closest('[id^="cngx-option"]');
+    if (!optionEl) {
+      return null;
+    }
+    const id = optionEl.id;
+    return this.projectedOptions().find((o) => o.id === id) ?? null;
   }
 
   /** @internal — click-outside dismissal. */

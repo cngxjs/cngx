@@ -324,6 +324,57 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(popover.isVisible()).toBe(true);
     expect(triggerBtn.getAttribute('aria-expanded')).toBe('true');
   });
+
+  it('clicking a projected <cngx-option> commits the value via shell delegation', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+
+    triggerBtn.click();
+    flush(fixture);
+
+    // Click the second projected option (`green`). Content-projection
+    // scoping prevents the option's own click handler from reaching the
+    // listbox AD; the shell's click delegation routes the activation
+    // through the AD directly.
+    const greenOption = shellDe.nativeElement.querySelectorAll('cngx-option')[1] as HTMLElement;
+    greenOption.click();
+    flush(fixture);
+
+    expect(fixture.componentInstance.value()).toBe('green');
+  });
+
+  it('hovering a projected <cngx-option> highlights it via shell delegation', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    triggerBtn.click();
+    flush(fixture);
+
+    const blueOption = shellDe.nativeElement.querySelectorAll('cngx-option')[2] as HTMLElement;
+    const lbDe = fixture.debugElement.query(By.directive(CngxListbox));
+    const listbox = lbDe.injector.get(CngxListbox);
+
+    blueOption.dispatchEvent(new Event('pointerover', { bubbles: true }));
+    flush(fixture);
+
+    const activeId = listbox.ad.activeId();
+    expect(activeId).toBe(blueOption.id);
+    // Visual class applied via the shell's highlight-mirror effect —
+    // the option's own `isHighlighted` reads its (null) authoring-scope
+    // AD and stays false; the shell toggles the DOM class directly.
+    expect(blueOption.classList.contains('cngx-option--highlighted')).toBe(true);
+  });
 });
 
 describe('CngxSelectShell — form-field integration', () => {
