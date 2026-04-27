@@ -102,6 +102,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Reorderable Multi', path: 'forms/reorderable-multi-select' },
       { label: 'Select compare', path: 'forms/select-compare' },
       { label: 'Select', path: 'forms/select' },
+      { label: 'Select Shell', path: 'forms/select-shell' },
       { label: 'Select (virtual)', path: 'forms/select-virtual' },
       { label: 'Tree Select', path: 'forms/tree-select' },
       { label: 'Utilities', path: 'forms/utilities' },

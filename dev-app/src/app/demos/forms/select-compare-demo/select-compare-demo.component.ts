@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
-import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
 
 @Component({
   selector: 'app-select-compare-demo',
@@ -21,12 +21,14 @@ import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelec
     CngxReorderableMultiSelect,
     CngxActionSelect,
     CngxActionMultiSelect,
+    CngxSelectShell,
+    CngxSelectOption,
   ],
   template: `
     <app-doc-shell title="Select Family — pick-your-select"
-      description="Side-by-side comparison of the eight CngxSelect-family variants with use-case guidance — pick the right one without re-reading the architecture doc."
-      overview="<p>The Select family ships eight variants. They share commit, async-state, ARIA, and template-slot machinery — they differ in <em>value shape</em> (single vs array vs reorder vs tree) and in the <em>panel surface</em> (button trigger vs inline-input vs inline action).</p><p><strong>Decision tree:</strong></p><ul><li><code>CngxSelect</code> — single value, button trigger. Native <code>&lt;select&gt;</code> replacement.</li><li><code>CngxMultiSelect</code> — array of values, button trigger + chip strip.</li><li><code>CngxCombobox</code> — array of values, inline <code>&lt;input&gt;</code> trigger with type-to-filter.</li><li><code>CngxTypeahead</code> — single value, inline <code>&lt;input&gt;</code> with <code>displayWith</code> (server-driven autocomplete).</li><li><code>CngxTreeSelect</code> — array of values from a hierarchical option tree, button trigger + chip strip + tree panel.</li><li><code>CngxReorderableMultiSelect</code> — like Multi but the chip strip is reorderable (drag + Ctrl-Arrow keyboard).</li><li><code>CngxActionSelect</code> — single value with an inline action workflow (quick-create, filter-bar, &quot;manage tags&quot; pop-out).</li><li><code>CngxActionMultiSelect</code> — array of values with the same inline action workflow.</li></ul>"
-      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxTypeahead', 'CngxTreeSelect', 'CngxReorderableMultiSelect', 'CngxActionSelect', 'CngxActionMultiSelect']">
+      description="Side-by-side comparison of the nine CngxSelect-family variants with use-case guidance — pick the right one without re-reading the architecture doc."
+      overview="<p>The Select family ships eight variants. They share commit, async-state, ARIA, and template-slot machinery — they differ in <em>value shape</em> (single vs array vs reorder vs tree) and in the <em>panel surface</em> (button trigger vs inline-input vs inline action).</p><p><strong>Decision tree:</strong></p><ul><li><code>CngxSelect</code> — single value, button trigger. Native <code>&lt;select&gt;</code> replacement.</li><li><code>CngxMultiSelect</code> — array of values, button trigger + chip strip.</li><li><code>CngxCombobox</code> — array of values, inline <code>&lt;input&gt;</code> trigger with type-to-filter.</li><li><code>CngxTypeahead</code> — single value, inline <code>&lt;input&gt;</code> with <code>displayWith</code> (server-driven autocomplete).</li><li><code>CngxTreeSelect</code> — array of values from a hierarchical option tree, button trigger + chip strip + tree panel.</li><li><code>CngxReorderableMultiSelect</code> — like Multi but the chip strip is reorderable (drag + Ctrl-Arrow keyboard).</li><li><code>CngxActionSelect</code> — single value with an inline action workflow (quick-create, filter-bar, &quot;manage tags&quot; pop-out).</li><li><code>CngxActionMultiSelect</code> — array of values with the same inline action workflow.</li><li><code>CngxSelectShell</code> — single value with declarative <code>&lt;cngx-option&gt;</code> projection. Pick this when consumers want native-feeling option markup instead of the data-driven <code>[options]</code> input.</li></ul>"
+      [apiComponents]="['CngxSelect', 'CngxMultiSelect', 'CngxCombobox', 'CngxTypeahead', 'CngxTreeSelect', 'CngxReorderableMultiSelect', 'CngxActionSelect', 'CngxActionMultiSelect', 'CngxSelectShell']">
       <app-example-card title="Single button trigger — CngxSelect"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -155,6 +157,26 @@ import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelec
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ actionMultiValues().join(', ') || '—' }}</span></div>
   </div>
       </app-example-card>
+      <app-example-card title="Declarative shell — CngxSelectShell"
+        [subtitle]="_s8"
+        [sourceHtml]="_srcHtml8"
+        [sourceTs]="_srcTs8">
+        
+  <cngx-select-shell
+    [label]="'Tag'"
+    [(value)]="shellValue"
+    [clearable]="true"
+    placeholder="Tag wählen…"
+  >
+    <cngx-option [value]="'angular'">Angular</cngx-option>
+    <cngx-option [value]="'signals'">Signals</cngx-option>
+    <cngx-option [value]="'rxjs'">RxJS</cngx-option>
+    <cngx-option [value]="'a11y'">A11y</cngx-option>
+  </cngx-select-shell>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ shellValue() ?? '—' }}</span></div>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -167,6 +189,7 @@ export class SelectCompareDemoComponent {
   protected readonly _s5 = 'Same value shape as CngxMultiSelect, but the chip strip is reorderable. Pointer drag works; Ctrl-Arrow on a focused chip moves it (modifier configurable via <code>provideReorderableSelectConfig(withReorderKeyboardModifier(...))</code>).';
   protected readonly _s6 = 'Single-value variant with an inline <code>*cngxSelectAction</code> slot — render a quick-create form, a filter bar, or any inline workflow inside the panel without closing it. Action context exposes <code>{ close, commit, dirty, isPending, retry, error }</code>.';
   protected readonly _s7 = 'Multi-value variant of the action-host. Same inline workflow capabilities (<code>*cngxSelectAction</code>) but the trigger is a chip strip + inline <code>&lt;input&gt;</code> like CngxCombobox.';
+  protected readonly _s8 = 'Same UX as CngxSelect, but options are projected as <code>&lt;cngx-option&gt;</code> children instead of fed via <code>[options]</code>. Pick this when consumers want native-feeling option markup; the data-driven CngxSelect is still the right call for server-driven option lists.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Tag'"
     [options]="tags"
@@ -177,460 +200,8 @@ export class SelectCompareDemoComponent {
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ singleValue() ?? '—' }}</span></div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+  protected readonly _srcTs0 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
 
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml1 = `<cngx-multi-select
-    [label]="'Themen'"
-    [options]="tags"
-    [(values)]="multiValues"
-    [clearable]="true"
-    placeholder="Themen wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
-  </div>`;
-  protected readonly _srcTs1 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml2 = `<cngx-combobox
-    [label]="'Themen'"
-    [options]="tags"
-    [(values)]="comboValues"
-    [clearable]="true"
-    placeholder="Type to filter…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
-  </div>`;
-  protected readonly _srcTs2 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml3 = `<cngx-typeahead
-    [label]="'User'"
-    [options]="users"
-    [compareWith]="userCompare"
-    [displayWith]="userDisplay"
-    [clearable]="true"
-    placeholder="Search by name…"
-    [(value)]="typeaheadValue"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
-  </div>`;
-  protected readonly _srcTs3 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml4 = `<cngx-tree-select
-    [label]="'Stack'"
-    [nodes]="tree"
-    [nodeIdFn]="treeNodeId"
-    [(values)]="treeValues"
-    placeholder="Stack wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ treeValues().join(', ') || '—' }}</span></div>
-  </div>`;
-  protected readonly _srcTs4 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml5 = `<cngx-reorderable-multi-select
-    [label]="'Recipients'"
-    [options]="tags"
-    [(values)]="reorderValues"
-    placeholder="Themen wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Order</span><span class="event-value">{{ reorderValues().join(' → ') }}</span></div>
-  </div>`;
-  protected readonly _srcTs5 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml6 = `<cngx-action-select
-    [label]="'Tag'"
-    [options]="tags"
-    [(value)]="actionValue"
-    placeholder="Tag wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ actionValue() ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Tip</span><span class="event-value">Project a <code>*cngxSelectAction</code> template — see the action-select demo.</span></div>
-  </div>`;
-  protected readonly _srcTs6 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
-  protected readonly _srcHtml7 = `<cngx-action-multi-select
-    [label]="'Themen'"
-    [options]="tags"
-    [(values)]="actionMultiValues"
-    placeholder="Themen wählen…"
-  />
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ actionMultiValues().join(', ') || '—' }}</span></div>
-  </div>`;
-  protected readonly _srcTs7 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
-
-
-  protected readonly tags: CngxSelectOptionDef<string>[] = [
-    { value: 'angular', label: 'Angular' },
-    { value: 'signals', label: 'Signals' },
-    { value: 'rxjs', label: 'RxJS' },
-    { value: 'a11y', label: 'A11y' },
-  ];
-
-  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
-    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
-    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
-    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
-  ];
-
-  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
-    !!a && !!b && a.id === b.id;
-  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
-  protected readonly treeNodeId = (v: string): string => v;
-
-  protected readonly tree: CngxTreeNode<string>[] = [
-    {
-      value: 'frontend',
-      label: 'Frontend',
-      children: [
-        { value: 'angular', label: 'Angular' },
-        { value: 'react', label: 'React' },
-      ],
-    },
-    {
-      value: 'backend',
-      label: 'Backend',
-      children: [
-        { value: 'node', label: 'Node' },
-        { value: 'go', label: 'Go' },
-      ],
-    },
-  ];
-
-  protected readonly singleValue = signal<string | undefined>(undefined);
-  protected readonly multiValues = signal<string[]>([]);
-  protected readonly comboValues = signal<string[]>([]);
-  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
-  protected readonly treeValues = signal<string[]>([]);
-  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
-  protected readonly actionValue = signal<string | undefined>(undefined);
-  protected readonly actionMultiValues = signal<string[]>([]);`;
 
   protected readonly tags: CngxSelectOptionDef<string>[] = [
     { value: 'angular', label: 'Angular' },
@@ -677,5 +248,529 @@ export class SelectCompareDemoComponent {
   protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
   protected readonly actionValue = signal<string | undefined>(undefined);
   protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml1 = `<cngx-multi-select
+    [label]="'Themen'"
+    [options]="tags"
+    [(values)]="multiValues"
+    [clearable]="true"
+    placeholder="Themen wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml2 = `<cngx-combobox
+    [label]="'Themen'"
+    [options]="tags"
+    [(values)]="comboValues"
+    [clearable]="true"
+    placeholder="Type to filter…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml3 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="users"
+    [compareWith]="userCompare"
+    [displayWith]="userDisplay"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadValue"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs3 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml4 = `<cngx-tree-select
+    [label]="'Stack'"
+    [nodes]="tree"
+    [nodeIdFn]="treeNodeId"
+    [(values)]="treeValues"
+    placeholder="Stack wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ treeValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs4 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml5 = `<cngx-reorderable-multi-select
+    [label]="'Recipients'"
+    [options]="tags"
+    [(values)]="reorderValues"
+    placeholder="Themen wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Order</span><span class="event-value">{{ reorderValues().join(' → ') }}</span></div>
+  </div>`;
+  protected readonly _srcTs5 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml6 = `<cngx-action-select
+    [label]="'Tag'"
+    [options]="tags"
+    [(value)]="actionValue"
+    placeholder="Tag wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ actionValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Tip</span><span class="event-value">Project a <code>*cngxSelectAction</code> template — see the action-select demo.</span></div>
+  </div>`;
+  protected readonly _srcTs6 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml7 = `<cngx-action-multi-select
+    [label]="'Themen'"
+    [options]="tags"
+    [(values)]="actionMultiValues"
+    placeholder="Themen wählen…"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ actionMultiValues().join(', ') || '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs7 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+  protected readonly _srcHtml8 = `<cngx-select-shell
+    [label]="'Tag'"
+    [(value)]="shellValue"
+    [clearable]="true"
+    placeholder="Tag wählen…"
+  >
+    <cngx-option [value]="'angular'">Angular</cngx-option>
+    <cngx-option [value]="'signals'">Signals</cngx-option>
+    <cngx-option [value]="'rxjs'">RxJS</cngx-option>
+    <cngx-option [value]="'a11y'">A11y</cngx-option>
+  </cngx-select-shell>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ shellValue() ?? '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs8 = `import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';
+
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);`;
+
+  protected readonly tags: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'A11y' },
+  ];
+
+  protected readonly users: CngxSelectOptionDef<{ id: string; name: string }>[] = [
+    { value: { id: 'u1', name: 'Ada Lovelace' }, label: 'Ada Lovelace' },
+    { value: { id: 'u2', name: 'Grace Hopper' }, label: 'Grace Hopper' },
+    { value: { id: 'u3', name: 'Margaret Hamilton' }, label: 'Margaret Hamilton' },
+  ];
+
+  protected readonly userCompare = (a?: { id: string }, b?: { id: string }): boolean =>
+    !!a && !!b && a.id === b.id;
+  protected readonly userDisplay = (u?: { name: string }): string => u?.name ?? '';
+  protected readonly treeNodeId = (v: string): string => v;
+
+  protected readonly tree: CngxTreeNode<string>[] = [
+    {
+      value: 'frontend',
+      label: 'Frontend',
+      children: [
+        { value: 'angular', label: 'Angular' },
+        { value: 'react', label: 'React' },
+      ],
+    },
+    {
+      value: 'backend',
+      label: 'Backend',
+      children: [
+        { value: 'node', label: 'Node' },
+        { value: 'go', label: 'Go' },
+      ],
+    },
+  ];
+
+  protected readonly singleValue = signal<string | undefined>(undefined);
+  protected readonly multiValues = signal<string[]>([]);
+  protected readonly comboValues = signal<string[]>([]);
+  protected readonly typeaheadValue = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly treeValues = signal<string[]>([]);
+  protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
+  protected readonly actionValue = signal<string | undefined>(undefined);
+  protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);
   
 }

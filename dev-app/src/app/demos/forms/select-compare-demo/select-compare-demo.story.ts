@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   navLabel: 'Select compare',
   navCategory: 'field',
   description:
-    'Side-by-side comparison of the eight CngxSelect-family variants with use-case guidance — pick the right one without re-reading the architecture doc.',
+    'Side-by-side comparison of the nine CngxSelect-family variants with use-case guidance — pick the right one without re-reading the architecture doc.',
   apiComponents: [
     'CngxSelect',
     'CngxMultiSelect',
@@ -15,6 +15,7 @@ export const STORY: DemoSpec = {
     'CngxReorderableMultiSelect',
     'CngxActionSelect',
     'CngxActionMultiSelect',
+    'CngxSelectShell',
   ],
   overview:
     '<p>The Select family ships eight variants. They share commit, async-state, ARIA, and template-slot machinery — they differ in <em>value shape</em> (single vs array vs reorder vs tree) and in the <em>panel surface</em> (button trigger vs inline-input vs inline action).</p>' +
@@ -28,9 +29,10 @@ export const STORY: DemoSpec = {
     '<li><code>CngxReorderableMultiSelect</code> — like Multi but the chip strip is reorderable (drag + Ctrl-Arrow keyboard).</li>' +
     '<li><code>CngxActionSelect</code> — single value with an inline action workflow (quick-create, filter-bar, "manage tags" pop-out).</li>' +
     '<li><code>CngxActionMultiSelect</code> — array of values with the same inline action workflow.</li>' +
+    '<li><code>CngxSelectShell</code> — single value with declarative <code>&lt;cngx-option&gt;</code> projection. Pick this when consumers want native-feeling option markup instead of the data-driven <code>[options]</code> input.</li>' +
     '</ul>',
   moduleImports: [
-    "import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';",
+    "import { CngxSelect, CngxMultiSelect, CngxCombobox, CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, CngxActionSelect, CngxActionMultiSelect, CngxSelectShell, CngxSelectOption, type CngxSelectOptionDef, type CngxTreeNode } from '@cngx/forms/select';",
   ],
   setup: `
   protected readonly tags: CngxSelectOptionDef<string>[] = [
@@ -78,6 +80,7 @@ export const STORY: DemoSpec = {
   protected readonly reorderValues = signal<string[]>(['angular', 'signals']);
   protected readonly actionValue = signal<string | undefined>(undefined);
   protected readonly actionMultiValues = signal<string[]>([]);
+  protected readonly shellValue = signal<string | undefined>(undefined);
   `,
   sections: [
     {
@@ -214,6 +217,27 @@ export const STORY: DemoSpec = {
   />
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ actionMultiValues().join(', ') || '—' }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Declarative shell — CngxSelectShell',
+      subtitle:
+        'Same UX as CngxSelect, but options are projected as <code>&lt;cngx-option&gt;</code> children instead of fed via <code>[options]</code>. Pick this when consumers want native-feeling option markup; the data-driven CngxSelect is still the right call for server-driven option lists.',
+      imports: ['CngxSelectShell', 'CngxSelectOption'],
+      template: `
+  <cngx-select-shell
+    [label]="'Tag'"
+    [(value)]="shellValue"
+    [clearable]="true"
+    placeholder="Tag wählen…"
+  >
+    <cngx-option [value]="'angular'">Angular</cngx-option>
+    <cngx-option [value]="'signals'">Signals</cngx-option>
+    <cngx-option [value]="'rxjs'">RxJS</cngx-option>
+    <cngx-option [value]="'a11y'">A11y</cngx-option>
+  </cngx-select-shell>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ shellValue() ?? '—' }}</span></div>
   </div>`,
     },
   ],
