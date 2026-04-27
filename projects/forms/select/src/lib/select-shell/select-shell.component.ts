@@ -12,6 +12,7 @@ import {
   output,
   untracked,
   type ElementRef,
+  type Signal,
   type TemplateRef,
   viewChild,
 } from '@angular/core';
@@ -23,8 +24,11 @@ import {
   CngxListbox,
   CngxListboxTrigger,
   CNGX_OPTION_CONTAINER,
+  CNGX_OPTION_STATUS_HOST,
   type CngxOption,
   type CngxOptionGroup,
+  type CngxOptionStatus,
+  type CngxOptionStatusHost,
 } from '@cngx/common/interactive';
 import {
   CngxPopover,
@@ -149,6 +153,7 @@ export interface CngxSelectShellChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
   ],
   host: {
     '[id]': 'resolvedId()',
@@ -235,7 +240,9 @@ export interface CngxSelectShellChange<T = unknown> {
   `,
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
 })
-export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
+export class CngxSelectShell<T = unknown>
+  implements CngxFormFieldControl, CngxOptionStatusHost
+{
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
@@ -794,6 +801,42 @@ export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
   }
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
+  }
+
+  // ── CngxOptionStatusHost — drives per-option commit pending/error ──
+  //
+  // Routes commit-pending and commit-error glyphs into each
+  // `CngxOption`'s reserved internal status slot (Phase 2 contract),
+  // never alongside user content. The option directive injects
+  // `CNGX_OPTION_STATUS_HOST` and renders the resolved `tpl` inside its
+  // own `.cngx-option__status` span.
+
+  /** @internal */
+  statusFor<TVal>(value: TVal): Signal<CngxOptionStatus | null> {
+    return computed<CngxOptionStatus | null>(() => {
+      const opt = this.core.togglingOption();
+      if (!opt) {
+        return null;
+      }
+      const eq = this.compareWith() as CngxSelectCompareFn<unknown>;
+      if (!eq(opt.value, value)) {
+        return null;
+      }
+      const err = this.core.commitErrorValue();
+      if (err !== undefined && err !== null) {
+        return {
+          kind: 'error',
+          tpl: this.tpl.optionError() as TemplateRef<unknown> | null,
+        };
+      }
+      if (this.isCommitting()) {
+        return {
+          kind: 'pending',
+          tpl: this.tpl.optionPending() as TemplateRef<unknown> | null,
+        };
+      }
+      return null;
+    });
   }
 
   constructor() {

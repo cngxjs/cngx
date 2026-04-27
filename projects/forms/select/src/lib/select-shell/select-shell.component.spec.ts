@@ -17,6 +17,7 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
+import { CngxSelectOptionError } from '../shared/template-slots';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
@@ -152,12 +153,15 @@ class ReactiveFormsHost {
       (commitError)="errors.push($event)"
       (stateChange)="statuses.push($event)"
     >
+      <ng-template cngxSelectOptionError>
+        <span class="commit-error-glyph">!</span>
+      </ng-template>
       <cngx-option [value]="'red'">Rot</cngx-option>
       <cngx-option [value]="'green'">Grün</cngx-option>
       <cngx-option [value]="'blue'">Blau</cngx-option>
     </cngx-select-shell>
   `,
-  imports: [CngxSelectShell, CngxSelectOption],
+  imports: [CngxSelectShell, CngxSelectOption, CngxSelectOptionError],
 })
 class CommitHost {
   readonly value = signal<string | undefined>('red');
@@ -458,5 +462,38 @@ describe('CngxSelectShell — commit action producer', () => {
     firstPending.complete();
     flush(fixture);
     expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('optimistic error: value rolls back, status-host renders glyph in option slot', () => {
+    const { fixture, listbox, host } = setup();
+    const greenOption = fixture.debugElement.queryAll(By.css('cngx-option'))[1]
+      .nativeElement as HTMLElement;
+
+    pickValue(listbox, 'green');
+    flush(fixture);
+
+    // Optimistic write applied.
+    expect(host.value()).toBe('green');
+
+    const err = new Error('server down');
+    host.pending!.error(err);
+    flush(fixture);
+
+    // Rollback to previous value; commitError emitted.
+    expect(host.value()).toBe('red');
+    expect(host.errors).toEqual([err]);
+    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+
+    // Status-host contract: failed option carries data-status="error" on
+    // the host element, and the consumer-projected error glyph renders
+    // inside the option's reserved internal slot — never alongside user
+    // content. Plan locked decision: the glyph is in `.cngx-option__status`,
+    // adjacent to (not inside) the consumer's `<ng-content/>`.
+    expect(greenOption.getAttribute('data-status')).toBe('error');
+    const slot = greenOption.querySelector('.cngx-option__status');
+    expect(slot).not.toBeNull();
+    const glyph = slot!.querySelector('.commit-error-glyph');
+    expect(glyph).not.toBeNull();
+    expect(glyph!.textContent).toBe('!');
   });
 });
