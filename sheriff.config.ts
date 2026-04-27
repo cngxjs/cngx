@@ -11,7 +11,7 @@
  *               data-display/mat-treetable secondary entry)
  *
  * The dependency direction is enforced via per-lib rules — peers at the same
- * level (forms <-> data-display) are forbidden, in line with CLAUDE.md
+ * level (forms <-> data-display) are forbidden,
  * ("a lib may only import from a **lower** level"). Level/entry/scope tags
  * are kept for diagnostics (they appear in violation messages) and resolved
  * with `anyTag` so the lib rule is the single decision point.
