@@ -72,6 +72,10 @@ import {
 } from '../shared/option.model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import {
+  CNGX_SELECT_SHELL_SEARCH_HOST,
+  type CngxSelectShellSearchHost,
+} from '../declarative/select-search-host';
 import { resolveSelectConfig } from '../shared/resolve-config';
 import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
@@ -160,6 +164,7 @@ export interface CngxSelectShellChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_FILTER_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: CngxSelectShell },
   ],
   host: {
     '[id]': 'resolvedId()',
@@ -230,6 +235,7 @@ export interface CngxSelectShellChange<T = unknown> {
         [class]="panelClassList()"
         [style.--cngx-select-panel-min-width]="panelWidthCss()"
       >
+        <ng-content select="cngx-select-search" />
         <div
           cngxListbox
           #lb="cngxListbox"
@@ -278,7 +284,11 @@ export interface CngxSelectShellChange<T = unknown> {
   styleUrls: ['../shared/select-base.css', './select-shell.component.css'],
 })
 export class CngxSelectShell<T = unknown>
-  implements CngxFormFieldControl, CngxOptionStatusHost, CngxOptionFilterHost
+  implements
+    CngxFormFieldControl,
+    CngxOptionStatusHost,
+    CngxOptionFilterHost,
+    CngxSelectShellSearchHost
 {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
@@ -623,7 +633,10 @@ export class CngxSelectShell<T = unknown>
   // ── ViewChildren ───────────────────────────────────────────────────
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
-  private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
+  /** @internal — exposed to satisfy {@link CngxSelectShellSearchHost} so the
+   *  declaratively-projected `<cngx-select-search>` can forward keyboard
+   *  navigation into the listbox AD without ancestor injection. */
+  readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
   // ── Public derived signals ─────────────────────────────────────────
@@ -1066,6 +1079,7 @@ export class CngxSelectShell<T = unknown>
     }
     this.toggle();
   }
+
 
   /**
    * Trigger-level keyboard handling — typeahead-while-closed (native

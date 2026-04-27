@@ -97,6 +97,11 @@ export {
 export { CngxSelectOption } from './src/lib/declarative/option.component';
 export { CngxSelectOptgroup } from './src/lib/declarative/optgroup.component';
 export { CngxSelectDivider } from './src/lib/declarative/divider.component';
+export { CngxSelectSearch } from './src/lib/declarative/select-search.component';
+export {
+  CNGX_SELECT_SHELL_SEARCH_HOST,
+  type CngxSelectShellSearchHost,
+} from './src/lib/declarative/select-search-host';
 
 // ── Shared data model (option types + helpers) ────────────────────────
 export {

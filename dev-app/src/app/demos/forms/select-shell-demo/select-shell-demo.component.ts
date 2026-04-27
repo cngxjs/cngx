@@ -6,7 +6,7 @@ import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 @Component({
@@ -26,6 +26,7 @@ import { delay, of, throwError } from 'rxjs';
     CngxSelectOptionPending,
     CngxSelectEmpty,
     CngxSelectPlaceholder,
+    CngxSelectSearch,
     CngxSelectCaret,
   ],
   template: `
@@ -239,28 +240,11 @@ import { delay, of, throwError } from 'rxjs';
     </div>
   </div>
       </app-example-card>
-      <app-example-card title="Search — filter projected options live"
+      <app-example-card title="Search — declarative <cngx-select-search>"
         [subtitle]="_s6"
         [sourceHtml]="_srcHtml6"
         [sourceTs]="_srcTs6">
         
-  <div style="margin-bottom:12px">
-    <input
-      type="search"
-      [value]="searchTerm()"
-      (input)="searchTerm.set($any($event.target).value)"
-      placeholder="Filter cities…"
-      aria-label="Filter cities"
-      style="
-        width: 100%;
-        padding: .5rem .75rem;
-        border: 1px solid var(--cngx-border, #cbd5e1);
-        border-radius: .25rem;
-        font: inherit;
-      "
-    />
-  </div>
-
   <cngx-select-shell
     [label]="'City'"
     [(value)]="searchValue"
@@ -268,6 +252,7 @@ import { delay, of, throwError } from 'rxjs';
     [clearable]="true"
     placeholder="Pick a city…"
   >
+    <cngx-select-search [placeholder]="'Filter cities…'" />
     @for (city of cities; track city) {
       <cngx-option [value]="city">{{ city }}</cngx-option>
     }
@@ -284,7 +269,7 @@ import { delay, of, throwError } from 'rxjs';
     </div>
     <div class="event-row">
       <span class="event-label">tip</span>
-      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
+      <span class="event-value">Open + type "be" → only Berlin / Berlin-prefixed remain. Press <kbd>↓</kbd> + <kbd>Enter</kbd> to pick.</span>
     </div>
   </div>
       </app-example-card>
@@ -399,7 +384,7 @@ export class SelectShellDemoComponent {
   protected readonly _s3 = '<code>adaptFormControl(control, name)</code> bridges a Reactive-Forms <code>FormControl</code> into the shell\'s Signal-Forms-first <code>[field]</code> contract. Bidirectional sync runs through <code>createFieldSync</code> with <code>compareWith</code>-aware equality.';
   protected readonly _s4 = 'Bind <code>[commitAction]</code> + <code>[commitMode]</code>. <strong>Pessimistic</strong> keeps the panel open during the commit so the projected <code>*cngxSelectOptionPending</code> glyph is visible inside the option\'s reserved internal slot; <strong>optimistic</strong> closes the panel immediately and rolls back on error. Toggle <strong>Server fails</strong> to observe the failure path: the failed option carries <code>data-status="error"</code> and the projected <code>*cngxSelectOptionError</code> glyph renders — never alongside user content.';
   protected readonly _s5 = 'Project <code>*cngxSelectEmpty</code> for the no-options state and <code>*cngxSelectPlaceholder</code> for the empty trigger. Toggle <code>[loading]</code> to render the family-shared loading view (spinner / bar / dots / skeleton — configurable via <code>provideSelectConfig(withLoadingVariant(...))</code>).';
-  protected readonly _s6 = 'Bind <code>[(searchTerm)]</code> to wire any external <code>&lt;input&gt;</code> into the shell\'s filter host. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and computes its own <code>hidden</code> visibility — and the shell drops hidden options from the listbox AD so keyboard navigation skips them. Default policy is case-insensitive substring on the resolved label; override per-instance via <code>[searchMatchFn]</code>.';
+  protected readonly _s6 = 'Project <code>&lt;cngx-select-search /&gt;</code> as a child to add a filter input as the first item in the panel. The search element finds the shell via <code>CNGX_SELECT_SHELL_SEARCH_HOST</code>, two-way binds the term, and forwards <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd> into the listbox AD. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and hides itself when the resolved label does not match — AD nav and visual filter stay in lockstep.';
   protected readonly _s7 = 'Replace the built-in ✕ clear button glyph and ▾ caret with consumer-authored templates. The button frame, ARIA wiring, and click handlers stay intact — only the glyph swaps. <code>*cngxSelectClearButton</code> replaces the entire button when full control is needed.';
   protected readonly _s8 = 'Reactive ARIA, optgroups, divider, async commit (pessimistic so pending is visible), pending + error glyphs, custom caret, custom placeholder, change-event log, keyboard nav (↑↓/Home/End/PageUp/PageDown, typeahead-while-closed), click-outside dismiss, focus restoration on close.';
   protected readonly _srcHtml0 = `<cngx-select-shell
@@ -427,7 +412,7 @@ export class SelectShellDemoComponent {
   </div>`;
   protected readonly _srcTs0 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -515,7 +500,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs1 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -601,7 +586,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs2 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -686,7 +671,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs3 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -817,7 +802,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs4 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -935,7 +920,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs5 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -1003,30 +988,14 @@ import { delay, of, throwError } from 'rxjs';
       [...l.slice(-4), new Date().toLocaleTimeString() + ' → ' + (e.option?.label ?? 'cleared')],
     );
   }`;
-  protected readonly _srcHtml6 = `<div style="margin-bottom:12px">
-    <input
-      type="search"
-      [value]="searchTerm()"
-      (input)="searchTerm.set($any($event.target).value)"
-      placeholder="Filter cities…"
-      aria-label="Filter cities"
-      style="
-        width: 100%;
-        padding: .5rem .75rem;
-        border: 1px solid var(--cngx-border, #cbd5e1);
-        border-radius: .25rem;
-        font: inherit;
-      "
-    />
-  </div>
-
-  <cngx-select-shell
+  protected readonly _srcHtml6 = `<cngx-select-shell
     [label]="'City'"
     [(value)]="searchValue"
     [(searchTerm)]="searchTerm"
     [clearable]="true"
     placeholder="Pick a city…"
   >
+    <cngx-select-search [placeholder]="'Filter cities…'" />
     @for (city of cities; track city) {
       <cngx-option [value]="city">{{ city }}</cngx-option>
     }
@@ -1043,12 +1012,12 @@ import { delay, of, throwError } from 'rxjs';
     </div>
     <div class="event-row">
       <span class="event-label">tip</span>
-      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
+      <span class="event-value">Open + type "be" → only Berlin / Berlin-prefixed remain. Press <kbd>↓</kbd> + <kbd>Enter</kbd> to pick.</span>
     </div>
   </div>`;
   protected readonly _srcTs6 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -1144,7 +1113,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs7 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 
@@ -1276,7 +1245,7 @@ import { delay, of, throwError } from 'rxjs';
   </div>`;
   protected readonly _srcTs8 = `import { FormControl } from '@angular/forms';
 import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';
-import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
+import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';
 import { delay, of, throwError } from 'rxjs';
 
 

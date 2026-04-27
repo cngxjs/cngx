@@ -36,7 +36,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { FormControl } from '@angular/forms';",
     "import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';",
-    "import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';",
+    "import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
   ],
   setup: `
@@ -359,32 +359,16 @@ export const STORY: DemoSpec = {
   </div>`,
     },
     {
-      title: 'Search — filter projected options live',
+      title: 'Search — declarative <cngx-select-search>',
       subtitle:
-        'Bind <code>[(searchTerm)]</code> to wire any external <code>&lt;input&gt;</code> into the shell\'s filter ' +
-        'host. Each projected <code>&lt;cngx-option&gt;</code> reads <code>CNGX_OPTION_FILTER_HOST</code> and ' +
-        'computes its own <code>hidden</code> visibility — and the shell drops hidden options from the listbox AD ' +
-        'so keyboard navigation skips them. Default policy is case-insensitive substring on the resolved label; ' +
-        'override per-instance via <code>[searchMatchFn]</code>.',
-      imports: ['CngxSelectShell', 'CngxSelectOption'],
+        'Project <code>&lt;cngx-select-search /&gt;</code> as a child to add a filter input as the first item ' +
+        'in the panel. The search element finds the shell via <code>CNGX_SELECT_SHELL_SEARCH_HOST</code>, ' +
+        'two-way binds the term, and forwards <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> ' +
+        '<kbd>Enter</kbd> <kbd>Esc</kbd> into the listbox AD. Each projected <code>&lt;cngx-option&gt;</code> ' +
+        'reads <code>CNGX_OPTION_FILTER_HOST</code> and hides itself when the resolved label does not match — ' +
+        'AD nav and visual filter stay in lockstep.',
+      imports: ['CngxSelectShell', 'CngxSelectOption', 'CngxSelectSearch'],
       template: `
-  <div style="margin-bottom:12px">
-    <input
-      type="search"
-      [value]="searchTerm()"
-      (input)="searchTerm.set($any($event.target).value)"
-      placeholder="Filter cities…"
-      aria-label="Filter cities"
-      style="
-        width: 100%;
-        padding: .5rem .75rem;
-        border: 1px solid var(--cngx-border, #cbd5e1);
-        border-radius: .25rem;
-        font: inherit;
-      "
-    />
-  </div>
-
   <cngx-select-shell
     [label]="'City'"
     [(value)]="searchValue"
@@ -392,6 +376,7 @@ export const STORY: DemoSpec = {
     [clearable]="true"
     placeholder="Pick a city…"
   >
+    <cngx-select-search [placeholder]="'Filter cities…'" />
     @for (city of cities; track city) {
       <cngx-option [value]="city">{{ city }}</cngx-option>
     }
@@ -408,7 +393,7 @@ export const STORY: DemoSpec = {
     </div>
     <div class="event-row">
       <span class="event-label">tip</span>
-      <span class="event-value">Type "be" → only Berlin remains in keyboard nav + visually.</span>
+      <span class="event-value">Open + type "be" → only Berlin / Berlin-prefixed remain. Press <kbd>↓</kbd> + <kbd>Enter</kbd> to pick.</span>
     </div>
   </div>`,
     },
