@@ -2,6 +2,7 @@ import { Component, effect, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Subject, type Observable } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox } from '@cngx/common/interactive';
@@ -13,9 +14,13 @@ import {
 } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
-import { CngxSelectShell } from './select-shell.component';
+import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
+import type {
+  CngxSelectCommitAction,
+  CngxSelectCommitMode,
+} from '../shared/commit-action.types';
 
 // jsdom does not implement the Popover API — polyfill so CngxPopover can toggle.
 function polyfillPopover(): void {
@@ -134,6 +139,41 @@ class FormFieldHost {
 class ReactiveFormsHost {
   readonly control = new FormControl<string | null>('red');
   readonly field = adaptFormControl(this.control, 'color');
+}
+
+@Component({
+  template: `
+    <cngx-select-shell
+      [label]="'Farbe'"
+      [commitAction]="commitAction"
+      [commitMode]="mode()"
+      [(value)]="value"
+      (selectionChange)="changes.push($event)"
+      (commitError)="errors.push($event)"
+      (stateChange)="statuses.push($event)"
+    >
+      <cngx-option [value]="'red'">Rot</cngx-option>
+      <cngx-option [value]="'green'">Grün</cngx-option>
+      <cngx-option [value]="'blue'">Blau</cngx-option>
+    </cngx-select-shell>
+  `,
+  imports: [CngxSelectShell, CngxSelectOption],
+})
+class CommitHost {
+  readonly value = signal<string | undefined>('red');
+  readonly mode = signal<CngxSelectCommitMode>('optimistic');
+  readonly changes: CngxSelectShellChange<string>[] = [];
+  readonly errors: unknown[] = [];
+  readonly statuses: string[] = [];
+  pending: Subject<string | undefined> | null = null;
+  commitCallCount = 0;
+  readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    this.commitCallCount += 1;
+    const subject = new Subject<string | undefined>();
+    this.pending = subject;
+    return subject.asObservable() as Observable<string | undefined>;
+    void intended;
+  };
 }
 
 describe('CngxSelectShell — Phase 5 scaffold', () => {
@@ -342,5 +382,81 @@ describe('CngxSelectShell — form-field integration', () => {
     flush(fixture);
 
     expect(shell.value()).toBe('green');
+  });
+});
+
+describe('CngxSelectShell — commit action producer', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  function setup(): {
+    fixture: ReturnType<typeof TestBed.createComponent<CommitHost>>;
+    shell: CngxSelectShell<string>;
+    listbox: CngxListbox;
+    host: CommitHost;
+  } {
+    const fixture = TestBed.createComponent(CommitHost);
+    fixture.detectChanges();
+    flush(fixture);
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const listboxDe = fixture.debugElement.query(By.directive(CngxListbox));
+    return {
+      fixture,
+      shell: shellDe.componentInstance as CngxSelectShell<string>,
+      listbox: listboxDe.injector.get(CngxListbox),
+      host: fixture.componentInstance,
+    };
+  }
+
+  function pickValue(listbox: CngxListbox, value: string): void {
+    listbox.ad.highlightByValue(value);
+    listbox.ad.activateCurrent();
+  }
+
+  it('optimistic success: value stays at intended, selectionChange emits on success', () => {
+    const { fixture, listbox, host } = setup();
+
+    pickValue(listbox, 'green');
+    flush(fixture);
+
+    // Optimistic: value reflects intended immediately, no selectionChange
+    // until commit resolves.
+    expect(host.value()).toBe('green');
+    expect(host.changes.length).toBe(0);
+    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+
+    expect(host.value()).toBe('green');
+    expect(host.changes.length).toBe(1);
+    expect(host.changes[0].value).toBe('green');
+    expect(host.changes[0].option?.value).toBe('green');
+    expect(host.statuses[host.statuses.length - 1]).toBe('success');
+  });
+
+  it('supersede: a second pick aborts the in-flight commit', () => {
+    const { fixture, listbox, host } = setup();
+
+    pickValue(listbox, 'green');
+    flush(fixture);
+    const firstPending = host.pending!;
+    const firstCount = host.commitCallCount;
+
+    // Second pick while first is pending — supersedes via commitId.
+    pickValue(listbox, 'blue');
+    flush(fixture);
+    expect(host.commitCallCount).toBeGreaterThan(firstCount);
+
+    // First pending resolves too late — must be ignored by the commit
+    // controller's supersede check.
+    const statusesBefore = [...host.statuses];
+    firstPending.next('green');
+    firstPending.complete();
+    flush(fixture);
+    expect(host.statuses).toEqual(statusesBefore);
   });
 });

@@ -10,6 +10,7 @@ import {
   input,
   model,
   output,
+  untracked,
   type ElementRef,
   type TemplateRef,
   viewChild,
@@ -37,6 +38,12 @@ import {
   type CngxFormFieldControl,
 } from '@cngx/forms/field';
 
+import { createADActivationDispatcher } from '../shared/ad-activation-dispatcher';
+import { CngxSelectAnnouncer } from '../shared/announcer';
+import {
+  CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
+  type CngxCommitErrorAnnouncePolicy,
+} from '../shared/commit-error-announcer';
 import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
@@ -58,6 +65,10 @@ import {
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
 import { resolveSelectConfig } from '../shared/resolve-config';
+import {
+  CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  type ScalarCommitHandler,
+} from '../shared/scalar-commit-handler';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -226,6 +237,7 @@ export interface CngxSelectShellChange<T = unknown> {
 })
 export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
+  private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
   // ── Inputs ─────────────────────────────────────────────────────────
@@ -272,6 +284,15 @@ export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
+  /**
+   * Scalar-commit error-announce policy. Per-instance input wins over
+   * {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when neither is
+   * set, the variant default `{ kind: 'verbose', severity: 'assertive' }`
+   * applies. Mirrors the {@link CngxSelect} input contract.
+   */
+  readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
+    this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
+  );
 
   /** Two-way bindable selected value. */
   readonly value = model<T | undefined>(undefined);
@@ -630,14 +651,79 @@ export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
 
   /** @internal */
   readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+
+  // ── Commit state (delegated) ───────────────────────────────────────
+
   /**
-   * Phase-5 stub — Phase 7 commit 1 rebinds this to the scalar-handler's
-   * `retryLast()`. Until then the retry callback is a no-op so the
-   * context shape stays valid for the (deferred) panel-shell consumer.
+   * Routes a failed commit through the family-shared announcer policy
+   * (verbose / soft, assertive / polite). Keeps the variant body free
+   * of error-message formatting and live-region routing.
    *
    * @internal
    */
-  readonly commitErrorContext = this.core.bindCommitRetry(() => undefined);
+  private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
+    deps: {
+      announcer: this.announcer,
+      commitErrorMessage: (err) => this.core.commitErrorMessage(err),
+      softAnnounce: (opt, action, count, multi) =>
+        this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
+    },
+    policy: this.commitErrorAnnouncePolicy,
+  });
+
+  /**
+   * Shared scalar commit handler — same factory `CngxSelect` consumes.
+   * `onStateChange('pending')` eager-closes the popover in optimistic
+   * mode; `onCommitFinalize` emits selectionChange + announces 'added';
+   * `onCommitError` delegates to the announcer; `onError` emits the
+   * variant's `commitError` output.
+   *
+   * @internal
+   */
+  private readonly scalarHandler: ScalarCommitHandler<T> = inject(
+    CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
+  )<T>({
+    value: this.value,
+    compareWith: this.compareWith,
+    commitMode: this.commitMode,
+    core: this.core,
+    commitAction: this.commitAction,
+    onCommitFinalize: (option, finalValue, previousValue) => {
+      this.selectionChange.emit({
+        source: this,
+        value: finalValue,
+        previousValue,
+        option,
+      });
+      this.core.announce(option, 'added', option ? 1 : 0, false);
+      // Pessimistic mode kept the popover open while pending; close it
+      // on success now that the write committed. AD dispatcher already
+      // handled the optimistic / non-commit close — calling hide()
+      // again is a no-op there.
+      if (this.commitMode() === 'pessimistic') {
+        const pop = this.popoverRef();
+        if (pop?.isVisible()) {
+          pop.hide();
+        }
+      }
+    },
+    onCommitError: (err) => this.announceCommitError(err),
+    onStateChange: (status) => {
+      this.stateChange.emit(status);
+      if (status === 'pending' && this.commitMode() === 'optimistic') {
+        const pop = this.popoverRef();
+        if (pop?.isVisible()) {
+          pop.hide();
+        }
+      }
+    },
+    onError: (err) => this.commitError.emit(err),
+  });
+
+  /** @internal */
+  readonly commitErrorContext = this.core.bindCommitRetry(() =>
+    this.scalarHandler.retryLast(),
+  );
 
   /** Currently selected option resolved against the derived option model. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
@@ -716,6 +802,31 @@ export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
       if (this.autofocus()) {
         this.focus();
       }
+    });
+
+    // Bridge AD activations into popover-close, selectionChange output,
+    // and (when [commitAction] is bound) the commit flow. Lifecycle and
+    // routing live in `createADActivationDispatcher`; value-shape work
+    // (previous-value snapshot, finalize emission) stays here. Pattern
+    // mirrors `CngxSelect` verbatim.
+    createADActivationDispatcher<T, T>({
+      listboxRef: this.listboxRef,
+      core: this.core,
+      popoverRef: this.popoverRef,
+      closeOnSelect: true,
+      commitAction: this.commitAction,
+      onCommit: (intended, opt) =>
+        this.scalarHandler.dispatchFromActivation(intended, opt),
+      onActivate: (intended, opt) => {
+        // Snapshot previous value before the listbox's own activation
+        // subscriber writes the new value through [(value)]. RxJS
+        // Subject subscribers fire in registration order; the listbox
+        // (subscribed during its own constructor) runs before this
+        // callback. Reading `untracked(value)` returns whatever has
+        // already propagated.
+        const previous = untracked(() => this.value());
+        this.scalarHandler.finalizeSelection(intended, opt, previous);
+      },
     });
 
     // Panel open/close lifecycle events. Restores focus to the trigger
