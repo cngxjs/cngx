@@ -48,7 +48,7 @@ import { CngxOption } from '@cngx/common/interactive';
   template: `
     <ng-content />
     @let s = option.statusSignal();
-    @if (s?.tpl) {
+    @if (s !== null && s.tpl !== null) {
       <span class="cngx-option__status" [attr.data-state]="s.kind">
         <ng-container *ngTemplateOutlet="s.tpl" />
       </span>
