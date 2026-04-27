@@ -1,10 +1,13 @@
 import {
+  afterNextRender,
   computed,
   Directive,
   ElementRef,
   inject,
   input,
+  isDevMode,
   signal,
+  type Signal,
 } from '@angular/core';
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
@@ -63,6 +66,13 @@ export class CngxOption implements CngxAdItemHandle {
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
   private readonly statusHost = inject(CNGX_OPTION_STATUS_HOST, { optional: true });
   private readonly selectedState = signal(false);
+  /**
+   * Snapshot of `nativeElement.textContent` taken in `afterNextRender`. The
+   * `textContent` getter is not a signal, so a reactive `label` cannot
+   * subscribe to it directly; the snapshot bridges DOM state into the
+   * reactive graph once the first render has populated text.
+   */
+  private readonly textContentSnapshot = signal('');
 
   /** Whether this option is currently highlighted by the surrounding AD. */
   readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
@@ -91,21 +101,46 @@ export class CngxOption implements CngxAdItemHandle {
   readonly isSelected = this.selectedState.asReadonly();
 
   /**
-   * Resolved label: explicit `label` input, otherwise trimmed `textContent`.
-   * Not a `computed()` — the textContent fallback is intentionally recomputed
-   * on every access so it reacts to runtime DOM changes.
+   * Resolved label as a Signal — explicit `label` input wins, falling back to
+   * the host element's trimmed `textContent` (the W3C-defined plain-text
+   * projection of the subtree). Plain text by construction; never reads
+   * `innerHTML`. Consumers can text-interpolate this safely on a closed
+   * trigger (`{{ option.label() }}`) without an XSS surface.
+   *
+   * The textContent fallback is captured as a post-render snapshot
+   * (`afterNextRender`), so the signal is reactive on `labelInput` while
+   * still giving callers a non-empty value for static-text declarative
+   * options. Consumers with dynamic option text should bind `[label]`
+   * explicitly rather than relying on the projection.
    */
-  readonly resolvedLabel = (): string => {
+  readonly label: Signal<string> = computed(() => {
     const explicit = this.labelInput();
     if (explicit) {
       return explicit;
     }
-    const el = this.elementRef.nativeElement as HTMLElement;
-    return (el.textContent ?? '').trim();
-  };
+    return this.textContentSnapshot();
+  });
 
-  /** @internal Handle shape for `CngxActiveDescendant`. */
-  readonly label = this.resolvedLabel;
+  /**
+   * Back-compat callable alias — `CngxAdItemHandle.label` accepts both
+   * `Signal<string>` and `() => string`, so this arrow keeps any
+   * consumer that called `option.resolvedLabel()` imperatively working
+   * unchanged.
+   */
+  readonly resolvedLabel = (): string => this.label();
+
+  constructor() {
+    afterNextRender(() => {
+      const el = this.elementRef.nativeElement as HTMLElement;
+      this.textContentSnapshot.set((el.textContent ?? '').trim());
+      if (isDevMode() && !this.label()) {
+        console.error(
+          `<cngx-option> at ${this.id} has no label and no textContent. ` +
+            `Label is required for AT and trigger display.`,
+        );
+      }
+    });
+  }
 
   /** @internal Used by `CngxListbox` to sync selection state. */
   markSelected(selected: boolean): void {

@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -133,6 +133,79 @@ describe('CngxOption', () => {
     const { fixture, options } = setup();
     fixture.detectChanges();
     expect(options[0].resolvedLabel().trim()).toBe('Apple');
+  });
+
+  describe('label Signal', () => {
+    it('returns the explicit label input when supplied', () => {
+      @Component({
+        template: `<div cngxActiveDescendant tabindex="0">
+          <div cngxOption value="a" label="Explicit Apple">Body Apple</div>
+        </div>`,
+        imports: [CngxActiveDescendant, CngxOption],
+      })
+      class ExplicitLabelHost {}
+
+      TestBed.configureTestingModule({});
+      const fixture = TestBed.createComponent(ExplicitLabelHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const opt = fixture.debugElement.query(By.directive(CngxOption)).injector.get(CngxOption);
+      expect(opt.label()).toBe('Explicit Apple');
+    });
+
+    it('falls back to trimmed textContent when label input is absent', () => {
+      const { options } = setup();
+      expect(options[0].label()).toBe('Apple');
+    });
+
+    it('dev-warns once when both label input and textContent are empty', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      try {
+        @Component({
+          template: `<div cngxActiveDescendant tabindex="0">
+            <div cngxOption value="x"></div>
+          </div>`,
+          imports: [CngxActiveDescendant, CngxOption],
+        })
+        class EmptyLabelHost {}
+
+        TestBed.configureTestingModule({});
+        const fixture = TestBed.createComponent(EmptyLabelHost);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        TestBed.flushEffects();
+        fixture.detectChanges();
+
+        expect(errorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('has no label and no textContent'),
+        );
+      } finally {
+        errorSpy.mockRestore();
+      }
+    });
+
+    it('label() strips markup from rich-content options (XSS-safe by construction)', () => {
+      @Component({
+        template: `<div cngxActiveDescendant tabindex="0">
+          <div cngxOption value="p"><b>Premium</b> Service</div>
+        </div>`,
+        imports: [CngxActiveDescendant, CngxOption],
+      })
+      class RichContentHost {}
+
+      TestBed.configureTestingModule({});
+      const fixture = TestBed.createComponent(RichContentHost);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const opt = fixture.debugElement.query(By.directive(CngxOption)).injector.get(CngxOption);
+      expect(opt.label()).toBe('Premium Service');
+      expect(opt.label()).not.toContain('<');
+      expect(opt.label()).not.toContain('>');
+    });
   });
 });
 
