@@ -17,7 +17,10 @@ import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
-import { CngxSelectOptionError } from '../shared/template-slots';
+import {
+  CngxSelectOptionError,
+  CngxSelectOptionPending,
+} from '../shared/template-slots';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
@@ -156,12 +159,20 @@ class ReactiveFormsHost {
       <ng-template cngxSelectOptionError>
         <span class="commit-error-glyph">!</span>
       </ng-template>
+      <ng-template cngxSelectOptionPending>
+        <span class="commit-pending-glyph">…</span>
+      </ng-template>
       <cngx-option [value]="'red'">Rot</cngx-option>
       <cngx-option [value]="'green'">Grün</cngx-option>
       <cngx-option [value]="'blue'">Blau</cngx-option>
     </cngx-select-shell>
   `,
-  imports: [CngxSelectShell, CngxSelectOption, CngxSelectOptionError],
+  imports: [
+    CngxSelectShell,
+    CngxSelectOption,
+    CngxSelectOptionError,
+    CngxSelectOptionPending,
+  ],
 })
 class CommitHost {
   readonly value = signal<string | undefined>('red');
@@ -513,6 +524,46 @@ describe('CngxSelectShell — commit action producer', () => {
     firstPending.complete();
     flush(fixture);
     expect(host.statuses).toEqual(statusesBefore);
+  });
+
+  it('pessimistic pending: panel stays open, failed option carries data-status="pending"', () => {
+    const { fixture, listbox, host } = setup();
+    fixture.componentInstance.mode.set('pessimistic');
+    flush(fixture);
+
+    const greenOption = fixture.debugElement.queryAll(By.css('cngx-option'))[1]
+      .nativeElement as HTMLElement;
+    const popover = fixture.debugElement.query(By.directive(CngxPopover))
+      .injector.get(CngxPopover);
+    const triggerBtn = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .nativeElement.querySelector('.cngx-select-shell__trigger') as HTMLElement;
+
+    triggerBtn.click();
+    flush(fixture);
+    expect(popover.isVisible()).toBe(true);
+
+    pickValue(listbox, 'green');
+    flush(fixture);
+
+    // Pessimistic: panel stays open while the commit is pending, the
+    // failed option carries data-status="pending", and the glyph
+    // template (when projected) renders inside the reserved internal
+    // slot. The status-host contract holds even before the commit
+    // resolves.
+    expect(popover.isVisible()).toBe(true);
+    expect(greenOption.getAttribute('data-status')).toBe('pending');
+    const slot = greenOption.querySelector('.cngx-option__status');
+    expect(slot).not.toBeNull();
+    const glyph = slot!.querySelector('.commit-pending-glyph');
+    expect(glyph).not.toBeNull();
+    expect(glyph!.textContent).toBe('…');
+
+    host.pending!.next('green');
+    host.pending!.complete();
+    flush(fixture);
+
+    // After success: status clears, panel closes.
+    expect(greenOption.getAttribute('data-status')).toBeNull();
   });
 
   it('optimistic error: value rolls back, status-host renders glyph in option slot', () => {
