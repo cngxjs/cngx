@@ -14,6 +14,7 @@ import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_OPTION_CONTAINER } from './option-container';
+import { CNGX_OPTION_FILTER_HOST } from './option-filter-host';
 import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-host';
 
 /**
@@ -45,6 +46,8 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
     '[attr.aria-selected]': 'isSelected()',
     '[attr.aria-disabled]': 'disabled() || null',
     '[attr.data-status]': 'statusSignal()?.kind ?? null',
+    '[class.cngx-option--hidden]': 'hidden()',
+    '[attr.hidden]': 'hidden() || null',
     '(click)': 'handleClick()',
     '(pointerenter)': 'handlePointerEnter()',
   },
@@ -65,6 +68,7 @@ export class CngxOption implements CngxAdItemHandle {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
   private readonly statusHost = inject(CNGX_OPTION_STATUS_HOST, { optional: true });
+  private readonly filterHost = inject(CNGX_OPTION_FILTER_HOST, { optional: true });
   private readonly selectedState = signal(false);
   /**
    * Snapshot of `nativeElement.textContent` taken in `afterNextRender`. The
@@ -99,6 +103,26 @@ export class CngxOption implements CngxAdItemHandle {
    * via `markSelected()`. Standalone use (without a listbox) always returns `false`.
    */
   readonly isSelected = this.selectedState.asReadonly();
+
+  /**
+   * Reactive visibility derived from the optional `CNGX_OPTION_FILTER_HOST`
+   * host's `searchTerm` and `matches` policy. `false` when no host is
+   * provided or the term is empty; `true` only when the host's policy
+   * explicitly rejects the option for the current term.
+   *
+   * Boolean — default `Object.is` equality is sufficient.
+   */
+  readonly hidden = computed<boolean>(() => {
+    const host = this.filterHost;
+    if (!host) {
+      return false;
+    }
+    const term = host.searchTerm();
+    if (!term) {
+      return false;
+    }
+    return !host.matches(this.value(), this.label(), term);
+  });
 
   /**
    * Resolved label as a Signal — explicit `label` input wins, falling back to

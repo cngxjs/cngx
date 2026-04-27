@@ -77,6 +77,9 @@ import { CngxOption } from '@cngx/common/interactive';
       display: inline-flex;
       align-items: center;
     }
+    :host([hidden]) {
+      display: none;
+    }
   `,
 })
 export class CngxSelectOption {

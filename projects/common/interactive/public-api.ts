@@ -92,6 +92,10 @@ export {
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from './src/listbox/option-status-host';
+export {
+  CNGX_OPTION_FILTER_HOST,
+  type CngxOptionFilterHost,
+} from './src/listbox/option-filter-host';
 export { CngxListbox } from './src/listbox/listbox.directive';
 export {
   CngxListboxSearch,
