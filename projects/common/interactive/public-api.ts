@@ -87,6 +87,11 @@ export {
   type CngxOptionContainerGroup,
   type CngxOptionContainerOption,
 } from './src/listbox/option-container';
+export {
+  CNGX_OPTION_STATUS_HOST,
+  type CngxOptionStatus,
+  type CngxOptionStatusHost,
+} from './src/listbox/option-status-host';
 export { CngxListbox } from './src/listbox/listbox.directive';
 export {
   CngxListboxSearch,

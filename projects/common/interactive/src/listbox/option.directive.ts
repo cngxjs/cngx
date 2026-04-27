@@ -11,6 +11,7 @@ import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx
 import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_OPTION_CONTAINER } from './option-container';
+import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-host';
 
 /**
  * A single selectable option registered with a surrounding `CngxActiveDescendant`.
@@ -40,6 +41,7 @@ import { CNGX_OPTION_CONTAINER } from './option-container';
     '[class.cngx-option--disabled]': 'disabled()',
     '[attr.aria-selected]': 'isSelected()',
     '[attr.aria-disabled]': 'disabled() || null',
+    '[attr.data-status]': 'statusSignal()?.kind ?? null',
     '(click)': 'handleClick()',
     '(pointerenter)': 'handlePointerEnter()',
   },
@@ -59,10 +61,28 @@ export class CngxOption implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
+  private readonly statusHost = inject(CNGX_OPTION_STATUS_HOST, { optional: true });
   private readonly selectedState = signal(false);
 
   /** Whether this option is currently highlighted by the surrounding AD. */
   readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
+
+  /**
+   * Reactive infrastructure-status entry resolved via the optional
+   * `CNGX_OPTION_STATUS_HOST` host. `null` when no host is provided or the
+   * host returns `null` for this option's value.
+   *
+   * `CngxSelectOption` (declarative wrapper) renders the status template
+   * AFTER the user's `<ng-content/>` in a reserved internal slot, so the
+   * indicator never invades the consumer-authored option content.
+   */
+  readonly statusSignal = computed<CngxOptionStatus | null>(
+    () => this.statusHost?.statusFor(this.value())() ?? null,
+    {
+      equal: (a, b) =>
+        a === b || (!!a && !!b && a.kind === b.kind && a.tpl === b.tpl),
+    },
+  );
 
   /**
    * Whether this option is selected. Driven externally by the enclosing listbox
