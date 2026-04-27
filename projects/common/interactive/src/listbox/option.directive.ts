@@ -10,6 +10,8 @@ import {
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
+import { CNGX_OPTION_CONTAINER } from './option-container';
+
 /**
  * A single selectable option registered with a surrounding `CngxActiveDescendant`.
  *
@@ -26,7 +28,10 @@ import { nextUid } from '@cngx/core/utils';
   selector: '[cngxOption]',
   exportAs: 'cngxOption',
   standalone: true,
-  providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxOption }],
+  providers: [
+    { provide: CNGX_AD_ITEM, useExisting: CngxOption },
+    { provide: CNGX_OPTION_CONTAINER, useExisting: CngxOption },
+  ],
   host: {
     role: 'option',
     '[id]': 'id',
@@ -40,6 +45,8 @@ import { nextUid } from '@cngx/core/utils';
   },
 })
 export class CngxOption implements CngxAdItemHandle {
+  /** Discriminator for `CNGX_OPTION_CONTAINER` consumers. */
+  readonly kind = 'option' as const;
   /** Opaque value emitted on activation. */
   readonly value = input<unknown>(undefined);
   /** Disabled options are skipped in navigation and reject clicks. */
