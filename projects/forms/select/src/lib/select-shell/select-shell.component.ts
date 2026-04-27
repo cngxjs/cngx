@@ -48,6 +48,7 @@ import {
   type CngxSelectCommitMode,
 } from '../shared/commit-action.types';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
+import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
   type CngxSelectOptionDef,
@@ -727,6 +728,19 @@ export class CngxSelectShell<T = unknown> implements CngxFormFieldControl {
       openedChange: this.openedChange,
       opened: this.opened,
       closed: this.closed,
+    });
+
+    // Bidirectional sync with the bound form field (if any). Reads
+    // CngxFormFieldPresenter via the family-shared factory; the two
+    // installed effects each guard with `valueEquals` so a write in
+    // either direction does not bounce back. Standalone use (no field
+    // bound) is a no-op — the factory returns early when no presenter
+    // is in scope.
+    createFieldSync<T | undefined>({
+      componentValue: this.value,
+      valueEquals: (a, b) =>
+        (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
+      coerceFromField: (x) => x as T | undefined,
     });
   }
 

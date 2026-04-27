@@ -1,10 +1,17 @@
 import { Component, effect, signal } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CngxFormField,
+  adaptFormControl,
+} from '@cngx/forms/field';
+import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { CngxSelectShell } from './select-shell.component';
 import { CngxSelectOption } from '../declarative/option.component';
@@ -89,6 +96,44 @@ class GroupedHost {
 class RichLabelHost {
   readonly value = signal<string | undefined>(undefined);
   readonly clearable = signal(false);
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-select-shell [label]="'Farbe'">
+        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'green'">Grün</cngx-option>
+      </cngx-select-shell>
+    </cngx-form-field>
+  `,
+  imports: [CngxFormField, CngxSelectShell, CngxSelectOption],
+})
+class FormFieldHost {
+  readonly _mock = createMockField<string>({ name: 'color', value: 'red' });
+  readonly field = this._mock.accessor;
+  readonly ref: MockFieldRef<string> = this._mock.ref;
+}
+
+@Component({
+  template: `
+    <cngx-form-field [field]="field">
+      <cngx-select-shell [label]="'Farbe'">
+        <cngx-option [value]="'red'">Rot</cngx-option>
+        <cngx-option [value]="'green'">Grün</cngx-option>
+      </cngx-select-shell>
+    </cngx-form-field>
+  `,
+  imports: [
+    CngxFormField,
+    CngxSelectShell,
+    CngxSelectOption,
+    ReactiveFormsModule,
+  ],
+})
+class ReactiveFormsHost {
+  readonly control = new FormControl<string | null>('red');
+  readonly field = adaptFormControl(this.control, 'color');
 }
 
 describe('CngxSelectShell — Phase 5 scaffold', () => {
@@ -234,5 +279,68 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     expect(popover.isVisible()).toBe(true);
     expect(triggerBtn.getAttribute('aria-expanded')).toBe('true');
+  });
+});
+
+describe('CngxSelectShell — form-field integration', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  it('provides CNGX_FORM_FIELD_CONTROL via the component', () => {
+    const fixture = TestBed.createComponent(FormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const resolved = shellDe.injector.get(CNGX_FORM_FIELD_CONTROL);
+    expect(resolved).toBe(shellDe.componentInstance);
+  });
+
+  it('Signal-Forms round-trip: external mutation propagates to value()', () => {
+    const fixture = TestBed.createComponent(FormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    expect(shell.value()).toBe('red');
+
+    fixture.componentInstance.ref.value.set('green');
+    flush(fixture);
+
+    expect(shell.value()).toBe('green');
+  });
+
+  it('Signal-Forms round-trip: internal value writes back into the field', () => {
+    const fixture = TestBed.createComponent(FormFieldHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    shell.value.set('green');
+    flush(fixture);
+
+    expect(fixture.componentInstance.ref.value()).toBe('green');
+  });
+
+  it('Reactive-Forms round-trip via adaptFormControl', () => {
+    const fixture = TestBed.createComponent(ReactiveFormsHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    expect(shell.value()).toBe('red');
+
+    fixture.componentInstance.control.setValue('green');
+    flush(fixture);
+
+    expect(shell.value()).toBe('green');
   });
 });
