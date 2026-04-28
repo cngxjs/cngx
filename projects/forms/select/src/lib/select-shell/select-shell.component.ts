@@ -74,7 +74,11 @@ import {
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
-import { CNGX_SELECT_PANEL_HOST } from '../shared/panel-host';
+import {
+  CNGX_SELECT_PANEL_HOST,
+  CNGX_SELECT_PANEL_VIEW_HOST,
+  type CngxSelectPanelViewHost,
+} from '../shared/panel-host';
 import {
   CNGX_SELECT_SHELL_SEARCH_HOST,
   type CngxSelectShellSearchHost,
@@ -165,6 +169,7 @@ export interface CngxSelectShellChange<T = unknown> {
       },
     },
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_SELECT_PANEL_VIEW_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_FILTER_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_INTERACTION_HOST, useExisting: CngxSelectShell },
@@ -291,6 +296,7 @@ export class CngxSelectShell<T = unknown>
   CngxOptionStatusHost,
   CngxOptionFilterHost,
   CngxOptionInteractionHost,
+  CngxSelectPanelViewHost<T>,
   CngxSelectShellSearchHost {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);

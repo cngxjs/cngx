@@ -12,6 +12,7 @@ import {
   CngxFormField,
   adaptFormControl,
 } from '@cngx/forms/field';
+import { CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
@@ -541,6 +542,16 @@ describe('CngxSelectShell — form-field integration', () => {
 
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const resolved = shellDe.injector.get(CNGX_FORM_FIELD_CONTROL);
+    expect(resolved).toBe(shellDe.componentInstance);
+  });
+
+  it('provides CNGX_SELECT_PANEL_VIEW_HOST via the component', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const resolved = shellDe.injector.get(CNGX_SELECT_PANEL_VIEW_HOST);
     expect(resolved).toBe(shellDe.componentInstance);
   });
 
