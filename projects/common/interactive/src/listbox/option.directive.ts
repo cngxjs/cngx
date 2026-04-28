@@ -15,6 +15,7 @@ import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_OPTION_CONTAINER } from './option-container';
 import { CNGX_OPTION_FILTER_HOST } from './option-filter-host';
+import { CNGX_OPTION_INTERACTION_HOST } from './option-interaction-host';
 import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-host';
 
 /**
@@ -67,6 +68,7 @@ export class CngxOption implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
+  private readonly interactionHost = inject(CNGX_OPTION_INTERACTION_HOST, { optional: true });
   private readonly statusHost = inject(CNGX_OPTION_STATUS_HOST, { optional: true });
   private readonly filterHost = inject(CNGX_OPTION_FILTER_HOST, { optional: true });
   private readonly selectedState = signal(false);
@@ -78,8 +80,17 @@ export class CngxOption implements CngxAdItemHandle {
    */
   private readonly textContentSnapshot = signal('');
 
-  /** Whether this option is currently highlighted by the surrounding AD. */
-  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
+  /**
+   * Whether this option is currently highlighted. Reads the surrounding
+   * `CngxActiveDescendant` when available; falls back to the optional
+   * {@link CNGX_OPTION_INTERACTION_HOST} contract for content-projected
+   * options whose authoring view has no AD in scope (e.g. children of
+   * `CngxSelectShell`).
+   */
+  readonly isHighlighted = computed<boolean>(() => {
+    const id = this.ad?.activeId() ?? this.interactionHost?.activeId() ?? null;
+    return id === this.id;
+  });
 
   /**
    * Reactive infrastructure-status entry resolved via the optional
@@ -176,17 +187,22 @@ export class CngxOption implements CngxAdItemHandle {
       return;
     }
     const ad = this.ad;
-    if (!ad) {
+    if (ad) {
+      ad.highlightByValue(this.value());
+      ad.activateCurrent();
       return;
     }
-    ad.highlightByValue(this.value());
-    ad.activateCurrent();
+    this.interactionHost?.activate(this.value());
   }
 
   protected handlePointerEnter(): void {
     if (this.disabled()) {
       return;
     }
-    this.ad?.highlightByValue(this.value());
+    if (this.ad) {
+      this.ad.highlightByValue(this.value());
+      return;
+    }
+    this.interactionHost?.highlight(this.value());
   }
 }
