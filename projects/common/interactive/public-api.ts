@@ -126,6 +126,23 @@ export {
   type CngxMenuNavStrategy,
 } from './src/menu/menu-nav-strategy';
 export {
+  CNGX_MENU_CONFIG,
+  DEFAULT_MENU_CONFIG,
+  injectMenuConfig,
+  provideMenuConfig,
+  provideMenuConfigAt,
+  type CngxMenuAriaLabels,
+  type CngxMenuConfig,
+  type CngxMenuConfigFeature,
+} from './src/menu/menu-config';
+export {
+  withAriaLabels,
+  withCloseOnSelect,
+  withSubmenuCloseDelay,
+  withSubmenuOpenDelay,
+  withTypeaheadDebounce,
+} from './src/menu/menu-config-features';
+export {
   CNGX_MENU_RADIO_GROUP,
   createMenuRadioController,
   type CngxMenuRadioGroup,
