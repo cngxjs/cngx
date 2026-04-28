@@ -491,6 +491,41 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     // `option.isHighlighted` reads the host's `activeId` signal.
     expect(blueOption.classList.contains('cngx-option--highlighted')).toBe(true);
   });
+
+  it('statusFor returns the same Signal reference for the same value (reference stability)', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    const a = shell.statusFor('red');
+    const b = shell.statusFor('red');
+    const c = shell.statusFor('green');
+
+    expect(Object.is(a, b)).toBe(true);
+    expect(Object.is(a, c)).toBe(false);
+  });
+
+  it('statusFor cache is cleared on destroy', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    const before = shell.statusFor('red');
+    fixture.destroy();
+    const after = shell.statusFor('red');
+
+    // After destroy, the cache is cleared — a fresh call yields a new
+    // Signal instance. This also exercises the `DestroyRef.onDestroy`
+    // teardown path, ensuring we don't leak the per-value cache across
+    // component lifetimes.
+    expect(Object.is(before, after)).toBe(false);
+  });
 });
 
 describe('CngxSelectShell — form-field integration', () => {

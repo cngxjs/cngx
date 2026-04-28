@@ -6,6 +6,7 @@ import {
   computed,
   contentChild,
   contentChildren,
+  DestroyRef,
   inject,
   input,
   model,
@@ -948,9 +949,25 @@ export class CngxSelectShell<T = unknown>
   // `CNGX_OPTION_STATUS_HOST` and renders the resolved `tpl` inside its
   // own `.cngx-option__status` span.
 
+  /**
+   * Per-value cache for {@link statusFor}. The option directive
+   * subscribes to the returned `Signal` once at construction; without
+   * memoisation each call from the option's outer computed allocated a
+   * fresh inner signal per CD pass (review-#4 carry-over concern). The
+   * cache lives for the shell's lifetime and is cleared in
+   * `DestroyRef.onDestroy`.
+   *
+   * @internal
+   */
+  private readonly statusCache = new Map<unknown, Signal<CngxOptionStatus | null>>();
+
   /** @internal */
   statusFor<TVal>(value: TVal): Signal<CngxOptionStatus | null> {
-    return computed<CngxOptionStatus | null>(() => {
+    const cached = this.statusCache.get(value);
+    if (cached) {
+      return cached;
+    }
+    const sig = computed<CngxOptionStatus | null>(() => {
       const opt = this.core.togglingOption();
       if (!opt) {
         return null;
@@ -974,9 +991,16 @@ export class CngxSelectShell<T = unknown>
       }
       return null;
     });
+    this.statusCache.set(value, sig);
+    return sig;
   }
 
   constructor() {
+    // Release the per-value status-signal cache on destroy. Bounded
+    // by the shell's lifetime; mirrors `SelectionController.destroy`
+    // shape (`projects/core/utils/src/selection-controller.ts`).
+    inject(DestroyRef).onDestroy(() => this.statusCache.clear());
+
     // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
