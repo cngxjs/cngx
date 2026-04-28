@@ -55,6 +55,13 @@ export class CngxMenuTrigger {
    */
   private readonly submenuStack = signal<readonly CngxMenuHost[]>([]);
 
+  /**
+   * Focused element captured at keyboard-driven open time. Restored after
+   * the outer popover closes via `queueMicrotask` so the focus write
+   * happens after the popover-close DOM mutation settles.
+   */
+  private savedFocus: HTMLElement | null = null;
+
   private effectiveMenu(): CngxMenuHost {
     const stack = this.submenuStack();
     return stack.length === 0 ? this.menu() : stack[stack.length - 1];
@@ -66,12 +73,14 @@ export class CngxMenuTrigger {
     if (!this.isOpen()) {
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
+        this.captureFocus();
         this.popover().show();
         this.menu().ad.highlightFirst();
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
+        this.captureFocus();
         this.popover().show();
         this.menu().ad.highlightLast();
         return;
@@ -90,6 +99,7 @@ export class CngxMenuTrigger {
           this.popSubmenu();
         } else {
           this.popover().hide();
+          this.restoreFocus();
         }
         return;
       case 'ArrowDown':
@@ -197,5 +207,22 @@ export class CngxMenuTrigger {
     }
     this.submenuStack.set([]);
     this.popover().hide();
+    this.restoreFocus();
+  }
+
+  private captureFocus(): void {
+    const active = typeof document !== 'undefined' ? document.activeElement : null;
+    this.savedFocus = active instanceof HTMLElement ? active : null;
+  }
+
+  private restoreFocus(): void {
+    const target = this.savedFocus;
+    this.savedFocus = null;
+    if (!target) {
+      return;
+    }
+    queueMicrotask(() => {
+      target.focus();
+    });
   }
 }
