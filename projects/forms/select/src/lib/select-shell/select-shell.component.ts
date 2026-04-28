@@ -555,19 +555,51 @@ export class CngxSelectShell<T = unknown>
    *
    * @internal
    */
-  protected readonly adItems = computed<ActiveDescendantItem[]>(() => {
-    const opts = this.visibleProjectedOptions();
-    const items: ActiveDescendantItem[] = [];
-    for (const opt of opts) {
-      items.push({
-        id: opt.id,
-        value: opt.value(),
-        label: opt.label(),
-        disabled: opt.disabled(),
-      });
-    }
-    return items;
-  });
+  protected readonly adItems = computed<ActiveDescendantItem[]>(
+    () => {
+      const opts = this.visibleProjectedOptions();
+      const items: ActiveDescendantItem[] = [];
+      for (const opt of opts) {
+        items.push({
+          id: opt.id,
+          value: opt.value(),
+          label: opt.label(),
+          disabled: opt.disabled(),
+        });
+      }
+      return items;
+    },
+    {
+      // Structural equal — without this, every read returns a fresh
+      // array reference and cascades into CngxListbox.[items] +
+      // CngxActiveDescendant.items, re-running keyboard-nav memoisation
+      // on every CD pass even when the underlying option set hasn't
+      // changed. Length + per-entry id/value/label/disabled compare
+      // matches the family's pattern (per visibleProjectedOptions
+      // shape).
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          const x = a[i];
+          const y = b[i];
+          if (
+            x.id !== y.id ||
+            x.value !== y.value ||
+            x.label !== y.label ||
+            x.disabled !== y.disabled
+          ) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
 
   // ── Content-child template-slot directives ─────────────────────────
 

@@ -72,6 +72,7 @@ interface CngxSelectShellInternals {
   readonly flatOptions: () => readonly { value: unknown; label: string; disabled?: boolean }[];
   readonly effectiveOptions: () => readonly unknown[];
   readonly derivedOptions: () => readonly unknown[];
+  readonly adItems: () => readonly { id: string; value: unknown; label: string; disabled: boolean }[];
 }
 
 function shellInternals<T>(shell: CngxSelectShell<T>): CngxSelectShellInternals {
@@ -630,6 +631,29 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     // teardown path, ensuring we don't leak the per-value cache across
     // component lifetimes.
     expect(Object.is(before, after)).toBe(false);
+  });
+
+  it('adItems holds a stable array reference across unrelated input flips', () => {
+    const fixture = TestBed.createComponent(RichLabelHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+    const internals = shellInternals(shell);
+
+    const before = internals.adItems();
+    fixture.componentInstance.clearable.set(true);
+    flush(fixture);
+    const after = internals.adItems();
+
+    // Without the equal fn, the computed re-allocates a fresh array on
+    // every read and cascades into CngxListbox.[items] +
+    // CngxActiveDescendant.items — re-running keyboard-nav memoisation
+    // on every CD pass. The structural equal (length + per-entry
+    // id/value/label/disabled) keeps the reference stable when the
+    // underlying option set hasn't changed.
+    expect(Object.is(before, after)).toBe(true);
   });
 });
 
