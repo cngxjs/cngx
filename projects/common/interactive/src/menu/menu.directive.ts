@@ -3,6 +3,8 @@ import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@a
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
+import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
+
 /**
  * Navigable menu container with WAI-ARIA `role="menu"` semantics.
  *
@@ -22,12 +24,13 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
       inputs: ['orientation', 'loop', 'typeahead', 'autoHighlightFirst'],
     },
   ],
+  providers: [{ provide: CNGX_MENU_HOST, useExisting: CngxMenu }],
   host: {
     role: 'menu',
     '[attr.aria-label]': 'label()',
   },
 })
-export class CngxMenu {
+export class CngxMenu implements CngxMenuHost {
   /** Accessible label. */
   readonly label = input.required<string>();
 

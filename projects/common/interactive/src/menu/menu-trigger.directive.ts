@@ -1,6 +1,6 @@
 import { computed, Directive, input } from '@angular/core';
 
-import type { CngxMenu } from './menu.directive';
+import type { CngxMenuHost } from './menu-host.token';
 
 /** See `CngxListboxTrigger` — same structural contract. */
 interface PopoverController {
@@ -31,7 +31,7 @@ interface PopoverController {
 })
 export class CngxMenuTrigger {
   /** Menu controlled by this trigger. */
-  readonly menu = input.required<CngxMenu>({ alias: 'cngxMenuTrigger' });
+  readonly menu = input.required<CngxMenuHost>({ alias: 'cngxMenuTrigger' });
   /** Popover that wraps the menu panel. */
   readonly popover = input.required<PopoverController>();
 

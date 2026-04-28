@@ -107,6 +107,7 @@ export {
 } from './src/listbox/listbox-search.directive';
 export { CngxListboxTrigger } from './src/listbox/listbox-trigger.directive';
 export { CngxMenu } from './src/menu/menu.directive';
+export { CNGX_MENU_HOST, type CngxMenuHost } from './src/menu/menu-host.token';
 export { CngxMenuItem } from './src/menu/menu-item.directive';
 export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
 export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
