@@ -9,7 +9,7 @@ import {
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
-import { CngxMenuGroup } from './menu-group.directive';
+import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
 
 /**
  * Radio-style menu item (`role="menuitemradio"`). Mutual exclusion is scoped
@@ -45,7 +45,7 @@ export class CngxMenuItemRadio implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
-  private readonly group = inject(CngxMenuGroup, { optional: true });
+  private readonly group = inject(CNGX_MENU_RADIO_GROUP, { optional: true });
 
   readonly isHighlighted = (): boolean => this.ad?.activeId() === this.id;
 
@@ -76,7 +76,7 @@ export class CngxMenuItemRadio implements CngxAdItemHandle {
       return;
     }
     ad.highlightByValue(this.value());
-    this.group?.selectedValue.set(this.value());
+    this.group?.select(this.value());
     ad.activateCurrent();
   }
 

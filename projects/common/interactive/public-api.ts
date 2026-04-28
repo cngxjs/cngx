@@ -112,4 +112,10 @@ export { CngxMenuItem } from './src/menu/menu-item.directive';
 export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
 export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
 export { CngxMenuGroup } from './src/menu/menu-group.directive';
+export {
+  CNGX_MENU_RADIO_GROUP,
+  createMenuRadioController,
+  type CngxMenuRadioGroup,
+  type CngxMenuRadioGroupFactory,
+} from './src/menu/menu-radio-controller';
 export { CngxMenuTrigger } from './src/menu/menu-trigger.directive';
