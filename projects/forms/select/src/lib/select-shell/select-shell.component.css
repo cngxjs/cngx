@@ -1,0 +1,107 @@
+/*
+ * select-shell.component.css — CngxSelectShell-specific skin.
+ *
+ * Mirrors `single-select/select.component.css` but namespaces every
+ * tunable through `--cngx-select-shell-*` so consumers can theme the
+ * declarative-projection variant independently of the data-mode
+ * `CngxSelect`. Each token cascades through the matching
+ * `--cngx-select-*` token (the shared family default), which in turn
+ * cascades through framework-level vars like `--cngx-border` /
+ * `--cngx-focus-ring`.
+ *
+ * Structural rules (panel frame, option rows, async-state surfaces)
+ * stay in `../shared/select-base.css` — referenced via `styleUrls`.
+ */
+
+/* ── Host + root wrapper ──────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  position: relative;
+  font: inherit;
+  min-width: var(--cngx-select-shell-min-width, var(--cngx-select-min-width, 10rem));
+}
+
+.cngx-select-shell__root {
+  display: contents;
+}
+
+/* ── Trigger element (role="combobox") ────────────────────────────── */
+
+.cngx-select-shell__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-shell-gap, var(--cngx-select-gap, 0.5rem));
+  width: 100%;
+  padding: var(--cngx-select-shell-padding, var(--cngx-select-padding, 0.5rem 0.75rem));
+  border: var(
+    --cngx-select-shell-border,
+    var(--cngx-select-border, 1px solid var(--cngx-border, #c4c4c4))
+  );
+  border-radius: var(--cngx-select-shell-radius, var(--cngx-select-radius, 0.25rem));
+  background: var(--cngx-select-shell-bg, var(--cngx-select-bg, transparent));
+  color: var(--cngx-select-shell-color, var(--cngx-select-color, inherit));
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+  justify-content: space-between;
+  user-select: none;
+}
+.cngx-select-shell__trigger:focus-visible {
+  outline: var(
+    --cngx-select-shell-focus-outline,
+    var(--cngx-select-focus-outline, 2px solid var(--cngx-focus-ring, #1976d2))
+  );
+  outline-offset: var(
+    --cngx-select-shell-focus-offset,
+    var(--cngx-select-focus-offset, 2px)
+  );
+}
+.cngx-select-shell__trigger[aria-disabled='true'] {
+  opacity: var(
+    --cngx-select-shell-disabled-opacity,
+    var(--cngx-select-disabled-opacity, 0.5)
+  );
+  cursor: not-allowed;
+}
+
+/* ── Trigger label text ───────────────────────────────────────────── */
+
+.cngx-select-shell__label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-select-shell-label-gap, 0.375rem);
+}
+
+/* ── Caret ────────────────────────────────────────────────────────── */
+
+.cngx-select-shell__caret {
+  flex: 0 0 auto;
+  opacity: var(--cngx-select-shell-caret-opacity, 0.7);
+}
+
+/* ── Clear button ─────────────────────────────────────────────────── */
+
+.cngx-select-shell__clear {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  font: inherit;
+  opacity: var(--cngx-select-shell-clear-opacity, 0.6);
+}
+.cngx-select-shell__clear:hover {
+  opacity: 1;
+}
+.cngx-select-shell__clear:focus-visible {
+  outline: 2px solid var(--cngx-select-shell-focus-ring, var(--cngx-focus-ring, #1976d2));
+  border-radius: 0.125rem;
+}
+

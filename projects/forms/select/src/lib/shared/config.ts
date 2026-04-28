@@ -204,6 +204,14 @@ export interface CngxSelectAriaLabels {
    * `'Save failed'`.
    */
   readonly commitFailedMessage?: string;
+  /**
+   * ARIA label on the built-in `<cngx-select-search>` filter input.
+   * Per-instance `[aria-label]` wins; absent that, this configured
+   * value applies; absent both, the input has no `aria-label` and
+   * falls through to the placeholder for AT naming. Default
+   * `'Search options'`.
+   */
+  readonly searchInput?: string;
 }
 
 /**
@@ -616,6 +624,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
     statusRefreshing: 'Refreshing options',
     fieldLabelFallback: 'Selection',
     commitFailedMessage: 'Save failed',
+    searchInput: 'Search options',
   },
   fallbackLabels: {
     loading: 'Loading…',

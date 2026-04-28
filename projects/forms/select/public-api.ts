@@ -83,14 +83,25 @@ export {
   CngxTreeSelect,
   type CngxTreeSelectChange,
 } from './src/lib/tree-select/tree-select.component';
+export {
+  CngxSelectShell,
+  type CngxSelectShellChange,
+} from './src/lib/select-shell/select-shell.component';
 
 // ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
-// path). NOT usable as direct children of `<cngx-select>` — see
+// path) and as direct children of `<cngx-select-shell>` (the projection
+// variant — see `select-shell/`). Still NOT usable as direct children of
+// the data-mode `<cngx-select>` — see
 // `.internal/architektur/select-family-architecture.md` for the reasoning.
 export { CngxSelectOption } from './src/lib/declarative/option.component';
 export { CngxSelectOptgroup } from './src/lib/declarative/optgroup.component';
 export { CngxSelectDivider } from './src/lib/declarative/divider.component';
+export { CngxSelectSearch } from './src/lib/declarative/select-search.component';
+export {
+  CNGX_SELECT_SHELL_SEARCH_HOST,
+  type CngxSelectShellSearchHost,
+} from './src/lib/declarative/select-search-host';
 
 // ── Shared data model (option types + helpers) ────────────────────────
 export {
@@ -364,6 +375,15 @@ export {
   type CngxSearchEffectsFactory,
   type SearchEffectsOptions,
 } from './src/lib/shared/search-effects';
+
+// ── Projected option model (CngxSelectShell DOM → option-model) ──────
+export {
+  CNGX_PROJECTED_OPTION_MODEL_FACTORY,
+  createProjectedOptionModel,
+  type CngxProjectedOptionModelFactory,
+  type ProjectedOptionModel,
+  type ProjectedOptionModelInput,
+} from './src/lib/shared/projected-option-model';
 
 // ── Unified aggregator across all 3 config surfaces ──────────────────
 export {

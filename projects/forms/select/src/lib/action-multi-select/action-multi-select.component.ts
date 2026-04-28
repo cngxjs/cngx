@@ -375,8 +375,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   private readonly config = resolveSelectConfig();
   private readonly actionConfig = resolveActionSelectConfig();
 
-  // ── Inputs (mirror CngxCombobox) ───────────────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -422,8 +420,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   );
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
-
-  // ── Action-multi-select specific inputs ────────────────────────────
 
   /**
    * Quick-create handler. `null` (default) disables the create path —
@@ -485,8 +481,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   /** Two-way multi-value binding. */
   readonly values = model<T[]>([]);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxActionMultiSelectChange<T>>();
   readonly optionToggled = output<{
@@ -568,8 +562,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   protected readonly inputSuffixTpl = computed<TemplateRef<CngxSelectInputSlotContext> | null>(
     () => this.inputSuffixDirective()?.templateRef ?? null,
   );
-
-  // ── ViewChildren ───────────────────────────────────────────────────
 
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly searchInputRef = viewChild(CngxListboxSearch);
@@ -723,30 +715,51 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   // ── Template-facing protected surface ──────────────────────────────
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
-  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
-  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  protected readonly activeView = this.core.activeView;
+  /** @internal */
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
@@ -772,8 +785,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly isCommitting = computed<boolean>(
     () => this.core.isCommitting() || this.createCommitController.isCommitting(),
   );
-  /** @internal */ readonly commitErrorValue = this.core.commitErrorValue;
-
+  /** @internal */
+  readonly commitErrorValue = this.core.commitErrorValue;
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
   /** @internal */
@@ -965,10 +978,14 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   });
 
   // ── Panel-host surface forwarding ──────────────────────────────────
-  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /** @internal */
+  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */
+  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */
+  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */
+  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.values().length === 0;
@@ -1072,8 +1089,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       },
     });
   }
-
-  // ── Public API ─────────────────────────────────────────────────────
 
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }

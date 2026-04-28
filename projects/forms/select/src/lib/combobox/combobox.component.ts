@@ -766,30 +766,51 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   // ── Template-facing protected surface (delegates to core) ──────────
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
-  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
-  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  protected readonly activeView = this.core.activeView;
+  /** @internal */
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
