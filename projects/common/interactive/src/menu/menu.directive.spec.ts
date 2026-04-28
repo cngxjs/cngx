@@ -112,4 +112,21 @@ describe('CngxMenu', () => {
     TestBed.flushEffects();
     expect(fixture.componentInstance.lastActivated()).toBeNull();
   });
+
+  it('tears down the AD bridge on directive destroy (no subscribe leak)', () => {
+    const { fixture, menu } = setup();
+    const spy = vi.fn<(v: unknown) => void>();
+    menu.itemActivated.subscribe(spy);
+
+    menu.ad.highlightByValue('open');
+    menu.ad.activateCurrent();
+    TestBed.flushEffects();
+    expect(spy).toHaveBeenCalledWith('open');
+    spy.mockClear();
+
+    fixture.destroy();
+
+    menu.ad.activated.emit('after-destroy');
+    expect(spy).not.toHaveBeenCalled();
+  });
 });

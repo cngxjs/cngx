@@ -1,4 +1,5 @@
-import { Directive, inject, input, output } from '@angular/core';
+import { Directive, inject, input } from '@angular/core';
+import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -30,13 +31,11 @@ export class CngxMenu {
   /** Accessible label. */
   readonly label = input.required<string>();
 
-  /** Emits the activated item's value on Enter/Space/click. */
-  readonly itemActivated = output<unknown>();
-
   /** Underlying `CngxActiveDescendant` — exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
-  constructor() {
-    this.ad.activated.subscribe((value) => this.itemActivated.emit(value));
-  }
+  /** Emits the activated item's value on Enter/Space/click. */
+  readonly itemActivated = outputFromObservable(
+    outputToObservable(this.ad.activated).pipe(takeUntilDestroyed()),
+  );
 }
