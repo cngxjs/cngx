@@ -142,6 +142,7 @@ export {
   withSubmenuOpenDelay,
   withTypeaheadDebounce,
 } from './src/menu/menu-config-features';
+export { CngxMenuAnnouncer, injectMenuAnnouncer } from './src/menu/menu-announcer';
 export {
   CNGX_MENU_RADIO_GROUP,
   createMenuRadioController,

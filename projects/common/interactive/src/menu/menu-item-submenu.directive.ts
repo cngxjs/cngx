@@ -1,5 +1,16 @@
-import { computed, Directive, ElementRef, inject, input } from '@angular/core';
+import {
+  computed,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  linkedSignal,
+  untracked,
+} from '@angular/core';
 
+import { CngxMenuAnnouncer } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
@@ -69,5 +80,41 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     if (this.popover().isVisible()) {
       this.popover().hide();
     }
+  }
+
+  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly menuConfig = injectMenuConfig();
+
+  /**
+   * Transition tracker for `isOpen`. `linkedSignal` carries an explicit
+   * structural `equal` so the effect below only fires on a real
+   * boolean transition, not on every parent re-eval.
+   */
+  private readonly transition = linkedSignal<
+    boolean,
+    { current: boolean; previous: boolean }
+  >({
+    source: this.isOpen,
+    computation: (current, prev) => ({
+      current,
+      previous: prev?.value.current ?? false,
+    }),
+    equal: (a, b) => a.current === b.current && a.previous === b.previous,
+  });
+
+  constructor() {
+    effect(() => {
+      const { current, previous } = this.transition();
+      if (current === previous) {
+        return;
+      }
+      untracked(() => {
+        if (current) {
+          this.announcer.announce(this.menuConfig.ariaLabels.submenuOpened);
+        } else {
+          this.announcer.announce(this.menuConfig.ariaLabels.submenuClosed);
+        }
+      });
+    });
   }
 }

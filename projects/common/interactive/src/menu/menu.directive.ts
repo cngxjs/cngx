@@ -1,8 +1,11 @@
 import { contentChildren, Directive, inject, input } from '@angular/core';
 import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { tap } from 'rxjs';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
+import { CngxMenuAnnouncer } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
@@ -38,6 +41,9 @@ export class CngxMenu implements CngxMenuHost {
   /** Underlying `CngxActiveDescendant` — exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
+  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly menuConfig = injectMenuConfig();
+
   /**
    * Submenu directives registered inside this menu's content tree. Empty
    * when the menu has no submenus. Drives the trigger's focus-stack
@@ -47,8 +53,18 @@ export class CngxMenu implements CngxMenuHost {
     descendants: true,
   });
 
-  /** Emits the activated item's value on Enter/Space/click. */
+  /**
+   * Emits the activated item's value on Enter/Space/click. Side effect:
+   * announces `ariaLabels.itemActivated` through the polite live region.
+   * The `tap` runs synchronously inside the upstream subscription —
+   * announce is a fire-and-forget DOM side effect, not a signal write.
+   */
   readonly itemActivated = outputFromObservable(
-    outputToObservable(this.ad.activated).pipe(takeUntilDestroyed()),
+    outputToObservable(this.ad.activated).pipe(
+      tap(() => {
+        this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
+      }),
+      takeUntilDestroyed(),
+    ),
   );
 }
