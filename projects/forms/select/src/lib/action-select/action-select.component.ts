@@ -120,7 +120,7 @@ import {
 export interface CngxActionSelectChange<T = unknown> {
   readonly source: CngxActionSelect<T>;
   readonly value: T | undefined;
-  readonly previousValue?: T | undefined;
+  readonly previousValue: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
   readonly action: 'select' | 'clear' | 'create';
 }
@@ -316,8 +316,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   private readonly config = resolveSelectConfig();
   private readonly actionConfig = resolveActionSelectConfig();
 
-  // ── Inputs ─────────────────────────────────────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -333,7 +331,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly autofocus = input<boolean>(false);
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
-  readonly displayWith = input<(value: T) => string>((v) => String(v));
+  readonly displayWith = input<(value: T) => string>(String);
   readonly clearOnBlur = input<boolean>(true);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   /**
@@ -514,8 +512,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     () => this.inputSuffixDirective()?.templateRef ?? null,
   );
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
@@ -584,9 +580,12 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     retry: () => this.createHandler.retryLast(),
     isPending: computed(() => this.core.isCommitting()),
   });
-  /** @internal */ readonly actionDirty = this.actionBridge.dirty;
-  /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
-  /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
+  /** @internal */
+  readonly actionDirty = this.actionBridge.dirty;
+  /** @internal */
+  readonly actionCallbacks = this.actionBridge.callbacks;
+  /** @internal */
+  readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
   /**
    * View-host signal the shared panel shell reads when building the
    * `*cngxSelectAction` context's `$implicit` + `searchTerm` fields.
@@ -680,30 +679,51 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   // ── Template-facing protected surface ──────────────────────────────
 
-  /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ protected readonly flatOptions = this.core.flatOptions;
-  /** @internal */ protected readonly activeView = this.core.activeView;
-  /** @internal */ protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ protected readonly showInlineError = this.core.showInlineError;
-  /** @internal */ protected readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ protected readonly panelClassList = this.core.panelClassList;
-  /** @internal */ protected readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */ protected readonly resolvedId = this.core.resolvedId;
-  /** @internal */ protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ protected readonly resolvedShowSelectionIndicator =
+  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  protected readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  protected readonly activeView = this.core.activeView;
+  /** @internal */
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  protected readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  protected readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  protected readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  protected readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
-  /** @internal */ protected readonly resolvedSelectionIndicatorVariant =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ protected readonly resolvedSelectionIndicatorPosition =
+  /** @internal */
+  protected readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ protected readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ protected readonly externalActivation = this.core.externalActivation;
-  /** @internal */ protected readonly showCommitError = this.core.showCommitError;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  protected readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  protected readonly showCommitError = this.core.showCommitError;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
@@ -721,7 +741,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
-  /** @internal */ readonly commitErrorValue = this.core.commitErrorValue;
+  /** @internal */
+  readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal */
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
@@ -833,10 +854,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   // ── Panel-host surface forwarding ──────────────────────────────────
-  /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
+  /** @internal */
+  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */
+  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */
+  protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */
+  protected readonly isCommittingOption = this.core.panelHostAdapter.isCommittingOption;
 
   protected isEmpty(): boolean {
     return this.value() === undefined;
