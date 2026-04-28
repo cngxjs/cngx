@@ -115,6 +115,8 @@ import {
   CngxSelectRefreshing,
   CngxSelectRetryButton,
   CngxSelectTriggerLabel,
+  type CngxSelectCaretContext,
+  type CngxSelectClearButtonContext,
   type CngxSelectTriggerLabelContext,
 } from '../shared/template-slots';
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
@@ -215,23 +217,41 @@ export interface CngxSelectShellChange<T = unknown> {
         (blur)="handleBlur()"
         (keydown)="handleTriggerKeydown($event)"
       >
-        <span class="cngx-select-shell__label">{{ triggerText() }}</span>
+        @if (triggerLabelTpl(); as labelTpl) {
+          <ng-container
+            *ngTemplateOutlet="labelTpl; context: triggerLabelContext()"
+          />
+        } @else {
+          <span class="cngx-select-shell__label">{{ triggerText() }}</span>
+        }
         @if (clearable() && !empty() && !disabled()) {
-          <button
-            type="button"
-            class="cngx-select-shell__clear"
-            [attr.aria-label]="clearButtonAriaLabel()"
-            (click)="handleClearClick($event)"
-          >
-            @if (clearGlyph(); as glyph) {
-              <ng-container *ngTemplateOutlet="glyph" />
-            } @else {
-              <span aria-hidden="true">&#10005;</span>
-            }
-          </button>
+          @if (tpl.clearButton(); as clearTpl) {
+            <ng-container
+              *ngTemplateOutlet="clearTpl; context: clearButtonContext()"
+            />
+          } @else {
+            <button
+              type="button"
+              class="cngx-select-shell__clear"
+              [attr.aria-label]="clearButtonAriaLabel()"
+              (click)="handleClearClick($event)"
+            >
+              @if (clearGlyph(); as glyph) {
+                <ng-container *ngTemplateOutlet="glyph" />
+              } @else {
+                <span aria-hidden="true">&#10005;</span>
+              }
+            </button>
+          }
         }
         @if (resolvedShowCaret()) {
-          @if (caretGlyph(); as glyph) {
+          @if (tpl.caret(); as caretTpl) {
+            <span aria-hidden="true" class="cngx-select-shell__caret">
+              <ng-container
+                *ngTemplateOutlet="caretTpl; context: caretContext()"
+              />
+            </span>
+          } @else if (caretGlyph(); as glyph) {
             <span aria-hidden="true" class="cngx-select-shell__caret">
               <ng-container *ngTemplateOutlet="glyph" />
             </span>
@@ -662,6 +682,85 @@ export class CngxSelectShell<T = unknown>
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxSelectTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
+
+  /**
+   * Trigger-label slot context. Re-runs only when one of the four
+   * reactive fields flips; structural equal suppresses ngTemplateOutlet
+   * rebinds when an unrelated input changes.
+   *
+   * @internal
+   */
+  protected readonly triggerLabelContext = computed<CngxSelectTriggerLabelContext<T>>(
+    () => {
+      const sel = this.selectedOption();
+      return {
+        $implicit: sel,
+        selected: sel,
+        disabled: this.disabled(),
+        panelOpen: this.panelOpen(),
+        focused: this.focused(),
+      };
+    },
+    {
+      equal: (a, b) =>
+        a.$implicit === b.$implicit &&
+        a.selected === b.selected &&
+        a.disabled === b.disabled &&
+        a.panelOpen === b.panelOpen &&
+        a.focused === b.focused,
+    },
+  );
+
+  /**
+   * Caret slot context. Mirrors `CngxSelectCaretContext` — `open` flips
+   * with the popover, `$implicit` is the same value.
+   *
+   * @internal
+   */
+  protected readonly caretContext = computed<CngxSelectCaretContext>(
+    () => ({ $implicit: this.panelOpen(), open: this.panelOpen() }),
+    { equal: (a, b) => a.open === b.open },
+  );
+
+  /**
+   * Clear-button slot context. `$implicit === clear` so consumer
+   * templates can capture either name (`let-clear` or `let-fn`); the
+   * function reference is stable across re-emits because it's the
+   * pre-bound `handleClearAction` closure.
+   *
+   * @internal
+   */
+  protected readonly clearButtonContext = computed<CngxSelectClearButtonContext>(
+    () => ({
+      $implicit: this.handleClearAction,
+      clear: this.handleClearAction,
+      disabled: this.disabled(),
+    }),
+    { equal: (a, b) => a.disabled === b.disabled },
+  );
+
+  /**
+   * Stable closure invoked from the slot context's `clear()` /
+   * `$implicit()` callbacks. Same code path as the default clear button
+   * (`handleClearClick`), minus the event payload — projected templates
+   * own their own pointer-event semantics.
+   *
+   * @internal
+   */
+  private readonly handleClearAction = (): void => {
+    const current = this.value();
+    if (current === undefined || current === null) {
+      return;
+    }
+    this.value.set(undefined);
+    this.selectionChange.emit({
+      source: this,
+      value: undefined,
+      previousValue: current,
+      option: null,
+    });
+    this.core.announce(null, 'removed', 0, false);
+  };
 
   // ── ViewChildren ───────────────────────────────────────────────────
 

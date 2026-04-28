@@ -25,8 +25,11 @@ import type { CngxSelectOptionsInput } from '../shared/option.model';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
 import {
+  CngxSelectCaret,
+  CngxSelectClearButton,
   CngxSelectOptionError,
   CngxSelectOptionPending,
+  CngxSelectTriggerLabel,
 } from '../shared/template-slots';
 import type {
   CngxSelectCommitAction,
@@ -954,5 +957,97 @@ describe('CngxSelectShell — factory token wiring', () => {
 
     expect(factoryCalls()).toBe(1);
     expect(shell.panelRenderer).toBe(stubRenderer);
+  });
+});
+
+describe('CngxSelectShell — trigger slot-cascade tier-1', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({});
+  });
+
+  it('renders projected *cngxSelectTriggerLabel instead of the default {{ triggerText }}', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'TL'" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <cngx-option [value]="'b'">B</cngx-option>
+          <ng-template cngxSelectTriggerLabel let-sel>
+            <span class="custom-trigger-label">{{ sel ? sel.label + '!' : 'none' }}</span>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectTriggerLabel],
+    })
+    class TriggerLabelHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(TriggerLabelHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const custom = shellDe.nativeElement.querySelector('.custom-trigger-label');
+    expect(custom).not.toBeNull();
+    expect(custom!.textContent!.trim()).toBe('A!');
+    expect(shellDe.nativeElement.querySelector('.cngx-select-shell__label')).toBeNull();
+  });
+
+  it('renders projected *cngxSelectClearButton instead of the default ✕ button', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'CB'" [clearable]="true" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+            <button type="button" class="custom-clear" [disabled]="disabled" (click)="clear()">
+              X
+            </button>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectClearButton],
+    })
+    class ClearButtonHost {
+      readonly value = signal<string | undefined>('a');
+    }
+
+    const fixture = TestBed.createComponent(ClearButtonHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const custom = shellDe.nativeElement.querySelector('.custom-clear') as HTMLButtonElement;
+    expect(custom).not.toBeNull();
+    expect(shellDe.nativeElement.querySelector('.cngx-select-shell__clear')).toBeNull();
+
+    custom.click();
+    flush(fixture);
+    expect(fixture.componentInstance.value()).toBeUndefined();
+  });
+
+  it('renders projected *cngxSelectCaret instead of the default ▾ glyph', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'CA'">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <ng-template cngxSelectCaret let-open>
+            <span class="custom-caret" [attr.data-open]="open">caret</span>
+          </ng-template>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption, CngxSelectCaret],
+    })
+    class CaretHost { }
+
+    const fixture = TestBed.createComponent(CaretHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const custom = shellDe.nativeElement.querySelector('.custom-caret');
+    expect(custom).not.toBeNull();
+    expect(custom!.getAttribute('data-open')).toBe('false');
+    expect(custom!.textContent).toBe('caret');
   });
 });
