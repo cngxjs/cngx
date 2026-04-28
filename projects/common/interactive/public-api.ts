@@ -108,7 +108,12 @@ export {
 export { CngxListboxTrigger } from './src/listbox/listbox-trigger.directive';
 export { CngxMenu } from './src/menu/menu.directive';
 export { CNGX_MENU_HOST, type CngxMenuHost } from './src/menu/menu-host.token';
+export {
+  CNGX_MENU_SUBMENU_ITEM,
+  type CngxMenuSubmenuLike,
+} from './src/menu/menu-submenu.token';
 export { CngxMenuItem } from './src/menu/menu-item.directive';
+export { CngxMenuItemSubmenu } from './src/menu/menu-item-submenu.directive';
 export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
 export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
 export { CngxMenuGroup } from './src/menu/menu-group.directive';

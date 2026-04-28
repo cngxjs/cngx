@@ -1,16 +1,24 @@
-import { InjectionToken } from '@angular/core';
+import { InjectionToken, type Signal } from '@angular/core';
 
 import type { CngxActiveDescendant } from '@cngx/common/a11y';
 
+import type { CngxMenuSubmenuLike } from './menu-submenu.token';
+
 /**
- * Structural contract a `CngxMenu` (or a future menu-bar / submenu host)
- * exposes to composers — currently the underlying `CngxActiveDescendant`
- * driving keyboard navigation. Triggers and submenu directives should depend
- * on this interface rather than on the concrete `CngxMenu` class so the
+ * Structural contract a `CngxMenu` (or a future menu-bar / nested menu
+ * host) exposes to composers. Triggers and submenu directives depend on
+ * this interface rather than on the concrete `CngxMenu` class so the
  * coupling stays substitutable.
  */
 export interface CngxMenuHost {
   readonly ad: CngxActiveDescendant;
+  /**
+   * Submenu companions registered inside this menu's content tree.
+   * Empty when no submenu directive is present. Recursive: each entry's
+   * `inner` is itself a `CngxMenuHost` with its own (possibly empty)
+   * `submenuItems`.
+   */
+  readonly submenuItems: Signal<readonly CngxMenuSubmenuLike[]>;
 }
 
 /**

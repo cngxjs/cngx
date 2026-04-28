@@ -1,6 +1,8 @@
-import { computed, Directive, input } from '@angular/core';
+import { computed, Directive, inject, input, signal } from '@angular/core';
 
 import type { CngxMenuHost } from './menu-host.token';
+import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
+import type { CngxMenuSubmenuLike } from './menu-submenu.token';
 
 /** See `CngxListboxTrigger` — same structural contract. */
 interface PopoverController {
@@ -16,6 +18,12 @@ interface PopoverController {
  * explicit template references — identical keyboard model to
  * `CngxListboxTrigger` except `closeOnSelect` is hardcoded `true` (menu
  * semantics: activating an item dismisses the menu).
+ *
+ * Carries a focus-stack model for nested submenus: when a submenu opens,
+ * its inner `CngxMenu` is pushed onto the stack so subsequent ArrowDown /
+ * Up / Home / End / Enter target the submenu's items via its own
+ * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
+ * top submenu.
  *
  * @category interactive
  */
@@ -38,30 +46,51 @@ export class CngxMenuTrigger {
   /** Mirrors `CngxPopover.isVisible()`. */
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
+  private readonly nav = inject(CNGX_MENU_NAV_STRATEGY);
+
+  /**
+   * Active submenu chain — empty when only the outer menu is open. Each
+   * entry is the `inner` host of an open submenu, top entry being the
+   * deepest. Keystrokes target the top entry's AD.
+   */
+  private readonly submenuStack = signal<readonly CngxMenuHost[]>([]);
+
+  private effectiveMenu(): CngxMenuHost {
+    const stack = this.submenuStack();
+    return stack.length === 0 ? this.menu() : stack[stack.length - 1];
+  }
+
   protected handleKeydown(event: KeyboardEvent): void {
     const key = event.key;
-    const ad = this.menu().ad;
 
     if (!this.isOpen()) {
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
         this.popover().show();
-        ad.highlightFirst();
+        this.menu().ad.highlightFirst();
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
         this.popover().show();
-        ad.highlightLast();
+        this.menu().ad.highlightLast();
         return;
       }
       return;
     }
 
+    const menu = this.effectiveMenu();
+    const ad = menu.ad;
+
     switch (key) {
       case 'Escape':
         event.preventDefault();
-        this.popover().hide();
+        if (this.submenuStack().length > 0) {
+          event.stopPropagation();
+          this.popSubmenu();
+        } else {
+          this.popover().hide();
+        }
         return;
       case 'ArrowDown':
         event.preventDefault();
@@ -79,15 +108,94 @@ export class CngxMenuTrigger {
         event.preventDefault();
         ad.highlightLast();
         return;
+      case 'ArrowRight':
+        this.handleArrowRight(menu, ad, event);
+        return;
+      case 'ArrowLeft':
+        this.handleArrowLeft(ad, event);
+        return;
       case 'Enter':
       case ' ':
-        if (!ad.activeItem()) {
-          return;
-        }
-        event.preventDefault();
-        ad.activateCurrent();
-        this.popover().hide();
+        this.handleActivation(menu, ad, event);
         return;
     }
+  }
+
+  private handleArrowRight(menu: CngxMenuHost, ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
+    const activeId = ad.activeId();
+    const submenu = this.findSubmenu(menu, activeId);
+    const action = this.nav.onArrowRight({
+      activeId,
+      hasSubmenu: !!submenu,
+      submenuOpen: submenu?.isOpen() ?? false,
+    });
+    if (action.kind === 'open-submenu' && submenu) {
+      event.preventDefault();
+      this.openSubmenu(submenu);
+    }
+  }
+
+  private handleArrowLeft(ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
+    const stackOpen = this.submenuStack().length > 0;
+    const action = this.nav.onArrowLeft({
+      activeId: ad.activeId(),
+      hasSubmenu: false,
+      submenuOpen: stackOpen,
+    });
+    if (action.kind === 'close-submenu' && stackOpen) {
+      event.preventDefault();
+      this.popSubmenu();
+    }
+  }
+
+  private handleActivation(menu: CngxMenuHost, ad: CngxMenuHost['ad'], event: KeyboardEvent): void {
+    if (!ad.activeItem()) {
+      return;
+    }
+    event.preventDefault();
+    const submenu = this.findSubmenu(menu, ad.activeId());
+    if (submenu) {
+      this.openSubmenu(submenu);
+    } else {
+      ad.activateCurrent();
+      this.closeAll();
+    }
+  }
+
+  private findSubmenu(menu: CngxMenuHost, activeId: string | null): CngxMenuSubmenuLike | undefined {
+    if (!activeId) {
+      return undefined;
+    }
+    return menu.submenuItems().find((s) => s.id === activeId);
+  }
+
+  private openSubmenu(submenu: CngxMenuSubmenuLike): void {
+    submenu.open();
+    this.submenuStack.update((s) => [...s, submenu.inner]);
+    submenu.inner.ad.highlightFirst();
+  }
+
+  private popSubmenu(): void {
+    const stack = this.submenuStack();
+    if (stack.length === 0) {
+      return;
+    }
+    const top = stack[stack.length - 1];
+    const parent = stack.length === 1 ? this.menu() : stack[stack.length - 2];
+    const submenu = parent.submenuItems().find((s) => s.inner === top);
+    submenu?.close();
+    this.submenuStack.update((prev) => prev.slice(0, -1));
+  }
+
+  private closeAll(): void {
+    const stack = this.submenuStack();
+    for (let i = stack.length - 1; i >= 0; i--) {
+      const inner = stack[i];
+      const parent = i === 0 ? this.menu() : stack[i - 1];
+      const submenu = parent.submenuItems().find((s) => s.inner === inner);
+      submenu?.close();
+    }
+    this.submenuStack.set([]);
+    this.popover().hide();
   }
 }
