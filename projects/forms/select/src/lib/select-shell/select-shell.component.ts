@@ -11,6 +11,7 @@ import {
   input,
   model,
   output,
+  signal,
   untracked,
   type ElementRef,
   type Signal,
@@ -89,6 +90,7 @@ import {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   type ScalarCommitHandler,
 } from '../shared/scalar-commit-handler';
+import { CNGX_SEARCH_EFFECTS_FACTORY } from '../shared/search-effects';
 import {
   cngxSelectDefaultCompare,
   createSelectCore,
@@ -355,6 +357,18 @@ export class CngxSelectShell<T = unknown>
     ((value: T, label: string, term: string) => boolean) | null
   >(null);
 
+  /**
+   * Debounce window for `searchTermChange` emissions, in milliseconds.
+   * Defaults to {@link CngxSelectConfig.typeaheadDebounceInterval} so
+   * the shell honours the family-shared cascade. Currently surfaced as
+   * a forward-compatible input — the shipped
+   * `CNGX_SEARCH_EFFECTS_FACTORY` default emits immediately on
+   * `searchTerm` change; consumers that override the factory token
+   * (e.g. with a debounce-aware implementation) read this signal to
+   * size their pipeline.
+   */
+  readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
+
   // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxSelectShellChange<T>>();
@@ -364,6 +378,13 @@ export class CngxSelectShell<T = unknown>
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
+  /**
+   * Live search term emitted via the shared
+   * {@link CNGX_SEARCH_EFFECTS_FACTORY}. The factory's `skipInitial`
+   * gate suppresses the seed `''` emission on mount so server-driven
+   * autocomplete consumers don't fire a hydrate-time blank search.
+   */
+  readonly searchTermChange = output<string>();
 
   // ── Hierarchy-aware projected option model ────────────────────────
 
@@ -883,6 +904,16 @@ export class CngxSelectShell<T = unknown>
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
 
+  /**
+   * Tracks whether the seed `searchTermChange` emission has fired.
+   * Read + flipped inside `CNGX_SEARCH_EFFECTS_FACTORY`; combined with
+   * a `skipInitial: signal(true)` gate so the hydrate-time `''`
+   * emission is suppressed.
+   *
+   * @internal
+   */
+  private readonly hasEmittedInitial = signal(false);
+
   /** Currently selected option resolved against the derived option model. */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => this.selectedOption(),
@@ -1093,6 +1124,22 @@ export class CngxSelectShell<T = unknown>
       coerceFromField: (x) => x as T | undefined,
     });
 
+    // Search-effects: emit `searchTermChange` whenever the model
+    // changes, with the seed `''` emission suppressed via the
+    // factory's `skipInitial` gate. Same factory `CngxCombobox` and
+    // `CngxTypeahead` consume — DI-overridable for telemetry,
+    // debounce-pipeline customisation, or race-condition guards.
+    inject(CNGX_SEARCH_EFFECTS_FACTORY)({
+      searchTerm: this.searchTerm,
+      panelOpen: this.panelOpen,
+      disabled: this.disabled,
+      open: () => this.open(),
+      emit: {
+        hasEmittedInitial: this.hasEmittedInitial,
+        skipInitial: signal(true),
+        onEmit: (term) => this.searchTermChange.emit(term),
+      },
+    });
   }
 
   // Public API (mat-select parity) 

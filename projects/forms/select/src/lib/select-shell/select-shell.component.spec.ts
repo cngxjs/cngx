@@ -851,6 +851,50 @@ describe('CngxSelectShell — factory token wiring', () => {
     polyfillPopover();
   });
 
+  it('emits searchTermChange when searchTerm flips after mount', () => {
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    const emissions: string[] = [];
+    shell.searchTermChange.subscribe((term) => emissions.push(term));
+
+    shell.searchTerm.set('foo');
+    flush(fixture);
+    shell.searchTerm.set('bar');
+    flush(fixture);
+
+    expect(emissions).toEqual(['foo', 'bar']);
+  });
+
+  it('skipInitial gate suppresses the seed searchTermChange emission on mount', () => {
+    const emissions: string[] = [];
+
+    @Component({
+      template: `
+        <cngx-select-shell
+          [label]="'SkipInitial'"
+          (searchTermChange)="track($event)"
+        >
+          <cngx-option [value]="'a'">A</cngx-option>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption],
+    })
+    class SkipInitialHost {
+      track(term: string): void { emissions.push(term); }
+    }
+
+    const fixture = TestBed.createComponent(SkipInitialHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    expect(emissions).toEqual([]);
+  });
+
   it('routes panelRenderer through CNGX_PANEL_RENDERER_FACTORY override', () => {
     const stubRenderer: PanelRenderer<string> = {
       renderOptions: signal([]).asReadonly(),
