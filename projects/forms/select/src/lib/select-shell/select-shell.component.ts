@@ -78,7 +78,6 @@ import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-
 import {
   CNGX_SELECT_PANEL_HOST,
   CNGX_SELECT_PANEL_VIEW_HOST,
-  type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
 import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
 import {
@@ -276,7 +275,6 @@ export class CngxSelectShell<T = unknown>
   CngxOptionStatusHost,
   CngxOptionFilterHost,
   CngxOptionInteractionHost,
-  CngxSelectPanelViewHost<T>,
   CngxSelectShellSearchHost {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
@@ -607,8 +605,7 @@ export class CngxSelectShell<T = unknown>
     CngxSelectOptionError,
   );
 
-  /** @internal */
-  readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
+  protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
     caret: this.caretDirective,
     optgroup: this.optgroupDirective,
@@ -629,8 +626,6 @@ export class CngxSelectShell<T = unknown>
   /**
    * Variant-specific trigger-label slot. The shared registry omits this
    * because the directive's typed context shape varies per variant.
-   *
-   * @internal
    */
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxSelectTriggerLabelContext<T>> | null
@@ -649,7 +644,6 @@ export class CngxSelectShell<T = unknown>
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
-  /** @internal */
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
@@ -659,7 +653,6 @@ export class CngxSelectShell<T = unknown>
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */
   readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => {
@@ -667,7 +660,6 @@ export class CngxSelectShell<T = unknown>
     return v === undefined || v === null;
   });
 
-  /** @internal */
   protected readonly listboxCompareWith = computed<(a: unknown, b: unknown) => boolean>(
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
@@ -675,7 +667,6 @@ export class CngxSelectShell<T = unknown>
   // ── Local-items buffer (kept for panel-host parity; unused at the
   //    shell level — the projected DOM is the source of truth). ──────
 
-  /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
@@ -688,8 +679,6 @@ export class CngxSelectShell<T = unknown>
    * here so {@link externalActivation} flips automatically when the
    * consumer binds an action; the actual scalar-handler routing
    * lands in Phase 7.
-   *
-   * @internal
    */
   private readonly core = createSelectCore<T, T>(
     {
@@ -728,51 +717,30 @@ export class CngxSelectShell<T = unknown>
 
   // ── Template-facing protected surface (delegates to core) ──────────
 
-  /** @internal */
-  readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */
-  readonly flatOptions = this.core.flatOptions;
-  /** @internal */
-  readonly activeView = this.core.activeView;
-  /** @internal */
-  readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */
-  readonly showInlineError = this.core.showInlineError;
-  /** @internal */
-  readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */
-  readonly panelClassList = this.core.panelClassList;
-  /** @internal */
-  readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */
+  protected readonly effectiveOptions = this.core.effectiveOptions;
+  protected readonly flatOptions = this.core.flatOptions;
+  protected readonly activeView = this.core.activeView;
+  protected readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  protected readonly showInlineError = this.core.showInlineError;
+  protected readonly skeletonIndices = this.core.skeletonIndices;
+  protected readonly panelClassList = this.core.panelClassList;
+  protected readonly panelWidthCss = this.core.panelWidthCss;
   readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */
   readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */
-  readonly resolvedId = this.core.resolvedId;
-  /** @internal */
-  readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */
-  readonly resolvedShowSelectionIndicator =
+  protected readonly resolvedId = this.core.resolvedId;
+  protected readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  protected readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
-  /** @internal */
-  readonly resolvedSelectionIndicatorVariant =
+  protected readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */
-  readonly resolvedSelectionIndicatorPosition =
+  protected readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */
   protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */
   protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */
-  readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */
+  protected readonly ariaReadonly = this.core.ariaReadonly;
   protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */
-  readonly externalActivation = this.core.externalActivation;
-  /** @internal */
-  readonly showCommitError = this.core.showCommitError;
+  protected readonly externalActivation = this.core.externalActivation;
+  protected readonly showCommitError = this.core.showCommitError;
 
   /**
    * Shared virtualisation wire-up — same factory `CngxSelect` and
@@ -782,8 +750,6 @@ export class CngxSelectShell<T = unknown>
    * leaves `virtualItemCount()` as `undefined` so AD's setsize falls
    * back to projected-options length. AD ↔ recycler scroll bridge wired
    * inside the helper.
-   *
-   * @internal
    */
   private readonly virtualSetup = setupVirtualization<T, T>({
     core: this.core,
@@ -791,9 +757,7 @@ export class CngxSelectShell<T = unknown>
     listboxRef: this.listboxRef,
     virtualization: this.config.virtualization,
   });
-  /** @internal */
   readonly panelRenderer = this.virtualSetup.panelRenderer;
-  /** @internal */
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   readonly disabled = this.core.disabled;
@@ -801,11 +765,9 @@ export class CngxSelectShell<T = unknown>
 
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
-  /** @internal */
   readonly commitErrorValue = this.core.commitErrorValue;
 
-  /** @internal */
-  readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
+  protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
 
   // ── Commit state (delegated) ───────────────────────────────────────
 
@@ -875,8 +837,7 @@ export class CngxSelectShell<T = unknown>
     onError: (err) => this.commitError.emit(err),
   });
 
-  /** @internal */
-  readonly commitErrorContext = this.core.bindCommitRetry(() =>
+  protected readonly commitErrorContext = this.core.bindCommitRetry(() =>
     this.scalarHandler.retryLast(),
   );
 
@@ -976,12 +937,10 @@ export class CngxSelectShell<T = unknown>
   // fields exist for the contract but nothing in the current template
   // renders against them.
 
-  /** @internal */
-  readonly unfilteredCount = computed(
+  protected readonly unfilteredCount = computed(
     () => this.core.unfilteredFlatOptions().length,
   );
-  /** @internal */
-  readonly previousLoadedCount = computed(
+  protected readonly previousLoadedCount = computed(
     () => this.flatOptions().length,
   );
 

@@ -68,6 +68,16 @@ function flush(fixture: { detectChanges: () => void }): void {
   fixture.detectChanges();
 }
 
+interface CngxSelectShellInternals {
+  readonly flatOptions: () => readonly { value: unknown; label: string; disabled?: boolean }[];
+  readonly effectiveOptions: () => readonly unknown[];
+  readonly derivedOptions: () => readonly unknown[];
+}
+
+function shellInternals<T>(shell: CngxSelectShell<T>): CngxSelectShellInternals {
+  return shell as unknown as CngxSelectShellInternals;
+}
+
 @Component({
   template: `
     <cngx-select-shell [label]="'Farbe'" [(value)]="value">
@@ -210,7 +220,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const shell = shellDe.componentInstance as CngxSelectShell<string>;
-    const opts = shell.flatOptions();
+    const opts = shellInternals(shell).flatOptions();
 
     expect(opts.length).toBe(3);
     expect(opts[0]).toMatchObject({ value: 'red', label: 'Rot' });
@@ -226,12 +236,12 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const shell = shellDe.componentInstance as CngxSelectShell<string>;
 
-    expect(shell.flatOptions()[1].disabled).toBe(false);
+    expect(shellInternals(shell).flatOptions()[1].disabled).toBe(false);
 
     fixture.componentInstance.greenDisabled.set(true);
     flush(fixture);
 
-    expect(shell.flatOptions()[1].disabled).toBe(true);
+    expect(shellInternals(shell).flatOptions()[1].disabled).toBe(true);
   });
 
   it('preserves group hierarchy in the projected option model', () => {
@@ -241,7 +251,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
 
     const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
     const shell = shellDe.componentInstance as CngxSelectShell<string>;
-    const eff = shell.effectiveOptions();
+    const eff = shellInternals(shell).effectiveOptions();
 
     expect(eff.length).toBe(3);
     const [first, second, third] = eff;
@@ -254,7 +264,12 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(grp.children.length).toBe(2);
     expect(grp.children.map((o) => o.value)).toEqual(['b', 'c']);
     // flatOptions still flattens to 4
-    expect(shell.flatOptions().map((o) => o.value)).toEqual(['a', 'b', 'c', 'd']);
+    expect(shellInternals(shell).flatOptions().map((o) => o.value)).toEqual([
+      'a',
+      'b',
+      'c',
+      'd',
+    ]);
   });
 
   it('does not re-emit derivedOptions on unrelated input changes (structural equal)', () => {
@@ -268,7 +283,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     let count = 0;
     TestBed.runInInjectionContext(() => {
       effect(() => {
-        shell.effectiveOptions();
+        shellInternals(shell).effectiveOptions();
         count++;
       });
     });
@@ -535,20 +550,14 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     triggerBtn.click();
     flush(fixture);
 
-    expect(
-      (shell as unknown as { derivedOptions: () => readonly unknown[] })
-        .derivedOptions().length,
-    ).toBe(3);
+    expect(shellInternals(shell).derivedOptions().length).toBe(3);
 
     fixture.componentInstance.loading.set(true);
     flush(fixture);
     fixture.componentInstance.loading.set(false);
     flush(fixture);
 
-    expect(
-      (shell as unknown as { derivedOptions: () => readonly unknown[] })
-        .derivedOptions().length,
-    ).toBe(3);
+    expect(shellInternals(shell).derivedOptions().length).toBe(3);
 
     const firstOption = shellDe.nativeElement.querySelectorAll(
       'cngx-option',
