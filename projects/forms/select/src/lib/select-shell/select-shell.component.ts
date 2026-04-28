@@ -6,7 +6,6 @@ import {
   computed,
   contentChild,
   contentChildren,
-  effect,
   inject,
   input,
   model,
@@ -26,10 +25,12 @@ import {
   CngxListboxTrigger,
   CNGX_OPTION_CONTAINER,
   CNGX_OPTION_FILTER_HOST,
+  CNGX_OPTION_INTERACTION_HOST,
   CNGX_OPTION_STATUS_HOST,
   type CngxOption,
   type CngxOptionFilterHost,
   type CngxOptionGroup,
+  type CngxOptionInteractionHost,
   type CngxOptionStatus,
   type CngxOptionStatusHost,
 } from '@cngx/common/interactive';
@@ -164,6 +165,7 @@ export interface CngxSelectShellChange<T = unknown> {
     { provide: CNGX_SELECT_PANEL_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_STATUS_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_OPTION_FILTER_HOST, useExisting: CngxSelectShell },
+    { provide: CNGX_OPTION_INTERACTION_HOST, useExisting: CngxSelectShell },
     { provide: CNGX_SELECT_SHELL_SEARCH_HOST, useExisting: CngxSelectShell },
   ],
   host: {
@@ -245,8 +247,6 @@ export interface CngxSelectShellChange<T = unknown> {
           [explicitOptions]="visibleProjectedOptions()"
           [items]="adItems()"
           [(value)]="value"
-          (click)="handleProjectedOptionClick($event)"
-          (pointerover)="handleProjectedOptionHover($event)"
         >
           @if (loading()) {
             @if (tpl.loading(); as loadTpl) {
@@ -285,11 +285,11 @@ export interface CngxSelectShellChange<T = unknown> {
 })
 export class CngxSelectShell<T = unknown>
   implements
-    CngxFormFieldControl,
-    CngxOptionStatusHost,
-    CngxOptionFilterHost,
-    CngxSelectShellSearchHost
-{
+  CngxFormFieldControl,
+  CngxOptionStatusHost,
+  CngxOptionFilterHost,
+  CngxOptionInteractionHost,
+  CngxSelectShellSearchHost {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
@@ -411,14 +411,14 @@ export class CngxSelectShell<T = unknown>
           // CNGX_OPTION_CONTAINER is provided via `useExisting: CngxOption` —
           // the runtime instance carries the full directive surface even
           // though the structural token type is intentionally narrow.
-          const opt = c as unknown as CngxOption;
+          const opt = c as CngxOption;
           items.push({
             value: opt.value() as T,
             label: opt.label(),
             disabled: opt.disabled(),
           });
         } else {
-          const grp = c as unknown as CngxOptionGroup;
+          const grp = c as CngxOptionGroup;
           const children: CngxSelectOptionDef<T>[] = [];
           for (const o of grp.options()) {
             children.push({
@@ -498,9 +498,9 @@ export class CngxSelectShell<T = unknown>
       const out: CngxOption[] = [];
       for (const c of this.containers()) {
         if (c.kind === 'option') {
-          out.push(c as unknown as CngxOption);
+          out.push(c as CngxOption);
         } else {
-          const grp = c as unknown as CngxOptionGroup;
+          const grp = c as CngxOptionGroup;
           for (const o of grp.options()) {
             out.push(o);
           }
@@ -653,7 +653,8 @@ export class CngxSelectShell<T = unknown>
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
-  /** @internal */ readonly focused = this.focusState.focused;
+  /** @internal */
+  readonly focused = this.focusState.focused;
 
   readonly empty = computed<boolean>(() => {
     const v = this.value();
@@ -911,11 +912,11 @@ export class CngxSelectShell<T = unknown>
   // renders against them.
 
   /** @internal */ readonly unfilteredCount = computed(
-    () => this.core.unfilteredFlatOptions().length,
-  );
+      () => this.core.unfilteredFlatOptions().length,
+    );
   /** @internal */ readonly previousLoadedCount = computed(
-    () => this.flatOptions().length,
-  );
+      () => this.flatOptions().length,
+    );
 
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -1033,26 +1034,6 @@ export class CngxSelectShell<T = unknown>
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Mirror the listbox AD's active-id onto the projected option
-    // elements. Content-projected options inject CngxActiveDescendant
-    // at construction time, when their authoring view has no AD in
-    // scope — `option.isHighlighted` always returns false. The shell
-    // owns the listbox/AD pair, so it can toggle the highlighted class
-    // on the matching DOM element directly. Pillar-2 communication
-    // restored without modifying the Level-2 atom.
-    effect(() => {
-      const activeId = this.listboxRef()?.ad.activeId() ?? null;
-      untracked(() => {
-        const projected = this.projectedOptions();
-        for (const opt of projected) {
-          const el = document.getElementById(opt.id);
-          if (!el) {
-            continue;
-          }
-          el.classList.toggle('cngx-option--highlighted', opt.id === activeId);
-        }
-      });
-    });
   }
 
   // ── Public API (mat-select parity) ─────────────────────────────────
@@ -1163,74 +1144,36 @@ export class CngxSelectShell<T = unknown>
     }
   }
 
-  /**
-   * Click delegation for content-projected `<cngx-option>` elements.
-   *
-   * **Why this exists.** The option's own click handler does
-   * `inject(CngxActiveDescendant, { optional: true })` at construction
-   * time. Content-projected options are authored in the consumer's view
-   * scope (outside the listbox in the template tree), so element-injector
-   * walking does not reach the listbox's AD — `this.ad` is null and the
-   * option's click handler short-circuits. Reading the click at the
-   * shell level instead resolves the projected option by `id` and routes
-   * the activation through the listbox's AD directly.
-   *
-   * @internal
-   */
-  protected handleProjectedOptionClick(event: Event): void {
+  // ── CngxOptionInteractionHost implementation ──────────────────────
+  //
+  // Content-projected `<cngx-option>` elements inject
+  // `CngxActiveDescendant, { optional: true }` at construction time —
+  // when their authoring view has no AD in scope. They fall back to
+  // this host via `CNGX_OPTION_INTERACTION_HOST` and read `activeId`
+  // (declared above; same Signal serves both panel-host and
+  // interaction-host contracts), plus call `activate()`/`highlight()`
+  // from their own click + pointerenter handlers. Pillar-1 derivation
+  // restored — no DOM walking, no shell-level event delegation.
+
+  /** @internal */
+  activate(value: unknown): void {
     if (this.disabled()) {
-      return;
-    }
-    const opt = this.findProjectedOptionFromEvent(event);
-    if (!opt || opt.disabled()) {
       return;
     }
     const ad = this.listboxRef()?.ad;
     if (!ad) {
       return;
     }
-    ad.highlightByValue(opt.value());
+    ad.highlightByValue(value);
     ad.activateCurrent();
   }
 
-  /**
-   * Hover delegation — same rationale as
-   * {@link handleProjectedOptionClick}. Keeps AD highlight state in sync
-   * with the consumer's pointer for content-projected options that
-   * never see the listbox's AD via DI.
-   *
-   * @internal
-   */
-  protected handleProjectedOptionHover(event: Event): void {
+  /** @internal */
+  highlight(value: unknown): void {
     if (this.disabled()) {
       return;
     }
-    const opt = this.findProjectedOptionFromEvent(event);
-    if (!opt || opt.disabled()) {
-      return;
-    }
-    this.listboxRef()?.ad.highlightByValue(opt.value());
-  }
-
-  /**
-   * Resolve the click/hover target back to the `CngxOption` directive
-   * instance via the projected element's stable `id` (set by the option
-   * directive's host binding `[id]="this.id"`). Returns `null` when the
-   * event did not originate inside a projected option.
-   *
-   * @internal
-   */
-  private findProjectedOptionFromEvent(event: Event): CngxOption | null {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) {
-      return null;
-    }
-    const optionEl = target.closest('[id^="cngx-option"]');
-    if (!optionEl) {
-      return null;
-    }
-    const id = optionEl.id;
-    return this.projectedOptions().find((o) => o.id === id) ?? null;
+    this.listboxRef()?.ad.highlightByValue(value);
   }
 
   /** @internal — click-outside dismissal. */

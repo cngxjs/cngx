@@ -187,7 +187,6 @@ class CommitHost {
     const subject = new Subject<string | undefined>();
     this.pending = subject;
     return subject.asObservable() as Observable<string | undefined>;
-    void intended;
   };
 }
 
@@ -380,7 +379,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(triggerBtn.getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('clicking a projected <cngx-option> commits the value via shell delegation', () => {
+  it('clicking a projected <cngx-option> commits via the interaction-host fallback', () => {
     const fixture = TestBed.createComponent(FlatHost);
     fixture.detectChanges();
     flush(fixture);
@@ -393,10 +392,11 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     triggerBtn.click();
     flush(fixture);
 
-    // Click the second projected option (`green`). Content-projection
-    // scoping prevents the option's own click handler from reaching the
-    // listbox AD; the shell's click delegation routes the activation
-    // through the AD directly.
+    // Click the second projected option (`green`). The option's own
+    // `inject(CngxActiveDescendant, { optional: true })` returns null in
+    // the consumer's authoring view, so it falls back to the shell's
+    // CNGX_OPTION_INTERACTION_HOST contract — `host.activate(value)`
+    // routes through the listbox AD.
     const greenOption = shellDe.nativeElement.querySelectorAll('cngx-option')[1] as HTMLElement;
     greenOption.click();
     flush(fixture);
@@ -409,7 +409,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
       template: `<cngx-select-shell [label]="'Empty'"></cngx-select-shell>`,
       imports: [CngxSelectShell],
     })
-    class EmptyHost {}
+    class EmptyHost { }
 
     const fixture = TestBed.createComponent(EmptyHost);
     fixture.detectChanges();
@@ -439,7 +439,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
       `,
       imports: [CngxSelectShell, CngxSelectOption],
     })
-    class LoadingHost {}
+    class LoadingHost { }
 
     const fixture = TestBed.createComponent(LoadingHost);
     fixture.detectChanges();
@@ -463,7 +463,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(contentWrapper.classList.contains('cngx-select-shell__content--hidden')).toBe(true);
   });
 
-  it('hovering a projected <cngx-option> highlights it via shell delegation', () => {
+  it('hovering a projected <cngx-option> highlights via the interaction-host fallback', () => {
     const fixture = TestBed.createComponent(FlatHost);
     fixture.detectChanges();
     flush(fixture);
@@ -479,14 +479,16 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     const lbDe = fixture.debugElement.query(By.directive(CngxListbox));
     const listbox = lbDe.injector.get(CngxListbox);
 
-    blueOption.dispatchEvent(new Event('pointerover', { bubbles: true }));
+    // The option's pointerenter handler falls back to
+    // `host.highlight(value)` because its own AD inject is null. The
+    // host forwards into `listbox.ad.highlightByValue(value)`.
+    blueOption.dispatchEvent(new Event('pointerenter', { bubbles: true }));
     flush(fixture);
 
     const activeId = listbox.ad.activeId();
     expect(activeId).toBe(blueOption.id);
-    // Visual class applied via the shell's highlight-mirror effect —
-    // the option's own `isHighlighted` reads its (null) authoring-scope
-    // AD and stays false; the shell toggles the DOM class directly.
+    // Visual class applied through the option's own host binding —
+    // `option.isHighlighted` reads the host's `activeId` signal.
     expect(blueOption.classList.contains('cngx-option--highlighted')).toBe(true);
   });
 });
@@ -594,7 +596,7 @@ describe('CngxSelectShell — commit action producer', () => {
     // until commit resolves.
     expect(host.value()).toBe('green');
     expect(host.changes.length).toBe(0);
-    expect(host.statuses[host.statuses.length - 1]).toBe('pending');
+    expect(host.statuses.at(-1)).toBe('pending');
 
     host.pending!.next('green');
     host.pending!.complete();
@@ -604,7 +606,7 @@ describe('CngxSelectShell — commit action producer', () => {
     expect(host.changes.length).toBe(1);
     expect(host.changes[0].value).toBe('green');
     expect(host.changes[0].option?.value).toBe('green');
-    expect(host.statuses[host.statuses.length - 1]).toBe('success');
+    expect(host.statuses.at(-1)).toBe('success');
   });
 
   it('supersede: a second pick aborts the in-flight commit', () => {
@@ -687,7 +689,7 @@ describe('CngxSelectShell — commit action producer', () => {
     // Rollback to previous value; commitError emitted.
     expect(host.value()).toBe('red');
     expect(host.errors).toEqual([err]);
-    expect(host.statuses[host.statuses.length - 1]).toBe('error');
+    expect(host.statuses.at(-1)).toBe('error');
 
     // Status-host contract: failed option carries data-status="error" on
     // the host element, and the consumer-projected error glyph renders
