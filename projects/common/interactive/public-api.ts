@@ -143,6 +143,7 @@ export {
   withTypeaheadDebounce,
 } from './src/menu/menu-config-features';
 export { CngxMenuAnnouncer, injectMenuAnnouncer } from './src/menu/menu-announcer';
+export { CngxContextMenuTrigger } from './src/menu/context-menu-trigger.directive';
 export {
   CNGX_MENU_RADIO_GROUP,
   createMenuRadioController,
