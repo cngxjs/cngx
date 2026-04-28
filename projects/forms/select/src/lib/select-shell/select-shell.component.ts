@@ -79,6 +79,7 @@ import {
   CNGX_SELECT_PANEL_VIEW_HOST,
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
+import { CngxSelectPanelShell } from '../shared/panel-shell/panel-shell.component';
 import {
   CNGX_SELECT_SHELL_SEARCH_HOST,
   type CngxSelectShellSearchHost,
@@ -157,6 +158,7 @@ export interface CngxSelectShellChange<T = unknown> {
     CngxListboxTrigger,
     CngxPopover,
     CngxPopoverTrigger,
+    CngxSelectPanelShell,
     NgTemplateOutlet,
   ],
   providers: [
@@ -255,35 +257,9 @@ export interface CngxSelectShellChange<T = unknown> {
           [items]="adItems()"
           [(value)]="value"
         >
-          @if (loading()) {
-            @if (tpl.loading(); as loadTpl) {
-              <ng-container *ngTemplateOutlet="loadTpl" />
-            } @else {
-              <div
-                class="cngx-select-shell__placeholder-body"
-                role="status"
-                [attr.aria-label]="ariaLabels.statusLoading ?? 'Loading'"
-              >
-                <span aria-hidden="true">⏳</span>
-              </div>
-            }
-          } @else if (visibleProjectedOptions().length === 0) {
-            @if (tpl.empty(); as emptyTpl) {
-              <ng-container *ngTemplateOutlet="emptyTpl" />
-            } @else {
-              <div class="cngx-select-shell__placeholder-body">
-                {{ fallbackLabels.empty }}
-              </div>
-            }
-          }
-          <div
-            class="cngx-select-shell__content"
-            [class.cngx-select-shell__content--hidden]="
-              loading() || visibleProjectedOptions().length === 0
-            "
-          >
+          <cngx-select-panel-shell>
             <ng-content />
-          </div>
+          </cngx-select-panel-shell>
         </div>
       </div>
     </div>

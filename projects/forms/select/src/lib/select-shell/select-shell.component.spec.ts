@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxListbox } from '@cngx/common/interactive';
 import { CngxPopover } from '@cngx/common/popover';
+import { createManualState } from '@cngx/common/data';
 import {
   CNGX_FORM_FIELD_CONTROL,
   CngxFormField,
@@ -16,6 +17,7 @@ import { CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
+import type { CngxSelectOptionsInput } from '../shared/option.model';
 import { CngxSelectOption } from '../declarative/option.component';
 import { CngxSelectOptgroup } from '../declarative/optgroup.component';
 import {
@@ -405,7 +407,7 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     expect(fixture.componentInstance.value()).toBe('green');
   });
 
-  it('renders the empty placeholder body when zero options are projected', () => {
+  it('renders the panel-shell empty region when zero options are projected', () => {
     @Component({
       template: `<cngx-select-shell [label]="'Empty'"></cngx-select-shell>`,
       imports: [CngxSelectShell],
@@ -423,15 +425,12 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     triggerBtn.click();
     flush(fixture);
 
-    const placeholder = shellDe.nativeElement.querySelector(
-      '.cngx-select-shell__placeholder-body',
-    );
-    expect(placeholder).not.toBeNull();
-    // Default fallback text — locale-cascade default is English.
-    expect(placeholder!.textContent).toBeTruthy();
+    const empty = shellDe.nativeElement.querySelector('.cngx-select__empty');
+    expect(empty).not.toBeNull();
+    expect(empty!.textContent).toBeTruthy();
   });
 
-  it('renders the loading placeholder body when [loading] is true', () => {
+  it('renders the panel-shell loading status region when [loading] is true', () => {
     @Component({
       template: `
         <cngx-select-shell [label]="'Loading'" [loading]="true">
@@ -453,15 +452,107 @@ describe('CngxSelectShell — Phase 5 scaffold', () => {
     triggerBtn.click();
     flush(fixture);
 
-    const placeholder = shellDe.nativeElement.querySelector(
-      '.cngx-select-shell__placeholder-body[role="status"]',
-    );
-    expect(placeholder).not.toBeNull();
-    // Projected options are hidden via the wrapper while loading is true.
-    const contentWrapper = shellDe.nativeElement.querySelector(
-      '.cngx-select-shell__content',
-    );
-    expect(contentWrapper.classList.contains('cngx-select-shell__content--hidden')).toBe(true);
+    const status = shellDe.nativeElement.querySelector('[role="status"]');
+    expect(status).not.toBeNull();
+    expect(status!.getAttribute('aria-label')).toBeTruthy();
+  });
+
+  it('renders the panel-shell error region with retry when [state] is in first-load error', () => {
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'ErrorState'" [state]="state" (retry)="onRetry()">
+          <cngx-option [value]="'a'">A</cngx-option>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption],
+    })
+    class ErrorHost {
+      readonly state = createManualState<CngxSelectOptionsInput<string>>();
+      retryCount = 0;
+      onRetry(): void { this.retryCount += 1; }
+    }
+
+    const fixture = TestBed.createComponent(ErrorHost);
+    fixture.componentInstance.state.setError(new Error('boom'));
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    triggerBtn.click();
+    flush(fixture);
+
+    const alert = shellDe.nativeElement.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    const retryBtn = alert!.querySelector('.cngx-select__error-retry') as HTMLButtonElement;
+    expect(retryBtn).not.toBeNull();
+
+    retryBtn.click();
+    flush(fixture);
+
+    expect(fixture.componentInstance.retryCount).toBe(1);
+  });
+
+  it('re-registers projected options after a content -> non-content -> content view bounce', () => {
+    // Drives the panel-shell @switch through 'content' -> 'skeleton' ->
+    // 'content' via the [loading] flag. Same invariant the plan-review
+    // concern targeted (the @case unmount of <ng-content /> tears down
+    // projected directives, then the return to @default re-instantiates
+    // them) — uses [loading] instead of [state] because [state]'s
+    // success/error path additionally interacts with the core's
+    // effectiveOptions merge in a way that's orthogonal to the
+    // re-registration invariant under test.
+    @Component({
+      template: `
+        <cngx-select-shell [label]="'Bounce'" [loading]="loading()" [(value)]="value">
+          <cngx-option [value]="'a'">A</cngx-option>
+          <cngx-option [value]="'b'">B</cngx-option>
+          <cngx-option [value]="'c'">C</cngx-option>
+        </cngx-select-shell>
+      `,
+      imports: [CngxSelectShell, CngxSelectOption],
+    })
+    class BounceHost {
+      readonly loading = signal(false);
+      readonly value = signal<string | undefined>(undefined);
+    }
+
+    const fixture = TestBed.createComponent(BounceHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shellDe = fixture.debugElement.query(By.directive(CngxSelectShell));
+    const shell = shellDe.componentInstance as CngxSelectShell<string>;
+    const triggerBtn = shellDe.nativeElement.querySelector(
+      '.cngx-select-shell__trigger',
+    ) as HTMLElement;
+    triggerBtn.click();
+    flush(fixture);
+
+    expect(
+      (shell as unknown as { derivedOptions: () => readonly unknown[] })
+        .derivedOptions().length,
+    ).toBe(3);
+
+    fixture.componentInstance.loading.set(true);
+    flush(fixture);
+    fixture.componentInstance.loading.set(false);
+    flush(fixture);
+
+    expect(
+      (shell as unknown as { derivedOptions: () => readonly unknown[] })
+        .derivedOptions().length,
+    ).toBe(3);
+
+    const firstOption = shellDe.nativeElement.querySelectorAll(
+      'cngx-option',
+    )[0] as HTMLElement;
+    firstOption.click();
+    flush(fixture);
+
+    expect(fixture.componentInstance.value()).toBe('a');
   });
 
   it('hovering a projected <cngx-option> highlights via the interaction-host fallback', () => {
