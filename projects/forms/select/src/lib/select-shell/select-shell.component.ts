@@ -20,7 +20,6 @@ import {
 } from '@angular/core';
 
 import { CNGX_STATEFUL, type AsyncStatus, type CngxAsyncState } from '@cngx/core/utils';
-import type { ActiveDescendantItem } from '@cngx/common/a11y';
 import {
   CngxClickOutside,
   CngxListbox,
@@ -29,9 +28,7 @@ import {
   CNGX_OPTION_FILTER_HOST,
   CNGX_OPTION_INTERACTION_HOST,
   CNGX_OPTION_STATUS_HOST,
-  type CngxOption,
   type CngxOptionFilterHost,
-  type CngxOptionGroup,
   type CngxOptionInteractionHost,
   type CngxOptionStatus,
   type CngxOptionStatusHost,
@@ -69,11 +66,10 @@ import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
-  isCngxSelectOptionGroupDef,
   type CngxSelectOptionDef,
-  type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
 } from '../shared/option.model';
+import { CNGX_PROJECTED_OPTION_MODEL_FACTORY } from '../shared/projected-option-model';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import {
   CNGX_SELECT_PANEL_HOST,
@@ -417,209 +413,33 @@ export class CngxSelectShell<T = unknown>
   });
 
   /**
-   * Hierarchy-preserving option model derived from the projected DOM.
-   * Leaves stay leaves, groups stay groups — `createSelectCore`
-   * reflattens for AD lookup and reuses the structure for the (deferred)
-   * panel-shell renderer.
+   * Projected option model — derives `derivedOptions` (option-loop
+   * input), `projectedOptions` (flat directive list for
+   * `cngxListbox.[explicitOptions]`), `visibleProjectedOptions`
+   * (after search filter), and `adItems` (AD-shape projection) from
+   * the content-projected `<cngx-option>` / `<cngx-optgroup>`
+   * children.
    *
-   * Plain-text labels (Part A Phase 3) — `option.label()` is the shared
-   * `Signal<string>` projection; closed-trigger rendering reads it via
-   * `{{ ... }}` text interpolation only, never `[innerHTML]`.
+   * Routed through `CNGX_PROJECTED_OPTION_MODEL_FACTORY` —
+   * DI-overridable for custom value/label/disabled extraction
+   * (e.g. `data-*` attributes, custom group nesting, async-loaded
+   * labels) without forking the shell.
    *
    * @internal
    */
-  protected readonly derivedOptions = computed<CngxSelectOptionsInput<T>>(
-    () => {
-      const items: (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[] = [];
-      for (const c of this.containers()) {
-        if (c.kind === 'option') {
-          // CNGX_OPTION_CONTAINER is provided via `useExisting: CngxOption` —
-          // the runtime instance carries the full directive surface even
-          // though the structural token type is intentionally narrow.
-          const opt = c as CngxOption;
-          items.push({
-            value: opt.value() as T,
-            label: opt.label(),
-            disabled: opt.disabled(),
-          });
-        } else {
-          const grp = c as CngxOptionGroup;
-          const children: CngxSelectOptionDef<T>[] = [];
-          for (const o of grp.options()) {
-            children.push({
-              value: o.value() as T,
-              label: o.label(),
-              disabled: o.disabled(),
-            });
-          }
-          items.push({ label: grp.label(), children });
-        }
-      }
-      return items;
-    },
-    {
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          const x = a[i];
-          const y = b[i];
-          if (x === y) {
-            continue;
-          }
-          const xIsGroup = isCngxSelectOptionGroupDef(x);
-          const yIsGroup = isCngxSelectOptionGroupDef(y);
-          if (xIsGroup !== yIsGroup) {
-            return false;
-          }
-          if (xIsGroup && yIsGroup) {
-            if (x.label !== y.label) {
-              return false;
-            }
-            if (x.children.length !== y.children.length) {
-              return false;
-            }
-            for (let j = 0; j < x.children.length; j++) {
-              const xj = x.children[j];
-              const yj = y.children[j];
-              if (
-                xj.value !== yj.value ||
-                xj.label !== yj.label ||
-                (xj.disabled ?? false) !== (yj.disabled ?? false)
-              ) {
-                return false;
-              }
-            }
-          } else if (!xIsGroup && !yIsGroup) {
-            if (
-              x.value !== y.value ||
-              x.label !== y.label ||
-              (x.disabled ?? false) !== (y.disabled ?? false)
-            ) {
-              return false;
-            }
-          }
-        }
-        return true;
-      },
-    },
-  );
+  private readonly projectedOptionModel = inject(
+    CNGX_PROJECTED_OPTION_MODEL_FACTORY,
+  )<T>({
+    containers: this.containers,
+    searchTerm: this.searchTerm,
+    matches: (value, label, term) => this.matches(value, label, term),
+  });
 
-  /**
-   * Flat list of `CngxOption` directive instances, walking the projected
-   * tree. Fed to `cngxListbox [explicitOptions]` so the listbox bypasses
-   * its own content-projection-scoped query (the very gap this shell was
-   * built to close — see plan Context).
-   *
-   * @internal
-   */
-  protected readonly projectedOptions = computed<readonly CngxOption[]>(
-    () => {
-      const out: CngxOption[] = [];
-      for (const c of this.containers()) {
-        if (c.kind === 'option') {
-          out.push(c as CngxOption);
-        } else {
-          const grp = c as CngxOptionGroup;
-          for (const o of grp.options()) {
-            out.push(o);
-          }
-        }
-      }
-      return out;
-    },
-    {
-      equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
-    },
-  );
-
-  /**
-   * Visible projected options after applying the search filter. Empty
-   * `searchTerm` short-circuits to the unfiltered list — same reference
-   * returned, so the listbox's `[explicitOptions]` binding doesn't
-   * cascade unnecessarily. When a term is active, options whose
-   * `matches(value, label, term)` returns false are dropped — this is
-   * the listbox-nav layer of the filter; the option directive's own
-   * `hidden` computed handles the CSS visibility layer.
-   *
-   * @internal
-   */
-  protected readonly visibleProjectedOptions = computed<readonly CngxOption[]>(
-    () => {
-      const all = this.projectedOptions();
-      const term = this.searchTerm();
-      if (!term) {
-        return all;
-      }
-      return all.filter((opt) =>
-        this.matches(opt.value() as T, opt.label(), term),
-      );
-    },
-    {
-      equal: (a, b) => a.length === b.length && a.every((v, i) => v === b[i]),
-    },
-  );
-
-  /**
-   * `ActiveDescendantItem[]` projection forwarded to the listbox's AD
-   * via the host-directive `[items]` input. Bypasses the AD's own
-   * `contentChildren(CNGX_AD_ITEM)` query (which loses content-projected
-   * items to authoring-view scoping) — same fix shape as
-   * `[explicitOptions]` above but for the AD layer. Uses
-   * {@link visibleProjectedOptions} so hidden options never enter the
-   * keyboard-nav cycle.
-   *
-   * @internal
-   */
-  protected readonly adItems = computed<ActiveDescendantItem[]>(
-    () => {
-      const opts = this.visibleProjectedOptions();
-      const items: ActiveDescendantItem[] = [];
-      for (const opt of opts) {
-        items.push({
-          id: opt.id,
-          value: opt.value(),
-          label: opt.label(),
-          disabled: opt.disabled(),
-        });
-      }
-      return items;
-    },
-    {
-      // Structural equal — without this, every read returns a fresh
-      // array reference and cascades into CngxListbox.[items] +
-      // CngxActiveDescendant.items, re-running keyboard-nav memoisation
-      // on every CD pass even when the underlying option set hasn't
-      // changed. Length + per-entry id/value/label/disabled compare
-      // matches the family's pattern (per visibleProjectedOptions
-      // shape).
-      equal: (a, b) => {
-        if (a === b) {
-          return true;
-        }
-        if (a.length !== b.length) {
-          return false;
-        }
-        for (let i = 0; i < a.length; i++) {
-          const x = a[i];
-          const y = b[i];
-          if (
-            x.id !== y.id ||
-            x.value !== y.value ||
-            x.label !== y.label ||
-            x.disabled !== y.disabled
-          ) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
-  );
+  protected readonly derivedOptions = this.projectedOptionModel.derivedOptions;
+  protected readonly projectedOptions = this.projectedOptionModel.projectedOptions;
+  protected readonly visibleProjectedOptions =
+    this.projectedOptionModel.visibleProjectedOptions;
+  protected readonly adItems = this.projectedOptionModel.adItems;
 
   // ── Content-child template-slot directives ─────────────────────────
 

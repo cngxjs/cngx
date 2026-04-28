@@ -376,6 +376,15 @@ export {
   type SearchEffectsOptions,
 } from './src/lib/shared/search-effects';
 
+// ── Projected option model (CngxSelectShell DOM → option-model) ──────
+export {
+  CNGX_PROJECTED_OPTION_MODEL_FACTORY,
+  createProjectedOptionModel,
+  type CngxProjectedOptionModelFactory,
+  type ProjectedOptionModel,
+  type ProjectedOptionModelInput,
+} from './src/lib/shared/projected-option-model';
+
 // ── Unified aggregator across all 3 config surfaces ──────────────────
 export {
   provideCngxSelect,

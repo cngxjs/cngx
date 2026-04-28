@@ -18,6 +18,10 @@ import {
   CNGX_PANEL_RENDERER_FACTORY,
   type PanelRenderer,
 } from '../shared/panel-renderer';
+import {
+  CNGX_PROJECTED_OPTION_MODEL_FACTORY,
+  type ProjectedOptionModel,
+} from '../shared/projected-option-model';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
@@ -929,6 +933,39 @@ describe('CngxSelectShell — factory token wiring', () => {
     flush(fixture);
 
     expect(emissions).toEqual([]);
+  });
+
+  it('routes the option model through CNGX_PROJECTED_OPTION_MODEL_FACTORY override', () => {
+    const factoryCalls = signal(0);
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_PROJECTED_OPTION_MODEL_FACTORY,
+          useValue: <T>(): ProjectedOptionModel<T> => {
+            factoryCalls.update((n) => n + 1);
+            return {
+              derivedOptions: signal([]).asReadonly(),
+              projectedOptions: signal([]).asReadonly(),
+              visibleProjectedOptions: signal([]).asReadonly(),
+              adItems: signal([]).asReadonly(),
+            } as unknown as ProjectedOptionModel<T>;
+          },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    expect(factoryCalls()).toBe(1);
+    // Stub returns empty derivedOptions even though FlatHost projects 3 options —
+    // proves the shell consumes the factory's output, not its own inline computation.
+    expect(shellInternals(shell).derivedOptions().length).toBe(0);
+    expect(shellInternals(shell).adItems().length).toBe(0);
   });
 
   it('routes panelRenderer through CNGX_PANEL_RENDERER_FACTORY override', () => {
