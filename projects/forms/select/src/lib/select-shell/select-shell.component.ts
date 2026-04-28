@@ -94,6 +94,7 @@ import {
   createSelectCore,
   type CngxSelectCompareFn,
 } from '../shared/select-core';
+import { setupVirtualization } from '../shared/setup-virtualization';
 import { createTypeaheadController } from '../shared/typeahead-controller';
 import { CNGX_TEMPLATE_REGISTRY_FACTORY } from '../shared/template-registry';
 import {
@@ -255,6 +256,7 @@ export interface CngxSelectShellChange<T = unknown> {
           [externalActivation]="externalActivation()"
           [explicitOptions]="visibleProjectedOptions()"
           [items]="adItems()"
+          [virtualCount]="virtualItemCount()"
           [(value)]="value"
         >
           <cngx-select-panel-shell>
@@ -705,37 +707,81 @@ export class CngxSelectShell<T = unknown>
 
   // ── Template-facing protected surface (delegates to core) ──────────
 
-  /** @internal */ readonly effectiveOptions = this.core.effectiveOptions;
-  /** @internal */ readonly flatOptions = this.core.flatOptions;
-  /** @internal */ readonly activeView = this.core.activeView;
-  /** @internal */ readonly showRefreshIndicator = this.core.showRefreshIndicator;
-  /** @internal */ readonly showInlineError = this.core.showInlineError;
-  /** @internal */ readonly skeletonIndices = this.core.skeletonIndices;
-  /** @internal */ readonly panelClassList = this.core.panelClassList;
-  /** @internal */ readonly panelWidthCss = this.core.panelWidthCss;
-  /** @internal */ readonly fallbackLabels = this.core.fallbackLabels;
-  /** @internal */ readonly ariaLabels = this.core.ariaLabels;
-  /** @internal */ readonly resolvedId = this.core.resolvedId;
-  /** @internal */ readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
-  /** @internal */ readonly resolvedShowSelectionIndicator =
+  /** @internal */
+  readonly effectiveOptions = this.core.effectiveOptions;
+  /** @internal */
+  readonly flatOptions = this.core.flatOptions;
+  /** @internal */
+  readonly activeView = this.core.activeView;
+  /** @internal */
+  readonly showRefreshIndicator = this.core.showRefreshIndicator;
+  /** @internal */
+  readonly showInlineError = this.core.showInlineError;
+  /** @internal */
+  readonly skeletonIndices = this.core.skeletonIndices;
+  /** @internal */
+  readonly panelClassList = this.core.panelClassList;
+  /** @internal */
+  readonly panelWidthCss = this.core.panelWidthCss;
+  /** @internal */
+  readonly fallbackLabels = this.core.fallbackLabels;
+  /** @internal */
+  readonly ariaLabels = this.core.ariaLabels;
+  /** @internal */
+  readonly resolvedId = this.core.resolvedId;
+  /** @internal */
+  readonly resolvedListboxLabel = this.core.resolvedListboxLabel;
+  /** @internal */
+  readonly resolvedShowSelectionIndicator =
     this.core.resolvedShowSelectionIndicator;
-  /** @internal */ readonly resolvedSelectionIndicatorVariant =
+  /** @internal */
+  readonly resolvedSelectionIndicatorVariant =
     this.core.resolvedSelectionIndicatorVariant;
-  /** @internal */ readonly resolvedSelectionIndicatorPosition =
+  /** @internal */
+  readonly resolvedSelectionIndicatorPosition =
     this.core.resolvedSelectionIndicatorPosition;
-  /** @internal */ protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
-  /** @internal */ protected readonly triggerAria = this.core.triggerAria;
-  /** @internal */ readonly ariaReadonly = this.core.ariaReadonly;
-  /** @internal */ protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
-  /** @internal */ readonly externalActivation = this.core.externalActivation;
-  /** @internal */ readonly showCommitError = this.core.showCommitError;
+  /** @internal */
+  protected readonly resolvedShowCaret = this.core.resolvedShowCaret;
+  /** @internal */
+  protected readonly triggerAria = this.core.triggerAria;
+  /** @internal */
+  readonly ariaReadonly = this.core.ariaReadonly;
+  /** @internal */
+  protected readonly effectiveTabIndex = this.core.effectiveTabIndex;
+  /** @internal */
+  readonly externalActivation = this.core.externalActivation;
+  /** @internal */
+  readonly showCommitError = this.core.showCommitError;
+
+  /**
+   * Shared virtualisation wire-up — same factory `CngxSelect` and
+   * `CngxCombobox` consume. Routes through `CNGX_PANEL_RENDERER_FACTORY`
+   * (DI-overridable for recycler / custom virtualising renderers); the
+   * default identity renderer reads `core.flatOptions` verbatim and
+   * leaves `virtualItemCount()` as `undefined` so AD's setsize falls
+   * back to projected-options length. AD ↔ recycler scroll bridge wired
+   * inside the helper.
+   *
+   * @internal
+   */
+  private readonly virtualSetup = setupVirtualization<T, T>({
+    core: this.core,
+    popoverRef: this.popoverRef,
+    listboxRef: this.listboxRef,
+    virtualization: this.config.virtualization,
+  });
+  /** @internal */
+  readonly panelRenderer = this.virtualSetup.panelRenderer;
+  /** @internal */
+  protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
-  /** @internal */ readonly commitErrorValue = this.core.commitErrorValue;
+  /** @internal */
+  readonly commitErrorValue = this.core.commitErrorValue;
 
   /** @internal */
   readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
@@ -1049,7 +1095,7 @@ export class CngxSelectShell<T = unknown>
 
   }
 
-  // ── Public API (mat-select parity) ─────────────────────────────────
+  // Public API (mat-select parity) 
 
   open(): void {
     this.popoverRef()?.show();
@@ -1063,8 +1109,6 @@ export class CngxSelectShell<T = unknown>
   focus(options?: FocusOptions): void {
     this.triggerBtn()?.nativeElement.focus(options);
   }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleTriggerClick(): void {

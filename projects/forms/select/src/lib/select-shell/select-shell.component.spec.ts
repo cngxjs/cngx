@@ -14,6 +14,10 @@ import {
   adaptFormControl,
 } from '@cngx/forms/field';
 import { CNGX_SELECT_PANEL_VIEW_HOST } from '../shared/panel-host';
+import {
+  CNGX_PANEL_RENDERER_FACTORY,
+  type PanelRenderer,
+} from '../shared/panel-renderer';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
 import { CngxSelectShell, type CngxSelectShellChange } from './select-shell.component';
@@ -839,5 +843,39 @@ describe('CngxSelectShell — commit action producer', () => {
     const glyph = slot!.querySelector('.commit-error-glyph');
     expect(glyph).not.toBeNull();
     expect(glyph!.textContent).toBe('!');
+  });
+});
+
+describe('CngxSelectShell — factory token wiring', () => {
+  beforeEach(() => {
+    polyfillPopover();
+  });
+
+  it('routes panelRenderer through CNGX_PANEL_RENDERER_FACTORY override', () => {
+    const stubRenderer: PanelRenderer<string> = {
+      renderOptions: signal([]).asReadonly(),
+    };
+    const factoryCalls = signal(0);
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: CNGX_PANEL_RENDERER_FACTORY,
+          useValue: <T>(): PanelRenderer<T> => {
+            factoryCalls.update((n) => n + 1);
+            return stubRenderer as unknown as PanelRenderer<T>;
+          },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(FlatHost);
+    fixture.detectChanges();
+    flush(fixture);
+
+    const shell = fixture.debugElement.query(By.directive(CngxSelectShell))
+      .componentInstance as CngxSelectShell<string>;
+
+    expect(factoryCalls()).toBe(1);
+    expect(shell.panelRenderer).toBe(stubRenderer);
   });
 });
