@@ -68,6 +68,7 @@ import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { createFieldSync } from '../shared/field-sync';
 import { CNGX_LOCAL_ITEMS_BUFFER_FACTORY } from '../shared/local-items-buffer';
 import {
+  isCngxSelectOptionGroupDef,
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
   type CngxSelectOptionsInput,
@@ -447,20 +448,21 @@ export class CngxSelectShell<T = unknown>
           if (x === y) {
             continue;
           }
-          const xg = x as CngxSelectOptionGroupDef<T>;
-          const yg = y as CngxSelectOptionGroupDef<T>;
-          if (xg.children !== undefined || yg.children !== undefined) {
-            if (xg.label !== yg.label) {
+          const xIsGroup = isCngxSelectOptionGroupDef(x);
+          const yIsGroup = isCngxSelectOptionGroupDef(y);
+          if (xIsGroup !== yIsGroup) {
+            return false;
+          }
+          if (xIsGroup && yIsGroup) {
+            if (x.label !== y.label) {
               return false;
             }
-            const xc = xg.children ?? [];
-            const yc = yg.children ?? [];
-            if (xc.length !== yc.length) {
+            if (x.children.length !== y.children.length) {
               return false;
             }
-            for (let j = 0; j < xc.length; j++) {
-              const xj = xc[j];
-              const yj = yc[j];
+            for (let j = 0; j < x.children.length; j++) {
+              const xj = x.children[j];
+              const yj = y.children[j];
               if (
                 xj.value !== yj.value ||
                 xj.label !== yj.label ||
@@ -469,13 +471,11 @@ export class CngxSelectShell<T = unknown>
                 return false;
               }
             }
-          } else {
-            const xo = x as CngxSelectOptionDef<T>;
-            const yo = y as CngxSelectOptionDef<T>;
+          } else if (!xIsGroup && !yIsGroup) {
             if (
-              xo.value !== yo.value ||
-              xo.label !== yo.label ||
-              (xo.disabled ?? false) !== (yo.disabled ?? false)
+              x.value !== y.value ||
+              x.label !== y.label ||
+              (x.disabled ?? false) !== (y.disabled ?? false)
             ) {
               return false;
             }
@@ -898,10 +898,15 @@ export class CngxSelectShell<T = unknown>
 
   // ── Panel-host adapter delegation ──────────────────────────────────
 
-  /** @internal */ readonly isGroup = this.core.panelHostAdapter.isGroup;
-  /** @internal */ readonly isSelected = this.core.panelHostAdapter.isSelected;
-  /** @internal */ readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
-  /** @internal */ readonly isCommittingOption =
+  /** @internal */
+  protected readonly isGroup = this.core.panelHostAdapter.isGroup;
+  /** @internal */
+  protected readonly isSelected = this.core.panelHostAdapter.isSelected;
+  /** @internal */
+  protected readonly isIndeterminate =
+    this.core.panelHostAdapter.isIndeterminate;
+  /** @internal */
+  protected readonly isCommittingOption =
     this.core.panelHostAdapter.isCommittingOption;
 
   // ── Panel-host interface completeness ──────────────────────────────
@@ -912,12 +917,14 @@ export class CngxSelectShell<T = unknown>
   // fields exist for the contract but nothing in the current template
   // renders against them.
 
-  /** @internal */ readonly unfilteredCount = computed(
-      () => this.core.unfilteredFlatOptions().length,
-    );
-  /** @internal */ readonly previousLoadedCount = computed(
-      () => this.flatOptions().length,
-    );
+  /** @internal */
+  readonly unfilteredCount = computed(
+    () => this.core.unfilteredFlatOptions().length,
+  );
+  /** @internal */
+  readonly previousLoadedCount = computed(
+    () => this.flatOptions().length,
+  );
 
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
