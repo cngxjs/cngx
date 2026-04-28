@@ -36,8 +36,8 @@ import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
     '(pointerenter)': 'handlePointerEnter()',
   },
 })
-export class CngxMenuItemRadio implements CngxAdItemHandle {
-  readonly value = input.required<unknown>();
+export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
+  readonly value = input.required<T>();
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 

@@ -34,8 +34,8 @@ import { nextUid } from '@cngx/core/utils';
     '(pointerenter)': 'handlePointerEnter()',
   },
 })
-export class CngxMenuItem implements CngxAdItemHandle {
-  readonly value = input<unknown>(undefined);
+export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
+  readonly value = input<T | undefined>(undefined);
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
