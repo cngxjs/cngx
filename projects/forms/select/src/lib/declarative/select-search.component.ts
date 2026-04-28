@@ -1,9 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
 } from '@angular/core';
+
+import { resolveSelectConfig } from '../shared/resolve-config';
 
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 
@@ -47,7 +50,7 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
       [value]="host.searchTerm()"
       (input)="handleInput($event)"
       (keydown)="handleKeydown($event)"
-      [attr.aria-label]="ariaLabel() ?? placeholder()"
+      [attr.aria-label]="resolvedAriaLabel()"
       [placeholder]="placeholder()"
       autocomplete="off"
     />
@@ -87,14 +90,28 @@ export class CngxSelectSearch {
   readonly placeholder = input<string>('Search…');
 
   /**
-   * Optional ARIA label override. Defaults to {@link placeholder} when
-   * omitted — sufficient for the common case where the placeholder
-   * already describes the field's purpose.
+   * Optional ARIA label override. Three-stage cascade:
+   * per-instance `[aria-label]` → injected
+   * `CNGX_SELECT_CONFIG.ariaLabels.searchInput` → `null` (the input
+   * falls through to its placeholder for AT naming).
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
   /** @internal */
   protected readonly host = inject(CNGX_SELECT_SHELL_SEARCH_HOST);
+  private readonly config = resolveSelectConfig();
+
+  /**
+   * Resolved ARIA label per the cascade documented on {@link ariaLabel}.
+   * Returns `null` when no instance input is bound and the config
+   * leaves `searchInput` unset — the input then exposes only the
+   * `placeholder` to AT, matching the native `<input>` default.
+   *
+   * @internal
+   */
+  protected readonly resolvedAriaLabel = computed<string | null>(
+    () => this.ariaLabel() ?? this.config.ariaLabels?.searchInput ?? null,
+  );
 
   /** @internal */
   protected handleInput(event: Event): void {
