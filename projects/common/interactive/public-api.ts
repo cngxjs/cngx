@@ -114,6 +114,13 @@ export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
 export { CngxMenuGroup } from './src/menu/menu-group.directive';
 export { CngxMenuSeparator } from './src/menu/menu-separator.directive';
 export {
+  CNGX_MENU_NAV_STRATEGY,
+  createW3CMenuStrategy,
+  type CngxMenuNavAction,
+  type CngxMenuNavContext,
+  type CngxMenuNavStrategy,
+} from './src/menu/menu-nav-strategy';
+export {
   CNGX_MENU_RADIO_GROUP,
   createMenuRadioController,
   type CngxMenuRadioGroup,
