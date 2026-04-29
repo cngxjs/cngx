@@ -74,7 +74,7 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
   },
   typeaheadDebounce: 300,
   submenuOpenDelay: 0,
-  submenuCloseDelay: 0,
+  submenuCloseDelay: 150,
   closeOnSelect: true,
 };
 

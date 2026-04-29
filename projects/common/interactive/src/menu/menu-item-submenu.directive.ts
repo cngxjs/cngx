@@ -1,11 +1,14 @@
 import {
+  afterNextRender,
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
   input,
   linkedSignal,
+  signal,
   untracked,
 } from '@angular/core';
 
@@ -25,6 +28,11 @@ interface PopoverController {
    * the browser's CSS Anchor Positioning expects on the anchor element.
    */
   readonly id: () => string;
+  /**
+   * Popover host element — the submenu directive attaches hover listeners to
+   * it so the submenu stays open while the user mouses over its items.
+   */
+  readonly elementRef: ElementRef<HTMLElement>;
 }
 
 /**
@@ -55,7 +63,8 @@ interface PopoverController {
     '[attr.aria-haspopup]': '"menu"',
     '[attr.aria-expanded]': 'isOpen()',
     '[style.anchor-name]': 'cssAnchorName()',
-    '(pointerenter)': 'handlePointerEnter()',
+    '(pointerenter)': 'handleParentEnter()',
+    '(pointerleave)': 'handleParentLeave()',
   },
 })
 export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
@@ -94,12 +103,48 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }
   }
 
-  protected handlePointerEnter(): void {
-    this.open();
+  // ── Hover-driven open/close lifecycle ────────────────────────────────
+  // The submenu opens on parent hover and stays open as long as the pointer
+  // is over EITHER the parent menu-item OR the submenu popover. When the
+  // pointer leaves both for `submenuCloseDelay` ms, the submenu closes.
+
+  private readonly parentHovered = signal(false);
+  private readonly popoverHovered = signal(false);
+  private readonly anyHovered = computed(() => this.parentHovered() || this.popoverHovered());
+
+  private closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  protected handleParentEnter(): void {
+    this.parentHovered.set(true);
+  }
+
+  protected handleParentLeave(): void {
+    this.parentHovered.set(false);
+  }
+
+  private cancelCloseTimer(): void {
+    if (this.closeTimer !== null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
+  }
+
+  private scheduleClose(): void {
+    this.cancelCloseTimer();
+    const delay = this.menuConfig.submenuCloseDelay;
+    if (delay <= 0) {
+      this.close();
+      return;
+    }
+    this.closeTimer = setTimeout(() => {
+      this.closeTimer = null;
+      this.close();
+    }, delay);
   }
 
   private readonly announcer = inject(CngxMenuAnnouncer);
   private readonly menuConfig = injectMenuConfig();
+  private readonly destroyRef = inject(DestroyRef);
 
   /**
    * Transition tracker for `isOpen`. `linkedSignal` carries an explicit
@@ -130,6 +175,31 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
         } else {
           this.announcer.announce(this.menuConfig.ariaLabels.submenuClosed);
         }
+      });
+    });
+
+    effect(() => {
+      const hovered = this.anyHovered();
+      untracked(() => {
+        if (hovered) {
+          this.cancelCloseTimer();
+          this.open();
+        } else if (this.popover().isVisible()) {
+          this.scheduleClose();
+        }
+      });
+    });
+
+    afterNextRender(() => {
+      const popoverEl = this.popover().elementRef.nativeElement;
+      const onEnter = (): void => this.popoverHovered.set(true);
+      const onLeave = (): void => this.popoverHovered.set(false);
+      popoverEl.addEventListener('pointerenter', onEnter);
+      popoverEl.addEventListener('pointerleave', onLeave);
+      this.destroyRef.onDestroy(() => {
+        popoverEl.removeEventListener('pointerenter', onEnter);
+        popoverEl.removeEventListener('pointerleave', onLeave);
+        this.cancelCloseTimer();
       });
     });
   }

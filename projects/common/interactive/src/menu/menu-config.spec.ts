@@ -26,7 +26,7 @@ describe('CNGX_MENU_CONFIG', () => {
     expect(config.ariaLabels.itemDisabled).toBe('Item disabled');
     expect(config.typeaheadDebounce).toBe(300);
     expect(config.submenuOpenDelay).toBe(0);
-    expect(config.submenuCloseDelay).toBe(0);
+    expect(config.submenuCloseDelay).toBe(150);
     expect(config.closeOnSelect).toBe(true);
     expect(config).toEqual(DEFAULT_MENU_CONFIG);
   });
