@@ -22,6 +22,7 @@ export {
   type CngxTagColor,
   type CngxTagSize,
 } from './src/tag/tag.directive';
+export { CngxTagIcon } from './src/tag/tag-icon.directive';
 export {
   CNGX_TAG_GROUP,
   type CngxTagGroupHost,

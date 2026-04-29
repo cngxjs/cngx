@@ -123,3 +123,11 @@
   --cngx-tag-color: var(--cngx-tag-info-color, #1e40af);
   --cngx-tag-border: 1px solid transparent;
 }
+
+/* Icon slot — sized so consumers can drop in any glyph without re-styling */
+
+.cngx-tag__icon {
+  width: var(--cngx-tag-icon-size, 1em);
+  height: var(--cngx-tag-icon-size, 1em);
+  flex: 0 0 auto;
+}
