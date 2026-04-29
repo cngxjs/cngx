@@ -113,6 +113,12 @@ export {
   type CngxMenuSubmenuLike,
 } from './src/menu/menu-submenu.token';
 export { CngxMenuItem } from './src/menu/menu-item.directive';
+export {
+  CngxMenuItemIcon,
+  CngxMenuItemKbd,
+  CngxMenuItemLabel,
+  CngxMenuItemSuffix,
+} from './src/menu/menu-item-slot.directives';
 export { CngxMenuItemSubmenu } from './src/menu/menu-item-submenu.directive';
 export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
 export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
