@@ -26,3 +26,8 @@ export {
   CNGX_TAG_GROUP,
   type CngxTagGroupHost,
 } from './src/tag-group/tag-group.token';
+export {
+  CngxTagGroup,
+  type CngxTagGroupGap,
+  type CngxTagGroupAlign,
+} from './src/tag-group/tag-group.component';
