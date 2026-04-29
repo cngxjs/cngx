@@ -47,6 +47,16 @@ export const STORY: DemoSpec = {
         'CngxMenuItemKbd',
       ],
       template: `
+  <style>
+    .menu { list-style: none; margin: 0; padding: 4px; width: 280px; outline: none; }
+    .menu [cngxMenuItem] { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
+    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
+    .menu .cngx-menu-item--disabled { opacity: 0.5; cursor: not-allowed; }
+    .menu .cngx-menu-item__icon { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; font-size: 1rem; }
+    .menu .cngx-menu-item__label { flex: 1; min-width: 0; }
+    .menu .cngx-menu-item__kbd { margin-left: auto; padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 0.75rem; color: #64748b; border: 1px solid #d0d5dd; border-radius: 4px; background: #f9fafb; }
+    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+  </style>
   <ul
     cngxMenu
     [label]="'File actions'"

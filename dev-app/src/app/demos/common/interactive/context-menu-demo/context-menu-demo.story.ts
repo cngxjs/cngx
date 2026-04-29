@@ -33,6 +33,15 @@ export const STORY: DemoSpec = {
         'CngxPopover',
       ],
       template: `
+  <style>
+    .zone { display: flex; align-items: center; justify-content: center; min-height: 160px; padding: 16px; border: 2px dashed #c7cdd6; border-radius: 8px; background: #f9fafb; color: #475569; cursor: context-menu; user-select: none; }
+    .zone:focus-visible { outline: 2px solid #4a8cff; outline-offset: 2px; }
+    .pop { padding: 4px; min-width: 200px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .menu { list-style: none; margin: 0; padding: 0; outline: none; }
+    .menu [cngxMenuItem] { padding: 6px 10px; border-radius: 4px; cursor: pointer; user-select: none; }
+    .menu [cngxMenuItem]:hover, .menu .cngx-menu-item--highlighted { background: rgba(74, 140, 255, 0.15); }
+    .menu [cngxMenuSeparator] { display: block; height: 1px; margin: 4px 6px; background: #e5e7eb; list-style: none; }
+  </style>
   <div
     class="zone"
     tabindex="0"
@@ -48,7 +57,7 @@ export const STORY: DemoSpec = {
       class="menu"
       tabindex="0"
       #ctx="cngxMenu"
-      (itemActivated)="lastAction.set($any($event))"
+      (itemActivated)="lastAction.set($any($event)); pop.hide()"
     >
       <li cngxMenuItem value="cut">Cut</li>
       <li cngxMenuItem value="copy">Copy</li>
