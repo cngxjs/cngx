@@ -19,6 +19,12 @@ interface PopoverController {
   readonly isVisible: () => boolean;
   show(): void;
   hide(): void;
+  readonly anchorElement: { set(el: HTMLElement | null): void };
+  /**
+   * Popover unique id signal — used to compose the `anchor-name` CSS value
+   * the browser's CSS Anchor Positioning expects on the anchor element.
+   */
+  readonly id: () => string;
 }
 
 /**
@@ -48,6 +54,8 @@ interface PopoverController {
   host: {
     '[attr.aria-haspopup]': '"menu"',
     '[attr.aria-expanded]': 'isOpen()',
+    '[style.anchor-name]': 'cssAnchorName()',
+    '(pointerenter)': 'handlePointerEnter()',
   },
 })
 export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
@@ -66,11 +74,15 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
 
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
 
+  /** CSS Anchor Positioning name — matches the popover's `position-anchor`. */
+  protected readonly cssAnchorName = computed(() => `--cngx-pop-${this.popover().id()}`);
+
   get inner(): CngxMenuHost {
     return this.submenuMenu();
   }
 
   open(): void {
+    this.popover().anchorElement.set(this.elementRef.nativeElement as HTMLElement);
     if (!this.popover().isVisible()) {
       this.popover().show();
     }
@@ -80,6 +92,10 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     if (this.popover().isVisible()) {
       this.popover().hide();
     }
+  }
+
+  protected handlePointerEnter(): void {
+    this.open();
   }
 
   private readonly announcer = inject(CngxMenuAnnouncer);
