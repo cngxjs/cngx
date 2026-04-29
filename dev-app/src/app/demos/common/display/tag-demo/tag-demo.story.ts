@@ -98,19 +98,19 @@ export const STORY: DemoSpec = {
       template: `
   <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag size="sm" color="info">
-      <cngx-avatar initials="SM" />
+      <cngx-avatar initials="S" />
       Sarah M.
     </span>
     <span cngxTag size="md" color="success">
-      <cngx-avatar initials="JD" />
+      <cngx-avatar initials="J" />
       Jane Doe
     </span>
     <span cngxTag size="lg" color="warning">
-      <cngx-avatar initials="AK" />
+      <cngx-avatar initials="A" />
       Alex K.
     </span>
     <span cngxTag size="xl" color="error">
-      <cngx-avatar initials="MS" />
+      <cngx-avatar initials="M" />
       Marcus S.
     </span>
   </div>`,

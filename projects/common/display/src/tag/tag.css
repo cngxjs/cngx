@@ -36,26 +36,32 @@
  */
 
 .cngx-tag {
-  /* Base content scale — children read this via the cascade below. */
-  --cngx-tag-content-size: var(--cngx-tag-md-content-size, 1.5em);
+  /* Base content scale — children read this via the cascade below.
+   * Sized to icon-glyph proportions (≈ 1em at md) so nested
+   * <cngx-avatar> / <cngx-icon> visually match a font glyph rather than
+   * forcing the chip taller than its natural text height. Each density
+   * step nudges this up modestly so the avatar grows with the chip
+   * without ever dominating it.
+   */
+  --cngx-tag-content-size: var(--cngx-tag-md-content-size, 1em);
 }
 
 .cngx-tag--sm {
   padding: var(--cngx-tag-sm-padding, 0 0.375rem);
   font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
-  --cngx-tag-content-size: var(--cngx-tag-sm-content-size, 1.25em);
+  --cngx-tag-content-size: var(--cngx-tag-sm-content-size, 0.875em);
 }
 
 .cngx-tag--lg {
   padding: var(--cngx-tag-lg-padding, 0.25rem 0.625rem);
   font-size: var(--cngx-tag-lg-font-size, 0.875rem);
-  --cngx-tag-content-size: var(--cngx-tag-lg-content-size, 1.5em);
+  --cngx-tag-content-size: var(--cngx-tag-lg-content-size, 1.125em);
 }
 
 .cngx-tag--xl {
   padding: var(--cngx-tag-xl-padding, 0.375rem 0.75rem);
   font-size: var(--cngx-tag-xl-font-size, 1rem);
-  --cngx-tag-content-size: var(--cngx-tag-xl-content-size, 1.625em);
+  --cngx-tag-content-size: var(--cngx-tag-xl-content-size, 1.25em);
 }
 
 /* Descendant atom scaling — overrides per-atom size tokens so nested
@@ -67,7 +73,11 @@
 
 .cngx-tag cngx-avatar {
   --cngx-avatar-size: var(--cngx-tag-content-size);
-  --cngx-avatar-font-size: calc(var(--cngx-tag-content-size) * 0.45);
+  /* At icon-glyph sizes a 2-letter initials block won't fit without
+   * overflow; consumers who need readable initials override the
+   * cascade or use a single letter. Multiplier sized for one letter
+   * to render comfortably at every density. */
+  --cngx-avatar-font-size: calc(var(--cngx-tag-content-size) * 0.6);
 }
 
 .cngx-tag > img {
