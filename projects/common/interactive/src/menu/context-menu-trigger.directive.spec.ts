@@ -162,4 +162,26 @@ describe('CngxContextMenuTrigger', () => {
       probe.remove();
     }
   });
+
+  it('outside-close (popover.hide() invoked externally) restores focus', async () => {
+    const probe = document.createElement('button');
+    probe.type = 'button';
+    document.body.appendChild(probe);
+    try {
+      const { triggerEl, popover } = setup();
+      probe.focus();
+      expect(document.activeElement).toBe(probe);
+
+      triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 18, clientY: 22 }));
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(true);
+
+      popover.hide();
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(document.activeElement).toBe(probe);
+    } finally {
+      probe.remove();
+    }
+  });
 });

@@ -3,9 +3,11 @@ import {
   computed,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   input,
+  untracked,
 } from '@angular/core';
 
 import type { CngxMenuHost } from './menu-host.token';
@@ -72,6 +74,17 @@ export class CngxContextMenuTrigger {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.removeVirtualAnchor());
+    effect(() => {
+      const open = this.isOpen();
+      untracked(() => {
+        if (open && this.savedFocus === null) {
+          const active = this.doc.activeElement;
+          this.savedFocus = active instanceof HTMLElement ? active : null;
+        } else if (!open && this.savedFocus !== null) {
+          this.restoreFocus();
+        }
+      });
+    });
   }
 
   protected handleContextMenu(event: MouseEvent): void {
@@ -89,12 +102,10 @@ export class CngxContextMenuTrigger {
     if (event.key === 'Escape' && this.isOpen()) {
       event.preventDefault();
       this.popover().hide();
-      this.restoreFocus();
     }
   }
 
   private openAt(x: number, y: number): void {
-    this.captureFocus();
     const anchor = this.ensureVirtualAnchor();
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
@@ -104,11 +115,6 @@ export class CngxContextMenuTrigger {
       this.popover().show();
     }
     this.menu().ad.highlightFirst();
-  }
-
-  private captureFocus(): void {
-    const active = this.doc.activeElement;
-    this.savedFocus = active instanceof HTMLElement ? active : null;
   }
 
   private restoreFocus(): void {
