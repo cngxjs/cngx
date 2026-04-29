@@ -15,12 +15,12 @@ export const STORY: DemoSpec = {
   navCategory: 'display',
   description:
     'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
-  apiComponents: ['CngxTag', 'CngxIcon', 'CngxAvatar'],
+  apiComponents: ['CngxTag', 'CngxIcon'],
   overview:
     '<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. ' +
     'Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; ' +
     'open-string colours emit a <code>data-color="…"</code> attribute consumers can theme directly.</p>',
-  moduleImports: ["import { CngxTag, CngxIcon, CngxAvatar } from '@cngx/common/display';"],
+  moduleImports: ["import { CngxTag, CngxIcon } from '@cngx/common/display';"],
   sections: [
     {
       title: 'Variant matrix',
@@ -90,37 +90,6 @@ export const STORY: DemoSpec = {
       css: `.row { display: flex; gap: 12px; align-items: center; }
 .row a { text-decoration: none; }
 .row a:hover { filter: brightness(0.92); }`,
-    },
-    {
-      title: 'Composition with CngxAvatar',
-      subtitle: 'Drop <code>&lt;cngx-avatar&gt;</code> directly inside <code>&lt;span cngxTag&gt;</code> — the tag overrides <code>--cngx-avatar-size</code> via the <code>--cngx-tag-content-size</code> cascade so the avatar scales with the tag\u2019s density instead of forcing the chip taller. Override <code>--cngx-tag-content-size</code> per instance for finer control.',
-      imports: ['CngxTag', 'CngxAvatar'],
-      template: `
-  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-    <span cngxTag size="sm" color="info">
-      <cngx-avatar initials="S" />
-      Sarah M.
-    </span>
-    <span cngxTag size="md" color="success">
-      <cngx-avatar initials="J" />
-      Jane Doe
-    </span>
-    <span cngxTag size="lg" color="warning">
-      <cngx-avatar initials="A" />
-      Alex K.
-    </span>
-    <span cngxTag size="xl" color="error">
-      <cngx-avatar initials="M" />
-      Marcus S.
-    </span>
-  </div>`,
-      css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.cngx-tag cngx-avatar {
-  /* Tag overrides --cngx-avatar-size via --cngx-tag-content-size cascade.
-   * Consumers can override per-instance:
-   *   <span cngxTag style="--cngx-tag-content-size: 2em">…</span>
-   */
-}`,
     },
     {
       title: 'Composition with CngxIcon',

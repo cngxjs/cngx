@@ -29,95 +29,21 @@
   border: var(--cngx-tag-border, 1px solid transparent);
 }
 
-/* Density — sm/md/lg/xl. Each variant scales padding + font-size AND
- * overrides `--cngx-tag-content-size` so children that opt into the
- * cascade (notably `<cngx-avatar>` via `--cngx-avatar-size`) shrink to
- * the tag's flow without forcing the chip to grow vertically.
- */
-
-.cngx-tag {
-  /* Base content scale — children read this via the cascade below.
-   * Sized to icon-glyph proportions (≈ 1em at md) so nested
-   * <cngx-avatar> / <cngx-icon> visually match a font glyph rather than
-   * forcing the chip taller than its natural text height. Each density
-   * step nudges this up modestly so the avatar grows with the chip
-   * without ever dominating it.
-   */
-  --cngx-tag-content-size: var(--cngx-tag-md-content-size, 1em);
-}
+/* Density — sm/md/lg/xl. Each variant scales padding + font-size. */
 
 .cngx-tag--sm {
   padding: var(--cngx-tag-sm-padding, 0 0.375rem);
   font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
-  --cngx-tag-content-size: var(--cngx-tag-sm-content-size, 0.875em);
 }
 
 .cngx-tag--lg {
   padding: var(--cngx-tag-lg-padding, 0.25rem 0.625rem);
   font-size: var(--cngx-tag-lg-font-size, 0.875rem);
-  --cngx-tag-content-size: var(--cngx-tag-lg-content-size, 1.125em);
 }
 
 .cngx-tag--xl {
   padding: var(--cngx-tag-xl-padding, 0.375rem 0.75rem);
   font-size: var(--cngx-tag-xl-font-size, 1rem);
-  --cngx-tag-content-size: var(--cngx-tag-xl-content-size, 1.25em);
-}
-
-/* Descendant atom scaling — overrides per-atom size tokens so nested
- * <cngx-avatar>, <cngx-icon>, <img>, <svg> follow the tag's flow rather
- * than imposing their own intrinsic size. Consumer can override per
- * tag instance via `--cngx-tag-content-size` or per-atom (e.g.
- * `--cngx-avatar-size`) on the host element.
- */
-
-/* Why this cascade exists, even though CngxAvatar already ships
- * xs/sm/md/lg/xl size variants:
- *
- *   avatar size  width/height   chip-baseline reality at md tag (font 0.75rem)
- *   xs           1.5rem  24px   2× the chip's natural text height (~12px)
- *   sm           2rem    32px   forces the chip to ~36px tall
- *   md           2.5rem  40px   forces the chip to ~44px tall
- *
- * Inline-chip avatars need to sit at ICON-glyph proportions (≈ 1em at md
- * = 12px), which is below avatar's smallest native size. The cascade
- * overrides `--cngx-avatar-size` inside tag context to map onto
- * `--cngx-tag-content-size`, scaling with the tag's density without
- * forcing the chip taller. Consumers who want the avatar's native
- * sizing use a standalone `<cngx-avatar size="xs">` outside any tag,
- * or override `--cngx-tag-content-size` per tag instance:
- *
- *   <span cngxTag style="--cngx-tag-content-size: 1.5rem">
- *     <cngx-avatar initials="JD" /> Jane Doe
- *   </span>
- *
- * Specificity note: CngxAvatar's own `:host(.cngx-avatar--md)` rule
- * is rewritten by emulated encapsulation to `[_nghost-xxx].cngx-avatar--md`
- * — specificity (0,2,0) — and would beat a plain `.cngx-tag cngx-avatar`
- * override (0,1,1). The doubled `cngx-avatar.cngx-avatar` selector
- * lifts our custom-property override to (0,2,1) so the cascade lands.
- */
-
-/* Only override avatar's DEFAULT size (md). Consumers who pick an
- * explicit `<cngx-avatar size="xs"/sm/lg/xl">` keep that native size
- * — the explicit choice wins over the tag's cascade. The selector
- * `.cngx-avatar--md` matches avatar's default-size class hook;
- * specificity (0,2,1) beats avatar's own `:host(.cngx-avatar--md)`
- * which encapsulation rewrites to (0,2,0).
- */
-
-.cngx-tag cngx-avatar.cngx-avatar--md {
-  --cngx-avatar-size: var(--cngx-tag-content-size);
-  /* At icon-glyph sizes a 2-letter initials block won't fit without
-   * overflow; consumers who need readable initials override the
-   * cascade or use a single letter / explicit avatar size. */
-  --cngx-avatar-font-size: calc(var(--cngx-tag-content-size) * 0.6);
-}
-
-.cngx-tag > img {
-  height: var(--cngx-tag-content-size);
-  width: auto;
-  flex: 0 0 auto;
 }
 
 /* Label — flex child, shrinkable so ellipsis can engage */
