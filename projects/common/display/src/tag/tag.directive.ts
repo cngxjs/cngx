@@ -82,7 +82,12 @@ export type CngxTagSize = 'sm' | 'md';
   // classes; thematic values cascade through `--cngx-tag-*` custom
   // properties for consumer overrides.
   encapsulation: ViewEncapsulation.None,
-  template: '<ng-content />',
+  // Wrap projected content in `cngx-tag__label` so the inner span can
+  // own `overflow: hidden` + `min-width: 0` independent of the host's
+  // `inline-flex` layout. Without the wrapper, `text-overflow: ellipsis`
+  // applied to the host fails — flex items don't shrink under ellipsis
+  // by default and the projected text node has no shrinkable parent.
+  template: '<span class="cngx-tag__label"><ng-content /></span>',
   styleUrl: './tag.css',
   host: {
     class: 'cngx-tag',

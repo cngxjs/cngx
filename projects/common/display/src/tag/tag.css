@@ -36,10 +36,16 @@
   font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
 }
 
-/* Truncate */
+/* Label — flex child, shrinkable so ellipsis can engage */
 
-.cngx-tag--truncate {
+.cngx-tag__label {
+  min-width: 0;
   overflow: hidden;
+}
+
+/* Truncate — single line + ellipsis on the inner label */
+
+.cngx-tag--truncate .cngx-tag__label {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
