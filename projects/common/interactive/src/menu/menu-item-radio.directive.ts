@@ -9,7 +9,9 @@ import {
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
-import { CngxMenuGroup } from './menu-group.directive';
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
+import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
 
 /**
  * Radio-style menu item (`role="menuitemradio"`). Mutual exclusion is scoped
@@ -36,8 +38,8 @@ import { CngxMenuGroup } from './menu-group.directive';
     '(pointerenter)': 'handlePointerEnter()',
   },
 })
-export class CngxMenuItemRadio implements CngxAdItemHandle {
-  readonly value = input.required<unknown>();
+export class CngxMenuItemRadio<T = unknown> implements CngxAdItemHandle {
+  readonly value = input.required<T>();
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
@@ -45,9 +47,11 @@ export class CngxMenuItemRadio implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
-  private readonly group = inject(CngxMenuGroup, { optional: true });
+  private readonly group = inject(CNGX_MENU_RADIO_GROUP, { optional: true });
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly menuConfig = injectMenuConfig();
 
-  readonly isHighlighted = (): boolean => this.ad?.activeId() === this.id;
+  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
 
   /** Whether this radio is the currently selected value in its group. */
   readonly checked = computed<boolean>(() => {
@@ -69,6 +73,7 @@ export class CngxMenuItemRadio implements CngxAdItemHandle {
 
   protected handleClick(): void {
     if (this.disabled()) {
+      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
       return;
     }
     const ad = this.ad;
@@ -76,7 +81,7 @@ export class CngxMenuItemRadio implements CngxAdItemHandle {
       return;
     }
     ad.highlightByValue(this.value());
-    this.group?.selectedValue.set(this.value());
+    this.group?.select(this.value());
     ad.activateCurrent();
   }
 

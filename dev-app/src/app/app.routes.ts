@@ -155,6 +155,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/context-menu',
+        loadComponent: () =>
+          import('./demos/common/interactive/context-menu-demo/context-menu-demo.component').then((m) => m.ContextMenuDemoComponent),
+      },
+      {
         path: 'interactive/copy-block',
         loadComponent: () =>
           import('./demos/common/interactive/copy-block-demo/copy-block-demo.component').then((m) => m.CopyBlockDemoComponent),
@@ -203,6 +208,11 @@ export const routes: Routes = [
         path: 'interactive/menu-checkable',
         loadComponent: () =>
           import('./demos/common/interactive/menu-checkable-demo/menu-checkable-demo.component').then((m) => m.MenuCheckableDemoComponent),
+      },
+      {
+        path: 'interactive/menu-submenu',
+        loadComponent: () =>
+          import('./demos/common/interactive/menu-submenu-demo/menu-submenu-demo.component').then((m) => m.MenuSubmenuDemoComponent),
       },
       {
         path: 'interactive/menu-trigger',

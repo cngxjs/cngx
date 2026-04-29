@@ -118,4 +118,30 @@ describe('CngxMenuTrigger', () => {
     TestBed.flushEffects();
     expect(popover.isVisible()).toBe(false);
   });
+
+  it('keyboard-opening then Escape restores focus to the trigger', async () => {
+    const { triggerEl, popover } = setup();
+    const probe = document.createElement('button');
+    probe.type = 'button';
+    document.body.appendChild(probe);
+    try {
+      triggerEl.focus();
+      expect(document.activeElement).toBe(triggerEl);
+
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      TestBed.flushEffects();
+      expect(popover.isVisible()).toBe(true);
+
+      probe.focus();
+      expect(document.activeElement).toBe(probe);
+
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(popover.isVisible()).toBe(false);
+      expect(document.activeElement).toBe(triggerEl);
+    } finally {
+      probe.remove();
+    }
+  });
 });

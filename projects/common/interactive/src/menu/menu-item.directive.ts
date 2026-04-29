@@ -1,4 +1,5 @@
 import {
+  computed,
   Directive,
   ElementRef,
   inject,
@@ -7,6 +8,9 @@ import {
 
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
+
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
 
 /**
  * A single action menuitem registered with a surrounding `CngxActiveDescendant`.
@@ -34,8 +38,8 @@ import { nextUid } from '@cngx/core/utils';
     '(pointerenter)': 'handlePointerEnter()',
   },
 })
-export class CngxMenuItem implements CngxAdItemHandle {
-  readonly value = input<unknown>(undefined);
+export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
+  readonly value = input<T | undefined>(undefined);
   readonly disabled = input<boolean>(false);
   readonly labelInput = input<string | undefined>(undefined, { alias: 'label' });
 
@@ -43,8 +47,10 @@ export class CngxMenuItem implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly menuConfig = injectMenuConfig();
 
-  readonly isHighlighted = (): boolean => this.ad?.activeId() === this.id;
+  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
 
   readonly label = (): string => {
     const explicit = this.labelInput();
@@ -57,6 +63,7 @@ export class CngxMenuItem implements CngxAdItemHandle {
 
   protected handleClick(): void {
     if (this.disabled()) {
+      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
       return;
     }
     const ad = this.ad;

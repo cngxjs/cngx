@@ -1,6 +1,12 @@
-import { Directive, inject, input, output } from '@angular/core';
+import { contentChildren, Directive, inject, input, untracked } from '@angular/core';
+import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
+import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
+import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
 /**
  * Navigable menu container with WAI-ARIA `role="menu"` semantics.
@@ -21,22 +27,43 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
       inputs: ['orientation', 'loop', 'typeahead', 'autoHighlightFirst'],
     },
   ],
+  providers: [{ provide: CNGX_MENU_HOST, useExisting: CngxMenu }],
   host: {
     role: 'menu',
     '[attr.aria-label]': 'label()',
   },
 })
-export class CngxMenu {
+export class CngxMenu implements CngxMenuHost {
   /** Accessible label. */
   readonly label = input.required<string>();
-
-  /** Emits the activated item's value on Enter/Space/click. */
-  readonly itemActivated = output<unknown>();
 
   /** Underlying `CngxActiveDescendant` — exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
+  private readonly menuConfig = injectMenuConfig();
+
+  /**
+   * Submenu directives registered inside this menu's content tree. Empty
+   * when the menu has no submenus. Drives the trigger's focus-stack
+   * arrow-right / arrow-left semantics.
+   */
+  readonly submenuItems = contentChildren<CngxMenuSubmenuLike>(CNGX_MENU_SUBMENU_ITEM, {
+    descendants: true,
+  });
+
+  /** Emits the activated item's value on Enter/Space/click. */
+  readonly itemActivated = outputFromObservable(
+    outputToObservable(this.ad.activated).pipe(takeUntilDestroyed()),
+  );
+
   constructor() {
-    this.ad.activated.subscribe((value) => this.itemActivated.emit(value));
+    outputToObservable(this.ad.activated)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        untracked(() => {
+          this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
+        });
+      });
   }
 }

@@ -107,8 +107,61 @@ export {
 } from './src/listbox/listbox-search.directive';
 export { CngxListboxTrigger } from './src/listbox/listbox-trigger.directive';
 export { CngxMenu } from './src/menu/menu.directive';
+export { CNGX_MENU_HOST, type CngxMenuHost } from './src/menu/menu-host.token';
+export {
+  CNGX_MENU_SUBMENU_ITEM,
+  type CngxMenuSubmenuLike,
+} from './src/menu/menu-submenu.token';
 export { CngxMenuItem } from './src/menu/menu-item.directive';
+export {
+  CngxMenuItemIcon,
+  CngxMenuItemKbd,
+  CngxMenuItemLabel,
+  CngxMenuItemSuffix,
+} from './src/menu/menu-item-slot.directives';
+export { CngxMenuItemSubmenu } from './src/menu/menu-item-submenu.directive';
 export { CngxMenuItemCheckbox } from './src/menu/menu-item-checkbox.directive';
 export { CngxMenuItemRadio } from './src/menu/menu-item-radio.directive';
 export { CngxMenuGroup } from './src/menu/menu-group.directive';
+export { CngxMenuSeparator } from './src/menu/menu-separator.directive';
+export {
+  CNGX_MENU_NAV_STRATEGY,
+  createW3CMenuStrategy,
+  type CngxMenuNavAction,
+  type CngxMenuNavContext,
+  type CngxMenuNavStrategy,
+} from './src/menu/menu-nav-strategy';
+export {
+  CNGX_MENU_CONFIG,
+  DEFAULT_MENU_CONFIG,
+  injectMenuConfig,
+  provideMenuConfig,
+  provideMenuConfigAt,
+  type CngxMenuAriaLabels,
+  type CngxMenuConfig,
+  type CngxMenuConfigFeature,
+} from './src/menu/menu-config';
+export {
+  withAriaLabels,
+  withCloseOnSelect,
+  withSubmenuCloseDelay,
+  withSubmenuOpenDelay,
+  withTypeaheadDebounce,
+} from './src/menu/menu-config-features';
+export {
+  CNGX_MENU_ANNOUNCER_FACTORY,
+  CngxMenuAnnouncer,
+  createMenuAnnouncer,
+  injectMenuAnnouncer,
+  type CngxMenuAnnouncerFactory,
+  type CngxMenuAnnouncerLike,
+} from './src/menu/menu-announcer';
+export { CngxContextMenuTrigger } from './src/menu/context-menu-trigger.directive';
+export { provideCngxMenu, type CngxMenuFeature } from './src/menu/provide-cngx-menu';
+export {
+  CNGX_MENU_RADIO_GROUP,
+  createMenuRadioController,
+  type CngxMenuRadioGroup,
+  type CngxMenuRadioGroupFactory,
+} from './src/menu/menu-radio-controller';
 export { CngxMenuTrigger } from './src/menu/menu-trigger.directive';

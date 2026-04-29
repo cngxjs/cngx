@@ -112,4 +112,40 @@ describe('CngxMenu', () => {
     TestBed.flushEffects();
     expect(fixture.componentInstance.lastActivated()).toBeNull();
   });
+
+  it('click on disabled item announces itemDisabled to the live region', () => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+    vi.useFakeTimers();
+    try {
+      const { fixture } = setup();
+      const items = fixture.debugElement
+        .queryAll(By.directive(CngxMenuItem))
+        .map((d) => d.nativeElement as HTMLElement);
+      items[2].click();
+      TestBed.flushEffects();
+      vi.advanceTimersByTime(20);
+      const region = document.querySelector('.cngx-menu-announcer');
+      expect(region?.textContent).toBe('Item disabled');
+    } finally {
+      vi.useRealTimers();
+      document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+    }
+  });
+
+  it('tears down the AD bridge on directive destroy (no subscribe leak)', () => {
+    const { fixture, menu } = setup();
+    const spy = vi.fn<(v: unknown) => void>();
+    menu.itemActivated.subscribe(spy);
+
+    menu.ad.highlightByValue('open');
+    menu.ad.activateCurrent();
+    TestBed.flushEffects();
+    expect(spy).toHaveBeenCalledWith('open');
+    spy.mockClear();
+
+    fixture.destroy();
+
+    menu.ad.activated.emit('after-destroy');
+    expect(spy).not.toHaveBeenCalled();
+  });
 });
