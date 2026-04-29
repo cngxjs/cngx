@@ -5,24 +5,26 @@ export const STORY: DemoSpec = {
   navLabel: 'Menu',
   navCategory: 'interactive',
   description:
-    'Keyboard-navigable menu with role="menu" and cngxMenuItem children. Activation fires itemActivated; no selection state.',
-  apiComponents: ['CngxMenu', 'CngxMenuItem'],
+    'Keyboard-navigable menu with role="menu" and cngxMenuItem children. Activation fires itemActivated; no selection state. Supports separators (skipped by AD nav) and inline static menu rendering.',
+  apiComponents: ['CngxMenu', 'CngxMenuItem', 'CngxMenuSeparator'],
   overview:
     '<p><code>[cngxMenu]</code> composes <code>CngxActiveDescendant</code> and role="menu". ' +
     'Arrow keys navigate, Home/End jump to boundaries, typeahead jumps to matching labels, ' +
-    'Enter/Space/click activate. Disabled items are skipped.</p>',
+    'Enter/Space/click activate. Disabled items are skipped.</p>' +
+    '<p><code>[cngxMenuSeparator]</code> renders <code>role="separator"</code>; ' +
+    'Active-descendant navigation skips it automatically.</p>',
   moduleImports: [
-    "import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';",
+    "import { CngxMenu, CngxMenuItem, CngxMenuSeparator } from '@cngx/common/interactive';",
   ],
   setup: `
   protected readonly lastAction = signal<string | null>(null);
   `,
   sections: [
     {
-      title: 'Context menu',
+      title: 'Action menu with separator',
       subtitle:
-        'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items are skipped.',
-      imports: ['CngxMenu', 'CngxMenuItem'],
+        'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items and separators are skipped.',
+      imports: ['CngxMenu', 'CngxMenuItem', 'CngxMenuSeparator'],
       template: `
   <ul
     cngxMenu
@@ -33,8 +35,10 @@ export const STORY: DemoSpec = {
   >
     <li cngxMenuItem value="new">New</li>
     <li cngxMenuItem value="open">Open…</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="save">Save</li>
     <li cngxMenuItem value="save-as" [disabled]="true">Save as… (disabled)</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="close">Close</li>
   </ul>
   <div class="event-grid" style="margin-top:12px">
@@ -69,6 +73,13 @@ export const STORY: DemoSpec = {
 .cngx-menu-item--disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+[cngxMenuSeparator] {
+  display: block;
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--cngx-surface-border, #e5e7eb);
+  list-style: none;
 }`,
     },
   ],

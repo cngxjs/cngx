@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
+import { CngxMenu, CngxMenuItem, CngxMenuSeparator } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-menu-demo',
@@ -15,13 +15,14 @@ import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
     DocShellComponent,
     CngxMenu,
     CngxMenuItem,
+    CngxMenuSeparator,
   ],
   template: `
     <app-doc-shell title="Menu"
-      description="Keyboard-navigable menu with role=&quot;menu&quot; and cngxMenuItem children. Activation fires itemActivated; no selection state."
-      overview="<p><code>[cngxMenu]</code> composes <code>CngxActiveDescendant</code> and role=&quot;menu&quot;. Arrow keys navigate, Home/End jump to boundaries, typeahead jumps to matching labels, Enter/Space/click activate. Disabled items are skipped.</p>"
-      [apiComponents]="['CngxMenu', 'CngxMenuItem']">
-      <app-example-card title="Context menu"
+      description="Keyboard-navigable menu with role=&quot;menu&quot; and cngxMenuItem children. Activation fires itemActivated; no selection state. Supports separators (skipped by AD nav) and inline static menu rendering."
+      overview="<p><code>[cngxMenu]</code> composes <code>CngxActiveDescendant</code> and role=&quot;menu&quot;. Arrow keys navigate, Home/End jump to boundaries, typeahead jumps to matching labels, Enter/Space/click activate. Disabled items are skipped.</p><p><code>[cngxMenuSeparator]</code> renders <code>role=&quot;separator&quot;</code>; Active-descendant navigation skips it automatically.</p>"
+      [apiComponents]="['CngxMenu', 'CngxMenuItem', 'CngxMenuSeparator']">
+      <app-example-card title="Action menu with separator"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0"
@@ -36,8 +37,10 @@ import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
   >
     <li cngxMenuItem value="new">New</li>
     <li cngxMenuItem value="open">Open…</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="save">Save</li>
     <li cngxMenuItem value="save-as" [disabled]="true">Save as… (disabled)</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="close">Close</li>
   </ul>
   <div class="event-grid" style="margin-top:12px">
@@ -51,7 +54,7 @@ import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
   `,
 })
 export class MenuDemoComponent {
-  protected readonly _s0 = 'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items are skipped.';
+  protected readonly _s0 = 'Use arrow keys, typeahead (type the first letters of an action), Home/End, Enter/Space. Disabled items and separators are skipped.';
   protected readonly _srcHtml0 = `<ul
     cngxMenu
     [label]="'File actions'"
@@ -61,8 +64,10 @@ export class MenuDemoComponent {
   >
     <li cngxMenuItem value="new">New</li>
     <li cngxMenuItem value="open">Open…</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="save">Save</li>
     <li cngxMenuItem value="save-as" [disabled]="true">Save as… (disabled)</li>
+    <li cngxMenuSeparator></li>
     <li cngxMenuItem value="close">Close</li>
   </ul>
   <div class="event-grid" style="margin-top:12px">
@@ -71,7 +76,7 @@ export class MenuDemoComponent {
       <span class="event-value">{{ lastAction() ?? '—' }}</span>
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxMenu, CngxMenuItem } from '@cngx/common/interactive';
+  protected readonly _srcTs0 = `import { CngxMenu, CngxMenuItem, CngxMenuSeparator } from '@cngx/common/interactive';
 
 
   protected readonly lastAction = signal<string | null>(null);`;
@@ -101,6 +106,13 @@ export class MenuDemoComponent {
 .cngx-menu-item--disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+[cngxMenuSeparator] {
+  display: block;
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--cngx-surface-border, #e5e7eb);
+  list-style: none;
 }`;
 
   protected readonly lastAction = signal<string | null>(null);

@@ -155,6 +155,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
       },
       {
+        path: 'interactive/context-menu',
+        loadComponent: () =>
+          import('./demos/common/interactive/context-menu-demo/context-menu-demo.component').then((m) => m.ContextMenuDemoComponent),
+      },
+      {
         path: 'interactive/copy-block',
         loadComponent: () =>
           import('./demos/common/interactive/copy-block-demo/copy-block-demo.component').then((m) => m.CopyBlockDemoComponent),

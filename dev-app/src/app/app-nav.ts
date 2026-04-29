@@ -41,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Icon', path: 'common/display/icon' },
       { label: 'Async Click', path: 'common/interactive/async-click' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
+      { label: 'Context Menu', path: 'common/interactive/context-menu' },
       { label: 'CopyBlock', path: 'common/interactive/copy-block' },
       { label: 'CopyText', path: 'common/interactive/copy-text' },
       { label: 'Disclosure', path: 'common/interactive/disclosure' },
