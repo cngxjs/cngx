@@ -1,6 +1,5 @@
-import { contentChildren, Directive, inject, input } from '@angular/core';
+import { contentChildren, Directive, inject, input, untracked } from '@angular/core';
 import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { tap } from 'rxjs';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
@@ -53,18 +52,18 @@ export class CngxMenu implements CngxMenuHost {
     descendants: true,
   });
 
-  /**
-   * Emits the activated item's value on Enter/Space/click. Side effect:
-   * announces `ariaLabels.itemActivated` through the polite live region.
-   * The `tap` runs synchronously inside the upstream subscription —
-   * announce is a fire-and-forget DOM side effect, not a signal write.
-   */
+  /** Emits the activated item's value on Enter/Space/click. */
   readonly itemActivated = outputFromObservable(
-    outputToObservable(this.ad.activated).pipe(
-      tap(() => {
-        this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
-      }),
-      takeUntilDestroyed(),
-    ),
+    outputToObservable(this.ad.activated).pipe(takeUntilDestroyed()),
   );
+
+  constructor() {
+    outputToObservable(this.ad.activated)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        untracked(() => {
+          this.announcer.announce(this.menuConfig.ariaLabels.itemActivated);
+        });
+      });
+  }
 }
