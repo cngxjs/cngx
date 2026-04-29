@@ -71,7 +71,15 @@
  * `--cngx-avatar-size`) on the host element.
  */
 
-.cngx-tag cngx-avatar {
+/* Specificity note: CngxAvatar's own `:host(.cngx-avatar--md)` rule
+ * is rewritten by emulated encapsulation to `[_nghost-xxx].cngx-avatar--md`
+ * — specificity (0,2,0) — and would beat a plain `.cngx-tag cngx-avatar`
+ * override (0,1,1). The doubled `cngx-avatar.cngx-avatar` selector
+ * lifts our custom-property override to (0,2,1) so the cascade lands.
+ * Without this the avatar stays at its intrinsic 2.5rem default and
+ * dwarfs the chip text. */
+
+.cngx-tag cngx-avatar.cngx-avatar {
   --cngx-avatar-size: var(--cngx-tag-content-size);
   /* At icon-glyph sizes a 2-letter initials block won't fit without
    * overflow; consumers who need readable initials override the
