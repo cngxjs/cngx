@@ -52,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'LongPress', path: 'common/interactive/long-press' },
       { label: 'MenuCheckable', path: 'common/interactive/menu-checkable' },
       { label: 'Menu', path: 'common/interactive/menu' },
+      { label: 'Menu Submenu', path: 'common/interactive/menu-submenu' },
       { label: 'MenuTrigger', path: 'common/interactive/menu-trigger' },
       { label: 'Nav', path: 'common/interactive/nav' },
       { label: 'Option', path: 'common/interactive/option' },
