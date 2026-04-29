@@ -3,7 +3,7 @@ import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@a
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 
-import { CngxMenuAnnouncer } from './menu-announcer';
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import { CNGX_MENU_HOST, type CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
@@ -40,7 +40,7 @@ export class CngxMenu implements CngxMenuHost {
   /** Underlying `CngxActiveDescendant` — exposed for trigger composition. */
   readonly ad = inject(CngxActiveDescendant, { self: true, host: true });
 
-  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   private readonly menuConfig = injectMenuConfig();
 
   /**

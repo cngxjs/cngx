@@ -9,7 +9,7 @@ import {
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
-import { CngxMenuAnnouncer } from './menu-announcer';
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 
 /**
@@ -47,7 +47,7 @@ export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
-  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   private readonly menuConfig = injectMenuConfig();
 
   readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);

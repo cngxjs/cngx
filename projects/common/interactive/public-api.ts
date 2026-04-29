@@ -148,7 +148,14 @@ export {
   withSubmenuOpenDelay,
   withTypeaheadDebounce,
 } from './src/menu/menu-config-features';
-export { CngxMenuAnnouncer, injectMenuAnnouncer } from './src/menu/menu-announcer';
+export {
+  CNGX_MENU_ANNOUNCER_FACTORY,
+  CngxMenuAnnouncer,
+  createMenuAnnouncer,
+  injectMenuAnnouncer,
+  type CngxMenuAnnouncerFactory,
+  type CngxMenuAnnouncerLike,
+} from './src/menu/menu-announcer';
 export { CngxContextMenuTrigger } from './src/menu/context-menu-trigger.directive';
 export { provideCngxMenu, type CngxMenuFeature } from './src/menu/provide-cngx-menu';
 export {

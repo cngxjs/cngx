@@ -12,7 +12,7 @@ import {
   untracked,
 } from '@angular/core';
 
-import { CngxMenuAnnouncer } from './menu-announcer';
+import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
@@ -142,7 +142,7 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }, delay);
   }
 
-  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly announcer = inject(CNGX_MENU_ANNOUNCER_FACTORY)();
   private readonly menuConfig = injectMenuConfig();
   private readonly destroyRef = inject(DestroyRef);
 

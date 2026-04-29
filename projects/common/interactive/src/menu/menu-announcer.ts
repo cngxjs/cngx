@@ -1,5 +1,26 @@
 import { DOCUMENT } from '@angular/common';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, InjectionToken } from '@angular/core';
+
+/**
+ * Public surface every menu-side consumer talks to. The class
+ * `CngxMenuAnnouncer` is the default implementation; consumers wire a
+ * custom (telemetry-wrapping, locale-aware, test-doubled) one by
+ * overriding `CNGX_MENU_ANNOUNCER_FACTORY`.
+ *
+ * @category interactive
+ */
+export interface CngxMenuAnnouncerLike {
+  announce(message: string): void;
+}
+
+/**
+ * Factory shape consumed by `CNGX_MENU_ANNOUNCER_FACTORY`. The default
+ * factory is {@link createMenuAnnouncer}; override returns any object
+ * that satisfies {@link CngxMenuAnnouncerLike}.
+ *
+ * @category interactive
+ */
+export type CngxMenuAnnouncerFactory = () => CngxMenuAnnouncerLike;
 
 /**
  * Global polite live-region announcer for the menu family. Maintains a
@@ -10,10 +31,14 @@ import { inject, Injectable } from '@angular/core';
  * region; messages are de-duped via a short clear-then-set cycle so
  * screen readers treat repeated identical messages as fresh events.
  *
+ * Default factory output for {@link CNGX_MENU_ANNOUNCER_FACTORY}.
+ * Consumers obtain the announcer via the factory token, never by
+ * `inject(CngxMenuAnnouncer)` directly, so a swap is enterprise-wide.
+ *
  * @category interactive
  */
 @Injectable({ providedIn: 'root' })
-export class CngxMenuAnnouncer {
+export class CngxMenuAnnouncer implements CngxMenuAnnouncerLike {
   private readonly doc = inject(DOCUMENT);
   private politeElement: HTMLElement | null = null;
   private clearTimer: ReturnType<typeof setTimeout> | null = null;
@@ -63,11 +88,51 @@ export class CngxMenuAnnouncer {
 }
 
 /**
- * Resolve the {@link CngxMenuAnnouncer} from the current injection scope.
+ * Default factory that hands out the root-scoped {@link CngxMenuAnnouncer}
+ * singleton. Consumers wire a custom announcer by replacing
+ * {@link CNGX_MENU_ANNOUNCER_FACTORY}.
+ *
  * Must run inside an injection context.
  *
  * @category interactive
  */
-export function injectMenuAnnouncer(): CngxMenuAnnouncer {
+export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
   return inject(CngxMenuAnnouncer);
+}
+
+/**
+ * DI token carrying the factory that yields the menu family's announcer.
+ * Defaults to {@link createMenuAnnouncer} returning the root-scoped
+ * {@link CngxMenuAnnouncer} singleton. Override via `providers` /
+ * `viewProviders` for telemetry-wrapping, locale-aware, or test-doubled
+ * announcers without forking the menu module. Symmetric to
+ * `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` from the select family.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [
+ *     {
+ *       provide: CNGX_MENU_ANNOUNCER_FACTORY,
+ *       useValue: () => ({ announce: (msg) => myTelemetry.log(msg) }),
+ *     },
+ *   ],
+ * });
+ * ```
+ *
+ * @category interactive
+ */
+export const CNGX_MENU_ANNOUNCER_FACTORY = new InjectionToken<CngxMenuAnnouncerFactory>(
+  'CNGX_MENU_ANNOUNCER_FACTORY',
+  { providedIn: 'root', factory: () => createMenuAnnouncer },
+);
+
+/**
+ * Resolve the {@link CngxMenuAnnouncerLike} from the current injection
+ * scope via the factory token. Must run inside an injection context.
+ *
+ * @category interactive
+ */
+export function injectMenuAnnouncer(): CngxMenuAnnouncerLike {
+  return inject(CNGX_MENU_ANNOUNCER_FACTORY)();
 }

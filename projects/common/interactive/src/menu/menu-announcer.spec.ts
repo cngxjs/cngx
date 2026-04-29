@@ -1,7 +1,13 @@
+import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxMenuAnnouncer } from './menu-announcer';
+import {
+  CNGX_MENU_ANNOUNCER_FACTORY,
+  CngxMenuAnnouncer,
+  type CngxMenuAnnouncerLike,
+  injectMenuAnnouncer,
+} from './menu-announcer';
 
 describe('CngxMenuAnnouncer', () => {
   beforeEach(() => {
@@ -52,5 +58,51 @@ describe('CngxMenuAnnouncer', () => {
     const announcer = TestBed.inject(CngxMenuAnnouncer);
     announcer.announce('');
     expect(document.querySelector('.cngx-menu-announcer')).toBeNull();
+  });
+});
+
+describe('CNGX_MENU_ANNOUNCER_FACTORY', () => {
+  beforeEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  afterEach(() => {
+    document.body.querySelectorAll('.cngx-menu-announcer').forEach((el) => el.remove());
+  });
+
+  it('default factory resolves to the root-scoped CngxMenuAnnouncer', () => {
+    TestBed.configureTestingModule({});
+    const factory = TestBed.inject(CNGX_MENU_ANNOUNCER_FACTORY);
+    const fromFactory = TestBed.runInInjectionContext(() => factory());
+    const direct = TestBed.inject(CngxMenuAnnouncer);
+    expect(fromFactory).toBe(direct);
+  });
+
+  it('override via providers swaps the announcer for every consumer', () => {
+    const calls: string[] = [];
+    const stub: CngxMenuAnnouncerLike = {
+      announce: (msg: string): void => {
+        calls.push(msg);
+      },
+    };
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_MENU_ANNOUNCER_FACTORY, useValue: () => stub }],
+    });
+    const factory = TestBed.inject(CNGX_MENU_ANNOUNCER_FACTORY);
+    const announcer = TestBed.runInInjectionContext(() => factory());
+    announcer.announce('Submenu opened');
+    expect(announcer).toBe(stub);
+    expect(calls).toEqual(['Submenu opened']);
+    expect(document.querySelector('.cngx-menu-announcer')).toBeNull();
+  });
+
+  it('injectMenuAnnouncer resolves through the factory token', () => {
+    const stub: CngxMenuAnnouncerLike = { announce: () => undefined };
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_MENU_ANNOUNCER_FACTORY, useValue: () => stub }],
+    });
+    const injector = TestBed.inject(Injector);
+    const captured = runInInjectionContext(injector, () => injectMenuAnnouncer());
+    expect(captured).toBe(stub);
   });
 });
