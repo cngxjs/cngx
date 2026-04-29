@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxTag } from '@cngx/common/display';
+import { CngxTag, CngxTagIcon } from '@cngx/common/display';
 
 @Component({
   selector: 'app-tag-demo',
@@ -14,12 +14,13 @@ import { CngxTag } from '@cngx/common/display';
     ExampleCardComponent,
     DocShellComponent,
     CngxTag,
+    CngxTagIcon,
   ],
   template: `
     <app-doc-shell title="Tag"
       description="Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>."
       overview="<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; open-string colours emit a <code>data-color=&quot;…&quot;</code> attribute consumers can theme directly.</p>"
-      [apiComponents]="['CngxTag']">
+      [apiComponents]="['CngxTag', 'CngxTagIcon']">
       <app-example-card title="Variant matrix"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -81,6 +82,33 @@ import { CngxTag } from '@cngx/common/display';
     <a cngxTag color="warning" href="#category/pending">pending</a>
   </div>
       </app-example-card>
+      <app-example-card title="Icon slot"
+        [subtitle]="_s5"
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5"
+        [sourceCss]="_srcCss5">
+        
+  <div class="row">
+    <span cngxTag color="success">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="M6.5 11.5 3 8l1.4-1.4 2.1 2.1L11.6 4l1.4 1.4z" />
+      </svg>
+      Active
+    </span>
+    <span cngxTag color="warning">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <circle cx="8" cy="8" r="4" fill="currentColor" />
+      </svg>
+      Pending
+    </span>
+    <span cngxTag color="error">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="2" />
+      </svg>
+      Failed
+    </span>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -90,12 +118,13 @@ export class TagDemoComponent {
   protected readonly _s2 = '<code>md</code> default; <code>sm</code> shrinks padding + font-size.';
   protected readonly _s3 = 'Visual-only truncation — full text remains in the DOM for assistive tech.';
   protected readonly _s4 = 'Native <code>&lt;a cngxTag&gt;</code> preserves anchor semantics — focus, keyboard, navigation.';
+  protected readonly _s5 = '<code>&lt;svg cngxTagIcon&gt;</code> / <code>&lt;img cngxTagIcon&gt;</code> hosts get sized + <code>aria-hidden="true"</code>; semantic meaning lives on the tag’s text.';
   protected readonly _srcHtml0 = `<div class="row">
     <span cngxTag variant="filled" color="success">Filled</span>
     <span cngxTag variant="outline" color="success">Outline</span>
     <span cngxTag variant="subtle" color="success">Subtle</span>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxTag } from '@cngx/common/display';`;
+  protected readonly _srcTs0 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
   protected readonly _srcCss0 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml1 = `<div class="row">
     <span cngxTag color="neutral">Neutral</span>
@@ -105,7 +134,7 @@ export class TagDemoComponent {
     <span cngxTag color="info">Beta</span>
     <span cngxTag color="my-brand">Branded</span>
   </div>`;
-  protected readonly _srcTs1 = `import { CngxTag } from '@cngx/common/display';`;
+  protected readonly _srcTs1 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
   protected readonly _srcCss1 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 [data-color="my-brand"] {
   --cngx-tag-bg: #4f46e5;
@@ -115,21 +144,43 @@ export class TagDemoComponent {
     <span cngxTag size="md" color="info">Medium</span>
     <span cngxTag size="sm" color="info">Small</span>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxTag } from '@cngx/common/display';`;
+  protected readonly _srcTs2 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
   protected readonly _srcCss2 = `.row { display: flex; gap: 12px; align-items: center; }`;
   protected readonly _srcHtml3 = `<div class="row">
     <span cngxTag color="neutral" [truncate]="true" maxWidth="8rem">A very long taxonomy label that overflows</span>
     <span cngxTag color="info" [truncate]="true" maxWidth="12rem">Another lengthy descriptor here</span>
   </div>`;
-  protected readonly _srcTs3 = `import { CngxTag } from '@cngx/common/display';`;
+  protected readonly _srcTs3 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
   protected readonly _srcCss3 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml4 = `<div class="row">
     <a cngxTag color="info" href="#category/frontend">frontend</a>
     <a cngxTag color="success" href="#category/cleared">cleared</a>
     <a cngxTag color="warning" href="#category/pending">pending</a>
   </div>`;
-  protected readonly _srcTs4 = `import { CngxTag } from '@cngx/common/display';`;
+  protected readonly _srcTs4 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
   protected readonly _srcCss4 = `.row { display: flex; gap: 12px; align-items: center; }
 .row a { text-decoration: none; }
 .row a:hover { filter: brightness(0.92); }`;
+  protected readonly _srcHtml5 = `<div class="row">
+    <span cngxTag color="success">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="M6.5 11.5 3 8l1.4-1.4 2.1 2.1L11.6 4l1.4 1.4z" />
+      </svg>
+      Active
+    </span>
+    <span cngxTag color="warning">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <circle cx="8" cy="8" r="4" fill="currentColor" />
+      </svg>
+      Pending
+    </span>
+    <span cngxTag color="error">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="2" />
+      </svg>
+      Failed
+    </span>
+  </div>`;
+  protected readonly _srcTs5 = `import { CngxTag, CngxTagIcon } from '@cngx/common/display';`;
+  protected readonly _srcCss5 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
 }

@@ -6,12 +6,12 @@ export const STORY: DemoSpec = {
   navCategory: 'display',
   description:
     'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
-  apiComponents: ['CngxTag'],
+  apiComponents: ['CngxTag', 'CngxTagIcon'],
   overview:
     '<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. ' +
     'Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; ' +
     'open-string colours emit a <code>data-color="…"</code> attribute consumers can theme directly.</p>',
-  moduleImports: ["import { CngxTag } from '@cngx/common/display';"],
+  moduleImports: ["import { CngxTag, CngxTagIcon } from '@cngx/common/display';"],
   sections: [
     {
       title: 'Variant matrix',
@@ -79,6 +79,33 @@ export const STORY: DemoSpec = {
       css: `.row { display: flex; gap: 12px; align-items: center; }
 .row a { text-decoration: none; }
 .row a:hover { filter: brightness(0.92); }`,
+    },
+    {
+      title: 'Icon slot',
+      subtitle: '<code>&lt;svg cngxTagIcon&gt;</code> / <code>&lt;img cngxTagIcon&gt;</code> hosts get sized + <code>aria-hidden="true"</code>; semantic meaning lives on the tag\u2019s text.',
+      imports: ['CngxTag', 'CngxTagIcon'],
+      template: `
+  <div class="row">
+    <span cngxTag color="success">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="M6.5 11.5 3 8l1.4-1.4 2.1 2.1L11.6 4l1.4 1.4z" />
+      </svg>
+      Active
+    </span>
+    <span cngxTag color="warning">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <circle cx="8" cy="8" r="4" fill="currentColor" />
+      </svg>
+      Pending
+    </span>
+    <span cngxTag color="error">
+      <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
+        <path fill="currentColor" d="m4 4 8 8m0-8-8 8" stroke="currentColor" stroke-width="2" />
+      </svg>
+      Failed
+    </span>
+  </div>`,
+      css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`,
     },
   ],
 };
