@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
 
 import { CNGX_TAG_GROUP } from '../tag-group/tag-group.token';
 
@@ -66,6 +73,15 @@ export type CngxTagSize = 'sm' | 'md';
   exportAs: 'cngxTag',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Encapsulation `None` — the visual variant matrix relies on
+  // host-class + `[data-color]` attribute selectors (.cngx-tag--filled
+  // [data-color='neutral'] etc). Emulated encapsulation rewrites those
+  // rules to `[_ngcontent-xxx]` form which never matches the host
+  // (carries `_nghost-xxx`), so the chrome silently drops at runtime.
+  // Mirrors `mat-*` convention — atoms ship globally consumable
+  // classes; thematic values cascade through `--cngx-tag-*` custom
+  // properties for consumer overrides.
+  encapsulation: ViewEncapsulation.None,
   template: '<ng-content />',
   styleUrl: './tag.css',
   host: {

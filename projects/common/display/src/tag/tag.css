@@ -12,14 +12,14 @@
  * flex-wrap) live with `CngxTagGroup` (Phase 3).
  */
 
-:host,
-[cngxTag] {
+.cngx-tag {
   display: inline-flex;
   align-items: center;
   gap: var(--cngx-tag-gap, 0.25rem);
   padding: var(--cngx-tag-padding, 0.125rem 0.5rem);
   border-radius: var(--cngx-tag-radius, 4px);
   font-size: var(--cngx-tag-font-size, 0.75rem);
+  font-weight: var(--cngx-tag-font-weight, 500);
   line-height: 1.25;
   max-width: 100%;
   /* Variant-specific bg/color/border resolve via [data-color] +
