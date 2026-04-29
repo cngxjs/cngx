@@ -83,4 +83,17 @@ describe('CNGX_MENU_CONFIG', () => {
     const captured = runInInjectionContext(injector, () => injectMenuConfig());
     expect(captured.typeaheadDebounce).toBe(123);
   });
+
+  it('every with* feature carries the _target=config discriminator', () => {
+    const features = [
+      withAriaLabels({ submenuOpened: 'X' }),
+      withTypeaheadDebounce(1),
+      withSubmenuCloseDelay(1),
+      withSubmenuOpenDelay(1),
+      withCloseOnSelect(false),
+    ];
+    for (const f of features) {
+      expect((f as { _target?: string })._target).toBe('config');
+    }
+  });
 });

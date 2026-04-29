@@ -1,4 +1,4 @@
-import type { CngxMenuAriaLabels, CngxMenuConfigFeature } from './menu-config';
+import { defineMenuConfigFeature, type CngxMenuAriaLabels, type CngxMenuConfigFeature } from './menu-config';
 
 /**
  * Override one or more ARIA strings (English defaults). Unset keys keep
@@ -8,10 +8,10 @@ import type { CngxMenuAriaLabels, CngxMenuConfigFeature } from './menu-config';
  * @category interactive
  */
 export function withAriaLabels(partial: Partial<CngxMenuAriaLabels>): CngxMenuConfigFeature {
-  return (cfg) => ({
+  return defineMenuConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...partial },
-  });
+  }));
 }
 
 /**
@@ -21,7 +21,7 @@ export function withAriaLabels(partial: Partial<CngxMenuAriaLabels>): CngxMenuCo
  * @category interactive
  */
 export function withTypeaheadDebounce(ms: number): CngxMenuConfigFeature {
-  return (cfg) => ({ ...cfg, typeaheadDebounce: ms });
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, typeaheadDebounce: ms }));
 }
 
 /**
@@ -32,7 +32,7 @@ export function withTypeaheadDebounce(ms: number): CngxMenuConfigFeature {
  * @category interactive
  */
 export function withSubmenuOpenDelay(ms: number): CngxMenuConfigFeature {
-  return (cfg) => ({ ...cfg, submenuOpenDelay: ms });
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, submenuOpenDelay: ms }));
 }
 
 /**
@@ -43,7 +43,7 @@ export function withSubmenuOpenDelay(ms: number): CngxMenuConfigFeature {
  * @category interactive
  */
 export function withSubmenuCloseDelay(ms: number): CngxMenuConfigFeature {
-  return (cfg) => ({ ...cfg, submenuCloseDelay: ms });
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, submenuCloseDelay: ms }));
 }
 
 /**
@@ -53,5 +53,5 @@ export function withSubmenuCloseDelay(ms: number): CngxMenuConfigFeature {
  * @category interactive
  */
 export function withCloseOnSelect(close: boolean): CngxMenuConfigFeature {
-  return (cfg) => ({ ...cfg, closeOnSelect: close });
+  return defineMenuConfigFeature((cfg) => ({ ...cfg, closeOnSelect: close }));
 }

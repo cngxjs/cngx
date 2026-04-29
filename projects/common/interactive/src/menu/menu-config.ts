@@ -37,8 +37,28 @@ export interface CngxMenuConfig {
   readonly closeOnSelect: boolean;
 }
 
-/** Single feature-flag function consumed by {@link provideMenuConfig}. */
-export type CngxMenuConfigFeature = (config: CngxMenuConfig) => CngxMenuConfig;
+/**
+ * Single feature-flag function consumed by {@link provideMenuConfig} and
+ * {@link provideCngxMenu}. Carries a hidden `_target` discriminator so
+ * future config surfaces (e.g. submenu-only or announcer overrides) can
+ * compose through the same `provideCngxMenu` aggregator without breaking
+ * the public API of existing `with*` features.
+ */
+export type CngxMenuConfigFeature = ((config: CngxMenuConfig) => CngxMenuConfig) & {
+  readonly _target?: 'config';
+};
+
+/**
+ * Internal helper that brands a config-mutator function with the `_target`
+ * discriminator. Every `with*` feature returns one of these.
+ *
+ * @internal
+ */
+export function defineMenuConfigFeature(
+  fn: (config: CngxMenuConfig) => CngxMenuConfig,
+): CngxMenuConfigFeature {
+  return Object.assign(fn, { _target: 'config' as const });
+}
 
 /**
  * Library-default menu configuration. **English-only** — German (or any
