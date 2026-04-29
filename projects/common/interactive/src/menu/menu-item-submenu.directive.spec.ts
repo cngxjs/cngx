@@ -207,4 +207,50 @@ describe('CngxMenuItemSubmenu', () => {
     expect(innerPop.isVisible()).toBe(true);
     expect(fixture.componentInstance.outerActivated()).toBeNull();
   });
+
+  it('submenu directive id mirrors the sibling [cngxMenuItem] id when co-located', () => {
+    const { submenu, submenuEl } = setup();
+    const menuItemDe = (submenuEl as unknown as { id: string }).id;
+    expect(submenu.id).toBe(menuItemDe);
+    expect(submenu.id).toMatch(/^cngx-menu-item-/);
+  });
+});
+
+@Component({
+  template: `
+    <ul cngxMenu [label]="'Outer'" tabindex="0">
+      <li [cngxMenuItemSubmenu]="pop" [submenuMenu]="inner" #s="cngxMenuItemSubmenu">Recent</li>
+    </ul>
+    <div cngxPopover #pop="cngxPopover" [exclusive]="false">
+      <ul cngxMenu [label]="'Recent'" tabindex="0" #inner="cngxMenu">
+        <li cngxMenuItem value="x">file1.ts</li>
+      </ul>
+    </div>
+  `,
+  imports: [CngxMenu, CngxMenuItem, CngxMenuItemSubmenu, CngxPopover],
+})
+class StandaloneSubmenuHost {}
+
+describe('CngxMenuItemSubmenu — applied without a sibling [cngxMenuItem]', () => {
+  beforeEach(() => {
+    polyfillPopover();
+    TestBed.configureTestingModule({ imports: [StandaloneSubmenuHost] });
+  });
+
+  it('falls back to a fresh nextUid id and warns in dev mode', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const fixture = TestBed.createComponent(StandaloneSubmenuHost);
+      fixture.detectChanges();
+      TestBed.tick();
+      const submenuDe = fixture.debugElement.query(By.directive(CngxMenuItemSubmenu));
+      const submenu = submenuDe.injector.get(CngxMenuItemSubmenu);
+      expect(submenu.id).toMatch(/^cngx-menu-submenu-/);
+      expect(warnSpy).toHaveBeenCalledOnce();
+      expect(warnSpy.mock.calls[0][0]).toContain('cngxMenuItemSubmenu');
+      expect(warnSpy.mock.calls[0][0]).toContain('cngxMenuItem');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
 });

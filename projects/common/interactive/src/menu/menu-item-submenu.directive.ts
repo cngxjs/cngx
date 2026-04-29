@@ -7,14 +7,18 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   linkedSignal,
   signal,
   untracked,
 } from '@angular/core';
 
+import { nextUid } from '@cngx/core/utils';
+
 import { CNGX_MENU_ANNOUNCER_FACTORY } from './menu-announcer';
 import { injectMenuConfig } from './menu-config';
 import type { CngxMenuHost } from './menu-host.token';
+import { CngxMenuItem } from './menu-item.directive';
 import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu.token';
 
 /** See `CngxListboxTrigger` — same structural contract. */
@@ -60,6 +64,7 @@ interface PopoverController {
   standalone: true,
   providers: [{ provide: CNGX_MENU_SUBMENU_ITEM, useExisting: CngxMenuItemSubmenu }],
   host: {
+    '[id]': 'id',
     '[attr.aria-haspopup]': '"menu"',
     '[attr.aria-expanded]': 'isOpen()',
     '[style.anchor-name]': 'cssAnchorName()',
@@ -75,10 +80,19 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
   readonly submenuMenu = input.required<CngxMenuHost>();
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
+  private readonly menuItem = inject(CngxMenuItem, { optional: true, self: true });
+  private readonly ownId = nextUid('cngx-menu-submenu');
 
-  /** Mirrors the host element id set by the sibling `CngxMenuItem`. */
+  /**
+   * Effective id used by `CngxMenuTrigger.submenuItems().find(s => s.id ===
+   * activeId)`. When applied alongside `[cngxMenuItem]` the directive
+   * mirrors the sibling's id so the trigger's lookup matches the AD's
+   * `activeId`. When applied alone (no sibling), falls back to a fresh
+   * `nextUid` — the AD will never highlight this element so the trigger
+   * lookup is moot, but the host element still receives a valid id.
+   */
   get id(): string {
-    return (this.elementRef.nativeElement as HTMLElement).id;
+    return this.menuItem?.id ?? this.ownId;
   }
 
   readonly isOpen = computed<boolean>(() => this.popover().isVisible());
@@ -202,5 +216,18 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
         this.cancelCloseTimer();
       });
     });
+
+    if (isDevMode()) {
+      afterNextRender(() => {
+        if (this.menuItem === null) {
+          console.warn(
+            '[cngxMenuItemSubmenu] applied without a sibling [cngxMenuItem] on the same host element. ' +
+              'The surrounding CngxMenuTrigger cannot route ArrowRight / activation to this submenu ' +
+              'because CngxActiveDescendant only highlights CngxMenuItem nodes. ' +
+              'Add [cngxMenuItem] alongside [cngxMenuItemSubmenu] on the same element.',
+          );
+        }
+      });
+    }
   }
 }
