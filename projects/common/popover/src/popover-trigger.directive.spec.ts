@@ -9,9 +9,9 @@ import { CngxPopoverTrigger } from './popover-trigger.directive';
 
 function stubPopoverElement(el: HTMLElement): void {
   const rec = el as unknown as Record<string, unknown>;
-  rec['showPopover'] ??= vi.fn();
-  rec['hidePopover'] ??= vi.fn();
-  rec['togglePopover'] ??= vi.fn();
+  rec['showPopover'] = vi.fn();
+  rec['hidePopover'] = vi.fn();
+  rec['togglePopover'] = vi.fn();
 
   vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
     transitionDuration: '0s',
