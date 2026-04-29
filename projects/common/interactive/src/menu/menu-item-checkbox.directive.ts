@@ -9,6 +9,9 @@ import {
 import { CNGX_AD_ITEM, CngxActiveDescendant, type CngxAdItemHandle } from '@cngx/common/a11y';
 import { nextUid } from '@cngx/core/utils';
 
+import { CngxMenuAnnouncer } from './menu-announcer';
+import { injectMenuConfig } from './menu-config';
+
 /**
  * Checkable menu item (`role="menuitemcheckbox"`). Activation toggles
  * `checked` and emits `checkedChange`. Unlike `CngxMenuItem`, the item
@@ -44,6 +47,8 @@ export class CngxMenuItemCheckbox<T = unknown> implements CngxAdItemHandle {
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly ad = inject(CngxActiveDescendant, { optional: true });
+  private readonly announcer = inject(CngxMenuAnnouncer);
+  private readonly menuConfig = injectMenuConfig();
 
   readonly isHighlighted = (): boolean => this.ad?.activeId() === this.id;
 
@@ -58,6 +63,7 @@ export class CngxMenuItemCheckbox<T = unknown> implements CngxAdItemHandle {
 
   protected handleClick(): void {
     if (this.disabled()) {
+      this.announcer.announce(this.menuConfig.ariaLabels.itemDisabled);
       return;
     }
     const ad = this.ad;
