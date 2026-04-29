@@ -1,4 +1,5 @@
 import {
+  computed,
   Directive,
   ElementRef,
   inject,
@@ -49,7 +50,7 @@ export class CngxMenuItem<T = unknown> implements CngxAdItemHandle {
   private readonly announcer = inject(CngxMenuAnnouncer);
   private readonly menuConfig = injectMenuConfig();
 
-  readonly isHighlighted = (): boolean => this.ad?.activeId() === this.id;
+  readonly isHighlighted = computed<boolean>(() => this.ad?.activeId() === this.id);
 
   readonly label = (): string => {
     const explicit = this.labelInput();
