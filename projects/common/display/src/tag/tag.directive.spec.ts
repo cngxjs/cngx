@@ -62,13 +62,32 @@ describe('CngxTag', () => {
     expect(host.classList.contains('cngx-tag--filled')).toBe(false);
   });
 
-  it('(c) [size]="sm" adds the --sm modifier', () => {
+  it('(c) [size]="sm"/"lg"/"xl" adds the matching modifier; "md" carries no size class', () => {
     const fixture = TestBed.createComponent(TagHost);
     flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag"]');
+
     fixture.componentInstance.size.set('sm');
     flush(fixture);
-    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="tag"]');
     expect(host.classList.contains('cngx-tag--sm')).toBe(true);
+    expect(host.classList.contains('cngx-tag--lg')).toBe(false);
+    expect(host.classList.contains('cngx-tag--xl')).toBe(false);
+
+    fixture.componentInstance.size.set('lg');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag--lg')).toBe(true);
+    expect(host.classList.contains('cngx-tag--sm')).toBe(false);
+
+    fixture.componentInstance.size.set('xl');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag--xl')).toBe(true);
+    expect(host.classList.contains('cngx-tag--lg')).toBe(false);
+
+    fixture.componentInstance.size.set('md');
+    flush(fixture);
+    expect(host.classList.contains('cngx-tag--sm')).toBe(false);
+    expect(host.classList.contains('cngx-tag--lg')).toBe(false);
+    expect(host.classList.contains('cngx-tag--xl')).toBe(false);
   });
 
   it('(d) [truncate]="true" adds the --truncate modifier', () => {

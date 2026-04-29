@@ -29,11 +29,51 @@
   border: var(--cngx-tag-border, 1px solid transparent);
 }
 
-/* Density */
+/* Density — sm/md/lg/xl. Each variant scales padding + font-size AND
+ * overrides `--cngx-tag-content-size` so children that opt into the
+ * cascade (notably `<cngx-avatar>` via `--cngx-avatar-size`) shrink to
+ * the tag's flow without forcing the chip to grow vertically.
+ */
+
+.cngx-tag {
+  /* Base content scale — children read this via the cascade below. */
+  --cngx-tag-content-size: var(--cngx-tag-md-content-size, 1.5em);
+}
 
 .cngx-tag--sm {
   padding: var(--cngx-tag-sm-padding, 0 0.375rem);
   font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
+  --cngx-tag-content-size: var(--cngx-tag-sm-content-size, 1.25em);
+}
+
+.cngx-tag--lg {
+  padding: var(--cngx-tag-lg-padding, 0.25rem 0.625rem);
+  font-size: var(--cngx-tag-lg-font-size, 0.875rem);
+  --cngx-tag-content-size: var(--cngx-tag-lg-content-size, 1.5em);
+}
+
+.cngx-tag--xl {
+  padding: var(--cngx-tag-xl-padding, 0.375rem 0.75rem);
+  font-size: var(--cngx-tag-xl-font-size, 1rem);
+  --cngx-tag-content-size: var(--cngx-tag-xl-content-size, 1.625em);
+}
+
+/* Descendant atom scaling — overrides per-atom size tokens so nested
+ * <cngx-avatar>, <cngx-icon>, <img>, <svg> follow the tag's flow rather
+ * than imposing their own intrinsic size. Consumer can override per
+ * tag instance via `--cngx-tag-content-size` or per-atom (e.g.
+ * `--cngx-avatar-size`) on the host element.
+ */
+
+.cngx-tag cngx-avatar {
+  --cngx-avatar-size: var(--cngx-tag-content-size);
+  --cngx-avatar-font-size: calc(var(--cngx-tag-content-size) * 0.45);
+}
+
+.cngx-tag > img {
+  height: var(--cngx-tag-content-size);
+  width: auto;
+  flex: 0 0 auto;
 }
 
 /* Label — flex child, shrinkable so ellipsis can engage */

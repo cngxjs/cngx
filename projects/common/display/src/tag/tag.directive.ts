@@ -32,8 +32,13 @@ export type CngxTagColor =
   | 'info'
   | (string & {});
 
-/** Density. `md` is the default; `sm` shrinks padding + font-size. */
-export type CngxTagSize = 'sm' | 'md';
+/**
+ * Density. `md` is the default. Each step scales padding + font-size and
+ * cascades a `--cngx-tag-avatar-size` custom property so any nested
+ * `<cngx-avatar>` (and any other size-token-aware atom) shrinks to fit
+ * the tag without forcing the chip to grow.
+ */
+export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 
 /**
  * Decorative tag / label / badge atom.
@@ -95,6 +100,8 @@ export type CngxTagSize = 'sm' | 'md';
     '[class.cngx-tag--outline]': "variant() === 'outline'",
     '[class.cngx-tag--subtle]': "variant() === 'subtle'",
     '[class.cngx-tag--sm]': "size() === 'sm'",
+    '[class.cngx-tag--lg]': "size() === 'lg'",
+    '[class.cngx-tag--xl]': "size() === 'xl'",
     '[class.cngx-tag--truncate]': 'truncate()',
     '[attr.data-color]': 'color()',
     '[style.max-width]': 'maxWidth()',
