@@ -16,6 +16,11 @@ interface PopoverController {
   show(): void;
   hide(): void;
   readonly anchorElement: { set(el: HTMLElement | null): void };
+  /**
+   * Popover unique id signal — used to compose the `anchor-name` CSS value
+   * the browser's CSS Anchor Positioning expects on the anchor element.
+   */
+  readonly id: () => string;
 }
 
 /**
@@ -93,6 +98,7 @@ export class CngxContextMenuTrigger {
     const anchor = this.ensureVirtualAnchor();
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
+    anchor.style.setProperty('anchor-name', `--cngx-pop-${this.popover().id()}`);
     this.popover().anchorElement.set(anchor);
     if (!this.popover().isVisible()) {
       this.popover().show();
