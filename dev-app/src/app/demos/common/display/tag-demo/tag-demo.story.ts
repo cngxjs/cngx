@@ -1,5 +1,12 @@
 import type { DemoSpec } from '../../../../dev-tools/demo-spec';
 
+// `.row` styling is inlined as a `style` attribute on each wrapper div
+// because the `css` field on a story section is display-only — it shows
+// up as the source-block consumers copy, not as injected runtime CSS
+// (per CLAUDE.md "Story `css` field is display-only ... use inline
+// `[style.*]` bindings for visual state in story templates").
+const ROW = 'display: flex; gap: 12px; align-items: center; flex-wrap: wrap;';
+
 export const STORY: DemoSpec = {
   title: 'Tag',
   navLabel: 'Tag',
@@ -18,7 +25,7 @@ export const STORY: DemoSpec = {
       subtitle: 'Same colour, three visual variants — filled, outline, subtle.',
       imports: ['CngxTag'],
       template: `
-  <div class="row">
+  <div style="${ROW}">
     <span cngxTag variant="filled" color="success">Filled</span>
     <span cngxTag variant="outline" color="success">Outline</span>
     <span cngxTag variant="subtle" color="success">Subtle</span>
@@ -30,13 +37,13 @@ export const STORY: DemoSpec = {
       subtitle: 'Five predefined semantic colours plus open-string extension via <code>data-color</code>.',
       imports: ['CngxTag'],
       template: `
-  <div class="row">
+  <div style="${ROW}">
     <span cngxTag color="neutral">Neutral</span>
     <span cngxTag color="success">Active</span>
     <span cngxTag color="warning">Pending</span>
     <span cngxTag color="error">Failed</span>
     <span cngxTag color="info">Beta</span>
-    <span cngxTag color="my-brand">Branded</span>
+    <span cngxTag color="my-brand" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">Branded</span>
   </div>`,
       css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 [data-color="my-brand"] {
@@ -49,7 +56,7 @@ export const STORY: DemoSpec = {
       subtitle: '<code>md</code> default; <code>sm</code> shrinks padding + font-size.',
       imports: ['CngxTag'],
       template: `
-  <div class="row">
+  <div style="${ROW}">
     <span cngxTag size="md" color="info">Medium</span>
     <span cngxTag size="sm" color="info">Small</span>
   </div>`,
@@ -60,7 +67,7 @@ export const STORY: DemoSpec = {
       subtitle: 'Visual-only truncation — full text remains in the DOM for assistive tech.',
       imports: ['CngxTag'],
       template: `
-  <div class="row">
+  <div style="${ROW}">
     <span cngxTag color="neutral" [truncate]="true" maxWidth="8rem">A very long taxonomy label that overflows</span>
     <span cngxTag color="info" [truncate]="true" maxWidth="12rem">Another lengthy descriptor here</span>
   </div>`,
@@ -71,10 +78,10 @@ export const STORY: DemoSpec = {
       subtitle: 'Native <code>&lt;a cngxTag&gt;</code> preserves anchor semantics — focus, keyboard, navigation.',
       imports: ['CngxTag'],
       template: `
-  <div class="row">
-    <a cngxTag color="info" href="#category/frontend">frontend</a>
-    <a cngxTag color="success" href="#category/cleared">cleared</a>
-    <a cngxTag color="warning" href="#category/pending">pending</a>
+  <div style="${ROW}">
+    <a cngxTag color="info" href="#category/frontend" style="text-decoration: none;">frontend</a>
+    <a cngxTag color="success" href="#category/cleared" style="text-decoration: none;">cleared</a>
+    <a cngxTag color="warning" href="#category/pending" style="text-decoration: none;">pending</a>
   </div>`,
       css: `.row { display: flex; gap: 12px; align-items: center; }
 .row a { text-decoration: none; }
@@ -85,7 +92,7 @@ export const STORY: DemoSpec = {
       subtitle: '<code>&lt;svg cngxTagIcon&gt;</code> / <code>&lt;img cngxTagIcon&gt;</code> hosts get sized + <code>aria-hidden="true"</code>; semantic meaning lives on the tag\u2019s text.',
       imports: ['CngxTag', 'CngxTagIcon'],
       template: `
-  <div class="row">
+  <div style="${ROW}">
     <span cngxTag color="success">
       <svg cngxTagIcon viewBox="0 0 16 16" focusable="false">
         <path fill="currentColor" d="M6.5 11.5 3 8l1.4-1.4 2.1 2.1L11.6 4l1.4 1.4z" />
