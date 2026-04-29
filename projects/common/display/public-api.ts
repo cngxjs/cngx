@@ -16,3 +16,18 @@ export {
 } from './src/badge/badge.directive';
 export { CngxChip } from './src/chip/chip.component';
 export { CngxCheckboxIndicator } from './src/checkbox-indicator/checkbox-indicator.component';
+export {
+  CngxTag,
+  type CngxTagVariant,
+  type CngxTagColor,
+  type CngxTagSize,
+} from './src/tag/tag.directive';
+export {
+  CNGX_TAG_GROUP,
+  type CngxTagGroupHost,
+} from './src/tag-group/tag-group.token';
+export {
+  CngxTagGroup,
+  type CngxTagGroupGap,
+  type CngxTagGroupAlign,
+} from './src/tag-group/tag-group.component';

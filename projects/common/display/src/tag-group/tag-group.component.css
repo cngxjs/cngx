@@ -1,0 +1,53 @@
+/*
+ * tag-group.component.css — layout skin of `CngxTagGroup`.
+ *
+ * Structural rules only (display: flex, flex-wrap, gap, alignment).
+ * Thematic values flow through `--cngx-tag-group-*` custom properties
+ * with English-readable fallbacks; consumers override at `:root` or
+ * component level without forking. No colour, no border, no
+ * background — the group is a neutral container for whichever
+ * `CngxTag` chrome the consumer renders inside it.
+ */
+
+.cngx-tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cngx-tag-group-gap, 0.5rem);
+  /* `start` is the layout default — explicit modifier classes below
+   * override `justify-content` only when the consumer opts into a
+   * non-start alignment. */
+  justify-content: flex-start;
+}
+
+/* Gap modifiers — sm is the default and resolves through the base
+ * `--cngx-tag-group-gap` cascade above. xs and md override only the
+ * tail of the cascade so consumer `--cngx-tag-group-gap` overrides
+ * still win at any level. */
+
+.cngx-tag-group--gap-xs {
+  gap: var(--cngx-tag-group-gap-xs, 0.25rem);
+}
+
+.cngx-tag-group--gap-md {
+  gap: var(--cngx-tag-group-gap-md, 0.75rem);
+}
+
+/* Alignment modifiers — `start` is the layout default; explicit
+ * modifiers cover the remaining three positions. */
+
+.cngx-tag-group--align-start {
+  justify-content: flex-start;
+}
+
+.cngx-tag-group--align-center {
+  justify-content: center;
+}
+
+.cngx-tag-group--align-end {
+  justify-content: flex-end;
+}
+
+.cngx-tag-group--align-between {
+  justify-content: space-between;
+}

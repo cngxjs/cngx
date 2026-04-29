@@ -145,6 +145,11 @@ export const routes: Routes = [
           import('./demos/common/display/icon-demo/icon-demo.component').then((m) => m.IconDemoComponent),
       },
       {
+        path: 'display/tag',
+        loadComponent: () =>
+          import('./demos/common/display/tag-demo/tag-demo.component').then((m) => m.TagDemoComponent),
+      },
+      {
         path: 'interactive/async-click',
         loadComponent: () =>
           import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),
