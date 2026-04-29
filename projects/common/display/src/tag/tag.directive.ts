@@ -117,8 +117,14 @@ export class CngxTag {
 
   /**
    * When `true`, applies `text-overflow: ellipsis` + `white-space: nowrap`
-   * + `overflow: hidden`. Pair with `[maxWidth]` for a hard upper bound.
-   * Visual-only — the full text remains in the DOM for AT.
+   * to the inner `.cngx-tag__label` span. Pair with `[maxWidth]` for a
+   * hard upper bound. Visual-only — the full text remains in the DOM
+   * for AT.
+   *
+   * Deliberately CSS-only — `CngxTruncate` (`@cngx/common/layout`) is the
+   * right tool for multi-line clamp + expand/collapse state on long-form
+   * text, but its reactive machinery (effect + ResizeObserver + isClamped
+   * signal) is overkill for a chip-style single-line overflow.
    */
   readonly truncate = input<boolean>(false);
 
