@@ -9,15 +9,28 @@ import {
 import { CNGX_TAG_GROUP, type CngxTagGroupHost } from './tag-group.token';
 
 /**
- * Spacing between projected tags. Maps to a `--cngx-tag-group-gap`
- * CSS custom property cascade with fallback defaults. `sm` is the
+ * Spacing between projected tags. Maps to the
+ * `--cngx-tag-group-gap{,-xs,-md}` CSS custom property cascade with
+ * fallback defaults (see `tag-group.component.css`). `sm` is the
  * default — matches the tag's own padding rhythm.
+ *
+ * - `xs` → 0.25rem (tight chip strips)
+ * - `sm` → 0.5rem (default)
+ * - `md` → 0.75rem (roomy taxonomy clusters)
  */
 export type CngxTagGroupGap = 'xs' | 'sm' | 'md';
 
 /**
- * Cross-axis distribution of projected tags within the flex row.
- * `between` resolves to `justify-content: space-between`.
+ * Cross-axis distribution of projected tags within the flex-wrap row.
+ * Resolves to a `justify-content` value:
+ *
+ * - `start` (default) → `flex-start`
+ * - `center` → `center`
+ * - `end` → `flex-end`
+ * - `between` → `space-between`
+ *
+ * Only meaningful when the group has more horizontal room than its
+ * intrinsic content; otherwise the row hugs its tags.
  */
 export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
 

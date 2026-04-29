@@ -33,10 +33,11 @@ export type CngxTagColor =
   | (string & {});
 
 /**
- * Density. `md` is the default. Each step scales padding + font-size and
- * cascades a `--cngx-tag-avatar-size` custom property so any nested
- * `<cngx-avatar>` (and any other size-token-aware atom) shrinks to fit
- * the tag without forcing the chip to grow.
+ * Density. `md` is the default. Each step scales padding + font-size
+ * via the `--cngx-tag-{sm|lg|xl}-padding` and matching font-size
+ * custom properties (see `tag.css`). Sizing of nested atoms
+ * (`cngx-icon`, `cngx-avatar`) is the consumer's call — Tag does not
+ * cascade a sub-token contract.
  */
 export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -119,7 +120,7 @@ export class CngxTag {
    */
   readonly color = input<CngxTagColor>('neutral');
 
-  /** Density. `md` (default) | `sm`. */
+  /** Density. `md` (default) | `sm` | `lg` | `xl`. */
   readonly size = input<CngxTagSize>('md');
 
   /**
