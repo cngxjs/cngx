@@ -63,6 +63,7 @@ export class CngxContextMenuTrigger {
   private readonly doc = inject(DOCUMENT);
   private readonly hostElRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private virtualAnchor: HTMLElement | null = null;
+  private savedFocus: HTMLElement | null = null;
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.removeVirtualAnchor());
@@ -83,10 +84,12 @@ export class CngxContextMenuTrigger {
     if (event.key === 'Escape' && this.isOpen()) {
       event.preventDefault();
       this.popover().hide();
+      this.restoreFocus();
     }
   }
 
   private openAt(x: number, y: number): void {
+    this.captureFocus();
     const anchor = this.ensureVirtualAnchor();
     anchor.style.left = `${x}px`;
     anchor.style.top = `${y}px`;
@@ -95,6 +98,22 @@ export class CngxContextMenuTrigger {
       this.popover().show();
     }
     this.menu().ad.highlightFirst();
+  }
+
+  private captureFocus(): void {
+    const active = this.doc.activeElement;
+    this.savedFocus = active instanceof HTMLElement ? active : null;
+  }
+
+  private restoreFocus(): void {
+    const target = this.savedFocus;
+    this.savedFocus = null;
+    if (!target) {
+      return;
+    }
+    queueMicrotask(() => {
+      target.focus();
+    });
   }
 
   private ensureVirtualAnchor(): HTMLElement {

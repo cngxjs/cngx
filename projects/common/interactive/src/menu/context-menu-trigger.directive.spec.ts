@@ -141,4 +141,25 @@ describe('CngxContextMenuTrigger', () => {
     fixture.destroy();
     expect(document.body.querySelector('.cngx-context-menu-anchor')).toBeNull();
   });
+
+  it('right-click then Escape restores focus to the previously active element', async () => {
+    const probe = document.createElement('button');
+    probe.type = 'button';
+    document.body.appendChild(probe);
+    try {
+      const { triggerEl } = setup();
+      probe.focus();
+      expect(document.activeElement).toBe(probe);
+
+      triggerEl.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, clientX: 12, clientY: 8 }));
+      TestBed.flushEffects();
+
+      triggerEl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      TestBed.flushEffects();
+      await Promise.resolve();
+      expect(document.activeElement).toBe(probe);
+    } finally {
+      probe.remove();
+    }
+  });
 });
