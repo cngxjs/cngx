@@ -15,12 +15,13 @@ export const STORY: DemoSpec = {
   navCategory: 'display',
   description:
     'Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>.',
-  apiComponents: ['CngxTag', 'CngxIcon'],
+  apiComponents: ['CngxTag', 'CngxIcon', 'CngxTagGroup'],
   overview:
     '<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. ' +
     'Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; ' +
-    'open-string colours emit a <code>data-color="…"</code> attribute consumers can theme directly.</p>',
-  moduleImports: ["import { CngxTag, CngxIcon } from '@cngx/common/display';"],
+    'open-string colours emit a <code>data-color="…"</code> attribute consumers can theme directly. ' +
+    '<code>&lt;cngx-tag-group&gt;</code> wraps siblings in a flex-wrap row with optional <code>role="list"</code> semantics that cascade <code>role="listitem"</code> to every projected <code>cngxTag</code> reactively via the <code>CNGX_TAG_GROUP</code> DI token.</p>',
+  moduleImports: ["import { CngxTag, CngxTagGroup, CngxIcon } from '@cngx/common/display';"],
   sections: [
     {
       title: 'Variant matrix',
@@ -117,6 +118,69 @@ export const STORY: DemoSpec = {
     </span>
   </div>`,
       css: `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`,
+    },
+    {
+      title: 'Group + semantic list',
+      subtitle: 'Wrap projected tags in <code>&lt;cngx-tag-group [semanticList]="true" label="…"&gt;</code> to expose a real <code>role="list"</code> with reactive <code>role="listitem"</code> children — AT reads "Filters, list, 5 items".',
+      imports: ['CngxTag', 'CngxTagGroup'],
+      template: `
+  <cngx-tag-group [semanticList]="true" label="Filters">
+    <span cngxTag color="info">Frontend</span>
+    <span cngxTag color="info">Backend</span>
+    <span cngxTag color="success">Cleared</span>
+    <span cngxTag color="warning">Pending</span>
+    <span cngxTag color="error">Failed</span>
+  </cngx-tag-group>`,
+      css: `cngx-tag-group { /* role="list", aria-label="Filters" applied automatically */ }`,
+    },
+    {
+      title: 'Layout-only — gap variants',
+      subtitle: 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-*</code> custom properties.',
+      imports: ['CngxTag', 'CngxTagGroup'],
+      template: `
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <cngx-tag-group gap="xs">
+      <span cngxTag color="neutral">xs</span>
+      <span cngxTag color="neutral">gap</span>
+      <span cngxTag color="neutral">tight</span>
+    </cngx-tag-group>
+    <cngx-tag-group gap="sm">
+      <span cngxTag color="neutral">sm</span>
+      <span cngxTag color="neutral">gap</span>
+      <span cngxTag color="neutral">default</span>
+    </cngx-tag-group>
+    <cngx-tag-group gap="md">
+      <span cngxTag color="neutral">md</span>
+      <span cngxTag color="neutral">gap</span>
+      <span cngxTag color="neutral">roomy</span>
+    </cngx-tag-group>
+  </div>`,
+      css: `cngx-tag-group { /* gap resolves through --cngx-tag-group-gap-{xs,sm,md} */ }`,
+    },
+    {
+      title: 'Layout-only — alignment',
+      subtitle: 'When the group has more horizontal room than its tags, <code>[align]</code> picks the cross-axis distribution. <code>between</code> resolves to <code>justify-content: space-between</code>.',
+      imports: ['CngxTag', 'CngxTagGroup'],
+      template: `
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <cngx-tag-group align="start" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
+      <span cngxTag color="info">start</span>
+      <span cngxTag color="info">align</span>
+    </cngx-tag-group>
+    <cngx-tag-group align="center" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
+      <span cngxTag color="info">center</span>
+      <span cngxTag color="info">align</span>
+    </cngx-tag-group>
+    <cngx-tag-group align="end" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
+      <span cngxTag color="info">end</span>
+      <span cngxTag color="info">align</span>
+    </cngx-tag-group>
+    <cngx-tag-group align="between" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
+      <span cngxTag color="info">between</span>
+      <span cngxTag color="info">align</span>
+    </cngx-tag-group>
+  </div>`,
+      css: `cngx-tag-group[align="between"] { justify-content: space-between; }`,
     },
   ],
 };
