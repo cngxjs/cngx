@@ -1,4 +1,5 @@
-import { computed, Directive, inject, input, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { computed, Directive, effect, inject, input, signal, untracked } from '@angular/core';
 
 import type { CngxMenuHost } from './menu-host.token';
 import { CNGX_MENU_NAV_STRATEGY } from './menu-nav-strategy';
@@ -56,11 +57,29 @@ export class CngxMenuTrigger {
   private readonly submenuStack = signal<readonly CngxMenuHost[]>([]);
 
   /**
-   * Focused element captured at keyboard-driven open time. Restored after
-   * the outer popover closes via `queueMicrotask` so the focus write
-   * happens after the popover-close DOM mutation settles.
+   * Focused element captured at popover-open time. Restored after close via
+   * `queueMicrotask` so the focus write happens after the popover-close DOM
+   * mutation settles. Captured reactively via the `isOpen` effect below so
+   * mouse-driven open paths (consumer's `(click)="pop.toggle()"`) get the
+   * same treatment as keyboard-driven open paths.
    */
   private savedFocus: HTMLElement | null = null;
+
+  private readonly doc = inject(DOCUMENT);
+
+  constructor() {
+    effect(() => {
+      const open = this.isOpen();
+      untracked(() => {
+        if (open && this.savedFocus === null) {
+          const active = this.doc.activeElement;
+          this.savedFocus = active instanceof HTMLElement ? active : null;
+        } else if (!open && this.savedFocus !== null) {
+          this.restoreFocus();
+        }
+      });
+    });
+  }
 
   private effectiveMenu(): CngxMenuHost {
     const stack = this.submenuStack();
@@ -73,14 +92,12 @@ export class CngxMenuTrigger {
     if (!this.isOpen()) {
       if (key === 'ArrowDown' || key === 'Enter' || key === ' ') {
         event.preventDefault();
-        this.captureFocus();
         this.popover().show();
         this.menu().ad.highlightFirst();
         return;
       }
       if (key === 'ArrowUp') {
         event.preventDefault();
-        this.captureFocus();
         this.popover().show();
         this.menu().ad.highlightLast();
         return;
@@ -99,7 +116,6 @@ export class CngxMenuTrigger {
           this.popSubmenu();
         } else {
           this.popover().hide();
-          this.restoreFocus();
         }
         return;
       case 'ArrowDown':
@@ -207,12 +223,6 @@ export class CngxMenuTrigger {
     }
     this.submenuStack.set([]);
     this.popover().hide();
-    this.restoreFocus();
-  }
-
-  private captureFocus(): void {
-    const active = typeof document !== 'undefined' ? document.activeElement : null;
-    this.savedFocus = active instanceof HTMLElement ? active : null;
   }
 
   private restoreFocus(): void {
