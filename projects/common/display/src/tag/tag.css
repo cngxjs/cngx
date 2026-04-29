@@ -71,20 +71,46 @@
  * `--cngx-avatar-size`) on the host element.
  */
 
-/* Specificity note: CngxAvatar's own `:host(.cngx-avatar--md)` rule
+/* Why this cascade exists, even though CngxAvatar already ships
+ * xs/sm/md/lg/xl size variants:
+ *
+ *   avatar size  width/height   chip-baseline reality at md tag (font 0.75rem)
+ *   xs           1.5rem  24px   2× the chip's natural text height (~12px)
+ *   sm           2rem    32px   forces the chip to ~36px tall
+ *   md           2.5rem  40px   forces the chip to ~44px tall
+ *
+ * Inline-chip avatars need to sit at ICON-glyph proportions (≈ 1em at md
+ * = 12px), which is below avatar's smallest native size. The cascade
+ * overrides `--cngx-avatar-size` inside tag context to map onto
+ * `--cngx-tag-content-size`, scaling with the tag's density without
+ * forcing the chip taller. Consumers who want the avatar's native
+ * sizing use a standalone `<cngx-avatar size="xs">` outside any tag,
+ * or override `--cngx-tag-content-size` per tag instance:
+ *
+ *   <span cngxTag style="--cngx-tag-content-size: 1.5rem">
+ *     <cngx-avatar initials="JD" /> Jane Doe
+ *   </span>
+ *
+ * Specificity note: CngxAvatar's own `:host(.cngx-avatar--md)` rule
  * is rewritten by emulated encapsulation to `[_nghost-xxx].cngx-avatar--md`
  * — specificity (0,2,0) — and would beat a plain `.cngx-tag cngx-avatar`
  * override (0,1,1). The doubled `cngx-avatar.cngx-avatar` selector
  * lifts our custom-property override to (0,2,1) so the cascade lands.
- * Without this the avatar stays at its intrinsic 2.5rem default and
- * dwarfs the chip text. */
+ */
 
-.cngx-tag cngx-avatar.cngx-avatar {
+/* Only override avatar's DEFAULT size (md). Consumers who pick an
+ * explicit `<cngx-avatar size="xs"/sm/lg/xl">` keep that native size
+ * — the explicit choice wins over the tag's cascade. The selector
+ * `.cngx-avatar--md` matches avatar's default-size class hook;
+ * specificity (0,2,1) beats avatar's own `:host(.cngx-avatar--md)`
+ * which encapsulation rewrites to (0,2,0).
+ */
+
+.cngx-tag cngx-avatar.cngx-avatar--md {
   --cngx-avatar-size: var(--cngx-tag-content-size);
   /* At icon-glyph sizes a 2-letter initials block won't fit without
    * overflow; consumers who need readable initials override the
-   * cascade or use a single letter. Multiplier sized for one letter
-   * to render comfortably at every density. */
+   * cascade or use a single letter / explicit avatar size. */
   --cngx-avatar-font-size: calc(var(--cngx-tag-content-size) * 0.6);
 }
 
