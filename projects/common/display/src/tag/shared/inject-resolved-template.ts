@@ -1,18 +1,22 @@
 import { computed, type Signal, type TemplateRef } from '@angular/core';
 
 /**
- * Keys into the upcoming `CngxTagConfig.templates` cascade. Phase 1
- * ships only the `CngxTag`-side keys; Phase 2 widens with `'header'`
- * and `'accessory'` for `CngxTagGroup`; Phase 4 commit 5 narrows the
- * union to `keyof CngxTagConfig['templates']` once the config
- * interface ships. Keeping the union tight to the keys actually
- * passed at current call sites prevents typos (e.g. passing
- * `'accessory'` to a slot that hasn't been wired) from going
- * unnoticed until Phase 2 merges.
+ * Keys into the upcoming `CngxTagConfig.templates` cascade. Phase 2
+ * adds the `CngxTagGroup`-side keys (`'header'`, `'accessory'`);
+ * Phase 4 commit 5 narrows the union to
+ * `keyof CngxTagConfig['templates']` once the config interface
+ * ships. Keeping the union tight to the keys actually passed at
+ * current call sites prevents typos (e.g. passing an unwired key)
+ * from going unnoticed until the corresponding phase merges.
  *
  * @internal
  */
-export type CngxTagTemplateKey = 'label' | 'prefix' | 'suffix';
+export type CngxTagTemplateKey =
+  | 'label'
+  | 'prefix'
+  | 'suffix'
+  | 'header'
+  | 'accessory';
 
 /**
  * Directive shape accepted by {@link injectResolvedTagTemplate}.
