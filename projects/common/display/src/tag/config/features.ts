@@ -79,6 +79,16 @@ export function withTagColors(
  * directives still win, the host's `<ng-template>` default body is
  * the floor.
  *
+ * **Staging note.** This factory ships ahead of a documented second
+ * consumer — the headless `CngxTag` + `CngxTagGroup` are the only
+ * current consumers. The staging is intentional and tracked in
+ * `display-accepted-debt.md §2` (Material organism deferral): a
+ * future `cngx-mat-tag` / `cngx-mat-tag-group` wrapper inherits the
+ * cascade for free without forking. If §2 is rejected outright,
+ * `withTagSlots` re-evaluates as a sunsetting candidate at the same
+ * time. Per the cngx-review architecture lens, the surface is
+ * tracked rather than left silent.
+ *
  * @example
  * ```ts
  * @Component({
