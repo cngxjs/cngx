@@ -16,6 +16,7 @@ export {
 } from './src/badge/badge.directive';
 export { CngxChip } from './src/chip/chip.component';
 export { CngxCheckboxIndicator } from './src/checkbox-indicator/checkbox-indicator.component';
+export { CngxRadioIndicator } from './src/radio-indicator/radio-indicator.component';
 export {
   CngxTag,
   type CngxTagVariant,
