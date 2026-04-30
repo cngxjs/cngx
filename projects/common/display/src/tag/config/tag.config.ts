@@ -75,15 +75,4 @@ export interface CngxTagConfig {
     readonly header?: TemplateRef<unknown> | null;
     readonly accessory?: TemplateRef<unknown> | null;
   };
-
-  /**
-   * App-wide ARIA-string fallbacks. Phase 4 ships only the
-   * `groupListLabelFallback` key as a placeholder for future locale
-   * cascade work (consumers who want German `aria-label` defaults
-   * can pre-populate this slot via `withAriaLabels` once the
-   * feature lands).
-   */
-  readonly ariaLabels?: {
-    readonly groupListLabelFallback?: string;
-  };
 }

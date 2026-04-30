@@ -30,7 +30,6 @@ export const CNGX_TAG_DEFAULTS: CngxTagConfig = {
   },
   colors: {},
   templates: {},
-  ariaLabels: {},
 };
 
 /**

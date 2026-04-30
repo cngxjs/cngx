@@ -95,7 +95,6 @@ function mergeConfig(
     groupDefaults: { ...base.groupDefaults, ...partial.groupDefaults },
     colors: { ...base.colors, ...partial.colors },
     templates: { ...base.templates, ...partial.templates },
-    ariaLabels: { ...base.ariaLabels, ...partial.ariaLabels },
   };
 }
 
