@@ -1,8 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
 import { CngxTag } from '../tag/tag.directive';
+import { CngxTagGroupAccessory } from './slots/tag-group-accessory.directive';
+import { CngxTagGroupHeader } from './slots/tag-group-header.directive';
 import {
   CngxTagGroup,
   type CngxTagGroupAlign,
@@ -59,6 +62,112 @@ class OrphanTagHost {}
   `,
 })
 class FullContractHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader>
+        <strong data-testid="header">Header</strong>
+      </ng-template>
+      <span cngxTag>One</span>
+    </cngx-tag-group>
+  `,
+})
+class HeaderSlotHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <span cngxTag>One</span>
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class AccessorySlotHost {}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader let-count="count">
+        <strong data-testid="header" [attr.data-count]="count">{{ count }}</strong>
+      </ng-template>
+      @if (showFirst()) {
+        <span cngxTag>One</span>
+      }
+      <span cngxTag>Two</span>
+      @if (showThird()) {
+        <span cngxTag>Three</span>
+      }
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class DynamicCountHost {
+  readonly showFirst = signal<boolean>(true);
+  readonly showThird = signal<boolean>(false);
+}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader],
+  template: `
+    <cngx-tag-group
+      [gap]="gap()"
+      [align]="align()"
+      [semanticList]="semanticList()"
+      [label]="label()"
+      data-testid="group"
+    >
+      <ng-template
+        cngxTagGroupHeader
+        let-gap="gap"
+        let-align="align"
+        let-semanticList="semanticList"
+        let-label="label"
+        let-count="count"
+      >
+        <span
+          data-testid="probe"
+          [attr.data-gap]="gap"
+          [attr.data-align]="align"
+          [attr.data-semantic]="semanticList"
+          [attr.data-label]="label"
+          [attr.data-count]="count"
+        >ctx</span>
+      </ng-template>
+      <span cngxTag>One</span>
+      <span cngxTag>Two</span>
+    </cngx-tag-group>
+  `,
+})
+class GroupContextProbeHost {
+  readonly gap = signal<CngxTagGroupGap>('sm');
+  readonly align = signal<CngxTagGroupAlign>('start');
+  readonly semanticList = signal<boolean>(false);
+  readonly label = signal<string | undefined>(undefined);
+}
+
+@Component({
+  imports: [CngxTagGroup, CngxTag, CngxTagGroupHeader, CngxTagGroupAccessory],
+  template: `
+    <cngx-tag-group data-testid="group">
+      <ng-template cngxTagGroupHeader>
+        <strong data-testid="header">Title</strong>
+      </ng-template>
+      <span cngxTag>One</span>
+      <ng-template cngxTagGroupAccessory>
+        <button data-testid="accessory">Clear</button>
+      </ng-template>
+    </cngx-tag-group>
+  `,
+})
+class BothSlotsLayoutOnlyHost {}
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
@@ -174,5 +283,72 @@ describe('CngxTagGroup', () => {
     expect(host.getAttribute('aria-label')).toBe('Tags');
     const items = host.querySelectorAll('[role="listitem"]');
     expect(items.length).toBe(5);
+  });
+
+  it('(j) *cngxTagGroupHeader template renders above the tag row', () => {
+    const fixture = TestBed.createComponent(HeaderSlotHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    const header = host.querySelector('[data-testid="header"]');
+    const row = host.querySelector('.cngx-tag-group__row');
+    expect(header).not.toBeNull();
+    expect(row).not.toBeNull();
+    expect(header!.compareDocumentPosition(row!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('(k) *cngxTagGroupAccessory template renders below the tag row', () => {
+    const fixture = TestBed.createComponent(AccessorySlotHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    const accessory = host.querySelector('[data-testid="accessory"]');
+    const row = host.querySelector('.cngx-tag-group__row');
+    expect(accessory).not.toBeNull();
+    expect(row).not.toBeNull();
+    expect(row!.compareDocumentPosition(accessory!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('(l) header context exposes live count derived from projected cngxTag siblings', () => {
+    const fixture = TestBed.createComponent(DynamicCountHost);
+    flush(fixture);
+    const probe: HTMLElement = fixture.nativeElement.querySelector('[data-testid="header"]');
+    expect(probe.getAttribute('data-count')).toBe('2');
+
+    fixture.componentInstance.showThird.set(true);
+    flush(fixture);
+    expect(probe.getAttribute('data-count')).toBe('3');
+
+    fixture.componentInstance.showFirst.set(false);
+    flush(fixture);
+    expect(probe.getAttribute('data-count')).toBe('2');
+  });
+
+  it('(m) slotContext returns the same reference when inputs are stable; new reference on real change', () => {
+    const fixture = TestBed.createComponent(GroupContextProbeHost);
+    flush(fixture);
+    const groupInstance = fixture.debugElement
+      .query(By.directive(CngxTagGroup))
+      .injector.get(CngxTagGroup) as unknown as { slotContext(): unknown };
+
+    const ctx1 = groupInstance.slotContext();
+    flush(fixture);
+    expect(groupInstance.slotContext()).toBe(ctx1);
+
+    fixture.componentInstance.gap.set('sm');
+    flush(fixture);
+    expect(groupInstance.slotContext()).toBe(ctx1);
+
+    fixture.componentInstance.gap.set('md');
+    flush(fixture);
+    expect(groupInstance.slotContext()).not.toBe(ctx1);
+  });
+
+  it('(n) layout-only group renders header + accessory without injecting role="list"', () => {
+    const fixture = TestBed.createComponent(BothSlotsLayoutOnlyHost);
+    flush(fixture);
+    const host: HTMLElement = fixture.nativeElement.querySelector('[data-testid="group"]');
+    expect(host.getAttribute('role')).toBeNull();
+    expect(host.querySelector('[data-testid="header"]')).not.toBeNull();
+    expect(host.querySelector('[data-testid="accessory"]')).not.toBeNull();
+    expect(host.querySelector('[role="list"]')).toBeNull();
   });
 });
