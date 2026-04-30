@@ -7,7 +7,7 @@ import {
   viewChildren,
 } from '@angular/core';
 
-import { CngxCheckboxIndicator } from '@cngx/common/display';
+import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display';
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
@@ -57,7 +57,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
   exportAs: 'cngxSelectPanel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxOption, CngxCheckboxIndicator, CngxSelectPanelShell, NgTemplateOutlet],
+  imports: [CngxOption, CngxCheckboxIndicator, CngxRadioIndicator, CngxSelectPanelShell, NgTemplateOutlet],
   host: {
     class: 'cngx-select-panel-host',
   },
@@ -126,12 +126,30 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
               position: 'before'
             }" />
           } @else {
-            <cngx-checkbox-indicator
-              class="cngx-select__check"
-              [variant]="host.resolvedSelectionIndicatorVariant()"
-              [checked]="host.isSelected(opt)"
-              [indeterminate]="host.isIndeterminate(opt)"
-            />
+            @switch (host.resolvedSelectionIndicatorVariant()) {
+              @case ('radio') {
+                <cngx-radio-indicator
+                  class="cngx-select__check"
+                  [checked]="host.isSelected(opt)"
+                />
+              }
+              @case ('checkmark') {
+                <cngx-checkbox-indicator
+                  class="cngx-select__check"
+                  variant="checkmark"
+                  [checked]="host.isSelected(opt)"
+                  [indeterminate]="host.isIndeterminate(opt)"
+                />
+              }
+              @default {
+                <cngx-checkbox-indicator
+                  class="cngx-select__check"
+                  variant="checkbox"
+                  [checked]="host.isSelected(opt)"
+                  [indeterminate]="host.isIndeterminate(opt)"
+                />
+              }
+            }
           }
         }
         @if (host.tpl.optionLabel(); as tpl) {
@@ -150,12 +168,30 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
               position: 'after'
             }" />
           } @else {
-            <cngx-checkbox-indicator
-              class="cngx-select__check"
-              [variant]="host.resolvedSelectionIndicatorVariant()"
-              [checked]="host.isSelected(opt)"
-              [indeterminate]="host.isIndeterminate(opt)"
-            />
+            @switch (host.resolvedSelectionIndicatorVariant()) {
+              @case ('radio') {
+                <cngx-radio-indicator
+                  class="cngx-select__check"
+                  [checked]="host.isSelected(opt)"
+                />
+              }
+              @case ('checkmark') {
+                <cngx-checkbox-indicator
+                  class="cngx-select__check"
+                  variant="checkmark"
+                  [checked]="host.isSelected(opt)"
+                  [indeterminate]="host.isIndeterminate(opt)"
+                />
+              }
+              @default {
+                <cngx-checkbox-indicator
+                  class="cngx-select__check"
+                  variant="checkbox"
+                  [checked]="host.isSelected(opt)"
+                  [indeterminate]="host.isIndeterminate(opt)"
+                />
+              }
+            }
           }
         }
         @if (host.isCommittingOption(opt)) {

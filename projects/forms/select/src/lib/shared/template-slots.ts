@@ -24,9 +24,11 @@ export interface CngxSelectCheckContext<T = unknown> {
    * input > `provideSelectConfig(withSelectionIndicatorVariant(...))` >
    * `'auto'` → `'checkbox'` in multi, `'checkmark'` in single).
    * Consumers overriding the slot mirror the surrounding panel's styling
-   * by reading this flag.
+   * by reading this flag. `'radio'` is honoured when the consumer opts
+   * in via `withSelectionIndicatorVariant('radio')` or the per-instance
+   * input — slot overrides may render `<cngx-radio-indicator>` directly.
    */
-  readonly variant: 'checkbox' | 'checkmark';
+  readonly variant: 'checkbox' | 'checkmark' | 'radio';
   /**
    * Which slot the template is being rendered in — `'before'` or
    * `'after'` the label. A single `*cngxSelectCheck` template can

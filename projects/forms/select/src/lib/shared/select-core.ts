@@ -166,7 +166,7 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly selectionIndicatorPosition: Signal<'before' | 'after' | null>;
 
   /** Per-instance override for `selectionIndicatorVariant`. `null` → inherit config. */
-  readonly selectionIndicatorVariant: Signal<'auto' | 'checkbox' | 'checkmark' | null>;
+  readonly selectionIndicatorVariant: Signal<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>;
 }
 
 /**
@@ -247,10 +247,11 @@ export interface CngxSelectCore<T, TCommit> {
   /**
    * Resolved concrete variant after the `instance > config > 'auto'`
    * cascade. `'auto'` resolves to `'checkbox'` in multi-mode, `'checkmark'`
-   * in single-mode. Panel consumers bind this directly to
-   * `<cngx-checkbox-indicator [variant]="…">`.
+   * in single-mode. Panel consumers branch on this:
+   * `'checkbox'`/`'checkmark'` → `<cngx-checkbox-indicator [variant]="…">`,
+   * `'radio'` → `<cngx-radio-indicator>`.
    */
-  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark' | 'radio'>;
   /**
    * Resolved position after the `instance > config > 'before'` cascade.
    */
@@ -650,7 +651,7 @@ export function createSelectCore<T, TCommit>(
     () => deps.selectionIndicatorPosition() ?? config.selectionIndicatorPosition,
   );
 
-  const resolvedSelectionIndicatorVariant = computed<'checkbox' | 'checkmark'>(() => {
+  const resolvedSelectionIndicatorVariant = computed<'checkbox' | 'checkmark' | 'radio'>(() => {
     const resolved = deps.selectionIndicatorVariant() ?? config.selectionIndicatorVariant;
     if (resolved === 'auto') {
       return deps.multi() ? 'checkbox' : 'checkmark';
