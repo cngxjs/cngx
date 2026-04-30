@@ -1,13 +1,20 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { CNGX_TAG_GROUP } from '../tag-group/tag-group.token';
+import { injectResolvedTagTemplate } from './shared/inject-resolved-template';
+import { CngxTagLabel } from './slots/tag-label.directive';
+import { CngxTagPrefix } from './slots/tag-prefix.directive';
+import { CngxTagSuffix } from './slots/tag-suffix.directive';
+import type { CngxTagLabelContext } from './slots/tag-slot.context';
 
 /** Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both. */
 export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
@@ -88,12 +95,28 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   // classes; thematic values cascade through `--cngx-tag-*` custom
   // properties for consumer overrides.
   encapsulation: ViewEncapsulation.None,
-  // Wrap projected content in `cngx-tag__label` so the inner span can
-  // own `overflow: hidden` + `min-width: 0` independent of the host's
-  // `inline-flex` layout. Without the wrapper, `text-overflow: ellipsis`
-  // applied to the host fails — flex items don't shrink under ellipsis
-  // by default and the projected text node has no shrinkable parent.
-  template: '<span class="cngx-tag__label"><ng-content /></span>',
+  imports: [NgTemplateOutlet],
+  // Three positional slots: prefix → label → suffix. The default
+  // label branch wraps `<ng-content />` in `cngx-tag__label` so the
+  // inner span can own `overflow: hidden` + `min-width: 0` independent
+  // of the host's `inline-flex` layout. Without that wrapper,
+  // `text-overflow: ellipsis` applied to the host fails — flex items
+  // don't shrink under ellipsis by default and the projected text
+  // node has no shrinkable parent. Consumers who project
+  // `*cngxTagLabel` own their own ellipsis hook.
+  template: `
+    @if (prefixTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    }
+    @if (labelTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    } @else {
+      <span class="cngx-tag__label"><ng-content /></span>
+    }
+    @if (suffixTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    }
+  `,
   styleUrl: './tag.css',
   host: {
     class: 'cngx-tag',
@@ -152,6 +175,74 @@ export class CngxTag {
    * `<button cngxTag>` keeps its `role="button"`, etc.
    */
   private readonly group = inject(CNGX_TAG_GROUP, { optional: true });
+
+  /**
+   * Per-instance label-slot directive — projected as
+   * `<ng-template cngxTagLabel>...</ng-template>`. Resolved through
+   * {@link injectResolvedTagTemplate} so consumers can override the
+   * default `<span class="cngx-tag__label">` wrapper without forking
+   * the directive.
+   */
+  protected readonly labelSlot = contentChild(CngxTagLabel);
+
+  /** Per-instance prefix-slot directive — projected before the label. */
+  protected readonly prefixSlot = contentChild(CngxTagPrefix);
+
+  /** Per-instance suffix-slot directive — projected after the label. */
+  protected readonly suffixSlot = contentChild(CngxTagSuffix);
+
+  /**
+   * Resolved label template. Phase 1 cascade: instance slot → host
+   * `@else` default (`<span class="cngx-tag__label"><ng-content /></span>`).
+   * Phase 4 commit 5 inserts `CNGX_TAG_CONFIG.templates.label` as a
+   * middle tier without touching this call site.
+   */
+  protected readonly labelTpl = injectResolvedTagTemplate(
+    this.labelSlot,
+    'label',
+  );
+
+  /** Resolved prefix template. Same 2-stage cascade as {@link labelTpl}. */
+  protected readonly prefixTpl = injectResolvedTagTemplate(
+    this.prefixSlot,
+    'prefix',
+  );
+
+  /** Resolved suffix template. Same 2-stage cascade as {@link labelTpl}. */
+  protected readonly suffixTpl = injectResolvedTagTemplate(
+    this.suffixSlot,
+    'suffix',
+  );
+
+  /**
+   * Reactive bundle exposed to every slot's `*ngTemplateOutletContext`.
+   * The three slot context interfaces are structurally identical in
+   * Phase 1; the same computed source serves all three. Consumer
+   * templates `let-variant="variant"` etc. read the live state without
+   * injecting the directive.
+   *
+   * Explicit structural `equal` fn — without it, a fresh literal each
+   * CD cycle would force `ngTemplateOutlet` to rebind embedded views
+   * even when no input changed. Per `reference_signal_architecture` §1
+   * Equality Rule: every `computed` returning an object MUST pass an
+   * `equal` fn.
+   */
+  protected readonly slotContext = computed<CngxTagLabelContext>(
+    () => ({
+      $implicit: undefined as void,
+      variant: this.variant(),
+      color: this.color(),
+      size: this.size(),
+      truncate: this.truncate(),
+    }),
+    {
+      equal: (a, b) =>
+        a.variant === b.variant &&
+        a.color === b.color &&
+        a.size === b.size &&
+        a.truncate === b.truncate,
+    },
+  );
 
   /**
    * Reactive `role` attribute. Returns `'listitem'` when projected
