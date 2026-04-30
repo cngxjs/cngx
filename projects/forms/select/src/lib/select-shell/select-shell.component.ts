@@ -56,6 +56,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
+  type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
 import {
   type CngxSelectCommitAction,
@@ -315,7 +316,7 @@ export class CngxSelectShell<T = unknown>
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
-  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>(
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(
     null,
   );
   readonly hideCaret = input<boolean>(!this.config.showCaret);

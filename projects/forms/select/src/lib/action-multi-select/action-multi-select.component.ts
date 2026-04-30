@@ -58,6 +58,7 @@ import {
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
+  type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
 import {
@@ -396,7 +397,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
-  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>(null);
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);

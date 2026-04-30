@@ -61,6 +61,7 @@ import {
   type CngxSelectConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
+  type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
 import {
   filterSelectOptions,
@@ -457,7 +458,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
 
   /** Per-instance override for the indicator variant. `null` → inherit config (`'auto'`). */
-  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>(null);
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
 
   /** Hide the default dropdown caret glyph. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
