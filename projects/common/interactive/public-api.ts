@@ -31,6 +31,7 @@ export {
   type CngxControlValue,
 } from './src/control-value/control-value.token';
 export { CngxToggle } from './src/toggle/toggle.component';
+export { CngxCheckbox } from './src/checkbox/checkbox.component';
 export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
