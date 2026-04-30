@@ -56,9 +56,14 @@ interface TagTemplateRefHolder<Ctx> {
  */
 export function injectResolvedTagTemplate<Ctx>(
   directive: Signal<TagTemplateRefHolder<Ctx> | undefined>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- consumed in Phase 4 commit 5 once CNGX_TAG_CONFIG ships
   configKey: CngxTagTemplateKey,
 ): Signal<TemplateRef<Ctx> | null> {
+  // Phase 1 placeholder — `configKey` is consumed in Phase 4 commit 5
+  // once `CNGX_TAG_CONFIG.templates[<key>]` becomes the second cascade
+  // tier. Referenced via `void` so call-site stability holds across
+  // phases without a per-line lint suppression that future edits would
+  // drift around.
+  void configKey;
   return computed<TemplateRef<Ctx> | null>(() => {
     const instance = directive()?.templateRef;
     return instance ?? null;
