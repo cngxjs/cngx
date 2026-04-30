@@ -13,6 +13,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
+import { injectTagConfig } from '../tag/config/inject-tag-config';
 import { injectResolvedTagTemplate } from '../tag/shared/inject-resolved-template';
 import { CngxTag } from '../tag/tag.directive';
 import { CngxTagGroupAccessory } from './slots/tag-group-accessory.directive';
@@ -131,11 +132,22 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
   },
 })
 export class CngxTagGroup implements CngxTagGroupHost {
+  /**
+   * Snapshot of the resolved tag-family config at construction
+   * time. Drives the per-input fallback defaults below.
+   *
+   * **Field-init ordering is load-bearing** — must be declared
+   * before any input field that reads `this.cfg.groupDefaults?.*`.
+   * Per the `tag-family-architectural-a-plus-pass` plan
+   * Architectural-Decisions table.
+   */
+  private readonly cfg = injectTagConfig();
+
   /** Spacing between projected tags. `sm` (default) | `xs` | `md`. */
-  readonly gap = input<CngxTagGroupGap>('sm');
+  readonly gap = input<CngxTagGroupGap>(this.cfg.groupDefaults?.gap ?? 'sm');
 
   /** Cross-axis distribution. `start` (default) | `center` | `end` | `between`. */
-  readonly align = input<CngxTagGroupAlign>('start');
+  readonly align = input<CngxTagGroupAlign>(this.cfg.groupDefaults?.align ?? 'start');
 
   /**
    * Optional label rendered as `aria-label` on the host. When the
@@ -158,7 +170,10 @@ export class CngxTagGroup implements CngxTagGroupHost {
    *
    * @internal
    */
-  readonly semanticListInput = input<boolean>(false, { alias: 'semanticList' });
+  readonly semanticListInput = input<boolean>(
+    this.cfg.groupDefaults?.semanticList ?? false,
+    { alias: 'semanticList' },
+  );
 
   /**
    * Public host-contract field. `InputSignal<boolean>` already

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 import { CNGX_TAG_GROUP } from '../tag-group/tag-group.token';
+import { injectTagConfig } from './config/inject-tag-config';
 import { injectResolvedTagTemplate } from './shared/inject-resolved-template';
 import { CngxTagLabel } from './slots/tag-label.directive';
 import { CngxTagPrefix } from './slots/tag-prefix.directive';
@@ -134,18 +135,35 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   },
 })
 export class CngxTag {
+  /**
+   * Snapshot of the resolved tag-family config at construction
+   * time. Drives the per-input fallback defaults below — Angular's
+   * input-default rule means per-instance `[variant]="..."`
+   * bindings still win.
+   *
+   * **Field-init ordering is load-bearing.** TypeScript class-field
+   * initialisers run in source order; `cfg` MUST be declared before
+   * any input field that reads `this.cfg`. A reorder pass that
+   * moved this declaration below the inputs would silently produce
+   * `undefined` at the input's init call site (runtime crash on
+   * first construction). Per the
+   * `tag-family-architectural-a-plus-pass` plan Architectural-
+   * Decisions table — flagged in cngx-plan-review 2026-04-29.
+   */
+  private readonly cfg = injectTagConfig();
+
   /** Visual variant. `filled` (default) | `outline` | `subtle`. */
-  readonly variant = input<CngxTagVariant>('filled');
+  readonly variant = input<CngxTagVariant>(this.cfg.defaults?.variant ?? 'filled');
 
   /**
    * Semantic colour. Predefined keys (`neutral` default, `success`,
    * `warning`, `error`, `info`) plus any consumer-defined string
    * which is emitted verbatim as a `data-color` attribute.
    */
-  readonly color = input<CngxTagColor>('neutral');
+  readonly color = input<CngxTagColor>(this.cfg.defaults?.color ?? 'neutral');
 
   /** Density. `md` (default) | `sm` | `lg` | `xl`. */
-  readonly size = input<CngxTagSize>('md');
+  readonly size = input<CngxTagSize>(this.cfg.defaults?.size ?? 'md');
 
   /**
    * When `true`, applies `text-overflow: ellipsis` + `white-space: nowrap`
@@ -158,14 +176,14 @@ export class CngxTag {
    * text, but its reactive machinery (effect + ResizeObserver + isClamped
    * signal) is overkill for a chip-style single-line overflow.
    */
-  readonly truncate = input<boolean>(false);
+  readonly truncate = input<boolean>(this.cfg.defaults?.truncate ?? false);
 
   /**
    * Optional CSS `max-width` (e.g. `'12rem'`, `'200px'`). Bound
    * inline so consumers don't need a CSS authoring step for ad-hoc
    * width caps. `null` clears the binding.
    */
-  readonly maxWidth = input<string | null>(null);
+  readonly maxWidth = input<string | null>(this.cfg.defaults?.maxWidth ?? null);
 
   /**
    * Optional parent group (Phase 3 ships `CngxTagGroup` as the
