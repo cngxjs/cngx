@@ -145,6 +145,11 @@ export const routes: Routes = [
           import('./demos/common/display/icon-demo/icon-demo.component').then((m) => m.IconDemoComponent),
       },
       {
+        path: 'display/radio-indicator',
+        loadComponent: () =>
+          import('./demos/common/display/radio-indicator-demo/radio-indicator-demo.component').then((m) => m.RadioIndicatorDemoComponent),
+      },
+      {
         path: 'display/tag',
         loadComponent: () =>
           import('./demos/common/display/tag-demo/tag-demo.component').then((m) => m.TagDemoComponent),

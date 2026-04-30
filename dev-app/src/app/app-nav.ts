@@ -39,6 +39,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Badge', path: 'common/display/badge' },
       { label: 'Divider', path: 'common/display/divider' },
       { label: 'Icon', path: 'common/display/icon' },
+      { label: 'Radio indicator', path: 'common/display/radio-indicator' },
       { label: 'Tag', path: 'common/display/tag' },
       { label: 'Async Click', path: 'common/interactive/async-click' },
       { label: 'ClickOutside', path: 'common/interactive/click-outside' },
