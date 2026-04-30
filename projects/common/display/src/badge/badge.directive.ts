@@ -102,8 +102,6 @@ export class CngxBadge {
 
     effect(() => {
       const shouldShow = !this.hidden() && (this.isDotMode() || !this.isEmpty());
-      console.log(shouldShow)
-
       if (!shouldShow) {
         this.removeBadge();
         return;
@@ -162,10 +160,6 @@ export class CngxBadge {
   }
 
   private removeBadge(): void {
-    setTimeout(() => {
-      console.log(this.badgeEl)
-
-    })
     if (this.badgeEl?.parentNode) {
       this.renderer.removeChild(this.badgeEl.parentNode, this.badgeEl);
     }
