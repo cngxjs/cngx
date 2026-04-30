@@ -22,6 +22,8 @@ export {
   type CngxTagColor,
   type CngxTagSize,
 } from './src/tag/tag.directive';
+export { type CngxTagConfig } from './src/tag/config/tag.config';
+export { CNGX_TAG_CONFIG } from './src/tag/config/tag.config.defaults';
 export { CngxTagLabel } from './src/tag/slots/tag-label.directive';
 export { CngxTagPrefix } from './src/tag/slots/tag-prefix.directive';
 export { CngxTagSuffix } from './src/tag/slots/tag-suffix.directive';
