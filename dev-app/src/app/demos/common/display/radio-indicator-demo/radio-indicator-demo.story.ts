@@ -6,8 +6,9 @@ export const STORY: DemoSpec = {
   navCategory: 'display',
   description:
     'Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, ' +
-    'no outputs, full --cngx-radio-indicator-* theming. Composes into CngxRadio, ' +
-    'CngxRadioGroup, and the CngxSelect "radio" indicator variant.',
+    'no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect ' +
+    '"radio" indicator variant; future single-value form atoms compose the ' +
+    'same skin.',
   apiComponents: ['CngxRadioIndicator'],
   overview:
     '<p><code>cngx-radio-indicator</code> renders a circle with a centred dot when ' +

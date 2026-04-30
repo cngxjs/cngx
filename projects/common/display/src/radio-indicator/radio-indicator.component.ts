@@ -10,11 +10,12 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
  * for both single-select (`'checkmark'`) and multi-select (`'checkbox'`)
  * indicators. The form-primitives spec (Brain vs. Skin) introduces a
  * radio variant — `selectionIndicatorVariant: 'radio'` for single-select
- * panels, plus the standalone {@link import('../../../interactive/src/radio/radio.directive').CngxRadio}
- * atom — that needs the dot-in-circle visual independently of the
+ * panels — that needs the dot-in-circle visual independently of the
  * box/checkmark shapes. This atom is the radio counterpart: same
  * decorative-only contract, same `--cngx-*` theming surface, same
- * `aria-hidden="true"` discipline.
+ * `aria-hidden="true"` discipline. Future single-value form atoms in
+ * `@cngx/common/interactive` will compose this same skin once they
+ * land in their own phase.
  *
  * **Responsibilities (intentionally narrow).**
  * - Render a circle frame and, when `checked` is true, a centred dot.

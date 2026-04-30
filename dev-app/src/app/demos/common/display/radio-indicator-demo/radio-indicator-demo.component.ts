@@ -17,7 +17,7 @@ import { CngxRadioIndicator } from '@cngx/common/display';
   ],
   template: `
     <app-doc-shell title="Radio indicator"
-      description="Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Composes into CngxRadio, CngxRadioGroup, and the CngxSelect &quot;radio&quot; indicator variant."
+      description="Decorative dot-in-circle atom. Mirrors CngxCheckboxIndicator: aria-hidden, no outputs, full --cngx-radio-indicator-* theming. Used by the CngxSelect &quot;radio&quot; indicator variant; future single-value form atoms compose the same skin."
       overview="<p><code>cngx-radio-indicator</code> renders a circle with a centred dot when <code>checked</code> is true. Always <code>aria-hidden=&quot;true&quot;</code> — the truth about selection lives on the parent row's <code>role=&quot;radio&quot;</code> + <code>aria-checked</code>.</p><p>Override the dot via <code>[dotGlyph]</code> for design-system custom glyphs. Size scale matches <code>CngxCheckboxIndicator</code> so both atoms render at identical visual weight inside a select panel.</p>"
       [apiComponents]="['CngxRadioIndicator']">
       <app-example-card title="Default — unchecked vs checked"
