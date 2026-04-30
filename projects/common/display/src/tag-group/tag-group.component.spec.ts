@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CngxTag } from '../tag/tag.directive';
 import { CngxTagGroupAccessory } from './slots/tag-group-accessory.directive';
@@ -168,6 +168,26 @@ class GroupContextProbeHost {
   `,
 })
 class BothSlotsLayoutOnlyHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `<cngx-tag-group label="Filters" data-testid="group"></cngx-tag-group>`,
+})
+class LabelOnlyHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `
+    <cngx-tag-group [semanticList]="true" label="Filters" data-testid="group"></cngx-tag-group>
+  `,
+})
+class LabelAndSemanticHost {}
+
+@Component({
+  imports: [CngxTagGroup],
+  template: `<cngx-tag-group [semanticList]="true" data-testid="group"></cngx-tag-group>`,
+})
+class SemanticOnlyHost {}
 
 function flush(fixture: { detectChanges: () => void }): void {
   TestBed.flushEffects();
@@ -351,4 +371,39 @@ describe('CngxTagGroup', () => {
     expect(host.querySelector('[data-testid="accessory"]')).not.toBeNull();
     expect(host.querySelector('[role="list"]')).toBeNull();
   });
+
+  it('(o) dev-mode warn fires when [label] is bound without [semanticList]', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(LabelOnlyHost);
+    flush(fixture);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const message = String(warnSpy.mock.calls[0]?.[0] ?? '');
+    expect(message).toContain('[cngx-tag-group]');
+    expect(message).toContain('[semanticList]');
+    warnSpy.mockRestore();
+  });
+
+  it('(p) no warn when [label] and [semanticList] are both bound', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(LabelAndSemanticHost);
+    flush(fixture);
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it('(q) no warn when only [semanticList] is bound (no [label])', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fixture = TestBed.createComponent(SemanticOnlyHost);
+    flush(fixture);
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  // Case (r) — production-mode suppression — would require module-level
+  // mocking of `@angular/core`'s `isDevMode()` via `vi.mock`, which
+  // contaminates the worker for all later specs. `enableProdMode()` is
+  // irreversible per process. The dev-mode gating is Angular's
+  // well-tested guard; cases (o)/(p)/(q) above prove our condition wiring
+  // (`label && !semanticList`); we trust the framework's `isDevMode()`
+  // for the env-flag short-circuit rather than re-verify it here.
 });
