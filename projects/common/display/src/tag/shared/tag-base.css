@@ -1,0 +1,126 @@
+/*
+ * tag-base.css — shared structural skeleton for the tag family.
+ *
+ * Both `CngxTag` and `CngxTagGroup` link this file FIRST in their
+ * `styleUrls` array and layer their thematic skin on top.
+ * Structural rules (inline-flex, gap, padding, density modifiers,
+ * label ellipsis hook, group column-stack + row layout) live here
+ * so the decompose schematic can flatten or keep them linked.
+ * Thematic values (colour cascades, radius, font-weight) ship in
+ * the per-atom skins (`tag.css` / `tag-group.component.css`).
+ *
+ * Per `reference_atomic_decompose` rule 3 — structural / thematic
+ * split. All values cascade through `--cngx-*` custom properties
+ * with English-readable fallbacks; consumers override at `:root`
+ * or component level without forking.
+ */
+
+/* CngxTag — single decorative tag, inline-flex container. */
+
+.cngx-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-tag-gap, 0.25rem);
+  padding: var(--cngx-tag-padding, 0.125rem 0.5rem);
+  font-size: var(--cngx-tag-font-size, 0.75rem);
+  line-height: 1.25;
+  max-width: 100%;
+}
+
+/* Density — sm/md/lg/xl. `md` is the default and resolves through
+ * the base `.cngx-tag` cascade above; the other three modifiers
+ * override only the tail of the cascade so consumer
+ * `--cngx-tag-padding` / `--cngx-tag-font-size` overrides still
+ * win at any level. The `--md` selector is a deliberate empty rule
+ * so consumers can author `[data-color="my-brand"].cngx-tag--md`
+ * overrides at the default size without an additional anchor. */
+
+.cngx-tag--md {
+  /* Selector anchor only — default cascade applies. */
+}
+
+.cngx-tag--sm {
+  padding: var(--cngx-tag-sm-padding, 0 0.375rem);
+  font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
+}
+
+.cngx-tag--lg {
+  padding: var(--cngx-tag-lg-padding, 0.25rem 0.625rem);
+  font-size: var(--cngx-tag-lg-font-size, 0.875rem);
+}
+
+.cngx-tag--xl {
+  padding: var(--cngx-tag-xl-padding, 0.375rem 0.75rem);
+  font-size: var(--cngx-tag-xl-font-size, 1rem);
+}
+
+/* Label — flex child, shrinkable so ellipsis can engage. */
+
+.cngx-tag__label {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Truncate — single line + ellipsis on the inner label. */
+
+.cngx-tag--truncate .cngx-tag__label {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* CngxTagGroup — vertical three-zone stack carrying
+ * (header / row / accessory). The row class is the layout anchor
+ * for gap + align modifier classes; the host stays a column flex
+ * stack so header / accessory render as siblings of the row. */
+
+.cngx-tag-group {
+  display: flex;
+  flex-direction: column;
+  /* Vertical breathing room between header / row / accessory.
+   * Collapses to no visible gap when only the row renders. */
+  gap: var(--cngx-tag-group-stack-gap, 0.5rem);
+}
+
+.cngx-tag-group__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cngx-tag-group-gap, 0.5rem);
+  /* `start` is the layout default — explicit modifier classes
+   * below override `justify-content` only when the consumer opts
+   * into a non-start alignment. */
+  justify-content: flex-start;
+}
+
+/* Gap modifiers — sm is the default and resolves through the base
+ * `--cngx-tag-group-gap` cascade above. Modifiers stay on the host
+ * (stable public API) but the rule targets the row via descendant
+ * selector. */
+
+.cngx-tag-group--gap-xs > .cngx-tag-group__row {
+  gap: var(--cngx-tag-group-gap-xs, 0.25rem);
+}
+
+.cngx-tag-group--gap-md > .cngx-tag-group__row {
+  gap: var(--cngx-tag-group-gap-md, 0.75rem);
+}
+
+/* Alignment modifiers — `start` is the layout default; explicit
+ * modifiers cover the remaining three positions. Same descendant-
+ * selector pattern: modifier on host, rule on row. */
+
+.cngx-tag-group--align-start > .cngx-tag-group__row {
+  justify-content: flex-start;
+}
+
+.cngx-tag-group--align-center > .cngx-tag-group__row {
+  justify-content: center;
+}
+
+.cngx-tag-group--align-end > .cngx-tag-group__row {
+  justify-content: flex-end;
+}
+
+.cngx-tag-group--align-between > .cngx-tag-group__row {
+  justify-content: space-between;
+}

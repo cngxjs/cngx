@@ -113,7 +113,7 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
       <ng-container *ngTemplateOutlet="t; context: slotContext()" />
     }
   `,
-  styleUrl: './tag-group.component.css',
+  styleUrls: ['../tag/shared/tag-base.css', './tag-group.component.css'],
   providers: [{ provide: CNGX_TAG_GROUP, useExisting: CngxTagGroup }],
   host: {
     class: 'cngx-tag-group',

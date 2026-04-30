@@ -1,70 +1,12 @@
 /*
- * tag-group.component.css — layout skin of `CngxTagGroup`.
+ * tag-group.component.css — thematic skin of `CngxTagGroup`.
  *
- * Phase 2 turned the host into a vertical three-zone stack
- * (header / row / accessory). The structural row class
- * (.cngx-tag-group__row) keeps the original flex-wrap layout —
- * gap and align modifier classes target it via descendant
- * selectors so the consumer-facing modifier API stays stable
- * even though the host is no longer the row.
- *
- * Thematic values flow through `--cngx-tag-group-*` custom
- * properties with English-readable fallbacks; consumers
- * override at `:root` or component level without forking. No
- * colour, no border, no background — the group is a neutral
- * container for whichever `CngxTag` chrome the consumer
- * renders inside it.
+ * Structural rules (column stack, row flex-wrap, gap + align
+ * modifiers) live in `../tag/shared/tag-base.css` — linked first
+ * by the component's `styleUrls` array. The group is a neutral
+ * layout container today (no colour, no border, no background) so
+ * this file ships intentionally empty; it stays in `styleUrls` so
+ * future per-atom thematic tokens (e.g. backplate colour for a
+ * Material wrapper) land here without changing the directive's
+ * style-link surface.
  */
-
-.cngx-tag-group {
-  display: flex;
-  flex-direction: column;
-  /* Vertical breathing room between header / row / accessory.
-   * Collapses to no visible gap when only the row renders. */
-  gap: var(--cngx-tag-group-stack-gap, 0.5rem);
-}
-
-.cngx-tag-group__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cngx-tag-group-gap, 0.5rem);
-  /* `start` is the layout default — explicit modifier classes
-   * below override `justify-content` only when the consumer
-   * opts into a non-start alignment. */
-  justify-content: flex-start;
-}
-
-/* Gap modifiers — sm is the default and resolves through the base
- * `--cngx-tag-group-gap` cascade above. xs and md override only the
- * tail of the cascade so consumer `--cngx-tag-group-gap` overrides
- * still win at any level. Modifiers stay on the host (stable public
- * API) but the rule targets the row via descendant selector. */
-
-.cngx-tag-group--gap-xs > .cngx-tag-group__row {
-  gap: var(--cngx-tag-group-gap-xs, 0.25rem);
-}
-
-.cngx-tag-group--gap-md > .cngx-tag-group__row {
-  gap: var(--cngx-tag-group-gap-md, 0.75rem);
-}
-
-/* Alignment modifiers — `start` is the layout default; explicit
- * modifiers cover the remaining three positions. Same descendant-
- * selector pattern: modifier on host, rule on row. */
-
-.cngx-tag-group--align-start > .cngx-tag-group__row {
-  justify-content: flex-start;
-}
-
-.cngx-tag-group--align-center > .cngx-tag-group__row {
-  justify-content: center;
-}
-
-.cngx-tag-group--align-end > .cngx-tag-group__row {
-  justify-content: flex-end;
-}
-
-.cngx-tag-group--align-between > .cngx-tag-group__row {
-  justify-content: space-between;
-}

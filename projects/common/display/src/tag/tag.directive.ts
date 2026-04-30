@@ -117,7 +117,7 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
       <ng-container *ngTemplateOutlet="t; context: slotContext()" />
     }
   `,
-  styleUrl: './tag.css',
+  styleUrls: ['./shared/tag-base.css', './tag.css'],
   host: {
     class: 'cngx-tag',
     '[class.cngx-tag--filled]': "variant() === 'filled'",

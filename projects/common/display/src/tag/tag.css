@@ -1,63 +1,27 @@
 /*
- * tag.css — visual skin of a single decorative tag.
+ * tag.css — thematic skin of `CngxTag`.
  *
- * Structural rules (inline-flex, padding, line-height) ship here.
- * Thematic values (colour, font-size, radius) are `--cngx-tag-*`
- * custom properties with English-readable fallbacks; consumers
- * override at `:root` or component level without forking. Per-color
- * surfaces resolve through `[data-color="…"]` attribute selectors so
- * the open-string extensibility stays consumer-driven.
+ * Structural rules (display, flex, padding, density modifiers,
+ * label ellipsis hook) live in `./shared/tag-base.css` — linked
+ * first by the directive's `styleUrls` array. This file ships only
+ * the colour cascade and radius / weight tokens so the decompose
+ * schematic can keep the thematic skin flat without dragging
+ * structural rules into the colour cascade.
  *
- * Layout concerns of a CONTAINER rendering multiple tags (gap,
- * flex-wrap) live with `CngxTagGroup` (Phase 3).
+ * Per-color surfaces resolve through `[data-color="…"]` attribute
+ * selectors so the open-string extensibility stays consumer-driven
+ * (predefined keys cascade through `--cngx-tag-{name}-*` custom
+ * properties; arbitrary keys ride the same selector pattern).
  */
 
 .cngx-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--cngx-tag-gap, 0.25rem);
-  padding: var(--cngx-tag-padding, 0.125rem 0.5rem);
   border-radius: var(--cngx-tag-radius, 4px);
-  font-size: var(--cngx-tag-font-size, 0.75rem);
   font-weight: var(--cngx-tag-font-weight, 500);
-  line-height: 1.25;
-  max-width: 100%;
   /* Variant-specific bg/color/border resolve via [data-color] +
    * --cngx-tag-{name}-* below. Default fills come from neutral. */
   background: var(--cngx-tag-bg, transparent);
   color: var(--cngx-tag-color, inherit);
   border: var(--cngx-tag-border, 1px solid transparent);
-}
-
-/* Density — sm/md/lg/xl. Each variant scales padding + font-size. */
-
-.cngx-tag--sm {
-  padding: var(--cngx-tag-sm-padding, 0 0.375rem);
-  font-size: var(--cngx-tag-sm-font-size, 0.6875rem);
-}
-
-.cngx-tag--lg {
-  padding: var(--cngx-tag-lg-padding, 0.25rem 0.625rem);
-  font-size: var(--cngx-tag-lg-font-size, 0.875rem);
-}
-
-.cngx-tag--xl {
-  padding: var(--cngx-tag-xl-padding, 0.375rem 0.75rem);
-  font-size: var(--cngx-tag-xl-font-size, 1rem);
-}
-
-/* Label — flex child, shrinkable so ellipsis can engage */
-
-.cngx-tag__label {
-  min-width: 0;
-  overflow: hidden;
-}
-
-/* Truncate — single line + ellipsis on the inner label */
-
-.cngx-tag--truncate .cngx-tag__label {
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Variants resolve --cngx-tag-bg/-color/-border per [data-color]. */
@@ -139,4 +103,3 @@
   --cngx-tag-color: var(--cngx-tag-info-color, #1e40af);
   --cngx-tag-border: 1px solid transparent;
 }
-
