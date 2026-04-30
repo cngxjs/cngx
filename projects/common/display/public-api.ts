@@ -22,6 +22,14 @@ export {
   type CngxTagColor,
   type CngxTagSize,
 } from './src/tag/tag.directive';
+export { CngxTagLabel } from './src/tag/slots/tag-label.directive';
+export { CngxTagPrefix } from './src/tag/slots/tag-prefix.directive';
+export { CngxTagSuffix } from './src/tag/slots/tag-suffix.directive';
+export {
+  type CngxTagLabelContext,
+  type CngxTagPrefixContext,
+  type CngxTagSuffixContext,
+} from './src/tag/slots/tag-slot.context';
 export {
   CNGX_TAG_GROUP,
   type CngxTagGroupHost,
