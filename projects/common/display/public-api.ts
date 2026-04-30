@@ -30,6 +30,12 @@ export {
   type CngxTagConfigFeature,
 } from './src/tag/config/provide-tag-config';
 export { injectTagConfig } from './src/tag/config/inject-tag-config';
+export {
+  withTagDefaults,
+  withTagGroupDefaults,
+  withTagColors,
+  withTagSlots,
+} from './src/tag/config/features';
 export { CngxTagLabel } from './src/tag/slots/tag-label.directive';
 export { CngxTagPrefix } from './src/tag/slots/tag-prefix.directive';
 export { CngxTagSuffix } from './src/tag/slots/tag-suffix.directive';
