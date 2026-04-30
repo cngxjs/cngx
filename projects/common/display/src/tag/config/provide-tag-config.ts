@@ -138,6 +138,14 @@ function mergeConfig(
 export function provideTagConfig(
   ...features: CngxTagConfigFeature[]
 ): EnvironmentProviders {
+  // Empty-features call: don't override the token. The root factory
+  // already returns `CNGX_TAG_DEFAULTS` — re-providing a fresh
+  // `mergeConfig(...)` would allocate identical content under a new
+  // reference and bust downstream identity comparisons that consumers
+  // of `injectTagConfig()` may rely on.
+  if (features.length === 0) {
+    return makeEnvironmentProviders([]);
+  }
   const partial = reduceFeatures(features);
   return makeEnvironmentProviders([
     {
@@ -179,6 +187,12 @@ export function provideTagConfig(
 export function provideTagConfigAt(
   ...features: CngxTagConfigFeature[]
 ): Provider[] {
+  // Empty-features call: parent value flows through untouched.
+  // Skipping the factory preserves reference identity through the
+  // sub-tree.
+  if (features.length === 0) {
+    return [];
+  }
   const partial = reduceFeatures(features);
   return [
     {

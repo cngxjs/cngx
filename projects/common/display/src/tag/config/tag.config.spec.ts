@@ -7,6 +7,7 @@ import { CngxTag } from '../tag.directive';
 import { withTagColors, withTagDefaults, withTagSlots } from './features';
 import { injectTagConfig } from './inject-tag-config';
 import { provideTagConfig, provideTagConfigAt } from './provide-tag-config';
+import { CNGX_TAG_DEFAULTS } from './tag.config.defaults';
 
 @Component({
   imports: [CngxTag],
@@ -130,5 +131,17 @@ describe('CngxTagConfig — resolution priority (Phase 4)', () => {
       color: '#ffffff',
       border: 'transparent',
     });
+  });
+
+  it('(g) provideTagConfig() with zero features preserves CNGX_TAG_DEFAULTS reference identity', () => {
+    TestBed.configureTestingModule({
+      providers: [provideTagConfig()],
+    });
+    const cfg = TestBed.runInInjectionContext(() => injectTagConfig());
+    // Reference equality — the empty-features guard skips re-providing the
+    // token, so the root factory's `CNGX_TAG_DEFAULTS` reference flows
+    // through unchanged. A fresh `mergeConfig(...)` would compare equal
+    // structurally but break this `.toBe` identity check.
+    expect(cfg).toBe(CNGX_TAG_DEFAULTS);
   });
 });
