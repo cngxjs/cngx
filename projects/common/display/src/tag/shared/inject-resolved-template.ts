@@ -1,4 +1,6 @@
-import { computed, type Signal, type TemplateRef } from '@angular/core';
+import { computed, inject, type Signal, type TemplateRef } from '@angular/core';
+
+import { CNGX_TAG_CONFIG } from '../config/tag.config.defaults';
 
 /**
  * Keys into the upcoming `CngxTagConfig.templates` cascade. Phase 2
@@ -30,21 +32,20 @@ interface TagTemplateRefHolder<Ctx> {
 }
 
 /**
- * Wraps a `contentChild` directive query in a slot-resolution
- * cascade.
+ * Wraps a `contentChild` directive query in a 3-stage slot-resolution
+ * cascade:
  *
- * **Phase 1 (this commit):** 2-stage cascade — instance directive,
- * else `null`. The directive's host template owns the default
- * `<ng-template>` body that runs when this helper returns `null`.
+ *   1. Instance directive (highest) — consumer-projected
+ *      `<ng-template cngxTag*>` template.
+ *   2. `CNGX_TAG_CONFIG.templates[<key>]` (app-wide cascade via
+ *      `provideTagConfig` / `provideTagConfigAt`).
+ *   3. `null` (the host's default `<ng-template>` body wins, e.g.
+ *      `CngxTag`'s `<span class="cngx-tag__label"><ng-content /></span>`
+ *      label fallback).
  *
- * **Phase 4 commit 5:** expanded to 3-stage —
- *   1. Instance directive (highest).
- *   2. `CNGX_TAG_CONFIG.templates[<key>]` (app-wide cascade).
- *   3. `null` (host template default).
- *
- * The `configKey` parameter ships now so Phase 4 lands as a pure
- * semantic upgrade — call sites in `tag.directive.ts` and
- * `tag-group.component.ts` do not change between phases.
+ * `inject(CNGX_TAG_CONFIG, { optional: true })` mirrors the select-
+ * shared helper exactly — `providedIn: 'root'` always resolves so
+ * the optional flag is defensive, not load-bearing.
  *
  * **Why a copy and not an import from `@cngx/forms/select/shared`.**
  * Sheriff blocks `lib:common-display` from importing
@@ -62,14 +63,16 @@ export function injectResolvedTagTemplate<Ctx>(
   directive: Signal<TagTemplateRefHolder<Ctx> | undefined>,
   configKey: CngxTagTemplateKey,
 ): Signal<TemplateRef<Ctx> | null> {
-  // Phase 1 placeholder — `configKey` is consumed in Phase 4 commit 5
-  // once `CNGX_TAG_CONFIG.templates[<key>]` becomes the second cascade
-  // tier. Referenced via `void` so call-site stability holds across
-  // phases without a per-line lint suppression that future edits would
-  // drift around.
-  void configKey;
+  const config = inject(CNGX_TAG_CONFIG, { optional: true });
   return computed<TemplateRef<Ctx> | null>(() => {
     const instance = directive()?.templateRef;
-    return instance ?? null;
+    if (instance) {
+      return instance;
+    }
+    const global = config?.templates?.[configKey] as
+      | TemplateRef<Ctx>
+      | null
+      | undefined;
+    return global ?? null;
   });
 }
