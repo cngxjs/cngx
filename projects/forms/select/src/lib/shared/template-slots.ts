@@ -5,9 +5,24 @@ import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.mod
 /**
  * Context for the selection-indicator (checkmark) template.
  *
+ * Discriminated on `variant` — radio panels do not carry an
+ * `indeterminate` field because radio selection is exclusive. Consumers
+ * overriding `*cngxSelectCheck` MUST narrow on `variant` before
+ * reading `indeterminate`.
+ *
  * @category interactive
  */
-export interface CngxSelectCheckContext<T = unknown> {
+export type CngxSelectCheckContext<T = unknown> =
+  | CngxSelectCheckBoxContext<T>
+  | CngxSelectCheckRadioContext<T>;
+
+/**
+ * Box-style branch of the selection-indicator slot context. Carries
+ * `indeterminate` for tree-of-checkboxes / select-all rows.
+ *
+ * @category interactive
+ */
+export interface CngxSelectCheckBoxContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
   readonly option: CngxSelectOptionDef<T>;
   /** Whether the option is currently selected. */
@@ -24,11 +39,35 @@ export interface CngxSelectCheckContext<T = unknown> {
    * input > `provideSelectConfig(withSelectionIndicatorVariant(...))` >
    * `'auto'` → `'checkbox'` in multi, `'checkmark'` in single).
    * Consumers overriding the slot mirror the surrounding panel's styling
-   * by reading this flag. `'radio'` is honoured when the consumer opts
-   * in via `withSelectionIndicatorVariant('radio')` or the per-instance
-   * input — slot overrides may render `<cngx-radio-indicator>` directly.
+   * by reading this flag.
    */
-  readonly variant: 'checkbox' | 'checkmark' | 'radio';
+  readonly variant: 'checkbox' | 'checkmark';
+  /**
+   * Which slot the template is being rendered in — `'before'` or
+   * `'after'` the label. A single `*cngxSelectCheck` template can
+   * produce different markup per position by branching on this field.
+   */
+  readonly position: 'before' | 'after';
+}
+
+/**
+ * Radio-style branch of the selection-indicator slot context. Carries
+ * no `indeterminate` field — radio selection is exclusive by
+ * definition; the box-style "some descendants selected" state has no
+ * radio analogue.
+ *
+ * @category interactive
+ */
+export interface CngxSelectCheckRadioContext<T = unknown> {
+  readonly $implicit: CngxSelectOptionDef<T>;
+  readonly option: CngxSelectOptionDef<T>;
+  /** Whether the option is currently selected. */
+  readonly selected: boolean;
+  /**
+   * Concrete indicator variant — always `'radio'` in this branch.
+   * Discriminator field for narrowing the parent union.
+   */
+  readonly variant: 'radio';
   /**
    * Which slot the template is being rendered in — `'before'` or
    * `'after'` the label. A single `*cngxSelectCheck` template can

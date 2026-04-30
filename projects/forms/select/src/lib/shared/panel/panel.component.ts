@@ -13,6 +13,7 @@ import { CngxOption } from '@cngx/common/interactive';
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../option.model';
+import type { CngxSelectCheckContext } from '../template-slots';
 import {
   CNGX_PANEL_RENDERER_FACTORY,
   type PanelRenderer,
@@ -117,14 +118,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.tpl.check(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: {
-              $implicit: opt,
-              option: opt,
-              selected: host.isSelected(opt),
-              indeterminate: host.isIndeterminate(opt),
-              variant: host.resolvedSelectionIndicatorVariant(),
-              position: 'before'
-            }" />
+            <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'before')" />
           } @else {
             <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
@@ -136,14 +130,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
         }
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
           @if (host.tpl.check(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: {
-              $implicit: opt,
-              option: opt,
-              selected: host.isSelected(opt),
-              indeterminate: host.isIndeterminate(opt),
-              variant: host.resolvedSelectionIndicatorVariant(),
-              position: 'after'
-            }" />
+            <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'after')" />
           } @else {
             <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
@@ -308,5 +295,36 @@ export class CngxSelectPanel<T = unknown> {
       return false;
     }
     return this.host.listboxCompareWith()(match.value(), opt.value);
+  }
+
+  /**
+   * Build the `*cngxSelectCheck` slot context for an option row.
+   * Branches on the resolved indicator variant — radio rows omit
+   * `indeterminate` because radio selection is exclusive (the
+   * "some descendants selected" state is undefined for radios).
+   * Consumers narrow on `variant` to read `indeterminate` safely.
+   */
+  protected checkContextFor(
+    opt: CngxSelectOptionDef<T>,
+    position: 'before' | 'after',
+  ): CngxSelectCheckContext<T> {
+    const variant = this.host.resolvedSelectionIndicatorVariant();
+    if (variant === 'radio') {
+      return {
+        $implicit: opt,
+        option: opt,
+        selected: this.host.isSelected(opt),
+        variant,
+        position,
+      };
+    }
+    return {
+      $implicit: opt,
+      option: opt,
+      selected: this.host.isSelected(opt),
+      indeterminate: this.host.isIndeterminate(opt),
+      variant,
+      position,
+    };
   }
 }

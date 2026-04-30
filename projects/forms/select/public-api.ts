@@ -236,6 +236,8 @@ export {
   CngxSelectInputSuffix,
   CngxSelectAction,
   type CngxSelectCheckContext,
+  type CngxSelectCheckBoxContext,
+  type CngxSelectCheckRadioContext,
   type CngxSelectCaretContext,
   type CngxSelectOptgroupContext,
   type CngxSelectPlaceholderContext,
