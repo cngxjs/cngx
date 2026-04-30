@@ -39,3 +39,9 @@ export {
   type CngxTagGroupGap,
   type CngxTagGroupAlign,
 } from './src/tag-group/tag-group.component';
+export { CngxTagGroupHeader } from './src/tag-group/slots/tag-group-header.directive';
+export { CngxTagGroupAccessory } from './src/tag-group/slots/tag-group-accessory.directive';
+export {
+  type CngxTagGroupHeaderContext,
+  type CngxTagGroupAccessoryContext,
+} from './src/tag-group/slots/tag-group-slot.context';
