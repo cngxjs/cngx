@@ -11,11 +11,12 @@ import type {
 // intent, not the current state. Mirrors the `tag-slot.context.ts`
 // convention.
 //
-// TODO(post-Phase-4 review): if both interfaces remain byte-identical
-// after Phase 4 ships and no consumer-driven divergence pressure has
-// surfaced, collapse into a single `CngxTagGroupSlotContext` plus
-// type aliases. Re-evaluate against real consumer signal, not
-// speculative.
+// Re-evaluation tracked in
+// `.internal/architektur/display-accepted-debt.md §3` (slot-context
+// structural-identity headroom). Collapse to a single
+// `CngxTagGroupSlotContext` plus type aliases when the §3 trigger
+// fires — the entry pairs this pair with the Tag-side label/prefix/
+// suffix trio so a single re-evaluation covers both files.
 
 /**
  * Context exposed by the `*cngxTagGroupHeader` slot — the full
