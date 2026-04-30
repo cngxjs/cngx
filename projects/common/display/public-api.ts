@@ -24,6 +24,12 @@ export {
 } from './src/tag/tag.directive';
 export { type CngxTagConfig } from './src/tag/config/tag.config';
 export { CNGX_TAG_CONFIG } from './src/tag/config/tag.config.defaults';
+export {
+  provideTagConfig,
+  provideTagConfigAt,
+  type CngxTagConfigFeature,
+} from './src/tag/config/provide-tag-config';
+export { injectTagConfig } from './src/tag/config/inject-tag-config';
 export { CngxTagLabel } from './src/tag/slots/tag-label.directive';
 export { CngxTagPrefix } from './src/tag/slots/tag-prefix.directive';
 export { CngxTagSuffix } from './src/tag/slots/tag-suffix.directive';

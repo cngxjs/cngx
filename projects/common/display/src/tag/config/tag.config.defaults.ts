@@ -7,13 +7,15 @@ import type { CngxTagConfig } from './tag.config';
  * by default per `feedback_en_default_locale`; locale overrides ride
  * the future `withAriaLabels` feature once it lands.
  *
- * Internal — not exported. Consumers reach the defaults via
- * `inject(CNGX_TAG_CONFIG)` (resolves through `provideTagConfig`/
- * `provideTagConfigAt` overrides first; falls back here).
+ * Exported for intra-lib consumers (`provideTagConfig` deep-merges
+ * with this base) but **NOT** re-exported from `public-api.ts` —
+ * downstream consumers should reach the defaults via
+ * `inject(CNGX_TAG_CONFIG)` so `provideTagConfig` /
+ * `provideTagConfigAt` overrides take precedence.
  *
  * @internal
  */
-const CNGX_TAG_DEFAULTS: CngxTagConfig = {
+export const CNGX_TAG_DEFAULTS: CngxTagConfig = {
   defaults: {
     variant: 'filled',
     color: 'neutral',
