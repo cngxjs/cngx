@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, signal, type TemplateRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
+import { injectResolvedTagTemplate } from '../shared/inject-resolved-template';
 import { CngxTag } from '../tag.directive';
-import { withTagColors, withTagDefaults } from './features';
+import { withTagColors, withTagDefaults, withTagSlots } from './features';
 import { injectTagConfig } from './inject-tag-config';
 import { provideTagConfig, provideTagConfigAt } from './provide-tag-config';
 
@@ -73,18 +74,45 @@ describe('CngxTagConfig — resolution priority (Phase 4)', () => {
     expect(tag.classList.contains('cngx-tag--outline')).toBe(false);
   });
 
-  // Case (e) — `withTagSlots({ label: customLabel })` template-tier
-  // resolution — deliberately omitted at the spec level. A `TemplateRef`
-  // must be created inside a host component, but config providers are
-  // resolved when their consumer (the directive) is instantiated; the
-  // host's viewChild lookup runs after that, leaving the provider with
-  // a `null` template at injection time. Working around the cycle
-  // requires either a synthetic `TemplateRef` factory or a two-stage
-  // bootstrap, both of which obscure what is being verified. The
-  // 3-stage cascade in `injectResolvedTagTemplate` is straightforward
-  // (`instance ?? config?.templates[key] ?? null`); tier 1 is proven
-  // by Phase 1 spec case (i), tier 3 by case (j). A dedicated
-  // integration spec for tier 2 ships when a consumer requires it.
+  it('(e) injectResolvedTagTemplate resolves to config.templates[key] when no slot directive is projected (tier-2 cascade)', () => {
+    // Synthetic `TemplateRef` — the helper only checks reference
+    // identity, never invokes `createEmbeddedView`. A mock object
+    // exercises the cascade without TemplateRef materialisation
+    // plumbing (capturing a real ref via viewChild before the
+    // directive renders requires a two-stage fixture; the tier
+    // semantic is identity-only, so the simpler proof suffices).
+    const fakeTpl = {} as TemplateRef<unknown>;
+    TestBed.configureTestingModule({
+      providers: [provideTagConfig(withTagSlots({ label: fakeTpl }))],
+    });
+
+    const result = TestBed.runInInjectionContext(() => {
+      // Empty content-child signal — simulates "no consumer projected
+      // *cngxTagLabel": tier 1 misses, tier 2 wins.
+      const noSlot = signal<undefined>(undefined);
+      return injectResolvedTagTemplate(noSlot, 'label');
+    });
+
+    expect(result()).toBe(fakeTpl);
+  });
+
+  it('(e2) injectResolvedTagTemplate prefers instance slot over config tier (tier-1 wins over tier-2)', () => {
+    const configTpl = {} as TemplateRef<unknown>;
+    const instanceTpl = {} as TemplateRef<unknown>;
+    TestBed.configureTestingModule({
+      providers: [provideTagConfig(withTagSlots({ label: configTpl }))],
+    });
+
+    const result = TestBed.runInInjectionContext(() => {
+      const slotSignal = signal<{ templateRef: TemplateRef<unknown> } | undefined>({
+        templateRef: instanceTpl,
+      });
+      return injectResolvedTagTemplate(slotSignal, 'label');
+    });
+
+    expect(result()).toBe(instanceTpl);
+    expect(result()).not.toBe(configTpl);
+  });
 
   it('(f) withTagColors registers consumer entries on injectTagConfig().colors', () => {
     TestBed.configureTestingModule({
