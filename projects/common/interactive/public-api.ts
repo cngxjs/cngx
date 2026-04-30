@@ -33,6 +33,13 @@ export {
 export { CngxToggle } from './src/toggle/toggle.component';
 export { CngxCheckbox } from './src/checkbox/checkbox.component';
 export {
+  CNGX_RADIO_GROUP,
+  type CngxRadioGroupContract,
+  type CngxRadioRegistration,
+} from './src/radio/radio-group.token';
+export { CngxRadioGroup } from './src/radio/radio-group.component';
+export { CngxRadio } from './src/radio/radio.component';
+export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
   type CngxTreeController,
