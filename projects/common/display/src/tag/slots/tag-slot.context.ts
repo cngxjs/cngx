@@ -4,6 +4,19 @@ import type {
   CngxTagVariant,
 } from '../tag.directive';
 
+// Phase 1 ships three structurally-identical context interfaces
+// (`CngxTagLabelContext` / `CngxTagPrefixContext` / `CngxTagSuffixContext`).
+// Kept as separate exported names so future per-slot fields (e.g. spacing
+// tokens on prefix, sort-direction on suffix) can land without breaking
+// label-slot consumers — divergence is the design intent, not the
+// current state.
+//
+// TODO(post-Phase-4 review): if this trio is still byte-identical after
+// Phase 4 ships and no consumer-driven divergence pressure has surfaced,
+// collapse into a single `CngxTagSlotContext` plus type aliases. The
+// three-name surface is an extensibility hedge — re-evaluate against
+// real consumer signal, not speculative.
+
 /**
  * Context exposed by the `*cngxTagLabel` slot — the full reactive
  * Tag state bundled so consumer templates can switch on variant /
