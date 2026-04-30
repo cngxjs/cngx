@@ -457,7 +457,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
 
   /** Per-instance override for the indicator variant. `null` → inherit config (`'auto'`). */
-  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
+  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>(null);
 
   /** Hide the default dropdown caret glyph. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
