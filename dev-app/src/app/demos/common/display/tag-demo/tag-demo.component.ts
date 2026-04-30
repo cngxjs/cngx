@@ -253,6 +253,18 @@ import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxT
     </cngx-tag-group>
   </div>
       </app-example-card>
+      <app-example-card title="App-wide defaults via provideTagConfig"
+        [subtitle]="_s12"
+        [sourceHtml]="_srcHtml12"
+        [sourceTs]="_srcTs12"
+        [sourceCss]="_srcCss12">
+        
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <span cngxTag variant="subtle" color="info" size="sm">subtle/sm/info</span>
+    <span cngxTag variant="subtle" color="success" size="sm">subtle/sm/success</span>
+    <span cngxTag variant="subtle" color="my-brand" size="sm" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">subtle/sm/my-brand</span>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -269,6 +281,7 @@ export class TagDemoComponent {
   protected readonly _s9 = 'Project <code>&lt;ng-template cngxTagGroupHeader&gt;</code> above the tag row and <code>&lt;ng-template cngxTagGroupAccessory&gt;</code> below it. Both slot contexts expose the live <code>count</code> of projected <code>cngxTag</code> children plus the group\'s reactive state — consumer "Filters ({{ count }})" patterns work without injecting the directive.';
   protected readonly _s10 = 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-*</code> custom properties.';
   protected readonly _s11 = 'When the group has more horizontal room than its tags, <code>[align]</code> picks the cross-axis distribution. <code>between</code> resolves to <code>justify-content: space-between</code>.';
+  protected readonly _s12 = 'Wrap a sub-tree in <code>provideTagConfigAt(...)</code> (component-scoped) or pass the same features to <code>provideTagConfig(...)</code> at <code>bootstrapApplication</code> for app-wide defaults. Four feature factories compose freely: <code>withTagDefaults</code> / <code>withTagGroupDefaults</code> / <code>withTagColors</code> / <code>withTagSlots</code>. Resolution priority: per-instance Input → <code>viewProviders</code> → root provider → library defaults. The tags below mimic the cascade result with inline bindings — in a real app, none of these per-instance values would be needed.';
   protected readonly _srcHtml0 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag variant="filled" color="success">Filled</span>
     <span cngxTag variant="outline" color="success">Outline</span>
@@ -441,4 +454,18 @@ export class TagDemoComponent {
   </div>`;
   protected readonly _srcTs11 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss11 = `cngx-tag-group[align="between"] { justify-content: space-between; }`;
+  protected readonly _srcHtml12 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <span cngxTag variant="subtle" color="info" size="sm">subtle/sm/info</span>
+    <span cngxTag variant="subtle" color="success" size="sm">subtle/sm/success</span>
+    <span cngxTag variant="subtle" color="my-brand" size="sm" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">subtle/sm/my-brand</span>
+  </div>`;
+  protected readonly _srcTs12 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcCss12 = `/* Consumer setup mirrored by the inline bindings above:
+provideTagConfigAt(
+  withTagDefaults({ variant: 'subtle', size: 'sm' }),
+  withTagColors({
+    'my-brand': { bg: '#4f46e5', color: '#ffffff', border: 'transparent' },
+  }),
+)
+*/`;
 }

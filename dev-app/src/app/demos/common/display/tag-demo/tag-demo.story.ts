@@ -269,5 +269,25 @@ export const STORY: DemoSpec = {
   </div>`,
       css: `cngx-tag-group[align="between"] { justify-content: space-between; }`,
     },
+    {
+      title: 'App-wide defaults via provideTagConfig',
+      subtitle:
+        'Wrap a sub-tree in <code>provideTagConfigAt(...)</code> (component-scoped) or pass the same features to <code>provideTagConfig(...)</code> at <code>bootstrapApplication</code> for app-wide defaults. Four feature factories compose freely: <code>withTagDefaults</code> / <code>withTagGroupDefaults</code> / <code>withTagColors</code> / <code>withTagSlots</code>. Resolution priority: per-instance Input → <code>viewProviders</code> → root provider → library defaults. The tags below mimic the cascade result with inline bindings — in a real app, none of these per-instance values would be needed.',
+      imports: ['CngxTag'],
+      template: `
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <span cngxTag variant="subtle" color="info" size="sm">subtle/sm/info</span>
+    <span cngxTag variant="subtle" color="success" size="sm">subtle/sm/success</span>
+    <span cngxTag variant="subtle" color="my-brand" size="sm" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">subtle/sm/my-brand</span>
+  </div>`,
+      css: `/* Consumer setup mirrored by the inline bindings above:
+provideTagConfigAt(
+  withTagDefaults({ variant: 'subtle', size: 'sm' }),
+  withTagColors({
+    'my-brand': { bg: '#4f46e5', color: '#ffffff', border: 'transparent' },
+  }),
+)
+*/`,
+    },
   ],
 };
