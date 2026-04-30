@@ -126,30 +126,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
               position: 'before'
             }" />
           } @else {
-            @switch (host.resolvedSelectionIndicatorVariant()) {
-              @case ('radio') {
-                <cngx-radio-indicator
-                  class="cngx-select__check"
-                  [checked]="host.isSelected(opt)"
-                />
-              }
-              @case ('checkmark') {
-                <cngx-checkbox-indicator
-                  class="cngx-select__check"
-                  variant="checkmark"
-                  [checked]="host.isSelected(opt)"
-                  [indeterminate]="host.isIndeterminate(opt)"
-                />
-              }
-              @default {
-                <cngx-checkbox-indicator
-                  class="cngx-select__check"
-                  variant="checkbox"
-                  [checked]="host.isSelected(opt)"
-                  [indeterminate]="host.isIndeterminate(opt)"
-                />
-              }
-            }
+            <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
         }
         @if (host.tpl.optionLabel(); as tpl) {
@@ -168,30 +145,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
               position: 'after'
             }" />
           } @else {
-            @switch (host.resolvedSelectionIndicatorVariant()) {
-              @case ('radio') {
-                <cngx-radio-indicator
-                  class="cngx-select__check"
-                  [checked]="host.isSelected(opt)"
-                />
-              }
-              @case ('checkmark') {
-                <cngx-checkbox-indicator
-                  class="cngx-select__check"
-                  variant="checkmark"
-                  [checked]="host.isSelected(opt)"
-                  [indeterminate]="host.isIndeterminate(opt)"
-                />
-              }
-              @default {
-                <cngx-checkbox-indicator
-                  class="cngx-select__check"
-                  variant="checkbox"
-                  [checked]="host.isSelected(opt)"
-                  [indeterminate]="host.isIndeterminate(opt)"
-                />
-              }
-            }
+            <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
         }
         @if (host.isCommittingOption(opt)) {
@@ -208,6 +162,40 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
           }
         }
       </div>
+    </ng-template>
+
+    <!--
+      Default indicator body — single source of truth for the
+      selection-indicator render path. Used by both the 'before' and
+      'after' position blocks above. Consumer overrides via
+      *cngxSelectCheck still win; this template renders only when no
+      slot directive is projected.
+    -->
+    <ng-template #defaultIndicator let-opt>
+      @switch (host.resolvedSelectionIndicatorVariant()) {
+        @case ('radio') {
+          <cngx-radio-indicator
+            class="cngx-select__check"
+            [checked]="host.isSelected(opt)"
+          />
+        }
+        @case ('checkmark') {
+          <cngx-checkbox-indicator
+            class="cngx-select__check"
+            variant="checkmark"
+            [checked]="host.isSelected(opt)"
+            [indeterminate]="host.isIndeterminate(opt)"
+          />
+        }
+        @default {
+          <cngx-checkbox-indicator
+            class="cngx-select__check"
+            variant="checkbox"
+            [checked]="host.isSelected(opt)"
+            [indeterminate]="host.isIndeterminate(opt)"
+          />
+        }
+      }
     </ng-template>
   `,
   styleUrls: ['../select-base.css', './panel.component.css'],
