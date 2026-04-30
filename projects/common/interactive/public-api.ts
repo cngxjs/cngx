@@ -30,6 +30,7 @@ export {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from './src/control-value/control-value.token';
+export { CngxToggle } from './src/toggle/toggle.component';
 export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
