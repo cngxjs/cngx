@@ -1,13 +1,21 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 
 import { CNGX_TAG_GROUP } from '../tag-group/tag-group.token';
+import { injectTagConfig } from './config/inject-tag-config';
+import { injectResolvedTagTemplate } from './shared/inject-resolved-template';
+import { CngxTagLabel } from './slots/tag-label.directive';
+import { CngxTagPrefix } from './slots/tag-prefix.directive';
+import { CngxTagSuffix } from './slots/tag-suffix.directive';
+import type { CngxTagLabelContext } from './slots/tag-slot.context';
 
 /** Visual variant. `filled` is the default solid pill; `outline` swaps fill for border; `subtle` softens both. */
 export type CngxTagVariant = 'filled' | 'outline' | 'subtle';
@@ -88,19 +96,36 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   // classes; thematic values cascade through `--cngx-tag-*` custom
   // properties for consumer overrides.
   encapsulation: ViewEncapsulation.None,
-  // Wrap projected content in `cngx-tag__label` so the inner span can
-  // own `overflow: hidden` + `min-width: 0` independent of the host's
-  // `inline-flex` layout. Without the wrapper, `text-overflow: ellipsis`
-  // applied to the host fails — flex items don't shrink under ellipsis
-  // by default and the projected text node has no shrinkable parent.
-  template: '<span class="cngx-tag__label"><ng-content /></span>',
-  styleUrl: './tag.css',
+  imports: [NgTemplateOutlet],
+  // Three positional slots: prefix → label → suffix. The default
+  // label branch wraps `<ng-content />` in `cngx-tag__label` so the
+  // inner span can own `overflow: hidden` + `min-width: 0` independent
+  // of the host's `inline-flex` layout. Without that wrapper,
+  // `text-overflow: ellipsis` applied to the host fails — flex items
+  // don't shrink under ellipsis by default and the projected text
+  // node has no shrinkable parent. Consumers who project
+  // `*cngxTagLabel` own their own ellipsis hook.
+  template: `
+    @if (prefixTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    }
+    @if (labelTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    } @else {
+      <span class="cngx-tag__label"><ng-content /></span>
+    }
+    @if (suffixTpl(); as t) {
+      <ng-container *ngTemplateOutlet="t; context: slotContext()" />
+    }
+  `,
+  styleUrls: ['./shared/tag-base.css', './tag.css'],
   host: {
     class: 'cngx-tag',
     '[class.cngx-tag--filled]': "variant() === 'filled'",
     '[class.cngx-tag--outline]': "variant() === 'outline'",
     '[class.cngx-tag--subtle]': "variant() === 'subtle'",
     '[class.cngx-tag--sm]': "size() === 'sm'",
+    '[class.cngx-tag--md]': "size() === 'md'",
     '[class.cngx-tag--lg]': "size() === 'lg'",
     '[class.cngx-tag--xl]': "size() === 'xl'",
     '[class.cngx-tag--truncate]': 'truncate()',
@@ -110,18 +135,35 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
   },
 })
 export class CngxTag {
+  /**
+   * Snapshot of the resolved tag-family config at construction
+   * time. Drives the per-input fallback defaults below — Angular's
+   * input-default rule means per-instance `[variant]="..."`
+   * bindings still win.
+   *
+   * **Field-init ordering is load-bearing.** TypeScript class-field
+   * initialisers run in source order; `cfg` MUST be declared before
+   * any input field that reads `this.cfg`. A reorder pass that
+   * moved this declaration below the inputs would silently produce
+   * `undefined` at the input's init call site (runtime crash on
+   * first construction). Per the
+   * `tag-family-architectural-a-plus-pass` plan Architectural-
+   * Decisions table — flagged in cngx-plan-review 2026-04-29.
+   */
+  private readonly cfg = injectTagConfig();
+
   /** Visual variant. `filled` (default) | `outline` | `subtle`. */
-  readonly variant = input<CngxTagVariant>('filled');
+  readonly variant = input<CngxTagVariant>(this.cfg.defaults?.variant ?? 'filled');
 
   /**
    * Semantic colour. Predefined keys (`neutral` default, `success`,
    * `warning`, `error`, `info`) plus any consumer-defined string
    * which is emitted verbatim as a `data-color` attribute.
    */
-  readonly color = input<CngxTagColor>('neutral');
+  readonly color = input<CngxTagColor>(this.cfg.defaults?.color ?? 'neutral');
 
   /** Density. `md` (default) | `sm` | `lg` | `xl`. */
-  readonly size = input<CngxTagSize>('md');
+  readonly size = input<CngxTagSize>(this.cfg.defaults?.size ?? 'md');
 
   /**
    * When `true`, applies `text-overflow: ellipsis` + `white-space: nowrap`
@@ -134,14 +176,14 @@ export class CngxTag {
    * text, but its reactive machinery (effect + ResizeObserver + isClamped
    * signal) is overkill for a chip-style single-line overflow.
    */
-  readonly truncate = input<boolean>(false);
+  readonly truncate = input<boolean>(this.cfg.defaults?.truncate ?? false);
 
   /**
    * Optional CSS `max-width` (e.g. `'12rem'`, `'200px'`). Bound
    * inline so consumers don't need a CSS authoring step for ad-hoc
    * width caps. `null` clears the binding.
    */
-  readonly maxWidth = input<string | null>(null);
+  readonly maxWidth = input<string | null>(this.cfg.defaults?.maxWidth ?? null);
 
   /**
    * Optional parent group (Phase 3 ships `CngxTagGroup` as the
@@ -152,6 +194,74 @@ export class CngxTag {
    * `<button cngxTag>` keeps its `role="button"`, etc.
    */
   private readonly group = inject(CNGX_TAG_GROUP, { optional: true });
+
+  /**
+   * Per-instance label-slot directive — projected as
+   * `<ng-template cngxTagLabel>...</ng-template>`. Resolved through
+   * {@link injectResolvedTagTemplate} so consumers can override the
+   * default `<span class="cngx-tag__label">` wrapper without forking
+   * the directive.
+   */
+  protected readonly labelSlot = contentChild(CngxTagLabel);
+
+  /** Per-instance prefix-slot directive — projected before the label. */
+  protected readonly prefixSlot = contentChild(CngxTagPrefix);
+
+  /** Per-instance suffix-slot directive — projected after the label. */
+  protected readonly suffixSlot = contentChild(CngxTagSuffix);
+
+  /**
+   * Resolved label template. Phase 1 cascade: instance slot → host
+   * `@else` default (`<span class="cngx-tag__label"><ng-content /></span>`).
+   * Phase 4 commit 5 inserts `CNGX_TAG_CONFIG.templates.label` as a
+   * middle tier without touching this call site.
+   */
+  protected readonly labelTpl = injectResolvedTagTemplate(
+    this.labelSlot,
+    'label',
+  );
+
+  /** Resolved prefix template. Same 2-stage cascade as {@link labelTpl}. */
+  protected readonly prefixTpl = injectResolvedTagTemplate(
+    this.prefixSlot,
+    'prefix',
+  );
+
+  /** Resolved suffix template. Same 2-stage cascade as {@link labelTpl}. */
+  protected readonly suffixTpl = injectResolvedTagTemplate(
+    this.suffixSlot,
+    'suffix',
+  );
+
+  /**
+   * Reactive bundle exposed to every slot's `*ngTemplateOutletContext`.
+   * The three slot context interfaces are structurally identical in
+   * Phase 1; the same computed source serves all three. Consumer
+   * templates `let-variant="variant"` etc. read the live state without
+   * injecting the directive.
+   *
+   * Explicit structural `equal` fn — without it, a fresh literal each
+   * CD cycle would force `ngTemplateOutlet` to rebind embedded views
+   * even when no input changed. Per `reference_signal_architecture` §1
+   * Equality Rule: every `computed` returning an object MUST pass an
+   * `equal` fn.
+   */
+  protected readonly slotContext = computed<CngxTagLabelContext>(
+    () => ({
+      $implicit: undefined as void,
+      variant: this.variant(),
+      color: this.color(),
+      size: this.size(),
+      truncate: this.truncate(),
+    }),
+    {
+      equal: (a, b) =>
+        a.variant === b.variant &&
+        a.color === b.color &&
+        a.size === b.size &&
+        a.truncate === b.truncate,
+    },
+  );
 
   /**
    * Reactive `role` attribute. Returns `'listitem'` when projected

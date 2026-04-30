@@ -1,4 +1,5 @@
 import {
+  afterRenderEffect,
   computed,
   DestroyRef,
   Directive,
@@ -85,6 +86,20 @@ export class CngxBadge {
   });
 
   constructor() {
+    let hostPositionEnsured = false;
+
+    afterRenderEffect(() => {
+      if (hostPositionEnsured || this.position() === 'inline') {
+        return;
+      }
+      const host = this.hostEl.nativeElement as HTMLElement;
+      const current = getComputedStyle(host).position;
+      if (current === 'static') {
+        this.renderer.setStyle(host, 'position', 'relative');
+      }
+      hostPositionEnsured = true;
+    });
+
     effect(() => {
       const shouldShow = !this.hidden() && (this.isDotMode() || !this.isEmpty());
       if (!shouldShow) {
@@ -106,19 +121,7 @@ export class CngxBadge {
     this.badgeEl = this.renderer.createElement('span') as HTMLElement;
     this.renderer.setAttribute(this.badgeEl, 'aria-hidden', 'true');
     this.renderer.addClass(this.badgeEl, 'cngx-badge-indicator');
-    this.ensureHostPositioning();
     this.renderer.appendChild(this.hostEl.nativeElement, this.badgeEl);
-  }
-
-  private ensureHostPositioning(): void {
-    const host = this.hostEl.nativeElement as HTMLElement;
-    const pos = this.position();
-    if (pos !== 'inline') {
-      const current = getComputedStyle(host).position;
-      if (current === 'static') {
-        this.renderer.setStyle(host, 'position', 'relative');
-      }
-    }
   }
 
   private applyClasses(): void {

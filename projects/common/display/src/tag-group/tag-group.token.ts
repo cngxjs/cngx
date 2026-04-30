@@ -1,7 +1,7 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
 /**
- * Public host contract that `CngxTagGroup` (Phase 3) and any future
+ * Public host contract that `CngxTagGroup` and any future
  * non-component implementer must satisfy. Surfaced through
  * `CNGX_TAG_GROUP` so child `CngxTag` directives can read parent state
  * reactively without injecting a concrete parent class.
@@ -9,8 +9,13 @@ import { InjectionToken, type Signal } from '@angular/core';
  * The field is typed `Signal<boolean>` (the public parent type),
  * NOT `InputSignal<boolean>` — test doubles and programmatic groups
  * must be able to satisfy the contract without owning an Angular
- * `input()`. The `CngxTagGroup` implementer exposes the bridge via
- * `readonly semanticList = this.semanticListInput.asReadonly()`.
+ * `input()`. The `CngxTagGroup` implementer narrows its
+ * `InputSignal<boolean>` to this public type via direct assignment
+ * (`readonly semanticList: Signal<boolean> = this.semanticListInput`).
+ * `InputSignal` already structurally extends `Signal`, so no runtime
+ * conversion is needed — and `.asReadonly()` does NOT exist on
+ * `InputSignal` (it lives on `WritableSignal` only); the type-only
+ * narrowing is the canonical bridge.
  */
 export interface CngxTagGroupHost {
   readonly semanticList: Signal<boolean>;

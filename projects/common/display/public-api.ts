@@ -22,6 +22,28 @@ export {
   type CngxTagColor,
   type CngxTagSize,
 } from './src/tag/tag.directive';
+export { type CngxTagConfig } from './src/tag/config/tag.config';
+export { CNGX_TAG_CONFIG } from './src/tag/config/tag.config.defaults';
+export {
+  provideTagConfig,
+  provideTagConfigAt,
+  type CngxTagConfigFeature,
+} from './src/tag/config/provide-tag-config';
+export { injectTagConfig } from './src/tag/config/inject-tag-config';
+export {
+  withTagDefaults,
+  withTagGroupDefaults,
+  withTagColors,
+  withTagSlots,
+} from './src/tag/config/features';
+export { CngxTagLabel } from './src/tag/slots/tag-label.directive';
+export { CngxTagPrefix } from './src/tag/slots/tag-prefix.directive';
+export { CngxTagSuffix } from './src/tag/slots/tag-suffix.directive';
+export {
+  type CngxTagLabelContext,
+  type CngxTagPrefixContext,
+  type CngxTagSuffixContext,
+} from './src/tag/slots/tag-slot.context';
 export {
   CNGX_TAG_GROUP,
   type CngxTagGroupHost,
@@ -31,3 +53,9 @@ export {
   type CngxTagGroupGap,
   type CngxTagGroupAlign,
 } from './src/tag-group/tag-group.component';
+export { CngxTagGroupHeader } from './src/tag-group/slots/tag-group-header.directive';
+export { CngxTagGroupAccessory } from './src/tag-group/slots/tag-group-accessory.directive';
+export {
+  type CngxTagGroupHeaderContext,
+  type CngxTagGroupAccessoryContext,
+} from './src/tag-group/slots/tag-group-slot.context';

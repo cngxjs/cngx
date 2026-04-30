@@ -1,53 +1,12 @@
 /*
- * tag-group.component.css — layout skin of `CngxTagGroup`.
+ * tag-group.component.css — thematic skin of `CngxTagGroup`.
  *
- * Structural rules only (display: flex, flex-wrap, gap, alignment).
- * Thematic values flow through `--cngx-tag-group-*` custom properties
- * with English-readable fallbacks; consumers override at `:root` or
- * component level without forking. No colour, no border, no
- * background — the group is a neutral container for whichever
- * `CngxTag` chrome the consumer renders inside it.
+ * Structural rules (column stack, row flex-wrap, gap + align
+ * modifiers) live in `../tag/shared/tag-base.css` — linked first
+ * by the component's `styleUrls` array. The group is a neutral
+ * layout container today (no colour, no border, no background) so
+ * this file ships intentionally empty; it stays in `styleUrls` so
+ * future per-atom thematic tokens (e.g. backplate colour for a
+ * Material wrapper) land here without changing the directive's
+ * style-link surface.
  */
-
-.cngx-tag-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--cngx-tag-group-gap, 0.5rem);
-  /* `start` is the layout default — explicit modifier classes below
-   * override `justify-content` only when the consumer opts into a
-   * non-start alignment. */
-  justify-content: flex-start;
-}
-
-/* Gap modifiers — sm is the default and resolves through the base
- * `--cngx-tag-group-gap` cascade above. xs and md override only the
- * tail of the cascade so consumer `--cngx-tag-group-gap` overrides
- * still win at any level. */
-
-.cngx-tag-group--gap-xs {
-  gap: var(--cngx-tag-group-gap-xs, 0.25rem);
-}
-
-.cngx-tag-group--gap-md {
-  gap: var(--cngx-tag-group-gap-md, 0.75rem);
-}
-
-/* Alignment modifiers — `start` is the layout default; explicit
- * modifiers cover the remaining three positions. */
-
-.cngx-tag-group--align-start {
-  justify-content: flex-start;
-}
-
-.cngx-tag-group--align-center {
-  justify-content: center;
-}
-
-.cngx-tag-group--align-end {
-  justify-content: flex-end;
-}
-
-.cngx-tag-group--align-between {
-  justify-content: space-between;
-}
