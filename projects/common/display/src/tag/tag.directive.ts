@@ -124,6 +124,7 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
     '[class.cngx-tag--outline]': "variant() === 'outline'",
     '[class.cngx-tag--subtle]': "variant() === 'subtle'",
     '[class.cngx-tag--sm]': "size() === 'sm'",
+    '[class.cngx-tag--md]': "size() === 'md'",
     '[class.cngx-tag--lg]': "size() === 'lg'",
     '[class.cngx-tag--xl]': "size() === 'xl'",
     '[class.cngx-tag--truncate]': 'truncate()',
