@@ -31,13 +31,13 @@
  * the base `.cngx-tag` cascade above; the other three modifiers
  * override only the tail of the cascade so consumer
  * `--cngx-tag-padding` / `--cngx-tag-font-size` overrides still
- * win at any level. The `--md` selector is a deliberate empty rule
- * so consumers can author `[data-color="my-brand"].cngx-tag--md`
- * overrides at the default size without an additional anchor. */
-
-.cngx-tag--md {
-  /* Selector anchor only — default cascade applies. */
-}
+ * win at any level.
+ *
+ * No `.cngx-tag--md { }` rule ships here — the host-binding in
+ * `tag.directive.ts` still adds the class at runtime so consumers
+ * can author `[data-color="my-brand"].cngx-tag--md` overrides at
+ * the default size, but a no-op rule body would trip stylelint's
+ * `block-no-empty` and adds zero cascade value. */
 
 .cngx-tag--sm {
   padding: var(--cngx-tag-sm-padding, 0 0.375rem);
