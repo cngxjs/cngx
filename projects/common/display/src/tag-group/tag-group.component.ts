@@ -1,12 +1,15 @@
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   contentChildren,
   input,
+  isDevMode,
   type Signal,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 
@@ -243,4 +246,35 @@ export class CngxTagGroup implements CngxTagGroupHost {
         a.count === b.count,
     },
   );
+
+  constructor() {
+    // Dev-mode advisory: `<cngx-tag-group [label]="...">` without
+    // `[semanticList]="true"` lands the `aria-label` on a generic
+    // `<div>` (no `role="list"`). AT then exposes the aria-label
+    // but doesn't surface "list, N items" — likely not the
+    // consumer's intent. One-shot post-mount check; tree-shaken in
+    // prod via the `isDevMode()` guard.
+    //
+    // `afterNextRender` is the canonical hook for one-shot
+    // post-mount checks (per `reference_signal_architecture` Hook
+    // Selection Matrix); `effect()` would re-fire on every input
+    // change. Reads are wrapped in `untracked()` defensively —
+    // `afterNextRender` does not establish a reactive scope, but
+    // the explicit wrapper documents one-shot intent and matches
+    // the cngx style-guide bias toward signal-read hygiene.
+    afterNextRender(() => {
+      const { label, semanticList } = untracked(() => ({
+        label: this.label(),
+        semanticList: this.semanticList(),
+      }));
+      if (isDevMode() && label && !semanticList) {
+        console.warn(
+          '[cngx-tag-group] [label] is bound without [semanticList]="true"; ' +
+            'the aria-label lands on a generic <div>. Add ' +
+            '[semanticList]="true" to expose role="list" + aria-label, ' +
+            'or remove [label].',
+        );
+      }
+    });
+  }
 }
