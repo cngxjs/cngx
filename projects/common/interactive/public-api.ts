@@ -27,6 +27,10 @@ export { CngxNavBadge, type NavBadgeVariant } from './src/nav/nav-badge.directiv
 export { CngxDisclosure } from './src/nav/disclosure.directive';
 export { CngxExpandable } from './src/expandable/expandable.directive';
 export {
+  CNGX_CONTROL_VALUE,
+  type CngxControlValue,
+} from './src/control-value/control-value.token';
+export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
   type CngxTreeController,
