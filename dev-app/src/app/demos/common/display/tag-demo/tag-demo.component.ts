@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';
+import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';
 
 @Component({
   selector: 'app-tag-demo',
@@ -19,12 +19,14 @@ import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, Cngx
     CngxTagSuffix,
     CngxTagLabel,
     CngxTagGroup,
+    CngxTagGroupHeader,
+    CngxTagGroupAccessory,
   ],
   template: `
     <app-doc-shell title="Tag"
       description="Decorative label / badge / status indicator. Dual selector ([cngxTag] and <cngx-tag>) so it composes onto any host element including <a> for link-mode tags. Removable affordances live in CngxChip; clickable interactions live on native <button cngxTag> / <a cngxTag>."
       overview="<p><code>[cngxTag]</code> applies host classes for variant / color / size / truncate / maxWidth. Predefined colours (<code>neutral</code>, <code>success</code>, <code>warning</code>, <code>error</code>, <code>info</code>) cascade through <code>--cngx-tag-{name}-*</code> custom properties; open-string colours emit a <code>data-color=&quot;…&quot;</code> attribute consumers can theme directly. <code>&lt;cngx-tag-group&gt;</code> wraps siblings in a flex-wrap row with optional <code>role=&quot;list&quot;</code> semantics that cascade <code>role=&quot;listitem&quot;</code> to every projected <code>cngxTag</code> reactively via the <code>CNGX_TAG_GROUP</code> DI token.</p>"
-      [apiComponents]="['CngxTag', 'CngxTagLabel', 'CngxTagPrefix', 'CngxTagSuffix', 'CngxIcon', 'CngxTagGroup']">
+      [apiComponents]="['CngxTag', 'CngxTagLabel', 'CngxTagPrefix', 'CngxTagSuffix', 'CngxIcon', 'CngxTagGroup', 'CngxTagGroupHeader', 'CngxTagGroupAccessory']">
       <app-example-card title="Variant matrix"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -182,11 +184,31 @@ import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, Cngx
     <span cngxTag color="error">Failed</span>
   </cngx-tag-group>
       </app-example-card>
-      <app-example-card title="Layout-only — gap variants"
+      <app-example-card title="Group with header + accessory"
         [subtitle]="_s9"
         [sourceHtml]="_srcHtml9"
         [sourceTs]="_srcTs9"
         [sourceCss]="_srcCss9">
+        
+  <cngx-tag-group [semanticList]="true" label="Active filters">
+    <ng-template cngxTagGroupHeader let-count="count">
+      <strong>Filters ({{ count }})</strong>
+    </ng-template>
+    <span cngxTag color="info">Frontend</span>
+    <span cngxTag color="info">Backend</span>
+    <span cngxTag color="success">Cleared</span>
+    <span cngxTag color="warning">Pending</span>
+    <span cngxTag color="error">Failed</span>
+    <ng-template cngxTagGroupAccessory let-count="count">
+      <button type="button">Clear all ({{ count }})</button>
+    </ng-template>
+  </cngx-tag-group>
+      </app-example-card>
+      <app-example-card title="Layout-only — gap variants"
+        [subtitle]="_s10"
+        [sourceHtml]="_srcHtml10"
+        [sourceTs]="_srcTs10"
+        [sourceCss]="_srcCss10">
         
   <div style="display: flex; flex-direction: column; gap: 16px;">
     <cngx-tag-group gap="xs">
@@ -207,10 +229,10 @@ import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, Cngx
   </div>
       </app-example-card>
       <app-example-card title="Layout-only — alignment"
-        [subtitle]="_s10"
-        [sourceHtml]="_srcHtml10"
-        [sourceTs]="_srcTs10"
-        [sourceCss]="_srcCss10">
+        [subtitle]="_s11"
+        [sourceHtml]="_srcHtml11"
+        [sourceTs]="_srcTs11"
+        [sourceCss]="_srcCss11">
         
   <div style="display: flex; flex-direction: column; gap: 16px;">
     <cngx-tag-group align="start" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
@@ -244,14 +266,15 @@ export class TagDemoComponent {
   protected readonly _s6 = 'Project <code>&lt;ng-template cngxTagPrefix&gt;</code>, <code>&lt;ng-template cngxTagLabel&gt;</code>, or <code>&lt;ng-template cngxTagSuffix&gt;</code> to control each region. Prefix and suffix slots render no DOM when omitted; the default label wraps content in <code>cngx-tag__label</code> for ellipsis support.';
   protected readonly _s7 = 'Replace the default <code>cngx-tag__label</code> wrapper with a richer inner element. Use <code>&lt;bdi&gt;</code> for bidi-safe rendering of user-supplied names; replacing the label drops the default ellipsis hook so the consumer template owns the overflow strategy. The label slot context exposes <code>variant</code>, <code>color</code>, <code>size</code>, and <code>truncate</code> reactively via <code>let-*</code> bindings.';
   protected readonly _s8 = 'Wrap projected tags in <code>&lt;cngx-tag-group [semanticList]="true" label="…"&gt;</code> to expose a real <code>role="list"</code> with reactive <code>role="listitem"</code> children — AT reads "Filters, list, 5 items".';
-  protected readonly _s9 = 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-*</code> custom properties.';
-  protected readonly _s10 = 'When the group has more horizontal room than its tags, <code>[align]</code> picks the cross-axis distribution. <code>between</code> resolves to <code>justify-content: space-between</code>.';
+  protected readonly _s9 = 'Project <code>&lt;ng-template cngxTagGroupHeader&gt;</code> above the tag row and <code>&lt;ng-template cngxTagGroupAccessory&gt;</code> below it. Both slot contexts expose the live <code>count</code> of projected <code>cngxTag</code> children plus the group\'s reactive state — consumer "Filters ({{ count }})" patterns work without injecting the directive.';
+  protected readonly _s10 = 'Without <code>[semanticList]</code> the group is a decorative flex-wrap row; <code>[gap]</code> scales the spacing through <code>--cngx-tag-group-gap-*</code> custom properties.';
+  protected readonly _s11 = 'When the group has more horizontal room than its tags, <code>[align]</code> picks the cross-axis distribution. <code>between</code> resolves to <code>justify-content: space-between</code>.';
   protected readonly _srcHtml0 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag variant="filled" color="success">Filled</span>
     <span cngxTag variant="outline" color="success">Outline</span>
     <span cngxTag variant="subtle" color="success">Subtle</span>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs0 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss0 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml1 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag color="neutral">Neutral</span>
@@ -261,7 +284,7 @@ export class TagDemoComponent {
     <span cngxTag color="info">Beta</span>
     <span cngxTag color="my-brand" style="--cngx-tag-bg: #4f46e5; --cngx-tag-color: #ffffff;">Branded</span>
   </div>`;
-  protected readonly _srcTs1 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs1 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss1 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 [data-color="my-brand"] {
   --cngx-tag-bg: #4f46e5;
@@ -273,20 +296,20 @@ export class TagDemoComponent {
     <span cngxTag size="lg" color="info">Large</span>
     <span cngxTag size="xl" color="info">Extra large</span>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs2 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss2 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml3 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag color="neutral" [truncate]="true" maxWidth="8rem">A very long taxonomy label that overflows</span>
     <span cngxTag color="info" [truncate]="true" maxWidth="12rem">Another lengthy descriptor here</span>
   </div>`;
-  protected readonly _srcTs3 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs3 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss3 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml4 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <a cngxTag color="info" href="#category/frontend" style="text-decoration: none;">frontend</a>
     <a cngxTag color="success" href="#category/cleared" style="text-decoration: none;">cleared</a>
     <a cngxTag color="warning" href="#category/pending" style="text-decoration: none;">pending</a>
   </div>`;
-  protected readonly _srcTs4 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs4 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss4 = `.row { display: flex; gap: 12px; align-items: center; }
 .row a { text-decoration: none; }
 .row a:hover { filter: brightness(0.92); }`;
@@ -310,7 +333,7 @@ export class TagDemoComponent {
       Failed
     </span>
   </div>`;
-  protected readonly _srcTs5 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs5 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss5 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml6 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag color="success">
@@ -338,7 +361,7 @@ export class TagDemoComponent {
       Pending review
     </span>
   </div>`;
-  protected readonly _srcTs6 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs6 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss6 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml7 = `<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
     <span cngxTag color="info">
@@ -353,7 +376,7 @@ export class TagDemoComponent {
       </ng-template>
     </span>
   </div>`;
-  protected readonly _srcTs7 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs7 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss7 = `.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }`;
   protected readonly _srcHtml8 = `<cngx-tag-group [semanticList]="true" label="Filters">
     <span cngxTag color="info">Frontend</span>
@@ -362,9 +385,24 @@ export class TagDemoComponent {
     <span cngxTag color="warning">Pending</span>
     <span cngxTag color="error">Failed</span>
   </cngx-tag-group>`;
-  protected readonly _srcTs8 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcTs8 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
   protected readonly _srcCss8 = `cngx-tag-group { /* role="list", aria-label="Filters" applied automatically */ }`;
-  protected readonly _srcHtml9 = `<div style="display: flex; flex-direction: column; gap: 16px;">
+  protected readonly _srcHtml9 = `<cngx-tag-group [semanticList]="true" label="Active filters">
+    <ng-template cngxTagGroupHeader let-count="count">
+      <strong>Filters ({{ count }})</strong>
+    </ng-template>
+    <span cngxTag color="info">Frontend</span>
+    <span cngxTag color="info">Backend</span>
+    <span cngxTag color="success">Cleared</span>
+    <span cngxTag color="warning">Pending</span>
+    <span cngxTag color="error">Failed</span>
+    <ng-template cngxTagGroupAccessory let-count="count">
+      <button type="button">Clear all ({{ count }})</button>
+    </ng-template>
+  </cngx-tag-group>`;
+  protected readonly _srcTs9 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcCss9 = `/* Header / accessory zones flow through --cngx-tag-group-stack-gap; row layout untouched. */`;
+  protected readonly _srcHtml10 = `<div style="display: flex; flex-direction: column; gap: 16px;">
     <cngx-tag-group gap="xs">
       <span cngxTag color="neutral">xs</span>
       <span cngxTag color="neutral">gap</span>
@@ -381,9 +419,9 @@ export class TagDemoComponent {
       <span cngxTag color="neutral">roomy</span>
     </cngx-tag-group>
   </div>`;
-  protected readonly _srcTs9 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
-  protected readonly _srcCss9 = `cngx-tag-group { /* gap resolves through --cngx-tag-group-gap-{xs,sm,md} */ }`;
-  protected readonly _srcHtml10 = `<div style="display: flex; flex-direction: column; gap: 16px;">
+  protected readonly _srcTs10 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcCss10 = `cngx-tag-group { /* gap resolves through --cngx-tag-group-gap-{xs,sm,md} */ }`;
+  protected readonly _srcHtml11 = `<div style="display: flex; flex-direction: column; gap: 16px;">
     <cngx-tag-group align="start" style="border: 1px dashed #d1d5db; padding: 8px; min-width: 24rem;">
       <span cngxTag color="info">start</span>
       <span cngxTag color="info">align</span>
@@ -401,6 +439,6 @@ export class TagDemoComponent {
       <span cngxTag color="info">align</span>
     </cngx-tag-group>
   </div>`;
-  protected readonly _srcTs10 = `import { CngxTag, CngxTagGroup, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
-  protected readonly _srcCss10 = `cngx-tag-group[align="between"] { justify-content: space-between; }`;
+  protected readonly _srcTs11 = `import { CngxTag, CngxTagGroup, CngxTagGroupHeader, CngxTagGroupAccessory, CngxTagLabel, CngxTagPrefix, CngxTagSuffix, CngxIcon } from '@cngx/common/display';`;
+  protected readonly _srcCss11 = `cngx-tag-group[align="between"] { justify-content: space-between; }`;
 }
