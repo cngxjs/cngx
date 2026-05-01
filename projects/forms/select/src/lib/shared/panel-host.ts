@@ -285,7 +285,7 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   readonly panelWidthCss: Signal<string | null>;
   readonly resolvedListboxLabel: Signal<string>;
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
-  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark'>;
+  readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark' | 'radio'>;
   readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;

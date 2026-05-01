@@ -50,6 +50,7 @@ import {
   type CngxSelectAnnouncerConfig,
   type CngxSelectLoadingVariant,
   type CngxSelectRefreshingVariant,
+  type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
 import {
   type CngxSelectOptionDef,
@@ -327,7 +328,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
-  readonly selectionIndicatorVariant = input<'auto' | 'checkbox' | 'checkmark' | null>(null);
+  readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**

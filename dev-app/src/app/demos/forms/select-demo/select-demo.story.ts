@@ -643,6 +643,27 @@ export const STORY: DemoSpec = {
   </cngx-select>`,
     },
     {
+      title: 'Selection indicator variant: radio',
+      subtitle:
+        '<code>[selectionIndicatorVariant]="\'radio\'"</code> swaps the panel\'s built-in indicator ' +
+        'from the checkmark to <code>cngx-radio-indicator</code> (dot-in-circle). Useful for ' +
+        'single-select panels that want a radio-style visual without losing dropdown ergonomics. ' +
+        'Set globally via <code>provideSelectConfig(withSelectionIndicatorVariant(\'radio\'))</code>.',
+      imports: ['CngxSelect'],
+      template: `
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+    selectionIndicatorVariant="radio"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Variant</span><span class="event-value">radio — dot-in-circle</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>`,
+    },
+    {
       title: 'Template override: rich trigger label',
       subtitle:
         '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your ' +

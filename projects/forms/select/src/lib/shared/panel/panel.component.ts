@@ -7,12 +7,13 @@ import {
   viewChildren,
 } from '@angular/core';
 
-import { CngxCheckboxIndicator } from '@cngx/common/display';
+import { CngxCheckboxIndicator, CngxRadioIndicator } from '@cngx/common/display';
 import { CngxOption } from '@cngx/common/interactive';
 
 import { CngxSelectPanelShell } from '../panel-shell/panel-shell.component';
 import { CNGX_SELECT_PANEL_HOST, type CngxSelectPanelHost } from '../panel-host';
 import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from '../option.model';
+import type { CngxSelectCheckContext } from '../template-slots';
 import {
   CNGX_PANEL_RENDERER_FACTORY,
   type PanelRenderer,
@@ -57,7 +58,7 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
   exportAs: 'cngxSelectPanel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxOption, CngxCheckboxIndicator, CngxSelectPanelShell, NgTemplateOutlet],
+  imports: [CngxOption, CngxCheckboxIndicator, CngxRadioIndicator, CngxSelectPanelShell, NgTemplateOutlet],
   host: {
     class: 'cngx-select-panel-host',
   },
@@ -117,21 +118,9 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
       >
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'before') {
           @if (host.tpl.check(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: {
-              $implicit: opt,
-              option: opt,
-              selected: host.isSelected(opt),
-              indeterminate: host.isIndeterminate(opt),
-              variant: host.resolvedSelectionIndicatorVariant(),
-              position: 'before'
-            }" />
+            <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'before')" />
           } @else {
-            <cngx-checkbox-indicator
-              class="cngx-select__check"
-              [variant]="host.resolvedSelectionIndicatorVariant()"
-              [checked]="host.isSelected(opt)"
-              [indeterminate]="host.isIndeterminate(opt)"
-            />
+            <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
         }
         @if (host.tpl.optionLabel(); as tpl) {
@@ -141,21 +130,9 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
         }
         @if (host.resolvedShowSelectionIndicator() && host.resolvedSelectionIndicatorPosition() === 'after') {
           @if (host.tpl.check(); as tpl) {
-            <ng-container *ngTemplateOutlet="tpl; context: {
-              $implicit: opt,
-              option: opt,
-              selected: host.isSelected(opt),
-              indeterminate: host.isIndeterminate(opt),
-              variant: host.resolvedSelectionIndicatorVariant(),
-              position: 'after'
-            }" />
+            <ng-container *ngTemplateOutlet="tpl; context: checkContextFor(opt, 'after')" />
           } @else {
-            <cngx-checkbox-indicator
-              class="cngx-select__check"
-              [variant]="host.resolvedSelectionIndicatorVariant()"
-              [checked]="host.isSelected(opt)"
-              [indeterminate]="host.isIndeterminate(opt)"
-            />
+            <ng-container *ngTemplateOutlet="defaultIndicator; context: { $implicit: opt }" />
           }
         }
         @if (host.isCommittingOption(opt)) {
@@ -172,6 +149,40 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
           }
         }
       </div>
+    </ng-template>
+
+    <!--
+      Default indicator body — single source of truth for the
+      selection-indicator render path. Used by both the 'before' and
+      'after' position blocks above. Consumer overrides via
+      *cngxSelectCheck still win; this template renders only when no
+      slot directive is projected.
+    -->
+    <ng-template #defaultIndicator let-opt>
+      @switch (host.resolvedSelectionIndicatorVariant()) {
+        @case ('radio') {
+          <cngx-radio-indicator
+            class="cngx-select__check"
+            [checked]="host.isSelected(opt)"
+          />
+        }
+        @case ('checkmark') {
+          <cngx-checkbox-indicator
+            class="cngx-select__check"
+            variant="checkmark"
+            [checked]="host.isSelected(opt)"
+            [indeterminate]="host.isIndeterminate(opt)"
+          />
+        }
+        @default {
+          <cngx-checkbox-indicator
+            class="cngx-select__check"
+            variant="checkbox"
+            [checked]="host.isSelected(opt)"
+            [indeterminate]="host.isIndeterminate(opt)"
+          />
+        }
+      }
     </ng-template>
   `,
   styleUrls: ['../select-base.css', './panel.component.css'],
@@ -284,5 +295,36 @@ export class CngxSelectPanel<T = unknown> {
       return false;
     }
     return this.host.listboxCompareWith()(match.value(), opt.value);
+  }
+
+  /**
+   * Build the `*cngxSelectCheck` slot context for an option row.
+   * Branches on the resolved indicator variant — radio rows omit
+   * `indeterminate` because radio selection is exclusive (the
+   * "some descendants selected" state is undefined for radios).
+   * Consumers narrow on `variant` to read `indeterminate` safely.
+   */
+  protected checkContextFor(
+    opt: CngxSelectOptionDef<T>,
+    position: 'before' | 'after',
+  ): CngxSelectCheckContext<T> {
+    const variant = this.host.resolvedSelectionIndicatorVariant();
+    if (variant === 'radio') {
+      return {
+        $implicit: opt,
+        option: opt,
+        selected: this.host.isSelected(opt),
+        variant,
+        position,
+      };
+    }
+    return {
+      $implicit: opt,
+      option: opt,
+      selected: this.host.isSelected(opt),
+      indeterminate: this.host.isIndeterminate(opt),
+      variant,
+      position,
+    };
   }
 }

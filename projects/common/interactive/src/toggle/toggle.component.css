@@ -1,0 +1,79 @@
+:host.cngx-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-toggle-gap, 0.5rem);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  font: inherit;
+  color: var(--cngx-toggle-color, inherit);
+}
+
+:host.cngx-toggle.cngx-toggle--label-before {
+  flex-direction: row-reverse;
+}
+
+:host.cngx-toggle.cngx-toggle--disabled {
+  cursor: not-allowed;
+  opacity: var(--cngx-toggle-disabled-opacity, 0.5);
+}
+
+:host.cngx-toggle:focus-visible {
+  outline: var(--cngx-toggle-focus-outline, 2px solid currentColor);
+  outline-offset: var(--cngx-toggle-focus-offset, 2px);
+  border-radius: var(--cngx-toggle-focus-radius, 0.25rem);
+}
+
+.cngx-toggle__track {
+  position: relative;
+  flex: 0 0 auto;
+  inline-size: var(--cngx-toggle-track-width, 2.25rem);
+  block-size: var(--cngx-toggle-track-height, 1.25rem);
+  border-radius: var(--cngx-toggle-track-radius, 9999px);
+  background: var(--cngx-toggle-track-bg-off, rgba(0, 0, 0, 0.25));
+  transition: background-color var(--cngx-toggle-transition, 150ms ease);
+}
+
+:host.cngx-toggle.cngx-toggle--checked .cngx-toggle__track {
+  background: var(--cngx-toggle-track-bg-on, var(--cngx-primary, #2563eb));
+}
+
+.cngx-toggle__thumb {
+  position: absolute;
+  inset-block-start: var(--cngx-toggle-thumb-inset, 0.125rem);
+  inset-inline-start: var(--cngx-toggle-thumb-inset, 0.125rem);
+  inline-size: var(--cngx-toggle-thumb-size, 1rem);
+  block-size: var(--cngx-toggle-thumb-size, 1rem);
+  border-radius: 50%;
+  background: var(--cngx-toggle-thumb-bg, #fff);
+  box-shadow: var(--cngx-toggle-thumb-shadow, 0 1px 2px rgba(0, 0, 0, 0.25));
+  transition: transform var(--cngx-toggle-transition, 150ms ease);
+}
+
+:host.cngx-toggle.cngx-toggle--checked .cngx-toggle__thumb {
+  transform: translateX(var(--cngx-toggle-thumb-travel, 1rem));
+}
+
+.cngx-toggle__label {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.cngx-toggle__sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-toggle__track,
+  .cngx-toggle__thumb {
+    transition: none;
+  }
+}

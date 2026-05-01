@@ -139,6 +139,9 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
               } @else {
                 <span aria-hidden="true" class="cngx-tree-select__twisty-spacer"></span>
               }
+              <!-- Tree-select intentionally hard-codes checkbox-indicator;
+                   'radio' / 'checkmark' variants from selectionIndicatorVariant
+                   are honoured only by the flat panel. See accepted-debt §7. -->
               <cngx-checkbox-indicator
                 [checked]="host.isSelected(node.value)"
                 [indeterminate]="host.isIndeterminate(node.value)"

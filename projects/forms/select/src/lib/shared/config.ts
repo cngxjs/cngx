@@ -140,10 +140,14 @@ export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
  *   expect without having to set it per-component.
  * - `'checkbox'` — always render a bordered boxed checkbox.
  * - `'checkmark'` — always render a bare checkmark glyph.
+ * - `'radio'` — render a dot-in-circle radio indicator. Intended primarily
+ *   for single-select panels that want a radio-style affordance; multi
+ *   panels honour the setting too, but the visual contract (exclusive
+ *   selection) reads as misleading there. Choose `'radio'` deliberately.
  *
  * @category interactive
  */
-export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark';
+export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
 /**
  * App-wide overrides for the standard ARIA labels used by the select family.
@@ -918,8 +922,10 @@ export function withSelectionIndicatorPosition(
 
 /**
  * Visual form of the per-option selection indicator — `'auto'` (default),
- * `'checkbox'`, or `'checkmark'`. `'auto'` resolves to `'checkbox'` for
- * multi-select / combobox and `'checkmark'` for single-select.
+ * `'checkbox'`, `'checkmark'`, or `'radio'`. `'auto'` resolves to
+ * `'checkbox'` for multi-select / combobox and `'checkmark'` for
+ * single-select. `'radio'` opts into the dot-in-circle indicator atom
+ * for single-select-style panels.
  *
  * @category interactive
  */

@@ -145,6 +145,11 @@ export const routes: Routes = [
           import('./demos/common/display/icon-demo/icon-demo.component').then((m) => m.IconDemoComponent),
       },
       {
+        path: 'display/radio-indicator',
+        loadComponent: () =>
+          import('./demos/common/display/radio-indicator-demo/radio-indicator-demo.component').then((m) => m.RadioIndicatorDemoComponent),
+      },
+      {
         path: 'display/tag',
         loadComponent: () =>
           import('./demos/common/display/tag-demo/tag-demo.component').then((m) => m.TagDemoComponent),
@@ -153,6 +158,11 @@ export const routes: Routes = [
         path: 'interactive/async-click',
         loadComponent: () =>
           import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),
+      },
+      {
+        path: 'interactive/checkbox',
+        loadComponent: () =>
+          import('./demos/common/interactive/checkbox-demo/checkbox-demo.component').then((m) => m.CheckboxDemoComponent),
       },
       {
         path: 'interactive/click-outside',
@@ -245,6 +255,11 @@ export const routes: Routes = [
           import('./demos/common/interactive/pressable-demo/pressable-demo.component').then((m) => m.PressableDemoComponent),
       },
       {
+        path: 'interactive/radio',
+        loadComponent: () =>
+          import('./demos/common/interactive/radio-demo/radio-demo.component').then((m) => m.RadioDemoComponent),
+      },
+      {
         path: 'interactive/retry',
         loadComponent: () =>
           import('./demos/common/interactive/retry-demo/retry-demo.component').then((m) => m.RetryDemoComponent),
@@ -263,6 +278,11 @@ export const routes: Routes = [
         path: 'interactive/swipe-dismiss',
         loadComponent: () =>
           import('./demos/common/interactive/swipe-dismiss-demo/swipe-dismiss-demo.component').then((m) => m.SwipeDismissDemoComponent),
+      },
+      {
+        path: 'interactive/toggle',
+        loadComponent: () =>
+          import('./demos/common/interactive/toggle-demo/toggle-demo.component').then((m) => m.ToggleDemoComponent),
       },
       {
         path: 'interactive/tree-primitives',

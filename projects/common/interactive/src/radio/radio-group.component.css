@@ -1,0 +1,9 @@
+:host.cngx-radio-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--cngx-radio-group-gap, 0.5rem);
+}
+
+:host.cngx-radio-group.cngx-radio-group--horizontal {
+  flex-direction: row;
+}

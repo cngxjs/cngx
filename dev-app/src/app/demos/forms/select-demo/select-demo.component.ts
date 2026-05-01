@@ -376,10 +376,27 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     </ng-template>
   </cngx-select>
       </app-example-card>
-      <app-example-card title="Template override: rich trigger label"
+      <app-example-card title="Selection indicator variant: radio"
         [subtitle]="_s13"
         [sourceHtml]="_srcHtml13"
         [sourceTs]="_srcTs13">
+        
+  <cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+    selectionIndicatorVariant="radio"
+  />
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Variant</span><span class="event-value">radio — dot-in-circle</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Template override: rich trigger label"
+        [subtitle]="_s14"
+        [sourceHtml]="_srcHtml14"
+        [sourceTs]="_srcTs14">
         
   <cngx-select
     [label]="'Gewerk'"
@@ -397,9 +414,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Fixed-width panel (number)"
-        [subtitle]="_s14"
-        [sourceHtml]="_srcHtml14"
-        [sourceTs]="_srcTs14">
+        [subtitle]="_s15"
+        [sourceHtml]="_srcHtml15"
+        [sourceTs]="_srcTs15">
         
   <cngx-select
     [label]="'Farbe'"
@@ -414,9 +431,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Keyboard: PageUp/PageDown on a long list"
-        [subtitle]="_s15"
-        [sourceHtml]="_srcHtml15"
-        [sourceTs]="_srcTs15">
+        [subtitle]="_s16"
+        [sourceHtml]="_srcHtml16"
+        [sourceTs]="_srcTs16">
         
   <cngx-select
     [label]="'Item'"
@@ -430,9 +447,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Autofocus on mount"
-        [subtitle]="_s16"
-        [sourceHtml]="_srcHtml16"
-        [sourceTs]="_srcTs16">
+        [subtitle]="_s17"
+        [sourceHtml]="_srcHtml17"
+        [sourceTs]="_srcTs17">
         
   <button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
     {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
@@ -451,9 +468,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Signal Forms (required)"
-        [subtitle]="_s17"
-        [sourceHtml]="_srcHtml17"
-        [sourceTs]="_srcTs17">
+        [subtitle]="_s18"
+        [sourceHtml]="_srcHtml18"
+        [sourceTs]="_srcTs18">
         
   <cngx-form-field [field]="singleForm.color">
     <label cngxLabel>Lieblingsfarbe</label>
@@ -470,9 +487,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Reactive Forms (adaptFormControl)"
-        [subtitle]="_s18"
-        [sourceHtml]="_srcHtml18"
-        [sourceTs]="_srcTs18">
+        [subtitle]="_s19"
+        [sourceHtml]="_srcHtml19"
+        [sourceTs]="_srcTs19">
         
   <cngx-form-field [field]="rfField">
     <label cngxLabel>Farbe (RF)</label>
@@ -485,9 +502,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — basic"
-        [subtitle]="_s19"
-        [sourceHtml]="_srcHtml19"
-        [sourceTs]="_srcTs19">
+        [subtitle]="_s20"
+        [sourceHtml]="_srcHtml20"
+        [sourceTs]="_srcTs20">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -501,9 +518,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — clearable"
-        [subtitle]="_s20"
-        [sourceHtml]="_srcHtml20"
-        [sourceTs]="_srcTs20">
+        [subtitle]="_s21"
+        [sourceHtml]="_srcHtml21"
+        [sourceTs]="_srcTs21">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -517,9 +534,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — async options via [state]"
-        [subtitle]="_s21"
-        [sourceHtml]="_srcHtml21"
-        [sourceTs]="_srcTs21">
+        [subtitle]="_s22"
+        [sourceHtml]="_srcHtml22"
+        [sourceTs]="_srcTs22">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -537,9 +554,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — per-toggle [commitAction]"
-        [subtitle]="_s22"
-        [sourceHtml]="_srcHtml22"
-        [sourceTs]="_srcTs22">
+        [subtitle]="_s23"
+        [sourceHtml]="_srcHtml23"
+        [sourceTs]="_srcTs23">
         
   <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
@@ -571,9 +588,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — text summary via *cngxMultiSelectTriggerLabel"
-        [subtitle]="_s23"
-        [sourceHtml]="_srcHtml23"
-        [sourceTs]="_srcTs23">
+        [subtitle]="_s24"
+        [sourceHtml]="_srcHtml24"
+        [sourceTs]="_srcTs24">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -595,9 +612,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Multi — custom *cngxMultiSelectChip template"
-        [subtitle]="_s24"
-        [sourceHtml]="_srcHtml24"
-        [sourceTs]="_srcTs24">
+        [subtitle]="_s25"
+        [sourceHtml]="_srcHtml25"
+        [sourceTs]="_srcTs25">
         
   <cngx-multi-select
     [label]="'Themen'"
@@ -617,9 +634,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Combobox — basic (tag picker with typeahead filter)"
-        [subtitle]="_s25"
-        [sourceHtml]="_srcHtml25"
-        [sourceTs]="_srcTs25">
+        [subtitle]="_s26"
+        [sourceHtml]="_srcHtml26"
+        [sourceTs]="_srcTs26">
         
   <cngx-combobox
     [label]="'Themen'"
@@ -633,9 +650,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Combobox — async via [state] + [skipInitial] + (searchTermChange)"
-        [subtitle]="_s26"
-        [sourceHtml]="_srcHtml26"
-        [sourceTs]="_srcTs26">
+        [subtitle]="_s27"
+        [sourceHtml]="_srcHtml27"
+        [sourceTs]="_srcTs27">
         
   <cngx-combobox
     [label]="'Themen'"
@@ -656,9 +673,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Combobox — per-toggle [commitAction]"
-        [subtitle]="_s27"
-        [sourceHtml]="_srcHtml27"
-        [sourceTs]="_srcTs27">
+        [subtitle]="_s28"
+        [sourceHtml]="_srcHtml28"
+        [sourceTs]="_srcTs28">
         
   <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
     <button type="button" class="chip"
@@ -690,9 +707,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Combobox — clearable + custom *cngxSelectClearButton"
-        [subtitle]="_s28"
-        [sourceHtml]="_srcHtml28"
-        [sourceTs]="_srcTs28">
+        [subtitle]="_s29"
+        [sourceHtml]="_srcHtml29"
+        [sourceTs]="_srcTs29">
         
   <cngx-combobox
     [label]="'Themen'"
@@ -712,9 +729,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Combobox — text summary via *cngxComboboxTriggerLabel"
-        [subtitle]="_s29"
-        [sourceHtml]="_srcHtml29"
-        [sourceTs]="_srcTs29">
+        [subtitle]="_s30"
+        [sourceHtml]="_srcHtml30"
+        [sourceTs]="_srcTs30">
         
   <cngx-combobox
     [label]="'Themen'"
@@ -738,9 +755,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — single-value async autocomplete"
-        [subtitle]="_s30"
-        [sourceHtml]="_srcHtml30"
-        [sourceTs]="_srcTs30">
+        [subtitle]="_s31"
+        [sourceHtml]="_srcHtml31"
+        [sourceTs]="_srcTs31">
         
   <cngx-typeahead
     [label]="'User'"
@@ -758,9 +775,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — bound to a typed form field"
-        [subtitle]="_s31"
-        [sourceHtml]="_srcHtml31"
-        [sourceTs]="_srcTs31">
+        [subtitle]="_s32"
+        [sourceHtml]="_srcHtml32"
+        [sourceTs]="_srcTs32">
         
   <cngx-form-field [field]="typeaheadColorField">
     <cngx-typeahead
@@ -775,9 +792,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectPlaceholder"
-        [subtitle]="_s32"
-        [sourceHtml]="_srcHtml32"
-        [sourceTs]="_srcTs32">
+        [subtitle]="_s33"
+        [sourceHtml]="_srcHtml33"
+        [sourceTs]="_srcTs33">
         
   <cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
     <ng-template cngxSelectPlaceholder let-text>
@@ -792,9 +809,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectLoading"
-        [subtitle]="_s33"
-        [sourceHtml]="_srcHtml33"
-        [sourceTs]="_srcTs33">
+        [subtitle]="_s34"
+        [sourceHtml]="_srcHtml34"
+        [sourceTs]="_srcTs34">
         
   <cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
     <ng-template cngxSelectLoading let-retry="retry">
@@ -807,9 +824,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   <button type="button" class="chip" (click)="toggleLoading()" style="margin-top:8px">{{ loading() ? 'Stop loading' : 'Start loading' }}</button>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectOptgroup"
-        [subtitle]="_s34"
-        [sourceHtml]="_srcHtml34"
-        [sourceTs]="_srcTs34">
+        [subtitle]="_s35"
+        [sourceHtml]="_srcHtml35"
+        [sourceTs]="_srcTs35">
         
   <cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
     <ng-template cngxSelectOptgroup let-group>
@@ -824,9 +841,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectRefreshing"
-        [subtitle]="_s35"
-        [sourceHtml]="_srcHtml35"
-        [sourceTs]="_srcTs35">
+        [subtitle]="_s36"
+        [sourceHtml]="_srcHtml36"
+        [sourceTs]="_srcTs36">
         
   <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
     <ng-template cngxSelectRefreshing let-previousCount="previousCount">
@@ -841,9 +858,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectCommitError"
-        [subtitle]="_s36"
-        [sourceHtml]="_srcHtml36"
-        [sourceTs]="_srcTs36">
+        [subtitle]="_s37"
+        [sourceHtml]="_srcHtml37"
+        [sourceTs]="_srcTs37">
         
   <cngx-select
     [label]="'Farbe'"
@@ -868,9 +885,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot overrides: *cngxSelectOptionPending + *cngxSelectOptionError"
-        [subtitle]="_s37"
-        [sourceHtml]="_srcHtml37"
-        [sourceTs]="_srcTs37">
+        [subtitle]="_s38"
+        [sourceHtml]="_srcHtml38"
+        [sourceTs]="_srcTs38">
         
   <cngx-select
     [label]="'Farbe'"
@@ -897,9 +914,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectRetryButton"
-        [subtitle]="_s38"
-        [sourceHtml]="_srcHtml38"
-        [sourceTs]="_srcTs38">
+        [subtitle]="_s39"
+        [sourceHtml]="_srcHtml39"
+        [sourceTs]="_srcTs39">
         
   <cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
     <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
@@ -914,9 +931,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxSelectLoadingGlyph"
-        [subtitle]="_s39"
-        [sourceHtml]="_srcHtml39"
-        [sourceTs]="_srcTs39">
+        [subtitle]="_s40"
+        [sourceHtml]="_srcHtml40"
+        [sourceTs]="_srcTs40">
         
   <cngx-select
     [label]="'Sprache'"
@@ -936,9 +953,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="commitErrorDisplay variants — banner / inline / none"
-        [subtitle]="_s40"
-        [sourceHtml]="_srcHtml40"
-        [sourceTs]="_srcTs40">
+        [subtitle]="_s41"
+        [sourceHtml]="_srcHtml41"
+        [sourceTs]="_srcTs41">
         
   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
     <div>
@@ -985,9 +1002,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — async [state] (load + error + retry)"
-        [subtitle]="_s41"
-        [sourceHtml]="_srcHtml41"
-        [sourceTs]="_srcTs41">
+        [subtitle]="_s42"
+        [sourceHtml]="_srcHtml42"
+        [sourceTs]="_srcTs42">
         
   <cngx-typeahead
     [label]="'User'"
@@ -1006,9 +1023,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — [commitAction] with optimistic/pessimistic mode"
-        [subtitle]="_s42"
-        [sourceHtml]="_srcHtml42"
-        [sourceTs]="_srcTs42">
+        [subtitle]="_s43"
+        [sourceHtml]="_srcHtml43"
+        [sourceTs]="_srcTs43">
         
   <cngx-typeahead
     [label]="'User'"
@@ -1034,9 +1051,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Typeahead — *cngxSelectOptionLabel slot override"
-        [subtitle]="_s43"
-        [sourceHtml]="_srcHtml43"
-        [sourceTs]="_srcTs43">
+        [subtitle]="_s44"
+        [sourceHtml]="_srcHtml44"
+        [sourceTs]="_srcTs44">
         
   <cngx-typeahead
     [label]="'User'"
@@ -1063,9 +1080,9 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   </div>
       </app-example-card>
       <app-example-card title="Slot override: *cngxComboboxChip"
-        [subtitle]="_s44"
-        [sourceHtml]="_srcHtml44"
-        [sourceTs]="_srcTs44">
+        [subtitle]="_s45"
+        [sourceHtml]="_srcHtml45"
+        [sourceTs]="_srcTs45">
         
   <cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
@@ -1097,38 +1114,39 @@ export class SelectDemoComponent {
   protected readonly _s10 = '<code>[refreshingVariant]</code> controls the subsequent-load indicator when options stay visible: <code>bar</code> (default), <code>spinner</code>, <code>dots</code>, or <code>none</code>. Triggered by <code>state.status() === \'refreshing\'</code>.';
   protected readonly _s11 = 'Project a <code>*cngxSelectCaret</code> template — the default ▾ glyph gets replaced with any markup you want, with <code>let-open="open"</code> available for rotation state.';
   protected readonly _s12 = 'Project <code>*cngxSelectCheck</code> to replace the ✓ glyph shown on the selected row. Context: <code>let-option</code>, <code>let-selected="selected"</code>.';
-  protected readonly _s13 = '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your own markup — ideal for icons + label combos that mirror the option rendering.';
-  protected readonly _s14 = '<code>[panelWidth]="400"</code> locks the panel\'s min-inline-size to 400px, independent of the trigger width. <code>\'trigger\'</code> (default) matches trigger width via CSS <code>anchor-size()</code>; <code>null</code> lets the panel size to content.';
-  protected readonly _s15 = 'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still works — focus the trigger and press a letter to commit without opening.';
-  protected readonly _s16 = '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).';
-  protected readonly _s17 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
-  protected readonly _s18 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
-  protected readonly _s19 = '<code>&lt;cngx-multi-select&gt;</code> with <code>[(values)]</code>. Panel stays open on each toggle (native <code>&lt;select multiple&gt;</code> parity). Disabled options don\'t toggle. Typing while the panel is closed toggles the first matching option.';
-  protected readonly _s20 = '<code>[clearable]="true"</code> exposes a single ✕ next to the caret that empties the whole selection in one click. The per-chip ✕ on every pill stays independent of this flag.';
-  protected readonly _s21 = 'Same async-state protocol as the single variant. The panel renders skeleton / empty / error / refreshing states from the bound <code>CngxAsyncState</code>; the trigger chip list stays derived from the resolved data.';
-  protected readonly _s22 = 'Each toggle routes through an async write. <code>optimistic</code> (default) updates <code>values()</code> immediately and rolls back on error; <code>pessimistic</code> defers the write until success and surfaces a spinner on the toggled option. Consecutive toggles supersede any in-flight commit.';
-  protected readonly _s23 = 'Replace the whole chip strip with a plain-text summary by projecting <code>*cngxMultiSelectTriggerLabel</code>. The template context gives you the resolved options, raw values, and count — pick any shape (count badge, comma list, first-label + "+N", …).';
-  protected readonly _s24 = 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.';
-  protected readonly _s25 = '<code>&lt;cngx-combobox&gt;</code> — inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>).';
-  protected readonly _s26 = 'Async-option wiring for server-driven autocomplete. <code>[skipInitial]="true"</code> suppresses the hydrate-time empty-string emission so your request handler never fires a "load everything" on mount. <code>(searchTermChange)</code> bridges the debounced term to your backend; <code>[state]</code> feeds the returned options back into the panel with the full async-view protocol (loading/empty/error/refreshing).';
-  protected readonly _s27 = 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.';
-  protected readonly _s28 = 'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.';
-  protected readonly _s29 = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).';
-  protected readonly _s30 = 'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> — type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.';
-  protected readonly _s31 = 'Wrapped in <code>&lt;cngx-form-field&gt;</code>. The typeahead binds to the <code>Field&lt;T&gt;</code> via <code>createFieldSync</code> — bidirectional sync with the form value, ARIA wiring inherited from the field-presenter.';
-  protected readonly _s32 = 'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.';
-  protected readonly _s33 = 'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.';
-  protected readonly _s34 = 'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.';
-  protected readonly _s35 = 'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.';
-  protected readonly _s36 = 'Replace the panel-shell\'s default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.';
-  protected readonly _s37 = 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).';
-  protected readonly _s38 = 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.';
-  protected readonly _s39 = 'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.';
-  protected readonly _s40 = 'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.';
-  protected readonly _s41 = 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.';
-  protected readonly _s42 = 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.';
-  protected readonly _s43 = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
-  protected readonly _s44 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
+  protected readonly _s13 = '<code>[selectionIndicatorVariant]="\'radio\'"</code> swaps the panel\'s built-in indicator from the checkmark to <code>cngx-radio-indicator</code> (dot-in-circle). Useful for single-select panels that want a radio-style visual without losing dropdown ergonomics. Set globally via <code>provideSelectConfig(withSelectionIndicatorVariant(\'radio\'))</code>.';
+  protected readonly _s14 = '<code>*cngxSelectTriggerLabel</code> replaces the trigger\'s text node with your own markup — ideal for icons + label combos that mirror the option rendering.';
+  protected readonly _s15 = '<code>[panelWidth]="400"</code> locks the panel\'s min-inline-size to 400px, independent of the trigger width. <code>\'trigger\'</code> (default) matches trigger width via CSS <code>anchor-size()</code>; <code>null</code> lets the panel size to content.';
+  protected readonly _s16 = 'Open the panel and press <kbd>PageDown</kbd> / <kbd>PageUp</kbd> to jump 10 rows at a time (clamped at boundaries, skipping disabled rows). Typeahead-while-closed still works — focus the trigger and press a letter to commit without opening.';
+  protected readonly _s17 = '<code>[autofocus]="true"</code> focuses the trigger on first render — evaluated once, later bound changes have no effect (matches native <code>&lt;select autofocus&gt;</code>).';
+  protected readonly _s18 = 'Drop <code>&lt;cngx-select&gt;</code> into <code>&lt;cngx-form-field&gt;</code>. Everything flows automatically.';
+  protected readonly _s19 = '<code>adaptFormControl</code> wraps the <code>FormControl</code> as a <code>Field&lt;T&gt;</code>.';
+  protected readonly _s20 = '<code>&lt;cngx-multi-select&gt;</code> with <code>[(values)]</code>. Panel stays open on each toggle (native <code>&lt;select multiple&gt;</code> parity). Disabled options don\'t toggle. Typing while the panel is closed toggles the first matching option.';
+  protected readonly _s21 = '<code>[clearable]="true"</code> exposes a single ✕ next to the caret that empties the whole selection in one click. The per-chip ✕ on every pill stays independent of this flag.';
+  protected readonly _s22 = 'Same async-state protocol as the single variant. The panel renders skeleton / empty / error / refreshing states from the bound <code>CngxAsyncState</code>; the trigger chip list stays derived from the resolved data.';
+  protected readonly _s23 = 'Each toggle routes through an async write. <code>optimistic</code> (default) updates <code>values()</code> immediately and rolls back on error; <code>pessimistic</code> defers the write until success and surfaces a spinner on the toggled option. Consecutive toggles supersede any in-flight commit.';
+  protected readonly _s24 = 'Replace the whole chip strip with a plain-text summary by projecting <code>*cngxMultiSelectTriggerLabel</code>. The template context gives you the resolved options, raw values, and count — pick any shape (count badge, comma list, first-label + "+N", …).';
+  protected readonly _s25 = 'Replace the default <code>&lt;cngx-chip&gt;</code> pill per instance with any content. The template context gives you the full option plus a commit-aware <code>remove</code> callback.';
+  protected readonly _s26 = '<code>&lt;cngx-combobox&gt;</code> — inline <code>&lt;input role="combobox"&gt;</code> next to the chip strip. Typing filters the panel live; Backspace on an empty input removes the trailing chip; panel stays open on each pick (<code>closeOnSelect</code> default <code>false</code>).';
+  protected readonly _s27 = 'Async-option wiring for server-driven autocomplete. <code>[skipInitial]="true"</code> suppresses the hydrate-time empty-string emission so your request handler never fires a "load everything" on mount. <code>(searchTermChange)</code> bridges the debounced term to your backend; <code>[state]</code> feeds the returned options back into the panel with the full async-view protocol (loading/empty/error/refreshing).';
+  protected readonly _s28 = 'Every toggle (option click, chip ×, Backspace-on-empty, clear-all) routes through an async write with optimistic/pessimistic supersede semantics — same wiring as the multi-select producer.';
+  protected readonly _s29 = 'Reuse the shared <code>*cngxSelectClearButton</code> slot to swap the default ✕ for any consumer-authored trigger. Same slot works on <code>CngxSelect</code> and <code>CngxMultiSelect</code>.';
+  protected readonly _s30 = 'Replace the chip strip with a plain-text summary while keeping the filter input visible. Context exposes the resolved options, raw values, and count — ideal for compact variants ("3 Themen ausgewählt" + input on the same row).';
+  protected readonly _s31 = 'Inline <code>&lt;input role="combobox"&gt;</code> with <code>displayWith</code> — type to filter, pick to commit a single value. The input shows <code>displayWith(value)</code> after a pick so the selection survives blur/refocus. <code>clearOnBlur</code> (default <code>true</code>) snaps the input back to the last-committed display if the user types stray text without picking.';
+  protected readonly _s32 = 'Wrapped in <code>&lt;cngx-form-field&gt;</code>. The typeahead binds to the <code>Field&lt;T&gt;</code> via <code>createFieldSync</code> — bidirectional sync with the form value, ARIA wiring inherited from the field-presenter.';
+  protected readonly _s33 = 'Replace the plain placeholder string with custom markup — render an icon + the placeholder text, a stylised hint, or a help link inside the trigger.';
+  protected readonly _s34 = 'Replace the panel-shell\'s default loading indicator with a consumer-authored body — useful for branded spinners, progress text, or a cancel-and-restart affordance.';
+  protected readonly _s35 = 'Re-skin grouped-option labels — render badges, icons, or counts in the optgroup header without touching the option rows themselves. Class name <code>CngxSelectOptgroupTemplate</code> distinguishes this directive from the <code>&lt;cngx-optgroup&gt;</code> element component used in declarative composition.';
+  protected readonly _s36 = 'Replace the default 2px progress bar overlaid on stale options. Override receives <code>previousCount</code> so consumer templates can render context-aware status like <em>"Refreshing 4 items"</em>.';
+  protected readonly _s37 = 'Replace the panel-shell\'s default commit-error banner with custom markup. Override receives <code>error</code>, the <code>option</code> the user was trying to pick, and a <code>retry()</code> callback that replays the commit.';
+  protected readonly _s38 = 'Per-option-row indicators driven by <code>[commitAction]</code>. Pending shows while the commit is in flight; the error glyph appears on the row that failed (with <code>commitErrorDisplay="inline"</code>).';
+  protected readonly _s39 = 'Swap the visual frame of every Retry / Try again button rendered by the shared panel-shell — load-error, inline refresh-error, and commit-error banner all read from this single override. Context: <code>{ retry, error, disabled, label }</code>.';
+  protected readonly _s40 = 'Replace the inner CSS-driven glyph of the spinner / bar / dots loading variants while keeping the shell\'s ARIA wiring (<code>role="status"</code>, <code>aria-live</code>, <code>aria-label</code>). Skeleton variant ignores this slot — its rows are layout, not glyph.';
+  protected readonly _s41 = 'Three identical selects bound to the same fail-on-demand <code>commitAction</code> with the three <code>commitErrorDisplay</code> values side by side. Toggle <em>Fail next</em>, click a value, and watch how each display mode surfaces the rejection.';
+  protected readonly _s42 = 'Typeahead with <code>[state]</code> driving the panel view. Trigger <em>Load</em> / <em>Error</em> / <em>Reset</em> to step through the async-view machine — first-load skeleton, error banner with retry, refresh shimmer.';
+  protected readonly _s43 = 'Same commit machinery as CngxSelect. Pick a user — the action runs for 800ms. Toggle mode to compare panel-close timing (optimistic closes immediately + rolls back on error; pessimistic keeps panel open until success). Fail-next button forces the action into the error path.';
+  protected readonly _s44 = 'Same slot family as CngxSelect — project a custom <code>*cngxSelectOptionLabel</code> template to render avatars / badges / two-line layouts in the typeahead listbox.';
+  protected readonly _s45 = 'Per-chip override for the combobox\'s tag strip — same context shape as <code>*cngxMultiSelectChip</code> (<code>{ option, remove, index }</code>), so a consumer-authored chip template can be projected into either variant unchanged.';
   protected readonly _srcHtml0 = `<cngx-select
     [label]="'Lieblingsfarbe'"
     [options]="colors"
@@ -4668,18 +4686,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     return of(intended).pipe(delay(800));
   };`;
   protected readonly _srcHtml13 = `<cngx-select
-    [label]="'Gewerk'"
-    [options]="richOptions"
-    [(value)]="richValue"
-    placeholder="Gewerk wählen…"
-  >
-    <ng-template cngxSelectTriggerLabel let-opt>
-      <span>{{ opt?.meta?.icon }}</span>
-      <strong>{{ opt?.label }}</strong>
-    </ng-template>
-  </cngx-select>
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="standaloneValue"
+    placeholder="Farbe wählen…"
+    selectionIndicatorVariant="radio"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Variant</span><span class="event-value">radio — dot-in-circle</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs13 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -4936,15 +4951,18 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     return of(intended).pipe(delay(800));
   };`;
   protected readonly _srcHtml14 = `<cngx-select
-    [label]="'Farbe'"
-    [options]="colors"
-    [(value)]="fixedWidthValue"
-    placeholder="Farbe wählen…"
-    [panelWidth]="400"
-  />
+    [label]="'Gewerk'"
+    [options]="richOptions"
+    [(value)]="richValue"
+    placeholder="Gewerk wählen…"
+  >
+    <ng-template cngxSelectTriggerLabel let-opt>
+      <span>{{ opt?.meta?.icon }}</span>
+      <strong>{{ opt?.label }}</strong>
+    </ng-template>
+  </cngx-select>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ richValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs14 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -5201,14 +5219,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     return of(intended).pipe(delay(800));
   };`;
   protected readonly _srcHtml15 = `<cngx-select
-    [label]="'Item'"
-    [options]="manyOptions"
-    [(value)]="manyValue"
-    placeholder="Item wählen…"
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="fixedWidthValue"
+    placeholder="Farbe wählen…"
+    [panelWidth]="400"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ fixedWidthValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Panel</span><span class="event-value">400px — locked independent of trigger</span></div>
   </div>`;
   protected readonly _srcTs15 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -5464,20 +5483,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml16 = `<button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
-    {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
-  </button>
-  @if (autofocusVisible()) {
-    <cngx-select
-      [label]="'Farbe'"
-      [options]="colors"
-      [(value)]="autofocusValue"
-      [autofocus]="true"
-      placeholder="Autofocus…"
-    />
-  }
+  protected readonly _srcHtml16 = `<cngx-select
+    [label]="'Item'"
+    [options]="manyOptions"
+    [(value)]="manyValue"
+    placeholder="Item wählen…"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ manyValue() ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Options</span><span class="event-value">40 entries — PageUp/Down jumps 10</span></div>
   </div>`;
   protected readonly _srcTs16 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -5733,18 +5747,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml17 = `<cngx-form-field [field]="singleForm.color">
-    <label cngxLabel>Lieblingsfarbe</label>
-    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
-    <cngx-field-errors />
-  </cngx-form-field>
+  protected readonly _srcHtml17 = `<button type="button" class="chip" (click)="toggleAutofocus()" style="margin-bottom:8px">
+    {{ autofocusVisible() ? 'Hide select' : 'Mount select (autofocus)' }}
+  </button>
+  @if (autofocusVisible()) {
+    <cngx-select
+      [label]="'Farbe'"
+      [options]="colors"
+      [(value)]="autofocusValue"
+      [autofocus]="true"
+      placeholder="Autofocus…"
+    />
+  }
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ singleForm.color().value() || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Valid</span><span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span></div>
-    <div class="event-row"><span class="event-label">Touched</span><span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span></div>
-    <div class="event-row" style="margin-top:8px">
-      <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
-    </div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ autofocusValue() ?? '—' }}</span></div>
   </div>`;
   protected readonly _srcTs17 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -6000,14 +6016,18 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml18 = `<cngx-form-field [field]="rfField">
-    <label cngxLabel>Farbe (RF)</label>
-    <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+  protected readonly _srcHtml18 = `<cngx-form-field [field]="singleForm.color">
+    <label cngxLabel>Lieblingsfarbe</label>
+    <cngx-select [label]="'Lieblingsfarbe'" [options]="colors" placeholder="Farbe wählen…" />
     <cngx-field-errors />
   </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
-    <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ singleForm.color().value() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Valid</span><span class="event-value">{{ singleForm.color().valid() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row"><span class="event-label">Touched</span><span class="event-value">{{ singleForm.color().touched() ? 'yes' : 'no' }}</span></div>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="handleSingleSubmit()">Submit</button>
+    </div>
   </div>`;
   protected readonly _srcTs18 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -6263,15 +6283,14 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml19 = `<cngx-multi-select
-    [label]="'Themen'"
-    [options]="tagOptions"
-    [(values)]="multiValues"
-    placeholder="Themen wählen…"
-  />
+  protected readonly _srcHtml19 = `<cngx-form-field [field]="rfField">
+    <label cngxLabel>Farbe (RF)</label>
+    <cngx-select [label]="'Farbe (RF)'" [options]="colors" placeholder="Farbe wählen…" />
+    <cngx-field-errors />
+  </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiValues().length }}</span></div>
+    <div class="event-row"><span class="event-label">RF control value</span><span class="event-value">{{ rfValue() }}</span></div>
+    <div class="event-row"><span class="event-label">RF control dirty</span><span class="event-value">{{ rfControl.dirty ? 'yes' : 'no' }}</span></div>
   </div>`;
   protected readonly _srcTs19 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -6530,12 +6549,12 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly _srcHtml20 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
-    [(values)]="multiClearableValues"
-    [clearable]="true"
+    [(values)]="multiValues"
     placeholder="Themen wählen…"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiClearableValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiValues().length }}</span></div>
   </div>`;
   protected readonly _srcTs20 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -6793,17 +6812,13 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   };`;
   protected readonly _srcHtml21 = `<cngx-multi-select
     [label]="'Themen'"
-    [state]="multiAsyncState"
-    [(values)]="multiAsyncValues"
+    [options]="tagOptions"
+    [(values)]="multiClearableValues"
+    [clearable]="true"
     placeholder="Themen wählen…"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row" style="margin-top:8px">
-      <button type="button" class="chip" (click)="multiAsyncSetLoading()">Set loading</button>
-      <button type="button" class="chip" (click)="multiAsyncSetSuccess()">Set success</button>
-    </div>
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiAsyncValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ multiAsyncState.status() }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiClearableValues().join(', ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs21 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -7059,33 +7074,19 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml22 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
-    <button type="button" class="chip"
-            [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
-            (click)="multiCommitMode.set('optimistic')">optimistic</button>
-    <button type="button" class="chip"
-            [style.background]="multiCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
-            (click)="multiCommitMode.set('pessimistic')">pessimistic</button>
-    <label style="margin-inline-start:12px">
-      <input type="checkbox"
-             [checked]="multiCommitShouldFail()"
-             (change)="multiCommitShouldFail.set($any($event.target).checked)" />
-      simulate error
-    </label>
-  </div>
-  <cngx-multi-select
-    [label]="'Themen (commit)'"
-    [options]="tagOptions"
-    [(values)]="multiCommitValues"
-    [commitAction]="multiCommitAction"
-    [commitMode]="multiCommitMode()"
+  protected readonly _srcHtml22 = `<cngx-multi-select
+    [label]="'Themen'"
+    [state]="multiAsyncState"
+    [(values)]="multiAsyncValues"
     placeholder="Themen wählen…"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCommitValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Commit log</span>
-      <span class="event-value" style="white-space:pre">{{ multiCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="multiAsyncSetLoading()">Set loading</button>
+      <button type="button" class="chip" (click)="multiAsyncSetSuccess()">Set success</button>
     </div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiAsyncValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ multiAsyncState.status() }}</span></div>
   </div>`;
   protected readonly _srcTs22 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -7341,23 +7342,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml23 = `<cngx-multi-select
-    [label]="'Themen'"
+  protected readonly _srcHtml23 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+    <button type="button" class="chip"
+            [style.background]="multiCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="multiCommitMode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="multiCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="multiCommitMode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="multiCommitShouldFail()"
+             (change)="multiCommitShouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+  </div>
+  <cngx-multi-select
+    [label]="'Themen (commit)'"
     [options]="tagOptions"
-    [(values)]="multiTextValues"
+    [(values)]="multiCommitValues"
+    [commitAction]="multiCommitAction"
+    [commitMode]="multiCommitMode()"
     placeholder="Themen wählen…"
-  >
-    <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
-      @if (count === 1) {
-        {{ opts[0].label }}
-      } @else {
-        {{ count }} Themen ausgewählt
-      }
-    </ng-template>
-  </cngx-multi-select>
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCommitValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Commit log</span>
+      <span class="event-value" style="white-space:pre">{{ multiCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    </div>
   </div>`;
   protected readonly _srcTs23 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -7616,18 +7627,20 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly _srcHtml24 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
-    [(values)]="multiCustomChipValues"
+    [(values)]="multiTextValues"
     placeholder="Themen wählen…"
   >
-    <ng-template cngxMultiSelectChip let-opt let-remove="remove">
-      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
-        <span>#{{ opt.label }}</span>
-        <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
-      </span>
+    <ng-template cngxMultiSelectTriggerLabel let-opts let-count="count">
+      @if (count === 1) {
+        {{ opts[0].label }}
+      } @else {
+        {{ count }} Themen ausgewählt
+      }
     </ng-template>
   </cngx-multi-select>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ multiTextValues().length }}</span></div>
   </div>`;
   protected readonly _srcTs24 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -7883,15 +7896,21 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml25 = `<cngx-combobox
+  protected readonly _srcHtml25 = `<cngx-multi-select
     [label]="'Themen'"
     [options]="tagOptions"
-    [(values)]="comboValues"
-    placeholder="Themen suchen…"
-  />
+    [(values)]="multiCustomChipValues"
+    placeholder="Themen wählen…"
+  >
+    <ng-template cngxMultiSelectChip let-opt let-remove="remove">
+      <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.125rem 0.5rem;border-radius:0.25rem;background:#ede7f6;color:#4527a0;font-weight:500;">
+        <span>#{{ opt.label }}</span>
+        <button type="button" (click)="remove()" style="border:0;background:transparent;color:inherit;cursor:pointer;padding:0 0.125rem;">✕</button>
+      </span>
+    </ng-template>
+  </cngx-multi-select>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ multiCustomChipValues().join(', ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs25 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -8149,20 +8168,13 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   };`;
   protected readonly _srcHtml26 = `<cngx-combobox
     [label]="'Themen'"
-    [state]="comboAsyncState"
-    [(values)]="comboAsyncValues"
-    [skipInitial]="true"
-    (searchTermChange)="comboLastTerm.set($event)"
+    [options]="tagOptions"
+    [(values)]="comboValues"
     placeholder="Themen suchen…"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row" style="margin-top:8px">
-      <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
-      <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>
-    </div>
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboAsyncValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ comboAsyncState.status() }}</span></div>
-    <div class="event-row"><span class="event-label">Last term</span><span class="event-value">{{ comboLastTerm() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboValues().length }}</span></div>
   </div>`;
   protected readonly _srcTs26 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -8418,33 +8430,22 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml27 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
-    <button type="button" class="chip"
-            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
-            (click)="comboCommitMode.set('optimistic')">optimistic</button>
-    <button type="button" class="chip"
-            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
-            (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
-    <label style="margin-inline-start:12px">
-      <input type="checkbox"
-             [checked]="comboCommitShouldFail()"
-             (change)="comboCommitShouldFail.set($any($event.target).checked)" />
-      simulate error
-    </label>
-  </div>
-  <cngx-combobox
-    [label]="'Themen (commit)'"
-    [options]="tagOptions"
-    [(values)]="comboCommitValues"
-    [commitAction]="comboCommitAction"
-    [commitMode]="comboCommitMode()"
+  protected readonly _srcHtml27 = `<cngx-combobox
+    [label]="'Themen'"
+    [state]="comboAsyncState"
+    [(values)]="comboAsyncValues"
+    [skipInitial]="true"
+    (searchTermChange)="comboLastTerm.set($event)"
     placeholder="Themen suchen…"
   />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Commit log</span>
-      <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    <div class="event-row" style="margin-top:8px">
+      <button type="button" class="chip" (click)="comboAsyncSetLoading()">Set loading</button>
+      <button type="button" class="chip" (click)="comboAsyncSetSuccess()">Set success</button>
     </div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboAsyncValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">State status</span><span class="event-value">{{ comboAsyncState.status() }}</span></div>
+    <div class="event-row"><span class="event-label">Last term</span><span class="event-value">{{ comboLastTerm() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs27 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -8700,21 +8701,33 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml28 = `<cngx-combobox
-    [label]="'Themen'"
+  protected readonly _srcHtml28 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px">
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'optimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('optimistic')">optimistic</button>
+    <button type="button" class="chip"
+            [style.background]="comboCommitMode() === 'pessimistic' ? '#c8e6c9' : ''"
+            (click)="comboCommitMode.set('pessimistic')">pessimistic</button>
+    <label style="margin-inline-start:12px">
+      <input type="checkbox"
+             [checked]="comboCommitShouldFail()"
+             (change)="comboCommitShouldFail.set($any($event.target).checked)" />
+      simulate error
+    </label>
+  </div>
+  <cngx-combobox
+    [label]="'Themen (commit)'"
     [options]="tagOptions"
-    [clearable]="true"
-    [(values)]="comboClearableValues"
+    [(values)]="comboCommitValues"
+    [commitAction]="comboCommitAction"
+    [commitMode]="comboCommitMode()"
     placeholder="Themen suchen…"
-  >
-    <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
-      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
-        Alle zurücksetzen
-      </button>
-    </ng-template>
-  </cngx-combobox>
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboCommitValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Commit log</span>
+      <span class="event-value" style="white-space:pre">{{ comboCommitLog().slice(-4).join('\\n') || '—' }}</span>
+    </div>
   </div>`;
   protected readonly _srcTs28 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -8973,22 +8986,18 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   protected readonly _srcHtml29 = `<cngx-combobox
     [label]="'Themen'"
     [options]="tagOptions"
-    [(values)]="comboTextValues"
+    [clearable]="true"
+    [(values)]="comboClearableValues"
     placeholder="Themen suchen…"
   >
-    <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
-      @if (count === 0) {
-        <!-- Placeholder takes over when empty -->
-      } @else if (count === 1) {
-        <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
-      } @else {
-        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
-      }
+    <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="clear()">
+        Alle zurücksetzen
+      </button>
     </ng-template>
   </cngx-combobox>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboClearableValues().join(', ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs29 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -9244,19 +9253,25 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml30 = `<cngx-typeahead
-    [label]="'User'"
-    [options]="typeaheadUsers"
-    [compareWith]="typeaheadCompare"
-    [displayWith]="typeaheadDisplay"
-    [clearable]="true"
-    placeholder="Search by name…"
-    [(value)]="typeaheadValue"
-    (searchTermChange)="handleTypeaheadSearch($event)"
-  />
+  protected readonly _srcHtml30 = `<cngx-combobox
+    [label]="'Themen'"
+    [options]="tagOptions"
+    [(values)]="comboTextValues"
+    placeholder="Themen suchen…"
+  >
+    <ng-template cngxComboboxTriggerLabel let-opts let-count="count">
+      @if (count === 0) {
+        <!-- Placeholder takes over when empty -->
+      } @else if (count === 1) {
+        <span style="padding-inline-end:0.5rem">{{ opts[0].label }}</span>
+      } @else {
+        <span style="padding-inline-end:0.5rem;font-weight:500">{{ count }} Themen</span>
+      }
+    </ng-template>
+  </cngx-combobox>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboTextValues().join(', ') || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Count</span><span class="event-value">{{ comboTextValues().length }}</span></div>
   </div>`;
   protected readonly _srcTs30 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -9512,16 +9527,19 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml31 = `<cngx-form-field [field]="typeaheadColorField">
-    <cngx-typeahead
-      [label]="'Farbe'"
-      [options]="typeaheadColorOptions"
-      [clearable]="true"
-      placeholder="Farbe eingeben…"
-    />
-  </cngx-form-field>
+  protected readonly _srcHtml31 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [clearable]="true"
+    placeholder="Search by name…"
+    [(value)]="typeaheadValue"
+    (searchTermChange)="handleTypeaheadSearch($event)"
+  />
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Search log</span><span class="event-value">{{ typeaheadSearchLog().join(' → ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs31 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -9777,16 +9795,16 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml32 = `<cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
-    <ng-template cngxSelectPlaceholder let-text>
-      <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
-        <span aria-hidden="true">🎨</span>
-        <em>{{ text }}</em>
-      </span>
-    </ng-template>
-  </cngx-select>
+  protected readonly _srcHtml32 = `<cngx-form-field [field]="typeaheadColorField">
+    <cngx-typeahead
+      [label]="'Farbe'"
+      [options]="typeaheadColorOptions"
+      [clearable]="true"
+      placeholder="Farbe eingeben…"
+    />
+  </cngx-form-field>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Field value</span><span class="event-value">{{ typeaheadColorField().value() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs32 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -10042,15 +10060,17 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml33 = `<cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
-    <ng-template cngxSelectLoading let-retry="retry">
-      <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
-        <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
-        <span>Lade verfügbare Sprachen…</span>
-      </div>
+  protected readonly _srcHtml33 = `<cngx-select [label]="'Farbe'" [options]="colors" [(value)]="standaloneValue" placeholder="Farbe wählen…">
+    <ng-template cngxSelectPlaceholder let-text>
+      <span style="display:inline-flex;align-items:center;gap:0.4rem;color:#7a7a7a">
+        <span aria-hidden="true">🎨</span>
+        <em>{{ text }}</em>
+      </span>
     </ng-template>
   </cngx-select>
-  <button type="button" class="chip" (click)="toggleLoading()" style="margin-top:8px">{{ loading() ? 'Stop loading' : 'Start loading' }}</button>`;
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ standaloneValue() || '—' }}</span></div>
+  </div>`;
   protected readonly _srcTs33 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
@@ -10305,17 +10325,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml34 = `<cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
-    <ng-template cngxSelectOptgroup let-group>
-      <span style="display:inline-flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
-        <strong>{{ group.label }}</strong>
-      </span>
+  protected readonly _srcHtml34 = `<cngx-select [label]="'Sprache'" [options]="loadingOptions" [(value)]="loadingValue" [loading]="loading()" placeholder="Sprache wählen…">
+    <ng-template cngxSelectLoading let-retry="retry">
+      <div role="status" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem">
+        <span aria-hidden="true" style="font-size:1.5rem">⏳</span>
+        <span>Lade verfügbare Sprachen…</span>
+      </div>
     </ng-template>
   </cngx-select>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
-  </div>`;
+  <button type="button" class="chip" (click)="toggleLoading()" style="margin-top:8px">{{ loading() ? 'Stop loading' : 'Start loading' }}</button>`;
   protected readonly _srcTs34 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
@@ -10570,16 +10588,16 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml35 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
-    <ng-template cngxSelectRefreshing let-previousCount="previousCount">
-      <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
-        🔄 Refreshing {{ previousCount }} options…
-      </div>
+  protected readonly _srcHtml35 = `<cngx-select [label]="'Priorität'" [options]="priorities" [(value)]="groupedValue" placeholder="Priorität wählen…">
+    <ng-template cngxSelectOptgroup let-group>
+      <span style="display:inline-flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="font-size:0.75rem;padding:2px 6px;border-radius:999px;background:#eef;color:#447">{{ group.children?.length ?? 0 }}</span>
+        <strong>{{ group.label }}</strong>
+      </span>
     </ng-template>
   </cngx-select>
-  <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
-    <button type="button" class="chip" (click)="asyncSetRefreshing()">Trigger refresh</button>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ groupedValue() || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs35 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -10835,26 +10853,16 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml36 = `<cngx-select
-    [label]="'Farbe'"
-    [options]="colors"
-    [(value)]="commitValue"
-    [commitAction]="commitAction"
-    [commitMode]="commitMode()"
-    commitErrorDisplay="banner"
-  >
-    <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
-      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
-        <span aria-hidden="true">⚠</span>
-        <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
-        <button type="button" class="chip" (click)="retry()">Replay</button>
+  protected readonly _srcHtml36 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <ng-template cngxSelectRefreshing let-previousCount="previousCount">
+      <div role="status" aria-live="polite" style="padding:0.4rem 0.75rem;font-size:0.8rem;color:#557;background:linear-gradient(90deg,#e3f2fd,#bbdefb,#e3f2fd);background-size:200% 100%;animation:cngx-select-refresh-shimmer 1.6s linear infinite">
+        🔄 Refreshing {{ previousCount }} options…
       </div>
     </ng-template>
   </cngx-select>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
-      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
-    </button>
+    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+    <button type="button" class="chip" (click)="asyncSetRefreshing()">Trigger refresh</button>
   </div>`;
   protected readonly _srcTs36 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -11116,21 +11124,19 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     [(value)]="commitValue"
     [commitAction]="commitAction"
     [commitMode]="commitMode()"
-    commitErrorDisplay="inline"
+    commitErrorDisplay="banner"
   >
-    <ng-template cngxSelectOptionPending let-opt>
-      <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
-    </ng-template>
-    <ng-template cngxSelectOptionError let-opt let-error="error">
-      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
+    <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
+      <div role="alert" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem;background:#fef2f2;color:#7f1d1d;border-radius:6px">
+        <span aria-hidden="true">⚠</span>
+        <span style="flex:1">Konnte <strong>{{ option?.label }}</strong> nicht speichern: {{ error?.message }}</span>
+        <button type="button" class="chip" (click)="retry()">Replay</button>
+      </div>
     </ng-template>
   </cngx-select>
   <div class="button-row" style="margin-top:12px">
     <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
       {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
-    </button>
-    <button type="button" class="chip" (click)="commitMode.set(commitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
-      Mode: {{ commitMode() }}
     </button>
   </div>`;
   protected readonly _srcTs37 = `import { form, schema, required, submit } from '@angular/forms/signals';
@@ -11387,16 +11393,28 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml38 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
-    <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
-      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
-        ↻ {{ label }}
-      </button>
+  protected readonly _srcHtml38 = `<cngx-select
+    [label]="'Farbe'"
+    [options]="colors"
+    [(value)]="commitValue"
+    [commitAction]="commitAction"
+    [commitMode]="commitMode()"
+    commitErrorDisplay="inline"
+  >
+    <ng-template cngxSelectOptionPending let-opt>
+      <span aria-hidden="true" style="margin-inline-start:auto;font-size:0.75rem">⏳</span>
+    </ng-template>
+    <ng-template cngxSelectOptionError let-opt let-error="error">
+      <span aria-hidden="true" [title]="error?.message" style="margin-inline-start:auto;color:#b00020">✕</span>
     </ng-template>
   </cngx-select>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="asyncSetError()">Trigger load error</button>
-    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+    <button type="button" class="chip" (click)="commitMode.set(commitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ commitMode() }}
+    </button>
   </div>`;
   protected readonly _srcTs38 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -11652,20 +11670,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml39 = `<cngx-select
-    [label]="'Sprache'"
-    [options]="asyncOptions"
-    [(value)]="asyncValue"
-    [state]="asyncState"
-    loadingVariant="spinner"
-    placeholder="Sprache wählen…"
-  >
-    <ng-template cngxSelectLoadingGlyph>
-      <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
+  protected readonly _srcHtml39 = `<cngx-select [label]="'Sprache'" [options]="asyncOptions" [(value)]="asyncValue" [state]="asyncState" placeholder="Sprache wählen…">
+    <ng-template cngxSelectRetryButton let-retry let-label="label" let-disabled="disabled">
+      <button type="button" class="chip" [disabled]="disabled" (click)="retry()" style="background:#fff7ed;border-color:#fed7aa;color:#9a3412">
+        ↻ {{ label }}
+      </button>
     </ng-template>
   </cngx-select>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="asyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="asyncSetError()">Trigger load error</button>
     <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
   </div>`;
   protected readonly _srcTs39 = `import { form, schema, required, submit } from '@angular/forms/signals';
@@ -11922,48 +11935,21 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml40 = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
-    <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
-      <cngx-select
-        [label]="'Farbe'"
-        [options]="colors"
-        [(value)]="commitValue"
-        [commitAction]="commitAction"
-        [commitMode]="'optimistic'"
-        commitErrorDisplay="banner"
-      />
-      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
-    </div>
-    <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
-      <cngx-select
-        [label]="'Farbe'"
-        [options]="colors"
-        [(value)]="commitValue"
-        [commitAction]="commitAction"
-        [commitMode]="'optimistic'"
-        commitErrorDisplay="inline"
-      />
-      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
-    </div>
-    <div>
-      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
-      <cngx-select
-        [label]="'Farbe'"
-        [options]="colors"
-        [(value)]="commitValue"
-        [commitAction]="commitAction"
-        [commitMode]="'optimistic'"
-        commitErrorDisplay="none"
-      />
-      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
-    </div>
-  </div>
+  protected readonly _srcHtml40 = `<cngx-select
+    [label]="'Sprache'"
+    [options]="asyncOptions"
+    [(value)]="asyncValue"
+    [state]="asyncState"
+    loadingVariant="spinner"
+    placeholder="Sprache wählen…"
+  >
+    <ng-template cngxSelectLoadingGlyph>
+      <span aria-hidden="true" style="font-size:1.25rem;display:inline-block;animation:cngx-select-spin 1s linear infinite">⚙</span>
+    </ng-template>
+  </cngx-select>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
-      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
-    </button>
+    <button type="button" class="chip" (click)="asyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="asyncSetSuccess()">Reset</button>
   </div>`;
   protected readonly _srcTs40 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12219,20 +12205,48 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml41 = `<cngx-typeahead
-    [label]="'User'"
-    [options]="typeaheadUsers"
-    [compareWith]="typeaheadCompare"
-    [displayWith]="typeaheadDisplay"
-    [state]="typeaheadAsyncState"
-    [clearable]="true"
-    placeholder="Search by name…"
-    [(value)]="typeaheadAsyncValue"
-  />
+  protected readonly _srcHtml41 = `<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1rem">
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">banner</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="banner"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Default. Inline alert above the option list.</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">inline</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="inline"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">Per-row visual badge on the failing option (AT feedback via the announcer).</small>
+    </div>
+    <div>
+      <h4 style="margin:0 0 0.5rem 0;font-size:0.85rem;color:#374151">none</h4>
+      <cngx-select
+        [label]="'Farbe'"
+        [options]="colors"
+        [(value)]="commitValue"
+        [commitAction]="commitAction"
+        [commitMode]="'optimistic'"
+        commitErrorDisplay="none"
+      />
+      <small style="display:block;margin-top:6px;color:#6b7280">No built-in UI — bridge via <code>&lt;cngx-toast-on /&gt;</code> or other transition bridges.</small>
+    </div>
+  </div>
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
-    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
-    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
+    <button type="button" class="chip" (click)="commitShouldFail.set(!commitShouldFail())">
+      {{ commitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
   </div>`;
   protected readonly _srcTs41 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12493,22 +12507,15 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
     [displayWith]="typeaheadDisplay"
-    [commitAction]="typeaheadCommitAction"
-    [commitMode]="typeaheadCommitMode()"
-    [(value)]="typeaheadCommitValue"
+    [state]="typeaheadAsyncState"
+    [clearable]="true"
     placeholder="Search by name…"
+    [(value)]="typeaheadAsyncValue"
   />
   <div class="button-row" style="margin-top:12px">
-    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
-      Mode: {{ typeaheadCommitMode() }}
-    </button>
-    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
-      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
-    </button>
-  </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
-    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetLoading()">Set loading</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetSuccess()">Set success</button>
+    <button type="button" class="chip" (click)="typeaheadAsyncSetError()">Set error</button>
   </div>`;
   protected readonly _srcTs42 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -12769,23 +12776,22 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     [options]="typeaheadUsers"
     [compareWith]="typeaheadCompare"
     [displayWith]="typeaheadDisplay"
-    [(value)]="typeaheadValue"
+    [commitAction]="typeaheadCommitAction"
+    [commitMode]="typeaheadCommitMode()"
+    [(value)]="typeaheadCommitValue"
     placeholder="Search by name…"
-  >
-    <ng-template cngxSelectOptionLabel let-opt>
-      <span style="display:flex;align-items:center;gap:0.5rem">
-        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
-          {{ opt.label.charAt(0) }}
-        </span>
-        <span>
-          <strong>{{ opt.label }}</strong>
-          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
-        </span>
-      </span>
-    </ng-template>
-  </cngx-typeahead>
+  />
+  <div class="button-row" style="margin-top:12px">
+    <button type="button" class="chip" (click)="typeaheadCommitMode.set(typeaheadCommitMode() === 'optimistic' ? 'pessimistic' : 'optimistic')">
+      Mode: {{ typeaheadCommitMode() }}
+    </button>
+    <button type="button" class="chip" (click)="typeaheadCommitShouldFail.set(!typeaheadCommitShouldFail())">
+      {{ typeaheadCommitShouldFail() ? 'Fail next: ON' : 'Fail next: off' }}
+    </button>
+  </div>
   <div class="event-grid" style="margin-top:12px">
-    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadCommitValue()?.name ?? '—' }}</span></div>
+    <div class="event-row"><span class="event-label">Log</span><span class="event-value">{{ typeaheadCommitLog().slice(-3).join(' · ') || '—' }}</span></div>
   </div>`;
   protected readonly _srcTs43 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
@@ -13041,7 +13047,284 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
     }
     return of(intended).pipe(delay(800));
   };`;
-  protected readonly _srcHtml44 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
+  protected readonly _srcHtml44 = `<cngx-typeahead
+    [label]="'User'"
+    [options]="typeaheadUsers"
+    [compareWith]="typeaheadCompare"
+    [displayWith]="typeaheadDisplay"
+    [(value)]="typeaheadValue"
+    placeholder="Search by name…"
+  >
+    <ng-template cngxSelectOptionLabel let-opt>
+      <span style="display:flex;align-items:center;gap:0.5rem">
+        <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:50%;background:#dbeafe;color:#1e40af;font-size:0.7rem">
+          {{ opt.label.charAt(0) }}
+        </span>
+        <span>
+          <strong>{{ opt.label }}</strong>
+          <small style="display:block;color:#6b7280">id: {{ opt.value.id }}</small>
+        </span>
+      </span>
+    </ng-template>
+  </cngx-typeahead>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Value</span><span class="event-value">{{ typeaheadValue()?.name ?? '—' }}</span></div>
+  </div>`;
+  protected readonly _srcTs44 = `import { form, schema, required, submit } from '@angular/forms/signals';
+import { FormControl, Validators } from '@angular/forms';
+import { DestroyRef } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
+import { CngxSelect, CngxSelectOption, CngxSelectOptgroup, CngxSelectOptgroupTemplate, CngxSelectDivider, CngxSelectOptionLabel, CngxSelectEmpty, CngxSelectError, CngxSelectRetryButton, CngxSelectCheck, CngxSelectCaret, CngxSelectTriggerLabel, CngxSelectClearButton, CngxSelectPlaceholder, CngxSelectLoading, CngxSelectLoadingGlyph, CngxSelectRefreshing, CngxSelectCommitError, CngxSelectOptionPending, CngxSelectOptionError, CngxMultiSelect, CngxMultiSelectChip, CngxMultiSelectTriggerLabel, CngxCombobox, CngxComboboxChip, CngxComboboxTriggerLabel, CngxTypeahead, type CngxSelectCommitAction, type CngxSelectOptionDef, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { delay, of, throwError } from 'rxjs';
+import { CngxListbox, CngxListboxTrigger } from '@cngx/common/interactive';
+import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
+
+
+  protected readonly colors: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'disabled', label: 'Nicht verfügbar', disabled: true },
+  ];
+
+  protected readonly priorities: CngxSelectOptionsInput<string> = [
+    { label: 'Normal', children: [
+      { value: 'low', label: 'Niedrig' },
+      { value: 'medium', label: 'Mittel' },
+    ]},
+    { label: 'Kritisch', children: [
+      { value: 'high', label: 'Hoch' },
+      { value: 'urgent', label: 'Dringend' },
+    ]},
+  ];
+
+  protected readonly richOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'fe', label: 'Frontend', meta: { icon: '🖥️' } },
+    { value: 'be', label: 'Backend', meta: { icon: '⚙️' } },
+    { value: 'db', label: 'Database', meta: { icon: '💾' } },
+    { value: 'ops', label: 'DevOps', meta: { icon: '🚀' } },
+  ];
+
+  protected readonly loadingOptions: CngxSelectOptionDef<string>[] = [];
+
+  // Standalone single
+  protected readonly standaloneValue = signal<string | undefined>(undefined);
+  protected readonly declarativeValue = signal<string | undefined>(undefined);
+  protected readonly assembledValue = signal<string | undefined>(undefined);
+  protected readonly groupedValue = signal<string | undefined>(undefined);
+  protected readonly clearableValue = signal<string | undefined>('red');
+  protected readonly richValue = signal<string | undefined>(undefined);
+  protected readonly loadingValue = signal<string | undefined>(undefined);
+  protected readonly loading = signal(true);
+  protected readonly openedLog = signal<string>('—');
+
+  // Async state consumer
+  protected readonly asyncOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'de', label: 'Deutsch' },
+    { value: 'en', label: 'English' },
+    { value: 'fr', label: 'Français' },
+    { value: 'es', label: 'Español' },
+  ];
+  protected readonly asyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected readonly asyncValue = signal<string | undefined>(undefined);
+  protected asyncReloads = 0;
+  protected readonly asyncReload = (): void => {
+    this.asyncReloads += 1;
+    this.asyncState.set('loading');
+    setTimeout(() => this.asyncState.setSuccess(this.asyncOptions), 600);
+  };
+  protected asyncSetLoading(): void { this.asyncState.set('loading'); }
+  protected asyncSetSuccess(): void { this.asyncState.setSuccess(this.asyncOptions); }
+  protected asyncSetRefreshing(): void {
+    this.asyncState.setSuccess(this.asyncOptions);
+    this.asyncState.set('refreshing');
+  }
+  protected asyncSetError(): void { this.asyncState.setError(new Error('Network offline')); }
+  protected asyncSetEmpty(): void { this.asyncState.setSuccess([]); }
+
+  // Variant switchers
+  protected readonly loadingVariantSel = signal<'skeleton' | 'spinner' | 'bar' | 'text'>('spinner');
+  protected readonly refreshingVariantSel = signal<'bar' | 'spinner' | 'dots' | 'none'>('bar');
+  protected readonly variantValue = signal<string | undefined>(undefined);
+  protected readonly variantState = createManualState<CngxSelectOptionsInput<string>>();
+  protected triggerVariantLoading(): void { this.variantState.set('loading'); }
+  protected triggerVariantSuccess(): void { this.variantState.setSuccess(this.asyncOptions); }
+  protected triggerVariantRefreshing(): void {
+    this.variantState.setSuccess(this.asyncOptions);
+    this.variantState.set('refreshing');
+  }
+
+  // Many-option list for PageUp/Down demo
+  protected readonly manyOptions: CngxSelectOptionDef<number>[] = Array.from(
+    { length: 40 },
+    (_, i) => ({ value: i + 1, label: 'Item ' + (i + 1) + ' (#' + (i + 1).toString().padStart(2, '0') + ')' })
+  );
+  protected readonly manyValue = signal<number | undefined>(undefined);
+
+  // Fixed-width panel
+  protected readonly fixedWidthValue = signal<string | undefined>(undefined);
+
+  // Autofocus
+  protected readonly autofocusValue = signal<string | undefined>(undefined);
+  protected readonly autofocusVisible = signal(false);
+  protected toggleAutofocus(): void { this.autofocusVisible.update(v => !v); }
+
+  // Commit action
+  protected readonly commitValue = signal<string | undefined>('red');
+  protected readonly commitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly commitShouldFail = signal(false);
+  protected readonly commitLog = signal<string[]>([]);
+  protected readonly commitAction: CngxSelectCommitAction<string> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.commitLog.update(l => [...l, ts + ' → commit(' + String(intended) + ')']);
+    if (this.commitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // Signal Forms
+  private readonly singleModel = signal<{ color: string }>({ color: '' });
+  private readonly singleSchema = schema<{ color: string }>((root) => {
+    required(root.color);
+  });
+  protected readonly singleForm = form(this.singleModel, this.singleSchema);
+
+  // Reactive Forms
+  protected readonly rfControl = new FormControl<string>('green', { validators: [Validators.required], nonNullable: true });
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', inject(DestroyRef));
+  protected readonly rfValue = toSignal(this.rfControl.valueChanges, { initialValue: this.rfControl.value });
+
+  protected handleSingleSubmit(): void {
+    submit(this.singleForm, async () => []);
+  }
+
+  protected handleOpened(open: boolean): void {
+    this.openedLog.set(open ? 'opened' : 'closed');
+  }
+
+  protected toggleLoading(): void {
+    this.loading.update(v => !v);
+  }
+
+  // ── Multi-Select ─────────────────────────────────────────────────
+  protected readonly tagOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'angular', label: 'Angular' },
+    { value: 'signals', label: 'Signals' },
+    { value: 'rxjs', label: 'RxJS' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'old', label: 'Nicht mehr gepflegt', disabled: true },
+  ];
+  protected readonly multiValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly multiCustomChipValues = signal<string[]>(['angular', 'signals', 'rxjs']);
+  protected readonly multiTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly multiAsyncValues = signal<string[]>([]);
+  protected readonly multiAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected multiAsyncSetLoading(): void { this.multiAsyncState.set('loading'); }
+  protected multiAsyncSetSuccess(): void { this.multiAsyncState.setSuccess(this.tagOptions); }
+
+  // Commit per toggle
+  protected readonly multiCommitValues = signal<string[]>(['angular']);
+  protected readonly multiCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly multiCommitShouldFail = signal(false);
+  protected readonly multiCommitLog = signal<string[]>([]);
+  protected readonly multiCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.multiCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.multiCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Combobox state ──────────────────────────────────────────────────
+  protected readonly comboValues = signal<string[]>(['angular']);
+  protected readonly comboTextValues = signal<string[]>(['angular', 'signals']);
+  protected readonly comboClearableValues = signal<string[]>(['angular', 'a11y']);
+  protected readonly comboLastTerm = signal<string>('');
+
+  // Async-options combobox with server-driven filter: the HTTP request
+  // would normally depend on the term — in this demo we just toggle
+  // loading/success on the manual state so the live-filter still
+  // renders against the returned options client-side.
+  protected readonly comboAsyncValues = signal<string[]>([]);
+  protected readonly comboAsyncState: ManualAsyncState<CngxSelectOptionsInput<string>> =
+    createManualState<CngxSelectOptionsInput<string>>();
+  protected comboAsyncSetLoading(): void { this.comboAsyncState.set('loading'); }
+  protected comboAsyncSetSuccess(): void {
+    this.comboAsyncState.setSuccess(this.tagOptions);
+  }
+
+  // Combobox with commitAction
+  protected readonly comboCommitValues = signal<string[]>(['angular']);
+  protected readonly comboCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly comboCommitShouldFail = signal(false);
+  protected readonly comboCommitLog = signal<string[]>([]);
+  protected readonly comboCommitAction: CngxSelectCommitAction<string[]> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.comboCommitLog.update(l => [...l, ts + ' → commit([' + (intended ?? []).join(',') + '])']);
+    if (this.comboCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };
+
+  // ── Typeahead state ─────────────────────────────────────────────────
+  protected readonly typeaheadUsers: CngxSelectOptionDef<{ id: number; name: string }>[] = [
+    { value: { id: 1, name: 'Alice Meier' },  label: 'Alice Meier' },
+    { value: { id: 2, name: 'Bob Schmidt' },  label: 'Bob Schmidt' },
+    { value: { id: 3, name: 'Charlotte Fischer' }, label: 'Charlotte Fischer' },
+    { value: { id: 4, name: 'David Weber' }, label: 'David Weber' },
+    { value: { id: 5, name: 'Eva Wagner' }, label: 'Eva Wagner' },
+  ];
+  protected readonly typeaheadValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCompare = (a: { id: number } | undefined, b: { id: number } | undefined): boolean =>
+    (a?.id ?? NaN) === (b?.id ?? NaN);
+  protected readonly typeaheadDisplay = (u: { id: number; name: string }): string => u.name;
+  protected readonly typeaheadSearchLog = signal<string[]>([]);
+  protected handleTypeaheadSearch(term: string): void {
+    this.typeaheadSearchLog.update(l => [...l.slice(-4), term]);
+  }
+
+  // Typeahead + Signal Forms
+  protected readonly typeaheadColorOptions: CngxSelectOptionDef<string>[] = [
+    { value: 'red', label: 'Rot' },
+    { value: 'green', label: 'Grün' },
+    { value: 'blue', label: 'Blau' },
+    { value: 'yellow', label: 'Gelb' },
+    { value: 'orange', label: 'Orange' },
+  ];
+  protected readonly typeaheadColorModel = signal<string>('');
+  protected readonly typeaheadColorField = form(this.typeaheadColorModel, schema<string>((c) => { required(c); }));
+
+  // Typeahead async/error state
+  protected readonly typeaheadAsyncState: ManualAsyncState<CngxSelectOptionsInput<{ id: number; name: string }>> =
+    createManualState<CngxSelectOptionsInput<{ id: number; name: string }>>();
+  protected readonly typeaheadAsyncValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected typeaheadAsyncSetLoading(): void { this.typeaheadAsyncState.set('loading'); }
+  protected typeaheadAsyncSetSuccess(): void { this.typeaheadAsyncState.setSuccess(this.typeaheadUsers); }
+  protected typeaheadAsyncSetError(): void { this.typeaheadAsyncState.setError(new Error('Network offline')); }
+
+  // Typeahead commit-action
+  protected readonly typeaheadCommitValue = signal<{ id: number; name: string } | undefined>(undefined);
+  protected readonly typeaheadCommitMode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly typeaheadCommitShouldFail = signal(false);
+  protected readonly typeaheadCommitLog = signal<string[]>([]);
+  protected readonly typeaheadCommitAction: CngxSelectCommitAction<{ id: number; name: string }> = (intended) => {
+    const ts = new Date().toLocaleTimeString();
+    this.typeaheadCommitLog.update(l => [...l, ts + ' → commit(' + (intended?.name ?? 'undefined') + ')']);
+    if (this.typeaheadCommitShouldFail()) {
+      return throwError(() => new Error('Server offline')).pipe(delay(800));
+    }
+    return of(intended).pipe(delay(800));
+  };`;
+  protected readonly _srcHtml45 = `<cngx-combobox [label]="'Themen'" [options]="tagOptions" [(values)]="comboValues" placeholder="Tag wählen…">
     <ng-template cngxComboboxChip let-opt let-remove="remove" let-i="index">
       <span style="display:inline-flex;align-items:center;gap:0.25rem;padding:0.15rem 0.5rem;border-radius:999px;background:#dbeafe;color:#1e40af;font-size:0.8rem">
         <span aria-hidden="true">#{{ i + 1 }}</span>
@@ -13053,7 +13336,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Values</span><span class="event-value">{{ comboValues().join(', ') || '—' }}</span></div>
   </div>`;
-  protected readonly _srcTs44 = `import { form, schema, required, submit } from '@angular/forms/signals';
+  protected readonly _srcTs45 = `import { form, schema, required, submit } from '@angular/forms/signals';
 import { FormControl, Validators } from '@angular/forms';
 import { DestroyRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
