@@ -160,9 +160,24 @@ export const routes: Routes = [
           import('./demos/common/interactive/async-click-demo/async-click-demo.component').then((m) => m.AsyncClickDemoComponent),
       },
       {
+        path: 'interactive/button-multi-toggle-group',
+        loadComponent: () =>
+          import('./demos/common/interactive/button-multi-toggle-group-demo/button-multi-toggle-group-demo.component').then((m) => m.ButtonMultiToggleGroupDemoComponent),
+      },
+      {
+        path: 'interactive/button-toggle-group',
+        loadComponent: () =>
+          import('./demos/common/interactive/button-toggle-group-demo/button-toggle-group-demo.component').then((m) => m.ButtonToggleGroupDemoComponent),
+      },
+      {
         path: 'interactive/checkbox',
         loadComponent: () =>
           import('./demos/common/interactive/checkbox-demo/checkbox-demo.component').then((m) => m.CheckboxDemoComponent),
+      },
+      {
+        path: 'interactive/checkbox-group',
+        loadComponent: () =>
+          import('./demos/common/interactive/checkbox-group-demo/checkbox-group-demo.component').then((m) => m.CheckboxGroupDemoComponent),
       },
       {
         path: 'interactive/click-outside',
