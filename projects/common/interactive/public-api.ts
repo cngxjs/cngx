@@ -52,6 +52,12 @@ export {
 export { CngxRadioGroup } from './src/radio/radio-group.component';
 export { CngxRadio } from './src/radio/radio.component';
 export {
+  CNGX_CHIP_GROUP_HOST,
+  type CngxChipGroupHost,
+} from './src/chip-group/chip-group-host.token';
+export { CngxChipInteraction } from './src/chip-interaction/chip-interaction.directive';
+export { CngxChipInGroup } from './src/chip-in-group/chip-in-group.directive';
+export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
   type CngxTreeController,
