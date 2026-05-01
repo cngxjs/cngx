@@ -56,6 +56,21 @@ import { CngxCheckbox } from '@cngx/common/interactive';
   <cngx-checkbox [value]="false" [disabled]="true">Locked-off</cngx-checkbox>
   <cngx-checkbox [value]="false" [indeterminate]="true" [disabled]="true">Locked-mixed</cngx-checkbox>
       </app-example-card>
+      <app-example-card title="Custom check + dash glyphs"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3"
+        [sourceCss]="_srcCss3">
+        
+  <ng-template #brandedCheck><span aria-hidden="true">★</span></ng-template>
+  <ng-template #brandedDash><span aria-hidden="true">~</span></ng-template>
+  <cngx-checkbox [value]="true" [checkGlyph]="brandedCheck">Custom check</cngx-checkbox>
+  <cngx-checkbox
+    [value]="false"
+    [indeterminate]="true"
+    [dashGlyph]="brandedDash"
+  >Custom dash</cngx-checkbox>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -63,6 +78,7 @@ export class CheckboxDemoComponent {
   protected readonly _s0 = 'Click the box or focus + press <strong>Space</strong>/<strong>Enter</strong>.';
   protected readonly _s1 = 'The header checkbox is <code>indeterminate</code> when some-but-not-all items are selected. Clicking it cascades: indeterminate → checked (selects all), checked → unchecked (clears all), unchecked → checked (selects all).';
   protected readonly _s2 = 'Disabled checkboxes ignore click + keydown and reflect <code>aria-disabled="true"</code>.';
+  protected readonly _s3 = '<code>cngx-checkbox</code> forwards <code>[checkGlyph]</code> and <code>[dashGlyph]</code> to the inner <code>cngx-checkbox-indicator</code>. Project a <code>TemplateRef&lt;void&gt;</code> each to replace the default ✓ / − glyphs with brand or design-system icons.';
   protected readonly _srcHtml0 = `<cngx-checkbox [(value)]="accept">I accept the terms</cngx-checkbox>
   <p class="caption">Bound: <code>{{ accept() }}</code></p>`;
   protected readonly _srcTs0 = `import { CngxCheckbox } from '@cngx/common/interactive';
@@ -128,6 +144,30 @@ export class CheckboxDemoComponent {
     this.itemC.set(next);
   }`;
   protected readonly _srcCss2 = `cngx-checkbox { display: inline-flex; margin-right: 24px; }`;
+  protected readonly _srcHtml3 = `<ng-template #brandedCheck><span aria-hidden="true">★</span></ng-template>
+  <ng-template #brandedDash><span aria-hidden="true">~</span></ng-template>
+  <cngx-checkbox [value]="true" [checkGlyph]="brandedCheck">Custom check</cngx-checkbox>
+  <cngx-checkbox
+    [value]="false"
+    [indeterminate]="true"
+    [dashGlyph]="brandedDash"
+  >Custom dash</cngx-checkbox>`;
+  protected readonly _srcTs3 = `import { CngxCheckbox } from '@cngx/common/interactive';
+
+
+  protected readonly accept = signal(false);
+  protected readonly itemA = signal(true);
+  protected readonly itemB = signal(false);
+  protected readonly itemC = signal(false);
+  protected readonly allChecked = computed(() => this.itemA() && this.itemB() && this.itemC());
+  protected readonly someChecked = computed(() => this.itemA() || this.itemB() || this.itemC());
+  protected readonly groupIndeterminate = computed(() => this.someChecked() && !this.allChecked());
+  protected toggleAll(next: boolean): void {
+    this.itemA.set(next);
+    this.itemB.set(next);
+    this.itemC.set(next);
+  }`;
+  protected readonly _srcCss3 = `cngx-checkbox { display: inline-flex; margin-right: 24px; }`;
 
   protected readonly accept = signal(false);
   protected readonly itemA = signal(true);

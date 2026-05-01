@@ -65,5 +65,21 @@ export const STORY: DemoSpec = {
   </cngx-radio-group>`,
       css: `.sort-btn { margin-bottom: 16px; }`,
     },
+    {
+      title: 'Custom dot glyph',
+      subtitle:
+        'Each <code>cngx-radio</code> forwards a <code>[dotGlyph]</code> input to the inner ' +
+        '<code>cngx-radio-indicator</code>. Project a <code>TemplateRef&lt;void&gt;</code> to ' +
+        'replace the default dot — useful for design-system glyphs or branded icons.',
+      imports: ['CngxRadioGroup', 'CngxRadio'],
+      template: `
+  <ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-radio-group [(value)]="payment" name="payment-method-glyph">
+    <cngx-radio value="card" [dotGlyph]="starGlyph">Card</cngx-radio>
+    <cngx-radio value="cash" [dotGlyph]="checkGlyph">Cash</cngx-radio>
+    <cngx-radio value="invoice">Invoice (default dot)</cngx-radio>
+  </cngx-radio-group>`,
+    },
   ],
 };

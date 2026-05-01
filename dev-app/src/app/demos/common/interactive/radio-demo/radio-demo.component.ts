@@ -59,6 +59,19 @@ import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
     <cngx-radio value="invoice" [disabled]="true">Invoice (per-radio disabled)</cngx-radio>
   </cngx-radio-group>
       </app-example-card>
+      <app-example-card title="Custom dot glyph"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3">
+        
+  <ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-radio-group [(value)]="payment" name="payment-method-glyph">
+    <cngx-radio value="card" [dotGlyph]="starGlyph">Card</cngx-radio>
+    <cngx-radio value="cash" [dotGlyph]="checkGlyph">Cash</cngx-radio>
+    <cngx-radio value="invoice">Invoice (default dot)</cngx-radio>
+  </cngx-radio-group>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -66,6 +79,7 @@ export class RadioDemoComponent {
   protected readonly _s0 = 'Tab into the group (lands on the active radio, or the first one if none selected). <strong>ArrowDown</strong>/<strong>ArrowRight</strong> move focus AND select the next radio; <strong>ArrowUp</strong>/<strong>ArrowLeft</strong> the previous. <strong>Space</strong>/<strong>Enter</strong> select the focused radio (idempotent).';
   protected readonly _s1 = '<code>[orientation]="\'horizontal\'"</code> flips the layout AND tells the host roving directive to use ArrowLeft/ArrowRight for navigation.';
   protected readonly _s2 = 'Group <code>[disabled]</code> cascades to every leaf via <code>radioDisabled = computed(() => group.disabled() || disabled())</code>. Per-radio <code>[disabled]</code> blocks only that leaf and is skipped by roving navigation.';
+  protected readonly _s3 = 'Each <code>cngx-radio</code> forwards a <code>[dotGlyph]</code> input to the inner <code>cngx-radio-indicator</code>. Project a <code>TemplateRef&lt;void&gt;</code> to replace the default dot — useful for design-system glyphs or branded icons.';
   protected readonly _srcHtml0 = `<cngx-radio-group [(value)]="payment" name="payment-method">
     <cngx-radio value="card">Credit card</cngx-radio>
     <cngx-radio value="cash">Cash on delivery</cngx-radio>
@@ -105,6 +119,19 @@ export class RadioDemoComponent {
   protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
   protected readonly groupDisabled = signal(false);`;
   protected readonly _srcCss2 = `.sort-btn { margin-bottom: 16px; }`;
+  protected readonly _srcHtml3 = `<ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-radio-group [(value)]="payment" name="payment-method-glyph">
+    <cngx-radio value="card" [dotGlyph]="starGlyph">Card</cngx-radio>
+    <cngx-radio value="cash" [dotGlyph]="checkGlyph">Cash</cngx-radio>
+    <cngx-radio value="invoice">Invoice (default dot)</cngx-radio>
+  </cngx-radio-group>`;
+  protected readonly _srcTs3 = `import { CngxRadioGroup, CngxRadio } from '@cngx/common/interactive';
+
+
+  protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
+  protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
+  protected readonly groupDisabled = signal(false);`;
 
   protected readonly payment = signal<'card' | 'cash' | 'invoice' | undefined>(undefined);
   protected readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
