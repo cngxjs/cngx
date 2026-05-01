@@ -1,12 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   input,
   model,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import { nextUid } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
@@ -44,7 +42,7 @@ import {
  *
  * @example
  * ```html
- * <cngx-button-toggle-group [(value)]="view" name="layout">
+ * <cngx-button-toggle-group label="Layout" [(value)]="view">
  *   <button cngxButtonToggle value="grid">Grid</button>
  *   <button cngxButtonToggle value="list">List</button>
  *   <button cngxButtonToggle value="table">Table</button>
@@ -73,7 +71,6 @@ import {
     '[attr.aria-invalid]': 'invalid() ? "true" : null',
     '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-orientation]': 'orientation()',
-    '[attr.name]': 'name()',
     '[class.cngx-button-toggle-group--horizontal]':
       'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
@@ -95,10 +92,6 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input.required<string>();
-  readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
-
-  private readonly fallbackName = nextUid('cngx-button-toggle-group');
-  readonly name = computed(() => this.nameInput() ?? this.fallbackName);
 
   private pendingArrowSelect = false;
 

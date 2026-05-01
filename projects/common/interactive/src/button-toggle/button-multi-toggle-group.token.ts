@@ -11,9 +11,7 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * `selectedValues` is a `ModelSignal<T[]>` so the consumer can
  * two-way-bind via `[(selectedValues)]` and the leaves can mutate
  * it on toggle. `disabled` is a read-only `Signal<boolean>` the
- * leaf combines with its own per-toggle `disabled()`. `name` mirrors
- * the single-mode contract for parity with native form-submission
- * tools.
+ * leaf combines with its own per-toggle `disabled()`.
  *
  * `isSelected(value)` returns the per-value membership signal from
  * the group's internal `SelectionController` so the leaf can render
@@ -31,7 +29,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
 export interface CngxButtonMultiToggleGroupContract<T = unknown> {
   readonly selectedValues: ModelSignal<T[]>;
   readonly disabled: Signal<boolean>;
-  readonly name: Signal<string>;
   isSelected(value: T): Signal<boolean>;
   toggle(value: T): void;
 }

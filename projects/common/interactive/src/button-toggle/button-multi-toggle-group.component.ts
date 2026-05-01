@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   input,
   model,
   type Signal,
@@ -9,7 +8,6 @@ import {
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
   createSelectionController,
-  nextUid,
   type SelectionController,
 } from '@cngx/core/utils';
 
@@ -49,7 +47,7 @@ import {
  *
  * @example
  * ```html
- * <cngx-button-multi-toggle-group [(selectedValues)]="filters" name="filters">
+ * <cngx-button-multi-toggle-group label="Filters" [(selectedValues)]="filters">
  *   <button cngxButtonToggle value="open">Open</button>
  *   <button cngxButtonToggle value="closed">Closed</button>
  *   <button cngxButtonToggle value="archived">Archived</button>
@@ -78,7 +76,6 @@ import {
     '[attr.aria-invalid]': 'invalid() ? "true" : null',
     '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-orientation]': 'orientation()',
-    '[attr.name]': 'name()',
     '[class.cngx-button-multi-toggle-group--horizontal]':
       'orientation() === "horizontal"',
   },
@@ -106,11 +103,7 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input.required<string>();
-  readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
   readonly keyFn = input<(value: T) => unknown>((v) => v);
-
-  private readonly fallbackName = nextUid('cngx-button-multi-toggle-group');
-  readonly name = computed(() => this.nameInput() ?? this.fallbackName);
 
   private readonly controller: SelectionController<T> =
     createSelectionController<T>(this.selectedValues, {

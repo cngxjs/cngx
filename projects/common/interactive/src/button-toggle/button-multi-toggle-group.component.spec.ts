@@ -14,7 +14,6 @@ import { CngxButtonToggle } from './button-toggle.directive';
       label="Filters"
       [(selectedValues)]="picked"
       [disabled]="off()"
-      name="filters"
     >
       <button cngxButtonToggle value="open">Open</button>
       <button cngxButtonToggle value="closed">Closed</button>

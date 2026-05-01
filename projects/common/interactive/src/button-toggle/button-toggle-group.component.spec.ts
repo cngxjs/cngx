@@ -11,7 +11,7 @@ import { CngxButtonToggle } from './button-toggle.directive';
 
 @Component({
   template: `
-    <cngx-button-toggle-group label="Layout" [(value)]="v" [disabled]="off()" name="layout">
+    <cngx-button-toggle-group label="Layout" [(value)]="v" [disabled]="off()">
       <button cngxButtonToggle value="grid">Grid</button>
       <button cngxButtonToggle value="list">List</button>
       <button cngxButtonToggle value="table" [disabled]="cOff()">Table</button>
@@ -122,11 +122,6 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     toggles[0].el.click();
     fixture.detectChanges();
     expect(host.v()).toBe('grid');
-  });
-
-  it('host carries the configured name attribute', () => {
-    const { groupEl } = setup();
-    expect(groupEl.getAttribute('name')).toBe('layout');
   });
 
   it('CNGX_CONTROL_VALUE.value carries the single ModelSignal<T | undefined> shape', () => {

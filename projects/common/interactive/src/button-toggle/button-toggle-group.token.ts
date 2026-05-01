@@ -12,17 +12,13 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * and the active leaf writes it via `value.set(this.value())` on
  * pick. `disabled` is a read-only `Signal<boolean>` so the leaf can
  * combine it with its own per-toggle `disabled()` to compute
- * `toggleDisabled`. `name` is the HTML `name` attribute applied to
- * the group's host element for parity with native form-submission
- * tools — defaults to a `nextUid('cngx-button-toggle-group')` value
- * when the consumer does not supply one.
+ * `toggleDisabled`.
  *
  * @category interactive
  */
 export interface CngxButtonToggleGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
   readonly disabled: Signal<boolean>;
-  readonly name: Signal<string>;
   /**
    * Consume the group's "last interaction was a roving-arrow keydown"
    * flag. Called by a leaf's `(focus)` handler — when the flag is
