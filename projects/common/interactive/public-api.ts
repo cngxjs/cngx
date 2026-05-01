@@ -199,3 +199,4 @@ export {
   type CngxMenuRadioGroupFactory,
 } from './src/menu/menu-radio-controller';
 export { CngxMenuTrigger } from './src/menu/menu-trigger.directive';
+export { CngxErrorState } from './src/error-state/error-state.directive';
