@@ -225,6 +225,16 @@ export const routes: Routes = [
           import('./demos/common/interactive/disclosure-demo/disclosure-demo.component').then((m) => m.DisclosureDemoComponent),
       },
       {
+        path: 'interactive/error-aggregator',
+        loadComponent: () =>
+          import('./demos/common/interactive/error-aggregator-demo/error-aggregator-demo.component').then((m) => m.ErrorAggregatorDemoComponent),
+      },
+      {
+        path: 'interactive/error-state',
+        loadComponent: () =>
+          import('./demos/common/interactive/error-state-demo/error-state-demo.component').then((m) => m.ErrorStateDemoComponent),
+      },
+      {
         path: 'interactive/keyboard-shortcut',
         loadComponent: () =>
           import('./demos/common/interactive/keyboard-shortcut-demo/keyboard-shortcut-demo.component').then((m) => m.KeyboardShortcutDemoComponent),

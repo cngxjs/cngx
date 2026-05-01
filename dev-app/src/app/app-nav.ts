@@ -55,6 +55,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'CopyBlock', path: 'common/interactive/copy-block' },
       { label: 'CopyText', path: 'common/interactive/copy-text' },
       { label: 'Disclosure', path: 'common/interactive/disclosure' },
+      { label: 'Error Aggregator', path: 'common/interactive/error-aggregator' },
+      { label: 'Error State', path: 'common/interactive/error-state' },
       { label: 'KeyboardShortcut', path: 'common/interactive/keyboard-shortcut' },
       { label: 'Listbox', path: 'common/interactive/listbox' },
       { label: 'ListboxSearch', path: 'common/interactive/listbox-search' },

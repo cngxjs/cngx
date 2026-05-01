@@ -1,0 +1,250 @@
+import type { DemoSpec } from '../../../../dev-tools/demo-spec';
+
+export const STORY: DemoSpec = {
+  title: 'Error Aggregator',
+  navLabel: 'Error Aggregator',
+  navCategory: 'interactive',
+  description:
+    '<code>cngxErrorAggregator</code> rolls up child <code>cngxErrorSource</code> ' +
+    'directives into one live A11y surface. Derived signals (<code>hasError</code>, ' +
+    '<code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, ' +
+    '<code>shouldShow</code>, <code>announcement</code>) all carry structural ' +
+    '<code>equal</code> fns so unrelated re-emissions do not cascade. The ' +
+    'directive is template-free — render the SR live region yourself for full ' +
+    'control over visual placement. Works on any host: native form, Material ' +
+    'tab label, CDK card, popover panel — ARIA flows from the same ' +
+    '<code>computed()</code> graph regardless.',
+  apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource'],
+  moduleImports: [
+    "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource } from '@cngx/common/interactive';",
+    "import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';",
+    "import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody } from '@cngx/common/popover';",
+    "import { MatTabsModule } from '@angular/material/tabs';",
+  ],
+  setup: `
+  protected readonly emailFormatBad = signal(true);
+  protected readonly emailTaken = signal(false);
+  protected readonly passwordWeak = signal(true);
+  protected readonly profileBioEmpty = signal(true);
+  protected readonly profileAvatarMissing = signal(false);
+  protected readonly billingDeclined = signal(true);
+  protected readonly tabAddressIncomplete = signal(true);
+  protected readonly tabPaymentInvalid = signal(true);
+  `,
+  sections: [
+    {
+      title: 'Native form + scope reveal-on-submit',
+      subtitle:
+        'A <code>&lt;form&gt;</code> wraps a fieldset aggregator. Errors stay hidden ' +
+        'until <code>(submit)</code> fires <code>scope.reveal()</code>; the resolved ' +
+        '<code>shouldShow()</code> then unblocks the SR announcement and the visible ' +
+        'error list. Click submit twice to see toggle.',
+      imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource'],
+      template: `
+  <form
+    cngxErrorScope
+    cngxErrorScopeName="signup"
+    #scope="cngxErrorScope"
+    (submit)="$event.preventDefault(); scope.reveal()"
+  >
+    <fieldset cngxErrorAggregator #signup="cngxErrorAggregator">
+      <legend>Sign up</legend>
+      <span cngxErrorSource="email-format" [when]="emailFormatBad()" label="Email format invalid"></span>
+      <span cngxErrorSource="email-taken" [when]="emailTaken()" label="Email already in use"></span>
+      <span cngxErrorSource="password-weak" [when]="passwordWeak()" label="Password too weak"></span>
+
+      <label>
+        <span>Email</span>
+        <input type="email" />
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" />
+      </label>
+
+      @if (signup.shouldShow()) {
+        <ul class="errors" role="list">
+          @for (label of signup.errorLabels(); track label) {
+            <li>{{ label }}</li>
+          }
+        </ul>
+      }
+      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
+        {{ signup.announcement() }}
+      </span>
+
+      <div class="actions">
+        <button type="submit">Submit</button>
+        <button type="button" (click)="scope.reset()">Reset</button>
+      </div>
+    </fieldset>
+  </form>`,
+      css: `
+fieldset { border: 1px solid var(--cngx-border, #d1d5db); padding: 12px 16px; border-radius: 6px; }
+fieldset.cngx-error { border-color: var(--cngx-error-text, #b00020); }
+.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
+.actions { margin-top: 12px; display: flex; gap: 8px; }
+.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+label { display: block; margin: 6px 0; }
+input { padding: 6px 8px; min-width: 240px; }`,
+    },
+    {
+      title: 'cngx-card host',
+      subtitle:
+        'A <code>&lt;cngx-card&gt;</code> hosts the aggregator on its body. The card ' +
+        'frame inherits <code>.cngx-error</code> via host-binding, so the visual ' +
+        'cue applies without consumer CSS plumbing.',
+      imports: [
+        'CngxCard',
+        'CngxCardHeader',
+        'CngxCardBody',
+        'CngxErrorAggregator',
+        'CngxErrorSource',
+      ],
+      template: `
+  <cngx-card>
+    <cngx-card-header>Profile</cngx-card-header>
+    <cngx-card-body cngxErrorAggregator #profile="cngxErrorAggregator">
+      <span cngxErrorSource="bio-empty" [when]="profileBioEmpty()" label="Bio is empty"></span>
+      <span cngxErrorSource="avatar-missing" [when]="profileAvatarMissing()" label="Avatar missing"></span>
+      <p>Update your bio and avatar before saving.</p>
+      @if (profile.hasError()) {
+        <ul class="errors">
+          @for (label of profile.errorLabels(); track label) {
+            <li>{{ label }}</li>
+          }
+        </ul>
+      }
+      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
+        {{ profile.announcement() }}
+      </span>
+      <div class="actions">
+        <button type="button" (click)="profileBioEmpty.set(!profileBioEmpty())">
+          Toggle bio
+        </button>
+        <button type="button" (click)="profileAvatarMissing.set(!profileAvatarMissing())">
+          Toggle avatar
+        </button>
+      </div>
+    </cngx-card-body>
+  </cngx-card>`,
+      css: `
+.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
+.actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`,
+    },
+    {
+      title: 'cngx-popover-panel host',
+      subtitle:
+        'The aggregator binds to a popover panel, gating reveal on the popover\'s ' +
+        'own scope. A trigger button opens the popover; the panel internally ' +
+        'rolls up its sources.',
+      imports: [
+        'CngxPopoverPanel',
+        'CngxPopoverTrigger',
+        'CngxPopoverHeader',
+        'CngxPopoverBody',
+        'CngxErrorAggregator',
+        'CngxErrorSource',
+      ],
+      template: `
+  <button #trigger="cngxPopoverTrigger" [cngxPopoverTrigger]="billingPanel" type="button">
+    Billing status
+  </button>
+  <cngx-popover-panel #billingPanel>
+    <cngx-popover-header>Billing</cngx-popover-header>
+    <cngx-popover-body cngxErrorAggregator #billing="cngxErrorAggregator">
+      <span cngxErrorSource="declined" [when]="billingDeclined()" label="Last charge declined"></span>
+      <p>Recent activity for this account.</p>
+      @if (billing.hasError()) {
+        <ul class="errors">
+          @for (label of billing.errorLabels(); track label) {
+            <li>{{ label }}</li>
+          }
+        </ul>
+      }
+      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
+        {{ billing.announcement() }}
+      </span>
+      <button type="button" (click)="billingDeclined.set(!billingDeclined())">
+        Toggle declined state
+      </button>
+    </cngx-popover-body>
+  </cngx-popover-panel>`,
+      css: `
+.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
+.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }`,
+    },
+    {
+      title: 'Material mat-tab label with error badge',
+      subtitle:
+        'Each tab carries its own aggregator. The label slot reads ' +
+        '<code>aggregator.errorCount()</code> to render a badge. The aggregator\'s ' +
+        '<code>.cngx-error</code> + <code>aria-invalid</code> still apply to the ' +
+        'underlying tab body element.',
+      imports: ['MatTabsModule', 'CngxErrorAggregator', 'CngxErrorSource'],
+      template: `
+  <mat-tab-group>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Address
+        @if (addressTab.errorCount() > 0) {
+          <span class="badge" aria-hidden="true">{{ addressTab.errorCount() }}</span>
+        }
+        <span class="cngx-sr-only">{{ addressTab.errorCount() }} error(s) in address</span>
+      </ng-template>
+      <section
+        cngxErrorAggregator
+        #addressTab="cngxErrorAggregator"
+        class="tab-body"
+      >
+        <span cngxErrorSource="address-incomplete" [when]="tabAddressIncomplete()" label="Street and city are required"></span>
+        <p>Address form goes here.</p>
+        <button type="button" (click)="tabAddressIncomplete.set(!tabAddressIncomplete())">
+          Toggle address error
+        </button>
+      </section>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        Payment
+        @if (paymentTab.errorCount() > 0) {
+          <span class="badge" aria-hidden="true">{{ paymentTab.errorCount() }}</span>
+        }
+        <span class="cngx-sr-only">{{ paymentTab.errorCount() }} error(s) in payment</span>
+      </ng-template>
+      <section
+        cngxErrorAggregator
+        #paymentTab="cngxErrorAggregator"
+        class="tab-body"
+      >
+        <span cngxErrorSource="payment-invalid" [when]="tabPaymentInvalid()" label="Card number invalid"></span>
+        <p>Payment form goes here.</p>
+        <button type="button" (click)="tabPaymentInvalid.set(!tabPaymentInvalid())">
+          Toggle payment error
+        </button>
+      </section>
+    </mat-tab>
+  </mat-tab-group>`,
+      css: `
+.tab-body { padding: 16px; }
+.tab-body.cngx-error { background: rgba(176, 0, 32, 0.04); }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-inline-start: 6px;
+  border-radius: 9px;
+  background: var(--cngx-error-text, #b00020);
+  color: white;
+  font-size: 0.75em;
+  line-height: 1;
+}
+.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }`,
+    },
+  ],
+};
