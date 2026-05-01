@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -122,6 +123,34 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     toggles[0].el.click();
     fixture.detectChanges();
     expect(host.v()).toBe('grid');
+  });
+
+  it('aria-busy reflects state.status() === "loading" reactively', () => {
+    @Component({
+      template: `
+        <cngx-button-toggle-group label="Async" [state]="state">
+          <button cngxButtonToggle value="x">X</button>
+        </cngx-button-toggle-group>
+      `,
+      imports: [CngxButtonToggleGroup, CngxButtonToggle],
+    })
+    class StateHost {
+      readonly state: ManualAsyncState<string> = createManualState<string>();
+    }
+
+    const fixture = TestBed.createComponent(StateHost);
+    fixture.detectChanges();
+    const groupEl = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+      .nativeElement as HTMLElement;
+    expect(groupEl.getAttribute('aria-busy')).toBeNull();
+
+    fixture.componentInstance.state.set('loading');
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-busy')).toBe('true');
+
+    fixture.componentInstance.state.setSuccess('ok');
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-busy')).toBeNull();
   });
 
   it('CngxButtonToggle binds [attr.aria-describedby] reactively from cngxDescribedBy input', () => {

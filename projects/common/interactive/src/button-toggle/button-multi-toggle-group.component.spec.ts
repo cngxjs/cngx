@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -148,6 +149,35 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
   it('aria-orientation reflects the orientation input default', () => {
     const { groupEl } = setup();
     expect(groupEl.getAttribute('aria-orientation')).toBe('horizontal');
+  });
+
+  it('aria-busy reflects state.status() === "loading" reactively', () => {
+    @Component({
+      template: `
+        <cngx-button-multi-toggle-group label="Async" [state]="state">
+          <button cngxButtonToggle value="x">X</button>
+        </cngx-button-multi-toggle-group>
+      `,
+      imports: [CngxButtonMultiToggleGroup, CngxButtonToggle],
+    })
+    class StateHost {
+      readonly state: ManualAsyncState<string> = createManualState<string>();
+    }
+
+    const fixture = TestBed.createComponent(StateHost);
+    fixture.detectChanges();
+    const groupEl = fixture.debugElement.query(
+      By.directive(CngxButtonMultiToggleGroup),
+    ).nativeElement as HTMLElement;
+    expect(groupEl.getAttribute('aria-busy')).toBeNull();
+
+    fixture.componentInstance.state.set('loading');
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-busy')).toBe('true');
+
+    fixture.componentInstance.state.setSuccess('ok');
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-busy')).toBeNull();
   });
 
   it('isSelected returns a stable signal identity per value (selection-controller invariant)', () => {

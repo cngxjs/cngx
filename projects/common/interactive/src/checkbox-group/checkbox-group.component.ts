@@ -112,7 +112,7 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
-  readonly label = input.required<string>();
+  readonly label = input<string | undefined>(undefined);
   readonly allValues = input<readonly T[] | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly keyFn = input<(value: T) => unknown>((v) => v);

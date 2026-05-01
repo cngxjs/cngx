@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   input,
@@ -10,6 +11,7 @@ import {
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
+  type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
 
@@ -78,6 +80,7 @@ import {
     '[attr.aria-invalid]': 'invalid() ? "true" : null',
     '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-orientation]': 'orientation()',
+    '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-button-multi-toggle-group--horizontal]':
       'orientation() === "horizontal"',
   },
@@ -104,8 +107,13 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  readonly label = input.required<string>();
+  readonly label = input<string | undefined>(undefined);
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly keyFn = input<(value: T) => unknown>((v) => v);
+
+  protected readonly ariaBusy = computed(
+    () => this.state()?.status() === 'loading',
+  );
 
   private readonly controller: SelectionController<T> = inject(
     CNGX_SELECTION_CONTROLLER_FACTORY,

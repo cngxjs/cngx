@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   input,
   model,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
+import type { CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
@@ -71,6 +73,7 @@ import {
     '[attr.aria-invalid]': 'invalid() ? "true" : null',
     '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-orientation]': 'orientation()',
+    '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-button-toggle-group--horizontal]':
       'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
@@ -91,7 +94,12 @@ export class CngxButtonToggleGroup<T = unknown>
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  readonly label = input.required<string>();
+  readonly label = input<string | undefined>(undefined);
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  protected readonly ariaBusy = computed(
+    () => this.state()?.status() === 'loading',
+  );
 
   private pendingArrowSelect = false;
 
