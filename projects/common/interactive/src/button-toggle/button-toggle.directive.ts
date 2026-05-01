@@ -57,6 +57,27 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * navigation in either parent group skips per-toggle-disabled leaves
  * automatically.
  *
+ * **Group-disabled cascade vs roving (accepted debt).** The
+ * group-level `[disabled]` cascade short-circuits `handleSelect` /
+ * `handleKeydown` / `handleFocus` (see `toggleDisabled` computed),
+ * but does NOT propagate into `CngxRovingItem.disabled` — Angular
+ * forbids re-binding a host-directive's read-only `InputSignal`
+ * input from a wrapping host. As a result, a fully-disabled group
+ * lets visual focus transit through its toggles via Arrow keys;
+ * every selection pathway short-circuits silently. Behaviour mirrors
+ * `CngxRadio`; tracked in `form-primitives-accepted-debt.md §4`.
+ * Re-evaluation is gated on `CngxRovingItem.disabled` becoming a
+ * writable surface in `@cngx/common/a11y`.
+ *
+ * **Disabled "why" via aria-describedby.** Pillar 2 requires
+ * disabled state to communicate a reason. The leaf exposes
+ * `[describedBy]` (alias `cngxDescribedBy`) — a reactive input that
+ * binds to the host's `aria-describedby`. Consumers render the
+ * description element themselves and pass its id; the directive does
+ * not own a sr-only span (it is a `@Directive` on a native
+ * `<button>` — no template to inject siblings into). Native
+ * `<button aria-describedby>` semantics apply.
+ *
  * @category interactive
  */
 @Directive({
@@ -75,6 +96,7 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-selected]': 'ariaSelected()',
     '[attr.aria-disabled]': 'toggleDisabled() ? "true" : null',
+    '[attr.aria-describedby]': 'describedBy()',
     '[attr.disabled]': 'toggleDisabled() ? "" : null',
     '[class.cngx-button-toggle--checked]': 'toggleChecked()',
     '[class.cngx-button-toggle--disabled]': 'toggleDisabled()',
@@ -89,6 +111,9 @@ export class CngxButtonToggle<T = unknown> {
 
   readonly value = input.required<T>();
   readonly disabled = input<boolean>(false);
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
 
   protected readonly toggleChecked = computed(() => {
     if (this.resolved.mode === 'single') {

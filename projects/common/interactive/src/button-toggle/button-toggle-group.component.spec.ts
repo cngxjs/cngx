@@ -124,6 +124,33 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     expect(host.v()).toBe('grid');
   });
 
+  it('CngxButtonToggle binds [attr.aria-describedby] reactively from cngxDescribedBy input', () => {
+    @Component({
+      template: `
+        <cngx-button-toggle-group label="Layout" [(value)]="v">
+          <button cngxButtonToggle value="grid" [cngxDescribedBy]="hint()">
+            Grid
+          </button>
+        </cngx-button-toggle-group>
+      `,
+      imports: [CngxButtonToggleGroup, CngxButtonToggle],
+    })
+    class DescribedHost {
+      v = signal<string | undefined>(undefined);
+      hint = signal<string | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(DescribedHost);
+    fixture.detectChanges();
+    const buttonEl = fixture.debugElement.query(By.directive(CngxButtonToggle))
+      .nativeElement as HTMLElement;
+    expect(buttonEl.getAttribute('aria-describedby')).toBeNull();
+
+    fixture.componentInstance.hint.set('reason-1');
+    fixture.detectChanges();
+    expect(buttonEl.getAttribute('aria-describedby')).toBe('reason-1');
+  });
+
   it('CNGX_CONTROL_VALUE.value carries the single ModelSignal<T | undefined> shape', () => {
     const { fixture, host, groupDe } = setup();
     const cv = groupDe.injector.get(CNGX_CONTROL_VALUE);
