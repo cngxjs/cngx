@@ -11,6 +11,7 @@ import { CngxButtonToggle } from './button-toggle.directive';
 @Component({
   template: `
     <cngx-button-multi-toggle-group
+      label="Filters"
       [(selectedValues)]="picked"
       [disabled]="off()"
       name="filters"

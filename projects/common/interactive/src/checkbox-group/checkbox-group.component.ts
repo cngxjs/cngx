@@ -92,6 +92,9 @@ import {
     role: 'group',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-invalid]': 'invalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-checkbox-group--horizontal]': 'orientation() === "horizontal"',
   },
@@ -103,6 +106,9 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
   readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly label = input.required<string>();
   readonly allValues = input<readonly T[] | undefined>(undefined);

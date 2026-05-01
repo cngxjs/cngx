@@ -34,7 +34,7 @@ export const STORY: DemoSpec = {
         'aria-checked reflects the group value reactively via <code>group.value() === toggle.value()</code>.',
       imports: ['CngxButtonToggleGroup', 'CngxButtonToggle'],
       template: `
-  <cngx-button-toggle-group [(value)]="view" name="layout">
+  <cngx-button-toggle-group label="Layout" [(value)]="view" name="layout">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
         'directive to use ArrowUp/ArrowDown for navigation.',
       imports: ['CngxButtonToggleGroup', 'CngxButtonToggle'],
       template: `
-  <cngx-button-toggle-group [(value)]="view" orientation="vertical" name="layout-v">
+  <cngx-button-toggle-group label="Layout (vertical)" [(value)]="view" orientation="vertical" name="layout-v">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -68,7 +68,7 @@ export const STORY: DemoSpec = {
   <button type="button" (click)="groupDisabled.set(!groupDisabled())">
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
-  <cngx-button-toggle-group [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
+  <cngx-button-toggle-group label="Layout (disabled-cascade demo)" [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table" [disabled]="true">Table (locked)</button>

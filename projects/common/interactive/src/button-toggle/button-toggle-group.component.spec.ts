@@ -10,7 +10,7 @@ import { CngxButtonToggle } from './button-toggle.directive';
 
 @Component({
   template: `
-    <cngx-button-toggle-group [(value)]="v" [disabled]="off()" name="layout">
+    <cngx-button-toggle-group label="Layout" [(value)]="v" [disabled]="off()" name="layout">
       <button cngxButtonToggle value="grid">Grid</button>
       <button cngxButtonToggle value="list">List</button>
       <button cngxButtonToggle value="table" [disabled]="cOff()">Table</button>

@@ -74,6 +74,9 @@ import {
     role: 'toolbar',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-invalid]': 'invalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.name]': 'name()',
     '[class.cngx-button-multi-toggle-group--horizontal]':
@@ -98,8 +101,11 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
   readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  readonly label = input<string | undefined>(undefined);
+  readonly label = input.required<string>();
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 

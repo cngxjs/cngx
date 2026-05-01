@@ -26,7 +26,7 @@ import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/inter
         [sourceTs]="_srcTs0"
         [sourceCss]="_srcCss0">
         
-  <cngx-button-multi-toggle-group [(selectedValues)]="filters" name="filters">
+  <cngx-button-multi-toggle-group label="Status filters" [(selectedValues)]="filters" name="filters">
     <button cngxButtonToggle value="open">Open</button>
     <button cngxButtonToggle value="closed">Closed</button>
     <button cngxButtonToggle value="archived">Archived</button>
@@ -45,6 +45,7 @@ import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/inter
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
   <cngx-button-multi-toggle-group
+    label="Status filters (disabled-cascade demo)"
     [(selectedValues)]="filters"
     [disabled]="groupDisabled()"
     name="filters-d"
@@ -60,7 +61,7 @@ import { CngxButtonMultiToggleGroup, CngxButtonToggle } from '@cngx/common/inter
 export class ButtonMultiToggleGroupDemoComponent {
   protected readonly _s0 = 'Click any toggle to add or remove it from the selection. Tab into the group and use <strong>ArrowLeft</strong>/<strong>ArrowRight</strong> to move focus (no auto-select); <strong>Space</strong>/<strong>Enter</strong> on the focused toggle flips its membership. aria-selected reflects per-leaf membership reactively via the selection controller.';
   protected readonly _s1 = 'Group <code>[disabled]</code> blocks every leaf\'s <code>toggle()</code> dispatch and reflects <code>aria-disabled="true"</code> on each toggle. Per-toggle <code>[disabled]</code> blocks only that leaf and is skipped by roving navigation. Both also reflect the native <code>disabled</code> attribute so form submission engines see it.';
-  protected readonly _srcHtml0 = `<cngx-button-multi-toggle-group [(selectedValues)]="filters" name="filters">
+  protected readonly _srcHtml0 = `<cngx-button-multi-toggle-group label="Status filters" [(selectedValues)]="filters" name="filters">
     <button cngxButtonToggle value="open">Open</button>
     <button cngxButtonToggle value="closed">Closed</button>
     <button cngxButtonToggle value="archived">Archived</button>
@@ -78,6 +79,7 @@ export class ButtonMultiToggleGroupDemoComponent {
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
   <cngx-button-multi-toggle-group
+    label="Status filters (disabled-cascade demo)"
     [(selectedValues)]="filters"
     [disabled]="groupDisabled()"
     name="filters-d"

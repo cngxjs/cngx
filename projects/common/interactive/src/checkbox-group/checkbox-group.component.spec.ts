@@ -17,6 +17,7 @@ const POOL: readonly string[] = ['a', 'b', 'c'];
       [(selectedValues)]="picked"
       [allValues]="pool"
       [disabled]="off()"
+      [errorMessageId]="errorId()"
     />
   `,
   imports: [CngxCheckboxGroup],
@@ -25,6 +26,7 @@ class Host {
   readonly pool = POOL;
   picked = signal<string[]>([]);
   off = signal(false);
+  errorId = signal<string | null>(null);
 }
 
 @Component({
@@ -161,6 +163,27 @@ describe('CngxCheckboxGroup', () => {
     host.off.set(true);
     fixture.detectChanges();
     expect(groupEl.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('aria-required / aria-invalid / aria-errormessage are reactive', () => {
+    const { fixture, group, host, groupEl } = setup();
+    expect(groupEl.getAttribute('aria-required')).toBeNull();
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
+    group.required.set(true);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-required')).toBe('true');
+
+    host.errorId.set('err-1');
+    group.invalid.set(true);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    expect(groupEl.getAttribute('aria-errormessage')).toBe('err-1');
+
+    group.invalid.set(false);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
   });
 
   it('aria-busy reflects state.status() === "loading" reactively', () => {

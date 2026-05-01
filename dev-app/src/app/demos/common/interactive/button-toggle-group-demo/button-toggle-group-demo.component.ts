@@ -26,7 +26,7 @@ import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactiv
         [sourceTs]="_srcTs0"
         [sourceCss]="_srcCss0">
         
-  <cngx-button-toggle-group [(value)]="view" name="layout">
+  <cngx-button-toggle-group label="Layout" [(value)]="view" name="layout">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -38,7 +38,7 @@ import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactiv
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <cngx-button-toggle-group [(value)]="view" orientation="vertical" name="layout-v">
+  <cngx-button-toggle-group label="Layout (vertical)" [(value)]="view" orientation="vertical" name="layout-v">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -53,7 +53,7 @@ import { CngxButtonToggleGroup, CngxButtonToggle } from '@cngx/common/interactiv
   <button type="button" (click)="groupDisabled.set(!groupDisabled())">
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
-  <cngx-button-toggle-group [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
+  <cngx-button-toggle-group label="Layout (disabled-cascade demo)" [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table" [disabled]="true">Table (locked)</button>
@@ -66,7 +66,7 @@ export class ButtonToggleGroupDemoComponent {
   protected readonly _s0 = 'Click any toggle, or Tab into the group and use ArrowLeft/ArrowRight to move + select. <strong>Space</strong>/<strong>Enter</strong> on the focused toggle pick it idempotently. aria-checked reflects the group value reactively via <code>group.value() === toggle.value()</code>.';
   protected readonly _s1 = '<code>[orientation]="\'vertical\'"</code> stacks the toggles and tells the host roving directive to use ArrowUp/ArrowDown for navigation.';
   protected readonly _s2 = 'Group <code>[disabled]</code> cascades to every toggle via <code>toggleDisabled = computed(() => group.disabled() || disabled())</code>. Per-toggle <code>[disabled]</code> blocks only that leaf and is skipped by roving navigation. Both reflect the native <code>disabled</code> attribute so form submission engines see it.';
-  protected readonly _srcHtml0 = `<cngx-button-toggle-group [(value)]="view" name="layout">
+  protected readonly _srcHtml0 = `<cngx-button-toggle-group label="Layout" [(value)]="view" name="layout">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -79,7 +79,7 @@ export class ButtonToggleGroupDemoComponent {
   protected readonly groupDisabled = signal(false);
   protected readonly orientation = signal<'horizontal' | 'vertical'>('horizontal');`;
   protected readonly _srcCss0 = `.caption { font-size: 0.875em; color: var(--cngx-text-muted, #6b7280); margin-top: 12px; }`;
-  protected readonly _srcHtml1 = `<cngx-button-toggle-group [(value)]="view" orientation="vertical" name="layout-v">
+  protected readonly _srcHtml1 = `<cngx-button-toggle-group label="Layout (vertical)" [(value)]="view" orientation="vertical" name="layout-v">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table">Table</button>
@@ -93,7 +93,7 @@ export class ButtonToggleGroupDemoComponent {
   protected readonly _srcHtml2 = `<button type="button" (click)="groupDisabled.set(!groupDisabled())">
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
-  <cngx-button-toggle-group [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
+  <cngx-button-toggle-group label="Layout (disabled-cascade demo)" [(value)]="view" [disabled]="groupDisabled()" name="layout-d">
     <button cngxButtonToggle value="grid">Grid</button>
     <button cngxButtonToggle value="list">List</button>
     <button cngxButtonToggle value="table" [disabled]="true">Table (locked)</button>

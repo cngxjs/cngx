@@ -35,7 +35,7 @@ export const STORY: DemoSpec = {
         'aria-selected reflects per-leaf membership reactively via the selection controller.',
       imports: ['CngxButtonMultiToggleGroup', 'CngxButtonToggle'],
       template: `
-  <cngx-button-multi-toggle-group [(selectedValues)]="filters" name="filters">
+  <cngx-button-multi-toggle-group label="Status filters" [(selectedValues)]="filters" name="filters">
     <button cngxButtonToggle value="open">Open</button>
     <button cngxButtonToggle value="closed">Closed</button>
     <button cngxButtonToggle value="archived">Archived</button>
@@ -59,6 +59,7 @@ export const STORY: DemoSpec = {
     {{ groupDisabled() ? 'Enable group' : 'Disable group' }}
   </button>
   <cngx-button-multi-toggle-group
+    label="Status filters (disabled-cascade demo)"
     [(selectedValues)]="filters"
     [disabled]="groupDisabled()"
     name="filters-d"

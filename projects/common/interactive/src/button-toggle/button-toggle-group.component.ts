@@ -69,6 +69,10 @@ import {
     role: 'radiogroup',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-invalid]': 'invalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
+    '[attr.aria-orientation]': 'orientation()',
     '[attr.name]': 'name()',
     '[class.cngx-button-toggle-group--horizontal]':
       'orientation() === "horizontal"',
@@ -86,8 +90,11 @@ export class CngxButtonToggleGroup<T = unknown>
 {
   readonly value = model<T | undefined>(undefined);
   readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  readonly label = input<string | undefined>(undefined);
+  readonly label = input.required<string>();
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
 
   private readonly fallbackName = nextUid('cngx-button-toggle-group');
