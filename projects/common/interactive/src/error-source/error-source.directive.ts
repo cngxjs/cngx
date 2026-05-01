@@ -1,4 +1,12 @@
-import { computed, DestroyRef, Directive, effect, inject, input } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  inject,
+  input,
+  untracked,
+} from '@angular/core';
 import {
   CNGX_ERROR_AGGREGATOR,
   type CngxErrorAggregatorContract,
@@ -63,15 +71,20 @@ export class CngxErrorSource {
     const aggregator = this.aggregator;
     effect((onCleanup) => {
       const key = this.cngxErrorSource();
-      aggregator.addSource({
-        key,
-        condition: this.conditionSignal,
-        label: this.label(),
+      const label = this.label();
+      untracked(() => {
+        aggregator.addSource({
+          key,
+          condition: this.conditionSignal,
+          label,
+        });
       });
-      onCleanup(() => aggregator.removeSource(key));
+      onCleanup(() => {
+        untracked(() => aggregator.removeSource(key));
+      });
     });
     this.destroyRef.onDestroy(() => {
-      aggregator.removeSource(this.cngxErrorSource());
+      untracked(() => aggregator.removeSource(this.cngxErrorSource()));
     });
   }
 }
