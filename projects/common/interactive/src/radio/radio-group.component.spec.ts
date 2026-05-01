@@ -149,6 +149,52 @@ describe('CngxRadioGroup + CngxRadio', () => {
     expect(group.consumePendingArrowSelect('b')).toBe(false);
   });
 
+  it('toggles aria-required reactively from the required model', () => {
+    const { fixture, group, groupEl } = setup();
+    expect(groupEl.getAttribute('aria-required')).toBeNull();
+    group.required.set(true);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('toggles aria-invalid + aria-errormessage reactively, gated on errorMessageId presence', () => {
+    @Component({
+      template: `
+        <cngx-radio-group [(value)]="v" [(invalid)]="bad" [errorMessageId]="msgId()">
+          <cngx-radio value="a">A</cngx-radio>
+        </cngx-radio-group>
+      `,
+      imports: [CngxRadioGroup, CngxRadio],
+    })
+    class InvalidHost {
+      v = signal<string | undefined>(undefined);
+      bad = signal(false);
+      msgId = signal<string | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(InvalidHost);
+    fixture.detectChanges();
+    const groupEl = fixture.debugElement
+      .query(By.directive(CngxRadioGroup))
+      .nativeElement as HTMLElement;
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
+    fixture.componentInstance.bad.set(true);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
+    fixture.componentInstance.msgId.set('payment-error');
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-errormessage')).toBe('payment-error');
+
+    fixture.componentInstance.bad.set(false);
+    fixture.detectChanges();
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+  });
+
   it('group exposes a stable name (auto-generated) and propagates it to leaves', () => {
     const { group, radios } = setup();
     expect(group.name()).toMatch(/^cngx-radio-group/);

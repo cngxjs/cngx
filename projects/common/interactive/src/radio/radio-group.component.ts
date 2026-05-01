@@ -76,6 +76,9 @@ import {
     class: 'cngx-radio-group',
     role: 'radiogroup',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-required]': 'required() ? "true" : null',
+    '[attr.aria-invalid]': 'invalid() ? "true" : null',
+    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
     '[class.cngx-radio-group--horizontal]': 'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
   },
@@ -90,6 +93,9 @@ export class CngxRadioGroup<T = unknown>
 {
   readonly value = model<T | undefined>(undefined);
   readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
 
