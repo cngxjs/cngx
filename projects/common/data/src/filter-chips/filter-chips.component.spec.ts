@@ -19,7 +19,7 @@ const TAGS: readonly Tag[] = [
 
 @Component({
   template: `
-    <ng-container cngxFilter #filter="cngxFilter">
+    <ng-container [cngxFilter]="null" #filter="cngxFilter">
       @if (mounted()) {
         <cngx-filter-chips
           label="Tags"
@@ -35,11 +35,11 @@ const TAGS: readonly Tag[] = [
   imports: [CngxFilter, CngxFilterChips],
 })
 class Host {
-  readonly options = TAGS;
-  readonly byLabel = (t: Tag): string => t.label;
-  readonly byId = (t: Tag): string => t.id;
+  readonly options: readonly unknown[] = TAGS;
+  readonly byLabel = (t: unknown): string => (t as Tag).label;
+  readonly byId = (t: unknown): string => (t as Tag).id;
   mounted = signal(true);
-  @ViewChild('filter', { static: true }) filterRef!: CngxFilter<Tag>;
+  @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
 }
 
 async function setup() {
@@ -52,7 +52,7 @@ async function setup() {
   return {
     fixture,
     host: fixture.componentInstance,
-    bridge: bridgeDe.injector.get(CngxFilterChips) as CngxFilterChips<Tag, string>,
+    bridge: bridgeDe.injector.get(CngxFilterChips) as CngxFilterChips<unknown, string>,
     filter: fixture.componentInstance.filterRef,
   };
 }
