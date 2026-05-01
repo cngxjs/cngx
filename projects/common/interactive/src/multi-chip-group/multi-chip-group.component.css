@@ -1,0 +1,10 @@
+:host.cngx-multi-chip-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--cngx-multi-chip-group-gap, var(--cngx-chip-group-gap, 0.5rem));
+}
+
+:host.cngx-multi-chip-group.cngx-multi-chip-group--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
