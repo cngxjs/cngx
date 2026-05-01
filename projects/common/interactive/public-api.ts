@@ -211,3 +211,4 @@ export {
   type CngxErrorAggregatorSourceEntry,
 } from './src/error-aggregator/error-aggregator.token';
 export { CngxErrorSource } from './src/error-source/error-source.directive';
+export { CngxErrorAggregator } from './src/error-aggregator/error-aggregator.directive';
