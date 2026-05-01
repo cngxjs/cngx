@@ -90,6 +90,11 @@ export const routes: Routes = [
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),
       },
       {
+        path: 'data/filter-chips',
+        loadComponent: () =>
+          import('./demos/common/data/filter-chips-demo/filter-chips-demo.component').then((m) => m.FilterChipsDemoComponent),
+      },
+      {
         path: 'data/mat-table',
         loadComponent: () =>
           import('./demos/common/data/mat-table-demo/mat-table-demo.component').then((m) => m.MatTableDemoComponent),
@@ -180,6 +185,21 @@ export const routes: Routes = [
           import('./demos/common/interactive/checkbox-group-demo/checkbox-group-demo.component').then((m) => m.CheckboxGroupDemoComponent),
       },
       {
+        path: 'interactive/chip-group',
+        loadComponent: () =>
+          import('./demos/common/interactive/chip-group-demo/chip-group-demo.component').then((m) => m.ChipGroupDemoComponent),
+      },
+      {
+        path: 'interactive/chip-input',
+        loadComponent: () =>
+          import('./demos/common/interactive/chip-input-demo/chip-input-demo.component').then((m) => m.ChipInputDemoComponent),
+      },
+      {
+        path: 'interactive/chip-interaction',
+        loadComponent: () =>
+          import('./demos/common/interactive/chip-interaction-demo/chip-interaction-demo.component').then((m) => m.ChipInteractionDemoComponent),
+      },
+      {
         path: 'interactive/click-outside',
         loadComponent: () =>
           import('./demos/common/interactive/click-outside-demo/click-outside-demo.component').then((m) => m.ClickOutsideDemoComponent),
@@ -248,6 +268,11 @@ export const routes: Routes = [
         path: 'interactive/menu-trigger',
         loadComponent: () =>
           import('./demos/common/interactive/menu-trigger-demo/menu-trigger-demo.component').then((m) => m.MenuTriggerDemoComponent),
+      },
+      {
+        path: 'interactive/multi-chip-group',
+        loadComponent: () =>
+          import('./demos/common/interactive/multi-chip-group-demo/multi-chip-group-demo.component').then((m) => m.MultiChipGroupDemoComponent),
       },
       {
         path: 'interactive/nav',
