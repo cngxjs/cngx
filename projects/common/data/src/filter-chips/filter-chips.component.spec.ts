@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxFilter } from '../filter/filter.directive';
-import { CngxFilterChips } from './filter-chips.component';
+import { CngxFilterChip, CngxFilterChips } from './filter-chips.component';
 
 interface Tag {
   readonly id: string;
@@ -128,5 +128,121 @@ describe('CngxFilterChips', () => {
     expect(html).toContain('Red');
     expect(html).toContain('Green');
     expect(html).toContain('Blue');
+  });
+
+  it('*cngxFilterChip slot replaces default cell rendering when projected', async () => {
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            label="Tags"
+            [options]="options"
+            [optionLabel]="byLabel"
+            [optionValue]="byId"
+            [filterRef]="filter"
+            filterKey="tags"
+          >
+            <ng-template
+              cngxFilterChip
+              let-option
+              let-label="label"
+            >
+              <span data-test="custom-chip" [attr.data-value]="byId(option)"
+                >★ {{ label }}</span>
+            </ng-template>
+          </cngx-filter-chips>
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips, CngxFilterChip],
+    })
+    class SlotHost {
+      readonly options: readonly unknown[] = TAGS;
+      readonly byLabel = (t: unknown): string => (t as Tag).label;
+      readonly byId = (t: unknown): string => (t as Tag).id;
+    }
+
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const customCells = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      '[data-test="custom-chip"]',
+    );
+    expect(customCells.length).toBe(TAGS.length);
+    expect(customCells[0].textContent?.trim()).toContain('★ Red');
+    // Default `<span cngxChipInGroup>` cells must NOT be rendered when slot wins
+    const defaultCells = (
+      fixture.nativeElement as HTMLElement
+    ).querySelectorAll('span[cngxChipInGroup]');
+    // Custom cells render the cngxChipInGroup attribute themselves only if
+    // the consumer wires it; in this test the slot template above does
+    // NOT wire cngxChipInGroup — so the default branch is suppressed and
+    // no chip-in-group leaves exist. Sanity-check the suppression:
+    expect(defaultCells.length).toBe(0);
+  });
+
+  it('keyFn — object-valued TValue with stable id survives re-emission with fresh references', async () => {
+    interface Tagged {
+      readonly id: string;
+      readonly label: string;
+    }
+    interface OptionRow {
+      readonly tag: Tagged;
+    }
+    const initialOptions: readonly OptionRow[] = [
+      { tag: { id: 'a', label: 'A' } },
+      { tag: { id: 'b', label: 'B' } },
+    ];
+
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            label="Tagged"
+            [options]="options()"
+            [optionLabel]="byLabel"
+            [optionValue]="byTag"
+            [keyFn]="byTagId"
+            [filterRef]="filter"
+            filterKey="tagged"
+          />
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips],
+    })
+    class ObjHost {
+      options = signal<readonly unknown[]>(initialOptions);
+      readonly byLabel = (o: unknown): string => (o as OptionRow).tag.label;
+      readonly byTag = (o: unknown): unknown => (o as OptionRow).tag;
+      readonly byTagId = (t: unknown): string => (t as Tagged).id;
+      @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
+    }
+
+    const fixture = TestBed.createComponent(ObjHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const bridge = fixture.debugElement
+      .query(By.directive(CngxFilterChips))
+      .injector.get(CngxFilterChips) as CngxFilterChips<unknown, unknown>;
+
+    // Select the first tag's identity (object value with id 'a').
+    bridge.selectedValues.set([initialOptions[0].tag]);
+    fixture.detectChanges();
+
+    const filter = fixture.componentInstance.filterRef;
+    const pred = filter.predicate();
+    expect(pred).not.toBeNull();
+    // Refetch with a FRESH OBJECT reference for the same id — Object.is
+    // alone would fail; keyFn extracts a stable string key so membership
+    // holds across the re-emission.
+    const refreshed: OptionRow = { tag: { id: 'a', label: 'A' } };
+    expect(refreshed.tag).not.toBe(initialOptions[0].tag);
+    expect(pred!(refreshed)).toBe(true);
+    // Negative case: the other id is rejected.
+    const otherRefreshed: OptionRow = { tag: { id: 'b', label: 'B' } };
+    expect(pred!(otherRefreshed)).toBe(false);
   });
 });

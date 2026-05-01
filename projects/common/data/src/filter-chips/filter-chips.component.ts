@@ -174,9 +174,17 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
    */
   readonly keyFn = input<(value: TValue) => unknown>((v) => v);
 
+  /**
+   * Resolved consumer-supplied chip template. The query uses an
+   * instantiation expression (`CngxFilterChip<TItem, TValue>`) so the
+   * bridge's class generics propagate into the slot directive type;
+   * absent that propagation, `contentChild(CngxFilterChip)` returns
+   * `Signal<CngxFilterChip<unknown, unknown> | undefined>` and the
+   * `chipContext()` helper would have to widen on every call.
+   */
   protected readonly chipTemplate: Signal<
     CngxFilterChip<TItem, TValue> | undefined
-  > = contentChild(CngxFilterChip);
+  > = contentChild(CngxFilterChip<TItem, TValue>);
 
   protected readonly chipContext = (
     option: TItem,

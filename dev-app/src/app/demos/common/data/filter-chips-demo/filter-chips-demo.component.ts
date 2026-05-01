@@ -4,7 +4,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxFilter, CngxFilterChips } from '@cngx/common/data';
+import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
+import { CngxChip } from '@cngx/common/display';
+import { CngxChipInGroup } from '@cngx/common/interactive';
 
 @Component({
   selector: 'app-filter-chips-demo',
@@ -15,15 +17,41 @@ import { CngxFilter, CngxFilterChips } from '@cngx/common/data';
     DocShellComponent,
     CngxFilter,
     CngxFilterChips,
+    CngxFilterChip,
+    CngxChip,
+    CngxChipInGroup,
   ],
   template: `
     <app-doc-shell title="Filter chips"
       description="Bridge between a multi-select chip strip and a parent <code>CngxFilter</code>. The bridge registers a single closure-style predicate ONCE on mount; chip toggles update the bridge's internal <code>selectedValues</code>; downstream filtered consumers recompute via the predicate's lazy read of <code>selectedValues()</code>. Pillar 1 derivation — no <code>effect()</code> write-back. Empty selection short-circuits to &quot;no filter applied&quot;. <strong>Phase 5 limitation:</strong> the bridge's <code>[optionValue]</code> function extracts a key from each list item AND each chip option — they must share a shape. A future <code>[itemValue]</code> input will separate the two extractors; tracked as a follow-up."
-      [apiComponents]="['CngxFilterChips', 'CngxFilter']">
-      <app-example-card title="Multi-role filter wired to a list"
+      [apiComponents]="['CngxFilterChips', 'CngxFilterChip', 'CngxFilter']">
+      <app-example-card title="Custom chip cell via *cngxFilterChip"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
+        
+  <ng-container [cngxFilter]="null" #filter="cngxFilter">
+    <cngx-filter-chips
+      label="Tags (custom cell)"
+      [options]="tagItems"
+      [optionLabel]="tagLabel"
+      [optionValue]="tagId"
+      [filterRef]="filter"
+      filterKey="tags"
+    >
+      <ng-template cngxFilterChip let-option let-value="value" let-label="label">
+        <cngx-chip cngxChipInGroup [value]="value">
+          <span aria-hidden="true">★</span>
+          {{ label }}
+        </cngx-chip>
+      </ng-template>
+    </cngx-filter-chips>
+  </ng-container>
+      </app-example-card>
+      <app-example-card title="Multi-role filter wired to a list"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
         
   <ng-container [cngxFilter]="null" #filter="cngxFilter">
     <cngx-filter-chips
@@ -50,8 +78,43 @@ import { CngxFilter, CngxFilterChips } from '@cngx/common/data';
   `,
 })
 export class FilterChipsDemoComponent {
-  protected readonly _s0 = 'The <code>&lt;cngx-filter-chips&gt;</code> bridge synchronises with the parent <code>CngxFilter</code>. The list reads <code>filter.predicate()</code> in a <code>computed</code>; toggling chips re-runs the filter without any <code>effect()</code> write-back.';
+  protected readonly _s0 = 'The slot directive replaces the entire chip cell. Consumers must redeclare <code>cngxChipInGroup [value]</code> on the projected element so the chip participates in the group selection. The slot context exposes <code>$implicit</code>/<code>option</code>, <code>value</code>, and <code>label</code>.';
+  protected readonly _s1 = 'The <code>&lt;cngx-filter-chips&gt;</code> bridge synchronises with the parent <code>CngxFilter</code>. The list reads <code>filter.predicate()</code> in a <code>computed</code>; toggling chips re-runs the filter without any <code>effect()</code> write-back.';
   protected readonly _srcHtml0 = `<ng-container [cngxFilter]="null" #filter="cngxFilter">
+    <cngx-filter-chips
+      label="Tags (custom cell)"
+      [options]="tagItems"
+      [optionLabel]="tagLabel"
+      [optionValue]="tagId"
+      [filterRef]="filter"
+      filterKey="tags"
+    >
+      <ng-template cngxFilterChip let-option let-value="value" let-label="label">
+        <cngx-chip cngxChipInGroup [value]="value">
+          <span aria-hidden="true">★</span>
+          {{ label }}
+        </cngx-chip>
+      </ng-template>
+    </cngx-filter-chips>
+  </ng-container>`;
+  protected readonly _srcTs0 = `import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
+import { CngxChip } from '@cngx/common/display';
+import { CngxChipInGroup } from '@cngx/common/interactive';
+
+
+  protected readonly tagItems: readonly unknown[] = [
+    { id: 'urgent', label: 'Urgent' },
+    { id: 'review', label: 'Review' },
+    { id: 'blocker', label: 'Blocker' },
+    { id: 'follow-up', label: 'Follow-up' },
+    { id: 'on-hold', label: 'On hold' },
+  ];
+
+  protected readonly tagLabel = (t: unknown): string =>
+    (t as { readonly label: string }).label;
+  protected readonly tagId = (t: unknown): string =>
+    (t as { readonly id: string }).id;`;
+  protected readonly _srcHtml1 = `<ng-container [cngxFilter]="null" #filter="cngxFilter">
     <cngx-filter-chips
       label="Tags"
       [options]="tagItems"
@@ -71,7 +134,9 @@ export class FilterChipsDemoComponent {
       }
     </ul>
   </ng-container>`;
-  protected readonly _srcTs0 = `import { CngxFilter, CngxFilterChips } from '@cngx/common/data';
+  protected readonly _srcTs1 = `import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
+import { CngxChip } from '@cngx/common/display';
+import { CngxChipInGroup } from '@cngx/common/interactive';
 
 
   protected readonly tagItems: readonly unknown[] = [

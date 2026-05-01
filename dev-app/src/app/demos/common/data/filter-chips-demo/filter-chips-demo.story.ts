@@ -14,9 +14,11 @@ export const STORY: DemoSpec = {
     '<code>[optionValue]</code> function extracts a key from each list item AND each ' +
     'chip option — they must share a shape. A future <code>[itemValue]</code> input will ' +
     'separate the two extractors; tracked as a follow-up.',
-  apiComponents: ['CngxFilterChips', 'CngxFilter'],
+  apiComponents: ['CngxFilterChips', 'CngxFilterChip', 'CngxFilter'],
   moduleImports: [
-    "import { CngxFilter, CngxFilterChips } from '@cngx/common/data';",
+    "import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';",
+    "import { CngxChip } from '@cngx/common/display';",
+    "import { CngxChipInGroup } from '@cngx/common/interactive';",
   ],
   setup: `
   protected readonly tagItems: readonly unknown[] = [
@@ -33,6 +35,34 @@ export const STORY: DemoSpec = {
     (t as { readonly id: string }).id;
   `,
   sections: [
+    {
+      title: 'Custom chip cell via *cngxFilterChip',
+      subtitle:
+        'The slot directive replaces the entire chip cell. Consumers ' +
+        'must redeclare <code>cngxChipInGroup [value]</code> on the projected ' +
+        'element so the chip participates in the group selection. The slot ' +
+        'context exposes <code>$implicit</code>/<code>option</code>, ' +
+        '<code>value</code>, and <code>label</code>.',
+      imports: ['CngxFilter', 'CngxFilterChips', 'CngxFilterChip', 'CngxChip', 'CngxChipInGroup'],
+      template: `
+  <ng-container [cngxFilter]="null" #filter="cngxFilter">
+    <cngx-filter-chips
+      label="Tags (custom cell)"
+      [options]="tagItems"
+      [optionLabel]="tagLabel"
+      [optionValue]="tagId"
+      [filterRef]="filter"
+      filterKey="tags"
+    >
+      <ng-template cngxFilterChip let-option let-value="value" let-label="label">
+        <cngx-chip cngxChipInGroup [value]="value">
+          <span aria-hidden="true">★</span>
+          {{ label }}
+        </cngx-chip>
+      </ng-template>
+    </cngx-filter-chips>
+  </ng-container>`,
+    },
     {
       title: 'Multi-role filter wired to a list',
       subtitle:
