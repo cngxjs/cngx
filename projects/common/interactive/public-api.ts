@@ -38,6 +38,11 @@ export {
   type CngxButtonToggleGroupContract,
 } from './src/button-toggle/button-toggle-group.token';
 export { CngxButtonToggleGroup } from './src/button-toggle/button-toggle-group.component';
+export {
+  CNGX_BUTTON_MULTI_TOGGLE_GROUP,
+  type CngxButtonMultiToggleGroupContract,
+} from './src/button-toggle/button-multi-toggle-group.token';
+export { CngxButtonMultiToggleGroup } from './src/button-toggle/button-multi-toggle-group.component';
 export { CngxButtonToggle } from './src/button-toggle/button-toggle.directive';
 export {
   CNGX_RADIO_GROUP,
