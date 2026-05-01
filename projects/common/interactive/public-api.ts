@@ -32,6 +32,7 @@ export {
 } from './src/control-value/control-value.token';
 export { CngxToggle } from './src/toggle/toggle.component';
 export { CngxCheckbox } from './src/checkbox/checkbox.component';
+export { CngxCheckboxGroup } from './src/checkbox-group/checkbox-group.component';
 export {
   CNGX_RADIO_GROUP,
   type CngxRadioGroupContract,
