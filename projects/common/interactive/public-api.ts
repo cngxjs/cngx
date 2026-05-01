@@ -59,6 +59,7 @@ export { CngxChipInteraction } from './src/chip-interaction/chip-interaction.dir
 export { CngxChipInGroup } from './src/chip-in-group/chip-in-group.directive';
 export { CngxChipGroup } from './src/chip-group/chip-group.component';
 export { CngxMultiChipGroup } from './src/multi-chip-group/multi-chip-group.component';
+export { CngxChipInput } from './src/chip-input/chip-input.directive';
 export {
   CNGX_TREE_CONTROLLER_FACTORY,
   createTreeController,
