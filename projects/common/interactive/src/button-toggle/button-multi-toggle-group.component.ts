@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
-  createSelectionController,
+  CNGX_SELECTION_CONTROLLER_FACTORY,
   type SelectionController,
 } from '@cngx/core/utils';
 
@@ -107,10 +107,11 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly label = input.required<string>();
   readonly keyFn = input<(value: T) => unknown>((v) => v);
 
-  private readonly controller: SelectionController<T> =
-    createSelectionController<T>(this.selectedValues, {
-      keyFn: (v) => this.keyFn()(v),
-    });
+  private readonly controller: SelectionController<T> = inject(
+    CNGX_SELECTION_CONTROLLER_FACTORY,
+  )<T>(this.selectedValues, {
+    keyFn: (v) => this.keyFn()(v),
+  });
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.controller.destroy());
