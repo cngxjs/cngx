@@ -24,12 +24,31 @@ import {
  * supplied by the consumer; checked-ness is derived from
  * `group.value() === this.value()`.
  *
- * Composes `CngxRovingItem` as a host directive so arrow-key
- * navigation in the parent group (driven by
- * `CngxRovingTabindex`) skips disabled radios automatically.
- * Selection on click, Space, or Enter; Tab and arrow keys do not
- * select on focus alone (W3C APG manual-select variant — the
- * parent group's keyboard contract makes this explicit).
+ * Composes `CngxRovingItem` as a host directive with input
+ * forwarding (`'cngxRovingItemDisabled: disabled'`) so the
+ * consumer's `[disabled]` binding flows into both the radio's
+ * own `disabled` model AND the roving directive's skip-test —
+ * arrow-key navigation in the parent group (driven by
+ * `CngxRovingTabindex`) skips per-radio-disabled leaves
+ * automatically. Group-level `[disabled]` is a separate cascade
+ * via `radioDisabled = computed(() => group.disabled() ||
+ * disabled())`; it blocks click + Space/Enter + auto-select
+ * (`consumePendingArrowSelect` returns false when the group is
+ * disabled) but is NOT forwarded to roving — a fully-disabled
+ * group lets focus transit visually while every selection
+ * pathway short-circuits.
+ *
+ * Selection on click, Space, or Enter (auto-select also fires
+ * on arrow nav via `consumePendingArrowSelect`); Tab and
+ * programmatic focus do not select on focus alone (W3C APG
+ * variant — the parent group's keyboard contract makes this
+ * explicit).
+ *
+ * The `[attr.name]` host binding is **cosmetic** (parity with
+ * native `<input type="radio" name="…">` markup expectations);
+ * the `<div role="radio">` host does not participate in HTML
+ * form submission, so the attribute carries no functional
+ * weight.
  *
  * @category interactive
  */
@@ -38,7 +57,12 @@ import {
   exportAs: 'cngxRadio',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [CngxRovingItem],
+  hostDirectives: [
+    {
+      directive: CngxRovingItem,
+      inputs: ['cngxRovingItemDisabled: disabled'],
+    },
+  ],
   imports: [CngxRadioIndicator],
   host: {
     class: 'cngx-radio',

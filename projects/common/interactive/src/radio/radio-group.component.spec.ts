@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxRovingItem } from '@cngx/common/a11y';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -108,6 +109,18 @@ describe('CngxRadioGroup + CngxRadio', () => {
     radios[0].el.click();
     fixture.detectChanges();
     expect(host.v()).toBe('a');
+  });
+
+  it('per-radio disabled flows into CngxRovingItem so arrow-nav skips the leaf', () => {
+    const { fixture, host } = setup();
+    host.cOff.set(true);
+    fixture.detectChanges();
+    const rovingItems = fixture.debugElement
+      .queryAll(By.directive(CngxRovingItem))
+      .map((de) => de.injector.get(CngxRovingItem));
+    expect(rovingItems[0].disabled()).toBe(false);
+    expect(rovingItems[1].disabled()).toBe(false);
+    expect(rovingItems[2].disabled()).toBe(true);
   });
 
   it('arrow keydown raises pendingArrowSelect; focused leaf consumes it and selects', () => {
