@@ -2,6 +2,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
+  inject,
   input,
   model,
 } from '@angular/core';
@@ -119,6 +121,10 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
     createSelectionController<T>(this.selectedValues, {
       keyFn: (v) => this.keyFn()(v),
     });
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.controller.destroy());
+  }
 
   readonly selectedCount = this.controller.selectedCount;
 

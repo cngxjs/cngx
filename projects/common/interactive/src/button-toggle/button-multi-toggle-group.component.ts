@@ -1,6 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  inject,
   input,
   model,
   type Signal,
@@ -109,6 +111,10 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     createSelectionController<T>(this.selectedValues, {
       keyFn: (v) => this.keyFn()(v),
     });
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.controller.destroy());
+  }
 
   isSelected(value: T): Signal<boolean> {
     return this.controller.isSelected(value);
