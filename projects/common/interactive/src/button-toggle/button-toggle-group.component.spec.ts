@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
+import { CngxButtonMultiToggleGroup } from './button-multi-toggle-group.component';
 import { CngxButtonToggleGroup } from './button-toggle-group.component';
 import { CNGX_BUTTON_TOGGLE_GROUP } from './button-toggle-group.token';
 import { CngxButtonToggle } from './button-toggle.directive';
@@ -147,5 +148,30 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     expect(() => {
       TestBed.createComponent(Orphan).detectChanges();
     }).toThrow(/CngxButtonToggle requires a parent/);
+  });
+
+  it('CngxButtonToggle with both single AND multi parents throws (exactly-one contract)', () => {
+    @Component({
+      template: `
+        <cngx-button-toggle-group label="Outer" [(value)]="v">
+          <cngx-button-multi-toggle-group label="Inner" [(selectedValues)]="m">
+            <button cngxButtonToggle value="x">X</button>
+          </cngx-button-multi-toggle-group>
+        </cngx-button-toggle-group>
+      `,
+      imports: [
+        CngxButtonToggleGroup,
+        CngxButtonMultiToggleGroup,
+        CngxButtonToggle,
+      ],
+    })
+    class DualParent {
+      v = signal<string | undefined>(undefined);
+      m = signal<string[]>([]);
+    }
+
+    expect(() => {
+      TestBed.createComponent(DualParent).detectChanges();
+    }).toThrow(/both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/);
   });
 });
