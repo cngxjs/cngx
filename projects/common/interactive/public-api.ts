@@ -205,3 +205,9 @@ export {
   type CngxErrorScopeContract,
 } from './src/error-scope/error-scope.token';
 export { CngxErrorScope } from './src/error-scope/error-scope.directive';
+export {
+  CNGX_ERROR_AGGREGATOR,
+  type CngxErrorAggregatorContract,
+  type CngxErrorAggregatorSourceEntry,
+} from './src/error-aggregator/error-aggregator.token';
+export { CngxErrorSource } from './src/error-source/error-source.directive';
