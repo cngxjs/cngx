@@ -53,6 +53,12 @@ import {
  * >Dark mode</div>
  * ```
  *
+ * @example
+ * ```html
+ * <ng-template #icon><span aria-hidden="true">★</span></ng-template>
+ * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>
+ * ```
+ *
  * @category interactive
  */
 @Component({
