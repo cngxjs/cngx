@@ -1,0 +1,10 @@
+:host.cngx-checkbox-group {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--cngx-checkbox-group-gap, 0.5rem);
+}
+
+:host.cngx-checkbox-group.cngx-checkbox-group--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
