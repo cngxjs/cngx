@@ -9,12 +9,17 @@ import { InjectionToken, type Signal } from '@angular/core';
  * single + multi groups can share the same leaf implementation.
  *
  * Selection state is queried via `isSelected(value)` and mutated via
- * `toggle(value)` / `remove(value)`. `isMulti` and `isDisabled` are
- * `Signal<boolean>` so the leaf's reactive `aria-selected`,
- * `aria-disabled`, and disabled-cascade derivations track them
- * without re-injection. Per `reference_atomic_decompose` §4 — leaf
- * communicates with its parent via DI token, never via concrete
- * parent-class injection.
+ * `toggle(value)` / `remove(value)`. `isDisabled` is a
+ * `Signal<boolean>` so the leaf's reactive `aria-disabled` and the
+ * disabled-cascade derivation track it without re-injection. Per
+ * `reference_atomic_decompose` §4 — leaf communicates with its
+ * parent via DI token, never via concrete parent-class injection.
+ *
+ * Mode (single vs multi) is intentionally NOT exposed on this
+ * contract: the leaf does not branch behaviour on mode, and no
+ * consumer / bridge surface in scope reads it. A future feature
+ * that needs mode discovery can extend the interface then; until
+ * then the field stays out of the public surface.
  *
  * @category interactive
  */
@@ -22,7 +27,6 @@ export interface CngxChipGroupHost<T = unknown> {
   isSelected(value: T): boolean;
   toggle(value: T): void;
   remove(value: T): void;
-  readonly isMulti: Signal<boolean>;
   readonly isDisabled: Signal<boolean>;
 }
 

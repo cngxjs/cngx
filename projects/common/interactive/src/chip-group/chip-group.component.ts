@@ -4,7 +4,6 @@ import {
   computed,
   input,
   model,
-  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import type { CngxAsyncState } from '@cngx/core/utils';
@@ -106,9 +105,6 @@ export class CngxChipGroup<T = unknown>
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
-
-  /** CngxChipGroupHost — single-mode constant. */
-  readonly isMulti = signal(false).asReadonly();
 
   /** CngxChipGroupHost — leaf-side cascade source. */
   readonly isDisabled = this.disabled;

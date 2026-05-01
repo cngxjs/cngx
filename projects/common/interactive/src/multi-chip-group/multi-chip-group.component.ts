@@ -6,7 +6,6 @@ import {
   inject,
   input,
   model,
-  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
@@ -137,9 +136,6 @@ export class CngxMultiChipGroup<T = unknown>
   readonly label = input<string | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly keyFn = input<(value: T) => unknown>((v) => v);
-
-  /** CngxChipGroupHost — multi-mode constant. */
-  readonly isMulti = signal(true).asReadonly();
 
   /** CngxChipGroupHost — leaf-side cascade source. */
   readonly isDisabled = this.disabled;

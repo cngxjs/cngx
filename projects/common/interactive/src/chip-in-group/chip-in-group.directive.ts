@@ -1,4 +1,4 @@
-import { Directive, computed, inject, input, model } from '@angular/core';
+import { Directive, computed, inject, input } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
 
 import {
@@ -105,7 +105,7 @@ export class CngxChipInGroup<T = unknown> {
   );
 
   readonly value = input.required<T>();
-  readonly disabled = model<boolean>(false);
+  readonly disabled = input<boolean>(false);
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });
