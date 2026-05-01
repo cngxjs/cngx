@@ -179,6 +179,56 @@ describe('CngxCheckboxGroup', () => {
     expect(groupEl.getAttribute('aria-busy')).toBeNull();
   });
 
+  it('keyFn enables stable membership across re-emissions of object-valued items', () => {
+    interface User {
+      readonly id: number;
+      readonly name: string;
+    }
+
+    @Component({
+      template: `
+        <cngx-checkbox-group
+          label="Users"
+          [keyFn]="byId"
+          [allValues]="pool()"
+          [(selectedValues)]="picked"
+        />
+      `,
+      imports: [CngxCheckboxGroup],
+    })
+    class ObjectHost {
+      readonly byId = (u: User): number => u.id;
+      pool = signal<readonly User[]>([
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+      ]);
+      picked = signal<User[]>([]);
+    }
+
+    const fixture = TestBed.createComponent(ObjectHost);
+    fixture.detectChanges();
+    const group = fixture.debugElement
+      .query(By.directive(CngxCheckboxGroup))
+      .injector.get(CngxCheckboxGroup) as CngxCheckboxGroup<User>;
+
+    const alice = fixture.componentInstance.pool()[0];
+    group.select(alice);
+    fixture.detectChanges();
+    expect(group.selectedCount()).toBe(1);
+
+    // Refetch with a fresh reference for the same id; membership must hold.
+    fixture.componentInstance.picked.set([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ]);
+    fixture.componentInstance.pool.set([
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ]);
+    fixture.detectChanges();
+    expect(group.allSelected()).toBe(true);
+  });
+
   it('selected snapshot stays structurally equal across equal-array re-emissions', () => {
     const { fixture, group, host } = setup();
     host.picked.set(['a', 'b']);

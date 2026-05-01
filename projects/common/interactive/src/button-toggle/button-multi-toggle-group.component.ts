@@ -101,12 +101,15 @@ export class CngxButtonMultiToggleGroup<T = unknown>
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
+  readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   private readonly fallbackName = nextUid('cngx-button-multi-toggle-group');
   readonly name = computed(() => this.nameInput() ?? this.fallbackName);
 
   private readonly controller: SelectionController<T> =
-    createSelectionController<T>(this.selectedValues, { keyFn: (v) => v });
+    createSelectionController<T>(this.selectedValues, {
+      keyFn: (v) => this.keyFn()(v),
+    });
 
   isSelected(value: T): Signal<boolean> {
     return this.controller.isSelected(value);

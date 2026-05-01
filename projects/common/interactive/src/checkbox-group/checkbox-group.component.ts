@@ -49,6 +49,12 @@ import {
  * pass the full option pool here so `toggleAll()` can
  * select-or-clear-all per the user's mental model.
  *
+ * `[keyFn]` lets consumers with object-typed values map each value
+ * to a stable membership key (typically `(v) => v.id`). Without it,
+ * membership uses identity / primitive equality — which silently
+ * breaks across re-emissions when the consumer refetches array
+ * elements with the same id but new references.
+ *
  * `[state]` is an optional `CngxAsyncState<unknown>` input; when bound,
  * `aria-busy` reflects `state.status() === 'loading'` reactively so AT
  * announces the busy moment without the consumer wiring the attribute
@@ -101,9 +107,12 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
   readonly label = input.required<string>();
   readonly allValues = input<readonly T[] | undefined>(undefined);
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+  readonly keyFn = input<(value: T) => unknown>((v) => v);
 
   private readonly controller: SelectionController<T> =
-    createSelectionController<T>(this.selectedValues, { keyFn: (v) => v });
+    createSelectionController<T>(this.selectedValues, {
+      keyFn: (v) => this.keyFn()(v),
+    });
 
   readonly selectedCount = this.controller.selectedCount;
 
