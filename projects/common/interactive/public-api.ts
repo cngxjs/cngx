@@ -34,6 +34,12 @@ export { CngxToggle } from './src/toggle/toggle.component';
 export { CngxCheckbox } from './src/checkbox/checkbox.component';
 export { CngxCheckboxGroup } from './src/checkbox-group/checkbox-group.component';
 export {
+  CNGX_BUTTON_TOGGLE_GROUP,
+  type CngxButtonToggleGroupContract,
+} from './src/button-toggle/button-toggle-group.token';
+export { CngxButtonToggleGroup } from './src/button-toggle/button-toggle-group.component';
+export { CngxButtonToggle } from './src/button-toggle/button-toggle.directive';
+export {
   CNGX_RADIO_GROUP,
   type CngxRadioGroupContract,
   type CngxRadioRegistration,

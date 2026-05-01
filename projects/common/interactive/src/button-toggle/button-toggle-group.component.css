@@ -1,0 +1,10 @@
+:host.cngx-button-toggle-group {
+  display: inline-flex;
+  flex-direction: row;
+  gap: var(--cngx-button-toggle-group-gap, 0);
+  border-radius: var(--cngx-button-toggle-group-radius, 0.375rem);
+}
+
+:host.cngx-button-toggle-group:not(.cngx-button-toggle-group--horizontal) {
+  flex-direction: column;
+}
