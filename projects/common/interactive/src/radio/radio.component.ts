@@ -105,7 +105,7 @@ export class CngxRadio<T = unknown> {
   readonly dotGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly id = nextUid('cngx-radio');
-  protected readonly describedId = `${this.id}-desc`;
+  protected readonly describedId = nextUid('cngx-radio-desc');
 
   protected readonly radioChecked = computed(
     () => this.group.value() === this.value(),

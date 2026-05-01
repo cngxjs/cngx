@@ -87,6 +87,7 @@ import {
     { provide: CNGX_CONTROL_VALUE, useExisting: CngxRadioGroup },
   ],
   template: `<ng-content />`,
+  styleUrl: './radio-group.component.css',
 })
 export class CngxRadioGroup<T = unknown>
   implements CngxRadioGroupContract<T>, CngxControlValue<T | undefined>

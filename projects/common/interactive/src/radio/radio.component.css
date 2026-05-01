@@ -1,12 +1,7 @@
-:host.cngx-radio-group {
-  display: inline-flex;
-  flex-direction: column;
-  gap: var(--cngx-radio-group-gap, 0.5rem);
-}
-
-:host.cngx-radio-group.cngx-radio-group--horizontal {
-  flex-direction: row;
-}
+/* Visual state (filled circle vs ring) lives on the inner
+   <cngx-radio-indicator>; the .cngx-radio--checked /
+   .cngx-radio--disabled host classes are unstyled here on purpose
+   and exposed as consumer-theming hooks. */
 
 :host.cngx-radio {
   display: inline-flex;
