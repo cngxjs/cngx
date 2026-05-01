@@ -52,6 +52,18 @@ import { CngxToggle } from '@cngx/common/interactive';
   <cngx-toggle [(value)]="notifications" labelPosition="before">Label before</cngx-toggle>
   <cngx-toggle [(value)]="notifications">Label after (default)</cngx-toggle>
       </app-example-card>
+      <app-example-card title="Custom thumb glyph"
+        [subtitle]="_s3"
+        [sourceHtml]="_srcHtml3"
+        [sourceTs]="_srcTs3"
+        [sourceCss]="_srcCss3">
+        
+  <ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="starGlyph">Star thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="checkGlyph">Check thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications">Default thumb (no glyph)</cngx-toggle>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
@@ -59,6 +71,7 @@ export class ToggleDemoComponent {
   protected readonly _s0 = 'Click anywhere on the row, or focus and press <strong>Space</strong>/<strong>Enter</strong>. The host signal updates via <code>[(value)]</code>.';
   protected readonly _s1 = 'When <code>[disabled]</code> is true and <code>disabledReason</code> is non-empty, the host emits <code>aria-describedby</code> pointing to a hidden span — screen-readers announce <em>why</em> the control is disabled.';
   protected readonly _s2 = '<code>[labelPosition]="\'before\'"</code> renders the label to the left of the track via <code>flex-direction: row-reverse</code> on the host class.';
+  protected readonly _s3 = '<code>cngx-toggle</code> projects an optional <code>[thumbGlyph]</code> <code>TemplateRef&lt;void&gt;</code> inside the thumb span — useful for design-system icons or branded glyphs. The thumb wrapper stays <code>aria-hidden="true"</code>, so the glyph is decorative regardless of consumer markup.';
   protected readonly _srcHtml0 = `<cngx-toggle [(value)]="notifications">Receive e-mail notifications</cngx-toggle>
   <p class="caption">Bound: <code>{{ notifications() }}</code></p>`;
   protected readonly _srcTs0 = `import { CngxToggle } from '@cngx/common/interactive';
@@ -92,6 +105,18 @@ export class ToggleDemoComponent {
   protected readonly dark = signal(true);
   protected readonly systemLocked = signal(false);`;
   protected readonly _srcCss2 = `cngx-toggle { display: inline-flex; margin-right: 24px; }`;
+  protected readonly _srcHtml3 = `<ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="starGlyph">Star thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="checkGlyph">Check thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications">Default thumb (no glyph)</cngx-toggle>`;
+  protected readonly _srcTs3 = `import { CngxToggle } from '@cngx/common/interactive';
+
+
+  protected readonly notifications = signal(false);
+  protected readonly dark = signal(true);
+  protected readonly systemLocked = signal(false);`;
+  protected readonly _srcCss3 = `cngx-toggle { display: inline-flex; margin-right: 24px; }`;
 
   protected readonly notifications = signal(false);
   protected readonly dark = signal(true);

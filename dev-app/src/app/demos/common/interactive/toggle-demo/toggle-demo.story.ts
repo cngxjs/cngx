@@ -56,5 +56,22 @@ export const STORY: DemoSpec = {
   <cngx-toggle [(value)]="notifications">Label after (default)</cngx-toggle>`,
       css: `cngx-toggle { display: inline-flex; margin-right: 24px; }`,
     },
+    {
+      title: 'Custom thumb glyph',
+      subtitle:
+        '<code>cngx-toggle</code> projects an optional <code>[thumbGlyph]</code> ' +
+        '<code>TemplateRef&lt;void&gt;</code> inside the thumb span — useful for ' +
+        'design-system icons or branded glyphs. The thumb wrapper stays ' +
+        '<code>aria-hidden="true"</code>, so the glyph is decorative regardless of ' +
+        'consumer markup.',
+      imports: ['CngxToggle'],
+      template: `
+  <ng-template #starGlyph><span aria-hidden="true">★</span></ng-template>
+  <ng-template #checkGlyph><span aria-hidden="true">✓</span></ng-template>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="starGlyph">Star thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications" [thumbGlyph]="checkGlyph">Check thumb</cngx-toggle>
+  <cngx-toggle [(value)]="notifications">Default thumb (no glyph)</cngx-toggle>`,
+      css: `cngx-toggle { display: inline-flex; margin-right: 24px; }`,
+    },
   ],
 };
