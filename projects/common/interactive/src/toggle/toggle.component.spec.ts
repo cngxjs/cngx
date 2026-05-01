@@ -87,4 +87,22 @@ describe('CngxToggle', () => {
     const de = fixture.debugElement.query(By.directive(CngxToggle));
     expect(de.injector.get(CNGX_CONTROL_VALUE)).toBe(dir);
   });
+
+  it('projects thumbGlyph inside the thumb span when provided', () => {
+    @Component({
+      template: `
+        <ng-template #icon><span data-test="thumb-icon">★</span></ng-template>
+        <cngx-toggle [thumbGlyph]="icon">L</cngx-toggle>
+      `,
+      imports: [CngxToggle],
+    })
+    class GlyphHost {}
+
+    const fixture = TestBed.createComponent(GlyphHost);
+    fixture.detectChanges();
+    const projected = (fixture.nativeElement as HTMLElement).querySelector(
+      '.cngx-toggle__thumb [data-test="thumb-icon"]',
+    );
+    expect(projected?.textContent).toBe('★');
+  });
 });

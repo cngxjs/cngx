@@ -1,9 +1,11 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   input,
   model,
+  type TemplateRef,
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
 
@@ -73,9 +75,14 @@ import {
     '(keydown.enter)': 'handleKeydown($event)',
   },
   providers: [{ provide: CNGX_CONTROL_VALUE, useExisting: CngxToggle }],
+  imports: [NgTemplateOutlet],
   template: `
     <span class="cngx-toggle__track" aria-hidden="true">
-      <span class="cngx-toggle__thumb"></span>
+      <span class="cngx-toggle__thumb">
+        @if (thumbGlyph(); as glyph) {
+          <ng-container *ngTemplateOutlet="glyph" />
+        }
+      </span>
     </span>
     <span class="cngx-toggle__label">
       <ng-content />
@@ -93,6 +100,7 @@ export class CngxToggle implements CngxControlValue<boolean> {
   readonly disabled = model<boolean>(false);
   readonly disabledReason = input<string>('');
   readonly labelPosition = input<'before' | 'after'>('after');
+  readonly thumbGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-toggle-desc');
 
