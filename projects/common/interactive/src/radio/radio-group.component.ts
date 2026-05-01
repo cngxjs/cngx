@@ -6,7 +6,7 @@ import {
   model,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import { nextUid } from '@cngx/core/utils';
+import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
@@ -75,10 +75,13 @@ import {
   host: {
     class: 'cngx-radio-group',
     role: 'radiogroup',
+    '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': 'invalid() ? "true" : null',
     '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
+    '[attr.aria-orientation]': 'orientation()',
+    '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-radio-group--horizontal]': 'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
   },
@@ -98,7 +101,13 @@ export class CngxRadioGroup<T = unknown>
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('vertical');
+  readonly label = input<string | undefined>(undefined);
+  readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
   readonly nameInput = input<string | undefined>(undefined, { alias: 'name' });
+
+  protected readonly ariaBusy = computed(
+    () => this.state()?.status() === 'loading',
+  );
 
   private readonly fallbackName = nextUid('cngx-radio-group');
 
