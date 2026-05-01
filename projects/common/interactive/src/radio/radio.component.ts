@@ -104,7 +104,7 @@ export class CngxRadio<T = unknown> {
   readonly disabledReason = input<string>('');
   readonly dotGlyph = input<TemplateRef<void> | null>(null);
 
-  protected readonly id = nextUid('cngx-radio');
+  private readonly id = nextUid('cngx-radio');
   protected readonly describedId = nextUid('cngx-radio-desc');
 
   protected readonly radioChecked = computed(
