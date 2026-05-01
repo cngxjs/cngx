@@ -1,11 +1,16 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  Directive,
+  TemplateRef,
   afterNextRender,
+  contentChild,
   inject,
   input,
   model,
+  type Signal,
 } from '@angular/core';
 import {
   CngxChipInGroup,
@@ -14,6 +19,50 @@ import {
 import type { CngxAsyncState } from '@cngx/core/utils';
 
 import type { CngxFilter } from '../filter/filter.directive';
+
+/**
+ * Per-chip override slot context. Consumers project an
+ * `<ng-template *cngxFilterChip="let option; value: $value; label: $label">`
+ * to replace the default chip body — useful for icons, count badges,
+ * colour swatches, or any presentation beyond the default text label.
+ *
+ * The slot's template MUST render a `<cngx-chip cngxChipInGroup [value]>`
+ * (or equivalent) so the chip participates in the parent
+ * multi-chip-group's selection. The bridge does NOT wrap the projected
+ * template — it replaces the entire chip cell.
+ *
+ * @category filter
+ */
+export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
+  readonly $implicit: TItem;
+  readonly option: TItem;
+  readonly value: TValue;
+  readonly label: string;
+}
+
+/**
+ * Template-slot directive overriding the default chip rendering inside
+ * `<cngx-filter-chips>`. Consumers attach
+ * `<ng-template cngxFilterChip>` to project a custom chip cell;
+ * absence falls back to the default `<span cngxChipInGroup>` row.
+ *
+ * @category filter
+ */
+@Directive({
+  selector: 'ng-template[cngxFilterChip]',
+  standalone: true,
+})
+export class CngxFilterChip<TItem = unknown, TValue = unknown> {
+  readonly template: TemplateRef<CngxFilterChipContext<TItem, TValue>> =
+    inject<TemplateRef<CngxFilterChipContext<TItem, TValue>>>(TemplateRef);
+
+  static ngTemplateContextGuard<TItem, TValue>(
+    _dir: CngxFilterChip<TItem, TValue>,
+    _ctx: unknown,
+  ): _ctx is CngxFilterChipContext<TItem, TValue> {
+    return true;
+  }
+}
 
 /**
  * Bridge that connects a multi-select chip strip to a `CngxFilter`
@@ -83,17 +132,24 @@ import type { CngxFilter } from '../filter/filter.directive';
   exportAs: 'cngxFilterChips',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxMultiChipGroup, CngxChipInGroup],
+  imports: [CngxMultiChipGroup, CngxChipInGroup, NgTemplateOutlet],
   template: `
     <cngx-multi-chip-group
       [label]="label()"
       [(selectedValues)]="selectedValues"
       [state]="state()"
+      [keyFn]="keyFn()"
     >
-      @for (option of options(); track optionValue()(option)) {
-        <span cngxChipInGroup [value]="optionValue()(option)">
-          {{ optionLabel()(option) }}
-        </span>
+      @for (option of options(); track keyFn()(optionValue()(option))) {
+        @if (chipTemplate()?.template; as tpl) {
+          <ng-container
+            *ngTemplateOutlet="tpl; context: chipContext(option)"
+          />
+        } @else {
+          <span cngxChipInGroup [value]="optionValue()(option)">
+            {{ optionLabel()(option) }}
+          </span>
+        }
       }
     </cngx-multi-chip-group>
   `,
@@ -106,6 +162,33 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
   readonly filterRef = input.required<CngxFilter<TItem>>();
   readonly filterKey = input.required<string>();
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /**
+   * Membership key extractor for object-valued chip values. When
+   * `TValue` is an object (e.g. `{ id, label }` rather than a
+   * primitive id), this fn extracts a stable identity key so chip
+   * membership survives re-emissions with fresh references. Forwarded
+   * to the inner `<cngx-multi-chip-group>` AND used inside the
+   * predicate's `Object.is` comparison. Defaults to identity — works
+   * for primitive values.
+   */
+  readonly keyFn = input<(value: TValue) => unknown>((v) => v);
+
+  protected readonly chipTemplate: Signal<
+    CngxFilterChip<TItem, TValue> | undefined
+  > = contentChild(CngxFilterChip);
+
+  protected readonly chipContext = (
+    option: TItem,
+  ): CngxFilterChipContext<TItem, TValue> => {
+    const value = this.optionValue()(option);
+    return {
+      $implicit: option,
+      option,
+      value,
+      label: this.optionLabel()(option),
+    };
+  };
 
   /**
    * Internal multi-select state driven by chip toggles. Exposed as
@@ -124,8 +207,9 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
       if (values.length === 0) {
         return true;
       }
-      const key = this.optionValue()(item);
-      return values.some((v) => Object.is(v, key));
+      const extract = this.keyFn();
+      const key = extract(this.optionValue()(item));
+      return values.some((v) => Object.is(extract(v), key));
     };
 
     afterNextRender(() => {
