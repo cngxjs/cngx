@@ -90,6 +90,26 @@ describe('CngxCheckbox', () => {
     expect(indicator.indeterminate()).toBe(true);
   });
 
+  it('forwards checkGlyph + dashGlyph through to the indicator', () => {
+    @Component({
+      template: `
+        <ng-template #c><span data-test="custom-check">✔</span></ng-template>
+        <ng-template #d><span data-test="custom-dash">─</span></ng-template>
+        <cngx-checkbox [checkGlyph]="c" [dashGlyph]="d">L</cngx-checkbox>
+      `,
+      imports: [CngxCheckbox],
+    })
+    class GlyphHost {}
+
+    const fixture = TestBed.createComponent(GlyphHost);
+    fixture.detectChanges();
+    const indicator = fixture.debugElement
+      .query(By.directive(CngxCheckboxIndicator))
+      .componentInstance as CngxCheckboxIndicator;
+    expect(indicator.checkGlyph()).not.toBeNull();
+    expect(indicator.dashGlyph()).not.toBeNull();
+  });
+
   it('disabled blocks click and emits aria-disabled', () => {
     const { fixture, el, host } = setup();
     host.off.set(true);

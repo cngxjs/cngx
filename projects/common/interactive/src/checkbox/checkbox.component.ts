@@ -4,6 +4,7 @@ import {
   computed,
   input,
   model,
+  type TemplateRef,
 } from '@angular/core';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { nextUid } from '@cngx/core/utils';
@@ -79,6 +80,8 @@ import {
       [checked]="value()"
       [indeterminate]="indeterminate()"
       [disabled]="disabled()"
+      [checkGlyph]="checkGlyph()"
+      [dashGlyph]="dashGlyph()"
     />
     <span class="cngx-checkbox__label">
       <ng-content />
@@ -96,6 +99,8 @@ export class CngxCheckbox implements CngxControlValue<boolean> {
   readonly indeterminate = model<boolean>(false);
   readonly disabled = model<boolean>(false);
   readonly disabledReason = input<string>('');
+  readonly checkGlyph = input<TemplateRef<void> | null>(null);
+  readonly dashGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly describedId = nextUid('cngx-checkbox-desc');
 

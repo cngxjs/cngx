@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  type TemplateRef,
 } from '@angular/core';
 import { CngxRovingItem } from '@cngx/common/a11y';
 import { CngxRadioIndicator } from '@cngx/common/display';
@@ -82,6 +83,7 @@ import {
     <cngx-radio-indicator
       [checked]="radioChecked()"
       [disabled]="radioDisabled()"
+      [dotGlyph]="dotGlyph()"
     />
     <span class="cngx-radio__label">
       <ng-content />
@@ -100,6 +102,7 @@ export class CngxRadio<T = unknown> {
   readonly value = input.required<T>();
   readonly disabled = model<boolean>(false);
   readonly disabledReason = input<string>('');
+  readonly dotGlyph = input<TemplateRef<void> | null>(null);
 
   protected readonly id = nextUid('cngx-radio');
   protected readonly describedId = `${this.id}-desc`;

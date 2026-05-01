@@ -154,4 +154,26 @@ describe('CngxRadioGroup + CngxRadio', () => {
     expect(group.name()).toMatch(/^cngx-radio-group/);
     radios.forEach(({ el }) => expect(el.getAttribute('name')).toBe(group.name()));
   });
+
+  it('forwards dotGlyph through to the indicator', () => {
+    @Component({
+      template: `
+        <ng-template #star><span data-test="custom-dot">★</span></ng-template>
+        <cngx-radio-group [(value)]="v">
+          <cngx-radio value="a" [dotGlyph]="star">A</cngx-radio>
+        </cngx-radio-group>
+      `,
+      imports: [CngxRadioGroup, CngxRadio],
+    })
+    class GlyphHost {
+      v = signal<string | undefined>(undefined);
+    }
+
+    const fixture = TestBed.createComponent(GlyphHost);
+    fixture.detectChanges();
+    const indicator = fixture.debugElement
+      .query(By.css('cngx-radio-indicator'))
+      .componentInstance as { dotGlyph: () => unknown };
+    expect(indicator.dotGlyph()).not.toBeNull();
+  });
 });
