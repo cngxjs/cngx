@@ -17,8 +17,6 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxFilterChips', 'CngxFilterChip', 'CngxFilter'],
   moduleImports: [
     "import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';",
-    "import { CngxChip } from '@cngx/common/display';",
-    "import { CngxChipInGroup } from '@cngx/common/interactive';",
   ],
   setup: `
   protected readonly tagItems: readonly unknown[] = [
@@ -36,29 +34,26 @@ export const STORY: DemoSpec = {
   `,
   sections: [
     {
-      title: 'Custom chip cell via *cngxFilterChip',
+      title: 'Custom chip decoration via *cngxFilterChip',
       subtitle:
-        'The slot directive replaces the entire chip cell. Consumers ' +
-        'must redeclare <code>cngxChipInGroup [value]</code> on the projected ' +
-        'element so the chip participates in the group selection. The slot ' +
-        'context exposes <code>$implicit</code>/<code>option</code>, ' +
-        '<code>value</code>, and <code>label</code>.',
-      imports: ['CngxFilter', 'CngxFilterChips', 'CngxFilterChip', 'CngxChip', 'CngxChipInGroup'],
+        'The slot customizes <em>decoration</em> inside each chip. The ' +
+        'bridge always wraps every option in <code>&lt;cngx-chip cngxChipInGroup ' +
+        '[value]&gt;</code> itself, so the projected template never has ' +
+        'to wire selection. Slot context exposes <code>$implicit</code>/' +
+        '<code>option</code>, <code>value</code>, and <code>label</code>.',
+      imports: ['CngxFilter', 'CngxFilterChips', 'CngxFilterChip'],
       template: `
   <ng-container [cngxFilter]="null" #filter="cngxFilter">
     <cngx-filter-chips
-      label="Tags (custom cell)"
+      label="Tags (custom decoration)"
       [options]="tagItems"
       [optionLabel]="tagLabel"
       [optionValue]="tagId"
       [filterRef]="filter"
       filterKey="tags"
     >
-      <ng-template cngxFilterChip let-option let-value="value" let-label="label">
-        <cngx-chip cngxChipInGroup [value]="value">
-          <span aria-hidden="true">★</span>
-          {{ label }}
-        </cngx-chip>
+      <ng-template cngxFilterChip let-label="label">
+        <span aria-hidden="true">★</span> {{ label }}
       </ng-template>
     </cngx-filter-chips>
   </ng-container>`,

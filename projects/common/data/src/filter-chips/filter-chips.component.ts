@@ -12,6 +12,7 @@ import {
   model,
   type Signal,
 } from '@angular/core';
+import { CngxChip } from '@cngx/common/display';
 import {
   CngxChipInGroup,
   CngxMultiChipGroup,
@@ -22,14 +23,19 @@ import type { CngxFilter } from '../filter/filter.directive';
 
 /**
  * Per-chip override slot context. Consumers project an
- * `<ng-template *cngxFilterChip="let option; value: $value; label: $label">`
- * to replace the default chip body — useful for icons, count badges,
- * colour swatches, or any presentation beyond the default text label.
+ * `<ng-template cngxFilterChip let-option let-value="value" let-label="label">`
+ * to customize chip body decoration — icons, count badges, colour
+ * swatches, anything beyond the default text label.
  *
- * The slot's template MUST render a `<cngx-chip cngxChipInGroup [value]>`
- * (or equivalent) so the chip participates in the parent
- * multi-chip-group's selection. The bridge does NOT wrap the projected
- * template — it replaces the entire chip cell.
+ * **Decoration-only semantics.** The bridge ALWAYS wraps each option
+ * in `<cngx-chip cngxChipInGroup [value]>` itself; the slot only
+ * customizes what renders INSIDE that wrapper. Consumers do NOT
+ * redeclare selection wiring — it is handled by the bridge so the
+ * projected content survives Angular's `*ngTemplateOutlet`
+ * lexical-injector semantics (the projected template injects against
+ * the consumer's component, NOT the bridge's inner
+ * `<cngx-multi-chip-group>`, so a consumer-supplied
+ * `cngxChipInGroup` would fail to resolve `CNGX_CHIP_GROUP_HOST`).
  *
  * @category filter
  */
@@ -41,10 +47,11 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
 }
 
 /**
- * Template-slot directive overriding the default chip rendering inside
+ * Template-slot directive overriding the default chip body inside
  * `<cngx-filter-chips>`. Consumers attach
- * `<ng-template cngxFilterChip>` to project a custom chip cell;
- * absence falls back to the default `<span cngxChipInGroup>` row.
+ * `<ng-template cngxFilterChip>` to project decoration; the bridge
+ * wraps that decoration in `cngxChipInGroup`-bound chip wrappers
+ * automatically. Absence falls back to the default text-only label.
  *
  * @category filter
  */
@@ -132,24 +139,29 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
   exportAs: 'cngxFilterChips',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxMultiChipGroup, CngxChipInGroup, NgTemplateOutlet],
+  imports: [CngxChip, CngxMultiChipGroup, CngxChipInGroup, NgTemplateOutlet],
   template: `
     <cngx-multi-chip-group
       [label]="label()"
       [(selectedValues)]="selectedValues"
       [state]="state()"
       [keyFn]="keyFn()"
+      [(disabled)]="disabled"
+      [(required)]="required"
+      [(invalid)]="invalid"
+      [errorMessageId]="errorMessageId()"
+      [orientation]="orientation()"
     >
       @for (option of options(); track keyFn()(optionValue()(option))) {
-        @if (chipTemplate()?.template; as tpl) {
-          <ng-container
-            *ngTemplateOutlet="tpl; context: chipContext(option)"
-          />
-        } @else {
-          <span cngxChipInGroup [value]="optionValue()(option)">
+        <cngx-chip cngxChipInGroup [value]="optionValue()(option)">
+          @if (chipTemplate()?.template; as tpl) {
+            <ng-container
+              *ngTemplateOutlet="tpl; context: chipContext(option)"
+            />
+          } @else {
             {{ optionLabel()(option) }}
-          </span>
-        }
+          }
+        </cngx-chip>
       }
     </cngx-multi-chip-group>
   `,
@@ -162,6 +174,19 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
   readonly filterRef = input.required<CngxFilter<TItem>>();
   readonly filterKey = input.required<string>();
   readonly state = input<CngxAsyncState<unknown> | undefined>(undefined);
+
+  /**
+   * Form-state surface forwarded transparently to the inner
+   * `<cngx-multi-chip-group>`. Each is a `model<boolean>` matching the
+   * inner shape so consumers can two-way bind with their own forms
+   * state without reaching past the bridge. Mirrors `CngxCheckboxGroup`
+   * / `CngxButtonToggleGroup` precedent.
+   */
+  readonly disabled = model<boolean>(false);
+  readonly required = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
+  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
 
   /**
    * Membership key extractor for object-valued chip values. When
@@ -186,6 +211,18 @@ export class CngxFilterChips<TItem = unknown, TValue = unknown> {
     CngxFilterChip<TItem, TValue> | undefined
   > = contentChild(CngxFilterChip<TItem, TValue>);
 
+  /**
+   * Build the slot context for a given chip option. `optionValue` is
+   * invoked here per option for the chip rendering pass; the predicate
+   * closure invokes it again per LIST item for membership filtering.
+   * Both invocations are necessary because option items (the chip
+   * pool) and filtered list items (the consumer's filtered data) are
+   * separate data paths — they happen to share a shape under the
+   * Phase-5 single-shape limitation, but the bridge cannot memoise
+   * across the two paths without conflating them. Consumers should
+   * keep `optionValue` cheap (typically a property lookup); a future
+   * `[itemValue]` input will separate the two extractors.
+   */
   protected readonly chipContext = (
     option: TItem,
   ): CngxFilterChipContext<TItem, TValue> => {

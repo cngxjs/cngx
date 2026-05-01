@@ -1,6 +1,7 @@
 import { Component, ViewChild, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { CngxChipInGroup } from '@cngx/common/interactive';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxFilter } from '../filter/filter.directive';
@@ -130,7 +131,7 @@ describe('CngxFilterChips', () => {
     expect(html).toContain('Blue');
   });
 
-  it('*cngxFilterChip slot replaces default cell rendering when projected', async () => {
+  it('*cngxFilterChip slot — bridge wraps decoration in cngxChipInGroup; selection works end-to-end', async () => {
     @Component({
       template: `
         <ng-container [cngxFilter]="null" #filter="cngxFilter">
@@ -142,13 +143,8 @@ describe('CngxFilterChips', () => {
             [filterRef]="filter"
             filterKey="tags"
           >
-            <ng-template
-              cngxFilterChip
-              let-option
-              let-label="label"
-            >
-              <span data-test="custom-chip" [attr.data-value]="byId(option)"
-                >★ {{ label }}</span>
+            <ng-template cngxFilterChip let-label="label">
+              <span data-test="custom-deco">★ {{ label }}</span>
             </ng-template>
           </cngx-filter-chips>
         </ng-container>
@@ -159,6 +155,7 @@ describe('CngxFilterChips', () => {
       readonly options: readonly unknown[] = TAGS;
       readonly byLabel = (t: unknown): string => (t as Tag).label;
       readonly byId = (t: unknown): string => (t as Tag).id;
+      @ViewChild('filter', { static: true }) filterRef!: CngxFilter<unknown>;
     }
 
     const fixture = TestBed.createComponent(SlotHost);
@@ -166,20 +163,103 @@ describe('CngxFilterChips', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const customCells = (fixture.nativeElement as HTMLElement).querySelectorAll(
-      '[data-test="custom-chip"]',
+    // Decoration projects into the bridge-wrapped chip — both the
+    // custom span AND the cngxChipInGroup chip are rendered.
+    const customDeco = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      '[data-test="custom-deco"]',
     );
-    expect(customCells.length).toBe(TAGS.length);
-    expect(customCells[0].textContent?.trim()).toContain('★ Red');
-    // Default `<span cngxChipInGroup>` cells must NOT be rendered when slot wins
-    const defaultCells = (
-      fixture.nativeElement as HTMLElement
-    ).querySelectorAll('span[cngxChipInGroup]');
-    // Custom cells render the cngxChipInGroup attribute themselves only if
-    // the consumer wires it; in this test the slot template above does
-    // NOT wire cngxChipInGroup — so the default branch is suppressed and
-    // no chip-in-group leaves exist. Sanity-check the suppression:
-    expect(defaultCells.length).toBe(0);
+    expect(customDeco.length).toBe(TAGS.length);
+    expect(customDeco[0].textContent?.trim()).toContain('★ Red');
+
+    const chipEls = fixture.debugElement
+      .queryAll(By.directive(CngxChipInGroup))
+      .map((d) => d.nativeElement as HTMLElement);
+    expect(chipEls.length).toBe(TAGS.length);
+    expect(chipEls[0].textContent).toContain('★ Red');
+
+    // Selection flow: click toggles via the bridge-wrapped cngxChipInGroup,
+    // propagates into the inner group's selection controller, and the
+    // bridge's selectedValues + filter predicate reflect it.
+    const bridge = fixture.debugElement
+      .query(By.directive(CngxFilterChips))
+      .injector.get(CngxFilterChips) as CngxFilterChips<unknown, string>;
+    chipEls[0].click();
+    fixture.detectChanges();
+    expect(bridge.selectedValues()).toEqual(['red']);
+
+    const pred = fixture.componentInstance.filterRef.predicate();
+    expect(pred).not.toBeNull();
+    expect(pred!(TAGS[0])).toBe(true);
+    expect(pred!(TAGS[1])).toBe(false);
+  });
+
+  it('forwards form-state (disabled / required / invalid / errorMessageId / orientation) into the inner group', async () => {
+    @Component({
+      template: `
+        <ng-container [cngxFilter]="null" #filter="cngxFilter">
+          <cngx-filter-chips
+            #bridge="cngxFilterChips"
+            label="Tags"
+            [options]="options"
+            [optionLabel]="byLabel"
+            [optionValue]="byId"
+            [filterRef]="filter"
+            filterKey="tags"
+            [(disabled)]="off"
+            [(required)]="req"
+            [(invalid)]="bad"
+            [errorMessageId]="errId()"
+            [orientation]="ori()"
+          />
+        </ng-container>
+      `,
+      imports: [CngxFilter, CngxFilterChips],
+    })
+    class FormStateHost {
+      readonly options: readonly unknown[] = TAGS;
+      readonly byLabel = (t: unknown): string => (t as Tag).label;
+      readonly byId = (t: unknown): string => (t as Tag).id;
+      off = signal(false);
+      req = signal(false);
+      bad = signal(false);
+      errId = signal<string | null>(null);
+      ori = signal<'horizontal' | 'vertical'>('horizontal');
+    }
+
+    const fixture = TestBed.createComponent(FormStateHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const groupEl = (fixture.nativeElement as HTMLElement).querySelector(
+      'cngx-multi-chip-group',
+    ) as HTMLElement;
+    expect(groupEl).not.toBeNull();
+
+    // Initial state — no aria attributes set.
+    expect(groupEl.getAttribute('aria-disabled')).toBeNull();
+    expect(groupEl.getAttribute('aria-required')).toBeNull();
+    expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+
+    // Drive each input via the host signals; assert ARIA reflects.
+    fixture.componentInstance.off.set(true);
+    fixture.componentInstance.req.set(true);
+    fixture.componentInstance.bad.set(true);
+    fixture.componentInstance.errId.set('err-1');
+    fixture.detectChanges();
+
+    expect(groupEl.getAttribute('aria-disabled')).toBe('true');
+    expect(groupEl.getAttribute('aria-required')).toBe('true');
+    expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    expect(groupEl.getAttribute('aria-errormessage')).toBe('err-1');
+
+    // Orientation toggles the inner group's modifier class.
+    fixture.componentInstance.ori.set('vertical');
+    fixture.detectChanges();
+    expect(
+      groupEl.classList.contains('cngx-multi-chip-group--horizontal'),
+    ).toBe(false);
   });
 
   it('keyFn — object-valued TValue with stable id survives re-emission with fresh references', async () => {
