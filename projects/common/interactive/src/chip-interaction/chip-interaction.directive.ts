@@ -204,14 +204,19 @@ export class CngxChipInteraction<T = unknown>
     const span = renderer.createElement('span') as HTMLSpanElement;
     renderer.setAttribute(span, 'id', this.describedId);
     renderer.setAttribute(span, 'aria-hidden', 'true');
-    // SR-only inline styles: the directive runs in arbitrary host
-    // markup and must not depend on a consumer stylesheet.
-    renderer.setStyle(span, 'position', 'absolute');
-    renderer.setStyle(span, 'width', '1px');
-    renderer.setStyle(span, 'height', '1px');
-    renderer.setStyle(span, 'overflow', 'hidden');
-    renderer.setStyle(span, 'clip', 'rect(0, 0, 0, 0)');
-    renderer.setStyle(span, 'white-space', 'nowrap');
+    // SR-only inline styles via CSS-var fallback chain: the directive
+    // runs in arbitrary host markup and must not require a consumer
+    // stylesheet (hence inline), but every value goes through
+    // `var(--cngx-sr-only-*, default)` so the atomic-decompose
+    // schematic preserves the structural/thematic split — consumer
+    // CSS layers can still override sizes by setting the
+    // `--cngx-sr-only-*` properties on the host.
+    renderer.setStyle(span, 'position', 'var(--cngx-sr-only-position, absolute)');
+    renderer.setStyle(span, 'width', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'height', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+    renderer.setStyle(span, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+    renderer.setStyle(span, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
     renderer.appendChild(hostEl, span);
 
     // Symmetric teardown: when the directive is destroyed but the
