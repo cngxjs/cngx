@@ -6,11 +6,18 @@ import {
   inject,
   input,
   model,
+  signal,
   type Signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
+  nextUid,
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
@@ -19,6 +26,7 @@ import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_BUTTON_MULTI_TOGGLE_GROUP,
   type CngxButtonMultiToggleGroupContract,
@@ -74,6 +82,7 @@ import {
   host: {
     class: 'cngx-button-multi-toggle-group',
     role: 'toolbar',
+    '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
@@ -83,6 +92,8 @@ import {
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-button-multi-toggle-group--horizontal]':
       'orientation() === "horizontal"',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
   providers: [
     {
@@ -93,12 +104,19 @@ import {
       provide: CNGX_CONTROL_VALUE,
       useExisting: CngxButtonMultiToggleGroup,
     },
+    {
+      provide: CNGX_FORM_FIELD_CONTROL,
+      useExisting: CngxButtonMultiToggleGroup,
+    },
   ],
   template: `<ng-content />`,
   styleUrl: './button-toggle-group.component.css',
 })
 export class CngxButtonMultiToggleGroup<T = unknown>
-  implements CngxButtonMultiToggleGroupContract<T>, CngxControlValue<T[]>
+  implements
+    CngxButtonMultiToggleGroupContract<T>,
+    CngxControlValue<T[]>,
+    CngxFormFieldControl
 {
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
@@ -134,5 +152,35 @@ export class CngxButtonMultiToggleGroup<T = unknown>
       return;
     }
     this.controller.toggle(value);
+  }
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-button-multi-toggle-group-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when no toggles are selected. */
+  readonly empty = computed(() => this.selectedValues().length === 0);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }

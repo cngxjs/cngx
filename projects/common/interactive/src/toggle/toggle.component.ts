@@ -3,16 +3,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
+  signal,
   type TemplateRef,
 } from '@angular/core';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
  * Single-value boolean switch with W3C `role="switch"` semantics. Click,
@@ -69,6 +77,7 @@ import {
   host: {
     class: 'cngx-toggle',
     role: 'switch',
+    '[attr.id]': 'id()',
     '[attr.aria-checked]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-describedby]': 'describedById()',
@@ -79,8 +88,13 @@ import {
     '(click)': 'handleClick()',
     '(keydown.space)': 'handleKeydown($event)',
     '(keydown.enter)': 'handleKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
-  providers: [{ provide: CNGX_CONTROL_VALUE, useExisting: CngxToggle }],
+  providers: [
+    { provide: CNGX_CONTROL_VALUE, useExisting: CngxToggle },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxToggle },
+  ],
   imports: [NgTemplateOutlet],
   template: `
     <span class="cngx-toggle__track" aria-hidden="true">
@@ -101,7 +115,9 @@ import {
   `,
   styleUrls: ['./toggle.component.css'],
 })
-export class CngxToggle implements CngxControlValue<boolean> {
+export class CngxToggle
+  implements CngxControlValue<boolean>, CngxFormFieldControl
+{
   readonly value = model<boolean>(false);
   readonly disabled = model<boolean>(false);
   readonly disabledReason = input<string>('');
@@ -113,6 +129,38 @@ export class CngxToggle implements CngxControlValue<boolean> {
   protected readonly describedById = computed(() =>
     this.disabledReason() ? this.describedId : null,
   );
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  /** Stable per-instance id used for `<label for>` wiring. */
+  readonly id = signal(nextUid('cngx-toggle-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  /** Whether the host element currently has DOM focus. */
+  readonly focused = this.focusedState.asReadonly();
+
+  /** True when the toggle is `false` (off) — boolean atom semantics. */
+  readonly empty = computed(() => this.value() === false);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  /**
+   * Field-host→aggregator cascade. Inside `<cngx-form-field>` the
+   * presenter governs visibility (touched / strategy / scope). Outside
+   * form-field but inside `<cngxErrorAggregator>` the aggregator's
+   * `shouldShow` (reveal-aware) wins. Outside both contexts the atom
+   * paints no error skin.
+   */
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  // ── Event handlers ───────────────────────────────────────────────
 
   protected handleClick(): void {
     if (this.disabled()) {
@@ -127,5 +175,14 @@ export class CngxToggle implements CngxControlValue<boolean> {
     }
     event.preventDefault();
     this.value.update((v) => !v);
+  }
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }

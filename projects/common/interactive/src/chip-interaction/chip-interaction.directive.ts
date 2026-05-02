@@ -1,18 +1,27 @@
 import {
   Directive,
   afterNextRender,
+  computed,
   inject,
   input,
   isDevMode,
   model,
   output,
+  signal,
 } from '@angular/core';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import { nextUid } from '@cngx/core/utils';
 
 import { CNGX_CHIP_GROUP_HOST } from '../chip-group/chip-group-host.token';
 import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
  * Standalone interactive chip — applies onto `<cngx-chip>` from
@@ -88,6 +97,7 @@ import {
   host: {
     class: 'cngx-chip-interaction',
     role: 'option',
+    '[attr.id]': 'id()',
     '[attr.aria-selected]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-describedby]': 'describedBy()',
@@ -99,13 +109,16 @@ import {
     '(keydown.enter)': 'handleKeydown($event)',
     '(keydown.delete)': 'handleRemoveKeydown($event)',
     '(keydown.backspace)': 'handleRemoveKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
   providers: [
     { provide: CNGX_CONTROL_VALUE, useExisting: CngxChipInteraction },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxChipInteraction },
   ],
 })
 export class CngxChipInteraction<T = unknown>
-  implements CngxControlValue<boolean>
+  implements CngxControlValue<boolean>, CngxFormFieldControl
 {
   /**
    * Chip payload — required identifier the consumer associates with
@@ -132,6 +145,29 @@ export class CngxChipInteraction<T = unknown>
 
   /** Fires on Backspace/Delete keydown — consumer owns the removal. */
   readonly removeRequest = output<void>();
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-chip-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when the chip is unselected — boolean atom semantics. */
+  readonly empty = computed(() => this.value() === false);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly errorAggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ??
+      this.errorAggregator?.shouldShow() ??
+      false,
+  );
 
   constructor() {
     if (!isDevMode()) {
@@ -171,6 +207,15 @@ export class CngxChipInteraction<T = unknown>
     }
     event.preventDefault();
     this.removeRequest.emit();
+  }
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }
 

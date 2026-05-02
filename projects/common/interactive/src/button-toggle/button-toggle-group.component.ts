@@ -2,16 +2,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
+  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_BUTTON_TOGGLE_GROUP,
   type CngxButtonToggleGroupContract,
@@ -67,6 +75,7 @@ import {
   host: {
     class: 'cngx-button-toggle-group',
     role: 'radiogroup',
+    '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
@@ -77,16 +86,22 @@ import {
     '[class.cngx-button-toggle-group--horizontal]':
       'orientation() === "horizontal"',
     '(keydown)': 'handleKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
   providers: [
     { provide: CNGX_BUTTON_TOGGLE_GROUP, useExisting: CngxButtonToggleGroup },
     { provide: CNGX_CONTROL_VALUE, useExisting: CngxButtonToggleGroup },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxButtonToggleGroup },
   ],
   template: `<ng-content />`,
   styleUrl: './button-toggle-group.component.css',
 })
 export class CngxButtonToggleGroup<T = unknown>
-  implements CngxButtonToggleGroupContract<T>, CngxControlValue<T | undefined>
+  implements
+    CngxButtonToggleGroupContract<T>,
+    CngxControlValue<T | undefined>,
+    CngxFormFieldControl
 {
   readonly value = model<T | undefined>(undefined);
   readonly disabled = model<boolean>(false);
@@ -124,5 +139,35 @@ export class CngxButtonToggleGroup<T = unknown>
       key === 'ArrowRight' ||
       key === 'Home' ||
       key === 'End';
+  }
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-button-toggle-group-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when no toggle is selected. */
+  readonly empty = computed(() => this.value() === undefined);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }
