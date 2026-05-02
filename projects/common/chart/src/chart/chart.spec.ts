@@ -5,12 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
 
-class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
-  observe(_target: Element): void {}
-  unobserve(_target: Element): void {}
-  disconnect(): void {}
-}
+import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   selector: 'test-context-probe',

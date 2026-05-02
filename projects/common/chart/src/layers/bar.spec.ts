@@ -5,12 +5,7 @@ import { CngxBar } from './bar.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxChart } from '../chart/chart.component';
 
-class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
-  observe(_target: Element): void {}
-  unobserve(_target: Element): void {}
-  disconnect(): void {}
-}
+import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,

@@ -14,12 +14,7 @@ import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxThreshold } from '../layers/threshold.component';
 
-class ResizeObserverMock {
-  constructor(_callback: ResizeObserverCallback) {}
-  observe(_target: Element): void {}
-  unobserve(_target: Element): void {}
-  disconnect(): void {}
-}
+import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
 @Component({
   standalone: true,
