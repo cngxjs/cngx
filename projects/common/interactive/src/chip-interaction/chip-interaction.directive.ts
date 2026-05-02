@@ -1,13 +1,17 @@
 import {
   Directive,
+  ElementRef,
+  Renderer2,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   isDevMode,
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -64,11 +68,13 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * toggle does not double-fire alongside the chip's `(remove)`
  * output.
  *
- * **Disabled "why".** No internal sr-only span is rendered (no
- * template to inject one into). Consumers wanting a reason
- * announcement render the description element themselves and pass
- * its id via `[describedBy]` — mirrors `CngxButtonToggle`'s
- * directive-form pattern.
+ * **Disabled "why".** When `disabledReason` is set, the directive
+ * appends a hidden span to the host via `Renderer2` (always-in-DOM
+ * per Pillar 2 — the id stays stable across renders). When
+ * `disabledReason` is empty, consumers may still pass a custom id
+ * via `cngxDescribedBy` and the `aria-describedby` host binding
+ * routes to that. The two paths are mutually exclusive: a non-empty
+ * `disabledReason` wins.
  *
  * @example
  * ```html
@@ -143,12 +149,30 @@ export class CngxChipInteraction<T = unknown>
   readonly disabled = model<boolean>(false);
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
-  readonly describedBy = input<string | null>(null, {
+  readonly disabledReason = input<string>('');
+
+  /**
+   * @internal — alias backing the public `cngxDescribedBy` input.
+   * Consumers continue to bind `[cngxDescribedBy]`; the directive
+   * exposes the resolved id via the `describedBy` computed below,
+   * which routes through the always-in-DOM disabled-reason span when
+   * `disabledReason` is set.
+   */
+  readonly cngxDescribedByInput = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });
 
   /** Fires on Backspace/Delete keydown — consumer owns the removal. */
   readonly removeRequest = output<void>();
+
+  private readonly describedId = nextUid('cngx-chip-desc');
+
+  protected readonly describedBy = computed<string | null>(() => {
+    if (this.disabledReason()) {
+      return this.describedId;
+    }
+    return this.cngxDescribedByInput();
+  });
 
   // ── CngxFormFieldControl ─────────────────────────────────────────
 
@@ -174,6 +198,34 @@ export class CngxChipInteraction<T = unknown>
   );
 
   constructor() {
+    const hostEl = inject(ElementRef<HTMLElement>).nativeElement;
+    const renderer = inject(Renderer2);
+    const span = renderer.createElement('span') as HTMLSpanElement;
+    renderer.setAttribute(span, 'id', this.describedId);
+    renderer.setAttribute(span, 'aria-hidden', 'true');
+    // SR-only inline styles: the directive runs in arbitrary host
+    // markup and must not depend on a consumer stylesheet.
+    renderer.setStyle(span, 'position', 'absolute');
+    renderer.setStyle(span, 'width', '1px');
+    renderer.setStyle(span, 'height', '1px');
+    renderer.setStyle(span, 'overflow', 'hidden');
+    renderer.setStyle(span, 'clip', 'rect(0, 0, 0, 0)');
+    renderer.setStyle(span, 'white-space', 'nowrap');
+    renderer.appendChild(hostEl, span);
+
+    effect(() => {
+      const reason = this.disabledReason();
+      untracked(() => {
+        if (reason) {
+          renderer.removeAttribute(span, 'aria-hidden');
+          span.textContent = reason;
+        } else {
+          renderer.setAttribute(span, 'aria-hidden', 'true');
+          span.textContent = '';
+        }
+      });
+    });
+
     if (!isDevMode()) {
       return;
     }
