@@ -288,7 +288,7 @@ describe('CngxCheckboxGroup', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage is always present (independent of invalid state)', () => {
+    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
       @Component({
         template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
         imports: [CngxCheckboxGroup, CngxCheckbox],

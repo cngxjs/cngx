@@ -129,6 +129,11 @@ export class CngxButtonMultiToggleGroup<T = unknown>
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element. When set, the
+   * host emits `aria-errormessage="<id>"`; consumers MUST render an
+   * element with that id. Default `null` skips the attribute.
+   */
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);

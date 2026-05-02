@@ -177,7 +177,7 @@ describe('CngxChipGroup', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage is always present (independent of invalid state)', () => {
+    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
       @Component({
         template: `<cngx-chip-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-chip cngxChipInGroup [value]="'a'">A</cngx-chip></cngx-chip-group>`,
         imports: [CngxChipGroup, CngxChip, CngxChipInGroup],

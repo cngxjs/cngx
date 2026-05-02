@@ -247,7 +247,7 @@ describe('CngxRadioGroup + CngxRadio', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage is always present (independent of invalid state)', () => {
+    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
       @Component({
         template: `<cngx-radio-group [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-radio value="a">A</cngx-radio></cngx-radio-group>`,
         imports: [CngxRadioGroup, CngxRadio],

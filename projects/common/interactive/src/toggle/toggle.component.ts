@@ -129,6 +129,14 @@ export class CngxToggle
    * typically read only.
    */
   readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element (e.g. a sibling
+   * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
+   * When set, the host emits `aria-errormessage="<id>"` so AT can
+   * locate the message; consumers MUST render an element with that id
+   * — passing an id without a matching element produces a dangling
+   * AT reference. Default `null` skips the attribute entirely.
+   */
   readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
   readonly labelPosition = input<'before' | 'after'>('after');

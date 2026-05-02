@@ -231,7 +231,7 @@ describe('CngxButtonMultiToggleGroup + CngxButtonToggle (multi mode)', () => {
       expect(groupEl.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('aria-errormessage is always present (independent of invalid state)', () => {
+    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
       @Component({
         template: `<cngx-button-multi-toggle-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-multi-toggle-group>`,
         imports: [CngxButtonMultiToggleGroup, CngxButtonToggle],
