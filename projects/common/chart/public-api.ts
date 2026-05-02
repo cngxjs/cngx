@@ -12,3 +12,11 @@ export {
   createOrdinalScale,
   type BandScale,
 } from './src/scales';
+
+export { CngxChart } from './src/chart/chart.component';
+export {
+  CNGX_CHART_CONTEXT,
+  type CngxChartContext,
+  type ScaleFn,
+  type XScaleInput,
+} from './src/chart/chart-context';
