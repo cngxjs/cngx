@@ -8,9 +8,11 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxResizeObserver } from '@cngx/common/layout';
+import { nextUid } from '@cngx/core/utils';
 import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
+import { CngxChartDataTable } from './data-table.component';
 import {
   createBandScale,
   createLinearScale,
@@ -53,9 +55,11 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
   host: {
     role: 'img',
     '[attr.aria-label]': 'ariaLabelText()',
+    '[attr.aria-describedby]': 'dataTableId()',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
+  imports: [CngxChartDataTable],
   template: `
     <svg
       [attr.viewBox]="viewBox()"
@@ -66,6 +70,11 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
       <svg:title>{{ ariaLabelText() }}</svg:title>
       <ng-content />
     </svg>
+    <cngx-chart-data-table
+      [id]="dataTableId()"
+      [values]="summaryValues()"
+      [hidden]="!tableActive()"
+    />
   `,
   styles: [
     `
@@ -97,11 +106,25 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly summaryAccessor = input<(d: T, i: number) => number>(
     (d) => Number(d as unknown as number),
   );
+  /**
+   * Controls when the SR-only data-table view is exposed to assistive
+   * technology. `'auto'` (default) shows the table whenever the data
+   * has more than one point — a single value is announced via the
+   * `aria-label`, no table needed. `'off'` keeps the table hidden
+   * regardless. The table element is always present in the DOM —
+   * visibility flips through `aria-hidden`, the linked id on
+   * `aria-describedby` never disappears.
+   */
+  readonly accessibleTable = input<'auto' | 'off'>('auto');
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
   private readonly axes = contentChildren(CngxAxis, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly i18n = inject(CNGX_CHART_I18N);
+  protected readonly dataTableId = computed(
+    () => this.dataTableUid,
+  );
+  private readonly dataTableUid = nextUid('cngx-chart-data-table');
 
   readonly dataLength = computed(() => this.data().length);
 
@@ -166,6 +189,32 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
       return explicit;
     }
     return this.i18n.summary(this.summary());
+  });
+
+  /** Numeric projection of `data` reused by the data-table view. */
+  protected readonly summaryValues = computed<readonly number[]>(() => {
+    const acc = this.summaryAccessor();
+    const data = this.data();
+    const out = new Array<number>(data.length);
+    for (let i = 0; i < data.length; i++) {
+      out[i] = acc(data[i], i);
+    }
+    return out;
+  });
+
+  /**
+   * Auto-mode predicate. Drives the data-table's `aria-hidden`
+   * binding. The id on `aria-describedby` is invariant — it stays on
+   * the host whether the table is active or not. Single-value charts
+   * speak via the `aria-label` summary; multi-value charts add the
+   * table for row-by-row exploration.
+   */
+  protected readonly tableActive = computed(() => {
+    const mode = this.accessibleTable();
+    if (mode === 'off') {
+      return false;
+    }
+    return this.data().length > 1;
   });
 }
 
