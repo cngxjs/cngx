@@ -103,8 +103,8 @@ input { padding: 6px 8px; min-width: 240px; }`,
       ],
       template: `
   <cngx-card>
-    <cngx-card-header>Profile</cngx-card-header>
-    <cngx-card-body cngxErrorAggregator #profile="cngxErrorAggregator">
+    <header cngxCardHeader>Profile</header>
+    <div cngxCardBody cngxErrorAggregator #profile="cngxErrorAggregator">
       <span cngxErrorSource="bio-empty" [when]="profileBioEmpty()" label="Bio is empty"></span>
       <span cngxErrorSource="avatar-missing" [when]="profileAvatarMissing()" label="Avatar missing"></span>
       <p>Update your bio and avatar before saving.</p>
@@ -126,13 +126,13 @@ input { padding: 6px 8px; min-width: 240px; }`,
           Toggle avatar
         </button>
       </div>
-    </cngx-card-body>
+    </div>
   </cngx-card>`,
       css: `
 .errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
 .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 .cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`,
+[cngxCardBody].cngx-error { background: rgba(176, 0, 32, 0.04); }`,
     },
     {
       title: 'cngx-popover-panel host',
@@ -157,8 +157,8 @@ cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`,
     Billing status
   </button>
   <cngx-popover-panel #billingPanel>
-    <cngx-popover-header>Billing</cngx-popover-header>
-    <cngx-popover-body cngxErrorAggregator #billing="cngxErrorAggregator">
+    <span cngxPopoverHeader>Billing</span>
+    <div cngxPopoverBody cngxErrorAggregator #billing="cngxErrorAggregator">
       <span cngxErrorSource="declined" [when]="billingDeclined()" label="Last charge declined"></span>
       <p>Recent activity for this account.</p>
       @if (billing.hasError()) {
@@ -174,7 +174,7 @@ cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`,
       <button type="button" (click)="billingDeclined.set(!billingDeclined())">
         Toggle declined state
       </button>
-    </cngx-popover-body>
+    </div>
   </cngx-popover-panel>`,
       css: `
 .errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
