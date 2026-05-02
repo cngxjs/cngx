@@ -199,3 +199,16 @@ export {
   type CngxMenuRadioGroupFactory,
 } from './src/menu/menu-radio-controller';
 export { CngxMenuTrigger } from './src/menu/menu-trigger.directive';
+export { CngxErrorState } from './src/error-state/error-state.directive';
+export {
+  CNGX_ERROR_SCOPE,
+  type CngxErrorScopeContract,
+} from './src/error-scope/error-scope.token';
+export { CngxErrorScope } from './src/error-scope/error-scope.directive';
+export {
+  CNGX_ERROR_AGGREGATOR,
+  type CngxErrorAggregatorContract,
+  type CngxErrorAggregatorSourceEntry,
+} from './src/error-aggregator/error-aggregator.token';
+export { CngxErrorSource } from './src/error-source/error-source.directive';
+export { CngxErrorAggregator } from './src/error-aggregator/error-aggregator.directive';
