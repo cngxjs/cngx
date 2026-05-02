@@ -1,4 +1,5 @@
 import {
+  DestroyRef,
   Directive,
   ElementRef,
   Renderer2,
@@ -212,6 +213,15 @@ export class CngxChipInteraction<T = unknown>
     renderer.setStyle(span, 'clip', 'rect(0, 0, 0, 0)');
     renderer.setStyle(span, 'white-space', 'nowrap');
     renderer.appendChild(hostEl, span);
+
+    // Symmetric teardown: when the directive is destroyed but the
+    // host element outlives it (e.g. structural-directive re-projection,
+    // sibling viewContainerRef.clear()), the parent removal does not
+    // collect this span. Without explicit cleanup the span leaks and
+    // the next instantiation collides on `describedId`.
+    inject(DestroyRef).onDestroy(() => {
+      renderer.removeChild(hostEl, span);
+    });
 
     effect(() => {
       const reason = this.disabledReason();
