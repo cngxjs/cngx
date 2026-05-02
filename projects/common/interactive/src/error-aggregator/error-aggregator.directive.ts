@@ -6,12 +6,9 @@ import {
   inject,
   input,
   signal,
-  type Signal,
 } from '@angular/core';
-import {
-  errorSourceMapEqual,
-  shallowReadonlyArrayEqual,
-} from '../error-registry/equal-fns';
+import { createErrorAggregatorContract } from '../error-registry/aggregator-contract';
+import { errorSourceMapEqual } from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import {
@@ -19,8 +16,6 @@ import {
   type CngxErrorAggregatorContract,
   type CngxErrorAggregatorSourceEntry,
 } from './error-aggregator.token';
-
-const ERROR_LABEL_JOINER = ', ';
 
 /**
  * Aggregates one-or-more {@link CngxErrorSource} children into a single
@@ -83,77 +78,24 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     () => this.scope() ?? this.ancestorScope,
   );
 
-  readonly hasError: Signal<boolean> = computed(() => {
-    for (const entry of this.sourcesState().values()) {
-      if (entry.condition()) {
-        return true;
-      }
-    }
-    return false;
+  private readonly contract = createErrorAggregatorContract({
+    sourcesState: this.sourcesState,
+    scope: this.effectiveScope,
   });
 
-  readonly errorCount: Signal<number> = computed(() => {
-    let count = 0;
-    for (const entry of this.sourcesState().values()) {
-      if (entry.condition()) {
-        count++;
-      }
-    }
-    return count;
-  });
-
-  readonly activeErrors: Signal<readonly string[]> = computed(
-    () => {
-      const out: string[] = [];
-      for (const [key, entry] of this.sourcesState()) {
-        if (entry.condition()) {
-          out.push(key);
-        }
-      }
-      return out;
-    },
-    { equal: shallowReadonlyArrayEqual },
-  );
-
-  readonly errorLabels: Signal<readonly string[]> = computed(
-    () => {
-      const out: string[] = [];
-      for (const entry of this.sourcesState().values()) {
-        if (entry.condition() && entry.label) {
-          out.push(entry.label);
-        }
-      }
-      return out;
-    },
-    { equal: shallowReadonlyArrayEqual },
-  );
-
-  readonly shouldShow: Signal<boolean> = computed(() => {
-    if (!this.hasError()) {
-      return false;
-    }
-    const scope = this.effectiveScope();
-    return scope ? scope.showErrors() : true;
-  });
-
-  readonly announcement: Signal<string> = computed(() =>
-    this.shouldShow() ? this.errorLabels().join(ERROR_LABEL_JOINER) : '',
-  );
+  readonly hasError = this.contract.hasError;
+  readonly errorCount = this.contract.errorCount;
+  readonly activeErrors = this.contract.activeErrors;
+  readonly errorLabels = this.contract.errorLabels;
+  readonly shouldShow = this.contract.shouldShow;
+  readonly announcement = this.contract.announcement;
 
   addSource(entry: CngxErrorAggregatorSourceEntry): void {
-    const next = new Map(this.sourcesState());
-    next.set(entry.key, entry);
-    this.sourcesState.set(next);
+    this.contract.addSource(entry);
   }
 
   removeSource(key: string): void {
-    const current = this.sourcesState();
-    if (!current.has(key)) {
-      return;
-    }
-    const next = new Map(current);
-    next.delete(key);
-    this.sourcesState.set(next);
+    this.contract.removeSource(key);
   }
 
   constructor() {

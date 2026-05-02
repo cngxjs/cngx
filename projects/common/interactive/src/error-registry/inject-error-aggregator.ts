@@ -1,13 +1,12 @@
-import { computed, DestroyRef, inject, signal, type Signal } from '@angular/core';
+import { DestroyRef, inject, signal, type Signal } from '@angular/core';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
 } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { createErrorAggregatorContract } from './aggregator-contract';
 import { CngxErrorRegistry } from './error-registry';
-import { errorSourceMapEqual, shallowReadonlyArrayEqual } from './equal-fns';
-
-const ERROR_LABEL_JOINER = ', ';
+import { errorSourceMapEqual } from './equal-fns';
 
 /**
  * Creates a programmatic {@link CngxErrorAggregatorContract}, optionally
@@ -30,6 +29,11 @@ const ERROR_LABEL_JOINER = ', ';
  * Must be called in an injection context (constructor, factory provider,
  * `runInInjectionContext`).
  *
+ * Computed-graph derivation is delegated to
+ * {@link createErrorAggregatorContract} so the directive
+ * ({@link `@cngx/common/interactive`#CngxErrorAggregator}) and the
+ * function form share a single source of truth.
+ *
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
@@ -46,85 +50,12 @@ export function injectErrorAggregator(
     buildInitialSources(sources, labels),
     { equal: errorSourceMapEqual },
   );
+  const scopeSignal = signal<CngxErrorScopeContract | null | undefined>(scope);
 
-  const hasError = computed(() => {
-    for (const entry of sourcesState().values()) {
-      if (entry.condition()) {
-        return true;
-      }
-    }
-    return false;
+  const contract = createErrorAggregatorContract({
+    sourcesState,
+    scope: scopeSignal.asReadonly(),
   });
-
-  const errorCount = computed(() => {
-    let n = 0;
-    for (const entry of sourcesState().values()) {
-      if (entry.condition()) {
-        n++;
-      }
-    }
-    return n;
-  });
-
-  const activeErrors = computed(
-    () => {
-      const out: string[] = [];
-      for (const [key, entry] of sourcesState()) {
-        if (entry.condition()) {
-          out.push(key);
-        }
-      }
-      return out;
-    },
-    { equal: shallowReadonlyArrayEqual },
-  );
-
-  const errorLabels = computed(
-    () => {
-      const out: string[] = [];
-      for (const entry of sourcesState().values()) {
-        if (entry.condition() && entry.label) {
-          out.push(entry.label);
-        }
-      }
-      return out;
-    },
-    { equal: shallowReadonlyArrayEqual },
-  );
-
-  const shouldShow = computed(() => {
-    if (!hasError()) {
-      return false;
-    }
-    return scope ? scope.showErrors() : true;
-  });
-
-  const announcement = computed(() =>
-    shouldShow() ? errorLabels().join(ERROR_LABEL_JOINER) : '',
-  );
-
-  const contract: CngxErrorAggregatorContract = {
-    hasError,
-    errorCount,
-    activeErrors,
-    errorLabels,
-    shouldShow,
-    announcement,
-    addSource(entry) {
-      const next = new Map(sourcesState());
-      next.set(entry.key, entry);
-      sourcesState.set(next);
-    },
-    removeSource(key) {
-      const current = sourcesState();
-      if (!current.has(key)) {
-        return;
-      }
-      const next = new Map(current);
-      next.delete(key);
-      sourcesState.set(next);
-    },
-  };
 
   if (name) {
     const registry = inject(CngxErrorRegistry, { optional: true });
@@ -155,4 +86,3 @@ function buildInitialSources(
   }
   return map;
 }
-
