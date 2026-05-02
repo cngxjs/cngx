@@ -137,4 +137,37 @@ describe('CngxChart', () => {
     fixture.detectChanges();
     expect(ctx.dataLength()).toBe(6);
   });
+
+  it('binds an aria-label on the host derived from the auto-Summary', () => {
+    const { fixture, chart } = setup();
+    fixture.componentInstance.data.set([5, 12, 18, 38]);
+    fixture.detectChanges();
+    const label = chart.getAttribute('aria-label') ?? '';
+    // English defaults: "Trending up. Min 5, max 38, current 38. No thresholds."
+    expect(label).toContain('Trending up');
+    expect(label).toContain('Min 5');
+    expect(label).toContain('current 38');
+    expect(label).toContain('No thresholds');
+  });
+
+  it('reactively updates the aria-label as data changes', () => {
+    const { fixture, chart } = setup();
+    fixture.componentInstance.data.set([5, 4, 3, 2, 1]);
+    fixture.detectChanges();
+    const labelDown = chart.getAttribute('aria-label') ?? '';
+    expect(labelDown).toContain('Trending down');
+
+    fixture.componentInstance.data.set([10, 12, 14, 18, 22]);
+    fixture.detectChanges();
+    const labelUp = chart.getAttribute('aria-label') ?? '';
+    expect(labelUp).toContain('Trending up');
+    expect(labelDown).not.toBe(labelUp);
+  });
+
+  it('renders the auto-Summary as the SVG <title> element', () => {
+    const { svg } = setup();
+    const title = svg.querySelector('title');
+    expect(title).not.toBeNull();
+    expect((title?.textContent ?? '').length).toBeGreaterThan(0);
+  });
 });

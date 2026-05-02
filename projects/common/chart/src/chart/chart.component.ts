@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { CngxResizeObserver } from '@cngx/common/layout';
 import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
+import { CngxThreshold } from '../layers/threshold.component';
+import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import {
   createBandScale,
   createLinearScale,
@@ -20,6 +22,7 @@ import {
   type ScaleFn,
   type XScaleInput,
 } from './chart-context';
+import { computeChartSummary } from './summary';
 
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
@@ -47,7 +50,10 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { role: 'img' },
+  host: {
+    role: 'img',
+    '[attr.aria-label]': 'ariaLabelText()',
+  },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
   template: `
@@ -57,6 +63,7 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
       [attr.height]="dimensions().height || null"
       [attr.preserveAspectRatio]="preserveAspectRatio()"
     >
+      <svg:title>{{ ariaLabelText() }}</svg:title>
       <ng-content />
     </svg>
   `,
@@ -76,9 +83,25 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly width = input<number | undefined>(undefined);
   readonly height = input<number | undefined>(undefined);
   readonly preserveAspectRatio = input<string>('xMidYMid meet');
+  /**
+   * Optional explicit `aria-label` override. When set, supersedes the
+   * auto-Summary derived from data + threshold layers. Use when the
+   * default summary phrasing does not fit the chart's domain.
+   */
+  readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+  /**
+   * Numeric accessor used to project generic data to the values fed
+   * into the auto-Summary. Default `Number(d)` works for `readonly
+   * number[]` data; structured data must override.
+   */
+  readonly summaryAccessor = input<(d: T, i: number) => number>(
+    (d) => Number(d as unknown as number),
+  );
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
   private readonly axes = contentChildren(CngxAxis, { descendants: true });
+  private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
+  private readonly i18n = inject(CNGX_CHART_I18N);
 
   readonly dataLength = computed(() => this.data().length);
 
@@ -117,6 +140,32 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     }
     // SVG Y-axis is flipped — domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
     return buildScale(yAxis.type(), yAxis.domain() ?? [], [height, 0]) as ScaleFn<number>;
+  });
+
+  /**
+   * Auto-Summary derived from `data` and `<cngx-threshold>` content
+   * children. Drives the host's reactive `aria-label`. Layer atoms do
+   * not contribute to the summary on Phase 3 — Phase 5/6 may extend
+   * with per-layer hints.
+   */
+  readonly summary = computed(() => {
+    const acc = this.summaryAccessor();
+    const data = this.data();
+    const values = new Array<number>(data.length);
+    for (let i = 0; i < data.length; i++) {
+      values[i] = acc(data[i], i);
+    }
+    const thresholds = this.thresholds().map((t) => t.value());
+    return computeChartSummary(values, thresholds);
+  });
+
+  /** Reactive `aria-label` text the host announces. */
+  protected readonly ariaLabelText = computed(() => {
+    const explicit = this.ariaLabel();
+    if (explicit !== null && explicit !== undefined && explicit !== '') {
+      return explicit;
+    }
+    return this.i18n.summary(this.summary());
   });
 }
 
