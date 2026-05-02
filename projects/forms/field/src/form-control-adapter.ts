@@ -1,6 +1,11 @@
 import { type DestroyRef, signal, type Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { type AbstractControl, type ValidationErrors } from '@angular/forms';
+import {
+  type AbstractControl,
+  PristineChangeEvent,
+  TouchedChangeEvent,
+  type ValidationErrors,
+} from '@angular/forms';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 
 /**
@@ -57,13 +62,22 @@ export function adaptFormControl(
     errorsSignal.set(adaptErrors(control.errors));
   };
 
-  // Subscribe with automatic cleanup via DestroyRef
+  // control.events (Angular 14+) carries TouchedChangeEvent + PristineChangeEvent;
+  // statusChanges/valueChanges do not, so without this externally-driven
+  // markAsTouched()/markAsDirty() never reach the adapter.
+  const handleEvent = (event: unknown) => {
+    if (event instanceof TouchedChangeEvent || event instanceof PristineChangeEvent) {
+      syncState();
+    }
+  };
   if (destroyRef) {
     control.statusChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
     control.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
+    control.events.pipe(takeUntilDestroyed(destroyRef)).subscribe(handleEvent);
   } else {
     control.statusChanges.subscribe(syncState);
     control.valueChanges.subscribe(syncState);
+    control.events.subscribe(handleEvent);
   }
 
   // Writable value proxy: allows bridges (e.g. `CngxListboxFieldBridge`) to
