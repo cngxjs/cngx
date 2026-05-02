@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
+import { Directive, effect, inject, input, untracked } from '@angular/core';
 import {
   CNGX_ERROR_AGGREGATOR,
   type CngxErrorAggregatorContract,
@@ -51,8 +51,6 @@ export class CngxErrorSource {
     { optional: true },
   );
 
-  private readonly destroyRef = inject(DestroyRef);
-
   constructor() {
     if (!this.aggregator) {
       return;
@@ -67,9 +65,6 @@ export class CngxErrorSource {
       onCleanup(() => {
         untracked(() => aggregator.removeSource(key));
       });
-    });
-    this.destroyRef.onDestroy(() => {
-      untracked(() => aggregator.removeSource(this.cngxErrorSource()));
     });
   }
 }
