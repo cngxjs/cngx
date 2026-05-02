@@ -169,11 +169,15 @@ export class CngxChipInteraction<T = unknown>
   /**
    * Optional consumer-supplied id of an external description element
    * (e.g. a sibling sr-only `<span>`). Consumers bind via
-   * `[cngxDescribedBy]="someId"`. Resolved into `aria-describedby` via
-   * `resolvedDescribedBy`, which prefers the internal disabled-reason
-   * id when `disabledReason` is set.
+   * `[cngxDescribedBy]="someId"`. Field name `describedBy` matches
+   * sibling atoms (`CngxChipInGroup`, `CngxButtonToggle`); the alias
+   * preserves the consumer-facing template attribute. Resolved into
+   * `aria-describedby` via `resolvedDescribedBy`, which prefers the
+   * internal disabled-reason id when `disabledReason` is set.
    */
-  readonly cngxDescribedBy = input<string | null>(null);
+  readonly describedBy = input<string | null>(null, {
+    alias: 'cngxDescribedBy',
+  });
 
   /** Fires on Backspace/Delete keydown — consumer owns the removal. */
   readonly removeRequest = output<void>();
@@ -184,7 +188,7 @@ export class CngxChipInteraction<T = unknown>
     if (this.disabledReason()) {
       return this.describedId;
     }
-    return this.cngxDescribedBy();
+    return this.describedBy();
   });
 
   // ── CngxFormFieldControl ─────────────────────────────────────────
