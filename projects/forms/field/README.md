@@ -33,7 +33,7 @@ controls all layout and styling.
 | Export | Description |
 |-|-|
 | `focusFirstError(tree)` | Focuses first invalid leaf field after failed submit |
-| `adaptFormControl(control, name, destroyRef?)` | Adapts Reactive Forms `AbstractControl` to `CngxFieldAccessor` |
+| `adaptFormControl(control, name, destroyRef)` | Adapts Reactive Forms `AbstractControl` to `CngxFieldAccessor` |
 
 ### Tokens
 

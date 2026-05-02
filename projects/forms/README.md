@@ -167,10 +167,11 @@ const success = await submit(form, async () => { ... });
 if (!success) focusFirstError(form);
 ```
 
-#### `adaptFormControl(control, name, destroyRef?)`
+#### `adaptFormControl(control, name, destroyRef)`
 
 Adapts a Reactive Forms `AbstractControl` for use without Signal Forms.
-Pass `inject(DestroyRef)` for automatic subscription cleanup.
+`destroyRef` is required — pass `inject(DestroyRef)` for automatic
+subscription cleanup.
 
 ```typescript
 readonly control = new FormControl('', [Validators.required, Validators.email]);
