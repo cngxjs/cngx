@@ -37,6 +37,13 @@ export {
 } from './src/layers/scatter.component';
 export { CngxThreshold } from './src/layers/threshold.component';
 export { CngxBand } from './src/layers/band.component';
+
+export {
+  CNGX_CHART_I18N,
+  provideChartI18n,
+  type CngxChartI18n,
+  type CngxChartSummary,
+} from './src/i18n/chart-i18n';
 export {
   createPathBuilder,
   type PathBuilder,
