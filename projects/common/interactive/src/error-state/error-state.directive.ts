@@ -30,23 +30,19 @@ import { computed, Directive, input } from '@angular/core';
   standalone: true,
   exportAs: 'cngxErrorState',
   host: {
-    '[class.cngx-error]': 'errorState()',
+    '[class.cngx-error]': 'cngxErrorState()',
     '[attr.aria-invalid]': 'ariaInvalid()',
     '[attr.aria-errormessage]': 'ariaErrorMessage()',
   },
 })
 export class CngxErrorState {
-  /** Boolean error flag. Required. */
   readonly cngxErrorState = input.required<boolean>();
 
   /** Optional id of the element rendering the error message text. */
   readonly cngxErrorMessageId = input<string | null>(null);
 
-  /** @internal */
-  protected readonly errorState = computed(() => this.cngxErrorState());
-
   /** @internal — explicit boolean, always present in the DOM (cngx ARIA convention). */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? 'true' : 'false'));
+  protected readonly ariaInvalid = computed(() => (this.cngxErrorState() ? 'true' : 'false'));
 
   /**
    * @internal — emitted whenever a non-empty message id is bound, regardless
