@@ -8,6 +8,10 @@ import {
   signal,
   type Signal,
 } from '@angular/core';
+import {
+  errorSourceMapEqual,
+  shallowReadonlyArrayEqual,
+} from '../error-registry/equal-fns';
 import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import {
@@ -72,23 +76,7 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
 
   private readonly sourcesState = signal<
     ReadonlyMap<string, CngxErrorAggregatorSourceEntry>
-  >(new Map(), {
-    equal: (a, b) => {
-      if (a.size !== b.size) {
-        return false;
-      }
-      for (const [key, entryA] of a) {
-        const entryB = b.get(key);
-        if (
-          entryB?.condition !== entryA.condition ||
-          (entryB.label ?? null) !== (entryA.label ?? null)
-        ) {
-          return false;
-        }
-      }
-      return true;
-    },
-  });
+  >(new Map(), { equal: errorSourceMapEqual });
 
   /** @internal — the resolved scope (input wins, else ancestor, else `null`). */
   protected readonly effectiveScope = computed<CngxErrorScopeContract | null>(
@@ -185,20 +173,3 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   }
 }
 
-function shallowReadonlyArrayEqual(
-  a: readonly string[],
-  b: readonly string[],
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}

@@ -1,6 +1,7 @@
 import { computed, Injectable, signal, type Signal } from '@angular/core';
 import type { CngxErrorAggregatorContract } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
+import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
 
 /**
  * Programmatic registry for named error scopes and aggregators.
@@ -149,37 +150,3 @@ export class CngxErrorRegistry {
   }
 }
 
-// ── Equality helpers (length-then-key-set) ────────────────────────────
-
-function mapKeySetEqual<K, V>(
-  a: ReadonlyMap<K, V>,
-  b: ReadonlyMap<K, V>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const key of a.keys()) {
-    if (!b.has(key)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function shallowReadonlyArrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}

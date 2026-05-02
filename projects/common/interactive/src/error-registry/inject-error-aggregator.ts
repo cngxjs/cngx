@@ -5,6 +5,7 @@ import type {
 } from '../error-aggregator/error-aggregator.token';
 import type { CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import { CngxErrorRegistry } from './error-registry';
+import { errorSourceMapEqual, shallowReadonlyArrayEqual } from './equal-fns';
 
 const ERROR_LABEL_JOINER = ', ';
 
@@ -42,23 +43,7 @@ export function injectErrorAggregator(
 ): CngxErrorAggregatorContract {
   const sourcesState = signal<ReadonlyMap<string, CngxErrorAggregatorSourceEntry>>(
     buildInitialSources(sources, labels),
-    {
-      equal: (a, b) => {
-        if (a.size !== b.size) {
-          return false;
-        }
-        for (const [key, entryA] of a) {
-          const entryB = b.get(key);
-          if (
-            entryB?.condition !== entryA.condition ||
-            (entryB.label ?? null) !== (entryA.label ?? null)
-          ) {
-            return false;
-          }
-        }
-        return true;
-      },
-    },
+    { equal: errorSourceMapEqual },
   );
 
   const hasError = computed(() => {
@@ -170,17 +155,3 @@ function buildInitialSources(
   return map;
 }
 
-function shallowReadonlyArrayEqual<T>(a: readonly T[], b: readonly T[]): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.length !== b.length) {
-    return false;
-  }
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) {
-      return false;
-    }
-  }
-  return true;
-}
