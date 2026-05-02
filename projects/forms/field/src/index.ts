@@ -25,6 +25,7 @@ export {
   withRequiredMarker,
   withAutocompleteMappings,
   withNoSpellcheck,
+  withErrorStrategy,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
   DEFAULT_HINT_FORMATTERS,
@@ -41,4 +42,7 @@ export type {
   FormFieldFeature,
   ConstraintHintFormatters,
   ConstraintMetadata,
+  ErrorStrategyName,
+  ErrorStrategyContext,
+  ErrorStrategyFn,
 } from './form-field.token';

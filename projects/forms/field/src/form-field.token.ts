@@ -65,7 +65,57 @@ export interface FormFieldConfig {
    * `[showRequired]="false"`.
    */
   requiredMarker?: string | false;
+  /**
+   * When set, fully overrides the default error visibility gate
+   * (`touched OR errorScope.showErrors`). The presenter calls the strategy
+   * inside `untracked()` so strategy-internal signal reads do not widen
+   * `showError`'s dependency graph.
+   */
+  errorStrategy?: ErrorStrategyFn;
 }
+
+/**
+ * Built-in error visibility strategies used by {@link withErrorStrategy}.
+ *
+ * @category configuration
+ */
+export type ErrorStrategyName =
+  | 'onTouched'
+  | 'onDirty'
+  | 'onSubmit'
+  | 'onTouchedOrSubmit'
+  | 'always';
+
+/**
+ * Snapshot passed to a custom {@link ErrorStrategyFn}.
+ *
+ * `submitted` reflects the ambient `CngxErrorScope.showErrors` state — `true`
+ * after the scope has been revealed (typically on form submit).
+ *
+ * @category configuration
+ */
+export interface ErrorStrategyContext {
+  readonly touched: boolean;
+  readonly dirty: boolean;
+  readonly submitted: boolean;
+  readonly invalid: boolean;
+}
+
+/**
+ * Custom error visibility strategy. Returns `true` when errors should be
+ * visible to the user.
+ *
+ * @category configuration
+ */
+export type ErrorStrategyFn = (context: ErrorStrategyContext) => boolean;
+
+const NAMED_ERROR_STRATEGIES: Readonly<Record<ErrorStrategyName, ErrorStrategyFn>> = {
+  onTouched: (c) => c.touched,
+  onDirty: (c) => c.dirty,
+  onSubmit: (c) => c.submitted,
+  onTouchedOrSubmit: (c) => c.touched || c.submitted,
+  always: () => true,
+};
 
 /** A feature configuration function returned by `withXxx()` helpers. */
 export interface FormFieldFeature {
@@ -134,6 +184,36 @@ export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProv
 /** Enable auto-generated constraint hints (e.g. "8–64 characters") for all form fields. */
 export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
   return { _apply: (c) => ({ ...c, errorMessages: { ...c.errorMessages, ...messages } }) };
+}
+
+/**
+ * Configures the error visibility strategy used by `CngxFormFieldPresenter.showError`.
+ *
+ * Pass a built-in name (`'onTouched'`, `'onDirty'`, `'onSubmit'`,
+ * `'onTouchedOrSubmit'`, `'always'`) or a custom {@link ErrorStrategyFn}.
+ * The strategy fully overrides the default gate
+ * (`touched OR errorScope.showErrors`).
+ *
+ * @example built-in
+ * ```ts
+ * provideFormField(withErrorStrategy('onSubmit'))
+ * ```
+ *
+ * @example custom
+ * ```ts
+ * provideFormField(withErrorStrategy(
+ *   (c) => c.invalid && (c.dirty || c.submitted),
+ * ))
+ * ```
+ *
+ * @category configuration
+ */
+export function withErrorStrategy(
+  strategy: ErrorStrategyName | ErrorStrategyFn,
+): FormFieldFeature {
+  const fn: ErrorStrategyFn =
+    typeof strategy === 'function' ? strategy : NAMED_ERROR_STRATEGIES[strategy];
+  return { _apply: (c) => ({ ...c, errorStrategy: fn }) };
 }
 
 /**

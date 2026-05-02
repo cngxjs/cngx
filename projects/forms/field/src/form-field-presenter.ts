@@ -1,4 +1,5 @@
-import { computed, Directive, inject, input, type Signal } from '@angular/core';
+import { computed, Directive, inject, input, type Signal, untracked } from '@angular/core';
+import { CNGX_ERROR_SCOPE } from '@cngx/common/interactive';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import { CNGX_FORM_FIELD_CONFIG, type ConstraintMetadata } from './form-field.token';
 
@@ -61,6 +62,7 @@ function buildHint(
 })
 export class CngxFormFieldPresenter {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
+  private readonly errorScope = inject(CNGX_ERROR_SCOPE, { optional: true });
 
   /**
    * The Signal Forms field accessor — a callable that returns `FieldState`.
@@ -126,8 +128,33 @@ export class CngxFormFieldPresenter {
 
   // ── Error gate ─────────────────────────────────────────────────────
 
-  /** `true` when errors should be visible — only after user interaction. */
-  readonly showError = computed(() => this.touched() && this.invalid());
+  /**
+   * `true` when errors should be visible.
+   *
+   * Default gate: invalid AND (touched OR ambient `errorScope.showErrors`).
+   * When `withErrorStrategy()` is active, the configured strategy fully
+   * overrides the default gate. Strategy callbacks run inside `untracked()`
+   * so any signals they read internally do not widen the dependency graph
+   * beyond `invalid` / `touched` / `dirty` / `errorScope.showErrors` —
+   * `reference_signal_architecture` §3 (flat dependency graphs).
+   */
+  readonly showError = computed(() => {
+    if (!this.invalid()) {
+      return false;
+    }
+
+    const strategy = this.config.errorStrategy;
+    if (strategy) {
+      const touched = this.touched();
+      const dirty = this.dirty();
+      const submitted = this.errorScope?.showErrors() === true;
+      return untracked(() =>
+        strategy({ touched, dirty, submitted, invalid: true }),
+      );
+    }
+
+    return this.touched() || this.errorScope?.showErrors() === true;
+  });
 
   // ── Constraint metadata ────────────────────────────────────────────
 
