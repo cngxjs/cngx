@@ -8,6 +8,7 @@ import { form, schema, required } from '@angular/forms/signals';
 import { ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxToggle, CngxCheckbox, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
@@ -308,6 +309,7 @@ export class FormPrimitivesDemoComponent {
 import { ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxToggle, CngxCheckbox, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
@@ -347,6 +349,29 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
   protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
 
+  constructor() {
+    // Bridge TouchedChangeEvent → adapter signal sync.
+    // adaptFormControl subscribes to valueChanges/statusChanges but not
+    // to control.events (Angular 14+ TouchedChangeEvent), so externally-
+    // driven control.markAsTouched() does NOT update the adapter's
+    // touched signal. Without this bridge, tab-out from a wrapped atom
+    // marks the FormControl touched but the presenter never sees it,
+    // so <cngx-field-errors> stays hidden. Tracked as Phase 7.x cleanup
+    // on adaptFormControl itself; this loop is the demo workaround.
+    const wrappedPairs = [
+      [this.rfForm.controls.terms, this.rfTermsField] as const,
+      [this.rfForm.controls.payment, this.rfPaymentField] as const,
+      [this.rfForm.controls.notificationChannels, this.rfChannelsField] as const,
+    ];
+    for (const [ctrl, field] of wrappedPairs) {
+      ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (ctrl.touched && !field().touched()) {
+          field().markAsTouched();
+        }
+      });
+    }
+  }
+
   // Pool data for selection groups
   protected readonly paymentOptions = ['card', 'cash', 'invoice'];
   protected readonly viewOptions = ['grid', 'list', 'table'];
@@ -368,7 +393,15 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   }
 
   protected handleRfValidate(): void {
+    // Touch the raw FormControls (visible to bridges + readouts).
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
+    // Also touch the adapted accessors so the cngx-form-field presenters
+    // see the change immediately. The constructor's TouchedChangeEvent
+    // bridge would also catch this, but calling here is idempotent and
+    // makes the validate-on-click path synchronous.
+    this.rfTermsField().markAsTouched();
+    this.rfPaymentField().markAsTouched();
+    this.rfChannelsField().markAsTouched();
   }
 
   protected handleRfReset(): void {
@@ -478,6 +511,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
 import { ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxToggle, CngxCheckbox, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
@@ -517,6 +551,29 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
   protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
 
+  constructor() {
+    // Bridge TouchedChangeEvent → adapter signal sync.
+    // adaptFormControl subscribes to valueChanges/statusChanges but not
+    // to control.events (Angular 14+ TouchedChangeEvent), so externally-
+    // driven control.markAsTouched() does NOT update the adapter's
+    // touched signal. Without this bridge, tab-out from a wrapped atom
+    // marks the FormControl touched but the presenter never sees it,
+    // so <cngx-field-errors> stays hidden. Tracked as Phase 7.x cleanup
+    // on adaptFormControl itself; this loop is the demo workaround.
+    const wrappedPairs = [
+      [this.rfForm.controls.terms, this.rfTermsField] as const,
+      [this.rfForm.controls.payment, this.rfPaymentField] as const,
+      [this.rfForm.controls.notificationChannels, this.rfChannelsField] as const,
+    ];
+    for (const [ctrl, field] of wrappedPairs) {
+      ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (ctrl.touched && !field().touched()) {
+          field().markAsTouched();
+        }
+      });
+    }
+  }
+
   // Pool data for selection groups
   protected readonly paymentOptions = ['card', 'cash', 'invoice'];
   protected readonly viewOptions = ['grid', 'list', 'table'];
@@ -538,7 +595,15 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   }
 
   protected handleRfValidate(): void {
+    // Touch the raw FormControls (visible to bridges + readouts).
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
+    // Also touch the adapted accessors so the cngx-form-field presenters
+    // see the change immediately. The constructor's TouchedChangeEvent
+    // bridge would also catch this, but calling here is idempotent and
+    // makes the validate-on-click path synchronous.
+    this.rfTermsField().markAsTouched();
+    this.rfPaymentField().markAsTouched();
+    this.rfChannelsField().markAsTouched();
   }
 
   protected handleRfReset(): void {
@@ -551,6 +616,7 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
 import { ReactiveFormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CngxFormField, CngxLabel, CngxFieldErrors, adaptFormControl } from '@cngx/forms/field';
 import { CngxFormBridge } from '@cngx/forms/controls';
 import { CngxToggle, CngxCheckbox, CngxChipInteraction, CngxRadioGroup, CngxRadio, CngxCheckboxGroup, CngxButtonToggleGroup, CngxButtonMultiToggleGroup, CngxButtonToggle, CngxChipGroup, CngxMultiChipGroup, CngxChipInGroup } from '@cngx/common/interactive';
@@ -590,6 +656,29 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
   protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
 
+  constructor() {
+    // Bridge TouchedChangeEvent → adapter signal sync.
+    // adaptFormControl subscribes to valueChanges/statusChanges but not
+    // to control.events (Angular 14+ TouchedChangeEvent), so externally-
+    // driven control.markAsTouched() does NOT update the adapter's
+    // touched signal. Without this bridge, tab-out from a wrapped atom
+    // marks the FormControl touched but the presenter never sees it,
+    // so <cngx-field-errors> stays hidden. Tracked as Phase 7.x cleanup
+    // on adaptFormControl itself; this loop is the demo workaround.
+    const wrappedPairs = [
+      [this.rfForm.controls.terms, this.rfTermsField] as const,
+      [this.rfForm.controls.payment, this.rfPaymentField] as const,
+      [this.rfForm.controls.notificationChannels, this.rfChannelsField] as const,
+    ];
+    for (const [ctrl, field] of wrappedPairs) {
+      ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (ctrl.touched && !field().touched()) {
+          field().markAsTouched();
+        }
+      });
+    }
+  }
+
   // Pool data for selection groups
   protected readonly paymentOptions = ['card', 'cash', 'invoice'];
   protected readonly viewOptions = ['grid', 'list', 'table'];
@@ -611,7 +700,15 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   }
 
   protected handleRfValidate(): void {
+    // Touch the raw FormControls (visible to bridges + readouts).
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
+    // Also touch the adapted accessors so the cngx-form-field presenters
+    // see the change immediately. The constructor's TouchedChangeEvent
+    // bridge would also catch this, but calling here is idempotent and
+    // makes the validate-on-click path synchronous.
+    this.rfTermsField().markAsTouched();
+    this.rfPaymentField().markAsTouched();
+    this.rfChannelsField().markAsTouched();
   }
 
   protected handleRfReset(): void {
@@ -650,6 +747,29 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   protected readonly rfPaymentField = adaptFormControl(this.rfForm.controls.payment, 'payment', this.destroyRef);
   protected readonly rfChannelsField = adaptFormControl(this.rfForm.controls.notificationChannels, 'notificationChannels', this.destroyRef);
 
+  constructor() {
+    // Bridge TouchedChangeEvent → adapter signal sync.
+    // adaptFormControl subscribes to valueChanges/statusChanges but not
+    // to control.events (Angular 14+ TouchedChangeEvent), so externally-
+    // driven control.markAsTouched() does NOT update the adapter's
+    // touched signal. Without this bridge, tab-out from a wrapped atom
+    // marks the FormControl touched but the presenter never sees it,
+    // so <cngx-field-errors> stays hidden. Tracked as Phase 7.x cleanup
+    // on adaptFormControl itself; this loop is the demo workaround.
+    const wrappedPairs = [
+      [this.rfForm.controls.terms, this.rfTermsField] as const,
+      [this.rfForm.controls.payment, this.rfPaymentField] as const,
+      [this.rfForm.controls.notificationChannels, this.rfChannelsField] as const,
+    ];
+    for (const [ctrl, field] of wrappedPairs) {
+      ctrl.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (ctrl.touched && !field().touched()) {
+          field().markAsTouched();
+        }
+      });
+    }
+  }
+
   // Pool data for selection groups
   protected readonly paymentOptions = ['card', 'cash', 'invoice'];
   protected readonly viewOptions = ['grid', 'list', 'table'];
@@ -671,7 +791,15 @@ import { createFormPrimitivesFormGroup } from '../_fixtures/form-primitives-form
   }
 
   protected handleRfValidate(): void {
+    // Touch the raw FormControls (visible to bridges + readouts).
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
+    // Also touch the adapted accessors so the cngx-form-field presenters
+    // see the change immediately. The constructor's TouchedChangeEvent
+    // bridge would also catch this, but calling here is idempotent and
+    // makes the validate-on-click path synchronous.
+    this.rfTermsField().markAsTouched();
+    this.rfPaymentField().markAsTouched();
+    this.rfChannelsField().markAsTouched();
   }
 
   protected handleRfReset(): void {
