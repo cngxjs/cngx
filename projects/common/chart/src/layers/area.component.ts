@@ -68,7 +68,7 @@ export class CngxArea<T = unknown> {
     if (local !== undefined) {
       return local;
     }
-    return this.ctx.data() as readonly T[];
+    return this.ctx.data<T>();
   });
 
   protected readonly d = computed<string>(

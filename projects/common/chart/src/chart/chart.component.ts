@@ -88,7 +88,15 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
   ],
 })
 export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, number> {
-  readonly data = input.required<readonly T[]>();
+  /**
+   * Raw data input. Aliased as `data` at the template-binding level so
+   * consumer markup stays `<cngx-chart [data]="rows">`. The public,
+   * typed read surface is the `data<U>()` method below — layer atoms
+   * call `this.ctx.data<T>()` to narrow without per-site casts.
+   *
+   * @internal — alias for the public `data<U>()` method
+   */
+  readonly dataInput = input.required<readonly T[]>({ alias: 'data' });
   readonly width = input<number | undefined>(undefined);
   readonly height = input<number | undefined>(undefined);
   readonly preserveAspectRatio = input<string>('xMidYMid meet');
@@ -126,7 +134,17 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   );
   private readonly dataTableUid = nextUid('cngx-chart-data-table');
 
-  readonly dataLength = computed(() => this.data().length);
+  readonly dataLength = computed(() => this.dataInput().length);
+
+  /**
+   * Generic-aware data accessor satisfying {@link CngxChartContext.data}.
+   * The single boundary cast lives here; layer atoms call
+   * `this.ctx.data<T>()` and receive `readonly T[]` directly with no
+   * per-site `as` cast.
+   */
+  data<U = T>(): readonly U[] {
+    return this.dataInput() as unknown as readonly U[];
+  }
 
   readonly dimensions = computed(() => ({
     width: this.width() ?? this.resize.width(),
@@ -173,7 +191,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    */
   readonly summary = computed(() => {
     const acc = this.summaryAccessor();
-    const data = this.data();
+    const data = this.dataInput();
     const values = new Array<number>(data.length);
     for (let i = 0; i < data.length; i++) {
       values[i] = acc(data[i], i);
@@ -194,7 +212,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   /** Numeric projection of `data` reused by the data-table view. */
   protected readonly summaryValues = computed<readonly number[]>(() => {
     const acc = this.summaryAccessor();
-    const data = this.data();
+    const data = this.dataInput();
     const out = new Array<number>(data.length);
     for (let i = 0; i < data.length; i++) {
       out[i] = acc(data[i], i);
@@ -214,7 +232,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     if (mode === 'off') {
       return false;
     }
-    return this.data().length > 1;
+    return this.dataInput().length > 1;
   });
 }
 

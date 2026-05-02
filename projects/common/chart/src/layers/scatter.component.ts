@@ -61,7 +61,7 @@ export class CngxScatter<T = unknown> {
     if (local !== undefined) {
       return local;
     }
-    return this.ctx.data() as readonly T[];
+    return this.ctx.data<T>();
   });
 
   protected readonly circles = computed<readonly ScatterCircle[]>(
