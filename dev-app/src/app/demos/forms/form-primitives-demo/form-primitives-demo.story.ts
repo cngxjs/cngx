@@ -92,15 +92,11 @@ export const STORY: DemoSpec = {
   }
 
   protected handleRfValidate(): void {
-    // Touch the raw FormControls (visible to bridges + readouts).
+    // Touching the raw FormControls fires TouchedChangeEvent, which
+    // adaptFormControl now subscribes to — adapted accessors update
+    // synchronously inside the subscribe callback. No accessor-side touch
+    // call needed.
     Object.values(this.rfForm.controls).forEach((c) => c.markAsTouched());
-    // Also touch the adapted accessors so the cngx-form-field presenters
-    // update synchronously. adaptFormControl now subscribes to control.events
-    // and would catch the change on the next microtask; calling explicitly
-    // here is idempotent and keeps validate-on-click synchronous.
-    this.rfTermsField().markAsTouched();
-    this.rfPaymentField().markAsTouched();
-    this.rfChannelsField().markAsTouched();
   }
 
   protected handleRfReset(): void {
