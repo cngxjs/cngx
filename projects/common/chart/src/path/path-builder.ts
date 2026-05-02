@@ -42,29 +42,16 @@ export interface PathBuilder<T> {
  * reference-equal to the previous call. Any reference mismatch
  * triggers a rebuild and updates the slot.
  *
- * Factory-level LRU: `createPathBuilder` itself is a single-slot
- * factory cache keyed by the constructor options' `(y, x, curve)`
- * triple by reference. Two calls with the same `PathBuilderOptions`
- * field references return the same `PathBuilder` instance. Combined
- * with the `equal: (a, b) => a === b` cascade guard on the layer-atom
- * `builder` computed, the path-builder's per-build cache stays warm
- * across cascade re-emissions when nothing actually changed.
+ * Each call to `createPathBuilder` returns a fresh builder with its
+ * own `lastData / lastX / lastY` slots — there is no cross-call /
+ * cross-consumer state. The cascade guard for layer atoms is the
+ * `equal: (a, b) => a === b` on the `builder` `computed`; combined
+ * with Angular signals' default behaviour of skipping re-emissions
+ * when the inputs to the `computed` are unchanged, two consecutive
+ * cascade ticks with the same `(y, x, curve)` produce the same
+ * builder instance.
  */
-let lastFactoryY: unknown = Symbol('uninit');
-let lastFactoryX: unknown = Symbol('uninit');
-let lastFactoryCurve: unknown = Symbol('uninit');
-let lastFactoryBuilder: PathBuilder<unknown> | null = null;
-
 export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T> {
-  if (
-    opts.y === lastFactoryY &&
-    opts.x === lastFactoryX &&
-    opts.curve === lastFactoryCurve &&
-    lastFactoryBuilder !== null
-  ) {
-    return lastFactoryBuilder as PathBuilder<T>;
-  }
-
   const yAcc = opts.y;
   const xAcc: LineXAccessor<T> = opts.x ?? ((_, i) => i);
   const curve = opts.curve;
@@ -75,7 +62,7 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
   let lastResult = '';
   let rebuilds = 0;
 
-  const builder: PathBuilder<T> = {
+  return {
     build(data, xScale, yScale) {
       if (data === lastData && xScale === lastX && yScale === lastY) {
         return lastResult;
@@ -93,12 +80,6 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
       return rebuilds;
     },
   };
-
-  lastFactoryY = opts.y;
-  lastFactoryX = opts.x;
-  lastFactoryCurve = opts.curve;
-  lastFactoryBuilder = builder as PathBuilder<unknown>;
-  return builder;
 }
 
 function projectPoints<T>(

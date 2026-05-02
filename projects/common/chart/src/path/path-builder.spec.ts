@@ -87,4 +87,32 @@ describe('createPathBuilder — compute-guard (isolated)', () => {
     );
     expect(d).toBe('M 10 1 L 30 2');
   });
+
+  it('returns a fresh builder instance per call — no cross-consumer state', () => {
+    const opts = { y: (v: number) => v, curve: 'linear' as const };
+    const a = createPathBuilder<number>(opts);
+    const b = createPathBuilder<number>(opts);
+    expect(a).not.toBe(b);
+
+    a.build([1, 2, 3], xScale, yScale);
+    expect(a.rebuildCount()).toBe(1);
+    expect(b.rebuildCount()).toBe(0);
+
+    b.build([10, 20, 30], xScale, yScale);
+    expect(a.rebuildCount()).toBe(1);
+    expect(b.rebuildCount()).toBe(1);
+  });
+
+  it('two builders sharing the same (data, scale) refs each maintain their own internal cache', () => {
+    const a = createPathBuilder<number>({ y: (v) => v, curve: 'linear' });
+    const b = createPathBuilder<number>({ y: (v) => v, curve: 'linear' });
+    const data = [1, 2, 3];
+    a.build(data, xScale, yScale);
+    a.build(data, xScale, yScale);
+    expect(a.rebuildCount()).toBe(1);
+    b.build(data, xScale, yScale);
+    expect(b.rebuildCount()).toBe(1);
+    a.build(data, xScale, yScale);
+    expect(a.rebuildCount()).toBe(1);
+  });
 });

@@ -55,14 +55,12 @@ export class CngxArea<T = unknown> {
 
   private readonly ctx = injectChartContext('CngxArea');
 
-  private readonly builder = computed<PathBuilder<T>>(
-    () =>
-      createPathBuilder<T>({
-        y: this.accessor(),
-        x: this.xAccessor(),
-        curve: this.curve(),
-      }),
-    { equal: (a, b) => a === b },
+  private readonly builder = computed<PathBuilder<T>>(() =>
+    createPathBuilder<T>({
+      y: this.accessor(),
+      x: this.xAccessor(),
+      curve: this.curve(),
+    }),
   );
 
   private readonly resolvedData = computed<readonly T[]>(() => {
