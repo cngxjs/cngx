@@ -121,6 +121,8 @@ export class CngxToggle
 {
   readonly value = model<boolean>(false);
   readonly disabled = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
   readonly labelPosition = input<'before' | 'after'>('after');
   readonly thumbGlyph = input<TemplateRef<void> | null>(null);

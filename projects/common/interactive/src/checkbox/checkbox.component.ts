@@ -115,6 +115,8 @@ export class CngxCheckbox
   readonly value = model<boolean>(false);
   readonly indeterminate = model<boolean>(false);
   readonly disabled = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
   readonly dashGlyph = input<TemplateRef<void> | null>(null);

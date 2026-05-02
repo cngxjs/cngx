@@ -140,6 +140,8 @@ export class CngxChipInteraction<T = unknown>
   readonly value = model<boolean>(false, { alias: 'selected' });
 
   readonly disabled = model<boolean>(false);
+  readonly invalid = model<boolean>(false);
+  readonly errorMessageId = input<string | null>(null);
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });
