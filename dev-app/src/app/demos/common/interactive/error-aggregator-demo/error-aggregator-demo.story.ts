@@ -149,7 +149,11 @@ cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`,
         'CngxErrorSource',
       ],
       template: `
-  <button #trigger="cngxPopoverTrigger" [cngxPopoverTrigger]="billingPanel" type="button">
+  <button
+    [cngxPopoverTrigger]="billingPanel.popover"
+    (click)="billingPanel.popover.toggle()"
+    type="button"
+  >
     Billing status
   </button>
   <cngx-popover-panel #billingPanel>

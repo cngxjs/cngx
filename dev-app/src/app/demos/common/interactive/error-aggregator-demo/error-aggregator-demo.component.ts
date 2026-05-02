@@ -116,7 +116,11 @@ import { MatTabsModule } from '@angular/material/tabs';
         [sourceTs]="_srcTs2"
         [sourceCss]="_srcCss2">
         
-  <button #trigger="cngxPopoverTrigger" [cngxPopoverTrigger]="billingPanel" type="button">
+  <button
+    [cngxPopoverTrigger]="billingPanel.popover"
+    (click)="billingPanel.popover.toggle()"
+    type="button"
+  >
     Billing status
   </button>
   <cngx-popover-panel #billingPanel>
@@ -300,7 +304,11 @@ import { MatTabsModule } from '@angular/material/tabs';
 .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
 .cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 cngx-card-body.cngx-error { background: rgba(176, 0, 32, 0.04); }`;
-  protected readonly _srcHtml2 = `<button #trigger="cngxPopoverTrigger" [cngxPopoverTrigger]="billingPanel" type="button">
+  protected readonly _srcHtml2 = `<button
+    [cngxPopoverTrigger]="billingPanel.popover"
+    (click)="billingPanel.popover.toggle()"
+    type="button"
+  >
     Billing status
   </button>
   <cngx-popover-panel #billingPanel>
