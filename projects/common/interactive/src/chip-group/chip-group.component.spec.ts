@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { CngxChip } from '@cngx/common/display';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CngxChipInGroup } from '../chip-in-group/chip-in-group.directive';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -133,5 +134,66 @@ describe('CngxChipGroup', () => {
   it('aria-orientation defaults to horizontal class but does not emit attr', () => {
     const { groupEl } = setup();
     expect(groupEl.classList.contains('cngx-chip-group--horizontal')).toBe(true);
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects invalid() alone (no form-field host)', () => {
+      @Component({
+        template: `<cngx-chip-group label="L" [(invalid)]="bad"><cngx-chip cngxChipInGroup [value]="'a'">A</cngx-chip></cngx-chip-group>`,
+        imports: [CngxChipGroup, CngxChip, CngxChipInGroup],
+      })
+      class InvalidHost {
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(InvalidHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxChipGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-chip-group label="L"><cngx-chip cngxChipInGroup [value]="'a'">A</cngx-chip></cngx-chip-group>`,
+        imports: [CngxChipGroup, CngxChip, CngxChipInGroup],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {}
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxChipGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-errormessage tracks errorMessageId regardless of invalid state when bound', () => {
+      @Component({
+        template: `<cngx-chip-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-chip cngxChipInGroup [value]="'a'">A</cngx-chip></cngx-chip-group>`,
+        imports: [CngxChipGroup, CngxChip, CngxChipInGroup],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('cg-err');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxChipGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cg-err');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cg-err');
+    });
   });
 });

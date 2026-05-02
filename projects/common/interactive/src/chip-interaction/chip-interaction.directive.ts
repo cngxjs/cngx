@@ -1,13 +1,18 @@
 import {
+  DestroyRef,
   Directive,
+  ElementRef,
+  Renderer2,
   afterNextRender,
   computed,
+  effect,
   inject,
   input,
   isDevMode,
   model,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   CNGX_FORM_FIELD_CONTROL,
@@ -64,11 +69,13 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * toggle does not double-fire alongside the chip's `(remove)`
  * output.
  *
- * **Disabled "why".** No internal sr-only span is rendered (no
- * template to inject one into). Consumers wanting a reason
- * announcement render the description element themselves and pass
- * its id via `[describedBy]` — mirrors `CngxButtonToggle`'s
- * directive-form pattern.
+ * **Disabled "why".** When `disabledReason` is set, the directive
+ * appends a hidden span to the host via `Renderer2` (always-in-DOM
+ * per Pillar 2 — the id stays stable across renders). When
+ * `disabledReason` is empty, consumers may still pass a custom id
+ * via `cngxDescribedBy` and the `aria-describedby` host binding
+ * routes to that. The two paths are mutually exclusive: a non-empty
+ * `disabledReason` wins.
  *
  * @example
  * ```html
@@ -100,8 +107,9 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-selected]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': 'errorState() ? "true" : null',
-    '[attr.aria-describedby]': 'describedBy()',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
+    '[attr.aria-describedby]': 'resolvedDescribedBy()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-chip-interaction--selected]': 'value()',
     '[class.cngx-chip-interaction--disabled]': 'disabled()',
@@ -140,12 +148,51 @@ export class CngxChipInteraction<T = unknown>
   readonly value = model<boolean>(false, { alias: 'selected' });
 
   readonly disabled = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path — consumers
+   * typically read only.
+   */
+  readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element (e.g. a sibling
+   * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
+   * When set, the host emits `aria-errormessage="<id>"` so AT can
+   * locate the message; consumers MUST render an element with that id
+   * — passing an id without a matching element produces a dangling
+   * AT reference. Default `null` skips the attribute entirely.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
+   */
+  readonly errorMessageId = input<string | null>(null);
+  readonly disabledReason = input<string>('');
+
+  /**
+   * Optional consumer-supplied id of an external description element
+   * (e.g. a sibling sr-only `<span>`). Consumers bind via
+   * `[cngxDescribedBy]="someId"`. Field name `describedBy` matches
+   * sibling atoms (`CngxChipInGroup`, `CngxButtonToggle`); the alias
+   * preserves the consumer-facing template attribute. Resolved into
+   * `aria-describedby` via `resolvedDescribedBy`, which prefers the
+   * internal disabled-reason id when `disabledReason` is set.
+   */
   readonly describedBy = input<string | null>(null, {
     alias: 'cngxDescribedBy',
   });
 
   /** Fires on Backspace/Delete keydown — consumer owns the removal. */
   readonly removeRequest = output<void>();
+
+  private readonly describedId = nextUid('cngx-chip-desc');
+
+  protected readonly resolvedDescribedBy = computed<string | null>(() => {
+    if (this.disabledReason()) {
+      return this.describedId;
+    }
+    return this.describedBy();
+  });
 
   // ── CngxFormFieldControl ─────────────────────────────────────────
 
@@ -171,6 +218,55 @@ export class CngxChipInteraction<T = unknown>
   );
 
   constructor() {
+    const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
+    const renderer = inject(Renderer2);
+    const span = renderer.createElement('span') as HTMLSpanElement;
+    renderer.setAttribute(span, 'id', this.describedId);
+    renderer.setAttribute(span, 'aria-hidden', 'true');
+    // SR-only inline styles via CSS-var fallback chain: the directive
+    // runs in arbitrary host markup and must not require a consumer
+    // stylesheet (hence inline), but every value goes through
+    // `var(--cngx-sr-only-*, default)` so the atomic-decompose
+    // schematic preserves the structural/thematic split — consumer
+    // CSS layers can still override sizes by setting the
+    // `--cngx-sr-only-*` properties on the host.
+    renderer.setStyle(span, 'position', 'var(--cngx-sr-only-position, absolute)');
+    renderer.setStyle(span, 'width', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'height', 'var(--cngx-sr-only-size, 1px)');
+    renderer.setStyle(span, 'overflow', 'var(--cngx-sr-only-overflow, hidden)');
+    renderer.setStyle(span, 'clip', 'var(--cngx-sr-only-clip, rect(0, 0, 0, 0))');
+    renderer.setStyle(span, 'white-space', 'var(--cngx-sr-only-white-space, nowrap)');
+    renderer.appendChild(hostEl, span);
+
+    // Symmetric teardown: when the directive is destroyed but the
+    // host element outlives it (e.g. structural-directive re-projection,
+    // sibling viewContainerRef.clear()), the parent removal does not
+    // collect this span. Without explicit cleanup the span leaks and
+    // the next instantiation collides on `describedId`.
+    inject(DestroyRef).onDestroy(() => {
+      // Defensive parent-node check: the destroy hook fires symmetrically
+      // with `appendChild`, but the host may have been detached by a
+      // parent structural directive at the same destroy tick. Removing
+      // a child whose parent is no longer ours would throw under a
+      // stricter renderer; this guard expresses the contract explicitly.
+      if (span.parentNode === hostEl) {
+        renderer.removeChild(hostEl, span);
+      }
+    });
+
+    effect(() => {
+      const reason = this.disabledReason();
+      untracked(() => {
+        if (reason) {
+          renderer.removeAttribute(span, 'aria-hidden');
+          span.textContent = reason;
+        } else {
+          renderer.setAttribute(span, 'aria-hidden', 'true');
+          span.textContent = '';
+        }
+      });
+    });
+
     if (!isDevMode()) {
       return;
     }

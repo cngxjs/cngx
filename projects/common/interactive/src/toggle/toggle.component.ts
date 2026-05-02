@@ -80,7 +80,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': 'errorState() ? "true" : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-describedby]': 'describedById()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-toggle--checked]': 'value()',
@@ -121,6 +122,25 @@ export class CngxToggle
 {
   readonly value = model<boolean>(false);
   readonly disabled = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path — consumers
+   * typically read only.
+   */
+  readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element (e.g. a sibling
+   * rendered by `<cngx-form-field>` or a consumer-owned `<span>`).
+   * When set, the host emits `aria-errormessage="<id>"` so AT can
+   * locate the message; consumers MUST render an element with that id
+   * — passing an id without a matching element produces a dangling
+   * AT reference. Default `null` skips the attribute entirely.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
+   */
+  readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
   readonly labelPosition = input<'before' | 'after'>('after');
   readonly thumbGlyph = input<TemplateRef<void> | null>(null);

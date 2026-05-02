@@ -120,7 +120,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() || null : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-multi-chip-group--horizontal]':
       'orientation() === "horizontal"',
@@ -145,7 +145,21 @@ export class CngxMultiChipGroup<T = unknown>
   readonly value = this.selectedValues;
   readonly disabled = model<boolean>(false);
   readonly required = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path — consumers
+   * typically read only.
+   */
   readonly invalid = model<boolean>(false);
+  /**
+   * Optional id of an external error message element. When set, the
+   * host emits `aria-errormessage="<id>"`; consumers MUST render an
+   * element with that id. Default `null` skips the attribute.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
+   */
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly label = input<string | undefined>(undefined);

@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxToggle } from './toggle.component';
@@ -104,5 +105,61 @@ describe('CngxToggle', () => {
       '.cngx-toggle__thumb [data-test="thumb-icon"]',
     );
     expect(projected?.textContent).toBe('★');
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects invalid() alone (no form-field host)', () => {
+      const { fixture, dir, el } = setup();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+      dir.invalid.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-toggle>L</cngx-toggle>`,
+        imports: [CngxToggle],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {}
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxToggle))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid is null when both invalid() and errorState() are false', () => {
+      const { el } = setup();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it('aria-errormessage always reflects errorMessageId (independent of invalid)', () => {
+      @Component({
+        template: `<cngx-toggle [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-toggle>`,
+        imports: [CngxToggle],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('err-1');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxToggle))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-errormessage')).toBe('err-1');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-errormessage')).toBe('err-1');
+    });
   });
 });
