@@ -20,3 +20,9 @@ export {
   type ScaleFn,
   type XScaleInput,
 } from './src/chart/chart-context';
+
+export {
+  CngxAxis,
+  type CngxAxisPosition,
+  type CngxAxisType,
+} from './src/axis/axis.component';

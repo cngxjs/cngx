@@ -2,12 +2,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   inject,
   input,
-  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxResizeObserver } from '@cngx/common/layout';
+import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
+import {
+  createBandScale,
+  createLinearScale,
+  createTimeScale,
+} from '../scales';
 import {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
@@ -25,9 +31,14 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
  * (`<cngx-axis>`, layer atoms) read the live scales without injecting
  * the concrete `CngxChart` class.
  *
- * Phase 1 ships placeholder scales — Phase 2's `<cngx-axis>` replaces
- * them with axis-derived computeds via content-child collection. The
- * `[width]` / `[height]` inputs override the resize observer for
+ * Scales are derived from content-child `<cngx-axis>` directives:
+ * the X axis (top/bottom position) drives `xScale`, the Y axis
+ * (left/right) drives `yScale`. With no axis present, the
+ * corresponding scale falls back to a no-op `() => 0` and content
+ * children may render off-canvas — consumers must mount at least
+ * one axis per direction they actually use.
+ *
+ * The `[width]` / `[height]` inputs override the resize observer for
  * fixed-dimension presets (inline sparkline at 80×24, etc.).
  */
 @Component({
@@ -67,6 +78,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   readonly preserveAspectRatio = input<string>('xMidYMid meet');
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
+  private readonly axes = contentChildren(CngxAxis, { descendants: true });
 
   readonly dataLength = computed(() => this.data().length);
 
@@ -80,17 +92,78 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     return `0 0 ${width || 0} ${height || 0}`;
   });
 
-  /**
-   * Phase 1 placeholder. Phase 2's `<cngx-axis>` replaces this signal's
-   * source with a content-child-derived computed.
-   */
-  private readonly xScaleSource = signal<ScaleFn<XScaleInput>>(NOOP_SCALE);
-  readonly xScale = this.xScaleSource.asReadonly();
+  readonly xScale = computed<ScaleFn<XScaleInput>>(() => {
+    const axes = this.axes();
+    const { width } = this.dimensions();
+    if (width <= 0) {
+      return NOOP_SCALE;
+    }
+    const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
+    if (!xAxis) {
+      return NOOP_SCALE;
+    }
+    return buildScale(xAxis.type(), xAxis.domain() ?? [], [0, width]);
+  });
 
-  /**
-   * Phase 1 placeholder. Phase 2's `<cngx-axis>` replaces this signal's
-   * source with a content-child-derived computed.
-   */
-  private readonly yScaleSource = signal<ScaleFn<number>>(NOOP_Y_SCALE);
-  readonly yScale = this.yScaleSource.asReadonly();
+  readonly yScale = computed<ScaleFn<number>>(() => {
+    const axes = this.axes();
+    const { height } = this.dimensions();
+    if (height <= 0) {
+      return NOOP_Y_SCALE;
+    }
+    const yAxis = axes.find((a) => isVerticalPosition(a.position()));
+    if (!yAxis) {
+      return NOOP_Y_SCALE;
+    }
+    // SVG Y-axis is flipped — domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
+    return buildScale(yAxis.type(), yAxis.domain() ?? [], [height, 0]) as ScaleFn<number>;
+  });
+}
+
+function isHorizontalPosition(p: CngxAxisPosition): boolean {
+  return p === 'top' || p === 'bottom';
+}
+
+function isVerticalPosition(p: CngxAxisPosition): boolean {
+  return p === 'left' || p === 'right';
+}
+
+function buildScale(
+  type: CngxAxisType,
+  domain: readonly unknown[],
+  range: readonly [number, number],
+): ScaleFn<XScaleInput> {
+  if (domain.length < 2) {
+    return NOOP_SCALE;
+  }
+  switch (type) {
+    case 'linear': {
+      const linear = createLinearScale(
+        [Number(domain[0]), Number(domain[domain.length - 1])],
+        range,
+      );
+      return (v: XScaleInput) => linear(typeof v === 'number' ? v : Number(v));
+    }
+    case 'time': {
+      const time = createTimeScale(
+        [toMs(domain[0]), toMs(domain[domain.length - 1])],
+        range,
+      );
+      return (v: XScaleInput) => time(v instanceof Date ? v : Number(v));
+    }
+    case 'band': {
+      const band = createBandScale<unknown>(domain, range);
+      return (v: XScaleInput) => band(v);
+    }
+  }
+}
+
+function toMs(v: unknown): number {
+  if (typeof v === 'number') {
+    return v;
+  }
+  if (v instanceof Date) {
+    return v.getTime();
+  }
+  return Number(v);
 }
