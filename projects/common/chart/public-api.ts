@@ -35,6 +35,8 @@ export {
   type ScatterXAccessor,
   type ScatterYAccessor,
 } from './src/layers/scatter.component';
+export { CngxThreshold } from './src/layers/threshold.component';
+export { CngxBand } from './src/layers/band.component';
 export {
   createPathBuilder,
   type PathBuilder,

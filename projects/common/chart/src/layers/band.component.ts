@@ -1,0 +1,95 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  ViewEncapsulation,
+} from '@angular/core';
+import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
+
+/**
+ * Band reference atom. Renders a `<rect>` across a vertical Y-range
+ * (`from..to`) spanning the chart's full width. Use to highlight a
+ * value range (e.g. "good zone", "watch zone") behind primary layers.
+ *
+ * Default opacity is low (`var(--cngx-band-opacity, 0.12)`) so the
+ * band sits behind line / area / bar layers without dominating.
+ */
+@Component({
+  selector: 'cngx-band',
+  exportAs: 'cngxBand',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  template: `
+    @if (rect(); as r) {
+      <svg:rect
+        class="cngx-band__rect"
+        [attr.x]="0"
+        [attr.y]="r.y"
+        [attr.width]="r.width"
+        [attr.height]="r.height"
+        [attr.fill-opacity]="opacity()"
+      />
+      @if (label(); as l) {
+        <svg:text
+          class="cngx-band__label"
+          [attr.x]="r.width - 4"
+          [attr.y]="r.y + 12"
+          text-anchor="end"
+        >
+          {{ l }}
+        </svg:text>
+      }
+    }
+  `,
+  styles: [
+    `
+      .cngx-band__rect {
+        fill: var(--cngx-band-color, var(--cngx-chart-secondary, currentColor));
+        fill-opacity: var(--cngx-band-opacity, 0.12);
+        stroke: none;
+      }
+      .cngx-band__label {
+        fill: var(--cngx-band-text-color, var(--cngx-chart-text-color, currentColor));
+        font-size: var(--cngx-band-font-size, 11px);
+      }
+    `,
+  ],
+})
+export class CngxBand {
+  readonly from = input.required<number>();
+  readonly to = input.required<number>();
+  readonly label = input<string | null>(null);
+  readonly opacity = input<number | string | null>(null);
+
+  private readonly ctx = injectChartContext();
+
+  protected readonly rect = computed<{
+    width: number;
+    y: number;
+    height: number;
+  } | null>(() => {
+    const { width, height } = this.ctx.dimensions();
+    if (width <= 0 || height <= 0) {
+      return null;
+    }
+    const yScale = this.ctx.yScale();
+    const yA = yScale(this.from());
+    const yB = yScale(this.to());
+    const top = Math.min(yA, yB);
+    const bottom = Math.max(yA, yB);
+    return { width, y: top, height: bottom - top };
+  });
+}
+
+function injectChartContext(): CngxChartContext {
+  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
+  if (!ctx) {
+    throw new Error(
+      'CngxBand: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
+    );
+  }
+  return ctx;
+}
