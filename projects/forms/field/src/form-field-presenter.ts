@@ -140,11 +140,21 @@ export class CngxFormFieldPresenter {
    * but consumers may provide a router-driven, interceptor-driven, or
    * custom trigger without depending on the scope contract.
    *
-   * When `withErrorStrategy()` is active, the configured strategy fully
-   * overrides the default gate. Strategy callbacks run inside `untracked()`
-   * so any signals they read internally do not widen the dependency graph
-   * beyond `invalid` / `touched` / `dirty` / reveal-trigger —
-   * `reference_signal_architecture` §3 (flat dependency graphs).
+   * **Tracked dependencies (intentional):** `invalid`, plus — only when a
+   * strategy is configured — the snapshot fields `touched`, `dirty`, and
+   * `fieldReveal.showErrors`. Each of these is a primary driver of the
+   * gate; they cascade `showError` re-evaluation by design.
+   *
+   * **Why the `untracked()` wrap on the strategy call:** the `strategy`
+   * callback is a consumer-authored function whose body may read ambient
+   * signals (locale flags, tenant-scoped settings, time-of-day predicates,
+   * test-harness mocks). Those reads are *secondary* — they must not
+   * widen the presenter's dependency graph beyond the four declared
+   * inputs. The wrap protects the flat-graph invariant from
+   * `reference_signal_architecture` §3 against any consumer-side impurity.
+   * Verified by the cascade-witness spec at
+   * `form-field-presenter.spec.ts` ("untracked() wrap on strategy callback").
+   * Strategies that *are* pure (the common case) pay no overhead.
    */
   readonly showError = computed(() => {
     if (!this.invalid()) {

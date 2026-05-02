@@ -67,7 +67,22 @@ export class CngxErrorRegistry {
 
   // ── Scope mutations ─────────────────────────────────────────────────
 
-  /** Registers (or replaces by reference) the named scope. Idempotent. */
+  /**
+   * Registers the named scope. Idempotent for the same `(name, scope)`
+   * pair.
+   *
+   * **Swap-is-noop (intentional):** registering a *different* scope
+   * instance under an *existing* name is silently absorbed. The internal
+   * `scopesState` signal carries `equal: mapKeySetEqual`, which short-
+   * circuits when the key set is unchanged. Downstream readers (and any
+   * subsequent `getScope(name)` call) keep observing the originally
+   * registered instance.
+   *
+   * To perform a true swap, call `unregisterScope(name)` first, then
+   * `registerScope(name, newScope)` — the unregister cycle changes the
+   * key set, the equal fn emits, and the new instance becomes the live
+   * value.
+   */
   registerScope(name: string, scope: CngxErrorScopeContract): void {
     const current = this.scopesState();
     if (current.get(name) === scope) {
@@ -96,7 +111,17 @@ export class CngxErrorRegistry {
 
   // ── Aggregator mutations ────────────────────────────────────────────
 
-  /** Registers (or replaces by reference) the named aggregator. Idempotent. */
+  /**
+   * Registers the named aggregator. Idempotent for the same
+   * `(name, aggregator)` pair.
+   *
+   * **Swap-is-noop (intentional):** see `registerScope` for the full
+   * rationale. Re-registering a different aggregator instance under an
+   * existing name is silently absorbed by `mapKeySetEqual`; downstream
+   * readers stay attached to the originally registered contract. Use
+   * `unregisterAggregator(name)` then `registerAggregator(name, newAgg)`
+   * for a true swap.
+   */
   registerAggregator(name: string, aggregator: CngxErrorAggregatorContract): void {
     const current = this.aggregatorsState();
     if (current.get(name) === aggregator) {
