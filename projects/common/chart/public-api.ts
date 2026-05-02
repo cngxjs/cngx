@@ -50,6 +50,15 @@ export { CngxSparkline } from './src/presets/sparkline.component';
 export { CngxMiniBar } from './src/presets/mini-bar.component';
 export { CngxDeviationBar } from './src/presets/deviation-bar.component';
 export { CngxMiniArea } from './src/presets/mini-area.component';
+export { CngxDonut } from './src/presets/donut.component';
+export {
+  CngxBullet,
+  type CngxBulletRange,
+} from './src/presets/bullet.component';
+export {
+  CngxStackedBar,
+  type CngxStackedSegment,
+} from './src/presets/stacked-bar.component';
 export {
   createPathBuilder,
   type PathBuilder,
