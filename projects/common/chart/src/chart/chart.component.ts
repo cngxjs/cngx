@@ -1,10 +1,12 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
   inject,
   input,
+  isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxResizeObserver } from '@cngx/common/layout';
@@ -29,6 +31,14 @@ import { dimensionsEqual, sameNumberArr } from './equal-helpers';
 
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
+
+/**
+ * Stable reference for the default `summaryAccessor`. Exposed so the
+ * dev-mode warning can detect "consumer omitted [summaryAccessor] on
+ * non-numeric data" without false positives when the consumer happens
+ * to pass an identical-looking arrow.
+ */
+const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
 
 /**
  * Top-level chart container. Hosts an `<svg>` viewBox, applies
@@ -113,7 +123,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * number[]` data; structured data must override.
    */
   readonly summaryAccessor = input<(d: T, i: number) => number>(
-    (d) => Number(d as unknown),
+    DEFAULT_SUMMARY_ACCESSOR,
   );
   /**
    * Controls when the SR-only data-table view is exposed to assistive
@@ -131,6 +141,29 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly i18n = inject(CNGX_CHART_I18N);
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
+
+  constructor() {
+    if (isDevMode()) {
+      afterNextRender(() => {
+        if (this.summaryAccessor() !== DEFAULT_SUMMARY_ACCESSOR) {
+          return;
+        }
+        const data = this.dataInput();
+        if (data.length === 0) {
+          return;
+        }
+        const projected = Number(data[0] as unknown);
+        if (Number.isFinite(projected)) {
+          return;
+        }
+        console.warn(
+          'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
+            'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
+            'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
+        );
+      });
+    }
+  }
 
   readonly dataLength = computed(() => this.dataInput().length);
 

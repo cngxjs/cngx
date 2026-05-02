@@ -170,4 +170,65 @@ describe('CngxChart', () => {
     expect(title).not.toBeNull();
     expect((title?.textContent ?? '').length).toBeGreaterThan(0);
   });
+
+  it('warns in dev-mode when data is non-numeric and no [summaryAccessor] is bound', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `<cngx-chart [data]="data" [width]="100" [height]="50" />`,
+    })
+    class NonNumericHost {
+      data: readonly { value: number }[] = [{ value: 5 }, { value: 10 }];
+    }
+    TestBed.configureTestingModule({ imports: [NonNumericHost] });
+    const fixture = TestBed.createComponent(NonNumericHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('CngxChart: data is non-numeric'),
+    );
+    warn.mockRestore();
+  });
+
+  it('does NOT warn when [summaryAccessor] is provided', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    @Component({
+      standalone: true,
+      imports: [CngxChart],
+      template: `
+        <cngx-chart
+          [data]="data"
+          [width]="100"
+          [height]="50"
+          [summaryAccessor]="acc"
+        />
+      `,
+    })
+    class TypedHost {
+      data: readonly { value: number }[] = [{ value: 5 }];
+      readonly acc = (d: { value: number }): number => d.value;
+    }
+    TestBed.configureTestingModule({ imports: [TypedHost] });
+    const fixture = TestBed.createComponent(TypedHost);
+    fixture.detectChanges();
+    TestBed.tick();
+    const warnedAboutChart = warn.mock.calls.some((call) =>
+      String(call[0] ?? '').includes('CngxChart: data is non-numeric'),
+    );
+    expect(warnedAboutChart).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('does NOT warn for numeric data with the default accessor', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { fixture } = setup();
+    fixture.detectChanges();
+    TestBed.tick();
+    const warnedAboutChart = warn.mock.calls.some((call) =>
+      String(call[0] ?? '').includes('CngxChart: data is non-numeric'),
+    );
+    expect(warnedAboutChart).toBe(false);
+    warn.mockRestore();
+  });
 });
