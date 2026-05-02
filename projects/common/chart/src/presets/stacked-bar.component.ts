@@ -5,6 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectPresetState } from './preset-state';
 
 export interface CngxStackedSegment {
   readonly value: number;
@@ -40,18 +42,32 @@ interface SegmentRendering {
     class: 'cngx-stacked-bar',
   },
   template: `
-    <div class="cngx-stacked-bar__track">
-      @for (s of segmentRenderings(); track s.key) {
-        <div
-          class="cngx-stacked-bar__segment"
-          [style.left.%]="s.left"
-          [style.width.%]="s.width"
-          [style.background]="s.color"
-          [attr.title]="s.label + ': ' + s.value"
-          [attr.aria-hidden]="true"
-        ></div>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
       }
-    </div>
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <div class="cngx-stacked-bar__track">
+          @for (s of segmentRenderings(); track s.key) {
+            <div
+              class="cngx-stacked-bar__segment"
+              [style.left.%]="s.left"
+              [style.width.%]="s.width"
+              [style.background]="s.color"
+              [attr.title]="s.label + ': ' + s.value"
+              [attr.aria-hidden]="true"
+            ></div>
+          }
+        </div>
+      }
+    }
   `,
   styles: [
     `
@@ -74,13 +90,32 @@ interface SegmentRendering {
         transition: width var(--cngx-stacked-bar-transition, 240ms) ease-out,
           left var(--cngx-stacked-bar-transition, 240ms) ease-out;
       }
+      cngx-stacked-bar .cngx-preset-skeleton {
+        display: block;
+        height: var(--cngx-stacked-bar-height, 12px);
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: var(--cngx-stacked-bar-radius, 6px);
+      }
+      cngx-stacked-bar .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-stacked-bar .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
     `,
   ],
 })
 export class CngxStackedBar {
   readonly segments = input.required<readonly CngxStackedSegment[]>();
   readonly total = input<number | null>(null);
+  readonly state = input<CngxAsyncState<readonly CngxStackedSegment[]> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly resolvedTotal = computed(() => {
     const explicit = this.total();

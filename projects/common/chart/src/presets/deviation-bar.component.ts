@@ -5,6 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectPresetState } from './preset-state';
 
 /**
  * Mini deviation bar — a single-value indicator that diverges from a
@@ -30,18 +32,32 @@ import {
     class: 'cngx-deviation-bar',
   },
   template: `
-    <div class="cngx-deviation-bar__track">
-      <div class="cngx-deviation-bar__baseline"></div>
-      @if (geometry(); as g) {
-        <div
-          class="cngx-deviation-bar__fill"
-          [class.cngx-deviation-bar__fill--positive]="g.positive"
-          [class.cngx-deviation-bar__fill--negative]="!g.positive"
-          [style.left.%]="g.left"
-          [style.width.%]="g.width"
-        ></div>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
       }
-    </div>
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <div class="cngx-deviation-bar__track">
+          <div class="cngx-deviation-bar__baseline"></div>
+          @if (geometry(); as g) {
+            <div
+              class="cngx-deviation-bar__fill"
+              [class.cngx-deviation-bar__fill--positive]="g.positive"
+              [class.cngx-deviation-bar__fill--negative]="!g.positive"
+              [style.left.%]="g.left"
+              [style.width.%]="g.width"
+            ></div>
+          }
+        </div>
+      }
+    }
   `,
   styles: [
     `
@@ -80,6 +96,20 @@ import {
       cngx-deviation-bar .cngx-deviation-bar__fill--negative {
         background: var(--cngx-deviation-negative);
       }
+      cngx-deviation-bar .cngx-preset-skeleton {
+        display: block;
+        height: var(--cngx-deviation-bar-height, 6px);
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: var(--cngx-deviation-bar-radius, 3px);
+      }
+      cngx-deviation-bar .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-deviation-bar .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
     `,
   ],
 })
@@ -87,7 +117,12 @@ export class CngxDeviationBar {
   readonly value = input.required<number>();
   readonly baseline = input<number>(0);
   readonly magnitude = input<number>(100);
+  readonly state = input<CngxAsyncState<number> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly geometry = computed<{
     positive: boolean;

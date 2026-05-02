@@ -5,6 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectPresetState } from './preset-state';
 
 /**
  * Bullet chart range entry — a colour band stretching from one value
@@ -46,27 +48,41 @@ interface RangeRendering {
     class: 'cngx-bullet',
   },
   template: `
-    <div class="cngx-bullet__track">
-      @for (r of rangeRenderings(); track r.key) {
-        <div
-          class="cngx-bullet__range"
-          [style.left.%]="r.left"
-          [style.width.%]="r.width"
-          [style.background]="r.color"
-          [attr.aria-hidden]="true"
-        ></div>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
       }
-      <div
-        class="cngx-bullet__actual"
-        [style.width.%]="actualPercent()"
-        [attr.aria-hidden]="true"
-      ></div>
-      <div
-        class="cngx-bullet__target"
-        [style.left.%]="targetPercent()"
-        [attr.aria-hidden]="true"
-      ></div>
-    </div>
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <div class="cngx-bullet__track">
+          @for (r of rangeRenderings(); track r.key) {
+            <div
+              class="cngx-bullet__range"
+              [style.left.%]="r.left"
+              [style.width.%]="r.width"
+              [style.background]="r.color"
+              [attr.aria-hidden]="true"
+            ></div>
+          }
+          <div
+            class="cngx-bullet__actual"
+            [style.width.%]="actualPercent()"
+            [attr.aria-hidden]="true"
+          ></div>
+          <div
+            class="cngx-bullet__target"
+            [style.left.%]="targetPercent()"
+            [attr.aria-hidden]="true"
+          ></div>
+        </div>
+      }
+    }
   `,
   styles: [
     `
@@ -107,6 +123,20 @@ interface RangeRendering {
         background: var(--cngx-bullet-target-color);
         transition: left var(--cngx-bullet-transition, 240ms) ease-out;
       }
+      cngx-bullet .cngx-preset-skeleton {
+        display: block;
+        height: var(--cngx-bullet-height, 16px);
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: var(--cngx-bullet-radius, 2px);
+      }
+      cngx-bullet .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-bullet .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
     `,
   ],
 })
@@ -115,7 +145,12 @@ export class CngxBullet {
   readonly target = input<number | null>(null);
   readonly max = input<number | null>(null);
   readonly ranges = input<readonly CngxBulletRange[]>([]);
+  readonly state = input<CngxAsyncState<number> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly maxValue = computed(() => {
     const explicit = this.max();

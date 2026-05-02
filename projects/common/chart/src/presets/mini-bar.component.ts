@@ -5,6 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectPresetState } from './preset-state';
 
 /**
  * Mini horizontal bar — a single-value bounded indicator. Renders
@@ -28,9 +30,23 @@ import {
     class: 'cngx-mini-bar',
   },
   template: `
-    <div class="cngx-mini-bar__track">
-      <div class="cngx-mini-bar__fill" [style.width.%]="percent()"></div>
-    </div>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span class="cngx-preset-skeleton" [attr.aria-busy]="true" [attr.aria-label]="i18n.loading()"></span>
+      }
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <div class="cngx-mini-bar__track">
+          <div class="cngx-mini-bar__fill" [style.width.%]="percent()"></div>
+        </div>
+      }
+    }
   `,
   styles: [
     `
@@ -52,6 +68,20 @@ import {
         border-radius: inherit;
         transition: width var(--cngx-mini-bar-transition, 240ms) ease-out;
       }
+      cngx-mini-bar .cngx-preset-skeleton {
+        display: block;
+        height: var(--cngx-mini-bar-height, 6px);
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: var(--cngx-mini-bar-radius, 3px);
+      }
+      cngx-mini-bar .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-mini-bar .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
     `,
   ],
 })
@@ -60,7 +90,12 @@ export class CngxMiniBar {
   readonly max = input<number>(100);
   readonly min = input<number>(0);
   readonly label = input<string | null>(null);
+  readonly state = input<CngxAsyncState<number> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly percent = computed(() => {
     const v = this.value();

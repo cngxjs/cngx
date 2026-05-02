@@ -5,10 +5,12 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
 import { CngxChart } from '../chart/chart.component';
 import { CngxAxis } from '../axis/axis.component';
 import { CngxLine } from '../layers/line.component';
 import { CngxArea } from '../layers/area.component';
+import { injectPresetState } from './preset-state';
 
 /**
  * Inline sparkline — a tiny line chart for KPI cards and dashboard
@@ -33,19 +35,39 @@ import { CngxArea } from '../layers/area.component';
   imports: [CngxChart, CngxAxis, CngxLine, CngxArea],
   host: { class: 'cngx-sparkline' },
   template: `
-    <cngx-chart
-      [data]="data()"
-      [width]="width()"
-      [height]="height()"
-      [aria-label]="ariaLabel()"
-    >
-      <cngx-axis position="bottom" type="linear" [domain]="xDomain()" />
-      <cngx-axis position="left" type="linear" [domain]="yDomain()" />
-      @if (showArea()) {
-        <cngx-area />
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span
+          class="cngx-preset-skeleton"
+          [style.width.px]="width()"
+          [style.height.px]="height()"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
       }
-      <cngx-line [strokeWidth]="strokeWidth()" />
-    </cngx-chart>
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <cngx-chart
+          [data]="data()"
+          [width]="width()"
+          [height]="height()"
+          [aria-label]="ariaLabel()"
+        >
+          <cngx-axis position="bottom" type="linear" [domain]="xDomain()" />
+          <cngx-axis position="left" type="linear" [domain]="yDomain()" />
+          @if (showArea()) {
+            <cngx-area />
+          }
+          <cngx-line [strokeWidth]="strokeWidth()" />
+        </cngx-chart>
+      }
+    }
   `,
   styles: [
     `
@@ -58,6 +80,41 @@ import { CngxArea } from '../layers/area.component';
       cngx-sparkline cngx-axis {
         display: none;
       }
+      cngx-sparkline .cngx-preset-skeleton {
+        display: inline-block;
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: var(--cngx-preset-skeleton-radius, 2px);
+        animation: cngx-preset-shimmer 1.4s linear infinite;
+        background-image: linear-gradient(
+          90deg,
+          transparent 0,
+          var(--cngx-skeleton-shimmer, rgb(255 255 255 / 0.3)) 50%,
+          transparent 100%
+        );
+        background-size: 200% 100%;
+      }
+      cngx-sparkline .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        color: var(--cngx-chart-text-color, currentColor);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-sparkline .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
+      @keyframes cngx-preset-shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        cngx-sparkline .cngx-preset-skeleton {
+          animation: none;
+        }
+      }
     `,
   ],
 })
@@ -67,7 +124,12 @@ export class CngxSparkline {
   readonly height = input<number>(24);
   readonly strokeWidth = input<number | string | null>(null);
   readonly showArea = input<boolean>(false);
+  readonly state = input<CngxAsyncState<readonly number[]> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly xDomain = computed<readonly number[]>(() => {
     const n = this.data().length;

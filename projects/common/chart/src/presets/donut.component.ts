@@ -5,6 +5,8 @@ import {
   input,
   ViewEncapsulation,
 } from '@angular/core';
+import type { CngxAsyncState } from '@cngx/core/utils';
+import { injectPresetState } from './preset-state';
 
 const TWO_PI = Math.PI * 2;
 
@@ -29,35 +31,55 @@ const TWO_PI = Math.PI * 2;
     class: 'cngx-donut',
   },
   template: `
-    <svg
-      [attr.viewBox]="'0 0 ' + size() + ' ' + size()"
-      [attr.width]="size()"
-      [attr.height]="size()"
-      aria-hidden="true"
-    >
-      <svg:circle
-        class="cngx-donut__track"
-        [attr.cx]="center()"
-        [attr.cy]="center()"
-        [attr.r]="radius()"
-        [attr.stroke-width]="thickness()"
-        fill="none"
-      />
-      <svg:circle
-        class="cngx-donut__fill"
-        [attr.cx]="center()"
-        [attr.cy]="center()"
-        [attr.r]="radius()"
-        [attr.stroke-width]="thickness()"
-        [attr.stroke-dasharray]="dasharray()"
-        [attr.stroke-dashoffset]="dashoffset()"
-        [attr.transform]="'rotate(-90 ' + center() + ' ' + center() + ')'"
-        fill="none"
-        stroke-linecap="round"
-      />
-    </svg>
-    @if (label(); as l) {
-      <span class="cngx-donut__label">{{ l }}</span>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        <span
+          class="cngx-preset-skeleton cngx-donut__skeleton"
+          [style.width.px]="size()"
+          [style.height.px]="size()"
+          [attr.aria-busy]="true"
+          [attr.aria-label]="i18n.loading()"
+        ></span>
+      }
+      @case ('empty') {
+        <span class="cngx-preset-fallback">{{ i18n.empty() }}</span>
+      }
+      @case ('error') {
+        <span class="cngx-preset-fallback cngx-preset-fallback--error">{{ i18n.error() }}</span>
+      }
+      @case ('none') {}
+      @default {
+        <svg
+          [attr.viewBox]="'0 0 ' + size() + ' ' + size()"
+          [attr.width]="size()"
+          [attr.height]="size()"
+          aria-hidden="true"
+        >
+          <svg:circle
+            class="cngx-donut__track"
+            [attr.cx]="center()"
+            [attr.cy]="center()"
+            [attr.r]="radius()"
+            [attr.stroke-width]="thickness()"
+            fill="none"
+          />
+          <svg:circle
+            class="cngx-donut__fill"
+            [attr.cx]="center()"
+            [attr.cy]="center()"
+            [attr.r]="radius()"
+            [attr.stroke-width]="thickness()"
+            [attr.stroke-dasharray]="dasharray()"
+            [attr.stroke-dashoffset]="dashoffset()"
+            [attr.transform]="'rotate(-90 ' + center() + ' ' + center() + ')'"
+            fill="none"
+            stroke-linecap="round"
+          />
+        </svg>
+        @if (label(); as l) {
+          <span class="cngx-donut__label">{{ l }}</span>
+        }
+      }
     }
   `,
   styles: [
@@ -84,6 +106,19 @@ const TWO_PI = Math.PI * 2;
         line-height: 1;
         color: var(--cngx-chart-text-color, currentColor);
       }
+      cngx-donut .cngx-preset-skeleton {
+        display: inline-block;
+        background: var(--cngx-skeleton-bg, var(--cngx-chart-grid-color, rgb(0 0 0 / 0.08)));
+        border-radius: 50%;
+      }
+      cngx-donut .cngx-preset-fallback {
+        display: inline-block;
+        font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
+        opacity: var(--cngx-preset-fallback-opacity, 0.7);
+      }
+      cngx-donut .cngx-preset-fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+      }
     `,
   ],
 })
@@ -93,7 +128,12 @@ export class CngxDonut {
   readonly size = input<number>(48);
   readonly thickness = input<number>(6);
   readonly label = input<string | null>(null);
+  readonly state = input<CngxAsyncState<number> | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
+
+  private readonly preset = injectPresetState(() => this.state());
+  protected readonly i18n = this.preset.i18n;
+  protected readonly activeView = this.preset.activeView;
 
   protected readonly center = computed(() => this.size() / 2);
   protected readonly radius = computed(() => (this.size() - this.thickness()) / 2);
