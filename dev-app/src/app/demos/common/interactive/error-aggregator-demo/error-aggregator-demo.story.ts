@@ -10,10 +10,9 @@ export const STORY: DemoSpec = {
     '<code>errorCount</code>, <code>activeErrors</code>, <code>errorLabels</code>, ' +
     '<code>shouldShow</code>, <code>announcement</code>) all carry structural ' +
     '<code>equal</code> fns so unrelated re-emissions do not cascade. The ' +
-    'directive is template-free — render the SR live region yourself for full ' +
-    'control over visual placement. Works on any host: native form, Material ' +
-    'tab label, CDK card, popover panel — ARIA flows from the same ' +
-    '<code>computed()</code> graph regardless.',
+    'directive is template-free — render the SR live region yourself. Each ' +
+    'section below shows the reactive state at the top so the consumer sees ' +
+    'every signal toggle live.',
   apiComponents: ['CngxErrorAggregator', 'CngxErrorScope', 'CngxErrorSource'],
   moduleImports: [
     "import { CngxErrorAggregator, CngxErrorScope, CngxErrorSource } from '@cngx/common/interactive';",
@@ -35,10 +34,12 @@ export const STORY: DemoSpec = {
     {
       title: 'Native form + scope reveal-on-submit',
       subtitle:
-        'A <code>&lt;form&gt;</code> wraps a fieldset aggregator. Errors stay hidden ' +
-        'until <code>(submit)</code> fires <code>scope.reveal()</code>; the resolved ' +
-        '<code>shouldShow()</code> then unblocks the SR announcement and the visible ' +
-        'error list. Click submit twice to see toggle.',
+        'A <code>&lt;form cngxErrorScope&gt;</code> wraps a fieldset aggregator. ' +
+        'Errors stay hidden until <code>(submit)</code> fires <code>scope.reveal()</code>; ' +
+        'the resolved <code>shouldShow()</code> then unblocks the visible error list. ' +
+        'The state readout below always reflects every signal — observe how ' +
+        '<code>hasError</code> stays <code>true</code> from page load while ' +
+        '<code>shouldShow</code> only flips after submit.',
       imports: ['CngxErrorScope', 'CngxErrorAggregator', 'CngxErrorSource'],
       template: `
   <form
@@ -46,147 +47,129 @@ export const STORY: DemoSpec = {
     cngxErrorScopeName="signup"
     #scope="cngxErrorScope"
     (submit)="$event.preventDefault(); scope.reveal()"
+    [style.border]="signup.shouldShow() ? '1px solid #b00020' : '1px solid #d1d5db'"
+    style="padding: 12px 16px; border-radius: 6px;"
   >
-    <fieldset cngxErrorAggregator #signup="cngxErrorAggregator">
-      <legend>Sign up</legend>
+    <fieldset cngxErrorAggregator #signup="cngxErrorAggregator" style="border: none; padding: 0; margin: 0;">
+      <legend style="font-weight: 600;">Sign up</legend>
       <span cngxErrorSource="email-format" [when]="emailFormatBad()" label="Email format invalid"></span>
       <span cngxErrorSource="email-taken" [when]="emailTaken()" label="Email already in use"></span>
       <span cngxErrorSource="password-weak" [when]="passwordWeak()" label="Password too weak"></span>
 
-      <label>
-        <span>Email</span>
-        <input type="email" />
+      <pre style="margin: 8px 0; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85em;">hasError    : {{ signup.hasError() }}
+errorCount  : {{ signup.errorCount() }}
+shouldShow  : {{ signup.shouldShow() }}
+announcement: "{{ signup.announcement() }}"</pre>
+
+      <label style="display: block; margin: 6px 0;">
+        <span>Email </span>
+        <input type="email" style="padding: 6px 8px; min-width: 240px;" />
       </label>
-      <label>
-        <span>Password</span>
-        <input type="password" />
+      <label style="display: block; margin: 6px 0;">
+        <span>Password </span>
+        <input type="password" style="padding: 6px 8px; min-width: 240px;" />
       </label>
 
       @if (signup.shouldShow()) {
-        <ul class="errors" role="list">
+        <ul role="list" style="color: #b00020; margin: 8px 0 0; padding-inline-start: 24px;">
           @for (label of signup.errorLabels(); track label) {
             <li>{{ label }}</li>
           }
         </ul>
       }
-      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
-        {{ signup.announcement() }}
-      </span>
 
-      <div class="actions">
+      <div style="margin-top: 12px; display: flex; gap: 8px;">
         <button type="submit">Submit</button>
         <button type="button" (click)="scope.reset()">Reset</button>
+        <button type="button" (click)="emailFormatBad.set(!emailFormatBad())">Toggle email-format</button>
+        <button type="button" (click)="emailTaken.set(!emailTaken())">Toggle email-taken</button>
+        <button type="button" (click)="passwordWeak.set(!passwordWeak())">Toggle password-weak</button>
       </div>
     </fieldset>
   </form>`,
-      css: `
-fieldset { border: 1px solid var(--cngx-border, #d1d5db); padding: 12px 16px; border-radius: 6px; }
-fieldset.cngx-error { border-color: var(--cngx-error-text, #b00020); }
-.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
-.actions { margin-top: 12px; display: flex; gap: 8px; }
-.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-label { display: block; margin: 6px 0; }
-input { padding: 6px 8px; min-width: 240px; }`,
     },
     {
-      title: 'cngx-card host',
+      title: 'cngx-card host (no scope — errors visible immediately)',
       subtitle:
-        'A <code>&lt;cngx-card&gt;</code> hosts the aggregator on its body. The card ' +
-        'frame inherits <code>.cngx-error</code> via host-binding, so the visual ' +
-        'cue applies without consumer CSS plumbing.',
-      imports: [
-        'CngxCard',
-        'CngxCardHeader',
-        'CngxCardBody',
-        'CngxErrorAggregator',
-        'CngxErrorSource',
-      ],
+        'Without a <code>cngxErrorScope</code> ancestor the aggregator falls back to ' +
+        '<code>shouldShow === hasError</code>. Errors render the moment a source toggles. ' +
+        'The card body host element carries <code>.cngx-error</code> + ' +
+        '<code>aria-invalid="true"</code> reactively.',
+      imports: ['CngxCard', 'CngxCardHeader', 'CngxCardBody', 'CngxErrorAggregator', 'CngxErrorSource'],
       template: `
   <cngx-card>
     <header cngxCardHeader>Profile</header>
-    <div cngxCardBody cngxErrorAggregator #profile="cngxErrorAggregator">
+    <div
+      cngxCardBody
+      cngxErrorAggregator
+      #profile="cngxErrorAggregator"
+      [style.background]="profile.shouldShow() ? 'rgba(176, 0, 32, 0.04)' : 'transparent'"
+      style="padding: 12px 16px;"
+    >
       <span cngxErrorSource="bio-empty" [when]="profileBioEmpty()" label="Bio is empty"></span>
       <span cngxErrorSource="avatar-missing" [when]="profileAvatarMissing()" label="Avatar missing"></span>
       <p>Update your bio and avatar before saving.</p>
+
+      <pre style="margin: 8px 0; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85em;">hasError    : {{ profile.hasError() }}
+errorCount  : {{ profile.errorCount() }}
+shouldShow  : {{ profile.shouldShow() }}
+announcement: "{{ profile.announcement() }}"</pre>
+
       @if (profile.hasError()) {
-        <ul class="errors">
+        <ul style="color: #b00020; margin: 8px 0; padding-inline-start: 24px;">
           @for (label of profile.errorLabels(); track label) {
             <li>{{ label }}</li>
           }
         </ul>
       }
-      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
-        {{ profile.announcement() }}
-      </span>
-      <div class="actions">
-        <button type="button" (click)="profileBioEmpty.set(!profileBioEmpty())">
-          Toggle bio
-        </button>
-        <button type="button" (click)="profileAvatarMissing.set(!profileAvatarMissing())">
-          Toggle avatar
-        </button>
+      <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" (click)="profileBioEmpty.set(!profileBioEmpty())">Toggle bio</button>
+        <button type="button" (click)="profileAvatarMissing.set(!profileAvatarMissing())">Toggle avatar</button>
       </div>
     </div>
   </cngx-card>`,
-      css: `
-.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
-.actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
-.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
-[cngxCardBody].cngx-error { background: rgba(176, 0, 32, 0.04); }`,
     },
     {
       title: 'cngx-popover-panel host',
       subtitle:
-        'The aggregator binds to a popover panel, gating reveal on the popover\'s ' +
-        'own scope. A trigger button opens the popover; the panel internally ' +
-        'rolls up its sources.',
-      imports: [
-        'CngxPopoverPanel',
-        'CngxPopoverTrigger',
-        'CngxPopoverHeader',
-        'CngxPopoverBody',
-        'CngxErrorAggregator',
-        'CngxErrorSource',
-      ],
+        'The aggregator binds to a popover-panel body. Click the trigger to open the popover; ' +
+        'inside the panel, the aggregator rolls up its sources just like any other host.',
+      imports: ['CngxPopoverPanel', 'CngxPopoverTrigger', 'CngxPopoverHeader', 'CngxPopoverBody', 'CngxErrorAggregator', 'CngxErrorSource'],
       template: `
   <button
     [cngxPopoverTrigger]="billingPanel.popover"
     (click)="billingPanel.popover.toggle()"
     type="button"
   >
-    Billing status
+    Billing status — {{ billingDeclined() ? 'has issue' : 'all good' }}
+  </button>
+  <button type="button" (click)="billingDeclined.set(!billingDeclined())" style="margin-inline-start: 8px;">
+    Toggle declined
   </button>
   <cngx-popover-panel #billingPanel>
     <span cngxPopoverHeader>Billing</span>
     <div cngxPopoverBody cngxErrorAggregator #billing="cngxErrorAggregator">
       <span cngxErrorSource="declined" [when]="billingDeclined()" label="Last charge declined"></span>
       <p>Recent activity for this account.</p>
+      <pre style="margin: 8px 0; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85em;">hasError    : {{ billing.hasError() }}
+errorCount  : {{ billing.errorCount() }}
+shouldShow  : {{ billing.shouldShow() }}</pre>
       @if (billing.hasError()) {
-        <ul class="errors">
+        <ul style="color: #b00020; margin: 8px 0; padding-inline-start: 24px;">
           @for (label of billing.errorLabels(); track label) {
             <li>{{ label }}</li>
           }
         </ul>
       }
-      <span class="cngx-sr-only" aria-live="polite" aria-atomic="true">
-        {{ billing.announcement() }}
-      </span>
-      <button type="button" (click)="billingDeclined.set(!billingDeclined())">
-        Toggle declined state
-      </button>
     </div>
   </cngx-popover-panel>`,
-      css: `
-.errors { color: var(--cngx-error-text, #b00020); margin: 8px 0 0; }
-.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }`,
     },
     {
-      title: 'Material mat-tab label with error badge',
+      title: 'Material mat-tab label with error-count badge',
       subtitle:
         'Each tab carries its own aggregator. The label slot reads ' +
-        '<code>aggregator.errorCount()</code> to render a badge. The aggregator\'s ' +
-        '<code>.cngx-error</code> + <code>aria-invalid</code> still apply to the ' +
-        'underlying tab body element.',
+        '<code>aggregator.errorCount()</code> to render a red circular badge. ' +
+        'Toggle the buttons to watch the badges flip in real time.',
       imports: ['MatTabsModule', 'CngxErrorAggregator', 'CngxErrorSource'],
       template: `
   <mat-tab-group>
@@ -194,61 +177,41 @@ input { padding: 6px 8px; min-width: 240px; }`,
       <ng-template mat-tab-label>
         Address
         @if (addressTab.errorCount() > 0) {
-          <span class="badge" aria-hidden="true">{{ addressTab.errorCount() }}</span>
+          <span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-inline-start: 6px; border-radius: 9px; background: #b00020; color: white; font-size: 0.75em; line-height: 1;">{{ addressTab.errorCount() }}</span>
         }
-        <span class="cngx-sr-only">{{ addressTab.errorCount() }} error(s) in address</span>
       </ng-template>
       <section
         cngxErrorAggregator
         #addressTab="cngxErrorAggregator"
-        class="tab-body"
+        [style.background]="addressTab.shouldShow() ? 'rgba(176, 0, 32, 0.04)' : 'transparent'"
+        style="padding: 16px;"
       >
         <span cngxErrorSource="address-incomplete" [when]="tabAddressIncomplete()" label="Street and city are required"></span>
         <p>Address form goes here.</p>
-        <button type="button" (click)="tabAddressIncomplete.set(!tabAddressIncomplete())">
-          Toggle address error
-        </button>
+        <pre style="margin: 8px 0; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85em;">errorCount: {{ addressTab.errorCount() }}, shouldShow: {{ addressTab.shouldShow() }}</pre>
+        <button type="button" (click)="tabAddressIncomplete.set(!tabAddressIncomplete())">Toggle address error</button>
       </section>
     </mat-tab>
     <mat-tab>
       <ng-template mat-tab-label>
         Payment
         @if (paymentTab.errorCount() > 0) {
-          <span class="badge" aria-hidden="true">{{ paymentTab.errorCount() }}</span>
+          <span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-inline-start: 6px; border-radius: 9px; background: #b00020; color: white; font-size: 0.75em; line-height: 1;">{{ paymentTab.errorCount() }}</span>
         }
-        <span class="cngx-sr-only">{{ paymentTab.errorCount() }} error(s) in payment</span>
       </ng-template>
       <section
         cngxErrorAggregator
         #paymentTab="cngxErrorAggregator"
-        class="tab-body"
+        [style.background]="paymentTab.shouldShow() ? 'rgba(176, 0, 32, 0.04)' : 'transparent'"
+        style="padding: 16px;"
       >
         <span cngxErrorSource="payment-invalid" [when]="tabPaymentInvalid()" label="Card number invalid"></span>
         <p>Payment form goes here.</p>
-        <button type="button" (click)="tabPaymentInvalid.set(!tabPaymentInvalid())">
-          Toggle payment error
-        </button>
+        <pre style="margin: 8px 0; padding: 8px; background: #f3f4f6; border-radius: 4px; font-size: 0.85em;">errorCount: {{ paymentTab.errorCount() }}, shouldShow: {{ paymentTab.shouldShow() }}</pre>
+        <button type="button" (click)="tabPaymentInvalid.set(!tabPaymentInvalid())">Toggle payment error</button>
       </section>
     </mat-tab>
   </mat-tab-group>`,
-      css: `
-.tab-body { padding: 16px; }
-.tab-body.cngx-error { background: rgba(176, 0, 32, 0.04); }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  margin-inline-start: 6px;
-  border-radius: 9px;
-  background: var(--cngx-error-text, #b00020);
-  color: white;
-  font-size: 0.75em;
-  line-height: 1;
-}
-.cngx-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }`,
     },
   ],
 };
