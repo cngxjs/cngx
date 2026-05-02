@@ -184,4 +184,24 @@ describe('CngxErrorAggregator', () => {
     TestBed.flushEffects();
     expect(witness.mock.calls.length).toBe(baseline + 3);
   });
+
+  // Regression: the source-map equal fn must compare entry.label too, otherwise
+  // re-registering an active source with a fresh label silently drops the
+  // update and errorLabels()/announcement() stay stale.
+  it('label change on an active source propagates to errorLabels()', () => {
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const agg = aggregatorOf(fixture);
+
+    const conditionA = signal(true);
+    const refA: Signal<boolean> = conditionA.asReadonly();
+
+    agg.addSource({ key: 'a', condition: refA, label: 'Old label' });
+    TestBed.flushEffects();
+    expect(agg.errorLabels()).toEqual(['Old label']);
+
+    agg.addSource({ key: 'a', condition: refA, label: 'New label' });
+    TestBed.flushEffects();
+    expect(agg.errorLabels()).toEqual(['New label']);
+  });
 });

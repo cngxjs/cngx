@@ -69,7 +69,10 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
       }
       for (const [key, entryA] of a) {
         const entryB = b.get(key);
-        if (entryB?.condition !== entryA.condition) {
+        if (
+          entryB?.condition !== entryA.condition ||
+          (entryB.label ?? null) !== (entryA.label ?? null)
+        ) {
           return false;
         }
       }
