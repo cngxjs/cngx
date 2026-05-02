@@ -50,9 +50,7 @@ export {
   type PathBuilderOptions,
   type LineYAccessor,
   type LineXAccessor,
-} from './src/layers/path-builder';
-export {
   buildCurvePath,
   type CngxCurve,
   type PathPoint,
-} from './src/layers/curve';
+} from './src/path';

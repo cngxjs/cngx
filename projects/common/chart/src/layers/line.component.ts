@@ -7,13 +7,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
-import { type CngxCurve } from './curve';
+import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
   type LineXAccessor,
   type LineYAccessor,
   type PathBuilder,
-} from './path-builder';
+} from '../path/path-builder';
 
 /**
  * Line layer atom. Renders a single SVG `<path>` connecting the data

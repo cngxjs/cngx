@@ -34,7 +34,7 @@ describe('createPathBuilder — compute-guard (isolated)', () => {
       curve: 'linear',
     });
     builder.build([1, 2, 3], xScale, yScale);
-    builder.build([1, 2, 3], xScale, yScale); // fresh literal
+    builder.build([1, 2, 3], xScale, yScale);
     expect(builder.rebuildCount()).toBe(2);
   });
 
@@ -45,11 +45,11 @@ describe('createPathBuilder — compute-guard (isolated)', () => {
     });
     const data = [1, 2, 3];
     builder.build(data, xScale, yScale);
-    builder.build(data, (v) => Number(v), yScale); // fresh xScale
+    builder.build(data, (v) => Number(v), yScale);
     expect(builder.rebuildCount()).toBe(2);
   });
 
-  it('returns the cached d-string by reference equality (string interning is not guaranteed, but value equality holds)', () => {
+  it('returns the cached d-string by value equality', () => {
     const builder = createPathBuilder<number>({
       y: (v) => v,
       curve: 'linear',

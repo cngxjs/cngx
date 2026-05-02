@@ -30,8 +30,6 @@ describe('buildCurvePath', () => {
   });
 
   it('keeps the monotone curve flat when the slopes change sign at an interior point', () => {
-    // Local extremum at point 1 (y=20 > both neighbours) => Fritsch-Carlson sets
-    // tangent_1 = 0, so the cubic passes horizontally through that point.
     const d = buildCurvePath(points, 'monotone');
     expect(d).toContain('C 3.3333333333333335 13.333333333333334');
   });

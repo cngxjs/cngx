@@ -77,7 +77,6 @@ function resolveYAccessor<T>(acc: LineYAccessor<T>): (d: T, i: number) => number
   if (typeof acc === 'function') {
     return acc;
   }
-  // string property accessor — keyed via index signature for type narrowness
   return (d: T) => Number((d as Record<string, unknown>)[acc]);
 }
 
