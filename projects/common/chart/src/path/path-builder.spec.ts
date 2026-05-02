@@ -71,15 +71,6 @@ describe('createPathBuilder — compute-guard (isolated)', () => {
     expect(builder.rebuildCount()).toBe(1);
   });
 
-  it('supports a string property accessor for the y dimension', () => {
-    const builder = createPathBuilder<{ v: number }>({
-      y: 'v',
-      curve: 'linear',
-    });
-    const d = builder.build([{ v: 5 }, { v: 10 }], xScale, yScale);
-    expect(d).toBe('M 0 5 L 1 10');
-  });
-
   it('uses the provided x accessor when supplied (otherwise falls back to index)', () => {
     const builder = createPathBuilder<{ x: number; y: number }>({
       x: (d) => d.x,

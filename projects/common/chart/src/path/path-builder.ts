@@ -1,7 +1,7 @@
 import { buildCurvePath, type CngxCurve, type PathPoint } from './curve';
 import type { ScaleFn, XScaleInput } from '../chart/chart-context';
 
-export type LineYAccessor<T> = string | ((d: T, i: number) => number);
+export type LineYAccessor<T> = (d: T, i: number) => number;
 export type LineXAccessor<T> = (d: T, i: number) => XScaleInput;
 
 export interface PathBuilderOptions<T> {
@@ -43,7 +43,7 @@ export interface PathBuilder<T> {
  * triggers a rebuild and updates the slot.
  */
 export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T> {
-  const yAcc = resolveYAccessor(opts.y);
+  const yAcc = opts.y;
   const xAcc: LineXAccessor<T> = opts.x ?? ((_, i) => i);
   const curve = opts.curve;
 
@@ -71,13 +71,6 @@ export function createPathBuilder<T>(opts: PathBuilderOptions<T>): PathBuilder<T
       return rebuilds;
     },
   };
-}
-
-function resolveYAccessor<T>(acc: LineYAccessor<T>): (d: T, i: number) => number {
-  if (typeof acc === 'function') {
-    return acc;
-  }
-  return (d: T) => Number((d as Record<string, unknown>)[acc]);
 }
 
 function projectPoints<T>(

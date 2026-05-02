@@ -52,7 +52,7 @@ import {
   ],
 })
 export class CngxLine<T = unknown> {
-  readonly accessor = input<LineYAccessor<T>>(((d: T) => Number(d)) as LineYAccessor<T>);
+  readonly accessor = input<LineYAccessor<T>>((d: T) => Number(d));
   readonly xAccessor = input<LineXAccessor<T> | undefined>(undefined);
   readonly color = input<string | null>(null);
   readonly strokeWidth = input<number | string | null>(null);

@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 
-export type BarYAccessor<T> = string | ((d: T, i: number) => number);
+export type BarYAccessor<T> = (d: T, i: number) => number;
 
 interface BarRect {
   readonly key: number;
@@ -84,7 +84,7 @@ export class CngxBar<T = unknown> {
       const inner = slot * (1 - gap);
       const offset = (slot - inner) / 2;
       const baselineY = yScale(this.baseline());
-      const yAcc = resolveYAccessor(this.accessor());
+      const yAcc = this.accessor();
       const out = new Array<BarRect>(n);
       for (let i = 0; i < n; i++) {
         const value = yAcc(data[i], i);
@@ -113,13 +113,6 @@ function clamp01(v: number): number {
     return 1;
   }
   return v;
-}
-
-function resolveYAccessor<T>(acc: BarYAccessor<T>): (d: T, i: number) => number {
-  if (typeof acc === 'function') {
-    return acc;
-  }
-  return (d) => Number((d as Record<string, unknown>)[acc]);
 }
 
 function rectsEqual(a: readonly BarRect[], b: readonly BarRect[]): boolean {

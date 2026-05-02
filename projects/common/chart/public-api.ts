@@ -29,7 +29,8 @@ export {
 
 export { CngxLine } from './src/layers/line.component';
 export { CngxArea } from './src/layers/area.component';
-export { CngxBar, type BarYAccessor } from './src/layers/bar.component';
+export { CngxBar } from './src/layers/bar.component';
+export type { BarYAccessor } from './src/layers/bar.component';
 export {
   CngxScatter,
   type ScatterXAccessor,
