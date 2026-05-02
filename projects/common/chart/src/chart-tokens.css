@@ -1,0 +1,30 @@
+/*
+ * @cngx/common/chart — chart-level CSS custom properties.
+ *
+ * Two-level theming cascade:
+ *   atom-local var (e.g. --cngx-line-color)
+ *     -> chart-level var (--cngx-chart-primary)
+ *       -> consumer accent (--accent, --danger, etc.)
+ *         -> hardcoded literal fallback.
+ *
+ * Atom-local vars (--cngx-line-color, --cngx-area-fill, --cngx-bar-color,
+ * --cngx-scatter-color, --cngx-threshold-color, --cngx-band-color) live
+ * inside their respective component style blocks and ALWAYS fall back
+ * to a chart-level token, never to a hardcoded literal. Without atom-
+ * local tokens, recolouring one line on a multi-layer chart would
+ * force overriding the global --cngx-chart-primary, shifting every
+ * other layer too — a Pillar-3 violation (configuration-by-side-effect).
+ *
+ * Override the chart-level tokens at :root, on a wrapping container,
+ * or via a consumer's design-system tokens (--accent, --danger, etc.)
+ * which the literal fallbacks here defer to.
+ */
+:root {
+  --cngx-chart-primary: var(--accent, #4c8bf5);
+  --cngx-chart-secondary: var(--accent-secondary, #7d8997);
+  --cngx-chart-danger: var(--danger, #d2452f);
+  --cngx-chart-success: var(--success, #1f9d55);
+  --cngx-chart-grid-color: var(--border, #e5e7eb);
+  --cngx-chart-axis-color: var(--text-secondary, #6b7280);
+  --cngx-chart-text-color: var(--text-primary, #1f2937);
+}

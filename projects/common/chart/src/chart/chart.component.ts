@@ -87,6 +87,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       [hidden]="!tableActive()"
     />
   `,
+  styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       :host {
