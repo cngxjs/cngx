@@ -53,14 +53,32 @@ describe('adaptFormControl', () => {
     expect(ref.valid()).toBe(false);
   });
 
-  it('reads touched state', () => {
-    const control = new FormControl('');
-    const ref = adaptFormControl(control, 'test')();
-    expect(ref.touched()).toBe(false);
-    control.markAsTouched();
-    // Need to trigger sync
-    ref.markAsTouched();
-    expect(ref.touched()).toBe(true);
+  it('syncs touched state from externally-driven control.markAsTouched()', () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const control = new FormControl('');
+      const ref = adaptFormControl(control, 'test')();
+      expect(ref.touched()).toBe(false);
+
+      control.markAsTouched();
+      TestBed.flushEffects();
+
+      expect(ref.touched()).toBe(true);
+    });
+  });
+
+  it('syncs dirty state from externally-driven control.markAsDirty()', () => {
+    TestBed.configureTestingModule({});
+    TestBed.runInInjectionContext(() => {
+      const control = new FormControl('');
+      const ref = adaptFormControl(control, 'test')();
+      expect(ref.dirty()).toBe(false);
+
+      control.markAsDirty();
+      TestBed.flushEffects();
+
+      expect(ref.dirty()).toBe(true);
+    });
   });
 
   it('adapts errors to kind-based format', () => {
