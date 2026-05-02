@@ -6,12 +6,18 @@ import { CngxPopover } from './popover.directive';
 
 // ── Test helpers ────────────────────────────────────────────────────────
 
-// JSDOM does not implement the Popover API, so we stub it.
+// JSDOM Popover API support varies by version. Always install own-property
+// stubs that shadow whatever sits on the prototype — `??=` would skip the
+// assignment when JSDOM (or cross-file pollution) provides a real
+// `showPopover`/`hidePopover`/`togglePopover`, leaving us with the native
+// function instead of a vi.fn() spy and failing every `toHaveBeenCalled`
+// assertion. Unconditional `=` is the only assignment that survives both
+// "JSDOM has Popover" and "JSDOM does not have Popover" runtimes.
 function stubPopoverElement(el: HTMLElement): void {
   const rec = el as unknown as Record<string, unknown>;
-  rec['showPopover'] ??= vi.fn();
-  rec['hidePopover'] ??= vi.fn();
-  rec['togglePopover'] ??= vi.fn();
+  rec['showPopover'] = vi.fn();
+  rec['hidePopover'] = vi.fn();
+  rec['togglePopover'] = vi.fn();
 
   vi.spyOn(globalThis, 'getComputedStyle').mockReturnValue({
     transitionDuration: '0s',

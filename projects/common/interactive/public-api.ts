@@ -212,3 +212,12 @@ export {
 } from './src/error-aggregator/error-aggregator.token';
 export { CngxErrorSource } from './src/error-source/error-source.directive';
 export { CngxErrorAggregator } from './src/error-aggregator/error-aggregator.directive';
+export { CngxErrorRegistry } from './src/error-registry/error-registry';
+export { injectErrorScope } from './src/error-registry/inject-error-scope';
+export { injectErrorAggregator } from './src/error-registry/inject-error-aggregator';
+export {
+  provideErrorRegistry,
+  withGlobalRevealOnSubmit,
+  withRevealOnNavigate,
+  type ErrorRegistryFeature,
+} from './src/error-registry/provide-error-registry';

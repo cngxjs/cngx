@@ -1,4 +1,12 @@
-import { Directive, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
 
 /**
@@ -31,7 +39,7 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
   providers: [{ provide: CNGX_ERROR_SCOPE, useExisting: CngxErrorScope }],
 })
 export class CngxErrorScope implements CngxErrorScopeContract {
-  /** Optional name; enables programmatic lookup once the registry ships (Phase 6b). */
+  /** Optional name; enables programmatic lookup via {@link CngxErrorRegistry}. */
   readonly scopeName = input<string | undefined>(undefined, {
     alias: 'cngxErrorScopeName',
   });
@@ -49,5 +57,21 @@ export class CngxErrorScope implements CngxErrorScopeContract {
   /** Resets the scope to hidden (idempotent). */
   reset(): void {
     this.showErrorsState.set(false);
+  }
+
+  constructor() {
+    const registry = inject(CngxErrorRegistry, { optional: true });
+    if (!registry) {
+      return;
+    }
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const name = this.scopeName();
+      if (!name) {
+        return;
+      }
+      registry.registerScope(name, this);
+      destroyRef.onDestroy(() => registry.unregisterScope(name));
+    });
   }
 }

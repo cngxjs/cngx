@@ -18,6 +18,7 @@ export {
   CNGX_FORM_FIELD_CONTROL,
   CNGX_ERROR_MESSAGES,
   CNGX_FORM_FIELD_CONFIG,
+  CNGX_FORM_FIELD_REVEAL,
   provideFormField,
   provideErrorMessages,
   withErrorMessages,
@@ -25,10 +26,12 @@ export {
   withRequiredMarker,
   withAutocompleteMappings,
   withNoSpellcheck,
+  withErrorStrategy,
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
   DEFAULT_HINT_FORMATTERS,
 } from './form-field.token';
+export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 export type {
   CngxFieldRef,
   CngxFieldAccessor,
@@ -41,4 +44,8 @@ export type {
   FormFieldFeature,
   ConstraintHintFormatters,
   ConstraintMetadata,
+  ErrorStrategyName,
+  ErrorStrategyContext,
+  ErrorStrategyFn,
+  CngxFormFieldRevealContract,
 } from './form-field.token';

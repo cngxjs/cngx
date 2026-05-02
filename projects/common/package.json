@@ -5,11 +5,15 @@
     "@angular/cdk": "^21.2.0",
     "@angular/common": "^21.2.0",
     "@angular/core": "^21.2.0",
+    "@angular/router": "^21.2.0",
     "rxjs": "^7.8.0",
     "@floating-ui/dom": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@floating-ui/dom": {
+      "optional": true
+    },
+    "@angular/router": {
       "optional": true
     }
   },

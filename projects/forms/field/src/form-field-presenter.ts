@@ -1,6 +1,10 @@
-import { computed, Directive, inject, input, type Signal } from '@angular/core';
+import { computed, Directive, inject, input, type Signal, untracked } from '@angular/core';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
-import { CNGX_FORM_FIELD_CONFIG, type ConstraintMetadata } from './form-field.token';
+import {
+  CNGX_FORM_FIELD_CONFIG,
+  CNGX_FORM_FIELD_REVEAL,
+  type ConstraintMetadata,
+} from './form-field.token';
 
 // ── Constraint hint helper ─────────────────────────────────────────
 
@@ -61,6 +65,7 @@ function buildHint(
 })
 export class CngxFormFieldPresenter {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
+  private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
 
   /**
    * The Signal Forms field accessor — a callable that returns `FieldState`.
@@ -126,8 +131,48 @@ export class CngxFormFieldPresenter {
 
   // ── Error gate ─────────────────────────────────────────────────────
 
-  /** `true` when errors should be visible — only after user interaction. */
-  readonly showError = computed(() => this.touched() && this.invalid());
+  /**
+   * `true` when errors should be visible.
+   *
+   * Default gate: invalid AND (touched OR ambient reveal-trigger). The
+   * reveal-trigger is supplied via {@link CNGX_FORM_FIELD_REVEAL} —
+   * `CngxErrorScopeFieldBridge` defaults it to the nearest `CngxErrorScope`,
+   * but consumers may provide a router-driven, interceptor-driven, or
+   * custom trigger without depending on the scope contract.
+   *
+   * **Tracked dependencies (intentional):** `invalid`, plus — only when a
+   * strategy is configured — the snapshot fields `touched`, `dirty`, and
+   * `fieldReveal.showErrors`. Each of these is a primary driver of the
+   * gate; they cascade `showError` re-evaluation by design.
+   *
+   * **Why the `untracked()` wrap on the strategy call:** the `strategy`
+   * callback is a consumer-authored function whose body may read ambient
+   * signals (locale flags, tenant-scoped settings, time-of-day predicates,
+   * test-harness mocks). Those reads are *secondary* — they must not
+   * widen the presenter's dependency graph beyond the four declared
+   * inputs. The wrap protects the flat-graph invariant from
+   * `reference_signal_architecture` §3 against any consumer-side impurity.
+   * Verified by the cascade-witness spec at
+   * `form-field-presenter.spec.ts` ("untracked() wrap on strategy callback").
+   * Strategies that *are* pure (the common case) pay no overhead.
+   */
+  readonly showError = computed(() => {
+    if (!this.invalid()) {
+      return false;
+    }
+
+    const strategy = this.config.errorStrategy;
+    if (strategy) {
+      const touched = this.touched();
+      const dirty = this.dirty();
+      const submitted = this.fieldReveal?.showErrors() === true;
+      return untracked(() =>
+        strategy({ touched, dirty, submitted, invalid: true }),
+      );
+    }
+
+    return this.touched() || this.fieldReveal?.showErrors() === true;
+  });
 
   // ── Constraint metadata ────────────────────────────────────────────
 

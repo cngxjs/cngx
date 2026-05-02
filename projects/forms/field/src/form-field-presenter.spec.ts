@@ -1,12 +1,30 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, signal, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '@cngx/common/interactive';
 import { CngxFormField } from './form-field.component';
 import { CngxFormFieldPresenter } from './form-field-presenter';
-import { CNGX_FORM_FIELD_CONFIG, DEFAULT_HINT_FORMATTERS } from './form-field.token';
+import {
+  CNGX_FORM_FIELD_CONFIG,
+  DEFAULT_HINT_FORMATTERS,
+  type ErrorStrategyContext,
+  type ErrorStrategyFn,
+} from './form-field.token';
 import { createMockField, mockValidationError, type MockFieldRef } from './testing/mock-field';
 import type { CngxFieldAccessor } from './models';
+
+function makeScopeStub(showErrors: Signal<boolean>): CngxErrorScopeContract {
+  return {
+    showErrors,
+    reveal: () => {
+      /* noop — tests drive the underlying writable signal directly */
+    },
+    reset: () => {
+      /* noop */
+    },
+  };
+}
 
 @Component({
   template: `<cngx-form-field [field]="field()"></cngx-form-field>`,
@@ -201,6 +219,216 @@ describe('CngxFormFieldPresenter', () => {
       ref.invalid.set(false);
       TestBed.flushEffects();
       expect(presenter.showError()).toBe(false);
+    });
+  });
+
+  // ── CngxErrorScope integration via CNGX_FORM_FIELD_REVEAL ────────
+
+  describe('reveal-trigger integration', () => {
+    function setupWithReveal(
+      showErrors: Signal<boolean>,
+      config?: { errorStrategy?: ErrorStrategyFn },
+    ): { presenter: CngxFormFieldPresenter; ref: MockFieldRef } {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [
+          { provide: CNGX_ERROR_SCOPE, useValue: makeScopeStub(showErrors) },
+          { provide: CNGX_FORM_FIELD_CONFIG, useValue: config ?? {} },
+        ],
+      });
+      fixture = TestBed.createComponent(TestHost);
+      host = fixture.componentInstance;
+      host.field.set(mock.accessor);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
+      return { presenter, ref: mock.ref };
+    }
+
+    it('widens showError to (touched OR reveal.showErrors) when reveal trigger is provided', () => {
+      const showErrors = signal(false);
+      const { presenter, ref } = setupWithReveal(showErrors.asReadonly());
+
+      ref.invalid.set(true);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(false);
+
+      showErrors.set(true);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(true);
+
+      showErrors.set(false);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(false);
+
+      ref.touched.set(true);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(true);
+    });
+
+    it('reveal.showErrors does not surface errors while invalid is false', () => {
+      const showErrors = signal(true);
+      const { presenter } = setupWithReveal(showErrors.asReadonly());
+      expect(presenter.showError()).toBe(false);
+    });
+  });
+
+  // ── withErrorStrategy gating ─────────────────────────────────────
+
+  describe('withErrorStrategy integration', () => {
+    function setupWithStrategy(
+      strategy: ErrorStrategyFn,
+      revealShowErrors?: Signal<boolean>,
+    ): { presenter: CngxFormFieldPresenter; ref: MockFieldRef } {
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [
+          { provide: CNGX_FORM_FIELD_CONFIG, useValue: { errorStrategy: strategy } },
+          ...(revealShowErrors
+            ? [{ provide: CNGX_ERROR_SCOPE, useValue: makeScopeStub(revealShowErrors) }]
+            : []),
+        ],
+      });
+      fixture = TestBed.createComponent(TestHost);
+      host = fixture.componentInstance;
+      host.field.set(mock.accessor);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
+      return { presenter, ref: mock.ref };
+    }
+
+    it('onSubmit strategy gates only on reveal.showErrors', () => {
+      const showErrors = signal(false);
+      const onSubmit: ErrorStrategyFn = (c) => c.submitted;
+      const { presenter, ref } = setupWithStrategy(onSubmit, showErrors.asReadonly());
+
+      ref.invalid.set(true);
+      ref.touched.set(true);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(false);
+
+      showErrors.set(true);
+      TestBed.flushEffects();
+      expect(presenter.showError()).toBe(true);
+    });
+
+    it('strategy receives the live snapshot (touched, dirty, submitted, invalid)', () => {
+      const showErrors = signal(true);
+      const seen: ErrorStrategyContext[] = [];
+      const recordingStrategy: ErrorStrategyFn = (c) => {
+        seen.push({ ...c });
+        return c.touched && c.submitted;
+      };
+
+      const { presenter, ref } = setupWithStrategy(recordingStrategy, showErrors.asReadonly());
+      ref.invalid.set(true);
+      ref.touched.set(true);
+      ref.dirty.set(true);
+      TestBed.flushEffects();
+      void presenter.showError();
+
+      const last = seen.at(-1);
+      expect(last).toEqual({
+        touched: true,
+        dirty: true,
+        submitted: true,
+        invalid: true,
+      });
+    });
+
+    it('strategy short-circuits when invalid is false (early-exit before strategy call)', () => {
+      const calls = vi.fn<ErrorStrategyFn>(() => true);
+      const { presenter, ref } = setupWithStrategy(calls);
+      void presenter.showError();
+      expect(calls).not.toHaveBeenCalled();
+
+      ref.invalid.set(true);
+      TestBed.flushEffects();
+      void presenter.showError();
+      expect(calls).toHaveBeenCalled();
+    });
+  });
+
+  // ── untracked() cascade-witness ──────────────────────────────────
+  //
+  // The presenter widens showError to track (invalid, touched, dirty,
+  // reveal.showErrors). The strategy callback runs inside untracked() so
+  // strategy-internal signal reads do not widen the dependency graph
+  // beyond the four tracked sources — flat dependency graphs per
+  // reference_signal_architecture §3.
+  //
+  // Mechanic: instrument an effect with vi.fn(() => presenter.showError());
+  // mutate reveal.showErrors through 5 toggles while invalid stays true and
+  // touched / dirty stay constant; assert the witness fires baseline + 5.
+  // The strategy is wired to read a hidden signal — if the untracked() wrap
+  // were removed, that hidden signal would also become tracked and any
+  // mutation to it (none in this test) would cascade unrelated effects.
+  // The assertion asserts the FORWARD path: reveal toggles propagate cleanly,
+  // one cascade per genuine reveal change.
+
+  describe('cascade-witness — untracked() wrap on strategy callback', () => {
+    it('reveal toggles produce exactly one downstream re-fire each', () => {
+      const showErrors = signal(false);
+      const hiddenStrategySignal = signal(0);
+      const strategy: ErrorStrategyFn = (c) => {
+        // Strategy reads a hidden signal; the untracked() wrap on the
+        // strategy call ensures this read does NOT widen showError's
+        // dependency graph. The four declared inputs (touched, dirty,
+        // submitted, invalid) are passed by value via the snapshot.
+        void hiddenStrategySignal();
+        return c.submitted || c.touched;
+      };
+
+      const mock = createMockField({ name: 'email' });
+      TestBed.configureTestingModule({
+        imports: [TestHost],
+        providers: [
+          { provide: CNGX_FORM_FIELD_CONFIG, useValue: { errorStrategy: strategy } },
+          { provide: CNGX_ERROR_SCOPE, useValue: makeScopeStub(showErrors.asReadonly()) },
+        ],
+      });
+      fixture = TestBed.createComponent(TestHost);
+      host = fixture.componentInstance;
+      host.field.set(mock.accessor);
+      fixture.detectChanges();
+      TestBed.flushEffects();
+      presenter = fixture.debugElement
+        .query(By.directive(CngxFormFieldPresenter))
+        .injector.get(CngxFormFieldPresenter);
+      ref = mock.ref;
+
+      ref.invalid.set(true);
+      TestBed.flushEffects();
+
+      const witness = vi.fn(() => presenter.showError());
+      TestBed.runInInjectionContext(() => {
+        effect(() => {
+          witness();
+        });
+      });
+      TestBed.flushEffects();
+      const baseline = witness.mock.calls.length;
+      expect(baseline).toBeGreaterThanOrEqual(1);
+
+      for (let i = 0; i < 5; i++) {
+        showErrors.set(i % 2 === 0);
+        TestBed.flushEffects();
+      }
+
+      expect(witness.mock.calls.length).toBe(baseline + 5);
+
+      // Mutating the strategy-internal hidden signal does NOT cascade
+      // — it lives behind the untracked() wrap on the strategy call.
+      hiddenStrategySignal.set(42);
+      TestBed.flushEffects();
+      expect(witness.mock.calls.length).toBe(baseline + 5);
     });
   });
 

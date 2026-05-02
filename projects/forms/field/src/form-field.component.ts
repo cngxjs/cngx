@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 import { CngxFormFieldPresenter } from './form-field-presenter';
 
 /**
@@ -34,6 +35,7 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [
+    CngxErrorScopeFieldBridge,
     {
       directive: CngxFormFieldPresenter,
       inputs: ['field'],
