@@ -39,7 +39,7 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
   providers: [{ provide: CNGX_ERROR_SCOPE, useExisting: CngxErrorScope }],
 })
 export class CngxErrorScope implements CngxErrorScopeContract {
-  /** Optional name; enables programmatic lookup once the registry ships (Phase 6b). */
+  /** Optional name; enables programmatic lookup via {@link CngxErrorRegistry}. */
   readonly scopeName = input<string | undefined>(undefined, {
     alias: 'cngxErrorScopeName',
   });

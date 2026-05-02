@@ -26,6 +26,7 @@ export interface _ErrorRegistryConfig {
  * and collapse plan.
  */
 export interface ErrorRegistryFeature {
+  /** @internal */
   readonly _apply: (config: _ErrorRegistryConfig) => _ErrorRegistryConfig;
 }
 
@@ -105,10 +106,17 @@ export function provideErrorRegistry(
 /**
  * Reveals every registered scope on any DOM `submit` event.
  *
- * Installs a capture-phase document listener so submits inside any form
- * trigger a global reveal — appropriate when the application treats every
- * submit as a "show all errors now" trigger. Pair with named scopes to
- * scope reveals more narrowly via `registry.reveal(name)` instead.
+ * **Coarse-grained — affects every registered scope, every form.** The
+ * feature installs a capture-phase document listener that calls
+ * `registry.revealAll()` on any submit anywhere in the document, even
+ * when the submit fires from a form unrelated to the scope of interest.
+ * Appropriate when the application treats every submit as a "show all
+ * errors now" trigger.
+ *
+ * For finer-grained reveals (per-form, per-flow), skip this feature and
+ * call `registry.reveal(name)` from the consumer's submit handler
+ * instead — the scope-name registration path stays available without
+ * the global listener.
  *
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
@@ -126,6 +134,12 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  * Requires `provideRouter()` (or equivalent) in the host environment.
  * No-op when no `Router` is provided so the feature degrades gracefully
  * in test harnesses or non-routed apps.
+ *
+ * **Fires before route guards.** `NavigationStart` emits before
+ * `CanActivate` / `CanDeactivate` guards run, so a navigation that gets
+ * cancelled by a guard still leaves every scope revealed. Acceptable for
+ * the common pattern (reveal-all on attempted navigation) but surface
+ * the implication when wiring a guard that cancels based on form errors.
  *
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger

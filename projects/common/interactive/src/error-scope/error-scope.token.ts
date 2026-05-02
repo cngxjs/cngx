@@ -21,7 +21,7 @@ export interface CngxErrorScopeContract {
   reveal(): void;
   /** Resets the scope to hidden (idempotent). */
   reset(): void;
-  /** Optional name for programmatic registry lookup (Phase 6b). */
+  /** Optional name for programmatic registry lookup via {@link CngxErrorRegistry}. */
   readonly scopeName?: Signal<string | undefined>;
 }
 

@@ -19,8 +19,9 @@ const ERROR_LABEL_JOINER = ', ';
  * `DestroyRef`.
  *
  * @param name     Optional registry name (skips registration when omitted).
- * @param sources  Initial source map (`key` → boolean accessor; pass a
- *                 `Signal<boolean>` for reactive sources).
+ * @param sources  Initial source map (`key` → reactive boolean Signal).
+ *                 Each entry's signal is the live condition the aggregator
+ *                 reads on every recompute.
  * @param scope    Optional scope override; when omitted, `shouldShow`
  *                 collapses to `hasError`.
  * @param labels   Optional human-readable labels by source key, used in
@@ -37,7 +38,7 @@ const ERROR_LABEL_JOINER = ', ';
  */
 export function injectErrorAggregator(
   name?: string,
-  sources?: Record<string, () => boolean>,
+  sources?: Record<string, Signal<boolean>>,
   scope?: CngxErrorScopeContract,
   labels?: Record<string, string>,
 ): CngxErrorAggregatorContract {
@@ -138,7 +139,7 @@ export function injectErrorAggregator(
 }
 
 function buildInitialSources(
-  sources: Record<string, () => boolean> | undefined,
+  sources: Record<string, Signal<boolean>> | undefined,
   labels: Record<string, string> | undefined,
 ): ReadonlyMap<string, CngxErrorAggregatorSourceEntry> {
   if (!sources) {
@@ -148,7 +149,7 @@ function buildInitialSources(
   for (const [key, condition] of Object.entries(sources)) {
     map.set(key, {
       key,
-      condition: condition as Signal<boolean>,
+      condition,
       label: labels?.[key] ?? null,
     });
   }

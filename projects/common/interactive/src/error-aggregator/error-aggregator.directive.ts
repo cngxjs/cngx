@@ -64,7 +64,7 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
   /** External scope override; falls back to ancestor `CNGX_ERROR_SCOPE`. */
   readonly scope = input<CngxErrorScopeContract | undefined>(undefined);
 
-  /** Optional name; enables programmatic lookup once the registry ships (Phase 6b). */
+  /** Optional name; enables programmatic lookup via {@link CngxErrorRegistry}. */
   readonly aggregatorName = input<string | undefined>(undefined, {
     alias: 'cngxErrorAggregatorName',
   });
