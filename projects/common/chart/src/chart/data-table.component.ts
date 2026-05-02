@@ -95,12 +95,30 @@ export class CngxChartDataTable {
   protected readonly caption = computed(() => this.i18n.dataTable());
   protected readonly valueColumnLabel = computed(() => this.i18n.valueColumnLabel());
 
-  protected readonly rows = computed<readonly { index: number; value: number }[]>(() => {
-    const vs = this.values();
-    const out = new Array<{ index: number; value: number }>(vs.length);
-    for (let i = 0; i < vs.length; i++) {
-      out[i] = { index: i, value: vs[i] };
-    }
-    return out;
-  });
+  protected readonly rows = computed<readonly { index: number; value: number }[]>(
+    () => {
+      const vs = this.values();
+      const out = new Array<{ index: number; value: number }>(vs.length);
+      for (let i = 0; i < vs.length; i++) {
+        out[i] = { index: i, value: vs[i] };
+      }
+      return out;
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          if (a[i].index !== b[i].index || !Object.is(a[i].value, b[i].value)) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
 }
