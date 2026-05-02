@@ -1,4 +1,12 @@
-import { Directive, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
+import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.token';
 
 /**
@@ -49,5 +57,21 @@ export class CngxErrorScope implements CngxErrorScopeContract {
   /** Resets the scope to hidden (idempotent). */
   reset(): void {
     this.showErrorsState.set(false);
+  }
+
+  constructor() {
+    const registry = inject(CngxErrorRegistry, { optional: true });
+    if (!registry) {
+      return;
+    }
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const name = this.scopeName();
+      if (!name) {
+        return;
+      }
+      registry.registerScope(name, this);
+      destroyRef.onDestroy(() => registry.unregisterScope(name));
+    });
   }
 }

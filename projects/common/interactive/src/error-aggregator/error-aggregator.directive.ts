@@ -1,4 +1,14 @@
-import { computed, Directive, inject, input, signal, type Signal } from '@angular/core';
+import {
+  afterNextRender,
+  computed,
+  DestroyRef,
+  Directive,
+  inject,
+  input,
+  signal,
+  type Signal,
+} from '@angular/core';
+import { CngxErrorRegistry } from '../error-registry/error-registry';
 import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from '../error-scope/error-scope.token';
 import {
   CNGX_ERROR_AGGREGATOR,
@@ -156,6 +166,22 @@ export class CngxErrorAggregator implements CngxErrorAggregatorContract {
     const next = new Map(current);
     next.delete(key);
     this.sourcesState.set(next);
+  }
+
+  constructor() {
+    const registry = inject(CngxErrorRegistry, { optional: true });
+    if (!registry) {
+      return;
+    }
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const name = this.aggregatorName();
+      if (!name) {
+        return;
+      }
+      registry.registerAggregator(name, this);
+      destroyRef.onDestroy(() => registry.unregisterAggregator(name));
+    });
   }
 }
 
