@@ -21,6 +21,7 @@ export interface CngxChartSummary {
 export interface CngxChartI18n {
   readonly summary: (input: CngxChartSummary) => string;
   readonly dataTable: () => string;
+  readonly valueColumnLabel: () => string;
   readonly trendChanged: (trend: 'up' | 'down' | 'flat') => string;
   readonly thresholdAlert: (threshold: number) => string;
   readonly empty: () => string;
@@ -45,6 +46,7 @@ export const CNGX_CHART_I18N = new InjectionToken<CngxChartI18n>('CngxChartI18n'
       return `${trendText}. Min ${min}, max ${max}, current ${current}. ${thresholdText}`;
     },
     dataTable: () => 'Data table',
+    valueColumnLabel: () => 'Value',
     trendChanged: (trend) =>
       trend === 'up' ? 'Trend changed to up' : trend === 'down' ? 'Trend changed to down' : 'Trend flattened',
     thresholdAlert: (threshold) => `Threshold ${threshold} crossed`,

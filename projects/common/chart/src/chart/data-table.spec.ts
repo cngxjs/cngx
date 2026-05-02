@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { CngxChartDataTable } from './data-table.component';
+import { provideChartI18n, type CngxChartI18n } from '../i18n/chart-i18n';
 
 @Component({
   standalone: true,
@@ -74,6 +75,31 @@ describe('CngxChartDataTable', () => {
     fixture.detectChanges();
     const rows = Array.from(table.querySelectorAll('tbody tr'));
     expect(rows.length).toBe(6);
+  });
+
+  it('renders the value-column header from CNGX_CHART_I18N (override flows through)', () => {
+    const override: CngxChartI18n = {
+      summary: () => '',
+      dataTable: () => 'Data table',
+      valueColumnLabel: () => 'Wert',
+      trendChanged: () => '',
+      thresholdAlert: () => '',
+      empty: () => '',
+      loading: () => '',
+      error: () => '',
+    };
+    TestBed.configureTestingModule({
+      imports: [TestHost],
+      providers: [provideChartI18n(override)],
+    });
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.detectChanges();
+    const headerCells = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLTableCellElement>(
+        'thead th',
+      ),
+    ).map((th) => th.textContent?.trim() ?? '');
+    expect(headerCells).toContain('Wert');
   });
 
   it('allocates a unique default id per standalone instance when [id] is omitted', () => {

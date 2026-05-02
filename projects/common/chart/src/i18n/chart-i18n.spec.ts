@@ -10,6 +10,7 @@ describe('CNGX_CHART_I18N', () => {
     expect(i18n.loading()).toBe('Loading');
     expect(i18n.error()).toBe('Error loading chart');
     expect(i18n.dataTable()).toBe('Data table');
+    expect(i18n.valueColumnLabel()).toBe('Value');
   });
 
   it('formats a typical summary string with all sections', () => {
@@ -40,6 +41,7 @@ describe('CNGX_CHART_I18N', () => {
     const override: CngxChartI18n = {
       summary: () => 'OVERRIDDEN',
       dataTable: () => 'TABLE_OVR',
+      valueColumnLabel: () => 'COL_OVR',
       trendChanged: () => 'TREND_OVR',
       thresholdAlert: () => 'THRESHOLD_OVR',
       empty: () => 'EMPTY_OVR',
@@ -51,6 +53,7 @@ describe('CNGX_CHART_I18N', () => {
     });
     const i18n = TestBed.inject(CNGX_CHART_I18N);
     expect(i18n.empty()).toBe('EMPTY_OVR');
+    expect(i18n.valueColumnLabel()).toBe('COL_OVR');
     expect(i18n.summary({ trend: 'up', min: 0, max: 0, current: 0, thresholds: [] })).toBe(
       'OVERRIDDEN',
     );

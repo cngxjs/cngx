@@ -93,7 +93,7 @@ export class CngxChartDataTable {
   protected readonly resolvedId = computed(() => this.id() ?? this.defaultId);
 
   protected readonly caption = computed(() => this.i18n.dataTable());
-  protected readonly valueColumnLabel = computed(() => 'Value');
+  protected readonly valueColumnLabel = computed(() => this.i18n.valueColumnLabel());
 
   protected readonly rows = computed<readonly { index: number; value: number }[]>(() => {
     const vs = this.values();
