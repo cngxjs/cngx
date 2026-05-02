@@ -198,7 +198,7 @@ export class CngxChipInteraction<T = unknown>
   );
 
   constructor() {
-    const hostEl = inject(ElementRef<HTMLElement>).nativeElement;
+    const hostEl = (inject(ElementRef) as ElementRef<HTMLElement>).nativeElement;
     const renderer = inject(Renderer2);
     const span = renderer.createElement('span') as HTMLSpanElement;
     renderer.setAttribute(span, 'id', this.describedId);
