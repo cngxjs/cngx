@@ -122,6 +122,12 @@ export class CngxToggle
 {
   readonly value = model<boolean>(false);
   readonly disabled = model<boolean>(false);
+  /**
+   * Bridge-writable invalid state. `model<boolean>` mirrors `disabled`
+   * so external integrations (RF/Signal-Forms bridges, custom validity
+   * adapters) can drive it without a parallel API path — consumers
+   * typically read only.
+   */
   readonly invalid = model<boolean>(false);
   readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');
