@@ -56,7 +56,7 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
   host: {
     role: 'img',
     '[attr.aria-label]': 'ariaLabelText()',
-    '[attr.aria-describedby]': 'dataTableId()',
+    '[attr.aria-describedby]': 'dataTableId',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -72,7 +72,7 @@ const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
       <ng-content />
     </svg>
     <cngx-chart-data-table
-      [id]="dataTableId()"
+      [id]="dataTableId"
       [values]="summaryValues()"
       [hidden]="!tableActive()"
     />
@@ -113,7 +113,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * number[]` data; structured data must override.
    */
   readonly summaryAccessor = input<(d: T, i: number) => number>(
-    (d) => Number(d as unknown as number),
+    (d) => Number(d as unknown),
   );
   /**
    * Controls when the SR-only data-table view is exposed to assistive
@@ -130,10 +130,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly axes = contentChildren(CngxAxis, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
   private readonly i18n = inject(CNGX_CHART_I18N);
-  protected readonly dataTableId = computed(
-    () => this.dataTableUid,
-  );
-  private readonly dataTableUid = nextUid('cngx-chart-data-table');
+  protected readonly dataTableId = nextUid('cngx-chart-data-table');
 
   readonly dataLength = computed(() => this.dataInput().length);
 
