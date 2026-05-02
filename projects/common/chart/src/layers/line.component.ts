@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
+import { injectChartContext } from '../chart/chart-context';
 import { type CngxCurve } from '../path/curve';
 import {
   createPathBuilder,
@@ -60,7 +59,7 @@ export class CngxLine<T = unknown> {
   readonly curve = input<CngxCurve>('linear');
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext();
+  private readonly ctx = injectChartContext('CngxLine');
 
   private readonly builder = computed<PathBuilder<T>>(() =>
     createPathBuilder<T>({
@@ -82,14 +81,4 @@ export class CngxLine<T = unknown> {
     () => this.builder().build(this.resolvedData(), this.ctx.xScale(), this.ctx.yScale()),
     { equal: (a, b) => a === b },
   );
-}
-
-function injectChartContext(): CngxChartContext {
-  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
-  if (!ctx) {
-    throw new Error(
-      'CngxLine: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
-    );
-  }
-  return ctx;
 }

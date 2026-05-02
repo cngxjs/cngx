@@ -1,4 +1,4 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { inject, InjectionToken, type Signal } from '@angular/core';
 
 /**
  * Numeric input shape every concrete scale accepts. Linear scales take
@@ -44,3 +44,23 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
 export const CNGX_CHART_CONTEXT = new InjectionToken<CngxChartContext>(
   'CngxChartContext',
 );
+
+/**
+ * Inject the parent chart's reactive context. Throws a clear dev-mode
+ * error when the consumer is not mounted as a content child of
+ * `<cngx-chart>`. The `consumerName` argument is interpolated into the
+ * error message so the consumer-class name surfaces at the call site
+ * rather than a generic guard string.
+ *
+ * Replaces six verbatim copies of the same six-line helper that
+ * previously lived inline in every layer atom.
+ */
+export function injectChartContext(consumerName: string): CngxChartContext {
+  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
+  if (!ctx) {
+    throw new Error(
+      `${consumerName}: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>`,
+    );
+  }
+  return ctx;
+}

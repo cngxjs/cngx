@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
+import { injectChartContext } from '../chart/chart-context';
 
 export type BarYAccessor<T> = string | ((d: T, i: number) => number);
 
@@ -61,7 +60,7 @@ export class CngxBar<T = unknown> {
   readonly baseline = input<number>(FALLBACK_BASELINE);
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext();
+  private readonly ctx = injectChartContext('CngxBar');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();
@@ -140,12 +139,3 @@ function rectsEqual(a: readonly BarRect[], b: readonly BarRect[]): boolean {
   return true;
 }
 
-function injectChartContext(): CngxChartContext {
-  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
-  if (!ctx) {
-    throw new Error(
-      'CngxBar: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
-    );
-  }
-  return ctx;
-}

@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
+import { injectChartContext } from '../chart/chart-context';
 
 /**
  * Band reference atom. Renders a `<rect>` across a vertical Y-range
@@ -64,7 +63,7 @@ export class CngxBand {
   readonly label = input<string | null>(null);
   readonly opacity = input<number | string | null>(null);
 
-  private readonly ctx = injectChartContext();
+  private readonly ctx = injectChartContext('CngxBand');
 
   protected readonly rect = computed<{
     width: number;
@@ -84,12 +83,3 @@ export class CngxBand {
   });
 }
 
-function injectChartContext(): CngxChartContext {
-  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
-  if (!ctx) {
-    throw new Error(
-      'CngxBand: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
-    );
-  }
-  return ctx;
-}

@@ -2,11 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
-import { CNGX_CHART_CONTEXT, type CngxChartContext } from '../chart/chart-context';
+import { injectChartContext } from '../chart/chart-context';
 
 /**
  * Threshold reference atom. Renders a single horizontal `<line>` at
@@ -64,7 +63,7 @@ export class CngxThreshold {
   readonly label = input<string | null>(null);
   readonly dashed = input<boolean>(false);
 
-  private readonly ctx = injectChartContext();
+  private readonly ctx = injectChartContext('CngxThreshold');
 
   protected readonly geometry = computed<{ width: number; y: number } | null>(() => {
     const { width, height } = this.ctx.dimensions();
@@ -76,12 +75,3 @@ export class CngxThreshold {
   });
 }
 
-function injectChartContext(): CngxChartContext {
-  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
-  if (!ctx) {
-    throw new Error(
-      'CngxThreshold: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
-    );
-  }
-  return ctx;
-}

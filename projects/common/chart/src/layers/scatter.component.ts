@@ -2,13 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
   ViewEncapsulation,
 } from '@angular/core';
 import {
-  CNGX_CHART_CONTEXT,
-  type CngxChartContext,
+  injectChartContext,
   type XScaleInput,
 } from '../chart/chart-context';
 
@@ -56,7 +54,7 @@ export class CngxScatter<T = unknown> {
   readonly radius = input<number>(3);
   readonly data = input<readonly T[] | undefined>(undefined);
 
-  private readonly ctx = injectChartContext();
+  private readonly ctx = injectChartContext('CngxScatter');
 
   private readonly resolvedData = computed<readonly T[]>(() => {
     const local = this.data();
@@ -102,12 +100,3 @@ function circlesEqual(a: readonly ScatterCircle[], b: readonly ScatterCircle[]):
   return true;
 }
 
-function injectChartContext(): CngxChartContext {
-  const ctx = inject(CNGX_CHART_CONTEXT, { optional: true });
-  if (!ctx) {
-    throw new Error(
-      'CngxScatter: missing CNGX_CHART_CONTEXT — must be a content child of <cngx-chart>',
-    );
-  }
-  return ctx;
-}
