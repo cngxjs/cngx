@@ -3,8 +3,40 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type EnvironmentProviders,
+  type Signal,
 } from '@angular/core';
 import type { CngxFormFieldControl, ErrorMessageMap } from './models';
+
+/**
+ * Contract every reveal-trigger source fulfils.
+ *
+ * The Forms-side abstraction over "is the user-driven error reveal active
+ * right now?". `CngxErrorScope` from `@cngx/common/interactive` is the
+ * default producer (wired via `CngxErrorScopeFieldBridge`); custom
+ * router-driven, interceptor-driven, or test-harness-driven triggers can
+ * provide their own implementation without depending on `CngxErrorScope`.
+ *
+ * Decouples `CngxFormFieldPresenter` from the concrete scope contract —
+ * the presenter only knows about this Forms-local interface.
+ *
+ * @category interfaces
+ */
+export interface CngxFormFieldRevealContract {
+  /** Reactive flag — `true` when errors should be visible to the user. */
+  readonly showErrors: Signal<boolean>;
+}
+
+/**
+ * Injection token resolving to the active reveal trigger for the surrounding
+ * `CngxFormField`. Optional — when no provider exists the presenter falls
+ * back to the default `touched OR strategy(...)` gate without scope-driven
+ * reveal semantics.
+ *
+ * @category tokens
+ */
+export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
+  'CngxFormFieldReveal',
+);
 
 /**
  * Injection token provided by controls (`CngxInput`, `CngxBindField`, `CngxListboxFieldBridge`) inside a `cngx-form-field`.
