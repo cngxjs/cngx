@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -166,8 +166,9 @@ class FormFieldHost {
   ],
 })
 class ReactiveFormsHost {
+  private readonly destroyRef = inject(DestroyRef);
   readonly control = new FormControl<string | null>('red');
-  readonly field = adaptFormControl(this.control, 'color');
+  readonly field = adaptFormControl(this.control, 'color', this.destroyRef);
 }
 
 @Component({

@@ -1,6 +1,12 @@
 import { type DestroyRef, signal, type Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { type AbstractControl, type ValidationErrors } from '@angular/forms';
+import {
+  type AbstractControl,
+  type ControlEvent,
+  PristineChangeEvent,
+  TouchedChangeEvent,
+  type ValidationErrors,
+} from '@angular/forms';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 
 /**
@@ -12,7 +18,10 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  *
  * @param control The Reactive Forms control to adapt.
  * @param name A unique field name for deterministic ID generation.
- * @param destroyRef A `DestroyRef` for automatic subscription cleanup (pass `inject(DestroyRef)`).
+ * @param destroyRef A `DestroyRef` for automatic subscription cleanup. Required —
+ *  without it the three RxJS subscriptions on the control would leak for the
+ *  lifetime of the parent injector. Pass `inject(DestroyRef)` from a component
+ *  field initialiser, or wrap the call in `runInInjectionContext`.
  * @returns A `CngxFieldAccessor` compatible with `[field]` input on `cngx-form-field`.
  *
  * @example
@@ -26,7 +35,7 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
 export function adaptFormControl(
   control: AbstractControl,
   name: string,
-  destroyRef?: DestroyRef,
+  destroyRef: DestroyRef,
 ): CngxFieldAccessor {
   const nameSignal = signal(name);
   const valueSignal = signal<unknown>(control.value);
@@ -57,14 +66,17 @@ export function adaptFormControl(
     errorsSignal.set(adaptErrors(control.errors));
   };
 
-  // Subscribe with automatic cleanup via DestroyRef
-  if (destroyRef) {
-    control.statusChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
-    control.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
-  } else {
-    control.statusChanges.subscribe(syncState);
-    control.valueChanges.subscribe(syncState);
-  }
+  // control.events (Angular 14+) carries TouchedChangeEvent + PristineChangeEvent;
+  // statusChanges/valueChanges do not, so without this externally-driven
+  // markAsTouched()/markAsDirty() never reach the adapter.
+  const handleEvent = (event: ControlEvent) => {
+    if (event instanceof TouchedChangeEvent || event instanceof PristineChangeEvent) {
+      syncState();
+    }
+  };
+  control.statusChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
+  control.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
+  control.events.pipe(takeUntilDestroyed(destroyRef)).subscribe(handleEvent);
 
   // Writable value proxy: allows bridges (e.g. `CngxListboxFieldBridge`) to
   // push the control's value via `fieldRef.value.set(x)`. We don't just hand

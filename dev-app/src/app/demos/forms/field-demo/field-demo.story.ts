@@ -29,6 +29,7 @@ export const STORY: DemoSpec = {
     "import { CngxFormField, CngxLabel, CngxHint, CngxError, CngxFieldErrors, CngxFormErrors, focusFirstError, adaptFormControl } from '@cngx/forms/field';",
     "import { CngxInput } from '@cngx/forms/input';",
     "import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';",
+    "import { DestroyRef } from '@angular/core';",
   ],
   setup: `
   // ── Login form (Sections 1, 2, 4) ────────────────────────
@@ -107,8 +108,9 @@ export const STORY: DemoSpec = {
   }
 
   // ── Reactive Forms adapter (Section 6) ───────────────────
+  private readonly reactiveDestroyRef = inject(DestroyRef);
   protected readonly reactiveControl = new FormControl('', [Validators.required, Validators.email]);
-  protected readonly reactiveField = adaptFormControl(this.reactiveControl, 'reactiveEmail');
+  protected readonly reactiveField = adaptFormControl(this.reactiveControl, 'reactiveEmail', this.reactiveDestroyRef);
   `,
   sections: [
     {

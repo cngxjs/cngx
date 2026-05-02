@@ -38,6 +38,7 @@ export const STORY: DemoSpec = {
     "import { CngxFormField, CngxLabel, adaptFormControl } from '@cngx/forms/field';",
     "import { CngxSelectShell, CngxSelectOption, CngxSelectOptgroup, CngxSelectDivider, CngxSelectSearch, CngxSelectOptionError, CngxSelectOptionPending, CngxSelectPlaceholder, CngxSelectEmpty, CngxSelectCaret, type CngxSelectCommitAction, type CngxSelectCommitMode, type CngxSelectShellChange } from '@cngx/forms/select';",
     "import { delay, of, throwError } from 'rxjs';",
+    "import { DestroyRef } from '@angular/core';",
   ],
   setup: `
   // Basic — flat options.
@@ -56,8 +57,9 @@ export const STORY: DemoSpec = {
   protected readonly richValue = signal<string | undefined>(undefined);
 
   // Form-field — Reactive Forms via adaptFormControl.
+  private readonly rfDestroyRef = inject(DestroyRef);
   protected readonly rfControl = new FormControl<string | null>('green');
-  protected readonly rfField = adaptFormControl(this.rfControl, 'color');
+  protected readonly rfField = adaptFormControl(this.rfControl, 'color', this.rfDestroyRef);
 
   // Commit + error — async commit with toggleable failure + commit mode.
   protected readonly commitValue = signal<string | undefined>('red');
