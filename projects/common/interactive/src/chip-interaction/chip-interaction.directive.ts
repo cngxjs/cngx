@@ -241,7 +241,14 @@ export class CngxChipInteraction<T = unknown>
     // collect this span. Without explicit cleanup the span leaks and
     // the next instantiation collides on `describedId`.
     inject(DestroyRef).onDestroy(() => {
-      renderer.removeChild(hostEl, span);
+      // Defensive parent-node check: the destroy hook fires symmetrically
+      // with `appendChild`, but the host may have been detached by a
+      // parent structural directive at the same destroy tick. Removing
+      // a child whose parent is no longer ours would throw under a
+      // stricter renderer; this guard expresses the contract explicitly.
+      if (span.parentNode === hostEl) {
+        renderer.removeChild(hostEl, span);
+      }
     });
 
     effect(() => {
