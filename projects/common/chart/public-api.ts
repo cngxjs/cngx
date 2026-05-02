@@ -45,6 +45,11 @@ export {
   type CngxChartI18n,
   type CngxChartSummary,
 } from './src/i18n/chart-i18n';
+
+export { CngxSparkline } from './src/presets/sparkline.component';
+export { CngxMiniBar } from './src/presets/mini-bar.component';
+export { CngxDeviationBar } from './src/presets/deviation-bar.component';
+export { CngxMiniArea } from './src/presets/mini-area.component';
 export {
   createPathBuilder,
   type PathBuilder,
