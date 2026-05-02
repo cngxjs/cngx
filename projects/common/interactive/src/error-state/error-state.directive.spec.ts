@@ -27,42 +27,43 @@ function setup() {
 }
 
 describe('CngxErrorState', () => {
-  it('omits aria-invalid + cngx-error class when boolean is false', () => {
-    const { el } = setup();
-    expect(el.classList.contains('cngx-error')).toBe(false);
-    expect(el.getAttribute('aria-invalid')).toBeNull();
-  });
-
-  it('toggles aria-invalid="true" + cngx-error class when boolean flips', () => {
+  it('aria-invalid stays in the DOM with explicit "true"/"false"', () => {
     const { fixture, el, host } = setup();
+    expect(el.classList.contains('cngx-error')).toBe(false);
+    expect(el.getAttribute('aria-invalid')).toBe('false');
+
     host.invalid.set(true);
     fixture.detectChanges();
     expect(el.classList.contains('cngx-error')).toBe(true);
     expect(el.getAttribute('aria-invalid')).toBe('true');
+
     host.invalid.set(false);
     fixture.detectChanges();
     expect(el.classList.contains('cngx-error')).toBe(false);
-    expect(el.getAttribute('aria-invalid')).toBeNull();
+    expect(el.getAttribute('aria-invalid')).toBe('false');
   });
 
-  it('binds aria-errormessage only when error AND message id present', () => {
+  it('aria-errormessage stays in the DOM whenever a non-empty id is bound', () => {
     const { fixture, el, host } = setup();
-    host.invalid.set(true);
+    expect(el.getAttribute('aria-errormessage')).toBeNull();
+
     host.messageId.set('email-error');
+    fixture.detectChanges();
+    expect(el.getAttribute('aria-errormessage')).toBe('email-error');
+
+    host.invalid.set(true);
     fixture.detectChanges();
     expect(el.getAttribute('aria-errormessage')).toBe('email-error');
 
     host.invalid.set(false);
     fixture.detectChanges();
-    expect(el.getAttribute('aria-errormessage')).toBeNull();
+    expect(el.getAttribute('aria-errormessage')).toBe('email-error');
 
-    host.invalid.set(true);
-    host.messageId.set(null);
+    host.messageId.set('');
     fixture.detectChanges();
     expect(el.getAttribute('aria-errormessage')).toBeNull();
 
-    host.invalid.set(true);
-    host.messageId.set('');
+    host.messageId.set(null);
     fixture.detectChanges();
     expect(el.getAttribute('aria-errormessage')).toBeNull();
   });

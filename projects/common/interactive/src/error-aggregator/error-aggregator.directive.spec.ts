@@ -75,7 +75,7 @@ describe('CngxErrorAggregator', () => {
     const el = fixture.debugElement.query(By.directive(CngxErrorAggregator)).nativeElement as HTMLElement;
 
     expect(el.classList.contains('cngx-error')).toBe(false);
-    expect(el.getAttribute('aria-invalid')).toBeNull();
+    expect(el.getAttribute('aria-invalid')).toBe('false');
 
     fixture.componentInstance.aOn.set(true);
     fixture.detectChanges();

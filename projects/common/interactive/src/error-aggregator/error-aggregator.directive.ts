@@ -43,7 +43,7 @@ const ERROR_LABEL_JOINER = ', ';
   ],
   host: {
     '[class.cngx-error]': 'shouldShow()',
-    '[attr.aria-invalid]': 'shouldShow() ? "true" : null',
+    '[attr.aria-invalid]': 'shouldShow() ? "true" : "false"',
   },
 })
 export class CngxErrorAggregator implements CngxErrorAggregatorContract {

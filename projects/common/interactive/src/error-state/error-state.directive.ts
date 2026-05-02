@@ -45,14 +45,16 @@ export class CngxErrorState {
   /** @internal */
   protected readonly errorState = computed(() => this.cngxErrorState());
 
-  /** @internal — `'true'` when in error, omitted otherwise. */
-  protected readonly ariaInvalid = computed(() => (this.errorState() ? 'true' : null));
+  /** @internal — explicit boolean, always present in the DOM (cngx ARIA convention). */
+  protected readonly ariaInvalid = computed(() => (this.errorState() ? 'true' : 'false'));
 
-  /** @internal — only emitted when both error AND a message id are set. */
+  /**
+   * @internal — emitted whenever a non-empty message id is bound, regardless
+   * of the error flag. cngx convention: ID-bearing ARIA attributes stay in
+   * the DOM; visibility of the message element is controlled by the
+   * consumer via `aria-hidden` on the message itself.
+   */
   protected readonly ariaErrorMessage = computed(() => {
-    if (!this.errorState()) {
-      return null;
-    }
     const id = this.cngxErrorMessageId();
     return id && id.length > 0 ? id : null;
   });
