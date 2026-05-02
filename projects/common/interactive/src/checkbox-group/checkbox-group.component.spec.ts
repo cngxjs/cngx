@@ -183,7 +183,7 @@ describe('CngxCheckboxGroup', () => {
 
     group.invalid.set(false);
     fixture.detectChanges();
-    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBe('err-1');
   });
 
   it('aria-busy reflects state.status() === "loading" reactively', () => {

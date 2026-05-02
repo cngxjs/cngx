@@ -157,7 +157,7 @@ describe('CngxRadioGroup + CngxRadio', () => {
     expect(groupEl.getAttribute('aria-required')).toBe('true');
   });
 
-  it('toggles aria-invalid + aria-errormessage reactively, gated on errorMessageId presence', () => {
+  it('toggles aria-invalid reactively; aria-errormessage tracks errorMessageId always-in-DOM', () => {
     @Component({
       template: `
         <cngx-radio-group [(value)]="v" [(invalid)]="bad" [errorMessageId]="msgId()">
@@ -192,7 +192,7 @@ describe('CngxRadioGroup + CngxRadio', () => {
     fixture.componentInstance.bad.set(false);
     fixture.detectChanges();
     expect(groupEl.getAttribute('aria-invalid')).toBeNull();
-    expect(groupEl.getAttribute('aria-errormessage')).toBeNull();
+    expect(groupEl.getAttribute('aria-errormessage')).toBe('payment-error');
   });
 
   it('group exposes a stable name (auto-generated) and propagates it to leaves', () => {

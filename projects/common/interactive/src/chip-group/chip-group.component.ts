@@ -91,7 +91,7 @@ import {
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() || null : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-chip-group--horizontal]': 'orientation() === "horizontal"',
     '(focusin)': 'handleFocusIn()',

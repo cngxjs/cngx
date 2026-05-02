@@ -120,7 +120,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
-    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() || null : null',
+    '[attr.aria-errormessage]': 'errorMessageId()',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-multi-chip-group--horizontal]':
       'orientation() === "horizontal"',
