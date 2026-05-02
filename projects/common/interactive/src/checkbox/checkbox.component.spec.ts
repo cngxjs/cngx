@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxCheckbox } from './checkbox.component';
@@ -124,5 +125,61 @@ describe('CngxCheckbox', () => {
     const { dir, fixture } = setup();
     const de = fixture.debugElement.query(By.directive(CngxCheckbox));
     expect(de.injector.get(CNGX_CONTROL_VALUE)).toBe(dir);
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects invalid() alone (no form-field host)', () => {
+      const { fixture, dir, el } = setup();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+      dir.invalid.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-checkbox>L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {}
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid is null when both invalid() and errorState() are false', () => {
+      const { el } = setup();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it('aria-errormessage always reflects errorMessageId (independent of invalid)', () => {
+      @Component({
+        template: `<cngx-checkbox [errorMessageId]="msgId()" [(invalid)]="bad">L</cngx-checkbox>`,
+        imports: [CngxCheckbox],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('cb-err');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const el = fixture.debugElement.query(By.directive(CngxCheckbox))
+        .nativeElement as HTMLElement;
+      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(el.getAttribute('aria-errormessage')).toBe('cb-err');
+    });
   });
 });

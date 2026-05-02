@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxButtonMultiToggleGroup } from './button-multi-toggle-group.component';
@@ -224,5 +225,66 @@ describe('CngxButtonToggleGroup + CngxButtonToggle (single mode)', () => {
     expect(() => {
       TestBed.createComponent(DualParent).detectChanges();
     }).toThrow(/both CngxButtonToggleGroup and CngxButtonMultiToggleGroup/);
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects invalid() alone (no form-field host)', () => {
+      @Component({
+        template: `<cngx-button-toggle-group label="L" [(invalid)]="bad"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        imports: [CngxButtonToggleGroup, CngxButtonToggle],
+      })
+      class InvalidHost {
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(InvalidHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBeNull();
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-button-toggle-group label="L"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        imports: [CngxButtonToggleGroup, CngxButtonToggle],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {}
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-errormessage is always present (independent of invalid state)', () => {
+      @Component({
+        template: `<cngx-button-toggle-group label="L" [errorMessageId]="msgId()" [(invalid)]="bad"><button cngxButtonToggle [value]="'a'">A</button></cngx-button-toggle-group>`,
+        imports: [CngxButtonToggleGroup, CngxButtonToggle],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('btg-err');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxButtonToggleGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('btg-err');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('btg-err');
+    });
   });
 });

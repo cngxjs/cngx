@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CngxCheckbox } from '../checkbox/checkbox.component';
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
@@ -260,5 +261,51 @@ describe('CngxCheckboxGroup', () => {
     host.picked.set(['a', 'b']);
     fixture.detectChanges();
     expect(group.selectedCount()).toBe(first);
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-checkbox-group [allValues]="vs"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        imports: [CngxCheckboxGroup, CngxCheckbox],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {
+        vs = ['a'];
+      }
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-errormessage is always present (independent of invalid state)', () => {
+      @Component({
+        template: `<cngx-checkbox-group [allValues]="vs" [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-checkbox [value]="false">A</cngx-checkbox></cngx-checkbox-group>`,
+        imports: [CngxCheckboxGroup, CngxCheckbox],
+      })
+      class MsgHost {
+        vs = ['a'];
+        msgId = signal<string | null>('cbg-err');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxCheckboxGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('cbg-err');
+    });
   });
 });

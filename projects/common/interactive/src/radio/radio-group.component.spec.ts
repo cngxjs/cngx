@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxRovingItem } from '@cngx/common/a11y';
 import { describe, expect, it } from 'vitest';
+import { CNGX_FORM_FIELD_HOST } from '@cngx/core/tokens';
 
 import { CNGX_CONTROL_VALUE } from '../control-value/control-value.token';
 import { CngxRadioGroup } from './radio-group.component';
@@ -221,5 +222,48 @@ describe('CngxRadioGroup + CngxRadio', () => {
       .query(By.css('cngx-radio-indicator'))
       .componentInstance as { dotGlyph: () => unknown };
     expect(indicator.dotGlyph()).not.toBeNull();
+  });
+
+  describe('aria-invalid + aria-errormessage symmetric semantics', () => {
+    it('aria-invalid reflects errorState() alone (form-field host showError=true)', () => {
+      @Component({
+        template: `<cngx-radio-group><cngx-radio value="a">A</cngx-radio></cngx-radio-group>`,
+        imports: [CngxRadioGroup, CngxRadio],
+        providers: [
+          {
+            provide: CNGX_FORM_FIELD_HOST,
+            useValue: {
+              showError: () => true,
+              markAsTouched: () => undefined,
+            },
+          },
+        ],
+      })
+      class FieldHost {}
+      const fixture = TestBed.createComponent(FieldHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxRadioGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-invalid')).toBe('true');
+    });
+
+    it('aria-errormessage is always present (independent of invalid state)', () => {
+      @Component({
+        template: `<cngx-radio-group [errorMessageId]="msgId()" [(invalid)]="bad"><cngx-radio value="a">A</cngx-radio></cngx-radio-group>`,
+        imports: [CngxRadioGroup, CngxRadio],
+      })
+      class MsgHost {
+        msgId = signal<string | null>('rg-err');
+        bad = signal(false);
+      }
+      const fixture = TestBed.createComponent(MsgHost);
+      fixture.detectChanges();
+      const groupEl = fixture.debugElement.query(By.directive(CngxRadioGroup))
+        .nativeElement as HTMLElement;
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('rg-err');
+      fixture.componentInstance.bad.set(true);
+      fixture.detectChanges();
+      expect(groupEl.getAttribute('aria-errormessage')).toBe('rg-err');
+    });
   });
 });
