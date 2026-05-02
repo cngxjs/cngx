@@ -109,7 +109,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-errormessage]': 'errorMessageId()',
-    '[attr.aria-describedby]': 'describedBy()',
+    '[attr.aria-describedby]': 'resolvedDescribedBy()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-chip-interaction--selected]': 'value()',
     '[class.cngx-chip-interaction--disabled]': 'disabled()',
@@ -159,26 +159,24 @@ export class CngxChipInteraction<T = unknown>
   readonly disabledReason = input<string>('');
 
   /**
-   * @internal — alias backing the public `cngxDescribedBy` input.
-   * Consumers continue to bind `[cngxDescribedBy]`; the directive
-   * exposes the resolved id via the `describedBy` computed below,
-   * which routes through the always-in-DOM disabled-reason span when
-   * `disabledReason` is set.
+   * Optional consumer-supplied id of an external description element
+   * (e.g. a sibling sr-only `<span>`). Consumers bind via
+   * `[cngxDescribedBy]="someId"`. Resolved into `aria-describedby` via
+   * `resolvedDescribedBy`, which prefers the internal disabled-reason
+   * id when `disabledReason` is set.
    */
-  readonly cngxDescribedByInput = input<string | null>(null, {
-    alias: 'cngxDescribedBy',
-  });
+  readonly cngxDescribedBy = input<string | null>(null);
 
   /** Fires on Backspace/Delete keydown — consumer owns the removal. */
   readonly removeRequest = output<void>();
 
   private readonly describedId = nextUid('cngx-chip-desc');
 
-  protected readonly describedBy = computed<string | null>(() => {
+  protected readonly resolvedDescribedBy = computed<string | null>(() => {
     if (this.disabledReason()) {
       return this.describedId;
     }
-    return this.cngxDescribedByInput();
+    return this.cngxDescribedBy();
   });
 
   // ── CngxFormFieldControl ─────────────────────────────────────────
