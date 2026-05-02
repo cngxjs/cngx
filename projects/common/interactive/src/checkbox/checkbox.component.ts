@@ -2,17 +2,25 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
+  signal,
   type TemplateRef,
 } from '@angular/core';
 import { CngxCheckboxIndicator } from '@cngx/common/display';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
 import { nextUid } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
  * Single-value boolean checkbox with indeterminate support and W3C
@@ -62,8 +70,10 @@ import {
   host: {
     class: 'cngx-checkbox',
     role: 'checkbox',
+    '[attr.id]': 'id()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
+    '[attr.aria-invalid]': 'errorState() ? "true" : null',
     '[attr.aria-describedby]': 'describedById()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-checkbox--checked]': 'value()',
@@ -72,8 +82,13 @@ import {
     '(click)': 'handleClick()',
     '(keydown.space)': 'handleKeydown($event)',
     '(keydown.enter)': 'handleKeydown($event)',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
-  providers: [{ provide: CNGX_CONTROL_VALUE, useExisting: CngxCheckbox }],
+  providers: [
+    { provide: CNGX_CONTROL_VALUE, useExisting: CngxCheckbox },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxCheckbox },
+  ],
   template: `
     <cngx-checkbox-indicator
       variant="checkbox"
@@ -94,7 +109,9 @@ import {
   `,
   styleUrls: ['./checkbox.component.css'],
 })
-export class CngxCheckbox implements CngxControlValue<boolean> {
+export class CngxCheckbox
+  implements CngxControlValue<boolean>, CngxFormFieldControl
+{
   readonly value = model<boolean>(false);
   readonly indeterminate = model<boolean>(false);
   readonly disabled = model<boolean>(false);
@@ -112,6 +129,33 @@ export class CngxCheckbox implements CngxControlValue<boolean> {
     this.indeterminate() ? 'mixed' : this.value() ? 'true' : 'false',
   );
 
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-checkbox-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /**
+   * Empty when value is `false` AND not in tri-state intermediate. An
+   * indeterminate checkbox carries user-visible state, so it does not
+   * count as empty for forms purposes.
+   */
+  readonly empty = computed(() => this.value() === false && !this.indeterminate());
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  // ── Event handlers ───────────────────────────────────────────────
+
   protected handleClick(): void {
     this.advance();
   }
@@ -122,6 +166,15 @@ export class CngxCheckbox implements CngxControlValue<boolean> {
     }
     event.preventDefault();
     this.advance();
+  }
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 
   private advance(): void {

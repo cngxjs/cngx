@@ -462,6 +462,11 @@ export const routes: Routes = [
           import('./demos/forms/file-drop-demo/file-drop-demo.component').then((m) => m.FileDropDemoComponent),
       },
       {
+        path: 'form-primitives',
+        loadComponent: () =>
+          import('./demos/forms/form-primitives-demo/form-primitives-demo.component').then((m) => m.FormPrimitivesDemoComponent),
+      },
+      {
         path: 'input',
         loadComponent: () =>
           import('./demos/forms/input-demo/input-demo.component').then((m) => m.InputDemoComponent),

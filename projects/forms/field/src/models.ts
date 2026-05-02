@@ -2,6 +2,15 @@ import type { Signal } from '@angular/core';
 import type { ValidationError } from '@angular/forms/signals';
 
 /**
+ * Re-export — the canonical contract now lives at `@cngx/core/tokens` so
+ * Level-2 atoms can implement and provide it without crossing the
+ * Sheriff-enforced layer boundary. Public-API consumers keep their
+ * existing `import { CngxFormFieldControl } from '@cngx/forms/field'`
+ * path unchanged.
+ */
+export type { CngxFormFieldControl } from '@cngx/core/tokens';
+
+/**
  * Abstraction over Angular Signal Forms' `FieldState`.
  *
  * Consumers pass `Field<T>` (a callable that returns `FieldState<T>`) to `CngxFormField`.
@@ -51,30 +60,6 @@ export interface CngxFieldRef<T = unknown> {
  * @category structure
  */
 export type CngxFieldAccessor<T = unknown> = () => CngxFieldRef<T>;
-
-/**
- * Contract for controls that can participate in a `cngx-form-field`.
- *
- * `CngxInput` provides this natively. Third-party controls (Material, native HTML,
- * or custom components) adapt to this interface via the universal `CngxBindField`
- * directive, or a specialised bridge (e.g. `CngxListboxFieldBridge`).
- *
- * @category structure
- */
-export interface CngxFormFieldControl {
-  /** Unique element ID for the control. */
-  readonly id: Signal<string>;
-  /** Whether the control currently has DOM focus. */
-  readonly focused: Signal<boolean>;
-  /** Whether the control's value is empty. */
-  readonly empty: Signal<boolean>;
-  /** Whether the control is disabled. */
-  readonly disabled: Signal<boolean>;
-  /** Whether the control is in an error state. */
-  readonly errorState: Signal<boolean>;
-  /** Programmatically focus the control. */
-  focus?(options?: FocusOptions): void;
-}
 
 /**
  * A function that maps a validation error to a human-readable message string.

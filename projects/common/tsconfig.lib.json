@@ -12,6 +12,7 @@
     "paths": {
       "@cngx/utils": ["dist/utils/types/cngx-utils.d.ts"],
       "@cngx/core/utils": ["dist/core/types/cngx-core-utils.d.ts"],
+      "@cngx/core/tokens": ["dist/core/types/cngx-core-tokens.d.ts"],
       "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
       "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
       "@cngx/common/layout": ["projects/common/layout/public-api.ts"],

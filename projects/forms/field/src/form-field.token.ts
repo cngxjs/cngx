@@ -5,7 +5,23 @@ import {
   type EnvironmentProviders,
   type Signal,
 } from '@angular/core';
-import type { CngxFormFieldControl, ErrorMessageMap } from './models';
+import type { ErrorMessageMap } from './models';
+
+/**
+ * Re-exports — the form-field control + host contracts now live at
+ * `@cngx/core/tokens` so Level-2 atoms in `@cngx/common/*` can provide
+ * and inject them without crossing the Sheriff-enforced layer boundary
+ * (`lib:common` is forbidden from importing `lib:forms`). Public-API
+ * consumers keep their existing
+ * `import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field'` import
+ * paths unchanged.
+ */
+export {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+  type CngxFormFieldHostContract,
+} from '@cngx/core/tokens';
 
 /**
  * Contract every reveal-trigger source fulfils.
@@ -36,16 +52,6 @@ export interface CngxFormFieldRevealContract {
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
   'CngxFormFieldReveal',
-);
-
-/**
- * Injection token provided by controls (`CngxInput`, `CngxBindField`, `CngxListboxFieldBridge`) inside a `cngx-form-field`.
- * The presenter reads this to discover the active control.
- *
- * @category tokens
- */
-export const CNGX_FORM_FIELD_CONTROL = new InjectionToken<CngxFormFieldControl>(
-  'CngxFormFieldControl',
 );
 
 /**

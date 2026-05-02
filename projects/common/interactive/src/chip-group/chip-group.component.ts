@@ -2,16 +2,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
+  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
-import type { CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 
 import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 import {
   CNGX_CHIP_GROUP_HOST,
   type CngxChipGroupHost,
@@ -78,23 +86,30 @@ import {
   host: {
     class: 'cngx-chip-group',
     role: 'listbox',
+    '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
-    '[attr.aria-invalid]': 'invalid() ? "true" : null',
-    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() || null : null',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-chip-group--horizontal]': 'orientation() === "horizontal"',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
   providers: [
     { provide: CNGX_CHIP_GROUP_HOST, useExisting: CngxChipGroup },
     { provide: CNGX_CONTROL_VALUE, useExisting: CngxChipGroup },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxChipGroup },
   ],
   template: `<ng-content />`,
   styleUrl: './chip-group.component.css',
 })
 export class CngxChipGroup<T = unknown>
-  implements CngxControlValue<T | undefined>, CngxChipGroupHost<T>
+  implements
+    CngxControlValue<T | undefined>,
+    CngxChipGroupHost<T>,
+    CngxFormFieldControl
 {
   readonly selected = model<T | undefined>(undefined);
   readonly value = this.selected;
@@ -135,5 +150,37 @@ export class CngxChipGroup<T = unknown>
     if (this.isSelected(value)) {
       this.selected.set(undefined);
     }
+  }
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-chip-group-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when no chip is selected. */
+  readonly empty = computed(() => this.selected() === undefined);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly errorAggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ??
+      this.errorAggregator?.shouldShow() ??
+      false,
+  );
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }

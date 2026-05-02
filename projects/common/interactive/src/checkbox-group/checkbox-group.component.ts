@@ -6,10 +6,17 @@ import {
   inject,
   input,
   model,
+  signal,
 } from '@angular/core';
 import { CngxRovingTabindex } from '@cngx/common/a11y';
 import {
+  CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldControl,
+} from '@cngx/core/tokens';
+import {
   CNGX_SELECTION_CONTROLLER_FACTORY,
+  nextUid,
   type CngxAsyncState,
   type SelectionController,
 } from '@cngx/core/utils';
@@ -18,6 +25,7 @@ import {
   CNGX_CONTROL_VALUE,
   type CngxControlValue,
 } from '../control-value/control-value.token';
+import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.token';
 
 /**
  * Multi-value checkbox-group molecule. Owns a `selectedValues` model
@@ -92,19 +100,27 @@ import {
   host: {
     class: 'cngx-checkbox-group',
     role: 'group',
+    '[attr.id]': 'id()',
     '[attr.aria-label]': 'label()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
-    '[attr.aria-invalid]': 'invalid() ? "true" : null',
-    '[attr.aria-errormessage]': 'invalid() ? errorMessageId() || null : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
+    '[attr.aria-errormessage]': '(invalid() || errorState()) ? errorMessageId() || null : null',
     '[attr.aria-busy]': 'ariaBusy() ? "true" : null',
     '[class.cngx-checkbox-group--horizontal]': 'orientation() === "horizontal"',
+    '(focusin)': 'handleFocusIn()',
+    '(focusout)': 'handleFocusOut()',
   },
-  providers: [{ provide: CNGX_CONTROL_VALUE, useExisting: CngxCheckboxGroup }],
+  providers: [
+    { provide: CNGX_CONTROL_VALUE, useExisting: CngxCheckboxGroup },
+    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxCheckboxGroup },
+  ],
   template: `<ng-content />`,
   styleUrl: './checkbox-group.component.css',
 })
-export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
+export class CngxCheckboxGroup<T = unknown>
+  implements CngxControlValue<T[]>, CngxFormFieldControl
+{
   readonly selectedValues = model<T[]>([]);
   readonly value = this.selectedValues;
   readonly disabled = model<boolean>(false);
@@ -181,5 +197,35 @@ export class CngxCheckboxGroup<T = unknown> implements CngxControlValue<T[]> {
       return;
     }
     this.controller.deselect(value);
+  }
+
+  // ── CngxFormFieldControl ─────────────────────────────────────────
+
+  readonly id = signal(nextUid('cngx-checkbox-group-')).asReadonly();
+
+  private readonly focusedState = signal(false);
+  readonly focused = this.focusedState.asReadonly();
+
+  /** Empty when no values selected. */
+  readonly empty = computed(() => this.selectedValues().length === 0);
+
+  private readonly fieldHost = inject(CNGX_FORM_FIELD_HOST, { optional: true });
+  private readonly aggregator = inject(CNGX_ERROR_AGGREGATOR, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly errorState = computed<boolean>(
+    () =>
+      this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
+  );
+
+  protected handleFocusIn(): void {
+    this.focusedState.set(true);
+  }
+
+  protected handleFocusOut(): void {
+    this.focusedState.set(false);
+    this.fieldHost?.markAsTouched();
   }
 }

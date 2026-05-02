@@ -1,4 +1,8 @@
 import { computed, Directive, inject, input, type Signal, untracked } from '@angular/core';
+import {
+  CNGX_FORM_FIELD_HOST,
+  type CngxFormFieldHostContract,
+} from '@cngx/core/tokens';
 import type { CngxFieldAccessor, CngxFieldRef } from './models';
 import {
   CNGX_FORM_FIELD_CONFIG,
@@ -51,6 +55,9 @@ function buildHint(
 @Directive({
   selector: '[cngxFormFieldPresenter]',
   standalone: true,
+  providers: [
+    { provide: CNGX_FORM_FIELD_HOST, useExisting: CngxFormFieldPresenter },
+  ],
   host: {
     '[class.cngx-field--error]': 'showError()',
     '[class.cngx-field--touched]': 'touched()',
@@ -63,7 +70,7 @@ function buildHint(
     '[class.cngx-field--valid]': 'valid()',
   },
 })
-export class CngxFormFieldPresenter {
+export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
   private readonly fieldReveal = inject(CNGX_FORM_FIELD_REVEAL, { optional: true });
 
@@ -216,4 +223,17 @@ export class CngxFormFieldPresenter {
       ...fmt.extra(meta),
     ].filter((h): h is string => h !== undefined && h !== '');
   });
+
+  // ── CngxFormFieldHostContract ──────────────────────────────────────
+
+  /**
+   * Forwards `markAsTouched` into the bound field's state. Atoms that
+   * inject `CNGX_FORM_FIELD_HOST` call this from their focus-out path
+   * so the surrounding field's `touched` state advances without
+   * importing this concrete presenter class — same shape as
+   * `CngxBindField` / `CngxListboxFieldBridge` already use.
+   */
+  markAsTouched(): void {
+    this.fieldState().markAsTouched();
+  }
 }

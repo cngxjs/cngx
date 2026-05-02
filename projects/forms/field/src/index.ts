@@ -16,6 +16,7 @@ export {
 } from './form-errors.component';
 export {
   CNGX_FORM_FIELD_CONTROL,
+  CNGX_FORM_FIELD_HOST,
   CNGX_ERROR_MESSAGES,
   CNGX_FORM_FIELD_CONFIG,
   CNGX_FORM_FIELD_REVEAL,
@@ -30,6 +31,7 @@ export {
   DEFAULT_AUTOCOMPLETE_MAPPINGS,
   DEFAULT_NO_SPELLCHECK_FIELDS,
   DEFAULT_HINT_FORMATTERS,
+  type CngxFormFieldHostContract,
 } from './form-field.token';
 export { CngxErrorScopeFieldBridge } from './error-scope-field-bridge.directive';
 export type {

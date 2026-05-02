@@ -4,3 +4,4 @@
  */
 
 export * from './src/typed-control.directive';
+export * from './src/form-bridge.directive';

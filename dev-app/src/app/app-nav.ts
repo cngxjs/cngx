@@ -110,6 +110,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Autosize', path: 'forms/autosize' },
       { label: 'Form Field', path: 'forms/field' },
       { label: 'File Drop', path: 'forms/file-drop' },
+      { label: 'Form Primitives', path: 'forms/form-primitives' },
       { label: 'Input', path: 'forms/input' },
       { label: 'Listbox Forms', path: 'forms/listbox-forms' },
       { label: 'Mask', path: 'forms/mask' },
