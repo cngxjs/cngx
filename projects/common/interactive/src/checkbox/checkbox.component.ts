@@ -73,7 +73,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-checked]': 'ariaChecked()',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': 'errorState() ? "true" : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-describedby]': 'describedById()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-checkbox--checked]': 'value()',

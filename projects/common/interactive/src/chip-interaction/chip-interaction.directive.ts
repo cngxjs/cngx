@@ -100,7 +100,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
     '[attr.id]': 'id()',
     '[attr.aria-selected]': 'value() ? "true" : "false"',
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
-    '[attr.aria-invalid]': 'errorState() ? "true" : null',
+    '[attr.aria-invalid]': '(invalid() || errorState()) ? "true" : null',
     '[attr.aria-describedby]': 'describedBy()',
     '[attr.tabindex]': 'disabled() ? -1 : 0',
     '[class.cngx-chip-interaction--selected]': 'value()',
