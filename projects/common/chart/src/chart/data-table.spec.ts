@@ -75,4 +75,27 @@ describe('CngxChartDataTable', () => {
     const rows = Array.from(table.querySelectorAll('tbody tr'));
     expect(rows.length).toBe(6);
   });
+
+  it('allocates a unique default id per standalone instance when [id] is omitted', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChartDataTable],
+      template: `
+        <cngx-chart-data-table data-testid="a" [values]="[1]" [hidden]="false" />
+        <cngx-chart-data-table data-testid="b" [values]="[1]" [hidden]="false" />
+      `,
+    })
+    class MultiHost {}
+
+    TestBed.configureTestingModule({ imports: [MultiHost] });
+    const fixture = TestBed.createComponent(MultiHost);
+    fixture.detectChanges();
+    const a = fixture.nativeElement.querySelector('[data-testid="a"]') as HTMLElement;
+    const b = fixture.nativeElement.querySelector('[data-testid="b"]') as HTMLElement;
+    const idA = a.getAttribute('id') ?? '';
+    const idB = b.getAttribute('id') ?? '';
+    expect(idA).not.toBe('');
+    expect(idB).not.toBe('');
+    expect(idA).not.toBe(idB);
+  });
 });

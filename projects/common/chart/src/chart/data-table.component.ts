@@ -31,7 +31,7 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    '[id]': 'id()',
+    '[id]': 'resolvedId()',
     '[attr.aria-hidden]': 'hidden() ? "true" : "false"',
   },
   template: `
@@ -74,13 +74,23 @@ export class CngxChartDataTable {
   readonly hidden = input.required<boolean>();
   /**
    * Stable id consumed by the chart's `aria-describedby` binding.
-   * Defaults to a `nextUid`-allocated string so the id is never
-   * absent and the always-in-DOM rule cannot be violated by an
-   * unset input.
+   * Optional input — when omitted, falls back to a per-instance
+   * `nextUid`-allocated default. Two standalone tables without an
+   * explicit `[id]` therefore receive different ids; the always-in-
+   * DOM rule cannot be violated by an unset input.
    */
-  readonly id = input<string>(nextUid('cngx-chart-data-table'));
+  readonly id = input<string | undefined>(undefined);
 
+  private readonly defaultId = nextUid('cngx-chart-data-table');
   private readonly i18n = inject(CNGX_CHART_I18N);
+
+  /**
+   * Resolved host id — the explicit `[id]` input wins over the
+   * per-instance default. The host binding reads this signal so
+   * external `aria-describedby` references stay live across input
+   * changes.
+   */
+  protected readonly resolvedId = computed(() => this.id() ?? this.defaultId);
 
   protected readonly caption = computed(() => this.i18n.dataTable());
   protected readonly valueColumnLabel = computed(() => 'Value');
