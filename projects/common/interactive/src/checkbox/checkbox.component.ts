@@ -130,6 +130,9 @@ export class CngxCheckbox
    * locate the message; consumers MUST render an element with that id
    * — passing an id without a matching element produces a dangling
    * AT reference. Default `null` skips the attribute entirely.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
   readonly disabledReason = input<string>('');

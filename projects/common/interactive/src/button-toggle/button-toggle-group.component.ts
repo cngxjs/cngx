@@ -117,6 +117,9 @@ export class CngxButtonToggleGroup<T = unknown>
    * Optional id of an external error message element. When set, the
    * host emits `aria-errormessage="<id>"`; consumers MUST render an
    * element with that id. Default `null` skips the attribute.
+   * Note: WAI-ARIA dictates that AT ignores this attribute when
+   * `aria-invalid` is absent or `"false"`, so a stable always-emitted
+   * id is harmless when the field is valid.
    */
   readonly errorMessageId = input<string | null>(null);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
