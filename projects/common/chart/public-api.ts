@@ -26,3 +26,17 @@ export {
   type CngxAxisPosition,
   type CngxAxisType,
 } from './src/axis/axis.component';
+
+export { CngxLine } from './src/layers/line.component';
+export {
+  createPathBuilder,
+  type PathBuilder,
+  type PathBuilderOptions,
+  type LineYAccessor,
+  type LineXAccessor,
+} from './src/layers/path-builder';
+export {
+  buildCurvePath,
+  type CngxCurve,
+  type PathPoint,
+} from './src/layers/curve';

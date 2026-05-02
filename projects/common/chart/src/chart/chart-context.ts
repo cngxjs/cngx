@@ -20,19 +20,19 @@ export type ScaleFn<TIn> = (v: TIn) => number;
  * Reactive context published by `<cngx-chart>` to its content children.
  * Layer atoms (`<cngx-line>`, `<cngx-bar>`, ...) and `<cngx-axis>`
  * inject {@link CNGX_CHART_CONTEXT} to read the parent chart's scales,
- * dimensions, and data length without needing a direct reference to
- * the parent class. Token is non-generic at the DI boundary; consumers
- * narrow `<TX, TY>` on injection.
- *
- * The chart's data array is intentionally NOT on the context — layer
- * atoms read it from the chart via a separate generic-aware accessor
- * the chart component provides as a host-bound member.
+ * dimensions, data length, and (generic-erased) data array without
+ * needing a direct reference to the parent class. Token is non-generic
+ * at the DI boundary; layer atoms narrow `data()` to their own `<T>`
+ * via a single type assertion at the consumer side. The plan's
+ * "separate generic-aware accessor closure" is exactly this pattern —
+ * a `() => readonly unknown[]` that the layer atom narrows.
  */
 export interface CngxChartContext<TX = XScaleInput, TY = number> {
   readonly xScale: Signal<ScaleFn<TX>>;
   readonly yScale: Signal<ScaleFn<TY>>;
   readonly dimensions: Signal<{ width: number; height: number }>;
   readonly dataLength: Signal<number>;
+  readonly data: Signal<readonly unknown[]>;
 }
 
 /**
