@@ -28,6 +28,13 @@ export {
 } from './src/axis/axis.component';
 
 export { CngxLine } from './src/layers/line.component';
+export { CngxArea } from './src/layers/area.component';
+export { CngxBar, type BarYAccessor } from './src/layers/bar.component';
+export {
+  CngxScatter,
+  type ScatterXAccessor,
+  type ScatterYAccessor,
+} from './src/layers/scatter.component';
 export {
   createPathBuilder,
   type PathBuilder,
