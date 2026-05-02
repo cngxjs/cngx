@@ -69,17 +69,28 @@ export class CngxBand {
     width: number;
     y: number;
     height: number;
-  } | null>(() => {
-    const { width, height } = this.ctx.dimensions();
-    if (width <= 0 || height <= 0) {
-      return null;
-    }
-    const yScale = this.ctx.yScale();
-    const yA = yScale(this.from());
-    const yB = yScale(this.to());
-    const top = Math.min(yA, yB);
-    const bottom = Math.max(yA, yB);
-    return { width, y: top, height: bottom - top };
-  });
+  } | null>(
+    () => {
+      const { width, height } = this.ctx.dimensions();
+      if (width <= 0 || height <= 0) {
+        return null;
+      }
+      const yScale = this.ctx.yScale();
+      const yA = yScale(this.from());
+      const yB = yScale(this.to());
+      const top = Math.min(yA, yB);
+      const bottom = Math.max(yA, yB);
+      return { width, y: top, height: bottom - top };
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null &&
+          b !== null &&
+          a.width === b.width &&
+          a.y === b.y &&
+          a.height === b.height),
+    },
+  );
 }
 

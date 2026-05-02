@@ -65,13 +65,19 @@ export class CngxThreshold {
 
   private readonly ctx = injectChartContext('CngxThreshold');
 
-  protected readonly geometry = computed<{ width: number; y: number } | null>(() => {
-    const { width, height } = this.ctx.dimensions();
-    if (width <= 0 || height <= 0) {
-      return null;
-    }
-    const y = this.ctx.yScale()(this.value());
-    return { width, y };
-  });
+  protected readonly geometry = computed<{ width: number; y: number } | null>(
+    () => {
+      const { width, height } = this.ctx.dimensions();
+      if (width <= 0 || height <= 0) {
+        return null;
+      }
+      const y = this.ctx.yScale()(this.value());
+      return { width, y };
+    },
+    {
+      equal: (a, b) =>
+        a === b || (a !== null && b !== null && a.width === b.width && a.y === b.y),
+    },
+  );
 }
 

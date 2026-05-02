@@ -25,6 +25,7 @@ import {
   type XScaleInput,
 } from './chart-context';
 import { computeChartSummary } from './summary';
+import { dimensionsEqual, sameNumberArr } from './equal-helpers';
 
 const NOOP_SCALE: ScaleFn<XScaleInput> = () => 0;
 const NOOP_Y_SCALE: ScaleFn<number> = () => 0;
@@ -146,42 +147,54 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     return this.dataInput() as unknown as readonly U[];
   }
 
-  readonly dimensions = computed(() => ({
-    width: this.width() ?? this.resize.width(),
-    height: this.height() ?? this.resize.height(),
-  }));
+  readonly dimensions = computed(
+    () => ({
+      width: this.width() ?? this.resize.width(),
+      height: this.height() ?? this.resize.height(),
+    }),
+    { equal: dimensionsEqual },
+  );
 
   protected readonly viewBox = computed(() => {
     const { width, height } = this.dimensions();
     return `0 0 ${width || 0} ${height || 0}`;
   });
 
-  readonly xScale = computed<ScaleFn<XScaleInput>>(() => {
-    const axes = this.axes();
-    const { width } = this.dimensions();
-    if (width <= 0) {
-      return NOOP_SCALE;
-    }
-    const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
-    if (!xAxis) {
-      return NOOP_SCALE;
-    }
-    return buildScale(xAxis.type(), xAxis.domain() ?? [], [0, width]);
-  });
+  private readonly xScaleCache = createScaleLru();
+  private readonly yScaleCache = createScaleLru();
 
-  readonly yScale = computed<ScaleFn<number>>(() => {
-    const axes = this.axes();
-    const { height } = this.dimensions();
-    if (height <= 0) {
-      return NOOP_Y_SCALE;
-    }
-    const yAxis = axes.find((a) => isVerticalPosition(a.position()));
-    if (!yAxis) {
-      return NOOP_Y_SCALE;
-    }
-    // SVG Y-axis is flipped — domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
-    return buildScale(yAxis.type(), yAxis.domain() ?? [], [height, 0]) as ScaleFn<number>;
-  });
+  readonly xScale = computed<ScaleFn<XScaleInput>>(
+    () => {
+      const axes = this.axes();
+      const { width } = this.dimensions();
+      if (width <= 0) {
+        return NOOP_SCALE;
+      }
+      const xAxis = axes.find((a) => isHorizontalPosition(a.position()));
+      if (!xAxis) {
+        return NOOP_SCALE;
+      }
+      return this.xScaleCache.get(xAxis.type(), xAxis.domain() ?? [], [0, width]);
+    },
+    { equal: (a, b) => a === b },
+  );
+
+  readonly yScale = computed<ScaleFn<number>>(
+    () => {
+      const axes = this.axes();
+      const { height } = this.dimensions();
+      if (height <= 0) {
+        return NOOP_Y_SCALE;
+      }
+      const yAxis = axes.find((a) => isVerticalPosition(a.position()));
+      if (!yAxis) {
+        return NOOP_Y_SCALE;
+      }
+      // SVG Y-axis is flipped — domain[max] maps to range[0] (top), domain[min] to range[height] (bottom).
+      return this.yScaleCache.get(yAxis.type(), yAxis.domain() ?? [], [height, 0]) as ScaleFn<number>;
+    },
+    { equal: (a, b) => a === b },
+  );
 
   /**
    * Auto-Summary derived from `data` and `<cngx-threshold>` content
@@ -189,16 +202,26 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * not contribute to the summary on Phase 3 — Phase 5/6 may extend
    * with per-layer hints.
    */
-  readonly summary = computed(() => {
-    const acc = this.summaryAccessor();
-    const data = this.dataInput();
-    const values = new Array<number>(data.length);
-    for (let i = 0; i < data.length; i++) {
-      values[i] = acc(data[i], i);
-    }
-    const thresholds = this.thresholds().map((t) => t.value());
-    return computeChartSummary(values, thresholds);
-  });
+  readonly summary = computed(
+    () => {
+      const acc = this.summaryAccessor();
+      const data = this.dataInput();
+      const values = new Array<number>(data.length);
+      for (let i = 0; i < data.length; i++) {
+        values[i] = acc(data[i], i);
+      }
+      const thresholds = this.thresholds().map((t) => t.value());
+      return computeChartSummary(values, thresholds);
+    },
+    {
+      equal: (a, b) =>
+        a.trend === b.trend &&
+        a.min === b.min &&
+        a.max === b.max &&
+        a.current === b.current &&
+        sameNumberArr(a.thresholds, b.thresholds),
+    },
+  );
 
   /** Reactive `aria-label` text the host announces. */
   protected readonly ariaLabelText = computed(() => {
@@ -210,15 +233,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   });
 
   /** Numeric projection of `data` reused by the data-table view. */
-  protected readonly summaryValues = computed<readonly number[]>(() => {
-    const acc = this.summaryAccessor();
-    const data = this.dataInput();
-    const out = new Array<number>(data.length);
-    for (let i = 0; i < data.length; i++) {
-      out[i] = acc(data[i], i);
-    }
-    return out;
-  });
+  protected readonly summaryValues = computed<readonly number[]>(
+    () => {
+      const acc = this.summaryAccessor();
+      const data = this.dataInput();
+      const out = new Array<number>(data.length);
+      for (let i = 0; i < data.length; i++) {
+        out[i] = acc(data[i], i);
+      }
+      return out;
+    },
+    { equal: sameNumberArr },
+  );
 
   /**
    * Auto-mode predicate. Drives the data-table's `aria-hidden`
@@ -272,6 +298,79 @@ function buildScale(
       return (v: XScaleInput) => band(v);
     }
   }
+}
+
+/**
+ * Per-chart single-slot LRU on `buildScale`. Caches the
+ * `(type, domain-shape, range)` tuple so `xScale`/`yScale` re-emissions
+ * with the same axis configuration return the same `ScaleFn` closure
+ * instance. Combined with the `equal: (a, b) => a === b` on the
+ * `xScale`/`yScale` computeds, an unchanged dimension/axis re-evaluation
+ * short-circuits at the cascade guard.
+ *
+ * Time-typed `Date` endpoints are keyed via `+date` (ms) to handle the
+ * common case where a parent re-creates the domain array each tick with
+ * `new Date(...)` — raw `Date` references would never `Object.is`-match
+ * across ticks.
+ */
+interface ScaleLru {
+  get(
+    type: CngxAxisType,
+    domain: readonly unknown[],
+    range: readonly [number, number],
+  ): ScaleFn<XScaleInput>;
+}
+
+function createScaleLru(): ScaleLru {
+  let lastType: CngxAxisType | null = null;
+  let lastDomainLen = -1;
+  let lastDomainStart: number | string | null = null;
+  let lastDomainEnd: number | string | null = null;
+  let lastDomainAllKeys: string | null = null;
+  let lastRange0 = NaN;
+  let lastRange1 = NaN;
+  let lastFn: ScaleFn<XScaleInput> = NOOP_SCALE;
+
+  return {
+    get(type, domain, range) {
+      const keyStart = endpointKey(domain[0]);
+      const keyEnd = endpointKey(domain[domain.length - 1]);
+      // For band scales, the cache must invalidate on any reorder/swap of
+      // values; cheap stringification of all keys is sufficient because
+      // band domains are typically short.
+      const allKeys = type === 'band' ? domain.map(endpointKey).join('|') : null;
+      if (
+        type === lastType &&
+        domain.length === lastDomainLen &&
+        keyStart === lastDomainStart &&
+        keyEnd === lastDomainEnd &&
+        allKeys === lastDomainAllKeys &&
+        range[0] === lastRange0 &&
+        range[1] === lastRange1
+      ) {
+        return lastFn;
+      }
+      lastType = type;
+      lastDomainLen = domain.length;
+      lastDomainStart = keyStart;
+      lastDomainEnd = keyEnd;
+      lastDomainAllKeys = allKeys;
+      lastRange0 = range[0];
+      lastRange1 = range[1];
+      lastFn = buildScale(type, domain, range);
+      return lastFn;
+    },
+  };
+}
+
+function endpointKey(v: unknown): number | string {
+  if (v instanceof Date) {
+    return v.getTime();
+  }
+  if (typeof v === 'number' || typeof v === 'string') {
+    return v;
+  }
+  return String(v);
 }
 
 function toMs(v: unknown): number {

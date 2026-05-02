@@ -126,50 +126,115 @@ export class CngxAxis {
    *      spaced positions across the domain (default 5).
    *   3. Otherwise → empty array. Axis still renders the line.
    */
-  readonly tickValues = computed<readonly unknown[]>(() => {
-    const dom = this.domain();
-    const count = this.tickCount() ?? DEFAULT_TICK_COUNT;
-    const t = this.type();
+  readonly tickValues = computed<readonly unknown[]>(
+    () => {
+      const dom = this.domain();
+      const count = this.tickCount() ?? DEFAULT_TICK_COUNT;
+      const t = this.type();
 
-    if (t === 'band') {
-      return dom ?? [];
-    }
+      if (t === 'band') {
+        return dom ?? [];
+      }
 
-    if (!dom || dom.length < 2) {
-      return [];
-    }
+      if (!dom || dom.length < 2) {
+        return [];
+      }
 
-    if (t === 'time') {
-      const start = toMs(dom[0]);
-      const end = toMs(dom[dom.length - 1]);
-      return spread(start, end, count).map((ms) => new Date(ms));
-    }
+      if (t === 'time') {
+        const start = toMs(dom[0]);
+        const end = toMs(dom[dom.length - 1]);
+        return spread(start, end, count).map((ms) => new Date(ms));
+      }
 
-    const start = Number(dom[0]);
-    const end = Number(dom[dom.length - 1]);
-    return spread(start, end, count);
-  });
+      const start = Number(dom[0]);
+      const end = Number(dom[dom.length - 1]);
+      return spread(start, end, count);
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          const av = a[i];
+          const bv = b[i];
+          if (Object.is(av, bv)) {
+            continue;
+          }
+          if (av instanceof Date && bv instanceof Date && av.getTime() === bv.getTime()) {
+            continue;
+          }
+          return false;
+        }
+        return true;
+      },
+    },
+  );
 
-  protected readonly axisGeometry = computed<AxisGeometry | null>(() => {
-    const { width, height } = this.ctx.dimensions();
-    if (width <= 0 || height <= 0) {
-      return null;
-    }
-    const pos = this.position();
-    return buildAxisGeometry(pos, width, height);
-  });
+  protected readonly axisGeometry = computed<AxisGeometry | null>(
+    () => {
+      const { width, height } = this.ctx.dimensions();
+      if (width <= 0 || height <= 0) {
+        return null;
+      }
+      const pos = this.position();
+      return buildAxisGeometry(pos, width, height);
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null &&
+          b !== null &&
+          a.transform === b.transform &&
+          a.line.x1 === b.line.x1 &&
+          a.line.y1 === b.line.y1 &&
+          a.line.x2 === b.line.x2 &&
+          a.line.y2 === b.line.y2),
+    },
+  );
 
-  protected readonly tickRenderings = computed<readonly TickRendering[]>(() => {
-    const pos = this.position();
-    const values = this.tickValues();
-    const fmt = this.format();
-    const isHorizontal = pos === 'top' || pos === 'bottom';
-    const scale = isHorizontal ? this.ctx.xScale() : this.ctx.yScale();
-    return values.map((v, i) => {
-      const offset = (scale as (input: unknown) => number)(v);
-      return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`);
-    });
-  });
+  protected readonly tickRenderings = computed<readonly TickRendering[]>(
+    () => {
+      const pos = this.position();
+      const values = this.tickValues();
+      const fmt = this.format();
+      const isHorizontal = pos === 'top' || pos === 'bottom';
+      const scale = isHorizontal ? this.ctx.xScale() : this.ctx.yScale();
+      return values.map((v, i) => {
+        const offset = (scale as (input: unknown) => number)(v);
+        return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`);
+      });
+    },
+    {
+      equal: (a, b) => {
+        if (a === b) {
+          return true;
+        }
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          const ta = a[i];
+          const tb = b[i];
+          if (
+            ta.key !== tb.key ||
+            ta.transform !== tb.transform ||
+            ta.label.text !== tb.label.text ||
+            ta.tickLine.x1 !== tb.tickLine.x1 ||
+            ta.tickLine.y1 !== tb.tickLine.y1 ||
+            ta.tickLine.x2 !== tb.tickLine.x2 ||
+            ta.tickLine.y2 !== tb.tickLine.y2
+          ) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
 }
 
 function spread(start: number, end: number, count: number): number[] {
