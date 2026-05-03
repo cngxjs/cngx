@@ -52,10 +52,21 @@ import { injectChartContext } from '../chart/chart-context';
         fill: var(--cngx-band-color, var(--cngx-chart-secondary, currentColor));
         fill-opacity: var(--cngx-band-opacity, 0.12);
         stroke: none;
+        animation: cngx-band-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       .cngx-band__label {
         fill: var(--cngx-band-text-color, var(--cngx-chart-text-color, currentColor));
         font-size: var(--cngx-band-font-size, 11px);
+        animation: cngx-band-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
+      @keyframes cngx-band-enter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-band__rect, .cngx-band__label { animation: none; }
       }
     `,
   ],

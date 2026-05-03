@@ -43,6 +43,15 @@ import {
         fill: var(--cngx-area-fill, var(--cngx-chart-primary, currentColor));
         fill-opacity: var(--cngx-area-opacity, 0.18);
         stroke: none;
+        animation: cngx-area-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
+      @keyframes cngx-area-enter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-area { animation: none; }
       }
     `,
   ],

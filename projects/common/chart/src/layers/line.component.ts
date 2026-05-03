@@ -52,6 +52,17 @@ import {
       .cngx-line {
         stroke: var(--cngx-line-color, var(--cngx-chart-primary, currentColor));
         stroke-width: var(--cngx-line-stroke-width, 1.5px);
+        animation: cngx-line-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+        transform-origin: 0 50%;
+        transform-box: fill-box;
+      }
+      @keyframes cngx-line-enter {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-line { animation: none; }
       }
     `,
   ],

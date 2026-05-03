@@ -46,6 +46,17 @@ interface ScatterCircle {
     `
       .cngx-scatter {
         fill: var(--cngx-scatter-color, var(--cngx-chart-primary, currentColor));
+        transform-origin: 50% 50%;
+        transform-box: fill-box;
+        animation: cngx-scatter-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.34, 1.56, 0.64, 1)) backwards;
+      }
+      @keyframes cngx-scatter-enter {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-scatter { animation: none; }
       }
     `,
   ],

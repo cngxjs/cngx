@@ -52,10 +52,21 @@ import { injectChartContext } from '../chart/chart-context';
         stroke: var(--cngx-threshold-color, var(--cngx-chart-danger, currentColor));
         stroke-width: var(--cngx-threshold-stroke-width, 1px);
         fill: none;
+        animation: cngx-threshold-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
       }
       .cngx-threshold__label {
         fill: var(--cngx-threshold-text-color, var(--cngx-chart-danger, currentColor));
         font-size: var(--cngx-threshold-font-size, 11px);
+        animation: cngx-threshold-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.4, 0, 0.2, 1));
+      }
+      @keyframes cngx-threshold-enter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-threshold__line, .cngx-threshold__label { animation: none; }
       }
     `,
   ],

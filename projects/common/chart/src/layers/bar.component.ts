@@ -52,6 +52,17 @@ const FALLBACK_BASELINE = 0;
     `
       .cngx-bar {
         fill: var(--cngx-bar-color, var(--cngx-chart-primary, currentColor));
+        transform-origin: 50% 100%;
+        transform-box: fill-box;
+        animation: cngx-bar-enter var(--cngx-chart-enter-duration, 480ms)
+          var(--cngx-chart-enter-easing, cubic-bezier(0.34, 1.2, 0.64, 1));
+      }
+      @keyframes cngx-bar-enter {
+        from { transform: scaleY(0); opacity: 0; }
+        to { transform: scaleY(1); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cngx-bar { animation: none; }
       }
     `,
   ],
