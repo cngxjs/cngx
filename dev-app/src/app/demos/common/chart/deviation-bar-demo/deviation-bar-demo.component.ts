@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxDeviationBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-deviation-bar-demo',
@@ -42,11 +43,28 @@ import { CngxDeviationBar } from '@cngx/common/chart';
     </div>
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-deviation-bar [value]="35" [magnitude]="100" [state]="state" aria-label="Demo variance" />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class DeviationBarDemoComponent {
   protected readonly _s0 = 'Budget variance, score deltas, KPI swings — symmetric around the baseline mark.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the bar routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-direction:column;gap:12px;max-width:360px">
     <div style="display:flex;align-items:center;gap:12px">
       <span style="flex:1">Q1 budget</span>
@@ -64,5 +82,42 @@ export class DeviationBarDemoComponent {
       <span style="font-weight:600;width:60px;text-align:right">on target</span>
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxDeviationBar } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxDeviationBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(35); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Lookup failed')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-deviation-bar [value]="35" [magnitude]="100" [state]="state" aria-label="Demo variance" />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxDeviationBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(35); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Lookup failed')); }`;
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(35); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Lookup failed')); }
+
 }

@@ -15,7 +15,25 @@ export const STORY: DemoSpec = {
     'switch (skeleton / empty / error / content).</p>',
   moduleImports: [
     "import { CngxSparkline } from '@cngx/common/chart';",
+    "import { createManualState } from '@cngx/common/data';",
   ],
+  setup: `
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.setError(new Error('Network unreachable'));
+}
+`,
   sections: [
     {
       title: 'Basic sparklines',
@@ -52,6 +70,31 @@ export const STORY: DemoSpec = {
     <cngx-sparkline [data]="[5, 12, 8, 18, 14, 22, 19]" [showArea]="true" [width]="120" [height]="32" />
     <cngx-sparkline [data]="[20, 18, 22, 16, 14, 18, 21]" [showArea]="true" [width]="120" [height]="32"
       style="--cngx-sparkline-color: var(--success, #1f9d55)" />
+  </div>`,
+    },
+    {
+      title: 'Async state machine',
+      subtitle:
+        'Bind [state] to a CngxAsyncState and the sparkline routes through skeleton / empty / error / content branches automatically. Toggle the buttons below to flip the state.',
+      imports: ['CngxSparkline'],
+      template: `
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+      status: {{ state.status() }}
+    </span>
+    <cngx-sparkline
+      [data]="stateDemoData"
+      [state]="state"
+      [showArea]="true"
+      [width]="160"
+      [height]="40"
+    />
   </div>`,
     },
   ],

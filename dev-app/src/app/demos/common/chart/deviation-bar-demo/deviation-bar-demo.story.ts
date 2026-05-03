@@ -9,7 +9,16 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxDeviationBar'],
   moduleImports: [
     "import { CngxDeviationBar } from '@cngx/common/chart';",
+    "import { createManualState } from '@cngx/common/data';",
   ],
+  setup: `
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(35); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Lookup failed')); }
+`,
   sections: [
     {
       title: 'Variance readings',
@@ -32,6 +41,22 @@ export const STORY: DemoSpec = {
       <cngx-deviation-bar [value]="0" [magnitude]="100" aria-label="Q3 budget on target" />
       <span style="font-weight:600;width:60px;text-align:right">on target</span>
     </div>
+  </div>`,
+    },
+    {
+      title: 'Async state machine',
+      subtitle: 'Bind [state] to a CngxAsyncState — the bar routes through skeleton / empty / error / content branches automatically.',
+      imports: ['CngxDeviationBar'],
+      template: `
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-deviation-bar [value]="35" [magnitude]="100" [state]="state" aria-label="Demo variance" />
   </div>`,
     },
   ],

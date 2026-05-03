@@ -9,7 +9,16 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxDonut'],
   moduleImports: [
     "import { CngxDonut } from '@cngx/common/chart';",
+    "import { createManualState } from '@cngx/common/data';",
   ],
+  setup: `
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(72); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Score unavailable')); }
+`,
   sections: [
     {
       title: 'Score gauges',
@@ -24,6 +33,22 @@ export const STORY: DemoSpec = {
       style="--cngx-donut-color: var(--success, #1f9d55)" aria-label="Quality A plus" />
     <cngx-donut [value]="12" [max]="100" [size]="64" [thickness]="8" [label]="'12%'"
       style="--cngx-donut-color: var(--danger, #d2452f)" aria-label="Critical 12 of 100" />
+  </div>`,
+    },
+    {
+      title: 'Async state machine',
+      subtitle: 'Bind [state] to a CngxAsyncState — the donut routes through skeleton / empty / error / content branches automatically.',
+      imports: ['CngxDonut'],
+      template: `
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
   </div>`,
     },
   ],

@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxDonut } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-donut-demo',
@@ -34,11 +35,28 @@ import { CngxDonut } from '@cngx/common/chart';
       style="--cngx-donut-color: var(--danger, #d2452f)" aria-label="Critical 12 of 100" />
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class DonutDemoComponent {
   protected readonly _s0 = 'Three sizes; theming via --cngx-donut-color → --cngx-chart-primary.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the donut routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <cngx-donut [value]="75" [max]="100" [size]="48" [thickness]="6" [label]="'75%'" aria-label="Score 75 of 100" />
     <cngx-donut [value]="42" [max]="100" [size]="64" [thickness]="8" [label]="'42%'"
@@ -48,5 +66,42 @@ export class DonutDemoComponent {
     <cngx-donut [value]="12" [max]="100" [size]="64" [thickness]="8" [label]="'12%'"
       style="--cngx-donut-color: var(--danger, #d2452f)" aria-label="Critical 12 of 100" />
   </div>`;
-  protected readonly _srcTs0 = `import { CngxDonut } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxDonut } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(72); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Score unavailable')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxDonut } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(72); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Score unavailable')); }`;
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(72); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Score unavailable')); }
+
 }

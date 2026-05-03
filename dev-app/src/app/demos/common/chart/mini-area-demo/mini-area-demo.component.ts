@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxMiniArea } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-mini-area-demo',
@@ -40,11 +41,28 @@ import { CngxMiniArea } from '@cngx/common/chart';
     </div>
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class MiniAreaDemoComponent {
   protected readonly _s0 = 'Default 80×24, theming via --cngx-mini-area-color → --cngx-chart-primary.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the area routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
       <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">Sessions</span>
@@ -60,5 +78,45 @@ export class MiniAreaDemoComponent {
       />
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxMiniArea } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxMiniArea } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Network unreachable')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxMiniArea } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Network unreachable')); }`;
+
+protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Network unreachable')); }
+
 }

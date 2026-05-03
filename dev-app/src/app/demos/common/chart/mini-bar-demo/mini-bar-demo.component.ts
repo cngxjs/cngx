@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxMiniBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-mini-bar-demo',
@@ -44,11 +45,28 @@ import { CngxMiniBar } from '@cngx/common/chart';
     </div>
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class MiniBarDemoComponent {
   protected readonly _s0 = 'Default 80px width, theming via --cngx-bar-color → --cngx-chart-primary.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the bar routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-direction:column;gap:12px;max-width:300px">
     <div style="display:flex;align-items:center;gap:12px">
       <span style="flex:1">Battery</span>
@@ -67,5 +85,42 @@ export class MiniBarDemoComponent {
       <span style="font-weight:600;width:40px;text-align:right;color:var(--danger,#d2452f)">12%</span>
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxMiniBar } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxMiniBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(64); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Sensor offline')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-bar [value]="64" [state]="state" aria-label="Demo metric" />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxMiniBar } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(64); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Sensor offline')); }`;
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(64); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Sensor offline')); }
+
 }

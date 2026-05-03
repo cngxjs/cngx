@@ -4,7 +4,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxStackedBar } from '@cngx/common/chart';
+import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-stacked-bar-demo',
@@ -49,11 +50,28 @@ import { CngxStackedBar } from '@cngx/common/chart';
     </div>
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class StackedBarDemoComponent {
   protected readonly _s0 = 'Each segment is a labelled coloured slice; ARIA lists them in order with the total.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the stacked bar routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
     <div>
       <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Storage usage</div>
@@ -78,5 +96,57 @@ export class StackedBarDemoComponent {
       />
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxStackedBar } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
+  { value: 40, color: '#4c8bf5', label: 'Active' },
+  { value: 25, color: '#1f9d55', label: 'Idle' },
+  { value: 15, color: '#d2452f', label: 'Errors' },
+];
+protected readonly state = createManualState<readonly CngxStackedSegment[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Service unreachable')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <cngx-stacked-bar [segments]="stateDemoSegments" [state]="state" />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxStackedBar, type CngxStackedSegment } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
+  { value: 40, color: '#4c8bf5', label: 'Active' },
+  { value: 25, color: '#1f9d55', label: 'Idle' },
+  { value: 15, color: '#d2452f', label: 'Errors' },
+];
+protected readonly state = createManualState<readonly CngxStackedSegment[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Service unreachable')); }`;
+
+protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
+  { value: 40, color: '#4c8bf5', label: 'Active' },
+  { value: 25, color: '#1f9d55', label: 'Idle' },
+  { value: 15, color: '#d2452f', label: 'Errors' },
+];
+protected readonly state = createManualState<readonly CngxStackedSegment[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Service unreachable')); }
+
 }

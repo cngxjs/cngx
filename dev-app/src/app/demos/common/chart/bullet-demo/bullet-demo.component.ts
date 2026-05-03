@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxBullet } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-bullet-demo',
@@ -70,11 +71,39 @@ import { CngxBullet } from '@cngx/common/chart';
     </div>
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <cngx-bullet
+      [actual]="78"
+      [target]="80"
+      [max]="100"
+      [state]="state"
+      [ranges]="[
+        { from: 0, to: 50, color: 'rgb(0 0 0 / 0.10)', label: 'poor' },
+        { from: 50, to: 75, color: 'rgb(0 0 0 / 0.18)', label: 'fair' },
+        { from: 75, to: 100, color: 'rgb(0 0 0 / 0.28)', label: 'good' }
+      ]"
+      aria-label="Demo bullet"
+    />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class BulletDemoComponent {
   protected readonly _s0 = 'Range bands (poor / fair / good) + actual bar + target marker.';
+  protected readonly _s1 = 'Bind [state] to a CngxAsyncState — the bullet routes through skeleton / empty / error / content branches automatically.';
   protected readonly _srcHtml0 = `<div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
     <div>
       <div style="font-size:0.8125rem;color:var(--text-muted);margin-bottom:4px">Q1 Revenue</div>
@@ -120,5 +149,53 @@ export class BulletDemoComponent {
       />
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxBullet } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxBullet } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(78); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Target unavailable')); }`;
+  protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;max-width:400px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ state.status() }}</span>
+    <cngx-bullet
+      [actual]="78"
+      [target]="80"
+      [max]="100"
+      [state]="state"
+      [ranges]="[
+        { from: 0, to: 50, color: 'rgb(0 0 0 / 0.10)', label: 'poor' },
+        { from: 50, to: 75, color: 'rgb(0 0 0 / 0.18)', label: 'fair' },
+        { from: 75, to: 100, color: 'rgb(0 0 0 / 0.28)', label: 'good' }
+      ]"
+      aria-label="Demo bullet"
+    />
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxBullet } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(78); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Target unavailable')); }`;
+
+protected readonly state = createManualState<number>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(78); }
+protected showEmpty(): void { this.state.setSuccess(0); }
+protected showError(): void { this.state.setError(new Error('Target unavailable')); }
+
 }

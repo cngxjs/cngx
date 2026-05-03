@@ -9,7 +9,17 @@ export const STORY: DemoSpec = {
   apiComponents: ['CngxMiniArea'],
   moduleImports: [
     "import { CngxMiniArea } from '@cngx/common/chart';",
+    "import { createManualState } from '@cngx/common/data';",
   ],
+  setup: `
+protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.state.set('loading'); }
+protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
+protected showEmpty(): void { this.state.setSuccess([]); }
+protected showError(): void { this.state.setError(new Error('Network unreachable')); }
+`,
   sections: [
     {
       title: 'Inline area trends',
@@ -30,6 +40,22 @@ export const STORY: DemoSpec = {
         style="--cngx-mini-area-color: var(--success, #1f9d55)"
       />
     </div>
+  </div>`,
+    },
+    {
+      title: 'Async state machine',
+      subtitle: 'Bind [state] to a CngxAsyncState — the area routes through skeleton / empty / error / content branches automatically.',
+      imports: ['CngxMiniArea'],
+      template: `
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+    <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
   </div>`,
     },
   ],

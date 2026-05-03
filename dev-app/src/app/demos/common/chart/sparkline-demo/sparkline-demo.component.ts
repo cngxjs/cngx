@@ -5,6 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { CngxSparkline } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
 
 @Component({
   selector: 'app-sparkline-demo',
@@ -57,12 +58,37 @@ import { CngxSparkline } from '@cngx/common/chart';
       style="--cngx-sparkline-color: var(--success, #1f9d55)" />
   </div>
       </app-example-card>
+      <app-example-card title="Async state machine"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
+        
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+      status: {{ state.status() }}
+    </span>
+    <cngx-sparkline
+      [data]="stateDemoData"
+      [state]="state"
+      [showArea]="true"
+      [width]="160"
+      [height]="40"
+    />
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class SparklineDemoComponent {
   protected readonly _s0 = 'Default size, theming via CSS custom properties.';
   protected readonly _s1 = 'Combine line + area for a filled trend.';
+  protected readonly _s2 = 'Bind [state] to a CngxAsyncState and the sparkline routes through skeleton / empty / error / content branches automatically. Toggle the buttons below to flip the state.';
   protected readonly _srcHtml0 = `<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
     <div>
       <span style="font-size:0.75rem;color:var(--text-muted);margin-right:8px">CPU</span>
@@ -83,11 +109,101 @@ export class SparklineDemoComponent {
       <span style="margin-left:8px;font-weight:600;color:var(--danger,#d2452f)">3</span>
     </div>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxSparkline } from '@cngx/common/chart';`;
+  protected readonly _srcTs0 = `import { CngxSparkline } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.setError(new Error('Network unreachable'));
+}`;
   protected readonly _srcHtml1 = `<div style="display:flex;gap:24px;flex-wrap:wrap">
     <cngx-sparkline [data]="[5, 12, 8, 18, 14, 22, 19]" [showArea]="true" [width]="120" [height]="32" />
     <cngx-sparkline [data]="[20, 18, 22, 16, 14, 18, 21]" [showArea]="true" [width]="120" [height]="32"
       style="--cngx-sparkline-color: var(--success, #1f9d55)" />
   </div>`;
-  protected readonly _srcTs1 = `import { CngxSparkline } from '@cngx/common/chart';`;
+  protected readonly _srcTs1 = `import { CngxSparkline } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.setError(new Error('Network unreachable'));
+}`;
+  protected readonly _srcHtml2 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:24px">
+    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">
+      status: {{ state.status() }}
+    </span>
+    <cngx-sparkline
+      [data]="stateDemoData"
+      [state]="state"
+      [showArea]="true"
+      [width]="160"
+      [height]="40"
+    />
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxSparkline } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+
+
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.setError(new Error('Network unreachable'));
+}`;
+
+protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
+protected readonly state = createManualState<readonly number[]>();
+
+protected showSkeleton(): void {
+  this.state.set('loading');
+}
+protected showSuccess(): void {
+  this.state.setSuccess(this.stateDemoData);
+}
+protected showEmpty(): void {
+  this.state.setSuccess([]);
+}
+protected showError(): void {
+  this.state.setError(new Error('Network unreachable'));
+}
+
 }
