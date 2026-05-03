@@ -62,7 +62,7 @@ import { injectPresetState } from './preset-state';
           <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
           <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
           @if (showArea()) {
-            <svg:g cngxArea></svg:g>
+            <svg:g cngxArea [baseline]="yDomain()[0]"></svg:g>
           }
           <svg:g cngxLine [strokeWidth]="strokeWidth()"></svg:g>
         </cngx-chart>

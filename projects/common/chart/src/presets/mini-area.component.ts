@@ -52,7 +52,7 @@ import { injectPresetState } from './preset-state';
         >
           <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
           <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
-          <svg:g cngxArea [opacity]="opacity()"></svg:g>
+          <svg:g cngxArea [opacity]="opacity()" [baseline]="yDomain()[0]"></svg:g>
         </cngx-chart>
       }
     }
