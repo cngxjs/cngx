@@ -241,25 +241,29 @@ import { ViewChild, ElementRef } from '@angular/core';
 
   <dialog
     #fsDialog
-    style="border:none;border-radius:8px;padding:12px;width:90vw;max-width:1200px;height:80vh;background:var(--bg,#fff)"
+    class="cngx-fullscreen-dialog"
+    style="border:none;padding:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;background:var(--bg,#fff);box-sizing:border-box;display:flex;flex-direction:column"
   >
-    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <div style="display:flex;justify-content:flex-end;padding:8px;flex:0 0 auto">
       <button
         type="button"
         (click)="closeFullscreen()"
         aria-label="Close fullscreen"
-        style="all:unset;cursor:pointer;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
+        style="all:unset;cursor:pointer;padding:6px 12px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
       >Close</button>
     </div>
-    <cngx-chart
-      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-      aria-label="Fullscreen view of the trend chart"
-    >
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-      <svg:g cngxArea></svg:g>
-      <svg:g cngxLine [strokeWidth]="2"></svg:g>
-    </cngx-chart>
+    <div style="flex:1 1 auto;min-height:0;padding:8px;box-sizing:border-box">
+      <cngx-chart
+        [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+        aria-label="Fullscreen view of the trend chart"
+        style="width:100%;height:100%;aspect-ratio:auto"
+      >
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+        <svg:g cngxArea></svg:g>
+        <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      </cngx-chart>
+    </div>
   </dialog>
       </app-example-card>
       <app-example-card title="Scatter with performance zones"
@@ -876,25 +880,29 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
 
   <dialog
     #fsDialog
-    style="border:none;border-radius:8px;padding:12px;width:90vw;max-width:1200px;height:80vh;background:var(--bg,#fff)"
+    class="cngx-fullscreen-dialog"
+    style="border:none;padding:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;background:var(--bg,#fff);box-sizing:border-box;display:flex;flex-direction:column"
   >
-    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <div style="display:flex;justify-content:flex-end;padding:8px;flex:0 0 auto">
       <button
         type="button"
         (click)="closeFullscreen()"
         aria-label="Close fullscreen"
-        style="all:unset;cursor:pointer;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
+        style="all:unset;cursor:pointer;padding:6px 12px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
       >Close</button>
     </div>
-    <cngx-chart
-      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-      aria-label="Fullscreen view of the trend chart"
-    >
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-      <svg:g cngxArea></svg:g>
-      <svg:g cngxLine [strokeWidth]="2"></svg:g>
-    </cngx-chart>
+    <div style="flex:1 1 auto;min-height:0;padding:8px;box-sizing:border-box">
+      <cngx-chart
+        [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+        aria-label="Fullscreen view of the trend chart"
+        style="width:100%;height:100%;aspect-ratio:auto"
+      >
+        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+        <svg:g cngxArea></svg:g>
+        <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      </cngx-chart>
+    </div>
   </dialog>`;
   protected readonly _srcTs6 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
