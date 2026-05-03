@@ -306,9 +306,17 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    *   @else { <cngx-empty-state title="No telemetry yet" /> }
    * </ng-template>
    * ```
+   *
+   * Reads directly from the resize observer (host's actual painted
+   * size) — NOT from `dimensions()` which prefers the logical
+   * `[width]`/`[height]` inputs. This matters when an explicit
+   * `[width]="480"` chart squeezes via `max-width: 100%` on a narrow
+   * viewport: the rendered width is what the consumer cares about
+   * for fallback layout, not the logical viewBox dimension.
    */
   protected readonly slotContext = computed<CngxChartSlotContext>(() => {
-    const { width, height } = this.dimensions();
+    const width = this.resize.width();
+    const height = this.resize.height();
     return {
       width,
       height,
