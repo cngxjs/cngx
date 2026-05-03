@@ -85,7 +85,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[attr.aria-busy]': 'busy() ? "true" : null',
     '[class.cngx-chart--responsive]': 'isResponsive()',
     '[style.width.px]': 'width() ?? null',
-    '[style.height.px]': 'height() ?? null',
+    '[style.aspect-ratio]': 'explicitAspectRatio()',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -94,50 +94,32 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     @switch (activeView()) {
       @case ('skeleton') {
         @if (loadingTpl(); as tpl) {
-          <ng-container *ngTemplateOutlet="tpl" />
+          <div class="cngx-chart__fallback-frame">
+            <ng-container *ngTemplateOutlet="tpl" />
+          </div>
         } @else {
-          <div
-            class="cngx-chart__loading"
-            [style.width.px]="dimensions().width || null"
-            [style.height.px]="dimensions().height || null"
-            [attr.aria-hidden]="true"
-          >
+          <div class="cngx-chart__loading" [attr.aria-hidden]="true">
             <div class="cngx-chart__spinner"></div>
           </div>
         }
       }
       @case ('empty') {
         @if (emptyTpl(); as tpl) {
-          <div
-            class="cngx-chart__fallback-frame"
-            [style.width.px]="dimensions().width || null"
-            [style.height.px]="dimensions().height || null"
-          >
+          <div class="cngx-chart__fallback-frame">
             <ng-container *ngTemplateOutlet="tpl" />
           </div>
         } @else {
-          <div
-            class="cngx-chart__fallback"
-            [style.width.px]="dimensions().width || null"
-            [style.height.px]="dimensions().height || null"
-            [attr.aria-hidden]="true"
-          >{{ i18n.empty() }}</div>
+          <div class="cngx-chart__fallback" [attr.aria-hidden]="true">{{ i18n.empty() }}</div>
         }
       }
       @case ('error') {
         @if (errorTpl(); as tpl) {
-          <div
-            class="cngx-chart__fallback-frame"
-            [style.width.px]="dimensions().width || null"
-            [style.height.px]="dimensions().height || null"
-          >
+          <div class="cngx-chart__fallback-frame">
             <ng-container *ngTemplateOutlet="tpl; context: errorContext()" />
           </div>
         } @else {
           <div
             class="cngx-chart__fallback cngx-chart__fallback--error"
-            [style.width.px]="dimensions().width || null"
-            [style.height.px]="dimensions().height || null"
             [attr.aria-hidden]="true"
           >{{ i18n.error() }}</div>
         }
@@ -164,6 +146,13 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     `
       cngx-chart {
         display: inline-block;
+        /* Cap the host at its parent's content width so explicit
+           [width] values shrink on narrower viewports (mobile portrait,
+           constrained dashboard cells). The aspect-ratio derived from
+           [width]/[height] keeps the chart proportional when squeezed —
+           the SVG viewBox stays in logical coords so axes / threshold
+           labels / scales reflow cleanly. */
+        max-width: 100%;
       }
       /* Responsive mode: when neither width nor height is bound, the
          host fills its parent and derives height from the
@@ -185,11 +174,15 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 100%;
+        height: 100%;
       }
       cngx-chart > .cngx-chart__loading {
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 100%;
+        height: 100%;
       }
       cngx-chart .cngx-chart__spinner {
         width: var(--cngx-chart-spinner-size, 32px);
@@ -204,12 +197,15 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 100%;
+        height: 100%;
         min-height: var(--cngx-chart-fallback-min-height, 48px);
         font-size: var(--cngx-chart-fallback-font-size, 0.875rem);
         color: var(--cngx-chart-text-color, currentColor);
         opacity: var(--cngx-chart-fallback-opacity, 0.7);
         padding: var(--cngx-chart-fallback-padding, 1rem);
         text-align: center;
+        box-sizing: border-box;
       }
       cngx-chart > .cngx-chart__fallback--error {
         color: var(--cngx-chart-danger, currentColor);
@@ -447,6 +443,25 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   protected readonly isResponsive = computed(
     () => this.width() === undefined && this.height() === undefined,
   );
+
+  /**
+   * Aspect-ratio host style for the explicit-dimension case. Computed
+   * from `[width] / [height]` so the chart stays proportional when
+   * `max-width: 100%` shrinks the host below the explicit width on a
+   * narrow viewport (mobile portrait, constrained dashboard cell).
+   * Returns `null` in responsive mode so the
+   * `--cngx-chart-aspect-ratio` CSS variable on `.cngx-chart--responsive`
+   * wins, and `null` when only one of width/height is bound (caller
+   * intentionally drove just one dimension; we do not invent a ratio).
+   */
+  protected readonly explicitAspectRatio = computed<string | null>(() => {
+    const w = this.width();
+    const h = this.height();
+    if (w === undefined || h === undefined || w <= 0 || h <= 0) {
+      return null;
+    }
+    return `${w} / ${h}`;
+  });
 
   /**
    * Reactive `aria-label` text the host announces. Skeleton / empty /

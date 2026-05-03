@@ -37,7 +37,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="480"
@@ -58,7 +58,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
@@ -88,7 +88,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml2"
         [sourceTs]="_srcTs2">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
@@ -111,7 +111,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml3"
         [sourceTs]="_srcTs3">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="latencyData"
     [summaryAccessor]="latencyValue"
@@ -147,7 +147,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
     <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
   </div>
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="chartStateData"
     [state]="chartState"
@@ -181,7 +181,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml5"
         [sourceTs]="_srcTs5">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 0; width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
@@ -204,7 +204,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml6"
         [sourceTs]="_srcTs6">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"
@@ -238,7 +238,7 @@ export class PrimitivesDemoComponent {
   protected readonly _s4 = 'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).';
   protected readonly _s5 = 'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.';
   protected readonly _s6 = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
-  protected readonly _srcHtml0 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  protected readonly _srcHtml0 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="480"
@@ -300,7 +300,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
@@ -371,7 +371,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml2 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  protected readonly _srcHtml2 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
@@ -435,7 +435,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml3 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  protected readonly _srcHtml3 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="latencyData"
     [summaryAccessor]="latencyValue"
@@ -512,7 +512,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
     <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
   </div>
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="chartStateData"
     [state]="chartState"
@@ -587,7 +587,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml5 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
+  protected readonly _srcHtml5 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 0; width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
@@ -651,7 +651,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml6 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  protected readonly _srcHtml6 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"

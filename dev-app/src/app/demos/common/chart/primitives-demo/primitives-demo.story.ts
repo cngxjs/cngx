@@ -80,7 +80,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
       subtitle: 'A multi-layer chart with a target threshold and a "watch zone" band.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       [width]="480"
@@ -102,7 +102,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Two metrics on shared scales. The chart\'s [data] feeds the first line; the second line overrides via its own local [data] input. Per-line theming via the --cngx-line-color CSS variable.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
@@ -133,7 +133,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.',
       imports: ['CngxChart', 'CngxAxis', 'CngxBar', 'CngxLine'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
@@ -157,7 +157,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="latencyData"
     [summaryAccessor]="latencyValue"
@@ -194,7 +194,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
     <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
   </div>
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="chartStateData"
     [state]="chartState"
@@ -229,7 +229,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 0; width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
@@ -253,7 +253,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.',
       imports: ['CngxChart', 'CngxAxis', 'CngxScatter', 'CngxBand'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"
