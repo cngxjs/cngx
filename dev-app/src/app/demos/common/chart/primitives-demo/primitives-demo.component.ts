@@ -92,18 +92,19 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml2"
         [sourceTs]="_srcTs2">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
     [height]="200"
     aria-label="Monthly bars with three-month moving-average overlay."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
+    <svg:g cngxAxis position="bottom" type="band" [domain]="months"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxBar [gap]="0.18"></svg:g>
     <svg:g cngxLine
       [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
+      [xAccessor]="monthByIndex"
       [strokeWidth]="2"
       style="--cngx-line-color: var(--accent, #f5a623)"
     ></svg:g>
@@ -245,7 +246,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
 export class PrimitivesDemoComponent {
   protected readonly _s0 = 'A multi-layer chart with a target threshold and a "watch zone" band.';
   protected readonly _s1 = 'Two metrics on shared scales. Adds [label]="..." on each axis for X/Y titles, and pairs the chart with a presentational <cngx-chart-legend> driven by an [items] array — decoupled from the layer atoms by design.';
-  protected readonly _s2 = 'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.';
+  protected readonly _s2 = 'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis. Uses a band X axis so tick labels align with bar centres (a linear axis would place ticks at bar edges).';
   protected readonly _s3 = 'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.';
   protected readonly _s4 = 'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).';
   protected readonly _s5 = 'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.';
@@ -270,11 +271,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -344,11 +344,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -386,18 +385,19 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml2 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  protected readonly _srcHtml2 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
     [height]="200"
     aria-label="Monthly bars with three-month moving-average overlay."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
+    <svg:g cngxAxis position="bottom" type="band" [domain]="months"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxBar [gap]="0.18"></svg:g>
     <svg:g cngxLine
       [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
+      [xAccessor]="monthByIndex"
       [strokeWidth]="2"
       style="--cngx-line-color: var(--accent, #f5a623)"
     ></svg:g>
@@ -408,11 +408,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -476,11 +475,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -568,11 +566,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -632,11 +629,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -701,11 +697,10 @@ import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -744,11 +739,10 @@ protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData);
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
 
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },

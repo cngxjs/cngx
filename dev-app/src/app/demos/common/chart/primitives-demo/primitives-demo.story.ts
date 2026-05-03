@@ -31,11 +31,10 @@ export const STORY: DemoSpec = {
     "import { CngxEmptyState } from '@cngx/ui/empty-state';",
   ],
   setup: `
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
+protected readonly months: readonly string[] = [
+  'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+];
+protected readonly monthByIndex = (_: unknown, i: number): string => this.months[i];
 
 protected readonly latencyData: readonly { t: Date; v: number }[] = [
   { t: new Date(2026, 0, 5), v: 145 },
@@ -133,21 +132,22 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     {
       title: 'Combo: bars + moving-average line',
       subtitle:
-        'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.',
+        'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis. Uses a band X axis so tick labels align with bar centres (a linear axis would place ticks at bar edges).',
       imports: ['CngxChart', 'CngxAxis', 'CngxBar', 'CngxLine'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
     [height]="200"
     aria-label="Monthly bars with three-month moving-average overlay."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
+    <svg:g cngxAxis position="bottom" type="band" [domain]="months"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxBar [gap]="0.18"></svg:g>
     <svg:g cngxLine
       [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
+      [xAccessor]="monthByIndex"
       [strokeWidth]="2"
       style="--cngx-line-color: var(--accent, #f5a623)"
     ></svg:g>
