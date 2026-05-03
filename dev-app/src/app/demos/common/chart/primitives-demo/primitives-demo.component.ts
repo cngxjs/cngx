@@ -4,10 +4,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 @Component({
   selector: 'app-primitives-demo',
@@ -26,7 +25,6 @@ import { ViewChild, ElementRef } from '@angular/core';
     CngxChartEmpty,
     CngxChartError,
     CngxEmptyState,
-    CngxChartActions,
     CngxScatter,
   ],
   template: `
@@ -209,67 +207,10 @@ import { ViewChild, ElementRef } from '@angular/core';
     The chart re-flows live.
   </p>
       </app-example-card>
-      <app-example-card title="Fullscreen action slot"
+      <app-example-card title="Scatter with performance zones"
         [subtitle]="_s6"
         [sourceHtml]="_srcHtml6"
         [sourceTs]="_srcTs6">
-        
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 400px; min-width: 0; width: 100%; box-sizing: border-box">
-    <cngx-chart
-      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-      aria-label="Fullscreen-able trend chart"
-    >
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-      <svg:g cngxArea></svg:g>
-      <svg:g cngxLine [strokeWidth]="2"></svg:g>
-      <ng-template cngxChartActions let-small="small">
-        @if (small) {
-          <button
-            type="button"
-            (click)="openFullscreen()"
-            aria-label="Open fullscreen"
-            style="all:unset;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,0.06);font-size:14px;line-height:1"
-          >⛶</button>
-        }
-      </ng-template>
-    </cngx-chart>
-  </div>
-  <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
-    Resize the wrapper below 400px to surface the fullscreen button. Tap it to open a landscape dialog.
-  </p>
-
-  <dialog
-    #fsDialog
-    class="cngx-fullscreen-dialog"
-    style="border:none;padding:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;background:var(--bg,#fff);box-sizing:border-box;display:flex;flex-direction:column"
-  >
-    <div style="display:flex;justify-content:flex-end;padding:8px;flex:0 0 auto">
-      <button
-        type="button"
-        (click)="closeFullscreen()"
-        aria-label="Close fullscreen"
-        style="all:unset;cursor:pointer;padding:6px 12px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
-      >Close</button>
-    </div>
-    <div style="flex:1 1 auto;min-height:0;padding:8px;box-sizing:border-box">
-      <cngx-chart
-        [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-        aria-label="Fullscreen view of the trend chart"
-        style="width:100%;height:100%;aspect-ratio:auto"
-      >
-        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-        <svg:g cngxArea></svg:g>
-        <svg:g cngxLine [strokeWidth]="2"></svg:g>
-      </cngx-chart>
-    </div>
-  </dialog>
-      </app-example-card>
-      <app-example-card title="Scatter with performance zones"
-        [subtitle]="_s7"
-        [sourceHtml]="_srcHtml7"
-        [sourceTs]="_srcTs7">
         
   <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
@@ -304,8 +245,7 @@ export class PrimitivesDemoComponent {
   protected readonly _s3 = 'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.';
   protected readonly _s4 = 'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).';
   protected readonly _s5 = 'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.';
-  protected readonly _s6 = 'The *cngxChartActions slot mounts custom controls (fullscreen, refresh, settings…) at the top-right of every chart state. Combined with the slot context\'s `small` flag, you can show a fullscreen button only when the chart is squeezed below 400px and open the chart in a landscape-locked dialog. Library-clean: chart stays in @cngx/common, dialog wiring stays in consumer code (here a plain <dialog> element).';
-  protected readonly _s7 = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
+  protected readonly _s6 = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
   protected readonly _srcHtml0 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
@@ -321,10 +261,9 @@ export class PrimitivesDemoComponent {
       <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
     </cngx-chart>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -361,26 +300,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -413,10 +332,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
   </div>`;
-  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -453,26 +371,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -498,10 +396,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     ></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -538,26 +435,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -587,10 +464,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -627,26 +503,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -700,10 +556,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     </ng-template>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -740,26 +595,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -785,10 +620,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
     The chart re-flows live.
   </p>`;
-  protected readonly _srcTs5 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs5 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -826,26 +660,6 @@ protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
 
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
-
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
 
@@ -853,126 +667,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml6 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 400px; min-width: 0; width: 100%; box-sizing: border-box">
-    <cngx-chart
-      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-      aria-label="Fullscreen-able trend chart"
-    >
-      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-      <svg:g cngxArea></svg:g>
-      <svg:g cngxLine [strokeWidth]="2"></svg:g>
-      <ng-template cngxChartActions let-small="small">
-        @if (small) {
-          <button
-            type="button"
-            (click)="openFullscreen()"
-            aria-label="Open fullscreen"
-            style="all:unset;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,0.06);font-size:14px;line-height:1"
-          >⛶</button>
-        }
-      </ng-template>
-    </cngx-chart>
-  </div>
-  <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
-    Resize the wrapper below 400px to surface the fullscreen button. Tap it to open a landscape dialog.
-  </p>
-
-  <dialog
-    #fsDialog
-    class="cngx-fullscreen-dialog"
-    style="border:none;padding:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;background:var(--bg,#fff);box-sizing:border-box;display:flex;flex-direction:column"
-  >
-    <div style="display:flex;justify-content:flex-end;padding:8px;flex:0 0 auto">
-      <button
-        type="button"
-        (click)="closeFullscreen()"
-        aria-label="Close fullscreen"
-        style="all:unset;cursor:pointer;padding:6px 12px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
-      >Close</button>
-    </div>
-    <div style="flex:1 1 auto;min-height:0;padding:8px;box-sizing:border-box">
-      <cngx-chart
-        [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-        aria-label="Fullscreen view of the trend chart"
-        style="width:100%;height:100%;aspect-ratio:auto"
-      >
-        <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-        <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-        <svg:g cngxArea></svg:g>
-        <svg:g cngxLine [strokeWidth]="2"></svg:g>
-      </cngx-chart>
-    </div>
-  </dialog>`;
-  protected readonly _srcTs6 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
-import { createManualState } from '@cngx/common/data';
-import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
-
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
-
-protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
-protected readonly chartState = createManualState<readonly number[]>();
-
-protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
-protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
-protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
-protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml7 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  protected readonly _srcHtml6 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"
@@ -994,10 +689,9 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs7 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';
+  protected readonly _srcTs6 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
-import { ViewChild, ElementRef } from '@angular/core';
 
 
 protected readonly monthFmt = (v: unknown): string => {
@@ -1034,26 +728,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -1097,26 +771,6 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
-
-@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
-openFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.showModal();
-  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
-  if (typeof lock === 'function') {
-    lock.call(screen.orientation, 'landscape').catch(() => undefined);
-  }
-}
-closeFullscreen(): void {
-  const el = this.fsDialog?.nativeElement;
-  if (!el) { return; }
-  el.close();
-  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
-  if (typeof unlock === 'function') {
-    unlock.call(screen.orientation);
-  }
-}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
