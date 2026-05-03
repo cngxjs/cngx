@@ -118,6 +118,34 @@ describe('CngxAxis', () => {
     expect(axisGroup.querySelector('.cngx-axis__line')).not.toBeNull();
   });
 
+  it('default tick formatter strips floating-point noise from non-integer values', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class FormatHost {}
+    TestBed.configureTestingModule({ imports: [FormatHost] });
+    const f = TestBed.createComponent(FormatHost);
+    f.detectChanges();
+    const labels = Array.from(
+      (f.nativeElement as HTMLElement).querySelectorAll<SVGTextElement>(
+        '.cngx-axis__tick-label',
+      ),
+    ).map((el) => el.textContent?.trim() ?? '');
+    expect(labels).toEqual(['0', '2.2', '4.4', '6.6', '8.8', '11']);
+    // Without the fix the third label would render as
+    // `6.6000000000000005`, which is the symptom of accumulated
+    // float arithmetic from the linear-spread tick generator.
+    for (const label of labels) {
+      expect(label).not.toMatch(/\d{6,}/);
+    }
+  });
+
   it('does NOT render an axis-label text element by default', () => {
     const { fixture } = setup();
     const label = fixture.nativeElement.querySelector('.cngx-axis__axis-label');

@@ -175,7 +175,7 @@ export class CngxAxis {
   readonly type = input<CngxAxisType>('linear');
   readonly domain = input<readonly unknown[] | undefined>(undefined);
   readonly tickCount = input<number | undefined>(undefined, { alias: 'ticks' });
-  readonly format = input<(v: unknown) => string>((v) => String(v));
+  readonly format = input<(v: unknown) => string>(defaultTickFormat);
   /**
    * Render decorative gridlines extending from each tick across the
    * chart's perpendicular dimension. Theming via the
@@ -457,6 +457,29 @@ function buildTickRendering(
         },
       };
   }
+}
+
+/**
+ * Default tick label formatter. Strips floating-point arithmetic
+ * noise from non-integer numbers — `6.6000000000000005` becomes
+ * `'6.6'`, `2.2` stays `'2.2'`, `25` stays `'25'` — without rounding
+ * away meaningful precision. Dates and other types fall through to
+ * `String(v)`; consumers needing a richer format bind `[format]`.
+ */
+function defaultTickFormat(v: unknown): string {
+  if (typeof v === 'number') {
+    if (Number.isInteger(v)) {
+      return String(v);
+    }
+    if (!Number.isFinite(v)) {
+      return String(v);
+    }
+    // 12 significant digits is more than enough for any sensible
+    // chart domain while collapsing the trailing 1e-15 noise
+    // produced by accumulated float math.
+    return Number(v.toPrecision(12)).toString();
+  }
+  return String(v);
 }
 
 function buildAxisLabelGeometry(
