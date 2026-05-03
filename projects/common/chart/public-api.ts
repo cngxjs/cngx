@@ -26,6 +26,7 @@ export {
   CngxChartLoading,
   CngxChartEmpty,
   CngxChartError,
+  CngxChartActions,
   CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
   type CngxChartSlotContext,

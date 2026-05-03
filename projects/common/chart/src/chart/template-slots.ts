@@ -93,3 +93,38 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
 export class CngxChartError {
   readonly templateRef = inject(TemplateRef<CngxChartErrorContext>);
 }
+
+/**
+ * Per-instance actions slot for `<cngx-chart>`. Project an
+ * `<ng-template cngxChartActions>` to mount controls (fullscreen
+ * button, refresh, settings, ...) in the chart's top-right corner.
+ * The slot renders on top of the SVG content and remains visible in
+ * every state (loading / empty / error / content), so a "retry" or
+ * "open fullscreen" affordance is always reachable.
+ *
+ * Receives the standard {@link CngxChartSlotContext} so consumers can
+ * branch on chart size — e.g. show a fullscreen button only when the
+ * chart is squeezed below the breakpoint:
+ *
+ * @example
+ * ```html
+ * <cngx-chart [data]="data">
+ *   <ng-template cngxChartActions let-small="small">
+ *     @if (small) {
+ *       <button (click)="openFullscreen()" aria-label="Vollbild">⛶</button>
+ *     }
+ *   </ng-template>
+ *   ...
+ * </cngx-chart>
+ * ```
+ *
+ * The chart positions the slot absolutely; theming via
+ * `--cngx-chart-actions-top` / `--cngx-chart-actions-right`.
+ */
+@Directive({
+  selector: 'ng-template[cngxChartActions]',
+  standalone: true,
+})
+export class CngxChartActions {
+  readonly templateRef = inject(TemplateRef<CngxChartSlotContext>);
+}

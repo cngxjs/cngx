@@ -26,9 +26,10 @@ export const STORY: DemoSpec = {
     'selectors inside <code>&lt;svg&gt;</code> would create XHTML-namespaced wrappers and ' +
     'break layout for their SVG-namespaced children.</p>',
   moduleImports: [
-    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';",
+    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartActions } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
     "import { CngxEmptyState } from '@cngx/ui/empty-state';",
+    "import { ViewChild, ElementRef } from '@angular/core';",
   ],
   setup: `
 protected readonly monthFmt = (v: unknown): string => {
@@ -65,6 +66,26 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+@ViewChild('fsDialog') fsDialog?: ElementRef<HTMLDialogElement>;
+openFullscreen(): void {
+  const el = this.fsDialog?.nativeElement;
+  if (!el) { return; }
+  el.showModal();
+  const lock = (screen.orientation as unknown as { lock?: (o: string) => Promise<void> })?.lock;
+  if (typeof lock === 'function') {
+    lock.call(screen.orientation, 'landscape').catch(() => undefined);
+  }
+}
+closeFullscreen(): void {
+  const el = this.fsDialog?.nativeElement;
+  if (!el) { return; }
+  el.close();
+  const unlock = (screen.orientation as unknown as { unlock?: () => void })?.unlock;
+  if (typeof unlock === 'function') {
+    unlock.call(screen.orientation);
+  }
+}
 
 protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
 protected readonly chartState = createManualState<readonly number[]>();
@@ -254,6 +275,60 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
     The chart re-flows live.
   </p>`,
+    },
+    {
+      title: 'Fullscreen action slot',
+      subtitle:
+        'The *cngxChartActions slot mounts custom controls (fullscreen, refresh, settings…) at the top-right of every chart state. Combined with the slot context\'s `small` flag, you can show a fullscreen button only when the chart is squeezed below 400px and open the chart in a landscape-locked dialog. Library-clean: chart stays in @cngx/common, dialog wiring stays in consumer code (here a plain <dialog> element).',
+      imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand', 'CngxChartActions'],
+      template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 400px; min-width: 0; width: 100%; box-sizing: border-box">
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      aria-label="Fullscreen-able trend chart"
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      <ng-template cngxChartActions let-small="small">
+        @if (small) {
+          <button
+            type="button"
+            (click)="openFullscreen()"
+            aria-label="Open fullscreen"
+            style="all:unset;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(0,0,0,0.06);font-size:14px;line-height:1"
+          >⛶</button>
+        }
+      </ng-template>
+    </cngx-chart>
+  </div>
+  <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+    Resize the wrapper below 400px to surface the fullscreen button. Tap it to open a landscape dialog.
+  </p>
+
+  <dialog
+    #fsDialog
+    style="border:none;border-radius:8px;padding:12px;width:90vw;max-width:1200px;height:80vh;background:var(--bg,#fff)"
+  >
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+      <button
+        type="button"
+        (click)="closeFullscreen()"
+        aria-label="Close fullscreen"
+        style="all:unset;cursor:pointer;padding:4px 10px;border-radius:4px;background:rgba(0,0,0,0.08);font-size:14px"
+      >Close</button>
+    </div>
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      aria-label="Fullscreen view of the trend chart"
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+    </cngx-chart>
+  </dialog>`,
     },
     {
       title: 'Scatter with performance zones',

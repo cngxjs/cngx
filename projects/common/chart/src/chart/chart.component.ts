@@ -20,6 +20,7 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
 import {
   CHART_SMALL_BREAKPOINT_PX,
+  CngxChartActions,
   CngxChartEmpty,
   CngxChartError,
   CngxChartLoading,
@@ -137,6 +138,11 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         </svg>
       }
     }
+    @if (actionsTpl(); as tpl) {
+      <div class="cngx-chart__actions">
+        <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
+      </div>
+    }
     <cngx-chart-data-table
       [id]="dataTableId"
       [values]="summaryValues()"
@@ -155,6 +161,18 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
            the SVG viewBox stays in logical coords so axes / threshold
            labels / scales reflow cleanly. */
         max-width: 100%;
+        /* Anchor for the absolutely-positioned *cngxChartActions slot
+           (top-right corner overlay). */
+        position: relative;
+      }
+      cngx-chart > .cngx-chart__actions {
+        position: absolute;
+        top: var(--cngx-chart-actions-top, 4px);
+        right: var(--cngx-chart-actions-right, 4px);
+        display: flex;
+        gap: var(--cngx-chart-actions-gap, 4px);
+        pointer-events: auto;
+        z-index: 1;
       }
       /* Responsive mode: when neither width nor height is bound, the
          host fills its parent and derives height from the
@@ -286,6 +304,7 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   private readonly loadingSlot = contentChild(CngxChartLoading);
   private readonly emptySlot = contentChild(CngxChartEmpty);
   private readonly errorSlot = contentChild(CngxChartError);
+  private readonly actionsSlot = contentChild(CngxChartActions);
 
   /** Resolved consumer-projected loading template (null when no slot bound). */
   protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
@@ -293,6 +312,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   protected readonly emptyTpl = computed(() => this.emptySlot()?.templateRef ?? null);
   /** Resolved consumer-projected error template (null when no slot bound). */
   protected readonly errorTpl = computed(() => this.errorSlot()?.templateRef ?? null);
+  /** Resolved consumer-projected actions template (null when no slot bound). */
+  protected readonly actionsTpl = computed(() => this.actionsSlot()?.templateRef ?? null);
 
   /**
    * Common context for every slot template (loading, empty, error).
