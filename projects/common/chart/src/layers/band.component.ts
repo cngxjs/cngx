@@ -36,9 +36,10 @@ import { injectChartContext } from '../chart/chart-context';
       @if (label(); as l) {
         <svg:text
           class="cngx-band__label"
-          [attr.x]="r.width - 4"
-          [attr.y]="r.y + 12"
-          text-anchor="end"
+          [attr.x]="4"
+          [attr.y]="r.y + r.height / 2"
+          text-anchor="start"
+          dominant-baseline="middle"
         >
           {{ l }}
         </svg:text>
