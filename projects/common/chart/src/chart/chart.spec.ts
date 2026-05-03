@@ -4,6 +4,7 @@ import { By } from '@angular/platform-browser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxChart } from './chart.component';
 import { CNGX_CHART_CONTEXT, type CngxChartContext } from './chart-context';
+import { CngxChartEmpty, CngxChartError } from './template-slots';
 
 import { ResizeObserverMock } from '../testing/resize-observer-mock';
 
@@ -225,5 +226,168 @@ describe('CngxChart', () => {
     );
     expect(warnedAboutChart).toBe(false);
     warn.mockRestore();
+  });
+
+  describe('[state] envelope', () => {
+    it('renders SVG content when no [state] is bound (default branch)', () => {
+      const { svg } = setup();
+      expect(svg).not.toBeNull();
+      expect(svg.tagName.toLowerCase()).toBe('svg');
+    });
+
+    it('renders the skeleton element on first-load loading state and sets aria-busy', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart],
+        template: `
+          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+        `,
+      })
+      class StateHost {
+        readonly state = createManualState<readonly number[]>();
+      }
+      TestBed.configureTestingModule({ imports: [StateHost] });
+      const fixture = TestBed.createComponent(StateHost);
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      expect(chart.querySelector('svg')).toBeNull();
+      expect(chart.querySelector('.cngx-chart__loading')).not.toBeNull();
+      expect(chart.querySelector('.cngx-chart__spinner')).not.toBeNull();
+      expect(chart.getAttribute('aria-busy')).toBe('true');
+      expect(chart.getAttribute('aria-label')).toBe('Loading');
+    });
+
+    it('renders the empty fallback when state succeeds with empty data', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart],
+        template: `
+          <cngx-chart [data]="data" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+        `,
+      })
+      class EmptyHost {
+        readonly state = createManualState<readonly number[]>();
+        data: readonly number[] = [];
+      }
+      TestBed.configureTestingModule({ imports: [EmptyHost] });
+      const fixture = TestBed.createComponent(EmptyHost);
+      fixture.componentInstance.state.setSuccess([]);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      expect(chart.querySelector('svg')).toBeNull();
+      const fallback = chart.querySelector('.cngx-chart__fallback');
+      expect(fallback).not.toBeNull();
+      expect(fallback?.classList.contains('cngx-chart__fallback--error')).toBe(false);
+      expect(chart.getAttribute('aria-label')).toBe('No data');
+    });
+
+    it('renders the error fallback when state fails on first load', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart],
+        template: `
+          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+        `,
+      })
+      class ErrorHost {
+        readonly state = createManualState<readonly number[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ErrorHost] });
+      const fixture = TestBed.createComponent(ErrorHost);
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      const fallback = chart.querySelector('.cngx-chart__fallback--error');
+      expect(fallback).not.toBeNull();
+      expect(chart.getAttribute('aria-label')).toBe('Error loading chart');
+      expect(chart.getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('renders the *cngxChartEmpty slot template instead of the default fallback when projected', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart, CngxChartEmpty],
+        template: `
+          <cngx-chart [data]="[]" [state]="state" [width]="200" [height]="100" data-testid="chart">
+            <ng-template cngxChartEmpty>
+              <div data-testid="custom-empty">Try a different filter</div>
+            </ng-template>
+          </cngx-chart>
+        `,
+      })
+      class EmptySlotHost {
+        readonly state = createManualState<readonly number[]>();
+      }
+      TestBed.configureTestingModule({ imports: [EmptySlotHost] });
+      const fixture = TestBed.createComponent(EmptySlotHost);
+      fixture.componentInstance.state.setSuccess([]);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      expect(chart.querySelector('.cngx-chart__fallback')).toBeNull();
+      const custom = chart.querySelector('[data-testid="custom-empty"]');
+      expect(custom).not.toBeNull();
+      expect(custom?.textContent?.trim()).toBe('Try a different filter');
+    });
+
+    it('passes the live error value to the *cngxChartError slot context', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart, CngxChartError],
+        template: `
+          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart">
+            <ng-template cngxChartError let-err="error">
+              <div data-testid="custom-error">err: {{ err.message }}</div>
+            </ng-template>
+          </cngx-chart>
+        `,
+      })
+      class ErrorSlotHost {
+        readonly state = createManualState<readonly number[]>();
+      }
+      TestBed.configureTestingModule({ imports: [ErrorSlotHost] });
+      const fixture = TestBed.createComponent(ErrorSlotHost);
+      fixture.componentInstance.state.setError(new Error('boom'));
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      expect(chart.querySelector('.cngx-chart__fallback--error')).toBeNull();
+      const custom = chart.querySelector('[data-testid="custom-error"]');
+      expect(custom?.textContent?.trim()).toBe('err: boom');
+    });
+
+    it('switches back to SVG content when state transitions to success with data', async () => {
+      const { createManualState } = await import('@cngx/common/data');
+      @Component({
+        standalone: true,
+        imports: [CngxChart],
+        template: `
+          <cngx-chart [data]="[1, 2, 3]" [state]="state" [width]="200" [height]="100" data-testid="chart"></cngx-chart>
+        `,
+      })
+      class StateHost {
+        readonly state = createManualState<readonly number[]>();
+      }
+      TestBed.configureTestingModule({ imports: [StateHost] });
+      const fixture = TestBed.createComponent(StateHost);
+      fixture.componentInstance.state.set('loading');
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const chart = host.querySelector('[data-testid="chart"]') as HTMLElement;
+      expect(chart.querySelector('.cngx-chart__loading')).not.toBeNull();
+      fixture.componentInstance.state.setSuccess([1, 2, 3]);
+      fixture.detectChanges();
+      expect(chart.querySelector('.cngx-chart__loading')).toBeNull();
+      expect(chart.querySelector('svg')).not.toBeNull();
+    });
   });
 });

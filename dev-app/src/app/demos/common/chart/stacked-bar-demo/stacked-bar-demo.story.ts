@@ -19,10 +19,10 @@ protected readonly stateDemoSegments: readonly CngxStackedSegment[] = [
 ];
 protected readonly state = createManualState<readonly CngxStackedSegment[]>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(this.stateDemoSegments); }
-protected showEmpty(): void { this.state.setSuccess([]); }
-protected showError(): void { this.state.setError(new Error('Service unreachable')); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Service unreachable')); }
 `,
   sections: [
     {

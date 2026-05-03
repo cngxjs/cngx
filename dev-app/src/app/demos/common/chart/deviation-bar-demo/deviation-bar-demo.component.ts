@@ -88,10 +88,10 @@ import { createManualState } from '@cngx/common/data';
 
 protected readonly state = createManualState<number>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(35); }
-protected showEmpty(): void { this.state.setSuccess(0); }
-protected showError(): void { this.state.setError(new Error('Lookup failed')); }`;
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }`;
   protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
     <button class="chip" (click)="showSuccess()">success</button>
@@ -108,16 +108,16 @@ import { createManualState } from '@cngx/common/data';
 
 protected readonly state = createManualState<number>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(35); }
-protected showEmpty(): void { this.state.setSuccess(0); }
-protected showError(): void { this.state.setError(new Error('Lookup failed')); }`;
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }`;
 
 protected readonly state = createManualState<number>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(35); }
-protected showEmpty(): void { this.state.setSuccess(0); }
-protected showError(): void { this.state.setError(new Error('Lookup failed')); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }
 
 }

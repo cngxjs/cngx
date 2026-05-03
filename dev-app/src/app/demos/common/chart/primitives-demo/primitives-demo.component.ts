@@ -4,7 +4,9 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
+import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
 
 @Component({
   selector: 'app-primitives-demo',
@@ -20,6 +22,9 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
     CngxThreshold,
     CngxBand,
     CngxBar,
+    CngxChartEmpty,
+    CngxChartError,
+    CngxEmptyState,
     CngxScatter,
   ],
   template: `
@@ -32,32 +37,33 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <cngx-chart
-    [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-    [width]="480"
-    [height]="160"
-    aria-label="Monthly performance trend with watch-zone band and target threshold."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
-    <svg:g cngxArea></svg:g>
-    <svg:g cngxLine [strokeWidth]="2"></svg:g>
-    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
-  </cngx-chart>
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      [width]="480"
+      [height]="160"
+      aria-label="Monthly performance trend with watch-zone band and target threshold."
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    </cngx-chart>
+  </div>
       </app-example-card>
       <app-example-card title="Multi-series line"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
     [height]="180"
     aria-label="Two-series traffic and error trend over twelve months."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
@@ -71,6 +77,7 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
       style="--cngx-line-color: var(--danger, #d2452f)"
     ></svg:g>
   </cngx-chart>
+  </div>
   <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
@@ -81,12 +88,12 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
         [sourceHtml]="_srcHtml2"
         [sourceTs]="_srcTs2">
         
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
     [height]="200"
     aria-label="Monthly bars with three-month moving-average overlay."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
@@ -97,19 +104,20 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
       style="--cngx-line-color: var(--accent, #f5a623)"
     ></svg:g>
   </cngx-chart>
+  </div>
       </app-example-card>
       <app-example-card title="Time-series with threshold zones"
         [subtitle]="_s3"
         [sourceHtml]="_srcHtml3"
         [sourceTs]="_srcTs3">
         
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="latencyData"
     [summaryAccessor]="latencyValue"
     [width]="540"
     [height]="220"
     aria-label="P95 latency over six weeks with target, warn, and critical thresholds."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]" [grid]="true"></svg:g>
@@ -123,19 +131,63 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
     ></svg:g>
     <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
   </cngx-chart>
+  </div>
       </app-example-card>
-      <app-example-card title="Scatter with performance zones"
+      <app-example-card title="Async state machine on the primitive"
         [subtitle]="_s4"
         [sourceHtml]="_srcHtml4"
         [sourceTs]="_srcTs4">
         
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (spinner)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
+  </div>
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="chartStateData"
+    [state]="chartState"
+    [width]="480"
+    [height]="200"
+    aria-label="Telemetry feed with custom empty + error fallbacks."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+    <svg:g cngxArea></svg:g>
+    <svg:g cngxLine [strokeWidth]="2"></svg:g>
+    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    <ng-template cngxChartEmpty>
+      <cngx-empty-state
+        title="No telemetry yet"
+        description="Connect a feed or pick a different time window."
+      />
+    </ng-template>
+    <ng-template cngxChartError let-err="error">
+      <cngx-empty-state
+        title="Telemetry feed failed"
+        [description]="err?.message ?? 'Try again in a moment.'"
+      />
+    </ng-template>
+  </cngx-chart>
+  </div>
+      </app-example-card>
+      <app-example-card title="Scatter with performance zones"
+        [subtitle]="_s5"
+        [sourceHtml]="_srcHtml5"
+        [sourceTs]="_srcTs5">
+        
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"
     [width]="500"
     [height]="240"
     aria-label="Price-vs-sales scatter with low, mid, and high performance zones."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6" [grid]="true"></svg:g>
@@ -150,6 +202,7 @@ import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThre
     ></svg:g>
     <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
   </cngx-chart>
+  </div>
       </app-example-card>
     </app-doc-shell>
   `,
@@ -159,286 +212,27 @@ export class PrimitivesDemoComponent {
   protected readonly _s1 = 'Two metrics on shared scales. The chart\'s [data] feeds the first line; the second line overrides via its own local [data] input. Per-line theming via the --cngx-line-color CSS variable.';
   protected readonly _s2 = 'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.';
   protected readonly _s3 = 'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.';
-  protected readonly _s4 = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
-  protected readonly _srcHtml0 = `<cngx-chart
-    [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-    [width]="480"
-    [height]="160"
-    aria-label="Monthly performance trend with watch-zone band and target threshold."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
-    <svg:g cngxArea></svg:g>
-    <svg:g cngxLine [strokeWidth]="2"></svg:g>
-    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
-  </cngx-chart>`;
-  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
-
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`;
-  protected readonly _srcHtml1 = `<cngx-chart
-    [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
-    [width]="480"
-    [height]="180"
-    aria-label="Two-series traffic and error trend over twelve months."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-    <svg:g cngxLine
-      [strokeWidth]="2"
-      style="--cngx-line-color: var(--primary, #3b82f6)"
-    ></svg:g>
-    <svg:g cngxLine
-      [data]="[2, 4, 3, 8, 6, 5, 9, 12, 8, 10, 7, 6]"
-      [strokeWidth]="2"
-      style="--cngx-line-color: var(--danger, #d2452f)"
-    ></svg:g>
-  </cngx-chart>
-  <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
+  protected readonly _s4 = 'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).';
+  protected readonly _s5 = 'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.';
+  protected readonly _srcHtml0 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      [width]="480"
+      [height]="160"
+      aria-label="Monthly performance trend with watch-zone band and target threshold."
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    </cngx-chart>
   </div>`;
-  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
+  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
 
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`;
-  protected readonly _srcHtml2 = `<cngx-chart
-    [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-    [width]="520"
-    [height]="200"
-    aria-label="Monthly bars with three-month moving-average overlay."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-    <svg:g cngxBar [gap]="0.18"></svg:g>
-    <svg:g cngxLine
-      [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
-      [strokeWidth]="2"
-      style="--cngx-line-color: var(--accent, #f5a623)"
-    ></svg:g>
-  </cngx-chart>`;
-  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
-
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`;
-  protected readonly _srcHtml3 = `<cngx-chart
-    [data]="latencyData"
-    [summaryAccessor]="latencyValue"
-    [width]="540"
-    [height]="220"
-    aria-label="P95 latency over six weeks with target, warn, and critical thresholds."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]" [grid]="true"></svg:g>
-    <svg:g cngxArea [accessor]="latencyValue" [xAccessor]="latencyTime"></svg:g>
-    <svg:g cngxLine [accessor]="latencyValue" [xAccessor]="latencyTime" [strokeWidth]="2"></svg:g>
-    <svg:g cngxThreshold [value]="200" [label]="'target ≤ 200ms'" [dashed]="true"
-      style="--cngx-threshold-color: var(--success, #1f9d55); --cngx-threshold-text-color: var(--success, #1f9d55)"
-    ></svg:g>
-    <svg:g cngxThreshold [value]="300" [label]="'warn'" [dashed]="true"
-      style="--cngx-threshold-color: var(--warn, #f5a623); --cngx-threshold-text-color: var(--warn, #f5a623)"
-    ></svg:g>
-    <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
-  </cngx-chart>`;
-  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
-
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`;
-  protected readonly _srcHtml4 = `<cngx-chart
-    [data]="scatterData"
-    [summaryAccessor]="scatterY"
-    [width]="500"
-    [height]="240"
-    aria-label="Price-vs-sales scatter with low, mid, and high performance zones."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxBand [from]="0" [to]="33" label="low"
-      style="--cngx-band-color: var(--danger, #d2452f); --cngx-band-opacity: 0.10"
-    ></svg:g>
-    <svg:g cngxBand [from]="33" [to]="66" label="mid"
-      style="--cngx-band-color: var(--warn, #f5a623); --cngx-band-opacity: 0.10"
-    ></svg:g>
-    <svg:g cngxBand [from]="66" [to]="100" label="high"
-      style="--cngx-band-color: var(--success, #1f9d55); --cngx-band-opacity: 0.12"
-    ></svg:g>
-    <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
-  </cngx-chart>`;
-  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';
-
-
-protected readonly monthFmt = (v: unknown): string => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const n = Number(v);
-  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
-};
-
-protected readonly latencyData: readonly { t: Date; v: number }[] = [
-  { t: new Date(2026, 0, 5), v: 145 },
-  { t: new Date(2026, 0, 12), v: 168 },
-  { t: new Date(2026, 0, 19), v: 192 },
-  { t: new Date(2026, 0, 26), v: 220 },
-  { t: new Date(2026, 1, 2), v: 285 },
-  { t: new Date(2026, 1, 9), v: 240 },
-  { t: new Date(2026, 1, 16), v: 195 },
-];
-protected readonly latencyDomain: readonly Date[] = [
-  new Date(2026, 0, 5),
-  new Date(2026, 1, 16),
-];
-protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
-protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
-protected readonly dateFmt = (v: unknown): string => {
-  const d = v instanceof Date ? v : new Date(Number(v));
-  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
-};
-
-protected readonly scatterData: readonly { x: number; y: number }[] = [
-  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
-  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
-  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
-];
-protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
-protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
-protected readonly priceFmt = (v: unknown): string => '$' + Number(v);`;
 
 protected readonly monthFmt = (v: unknown): string => {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -474,5 +268,412 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
+    [width]="480"
+    [height]="180"
+    aria-label="Two-series traffic and error trend over twelve months."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxLine
+      [strokeWidth]="2"
+      style="--cngx-line-color: var(--primary, #3b82f6)"
+    ></svg:g>
+    <svg:g cngxLine
+      [data]="[2, 4, 3, 8, 6, 5, 9, 12, 8, 10, 7, 6]"
+      [strokeWidth]="2"
+      style="--cngx-line-color: var(--danger, #d2452f)"
+    ></svg:g>
+  </cngx-chart>
+  </div>
+  <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
+    <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
+    <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
+  </div>`;
+  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  protected readonly _srcHtml2 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+    [width]="520"
+    [height]="200"
+    aria-label="Monthly bars with three-month moving-average overlay."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxBar [gap]="0.18"></svg:g>
+    <svg:g cngxLine
+      [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
+      [strokeWidth]="2"
+      style="--cngx-line-color: var(--accent, #f5a623)"
+    ></svg:g>
+  </cngx-chart>
+  </div>`;
+  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  protected readonly _srcHtml3 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="latencyData"
+    [summaryAccessor]="latencyValue"
+    [width]="540"
+    [height]="220"
+    aria-label="P95 latency over six weeks with target, warn, and critical thresholds."
+  >
+    <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]" [grid]="true"></svg:g>
+    <svg:g cngxArea [accessor]="latencyValue" [xAccessor]="latencyTime"></svg:g>
+    <svg:g cngxLine [accessor]="latencyValue" [xAccessor]="latencyTime" [strokeWidth]="2"></svg:g>
+    <svg:g cngxThreshold [value]="200" [label]="'target ≤ 200ms'" [dashed]="true"
+      style="--cngx-threshold-color: var(--success, #1f9d55); --cngx-threshold-text-color: var(--success, #1f9d55)"
+    ></svg:g>
+    <svg:g cngxThreshold [value]="300" [label]="'warn'" [dashed]="true"
+      style="--cngx-threshold-color: var(--warn, #f5a623); --cngx-threshold-text-color: var(--warn, #f5a623)"
+    ></svg:g>
+    <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
+  </cngx-chart>
+  </div>`;
+  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  protected readonly _srcHtml4 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (spinner)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
+  </div>
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="chartStateData"
+    [state]="chartState"
+    [width]="480"
+    [height]="200"
+    aria-label="Telemetry feed with custom empty + error fallbacks."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+    <svg:g cngxArea></svg:g>
+    <svg:g cngxLine [strokeWidth]="2"></svg:g>
+    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    <ng-template cngxChartEmpty>
+      <cngx-empty-state
+        title="No telemetry yet"
+        description="Connect a feed or pick a different time window."
+      />
+    </ng-template>
+    <ng-template cngxChartError let-err="error">
+      <cngx-empty-state
+        title="Telemetry feed failed"
+        [description]="err?.message ?? 'Try again in a moment.'"
+      />
+    </ng-template>
+  </cngx-chart>
+  </div>`;
+  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+  protected readonly _srcHtml5 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="scatterData"
+    [summaryAccessor]="scatterY"
+    [width]="500"
+    [height]="240"
+    aria-label="Price-vs-sales scatter with low, mid, and high performance zones."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxBand [from]="0" [to]="33" label="low"
+      style="--cngx-band-color: var(--danger, #d2452f); --cngx-band-opacity: 0.10"
+    ></svg:g>
+    <svg:g cngxBand [from]="33" [to]="66" label="mid"
+      style="--cngx-band-color: var(--warn, #f5a623); --cngx-band-opacity: 0.10"
+    ></svg:g>
+    <svg:g cngxBand [from]="66" [to]="100" label="high"
+      style="--cngx-band-color: var(--success, #1f9d55); --cngx-band-opacity: 0.12"
+    ></svg:g>
+    <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
+  </cngx-chart>
+  </div>`;
+  protected readonly _srcTs5 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';
+import { createManualState } from '@cngx/common/data';
+import { CngxEmptyState } from '@cngx/ui/empty-state';
+
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
+
+protected readonly monthFmt = (v: unknown): string => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const n = Number(v);
+  return Number.isInteger(n) && n >= 0 && n < 12 ? months[n] : '';
+};
+
+protected readonly latencyData: readonly { t: Date; v: number }[] = [
+  { t: new Date(2026, 0, 5), v: 145 },
+  { t: new Date(2026, 0, 12), v: 168 },
+  { t: new Date(2026, 0, 19), v: 192 },
+  { t: new Date(2026, 0, 26), v: 220 },
+  { t: new Date(2026, 1, 2), v: 285 },
+  { t: new Date(2026, 1, 9), v: 240 },
+  { t: new Date(2026, 1, 16), v: 195 },
+];
+protected readonly latencyDomain: readonly Date[] = [
+  new Date(2026, 0, 5),
+  new Date(2026, 1, 16),
+];
+protected readonly latencyTime = (d: { t: Date; v: number }): Date => d.t;
+protected readonly latencyValue = (d: { t: Date; v: number }): number => d.v;
+protected readonly dateFmt = (v: unknown): string => {
+  const d = v instanceof Date ? v : new Date(Number(v));
+  return d.toLocaleDateString('en', { month: 'short', day: '2-digit' });
+};
+
+protected readonly scatterData: readonly { x: number; y: number }[] = [
+  { x: 12, y: 18 }, { x: 22, y: 24 }, { x: 18, y: 30 }, { x: 35, y: 42 },
+  { x: 48, y: 55 }, { x: 56, y: 62 }, { x: 64, y: 78 }, { x: 72, y: 70 },
+  { x: 80, y: 88 }, { x: 88, y: 82 }, { x: 30, y: 12 }, { x: 95, y: 60 },
+];
+protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
+protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
+protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }
 
 }

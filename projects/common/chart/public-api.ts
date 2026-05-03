@@ -23,6 +23,13 @@ export {
 } from './src/chart/chart-context';
 
 export {
+  CngxChartLoading,
+  CngxChartEmpty,
+  CngxChartError,
+  type CngxChartErrorContext,
+} from './src/chart/template-slots';
+
+export {
   CngxAxis,
   type CngxAxisPosition,
   type CngxAxisType,

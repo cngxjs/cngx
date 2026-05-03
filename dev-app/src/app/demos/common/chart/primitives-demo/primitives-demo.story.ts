@@ -26,7 +26,9 @@ export const STORY: DemoSpec = {
     'selectors inside <code>&lt;svg&gt;</code> would create XHTML-namespaced wrappers and ' +
     'break layout for their SVG-namespaced children.</p>',
   moduleImports: [
-    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand } from '@cngx/common/chart';",
+    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';",
+    "import { createManualState } from '@cngx/common/data';",
+    "import { CngxEmptyState } from '@cngx/ui/empty-state';",
   ],
   setup: `
 protected readonly monthFmt = (v: unknown): string => {
@@ -63,6 +65,14 @@ protected readonly scatterData: readonly { x: number; y: number }[] = [
 protected readonly scatterX = (d: { x: number; y: number }): number => d.x;
 protected readonly scatterY = (d: { x: number; y: number }): number => d.y;
 protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
+
+protected readonly chartStateData: readonly number[] = [8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32];
+protected readonly chartState = createManualState<readonly number[]>();
+
+protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('loading'); }
+protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
+protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
+protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }
 `,
   sections: [
     {
@@ -70,20 +80,21 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
       subtitle: 'A multi-layer chart with a target threshold and a "watch zone" band.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
       template: `
-  <cngx-chart
-    [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
-    [width]="480"
-    [height]="160"
-    aria-label="Monthly performance trend with watch-zone band and target threshold."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
-  >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
-    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
-    <svg:g cngxArea></svg:g>
-    <svg:g cngxLine [strokeWidth]="2"></svg:g>
-    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
-  </cngx-chart>`,
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      [width]="480"
+      [height]="160"
+      aria-label="Monthly performance trend with watch-zone band and target threshold."
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    </cngx-chart>
+  </div>`,
     },
     {
       title: 'Multi-series line',
@@ -91,12 +102,12 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
         'Two metrics on shared scales. The chart\'s [data] feeds the first line; the second line overrides via its own local [data] input. Per-line theming via the --cngx-line-color CSS variable.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine'],
       template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
     [height]="180"
     aria-label="Two-series traffic and error trend over twelve months."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
@@ -110,6 +121,7 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
       style="--cngx-line-color: var(--danger, #d2452f)"
     ></svg:g>
   </cngx-chart>
+  </div>
   <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
     <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
@@ -121,12 +133,12 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
         'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.',
       imports: ['CngxChart', 'CngxAxis', 'CngxBar', 'CngxLine'],
       template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
     [width]="520"
     [height]="200"
     aria-label="Monthly bars with three-month moving-average overlay."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
@@ -136,7 +148,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
       [strokeWidth]="2"
       style="--cngx-line-color: var(--accent, #f5a623)"
     ></svg:g>
-  </cngx-chart>`,
+  </cngx-chart>
+  </div>`,
     },
     {
       title: 'Time-series with threshold zones',
@@ -144,13 +157,13 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
         'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold'],
       template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="latencyData"
     [summaryAccessor]="latencyValue"
     [width]="540"
     [height]="220"
     aria-label="P95 latency over six weeks with target, warn, and critical thresholds."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]" [grid]="true"></svg:g>
@@ -163,7 +176,52 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
       style="--cngx-threshold-color: var(--warn, #f5a623); --cngx-threshold-text-color: var(--warn, #f5a623)"
     ></svg:g>
     <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
-  </cngx-chart>`,
+  </cngx-chart>
+  </div>`,
+    },
+    {
+      title: 'Async state machine on the primitive',
+      subtitle:
+        'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).',
+      imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand', 'CngxChartEmpty', 'CngxChartError', 'CngxEmptyState'],
+      template: `
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    <button class="chip" (click)="showSkeleton()">loading (spinner)</button>
+    <button class="chip" (click)="showSuccess()">success</button>
+    <button class="chip" (click)="showEmpty()">empty</button>
+    <button class="chip" (click)="showError()">error</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span style="font-size:0.75rem;color:var(--text-muted)">status: {{ chartState.status() }}</span>
+  </div>
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
+  <cngx-chart
+    [data]="chartStateData"
+    [state]="chartState"
+    [width]="480"
+    [height]="200"
+    aria-label="Telemetry feed with custom empty + error fallbacks."
+  >
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+    <svg:g cngxArea></svg:g>
+    <svg:g cngxLine [strokeWidth]="2"></svg:g>
+    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    <ng-template cngxChartEmpty>
+      <cngx-empty-state
+        title="No telemetry yet"
+        description="Connect a feed or pick a different time window."
+      />
+    </ng-template>
+    <ng-template cngxChartError let-err="error">
+      <cngx-empty-state
+        title="Telemetry feed failed"
+        [description]="err?.message ?? 'Try again in a moment.'"
+      />
+    </ng-template>
+  </cngx-chart>
+  </div>`,
     },
     {
       title: 'Scatter with performance zones',
@@ -171,13 +229,13 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
         'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.',
       imports: ['CngxChart', 'CngxAxis', 'CngxScatter', 'CngxBand'],
       template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block">
   <cngx-chart
     [data]="scatterData"
     [summaryAccessor]="scatterY"
     [width]="500"
     [height]="240"
     aria-label="Price-vs-sales scatter with low, mid, and high performance zones."
-    style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt" [grid]="true"></svg:g>
     <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6" [grid]="true"></svg:g>
@@ -191,7 +249,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
       style="--cngx-band-color: var(--success, #1f9d55); --cngx-band-opacity: 0.12"
     ></svg:g>
     <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
-  </cngx-chart>`,
+  </cngx-chart>
+  </div>`,
     },
   ],
 };

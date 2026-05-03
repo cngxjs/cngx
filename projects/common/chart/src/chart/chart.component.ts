@@ -3,18 +3,26 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   contentChildren,
   inject,
   input,
   isDevMode,
   ViewEncapsulation,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
-import { nextUid } from '@cngx/core/utils';
+import { resolveAsyncView, type AsyncView } from '@cngx/common/data';
+import { nextUid, type CngxAsyncState } from '@cngx/core/utils';
 import { CngxAxis, type CngxAxisPosition, type CngxAxisType } from '../axis/axis.component';
 import { CngxThreshold } from '../layers/threshold.component';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
+import {
+  CngxChartEmpty,
+  CngxChartError,
+  CngxChartLoading,
+} from './template-slots';
 import {
   createBandScale,
   createLinearScale,
@@ -74,34 +82,132 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     role: 'img',
     '[attr.aria-label]': 'ariaLabelText()',
     '[attr.aria-describedby]': 'dataTableId',
+    '[attr.aria-busy]': 'busy() ? "true" : null',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
-  imports: [CngxChartDataTable],
+  imports: [CngxChartDataTable, NgTemplateOutlet],
   template: `
-    <svg
-      [attr.viewBox]="viewBox()"
-      [attr.width]="dimensions().width || null"
-      [attr.height]="dimensions().height || null"
-      [attr.preserveAspectRatio]="preserveAspectRatio()"
-    >
-      <svg:title>{{ ariaLabelText() }}</svg:title>
-      <ng-content />
-    </svg>
+    @switch (activeView()) {
+      @case ('skeleton') {
+        @if (loadingTpl(); as tpl) {
+          <ng-container *ngTemplateOutlet="tpl" />
+        } @else {
+          <div
+            class="cngx-chart__loading"
+            [style.width.px]="dimensions().width || null"
+            [style.height.px]="dimensions().height || null"
+            [attr.aria-hidden]="true"
+          >
+            <div class="cngx-chart__spinner"></div>
+          </div>
+        }
+      }
+      @case ('empty') {
+        @if (emptyTpl(); as tpl) {
+          <div
+            class="cngx-chart__fallback-frame"
+            [style.width.px]="dimensions().width || null"
+            [style.height.px]="dimensions().height || null"
+          >
+            <ng-container *ngTemplateOutlet="tpl" />
+          </div>
+        } @else {
+          <div
+            class="cngx-chart__fallback"
+            [style.width.px]="dimensions().width || null"
+            [style.height.px]="dimensions().height || null"
+            [attr.aria-hidden]="true"
+          >{{ i18n.empty() }}</div>
+        }
+      }
+      @case ('error') {
+        @if (errorTpl(); as tpl) {
+          <div
+            class="cngx-chart__fallback-frame"
+            [style.width.px]="dimensions().width || null"
+            [style.height.px]="dimensions().height || null"
+          >
+            <ng-container *ngTemplateOutlet="tpl; context: errorContext()" />
+          </div>
+        } @else {
+          <div
+            class="cngx-chart__fallback cngx-chart__fallback--error"
+            [style.width.px]="dimensions().width || null"
+            [style.height.px]="dimensions().height || null"
+            [attr.aria-hidden]="true"
+          >{{ i18n.error() }}</div>
+        }
+      }
+      @case ('none') {}
+      @default {
+        <svg
+          [attr.viewBox]="viewBox()"
+          [attr.width]="dimensions().width || null"
+          [attr.height]="dimensions().height || null"
+          [attr.preserveAspectRatio]="preserveAspectRatio()"
+        >
+          <svg:title>{{ ariaLabelText() }}</svg:title>
+          <ng-content />
+        </svg>
+      }
+    }
     <cngx-chart-data-table
       [id]="dataTableId"
       [values]="summaryValues()"
-      [hidden]="!tableActive()"
+      [hidden]="!tableActive() || activeView() !== 'content'"
     />
   `,
   styleUrls: ['../chart-tokens.css'],
   styles: [
     `
       cngx-chart {
-        display: block;
+        display: inline-block;
       }
       cngx-chart > svg {
         display: block;
+      }
+      cngx-chart > .cngx-chart__fallback-frame {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      cngx-chart > .cngx-chart__loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      cngx-chart .cngx-chart__spinner {
+        width: var(--cngx-chart-spinner-size, 32px);
+        height: var(--cngx-chart-spinner-size, 32px);
+        border: var(--cngx-chart-spinner-thickness, 3px) solid
+          var(--cngx-chart-spinner-track, rgb(0 0 0 / 0.08));
+        border-top-color: var(--cngx-chart-spinner-color, var(--cngx-chart-primary, currentColor));
+        border-radius: 50%;
+        animation: cngx-chart-spin 800ms linear infinite;
+      }
+      cngx-chart > .cngx-chart__fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: var(--cngx-chart-fallback-min-height, 48px);
+        font-size: var(--cngx-chart-fallback-font-size, 0.875rem);
+        color: var(--cngx-chart-text-color, currentColor);
+        opacity: var(--cngx-chart-fallback-opacity, 0.7);
+        padding: var(--cngx-chart-fallback-padding, 1rem);
+        text-align: center;
+      }
+      cngx-chart > .cngx-chart__fallback--error {
+        color: var(--cngx-chart-danger, currentColor);
+        opacity: 1;
+      }
+      @keyframes cngx-chart-spin {
+        to { transform: rotate(360deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        cngx-chart .cngx-chart__spinner {
+          animation: none;
+        }
       }
     `,
   ],
@@ -143,12 +249,48 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
    * `aria-describedby` never disappears.
    */
   readonly accessibleTable = input<'auto' | 'off'>('auto');
+  /**
+   * Optional async-state envelope. When bound, the chart routes through
+   * the same skeleton / empty / error / content state machine that the
+   * preset molecules use. Without this input, the chart always renders
+   * its content (Pillar-2 always-in-DOM data-table id stays stable, but
+   * the SR data-table only flips out of `aria-hidden` when the active
+   * view is `'content'`).
+   *
+   * Accepts the standard `CngxAsyncState<T>` shape (any producer:
+   * `createManualState`, `createAsyncState`, `injectAsyncState`,
+   * `fromHttpResource`, `tap*` pipeline output). The chart provides
+   * `CNGX_STATEFUL` for downstream bridge directives — composing
+   * `<cngx-toast-on />` etc. inside the chart works automatically.
+   */
+  readonly state = input<CngxAsyncState<readonly T[]> | undefined>(undefined);
 
   private readonly resize = inject(CngxResizeObserver, { host: true });
   private readonly axes = contentChildren(CngxAxis, { descendants: true });
   private readonly thresholds = contentChildren(CngxThreshold, { descendants: true });
-  private readonly i18n = inject(CNGX_CHART_I18N);
+  protected readonly i18n = inject(CNGX_CHART_I18N);
   protected readonly dataTableId = nextUid('cngx-chart-data-table');
+
+  private readonly loadingSlot = contentChild(CngxChartLoading);
+  private readonly emptySlot = contentChild(CngxChartEmpty);
+  private readonly errorSlot = contentChild(CngxChartError);
+
+  /** Resolved consumer-projected loading template (null when no slot bound). */
+  protected readonly loadingTpl = computed(() => this.loadingSlot()?.templateRef ?? null);
+  /** Resolved consumer-projected empty template (null when no slot bound). */
+  protected readonly emptyTpl = computed(() => this.emptySlot()?.templateRef ?? null);
+  /** Resolved consumer-projected error template (null when no slot bound). */
+  protected readonly errorTpl = computed(() => this.errorSlot()?.templateRef ?? null);
+
+  /**
+   * Context object for the `*cngxChartError` template. Shape:
+   * `{ $implicit: error, error }` — gives consumers the live error
+   * value via either positional `let-err` or named `let-err="error"`.
+   */
+  protected readonly errorContext = computed(() => {
+    const err = this.state()?.error?.() ?? null;
+    return { $implicit: err, error: err };
+  });
 
   constructor() {
     if (isDevMode()) {
@@ -166,8 +308,8 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
         }
         console.warn(
           'CngxChart: data is non-numeric and no [summaryAccessor] is bound. ' +
-            'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
-            'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
+          'Auto-Summary and the SR data-table will silently fall back to NaN. ' +
+          'Bind [summaryAccessor]="(d) => d.yourField" or pass a numeric data array.',
         );
       });
     }
@@ -261,8 +403,42 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
     },
   );
 
-  /** Reactive `aria-label` text the host announces. */
+  /**
+   * Active view for the optional state-machine envelope. Returns
+   * `'content'` when no `[state]` is bound, falling through to the
+   * default branch that renders the SVG content. Otherwise routes
+   * through {@link resolveAsyncView} using the same status / firstLoad
+   * / empty triple every preset and async-aware atom in the library
+   * uses.
+   */
+  protected readonly activeView = computed<AsyncView>(() => {
+    const s = this.state();
+    if (!s) {
+      return 'content';
+    }
+    return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
+  });
+
+  /** True when the chart is currently rendering its skeleton view. */
+  protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Reactive `aria-label` text the host announces. Skeleton / empty /
+   * error states announce localised i18n strings; the auto-Summary
+   * runs only in the content branch so AT does not read stale data
+   * during a refetch.
+   */
   protected readonly ariaLabelText = computed(() => {
+    const view = this.activeView();
+    if (view === 'skeleton') {
+      return this.i18n.loading();
+    }
+    if (view === 'empty') {
+      return this.i18n.empty();
+    }
+    if (view === 'error') {
+      return this.i18n.error();
+    }
     const explicit = this.ariaLabel();
     if (explicit !== null && explicit !== undefined && explicit !== '') {
       return explicit;

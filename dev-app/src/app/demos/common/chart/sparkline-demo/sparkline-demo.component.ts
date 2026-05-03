@@ -117,15 +117,18 @@ protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 2
 protected readonly state = createManualState<readonly number[]>();
 
 protected showSkeleton(): void {
+  this.state.reset();
   this.state.set('loading');
 }
 protected showSuccess(): void {
   this.state.setSuccess(this.stateDemoData);
 }
 protected showEmpty(): void {
+  this.state.reset();
   this.state.setSuccess([]);
 }
 protected showError(): void {
+  this.state.reset();
   this.state.setError(new Error('Network unreachable'));
 }`;
   protected readonly _srcHtml1 = `<div style="display:flex;gap:24px;flex-wrap:wrap">
@@ -141,15 +144,18 @@ protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 2
 protected readonly state = createManualState<readonly number[]>();
 
 protected showSkeleton(): void {
+  this.state.reset();
   this.state.set('loading');
 }
 protected showSuccess(): void {
   this.state.setSuccess(this.stateDemoData);
 }
 protected showEmpty(): void {
+  this.state.reset();
   this.state.setSuccess([]);
 }
 protected showError(): void {
+  this.state.reset();
   this.state.setError(new Error('Network unreachable'));
 }`;
   protected readonly _srcHtml2 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
@@ -178,15 +184,18 @@ protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 2
 protected readonly state = createManualState<readonly number[]>();
 
 protected showSkeleton(): void {
+  this.state.reset();
   this.state.set('loading');
 }
 protected showSuccess(): void {
   this.state.setSuccess(this.stateDemoData);
 }
 protected showEmpty(): void {
+  this.state.reset();
   this.state.setSuccess([]);
 }
 protected showError(): void {
+  this.state.reset();
   this.state.setError(new Error('Network unreachable'));
 }`;
 
@@ -194,15 +203,18 @@ protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 2
 protected readonly state = createManualState<readonly number[]>();
 
 protected showSkeleton(): void {
+  this.state.reset();
   this.state.set('loading');
 }
 protected showSuccess(): void {
   this.state.setSuccess(this.stateDemoData);
 }
 protected showEmpty(): void {
+  this.state.reset();
   this.state.setSuccess([]);
 }
 protected showError(): void {
+  this.state.reset();
   this.state.setError(new Error('Network unreachable'));
 }
 

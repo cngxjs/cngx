@@ -14,10 +14,10 @@ export const STORY: DemoSpec = {
   setup: `
 protected readonly state = createManualState<number>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(35); }
-protected showEmpty(): void { this.state.setSuccess(0); }
-protected showError(): void { this.state.setError(new Error('Lookup failed')); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Lookup failed')); }
 `,
   sections: [
     {

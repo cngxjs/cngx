@@ -74,6 +74,7 @@ import { injectPresetState } from './preset-state';
       }
       cngx-mini-area .cngx-preset-fallback {
         display: inline-block;
+        line-height: normal;
         font-size: var(--cngx-preset-fallback-font-size, 0.75rem);
         opacity: var(--cngx-preset-fallback-opacity, 0.7);
       }

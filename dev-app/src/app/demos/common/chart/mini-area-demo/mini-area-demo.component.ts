@@ -85,10 +85,10 @@ import { createManualState } from '@cngx/common/data';
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
 protected readonly state = createManualState<readonly number[]>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
-protected showEmpty(): void { this.state.setSuccess([]); }
-protected showError(): void { this.state.setError(new Error('Network unreachable')); }`;
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Network unreachable')); }`;
   protected readonly _srcHtml1 = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
     <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
     <button class="chip" (click)="showSuccess()">success</button>
@@ -106,17 +106,17 @@ import { createManualState } from '@cngx/common/data';
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
 protected readonly state = createManualState<readonly number[]>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
-protected showEmpty(): void { this.state.setSuccess([]); }
-protected showError(): void { this.state.setError(new Error('Network unreachable')); }`;
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Network unreachable')); }`;
 
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
 protected readonly state = createManualState<readonly number[]>();
 
-protected showSkeleton(): void { this.state.set('loading'); }
+protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
 protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
-protected showEmpty(): void { this.state.setSuccess([]); }
-protected showError(): void { this.state.setError(new Error('Network unreachable')); }
+protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
+protected showError(): void { this.state.reset(); this.state.setError(new Error('Network unreachable')); }
 
 }
