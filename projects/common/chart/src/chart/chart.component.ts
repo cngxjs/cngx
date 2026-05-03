@@ -19,9 +19,11 @@ import { CngxThreshold } from '../layers/threshold.component';
 import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
 import { CngxChartDataTable } from './data-table.component';
 import {
+  CHART_SMALL_BREAKPOINT_PX,
   CngxChartEmpty,
   CngxChartError,
   CngxChartLoading,
+  type CngxChartSlotContext,
 } from './template-slots';
 import {
   createBandScale,
@@ -95,7 +97,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       @case ('skeleton') {
         @if (loadingTpl(); as tpl) {
           <div class="cngx-chart__fallback-frame">
-            <ng-container *ngTemplateOutlet="tpl" />
+            <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
           </div>
         } @else {
           <div class="cngx-chart__loading" [attr.aria-hidden]="true">
@@ -106,7 +108,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       @case ('empty') {
         @if (emptyTpl(); as tpl) {
           <div class="cngx-chart__fallback-frame">
-            <ng-container *ngTemplateOutlet="tpl" />
+            <ng-container *ngTemplateOutlet="tpl; context: slotContext()" />
           </div>
         } @else {
           <div class="cngx-chart__fallback" [attr.aria-hidden]="true">{{ i18n.empty() }}</div>
@@ -293,13 +295,36 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
   protected readonly errorTpl = computed(() => this.errorSlot()?.templateRef ?? null);
 
   /**
-   * Context object for the `*cngxChartError` template. Shape:
-   * `{ $implicit: error, error }` — gives consumers the live error
-   * value via either positional `let-err` or named `let-err="error"`.
+   * Common context for every slot template (loading, empty, error).
+   * Carries the chart's current rendered width/height plus a `small`
+   * flag flipped at the {@link CHART_SMALL_BREAKPOINT_PX} threshold,
+   * so consumers can branch on container size:
+   *
+   * ```html
+   * <ng-template cngxChartEmpty let-small="small">
+   *   @if (small) { <span>No data</span> }
+   *   @else { <cngx-empty-state title="No telemetry yet" /> }
+   * </ng-template>
+   * ```
+   */
+  protected readonly slotContext = computed<CngxChartSlotContext>(() => {
+    const { width, height } = this.dimensions();
+    return {
+      width,
+      height,
+      small: width > 0 && width < CHART_SMALL_BREAKPOINT_PX,
+    };
+  });
+
+  /**
+   * Error-slot context — extends {@link slotContext} with the live
+   * error value under `$implicit` and `error` keys, so a consumer can
+   * render a typed message AND branch on chart size in the same
+   * template.
    */
   protected readonly errorContext = computed(() => {
     const err = this.state()?.error?.() ?? null;
-    return { $implicit: err, error: err };
+    return { ...this.slotContext(), $implicit: err, error: err };
   });
 
   constructor() {

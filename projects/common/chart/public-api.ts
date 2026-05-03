@@ -26,7 +26,9 @@ export {
   CngxChartLoading,
   CngxChartEmpty,
   CngxChartError,
+  CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
+  type CngxChartSlotContext,
 } from './src/chart/template-slots';
 
 export {

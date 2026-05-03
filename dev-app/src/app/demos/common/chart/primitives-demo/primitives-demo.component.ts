@@ -161,17 +161,25 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
     <svg:g cngxArea></svg:g>
     <svg:g cngxLine [strokeWidth]="2"></svg:g>
     <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
-    <ng-template cngxChartEmpty>
-      <cngx-empty-state
-        title="No telemetry yet"
-        description="Connect a feed or pick a different time window."
-      />
+    <ng-template cngxChartEmpty let-small="small">
+      @if (small) {
+        <span style="font-size:0.8125rem;color:var(--text-muted)">No telemetry</span>
+      } @else {
+        <cngx-empty-state
+          title="No telemetry yet"
+          description="Connect a feed or pick a different time window."
+        />
+      }
     </ng-template>
-    <ng-template cngxChartError let-err="error">
-      <cngx-empty-state
-        title="Telemetry feed failed"
-        [description]="err?.message ?? 'Try again in a moment.'"
-      />
+    <ng-template cngxChartError let-err="error" let-small="small">
+      @if (small) {
+        <span style="font-size:0.8125rem;color:var(--cngx-chart-danger,#d2452f)">Feed failed</span>
+      } @else {
+        <cngx-empty-state
+          title="Telemetry feed failed"
+          [description]="err?.message ?? 'Try again in a moment.'"
+        />
+      }
     </ng-template>
   </cngx-chart>
   </div>
@@ -526,17 +534,25 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <svg:g cngxArea></svg:g>
     <svg:g cngxLine [strokeWidth]="2"></svg:g>
     <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
-    <ng-template cngxChartEmpty>
-      <cngx-empty-state
-        title="No telemetry yet"
-        description="Connect a feed or pick a different time window."
-      />
+    <ng-template cngxChartEmpty let-small="small">
+      @if (small) {
+        <span style="font-size:0.8125rem;color:var(--text-muted)">No telemetry</span>
+      } @else {
+        <cngx-empty-state
+          title="No telemetry yet"
+          description="Connect a feed or pick a different time window."
+        />
+      }
     </ng-template>
-    <ng-template cngxChartError let-err="error">
-      <cngx-empty-state
-        title="Telemetry feed failed"
-        [description]="err?.message ?? 'Try again in a moment.'"
-      />
+    <ng-template cngxChartError let-err="error" let-small="small">
+      @if (small) {
+        <span style="font-size:0.8125rem;color:var(--cngx-chart-danger,#d2452f)">Feed failed</span>
+      } @else {
+        <cngx-empty-state
+          title="Telemetry feed failed"
+          [description]="err?.message ?? 'Try again in a moment.'"
+        />
+      }
     </ng-template>
   </cngx-chart>
   </div>`;
