@@ -181,7 +181,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
         [sourceHtml]="_srcHtml5"
         [sourceTs]="_srcTs5">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 100%; min-width: 320px; width: 70%">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
@@ -587,7 +587,7 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml5 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 100%; min-width: 320px; width: 70%">
+  protected readonly _srcHtml5 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."

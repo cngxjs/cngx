@@ -174,7 +174,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       cngx-chart.cngx-chart--responsive {
         display: block;
         width: 100%;
-        aspect-ratio: var(--cngx-chart-aspect-ratio, 16 / 9);
+        aspect-ratio: var(--cngx-chart-aspect-ratio, 5 / 2);
       }
       cngx-chart > svg {
         display: block;

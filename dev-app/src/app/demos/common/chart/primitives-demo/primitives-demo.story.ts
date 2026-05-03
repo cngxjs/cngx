@@ -229,7 +229,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
         'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.',
       imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 100%; min-width: 320px; width: 70%">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 600px; min-width: 320px; width: 100%">
     <cngx-chart
       [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
       aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
