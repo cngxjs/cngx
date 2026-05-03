@@ -84,6 +84,8 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[attr.aria-describedby]': 'dataTableId',
     '[attr.aria-busy]': 'busy() ? "true" : null',
     '[class.cngx-chart--responsive]': 'isResponsive()',
+    '[style.width.px]': 'width() ?? null',
+    '[style.height.px]': 'height() ?? null',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -144,8 +146,6 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       @default {
         <svg
           [attr.viewBox]="viewBox()"
-          [attr.width]="dimensions().width || null"
-          [attr.height]="dimensions().height || null"
           [attr.preserveAspectRatio]="preserveAspectRatio()"
         >
           <svg:title>{{ ariaLabelText() }}</svg:title>
@@ -178,6 +178,8 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
       }
       cngx-chart > svg {
         display: block;
+        width: 100%;
+        height: 100%;
       }
       cngx-chart > .cngx-chart__fallback-frame {
         display: flex;
