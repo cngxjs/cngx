@@ -85,6 +85,46 @@ export const routes: Routes = [
           import('./demos/common/card/card-grid-demo/card-grid-demo.component').then((m) => m.CardGridDemoComponent),
       },
       {
+        path: 'chart/bullet',
+        loadComponent: () =>
+          import('./demos/common/chart/bullet-demo/bullet-demo.component').then((m) => m.BulletDemoComponent),
+      },
+      {
+        path: 'chart/deviation-bar',
+        loadComponent: () =>
+          import('./demos/common/chart/deviation-bar-demo/deviation-bar-demo.component').then((m) => m.DeviationBarDemoComponent),
+      },
+      {
+        path: 'chart/donut',
+        loadComponent: () =>
+          import('./demos/common/chart/donut-demo/donut-demo.component').then((m) => m.DonutDemoComponent),
+      },
+      {
+        path: 'chart/mini-area',
+        loadComponent: () =>
+          import('./demos/common/chart/mini-area-demo/mini-area-demo.component').then((m) => m.MiniAreaDemoComponent),
+      },
+      {
+        path: 'chart/mini-bar',
+        loadComponent: () =>
+          import('./demos/common/chart/mini-bar-demo/mini-bar-demo.component').then((m) => m.MiniBarDemoComponent),
+      },
+      {
+        path: 'chart/primitives',
+        loadComponent: () =>
+          import('./demos/common/chart/primitives-demo/primitives-demo.component').then((m) => m.PrimitivesDemoComponent),
+      },
+      {
+        path: 'chart/sparkline',
+        loadComponent: () =>
+          import('./demos/common/chart/sparkline-demo/sparkline-demo.component').then((m) => m.SparklineDemoComponent),
+      },
+      {
+        path: 'chart/stacked-bar',
+        loadComponent: () =>
+          import('./demos/common/chart/stacked-bar-demo/stacked-bar-demo.component').then((m) => m.StackedBarDemoComponent),
+      },
+      {
         path: 'data/data-source',
         loadComponent: () =>
           import('./demos/common/data/data-source-demo/data-source-demo.component').then((m) => m.DataSourceDemoComponent),

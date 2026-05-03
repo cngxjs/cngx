@@ -27,6 +27,7 @@
       "@cngx/common/dialog": ["projects/common/dialog/public-api.ts"],
       "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
       "@cngx/common/card": ["projects/common/card/public-api.ts"],
+      "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"],
       "@cngx/core": ["projects/core/src/public-api.ts"],
       "@cngx/core/tokens": ["projects/core/tokens/public-api.ts"],

@@ -313,7 +313,14 @@
   flex: 1;
   min-width: 0;
   background-color: var(--bg);
-  overflow-x: hidden;
+  // `overflow-x: hidden` would implicitly apply `overflow-y: auto` per
+  // the CSS spec, turning .content into a scroll container that stacks
+  // a second scrollbar on top of the page scroll. Using `clip` on the
+  // X axis keeps long horizontal content from leaking sideways without
+  // forcing the Y axis to become scrollable. The natural document
+  // scroll handles vertical overflow.
+  overflow-x: clip;
+  overflow-y: visible;
   padding: 2rem;
   transition: background-color 0.15s;
 }

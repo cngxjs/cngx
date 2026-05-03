@@ -20,9 +20,10 @@
       "@cngx/common/dialog": ["projects/common/dialog/public-api.ts"],
       "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
       "@cngx/common/card": ["projects/common/card/public-api.ts"],
+      "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "display/**/*.ts"],
+  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }
