@@ -77,8 +77,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
     aria-label="Monthly performance trend with watch-zone band and target threshold."
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
     <svg:g cngxArea></svg:g>
     <svg:g cngxLine [strokeWidth]="2"></svg:g>
@@ -98,8 +98,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
     aria-label="Two-series traffic and error trend over twelve months."
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxLine
       [strokeWidth]="2"
       style="--cngx-line-color: var(--primary, #3b82f6)"
@@ -129,7 +129,7 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
     <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="12" [format]="monthFmt"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
     <svg:g cngxBar [gap]="0.18"></svg:g>
     <svg:g cngxLine
       [data]="[8, 10, 11.3, 11.7, 13.7, 16.3, 21.7, 22, 20, 19.7, 22.7, 28]"
@@ -152,8 +152,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
     aria-label="P95 latency over six weeks with target, warn, and critical thresholds."
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
-    <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]"></svg:g>
+    <svg:g cngxAxis position="bottom" type="time" [domain]="latencyDomain" [ticks]="6" [format]="dateFmt" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 500]" [grid]="true"></svg:g>
     <svg:g cngxArea [accessor]="latencyValue" [xAccessor]="latencyTime"></svg:g>
     <svg:g cngxLine [accessor]="latencyValue" [xAccessor]="latencyTime" [strokeWidth]="2"></svg:g>
     <svg:g cngxThreshold [value]="200" [label]="'target ≤ 200ms'" [dashed]="true"
@@ -179,8 +179,8 @@ protected readonly priceFmt = (v: unknown): string => '$' + Number(v);
     aria-label="Price-vs-sales scatter with low, mid, and high performance zones."
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="6" [format]="priceFmt" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 100]" [ticks]="6" [grid]="true"></svg:g>
     <svg:g cngxBand [from]="0" [to]="33" label="low"
       style="--cngx-band-color: var(--danger, #d2452f); --cngx-band-opacity: 0.10"
     ></svg:g>

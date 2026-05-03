@@ -35,6 +35,15 @@ interface TickRendering {
   readonly key: string;
   readonly transform: string;
   readonly tickLine: { readonly x1: number; readonly y1: number; readonly x2: number; readonly y2: number };
+  /**
+   * Endpoint of the gridline that extends from this tick across the
+   * chart's perpendicular dimension. `(x1, y1)` is always `(0, 0)`
+   * (the tick's local origin); `(x2, y2)` reaches the opposite side
+   * of the chart area. Always present in the tick rendering — the
+   * `[showGrid]` input controls whether the line is rendered, not
+   * whether the geometry is computed.
+   */
+  readonly gridLine: { readonly x2: number; readonly y2: number };
   readonly label: {
     readonly x: number;
     readonly y: number;
@@ -74,6 +83,18 @@ interface TickRendering {
   },
   template: `
     @if (axisGeometry(); as g) {
+      @if (showGrid()) {
+        @for (tick of tickRenderings(); track tick.key) {
+          <svg:line
+            [attr.transform]="tick.transform"
+            [attr.x1]="0"
+            [attr.y1]="0"
+            [attr.x2]="tick.gridLine.x2"
+            [attr.y2]="tick.gridLine.y2"
+            class="cngx-axis__grid-line"
+          />
+        }
+      }
       <svg:line
         [attr.x1]="g.line.x1"
         [attr.y1]="g.line.y1"
@@ -115,6 +136,14 @@ interface TickRendering {
         fill: var(--cngx-axis-text-color, var(--cngx-chart-text-color, currentColor));
         font-size: var(--cngx-axis-font-size, 11px);
       }
+      .cngx-axis__grid-line {
+        stroke: var(--cngx-axis-grid-color, var(--cngx-chart-grid-color, currentColor));
+        stroke-opacity: var(--cngx-axis-grid-opacity, 0.6);
+        stroke-width: var(--cngx-axis-grid-stroke-width, 1px);
+        stroke-dasharray: var(--cngx-axis-grid-dasharray, 0);
+        fill: none;
+        pointer-events: none;
+      }
     `,
   ],
 })
@@ -124,6 +153,15 @@ export class CngxAxis {
   readonly domain = input<readonly unknown[] | undefined>(undefined);
   readonly tickCount = input<number | undefined>(undefined, { alias: 'ticks' });
   readonly format = input<(v: unknown) => string>((v) => String(v));
+  /**
+   * Render decorative gridlines extending from each tick across the
+   * chart's perpendicular dimension. Theming via the
+   * `--cngx-axis-grid-color` / `--cngx-axis-grid-opacity` /
+   * `--cngx-axis-grid-stroke-width` / `--cngx-axis-grid-dasharray`
+   * CSS custom properties (defaults: chart-level grid colour, 0.6
+   * opacity, 1px solid). Aliased as `[grid]` for terseness.
+   */
+  readonly showGrid = input<boolean>(false, { alias: 'grid' });
 
   private readonly ctx = inject(CNGX_CHART_CONTEXT);
 
@@ -214,11 +252,12 @@ export class CngxAxis {
       const pos = this.position();
       const values = this.tickValues();
       const fmt = this.format();
+      const { width, height } = this.ctx.dimensions();
       const isHorizontal = pos === 'top' || pos === 'bottom';
       const scale = isHorizontal ? this.ctx.xScale() : this.ctx.yScale();
       return values.map((v, i) => {
         const offset = (scale as (input: unknown) => number)(v);
-        return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`);
+        return buildTickRendering(pos, offset, fmt(v), `${i}-${String(v)}`, width, height);
       });
     },
     {
@@ -239,7 +278,9 @@ export class CngxAxis {
             ta.tickLine.x1 !== tb.tickLine.x1 ||
             ta.tickLine.y1 !== tb.tickLine.y1 ||
             ta.tickLine.x2 !== tb.tickLine.x2 ||
-            ta.tickLine.y2 !== tb.tickLine.y2
+            ta.tickLine.y2 !== tb.tickLine.y2 ||
+            ta.gridLine.x2 !== tb.gridLine.x2 ||
+            ta.gridLine.y2 !== tb.gridLine.y2
           ) {
             return false;
           }
@@ -307,6 +348,8 @@ function buildTickRendering(
   offset: number,
   text: string,
   key: string,
+  width: number,
+  height: number,
 ): TickRendering {
   switch (pos) {
     case 'bottom':
@@ -314,6 +357,7 @@ function buildTickRendering(
         key,
         transform: `translate(${offset},0)`,
         tickLine: { x1: 0, y1: 0, x2: 0, y2: TICK_LENGTH },
+        gridLine: { x2: 0, y2: -height },
         label: {
           x: 0,
           y: TICK_LENGTH + LABEL_OFFSET,
@@ -327,6 +371,7 @@ function buildTickRendering(
         key,
         transform: `translate(${offset},0)`,
         tickLine: { x1: 0, y1: 0, x2: 0, y2: -TICK_LENGTH },
+        gridLine: { x2: 0, y2: height },
         label: {
           x: 0,
           y: -TICK_LENGTH - LABEL_OFFSET,
@@ -340,6 +385,7 @@ function buildTickRendering(
         key,
         transform: `translate(0,${offset})`,
         tickLine: { x1: 0, y1: 0, x2: -TICK_LENGTH, y2: 0 },
+        gridLine: { x2: width, y2: 0 },
         label: {
           x: -TICK_LENGTH - LABEL_OFFSET,
           y: 0,
@@ -353,6 +399,7 @@ function buildTickRendering(
         key,
         transform: `translate(0,${offset})`,
         tickLine: { x1: 0, y1: 0, x2: TICK_LENGTH, y2: 0 },
+        gridLine: { x2: -width, y2: 0 },
         label: {
           x: TICK_LENGTH + LABEL_OFFSET,
           y: 0,

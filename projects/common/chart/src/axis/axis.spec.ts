@@ -118,6 +118,68 @@ describe('CngxAxis', () => {
     expect(axisGroup.querySelector('.cngx-axis__line')).not.toBeNull();
   });
 
+  it('emits no gridlines by default', () => {
+    const { fixture } = setup();
+    const grid = fixture.nativeElement.querySelectorAll('.cngx-axis__grid-line');
+    expect(grid.length).toBe(0);
+    void fixture;
+  });
+
+  it('emits one gridline per tick when [grid] is true (bottom axis renders vertical gridlines)', () => {
+    const fixture = TestBed.createComponent(TestHost);
+    fixture.componentInstance.tickCount.set(5);
+    fixture.detectChanges();
+    // Re-render with grid on by replacing the host with a separate
+    // grid-on host since the existing test host does not bind [grid].
+    TestBed.resetTestingModule();
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 100]" [ticks]="5" [grid]="true"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class GridHost {}
+    TestBed.configureTestingModule({ imports: [GridHost] });
+    const f2 = TestBed.createComponent(GridHost);
+    f2.detectChanges();
+    const lines = Array.from(
+      (f2.nativeElement as HTMLElement).querySelectorAll<SVGLineElement>('.cngx-axis__grid-line'),
+    );
+    expect(lines.length).toBe(5);
+    // Vertical gridlines for a bottom axis: x2=0, y2=-height (extends up across the chart).
+    for (const l of lines) {
+      expect(Number(l.getAttribute('x2'))).toBe(0);
+      expect(Number(l.getAttribute('y2'))).toBe(-100);
+    }
+  });
+
+  it('emits horizontal gridlines for a left axis (gridLine x2=width, y2=0)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" [ticks]="3" [grid]="true"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class LeftGridHost {}
+    TestBed.configureTestingModule({ imports: [LeftGridHost] });
+    const f = TestBed.createComponent(LeftGridHost);
+    f.detectChanges();
+    const lines = Array.from(
+      (f.nativeElement as HTMLElement).querySelectorAll<SVGLineElement>('.cngx-axis__grid-line'),
+    );
+    expect(lines.length).toBe(3);
+    for (const l of lines) {
+      expect(Number(l.getAttribute('x2'))).toBe(200);
+      expect(Number(l.getAttribute('y2'))).toBe(0);
+    }
+  });
+
   it('produces evenly spaced linear ticks across the domain', () => {
     const { fixture } = setup();
     fixture.componentInstance.tickCount.set(5);
