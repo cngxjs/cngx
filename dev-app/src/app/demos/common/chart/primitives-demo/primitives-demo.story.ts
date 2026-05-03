@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
     'selectors inside <code>&lt;svg&gt;</code> would create XHTML-namespaced wrappers and ' +
     'break layout for their SVG-namespaced children.</p>',
   moduleImports: [
-    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';",
+    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
     "import { CngxEmptyState } from '@cngx/ui/empty-state';",
   ],
@@ -97,20 +97,20 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   </div>`,
     },
     {
-      title: 'Multi-series line',
+      title: 'Multi-series line + axis labels + legend',
       subtitle:
-        'Two metrics on shared scales. The chart\'s [data] feeds the first line; the second line overrides via its own local [data] input. Per-line theming via the --cngx-line-color CSS variable.',
-      imports: ['CngxChart', 'CngxAxis', 'CngxLine'],
+        'Two metrics on shared scales. Adds [label]="..." on each axis for X/Y titles, and pairs the chart with a presentational <cngx-chart-legend> driven by an [items] array — decoupled from the layer atoms by design.',
+      imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxChartLegend'],
       template: `
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 40px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
-    [height]="180"
+    [height]="200"
     aria-label="Two-series traffic and error trend over twelve months."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true" label="Months"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true" label="Requests / sec"></svg:g>
     <svg:g cngxLine
       [strokeWidth]="2"
       style="--cngx-line-color: var(--primary, #3b82f6)"
@@ -122,10 +122,13 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     ></svg:g>
   </cngx-chart>
   </div>
-  <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
-  </div>`,
+  <cngx-chart-legend
+    [items]="[
+      { label: 'Traffic', color: 'var(--primary, #3b82f6)' },
+      { label: 'Errors',  color: 'var(--danger, #d2452f)' }
+    ]"
+    style="margin-top:8px"
+  />`,
     },
     {
       title: 'Combo: bars + moving-average line',

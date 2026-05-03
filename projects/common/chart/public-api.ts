@@ -37,6 +37,11 @@ export {
   type CngxAxisType,
 } from './src/axis/axis.component';
 
+export {
+  CngxChartLegend,
+  type CngxChartLegendItem,
+} from './src/legend/legend.component';
+
 export { CngxLine } from './src/layers/line.component';
 export { CngxArea } from './src/layers/area.component';
 export { CngxBar } from './src/layers/bar.component';

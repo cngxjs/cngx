@@ -118,6 +118,43 @@ describe('CngxAxis', () => {
     expect(axisGroup.querySelector('.cngx-axis__line')).not.toBeNull();
   });
 
+  it('does NOT render an axis-label text element by default', () => {
+    const { fixture } = setup();
+    const label = fixture.nativeElement.querySelector('.cngx-axis__axis-label');
+    expect(label).toBeNull();
+  });
+
+  it('renders the axis-label text when [label] is set, positioned by axis side', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxChart, CngxAxis],
+      template: `
+        <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]" label="Months"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]" label="Revenue"></svg:g>
+        </cngx-chart>
+      `,
+    })
+    class LabelHost {}
+    TestBed.configureTestingModule({ imports: [LabelHost] });
+    const f = TestBed.createComponent(LabelHost);
+    f.detectChanges();
+    const labels = Array.from(
+      (f.nativeElement as HTMLElement).querySelectorAll<SVGTextElement>('.cngx-axis__axis-label'),
+    );
+    expect(labels.length).toBe(2);
+    const texts = labels.map((l) => l.textContent?.trim());
+    expect(texts).toContain('Months');
+    expect(texts).toContain('Revenue');
+    // Bottom axis label is centered horizontally (no rotation in transform).
+    const bottomLabel = labels.find((l) => l.textContent?.trim() === 'Months');
+    expect(bottomLabel?.getAttribute('transform')).toMatch(/translate\(100,/);
+    expect(bottomLabel?.getAttribute('transform')).not.toMatch(/rotate/);
+    // Left axis label is rotated -90deg.
+    const leftLabel = labels.find((l) => l.textContent?.trim() === 'Revenue');
+    expect(leftLabel?.getAttribute('transform')).toMatch(/rotate\(-90\)/);
+  });
+
   it('emits no gridlines by default', () => {
     const { fixture } = setup();
     const grid = fixture.nativeElement.querySelectorAll('.cngx-axis__grid-line');

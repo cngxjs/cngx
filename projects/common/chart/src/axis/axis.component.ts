@@ -25,6 +25,14 @@ export type CngxAxisType = 'linear' | 'time' | 'band';
 const DEFAULT_TICK_COUNT = 5;
 const TICK_LENGTH = 5;
 const LABEL_OFFSET = 4;
+const AXIS_LABEL_OFFSET_INLINE = 32;
+const AXIS_LABEL_OFFSET_BLOCK = 36;
+
+interface AxisLabelGeometry {
+  readonly transform: string;
+  readonly anchor: 'start' | 'middle' | 'end';
+  readonly baseline: 'auto' | 'middle' | 'hanging';
+}
 
 interface AxisGeometry {
   readonly transform: string;
@@ -122,6 +130,16 @@ interface TickRendering {
           </svg:text>
         </svg:g>
       }
+      @if (axisLabel(); as title) {
+        @if (axisLabelGeometry(); as g) {
+          <svg:text
+            class="cngx-axis__axis-label"
+            [attr.transform]="g.transform"
+            [attr.text-anchor]="g.anchor"
+            [attr.dominant-baseline]="g.baseline"
+          >{{ title }}</svg:text>
+        }
+      }
     }
   `,
   styles: [
@@ -144,6 +162,11 @@ interface TickRendering {
         fill: none;
         pointer-events: none;
       }
+      .cngx-axis__axis-label {
+        fill: var(--cngx-axis-axis-label-color, var(--cngx-chart-text-color, currentColor));
+        font-size: var(--cngx-axis-axis-label-font-size, 12px);
+        font-weight: var(--cngx-axis-axis-label-font-weight, 500);
+      }
     `,
   ],
 })
@@ -162,6 +185,16 @@ export class CngxAxis {
    * opacity, 1px solid). Aliased as `[grid]` for terseness.
    */
   readonly showGrid = input<boolean>(false, { alias: 'grid' });
+  /**
+   * Optional axis title rendered alongside the tick labels —
+   * "Months", "Revenue (k€)", etc. The title is positioned outside
+   * the tick labels (further from the chart area) and rotated -90°
+   * for left/right axes so it reads bottom-to-top. Theming via the
+   * `--cngx-axis-axis-label-color` and `--cngx-axis-axis-label-font-size`
+   * CSS custom properties (default: chart text colour + 12px). Aliased
+   * `[label]` for terseness.
+   */
+  readonly axisLabel = input<string | null>(null, { alias: 'label' });
 
   private readonly ctx = inject(CNGX_CHART_CONTEXT);
 
@@ -223,6 +256,21 @@ export class CngxAxis {
 
   protected readonly hostClass = computed(
     () => `cngx-axis cngx-axis--${this.position()}`,
+  );
+
+  protected readonly axisLabelGeometry = computed<AxisLabelGeometry | null>(
+    () => {
+      const { width, height } = this.ctx.dimensions();
+      if (width <= 0 || height <= 0) {
+        return null;
+      }
+      return buildAxisLabelGeometry(this.position(), width, height);
+    },
+    {
+      equal: (a, b) =>
+        a === b ||
+        (a !== null && b !== null && a.transform === b.transform && a.anchor === b.anchor && a.baseline === b.baseline),
+    },
   );
 
   protected readonly axisGeometry = computed<AxisGeometry | null>(
@@ -407,6 +455,39 @@ function buildTickRendering(
           baseline: 'middle',
           text,
         },
+      };
+  }
+}
+
+function buildAxisLabelGeometry(
+  pos: CngxAxisPosition,
+  width: number,
+  height: number,
+): AxisLabelGeometry {
+  switch (pos) {
+    case 'bottom':
+      return {
+        transform: `translate(${width / 2},${AXIS_LABEL_OFFSET_INLINE})`,
+        anchor: 'middle',
+        baseline: 'hanging',
+      };
+    case 'top':
+      return {
+        transform: `translate(${width / 2},${-AXIS_LABEL_OFFSET_INLINE})`,
+        anchor: 'middle',
+        baseline: 'auto',
+      };
+    case 'left':
+      return {
+        transform: `translate(${-AXIS_LABEL_OFFSET_BLOCK},${height / 2}) rotate(-90)`,
+        anchor: 'middle',
+        baseline: 'auto',
+      };
+    case 'right':
+      return {
+        transform: `translate(${AXIS_LABEL_OFFSET_BLOCK},${height / 2}) rotate(90)`,
+        anchor: 'middle',
+        baseline: 'auto',
       };
   }
 }

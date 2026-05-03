@@ -171,6 +171,12 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
         display: block;
         width: 100%;
         height: 100%;
+        /* Let axis-label text and any decorative content beyond the
+           viewBox remain visible. Plot lines / areas / scatter use the
+           scale range and stay inside; axis-label text intentionally
+           sits outside (below bottom axis, left of Y axis tick labels)
+           and would otherwise be clipped. */
+        overflow: visible;
       }
       cngx-chart > .cngx-chart__fallback-frame {
         display: flex;

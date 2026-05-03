@@ -4,7 +4,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ExampleCardComponent } from '../../../../shared/example-card.component';
 import { DocShellComponent } from '../../../../shared/doc-shell.component';
-import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -21,6 +21,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
     CngxArea,
     CngxThreshold,
     CngxBand,
+    CngxChartLegend,
     CngxBar,
     CngxChartEmpty,
     CngxChartError,
@@ -53,20 +54,20 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
     </cngx-chart>
   </div>
       </app-example-card>
-      <app-example-card title="Multi-series line"
+      <app-example-card title="Multi-series line + axis labels + legend"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 40px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
-    [height]="180"
+    [height]="200"
     aria-label="Two-series traffic and error trend over twelve months."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true" label="Months"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true" label="Requests / sec"></svg:g>
     <svg:g cngxLine
       [strokeWidth]="2"
       style="--cngx-line-color: var(--primary, #3b82f6)"
@@ -78,10 +79,13 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
     ></svg:g>
   </cngx-chart>
   </div>
-  <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
-  </div>
+  <cngx-chart-legend
+    [items]="[
+      { label: 'Traffic', color: 'var(--primary, #3b82f6)' },
+      { label: 'Errors',  color: 'var(--danger, #d2452f)' }
+    ]"
+    style="margin-top:8px"
+  />
       </app-example-card>
       <app-example-card title="Combo: bars + moving-average line"
         [subtitle]="_s2"
@@ -240,7 +244,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
 })
 export class PrimitivesDemoComponent {
   protected readonly _s0 = 'A multi-layer chart with a target threshold and a "watch zone" band.';
-  protected readonly _s1 = 'Two metrics on shared scales. The chart\'s [data] feeds the first line; the second line overrides via its own local [data] input. Per-line theming via the --cngx-line-color CSS variable.';
+  protected readonly _s1 = 'Two metrics on shared scales. Adds [label]="..." on each axis for X/Y titles, and pairs the chart with a presentational <cngx-chart-legend> driven by an [items] array — decoupled from the layer atoms by design.';
   protected readonly _s2 = 'Bars carry monthly values; an overlay line shows the 3-month moving average via local [data]. Both layers share the same scales — one X axis, one Y axis.';
   protected readonly _s3 = 'Time axis with Date data + three stacked thresholds (target / warn / critical). The line and area atoms read x via the [xAccessor] callback projecting Date; the chart\'s [summaryAccessor] feeds the auto-summary and SR data table.';
   protected readonly _s4 = 'Bind [state] to <cngx-chart> and the primitive composition routes through loading / empty / error / content branches automatically. The default loading view is a centred spinner; default empty/error are inline text. Use the *cngxChartLoading / *cngxChartEmpty / *cngxChartError slots to project richer fallbacks (here: <cngx-empty-state> from @cngx/ui).';
@@ -261,7 +265,7 @@ export class PrimitivesDemoComponent {
       <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
     </cngx-chart>
   </div>`;
-  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs0 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -308,15 +312,15 @@ protected showSkeleton(): void { this.chartState.reset(); this.chartState.set('l
 protected showSuccess(): void { this.chartState.setSuccess(this.chartStateData); }
 protected showEmpty(): void { this.chartState.reset(); this.chartState.setSuccess([]); }
 protected showError(): void { this.chartState.reset(); this.chartState.setError(new Error('Telemetry feed offline')); }`;
-  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; display: inline-block; max-width: 100%; box-sizing: border-box">
+  protected readonly _srcHtml1 = `<div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px 8px 32px 40px; display: inline-block; max-width: 100%; box-sizing: border-box">
   <cngx-chart
     [data]="[10, 12, 18, 22, 24, 28, 32, 30, 27, 26, 30, 35]"
     [width]="480"
-    [height]="180"
+    [height]="200"
     aria-label="Two-series traffic and error trend over twelve months."
   >
-    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
-    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true" label="Months"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true" label="Requests / sec"></svg:g>
     <svg:g cngxLine
       [strokeWidth]="2"
       style="--cngx-line-color: var(--primary, #3b82f6)"
@@ -328,11 +332,14 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     ></svg:g>
   </cngx-chart>
   </div>
-  <div style="display:flex;gap:16px;font-size:0.8125rem;color:var(--text-muted);margin-top:8px">
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--primary,#3b82f6);vertical-align:middle;margin-right:4px"></span> Traffic</span>
-    <span><span style="display:inline-block;width:12px;height:2px;background:var(--danger,#d2452f);vertical-align:middle;margin-right:4px"></span> Errors</span>
-  </div>`;
-  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  <cngx-chart-legend
+    [items]="[
+      { label: 'Traffic', color: 'var(--primary, #3b82f6)' },
+      { label: 'Errors',  color: 'var(--danger, #d2452f)' }
+    ]"
+    style="margin-top:8px"
+  />`;
+  protected readonly _srcTs1 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -396,7 +403,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     ></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs2 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -464,7 +471,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <svg:g cngxThreshold [value]="400" [label]="'critical'" [dashed]="true"></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs3 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -556,7 +563,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     </ng-template>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs4 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -620,7 +627,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
     The chart re-flows live.
   </p>`;
-  protected readonly _srcTs5 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs5 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
@@ -689,7 +696,7 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
     <svg:g cngxScatter [x]="scatterX" [y]="scatterY" [radius]="5"></svg:g>
   </cngx-chart>
   </div>`;
-  protected readonly _srcTs6 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';
+  protected readonly _srcTs6 = `import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLegend } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
 import { CngxEmptyState } from '@cngx/ui/empty-state';
 
