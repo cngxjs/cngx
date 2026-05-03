@@ -37,12 +37,12 @@ export const STORY: DemoSpec = {
     aria-label="Monthly performance trend with watch-zone band and target threshold."
     style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px"
   >
-    <cngx-axis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" />
-    <cngx-axis position="left" type="linear" [domain]="[0, 40]" />
-    <cngx-band [from]="20" [to]="30" label="watch" />
-    <cngx-area />
-    <cngx-line [strokeWidth]="2" />
-    <cngx-threshold [value]="25" [label]="'target'" [dashed]="true" />
+    <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6"></svg:g>
+    <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]"></svg:g>
+    <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+    <svg:g cngxArea></svg:g>
+    <svg:g cngxLine [strokeWidth]="2"></svg:g>
+    <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
   </cngx-chart>`,
     },
   ],

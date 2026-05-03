@@ -59,12 +59,12 @@ import { injectPresetState } from './preset-state';
           [height]="height()"
           [aria-label]="ariaLabel()"
         >
-          <cngx-axis position="bottom" type="linear" [domain]="xDomain()" />
-          <cngx-axis position="left" type="linear" [domain]="yDomain()" />
+          <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
+          <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
           @if (showArea()) {
-            <cngx-area />
+            <svg:g cngxArea></svg:g>
           }
-          <cngx-line [strokeWidth]="strokeWidth()" />
+          <svg:g cngxLine [strokeWidth]="strokeWidth()"></svg:g>
         </cngx-chart>
       }
     }
@@ -77,7 +77,7 @@ import { injectPresetState } from './preset-state';
         --cngx-line-color: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
         --cngx-area-fill: var(--cngx-sparkline-color, var(--cngx-chart-primary, currentColor));
       }
-      cngx-sparkline cngx-axis {
+      cngx-sparkline [cngxAxis] {
         display: none;
       }
       cngx-sparkline .cngx-preset-skeleton {

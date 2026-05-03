@@ -21,10 +21,10 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
   imports: [CngxChart, CngxAxis, CngxLine, CngxThreshold],
   template: `
     <cngx-chart [data]="data()" [width]="width()" [height]="height()">
-      <cngx-axis position="bottom" type="linear" [domain]="[0, 4]" />
-      <cngx-axis position="left" type="linear" [domain]="[0, 10]" />
-      <cngx-line />
-      <cngx-threshold [value]="5" />
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 4]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxLine></svg:g>
+      <svg:g cngxThreshold [value]="5"></svg:g>
     </cngx-chart>
   `,
 })

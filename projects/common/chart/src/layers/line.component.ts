@@ -19,6 +19,11 @@ import {
  * points projected through the parent chart's scales. Reads scales
  * from {@link CNGX_CHART_CONTEXT}, NOT from a parent class.
  *
+ * Attribute-selector on `<svg:g>` — the host element IS the SVG group.
+ * Element selectors create XHTML-namespaced custom elements inside
+ * SVG, which break layout for the namespaced children. Apply this
+ * directive on an `<svg:g>` host instead.
+ *
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so downstream effects only re-run when the path
  * geometry actually changes. The `createPathBuilder` cache provides
@@ -26,7 +31,7 @@ import {
  * reference skips the per-datapoint projection work.
  */
 @Component({
-  selector: 'cngx-line',
+  selector: '[cngxLine]',
   exportAs: 'cngxLine',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

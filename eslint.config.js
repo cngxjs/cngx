@@ -72,6 +72,27 @@ module.exports = tseslint.config(
         },
     },
 
+    // ── chart layer/axis atoms: attribute selectors on <svg:g> hosts ─────────
+    // The `[cngxAxis]`, `[cngxLine]`, `[cngxArea]`, `[cngxBar]`, `[cngxScatter]`,
+    // `[cngxThreshold]`, `[cngxBand]` components are intentionally attribute-only:
+    // an element selector inside `<svg>` would create an XHTML-namespaced custom
+    // element whose SVG-namespaced children would not lay out (jsdom is permissive
+    // and would mask this). Allow either element or attribute selectors here so
+    // the attribute-form components pass while preset components like
+    // `<cngx-sparkline>` (still elements) continue to be enforced.
+    {
+        files: [
+            'projects/common/chart/src/axis/**/*.ts',
+            'projects/common/chart/src/layers/**/*.ts',
+        ],
+        rules: {
+            '@angular-eslint/component-selector': [
+                'error',
+                { type: ['element', 'attribute'], prefix: 'cngx', style: 'camelCase' },
+            ],
+        },
+    },
+
     // ── HTML templates ────────────────────────────────────────────────────────
     {
         files: ['**/*.html'],

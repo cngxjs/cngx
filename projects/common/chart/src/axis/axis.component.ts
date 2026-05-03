@@ -50,48 +50,57 @@ interface TickRendering {
  * parent's scale derivation. Renders SVG ticks and labels in the
  * coordinate system the parent publishes via {@link CNGX_CHART_CONTEXT}.
  *
+ * Attribute-selector on `<svg:g>` — the host element IS the SVG group.
+ * This keeps the namespace boundary clean: a `<cngx-axis>` element
+ * inside `<svg>` would be in the XHTML namespace and SVG layout would
+ * not flow through it. By making the directive attribute-only, the
+ * host stays in the SVG namespace and the browser lays out tick lines
+ * and labels exactly where the geometry says.
+ *
  * Host carries `aria-hidden="true"` — axis text is decoration; the
- * semantic data view lives on the parent chart's auto-Summary
- * (Phase 3) and Data Table (Phase 3).
+ * semantic data view lives on the parent chart's auto-Summary and
+ * Data Table.
  */
 @Component({
-  selector: 'cngx-axis',
+  selector: '[cngxAxis]',
   exportAs: 'cngxAxis',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { 'aria-hidden': 'true' },
+  host: {
+    'aria-hidden': 'true',
+    '[attr.transform]': 'axisGeometry()?.transform ?? null',
+    '[attr.class]': 'hostClass()',
+  },
   template: `
     @if (axisGeometry(); as g) {
-      <svg:g [attr.transform]="g.transform" [attr.class]="'cngx-axis cngx-axis--' + position()">
-        <svg:line
-          [attr.x1]="g.line.x1"
-          [attr.y1]="g.line.y1"
-          [attr.x2]="g.line.x2"
-          [attr.y2]="g.line.y2"
-          class="cngx-axis__line"
-        />
-        @for (tick of tickRenderings(); track tick.key) {
-          <svg:g [attr.transform]="tick.transform" class="cngx-axis__tick">
-            <svg:line
-              [attr.x1]="tick.tickLine.x1"
-              [attr.y1]="tick.tickLine.y1"
-              [attr.x2]="tick.tickLine.x2"
-              [attr.y2]="tick.tickLine.y2"
-              class="cngx-axis__tick-line"
-            />
-            <svg:text
-              [attr.x]="tick.label.x"
-              [attr.y]="tick.label.y"
-              [attr.text-anchor]="tick.label.anchor"
-              [attr.dominant-baseline]="tick.label.baseline"
-              class="cngx-axis__tick-label"
-            >
-              {{ tick.label.text }}
-            </svg:text>
-          </svg:g>
-        }
-      </svg:g>
+      <svg:line
+        [attr.x1]="g.line.x1"
+        [attr.y1]="g.line.y1"
+        [attr.x2]="g.line.x2"
+        [attr.y2]="g.line.y2"
+        class="cngx-axis__line"
+      />
+      @for (tick of tickRenderings(); track tick.key) {
+        <svg:g [attr.transform]="tick.transform" class="cngx-axis__tick">
+          <svg:line
+            [attr.x1]="tick.tickLine.x1"
+            [attr.y1]="tick.tickLine.y1"
+            [attr.x2]="tick.tickLine.x2"
+            [attr.y2]="tick.tickLine.y2"
+            class="cngx-axis__tick-line"
+          />
+          <svg:text
+            [attr.x]="tick.label.x"
+            [attr.y]="tick.label.y"
+            [attr.text-anchor]="tick.label.anchor"
+            [attr.dominant-baseline]="tick.label.baseline"
+            class="cngx-axis__tick-label"
+          >
+            {{ tick.label.text }}
+          </svg:text>
+        </svg:g>
+      }
     }
   `,
   styles: [
@@ -172,6 +181,10 @@ export class CngxAxis {
         return true;
       },
     },
+  );
+
+  protected readonly hostClass = computed(
+    () => `cngx-axis cngx-axis--${this.position()}`,
   );
 
   protected readonly axisGeometry = computed<AxisGeometry | null>(

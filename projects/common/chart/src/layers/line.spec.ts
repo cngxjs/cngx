@@ -19,9 +19,9 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
   imports: [CngxChart, CngxAxis, CngxLine],
   template: `
     <cngx-chart [data]="data()" [width]="200" [height]="100">
-      <cngx-axis position="bottom" type="linear" [domain]="xDomain()" />
-      <cngx-axis position="left" type="linear" [domain]="yDomain()" />
-      <cngx-line [accessor]="acc()" />
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="xDomain()"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="yDomain()"></svg:g>
+      <svg:g cngxLine [accessor]="acc()"></svg:g>
     </cngx-chart>
   `,
 })
@@ -35,7 +35,7 @@ class TestHost {
 @Component({
   standalone: true,
   imports: [CngxLine],
-  template: `<cngx-line [data]="data" />`,
+  template: `<div cngxLine [data]="data"></div>`,
 })
 class OrphanLineHost {
   data: readonly number[] = [1, 2, 3];

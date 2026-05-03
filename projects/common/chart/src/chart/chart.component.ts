@@ -44,10 +44,17 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
  * Top-level chart container. Hosts an `<svg>` viewBox, applies
  * {@link CngxResizeObserver} via `hostDirectives` to track its rendered
  * size, and provides {@link CNGX_CHART_CONTEXT} so child atoms
- * (`<cngx-axis>`, layer atoms) read the live scales without injecting
+ * (`[cngxAxis]`, layer atoms) read the live scales without injecting
  * the concrete `CngxChart` class.
  *
- * Scales are derived from content-child `<cngx-axis>` directives:
+ * Layer atoms and `[cngxAxis]` are attribute directives: consumers
+ * mount them on `<svg:g>` hosts inside the chart so the SVG namespace
+ * boundary stays clean. An element selector (`<cngx-axis>` etc.)
+ * inside `<svg>` would create an XHTML-namespaced custom element
+ * whose SVG-namespaced children would not lay out, leaving the chart
+ * blank in real browsers (jsdom is permissive and would mask this).
+ *
+ * Scales are derived from content-child `[cngxAxis]` directives:
  * the X axis (top/bottom position) drives `xScale`, the Y axis
  * (left/right) drives `yScale`. With no axis present, the
  * corresponding scale falls back to a no-op `() => 0` and content
@@ -90,10 +97,10 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
   styleUrls: ['../chart-tokens.css'],
   styles: [
     `
-      :host {
+      cngx-chart {
         display: block;
       }
-      svg {
+      cngx-chart > svg {
         display: block;
       }
     `,

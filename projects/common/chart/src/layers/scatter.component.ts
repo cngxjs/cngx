@@ -23,9 +23,11 @@ interface ScatterCircle {
  * Scatter layer atom. Renders one `<circle>` per datapoint. X and Y
  * accessors are independent — neither defaults to index, since the
  * defining trait of a scatter chart is two genuine data dimensions.
+ *
+ * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  */
 @Component({
-  selector: 'cngx-scatter',
+  selector: '[cngxScatter]',
   exportAs: 'cngxScatter',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

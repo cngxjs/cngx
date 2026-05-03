@@ -28,9 +28,11 @@ const FALLBACK_BASELINE = 0;
  * Bar does NOT require a band X scale; the slot width is purely
  * geometric. This keeps the atom usable with linear or band X axes
  * interchangeably.
+ *
+ * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  */
 @Component({
-  selector: 'cngx-bar',
+  selector: '[cngxBar]',
   exportAs: 'cngxBar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

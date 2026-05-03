@@ -2,8 +2,9 @@
  * @module @cngx/common/chart
  *
  * Declarative, Signal-first chart system. Two-level architecture:
- * composable atoms (`<cngx-chart>`, `<cngx-axis>`, layer atoms) and
- * preset molecules (`<cngx-sparkline>`, `<cngx-donut>`, etc.).
+ * composable atoms (`<cngx-chart>` element + `[cngxAxis]` and layer
+ * atoms applied to `<svg:g>` hosts) and preset molecules
+ * (`<cngx-sparkline>`, `<cngx-donut>`, etc.).
  */
 export {
   createLinearScale,

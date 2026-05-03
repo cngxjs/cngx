@@ -14,9 +14,11 @@ import { injectChartContext } from '../chart/chart-context';
  *
  * Default opacity is low (`var(--cngx-band-opacity, 0.12)`) so the
  * band sits behind line / area / bar layers without dominating.
+ *
+ * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  */
 @Component({
-  selector: 'cngx-band',
+  selector: '[cngxBand]',
   exportAs: 'cngxBand',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -11,13 +11,14 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
   imports: [CngxChart, CngxAxis],
   template: `
     <cngx-chart [data]="data()" [width]="width()" [height]="height()">
-      <cngx-axis
+      <svg:g
+        cngxAxis
         [position]="position()"
         [type]="axisType()"
         [domain]="domain()"
         [ticks]="tickCount()"
         [format]="formatFn()"
-      />
+      ></svg:g>
     </cngx-chart>
   `,
 })

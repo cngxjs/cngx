@@ -16,14 +16,16 @@ import {
 
 /**
  * Area layer atom. Reuses {@link createPathBuilder} for the upper edge
- * (same compute guard as `<cngx-line>`) and closes the polygon to a
+ * (same compute guard as `[cngxLine]`) and closes the polygon to a
  * `[baseline]` (default `0`) so SVG can fill it.
+ *
+ * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  *
  * The `d` string is cascade-guarded with string equality on its
  * `computed` so a no-op data refresh does not force a fill repaint.
  */
 @Component({
-  selector: 'cngx-area',
+  selector: '[cngxArea]',
   exportAs: 'cngxArea',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

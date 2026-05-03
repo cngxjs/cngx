@@ -12,9 +12,9 @@ import { ResizeObserverMock } from '../testing/resize-observer-mock';
   imports: [CngxChart, CngxAxis, CngxBand],
   template: `
     <cngx-chart [data]="[1, 2, 3]" [width]="200" [height]="100">
-      <cngx-axis position="bottom" type="linear" [domain]="[0, 2]" />
-      <cngx-axis position="left" type="linear" [domain]="[0, 10]" />
-      <cngx-band [from]="from()" [to]="to()" [label]="label()" />
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 2]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxBand [from]="from()" [to]="to()" [label]="label()"></svg:g>
     </cngx-chart>
   `,
 })

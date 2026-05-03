@@ -55,7 +55,7 @@ import { CNGX_CHART_I18N } from '../i18n/chart-i18n';
   `,
   styles: [
     `
-      :host {
+      cngx-chart-data-table {
         position: absolute;
         width: 1px;
         height: 1px;

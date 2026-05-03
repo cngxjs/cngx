@@ -15,9 +15,11 @@ import { injectChartContext } from '../chart/chart-context';
  * Common use: target threshold ("budget cap"), warning bands, or any
  * "line at value" reference. Always reads scales from
  * {@link CNGX_CHART_CONTEXT}.
+ *
+ * Attribute-selector on `<svg:g>` — see {@link CngxLine} for why.
  */
 @Component({
-  selector: 'cngx-threshold',
+  selector: '[cngxThreshold]',
   exportAs: 'cngxThreshold',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,

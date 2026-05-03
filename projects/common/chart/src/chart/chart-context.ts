@@ -4,7 +4,7 @@ import { inject, InjectionToken, type Signal } from '@angular/core';
  * Numeric input shape every concrete scale accepts. Linear scales take
  * `number`, time scales take `Date | number`, band scales take `string`
  * or arbitrary references via {@link createBandScale}'s generic. The
- * union narrows at the layer atom (`<cngx-line>`, `<cngx-bar>`, ...);
+ * union narrows at the layer atom (`[cngxLine]`, `[cngxBar]`, ...);
  * the chart context surface stays scale-agnostic.
  */
 export type XScaleInput = number | Date | string;
@@ -18,8 +18,8 @@ export type ScaleFn<TIn> = (v: TIn) => number;
 
 /**
  * Reactive context published by `<cngx-chart>` to its content children.
- * Layer atoms (`<cngx-line>`, `<cngx-bar>`, ...) and `<cngx-axis>`
- * inject {@link CNGX_CHART_CONTEXT} to read the parent chart's scales,
+ * Layer atoms (`[cngxLine]`, `[cngxBar]`, ...) and `[cngxAxis]` inject
+ * {@link CNGX_CHART_CONTEXT} to read the parent chart's scales,
  * dimensions, data length, and data array without needing a direct
  * reference to the parent class. Token is non-generic at the DI
  * boundary; layer atoms call `data<T>()` to narrow the array to their
@@ -41,7 +41,7 @@ export interface CngxChartContext<TX = XScaleInput, TY = number> {
 }
 
 /**
- * Injection token consumed by every chart child (`<cngx-axis>`, layer
+ * Injection token consumed by every chart child (`[cngxAxis]`, layer
  * atoms, `<cngx-chart-data-table>`). `<cngx-chart>` provides itself
  * via `useExisting`; child queries narrow the generic on the consumer
  * side.

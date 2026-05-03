@@ -17,9 +17,9 @@ interface Point {
   imports: [CngxChart, CngxAxis, CngxScatter],
   template: `
     <cngx-chart [data]="data()" [width]="100" [height]="100">
-      <cngx-axis position="bottom" type="linear" [domain]="[0, 10]" />
-      <cngx-axis position="left" type="linear" [domain]="[0, 10]" />
-      <cngx-scatter [x]="xAcc" [y]="yAcc" [radius]="radius()" />
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 10]"></svg:g>
+      <svg:g cngxScatter [x]="xAcc" [y]="yAcc" [radius]="radius()"></svg:g>
     </cngx-chart>
   `,
 })
