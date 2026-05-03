@@ -26,7 +26,7 @@ export const STORY: DemoSpec = {
     'selectors inside <code>&lt;svg&gt;</code> would create XHTML-namespaced wrappers and ' +
     'break layout for their SVG-namespaced children.</p>',
   moduleImports: [
-    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxChartLoading } from '@cngx/common/chart';",
+    "import { CngxChart, CngxAxis, CngxLine, CngxArea, CngxBar, CngxScatter, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError } from '@cngx/common/chart';",
     "import { createManualState } from '@cngx/common/data';",
     "import { CngxEmptyState } from '@cngx/ui/empty-state';",
   ],
