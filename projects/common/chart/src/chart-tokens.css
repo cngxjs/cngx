@@ -27,4 +27,8 @@
   --cngx-chart-grid-color: var(--border, #e5e7eb);
   --cngx-chart-axis-color: var(--text-secondary, #6b7280);
   --cngx-chart-text-color: var(--text-primary, #1f2937);
+  /* Default aspect ratio when <cngx-chart> runs in responsive mode
+     (no width/height inputs bound). Override globally at :root or
+     per-instance via inline style. */
+  --cngx-chart-aspect-ratio: 16 / 9;
 }

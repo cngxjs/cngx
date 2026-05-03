@@ -83,6 +83,7 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     '[attr.aria-label]': 'ariaLabelText()',
     '[attr.aria-describedby]': 'dataTableId',
     '[attr.aria-busy]': 'busy() ? "true" : null',
+    '[class.cngx-chart--responsive]': 'isResponsive()',
   },
   hostDirectives: [CngxResizeObserver],
   providers: [{ provide: CNGX_CHART_CONTEXT, useExisting: CngxChart }],
@@ -163,6 +164,17 @@ const DEFAULT_SUMMARY_ACCESSOR = <T>(d: T): number => Number(d as unknown);
     `
       cngx-chart {
         display: inline-block;
+      }
+      /* Responsive mode: when neither width nor height is bound, the
+         host fills its parent and derives height from the
+         --cngx-chart-aspect-ratio CSS variable (default 16/9). The
+         resize observer measures the rendered size; dimensions() then
+         drives the SVG width/height + viewBox + scale math, so axes
+         and layer atoms re-flow as the parent resizes. */
+      cngx-chart.cngx-chart--responsive {
+        display: block;
+        width: 100%;
+        aspect-ratio: var(--cngx-chart-aspect-ratio, 16 / 9);
       }
       cngx-chart > svg {
         display: block;
@@ -421,6 +433,18 @@ export class CngxChart<T = unknown> implements CngxChartContext<XScaleInput, num
 
   /** True when the chart is currently rendering its skeleton view. */
   protected readonly busy = computed(() => this.activeView() === 'skeleton');
+
+  /**
+   * Responsive mode is active when neither `[width]` nor `[height]` is
+   * bound. The host then fills its parent's width and derives height
+   * from the `--cngx-chart-aspect-ratio` CSS custom property (default
+   * `16 / 9`). The resize observer feeds `dimensions()` which drives
+   * the SVG sizing + scale math, so axes and layer atoms re-flow
+   * reactively as the parent resizes.
+   */
+  protected readonly isResponsive = computed(
+    () => this.width() === undefined && this.height() === undefined,
+  );
 
   /**
    * Reactive `aria-label` text the host announces. Skeleton / empty /

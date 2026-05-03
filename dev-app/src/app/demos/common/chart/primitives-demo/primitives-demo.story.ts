@@ -224,6 +224,30 @@ protected showError(): void { this.chartState.reset(); this.chartState.setError(
   </div>`,
     },
     {
+      title: 'Responsive (fills parent width)',
+      subtitle:
+        'Omit [width]/[height] and the chart switches into responsive mode: host fills the parent width, height comes from the --cngx-chart-aspect-ratio CSS variable (default 16/9). The resize observer drives dimensions() which feeds the SVG sizing + scale math, so axes and layer atoms re-flow on every container resize. Open the dev tools and drag the viewport to see the live re-flow.',
+      imports: ['CngxChart', 'CngxAxis', 'CngxLine', 'CngxArea', 'CngxThreshold', 'CngxBand'],
+      template: `
+  <div style="border:1px solid var(--border, #e5e7eb); border-radius: 4px; padding: 8px; resize: horizontal; overflow: auto; max-width: 100%; min-width: 320px; width: 70%">
+    <cngx-chart
+      [data]="[8, 12, 14, 9, 18, 22, 25, 19, 16, 24, 28, 32]"
+      aria-label="Responsive monthly performance trend with watch-zone band and target threshold."
+    >
+      <svg:g cngxAxis position="bottom" type="linear" [domain]="[0, 11]" [ticks]="6" [grid]="true"></svg:g>
+      <svg:g cngxAxis position="left" type="linear" [domain]="[0, 40]" [grid]="true"></svg:g>
+      <svg:g cngxBand [from]="20" [to]="30" label="watch"></svg:g>
+      <svg:g cngxArea></svg:g>
+      <svg:g cngxLine [strokeWidth]="2"></svg:g>
+      <svg:g cngxThreshold [value]="25" [label]="'target'" [dashed]="true"></svg:g>
+    </cngx-chart>
+  </div>
+  <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+    The wrapper has <code>resize: horizontal</code> — drag its right edge to resize.
+    The chart re-flows live.
+  </p>`,
+    },
+    {
       title: 'Scatter with performance zones',
       subtitle:
         'Scatter plot of (price, sales) points with low / mid / high performance zones via three stacked [cngxBand]s. Bands span the full chart width; their Y-range partitions the value space into traffic-light tiers.',

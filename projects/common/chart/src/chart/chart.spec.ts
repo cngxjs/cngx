@@ -365,6 +365,34 @@ describe('CngxChart', () => {
       expect(custom?.textContent?.trim()).toBe('err: boom');
     });
 
+    it('applies the responsive class only when both [width] and [height] are unset', () => {
+      @Component({
+        standalone: true,
+        imports: [CngxChart],
+        template: `
+          <cngx-chart [data]="data" data-testid="responsive"></cngx-chart>
+          <cngx-chart [data]="data" [width]="400" data-testid="explicit-w"></cngx-chart>
+          <cngx-chart [data]="data" [height]="200" data-testid="explicit-h"></cngx-chart>
+          <cngx-chart [data]="data" [width]="400" [height]="200" data-testid="explicit-both"></cngx-chart>
+        `,
+      })
+      class ResponsiveHost {
+        data: readonly number[] = [1, 2, 3];
+      }
+      TestBed.configureTestingModule({ imports: [ResponsiveHost] });
+      const fixture = TestBed.createComponent(ResponsiveHost);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      const responsive = host.querySelector('[data-testid="responsive"]') as HTMLElement;
+      const explicitW = host.querySelector('[data-testid="explicit-w"]') as HTMLElement;
+      const explicitH = host.querySelector('[data-testid="explicit-h"]') as HTMLElement;
+      const explicitBoth = host.querySelector('[data-testid="explicit-both"]') as HTMLElement;
+      expect(responsive.classList.contains('cngx-chart--responsive')).toBe(true);
+      expect(explicitW.classList.contains('cngx-chart--responsive')).toBe(false);
+      expect(explicitH.classList.contains('cngx-chart--responsive')).toBe(false);
+      expect(explicitBoth.classList.contains('cngx-chart--responsive')).toBe(false);
+    });
+
     it('switches back to SVG content when state transitions to success with data', async () => {
       const { createManualState } = await import('@cngx/common/data');
       @Component({
