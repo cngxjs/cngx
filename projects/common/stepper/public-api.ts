@@ -68,3 +68,11 @@ export {
   injectStepperI18n,
   provideStepperI18n,
 } from './src/i18n/stepper-i18n';
+
+export {
+  CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
+  type CngxStepperCommitHandler,
+  type CngxStepperCommitHandlerFactory,
+  type CngxStepperCommitHandlerOptions,
+  createStepperCommitHandler,
+} from './src/commit-handler';
