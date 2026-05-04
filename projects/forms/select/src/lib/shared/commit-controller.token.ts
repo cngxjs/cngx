@@ -1,6 +1,7 @@
-import { InjectionToken } from '@angular/core';
+import { InjectionToken, inject } from '@angular/core';
 
 import {
+  CNGX_COMMIT_CONTROLLER_FACTORY,
   createCommitController as createGenericCommitController,
   type CngxCommitBeginHandlers,
   type CngxCommitController as CngxGenericCommitController,
@@ -54,18 +55,17 @@ export interface CngxCommitController<T>
 }
 
 /**
- * Factory for the select-side commit controller. Wraps the lifted
- * {@link createGenericCommitController} from `@cngx/common/data` with
- * the {@link runCommitAction} runtime adapter so call-sites in the
- * select family keep their action-shape `begin()` ergonomics.
+ * Wraps a generic {@link CngxGenericCommitController} with the
+ * select-side action-shape adapter. The runtime adapter
+ * ({@link runCommitAction}) handles Observable/Promise/sync action
+ * results and routes them through the generic controller's runner-
+ * callback `begin`.
  *
- * Plain factory, not a class — matches the rest of the repo
- * (`createManualState`, `createAsyncState`, `createTransitionTracker`).
- *
- * @category interactive
+ * @internal
  */
-export function createCommitController<T>(): CngxCommitController<T> {
-  const generic = createGenericCommitController<T>();
+function wrapAsSelectController<T>(
+  generic: CngxGenericCommitController<T>,
+): CngxCommitController<T> {
   return {
     state: generic.state,
     isCommitting: generic.isCommitting,
@@ -81,6 +81,19 @@ export function createCommitController<T>(): CngxCommitController<T> {
       );
     },
   };
+}
+
+/**
+ * Factory for the select-side commit controller. Wraps a freshly-
+ * allocated generic controller with the action-shape adapter. Direct
+ * (non-DI) usage; bypasses the {@link CNGX_COMMIT_CONTROLLER_FACTORY}
+ * token. For DI-aware usage that respects override cascades, inject
+ * {@link CNGX_SELECT_COMMIT_CONTROLLER_FACTORY} instead.
+ *
+ * @category interactive
+ */
+export function createCommitController<T>(): CngxCommitController<T> {
+  return wrapAsSelectController(createGenericCommitController<T>());
 }
 
 /**
@@ -127,6 +140,14 @@ export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =
     'CngxSelectCommitControllerFactory',
     {
       providedIn: 'root',
-      factory: () => createCommitController,
+      factory: () => {
+        // Bind the generic factory at injection time so an override
+        // on CNGX_COMMIT_CONTROLLER_FACTORY cascades transparently
+        // into every select variant. The returned select-side
+        // factory wraps each generic controller with the action-
+        // shape adapter on demand.
+        const genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
+        return <T>() => wrapAsSelectController(genericFactory<T>());
+      },
     },
   );
