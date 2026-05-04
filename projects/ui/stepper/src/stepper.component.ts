@@ -107,7 +107,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
-  protected readonly presenter = inject(CNGX_STEPPER_HOST) as CngxStepperPresenter;
+  protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
