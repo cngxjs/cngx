@@ -86,6 +86,17 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly i18n = injectStepperI18n();
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
 
+  // Pre-build a Map<id, CngxStep> so labelTemplateFor /
+  // contentTemplateFor are O(1) per call instead of O(N) linear
+  // scans on every panel render.
+  private readonly stepDirectiveById = computed(() => {
+    const map = new Map<string, CngxStep>();
+    for (const dir of this.stepDirectives()) {
+      map.set(dir.id(), dir);
+    }
+    return map;
+  });
+
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
@@ -174,14 +185,12 @@ export class CngxStepper implements CngxStepPanelHost {
     if (idx >= 0) this.presenter.select(idx);
   }
 
-  // CngxStepPanelHost contract
+  // CngxStepPanelHost contract — O(1) via the pre-built map.
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
-    const dir = this.stepDirectives().find((d) => d.id() === id);
-    return dir?.labelTemplate()?.templateRef ?? null;
+    return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
   contentTemplateFor(id: string): TemplateRef<unknown> | null {
-    const dir = this.stepDirectives().find((d) => d.id() === id);
-    return dir?.contentTemplate()?.templateRef ?? null;
+    return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
 }
