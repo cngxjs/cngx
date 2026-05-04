@@ -648,6 +648,11 @@ export const routes: Routes = [
           import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
       },
       {
+        path: 'stepper/stepper-commit-action',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-commit-action-demo/stepper-commit-action-demo.component').then((m) => m.StepperCommitActionDemoComponent),
+      },
+      {
         path: 'stepper/stepper-error-aggregation',
         loadComponent: () =>
           import('./demos/ui/stepper/stepper-error-aggregation-demo/stepper-error-aggregation-demo.component').then((m) => m.StepperErrorAggregationDemoComponent),
