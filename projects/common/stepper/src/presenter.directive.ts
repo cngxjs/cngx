@@ -13,6 +13,7 @@ import {
   type CngxCommitController,
 } from '@cngx/common/data';
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
+import type { Observable } from 'rxjs';
 
 import { CNGX_STEPPER_HOST, type CngxStepperHost, type CngxStepNode, type CngxStepRegistration, type CngxStepStatus } from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
@@ -30,7 +31,7 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
 export type CngxStepperCommitAction = (
   fromIndex: number,
   toIndex: number,
-) => boolean | Promise<boolean> | import('rxjs').Observable<boolean>;
+) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
  * Stepper presenter — the brain of every stepper / wizard flow in
