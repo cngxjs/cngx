@@ -145,9 +145,14 @@ export class CngxStepper implements CngxStepPanelHost {
     return Array.isArray(cls) ? (cls as readonly string[]) : [String(cls)];
   });
 
-  /** Step ↔ index map for `aria-controls` ID generation. */
+  /**
+   * Step's position in the flat step-only projection. Reads
+   * `flatIndex` directly — set by `flattenStepTree` at O(1) in the
+   * presenter. Group nodes carry `-1` here, so callers that resolve
+   * a UI position must guard `node.kind === 'step'` first.
+   */
   protected stepIndexOf(node: CngxStepNode): number {
-    return this.stepsOnly().findIndex((n) => n.id === node.id);
+    return node.flatIndex;
   }
 
   protected isActive(node: CngxStepNode): boolean {
