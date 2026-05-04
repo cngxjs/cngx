@@ -6,7 +6,7 @@ import type { CngxStepNode } from './stepper-host.token';
  * to render strip + panels and uses `kind` to decide whether to
  * render a panel container or a group header.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 export function flattenStepTree(
   nodes: readonly CngxStepNode[],

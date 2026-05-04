@@ -10,7 +10,7 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * <ng-template cngxStepContent>...form fields...</ng-template>
  * ```
  *
- * @category interactive
+ * @category interactive/stepper
  */
 @Directive({
   selector: 'ng-template[cngxStepContent]',

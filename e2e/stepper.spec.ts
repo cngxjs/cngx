@@ -18,6 +18,7 @@ const VERTICAL = '/#/ui/stepper/stepper-vertical';
 const HIERARCHICAL = '/#/ui/stepper/stepper-hierarchical';
 const ERRORS = '/#/ui/stepper/stepper-error-aggregation';
 const COMMIT_ACTION = '/#/ui/stepper/stepper-commit-action';
+const ROUTER_SYNC = '/#/ui/stepper/stepper-router-sync';
 
 function stepper(page: Page): Locator {
   return page.locator('cngx-stepper').first();
@@ -168,6 +169,50 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
     await expect(buttons.nth(0)).toHaveAttribute('aria-current', 'step', {
       timeout: 4000,
     });
+  });
+
+  test('(h) router-sync: clicking a step writes the id into the URL fragment', async ({
+    page,
+  }) => {
+    await page.goto(ROUTER_SYNC);
+    const buttons = stepButtons(page);
+    await expect(buttons).toHaveCount(4);
+    // Default mode is fragment. Click step 2 — URL should now carry
+    // a `step=<id>` fragment. With hash routing the demo URL itself
+    // already contains '#', so we assert the directive's fragment
+    // segment lands somewhere in the URL.
+    await buttons.nth(1).click();
+    await expect(buttons.nth(1)).toHaveAttribute('aria-current', 'step');
+    await expect.poll(() => page.url()).toMatch(/step=notifications/);
+    // Step 4 should also wire the id through.
+    await buttons.nth(3).click();
+    await expect.poll(() => page.url()).toMatch(/step=confirm/);
+  });
+
+  test('(h) router-sync: queryParam mode writes ?step=<id> instead of fragment', async ({
+    page,
+  }) => {
+    await page.goto(ROUTER_SYNC);
+    // Switch to queryParam mode.
+    await page.getByRole('button', { name: 'queryParam (?)', exact: true }).click();
+    const buttons = stepButtons(page);
+    await buttons.nth(2).click();
+    await expect(buttons.nth(2)).toHaveAttribute('aria-current', 'step');
+    await expect.poll(() => page.url()).toMatch(/[?&]step=security/);
+  });
+
+  test('(h) router-sync: reload preserves the active step from the fragment', async ({
+    page,
+  }) => {
+    await page.goto(ROUTER_SYNC);
+    const buttons = stepButtons(page);
+    await buttons.nth(2).click();
+    await expect.poll(() => page.url()).toMatch(/step=security/);
+    // Reload — fragment should be parsed on first render.
+    await page.reload();
+    const reloaded = stepButtons(page);
+    await expect(reloaded).toHaveCount(4);
+    await expect(reloaded.nth(2)).toHaveAttribute('aria-current', 'step');
   });
 
   test('(f) error-aggregation: toggling validity flips the badge + descriptor announcement', async ({

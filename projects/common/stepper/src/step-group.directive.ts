@@ -31,7 +31,7 @@ import {
  * `pending` if any is pending, otherwise `idle`. Used by Level-4
  * organisms to render group-level badges.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 @Directive({
   selector: '[cngxStepGroup]',
@@ -72,7 +72,7 @@ export class CngxStepGroup implements CngxStepGroupHost {
     if (!this.stepperHost) {
       throw new Error(
         'CngxStepGroup: no enclosing CngxStepperPresenter found. ' +
-          'Wrap the group inside an element carrying [cngxStepper].',
+        'Wrap the group inside an element carrying [cngxStepper].',
       );
     }
     const groupId = this.id();

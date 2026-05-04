@@ -31,7 +31,7 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * `Observable | Promise | sync` union mirrors every other cngx
  * commit-action signature in the repo.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 export type CngxStepperCommitAction = (
   fromIndex: number,

@@ -15,7 +15,7 @@ import type { CngxStepperCommitAction } from './presenter.directive';
  * delegates to `beginTransition` whenever the user attempts a
  * step change.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 export interface CngxStepperCommitHandler {
   /**

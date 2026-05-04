@@ -30,7 +30,7 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
  * the directive logs a dev warning via `afterNextRender` and becomes
  * a no-op. Consumers without router escape gracefully.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 @Directive({
   selector: '[cngxStepperRouterSync]',
@@ -68,7 +68,7 @@ export class CngxStepperRouterSync {
       afterNextRender(() => {
         console.warn(
           'CngxStepperRouterSync: no Router available — directive is a no-op. ' +
-            'Provide @angular/router via provideRouter(...) to enable deep-linking.',
+          'Provide @angular/router via provideRouter(...) to enable deep-linking.',
         );
       });
       return;
@@ -97,15 +97,15 @@ export class CngxStepperRouterSync {
         const navigation =
           this.mode() === 'fragment'
             ? router.navigate([], {
-                fragment: `${this.paramName()}=${id}`,
-                queryParamsHandling: 'merge',
-                replaceUrl: true,
-              })
+              fragment: `${this.paramName()}=${id}`,
+              queryParamsHandling: 'merge',
+              replaceUrl: true,
+            })
             : router.navigate([], {
-                queryParams: { [this.paramName()]: id },
-                queryParamsHandling: 'merge',
-                replaceUrl: true,
-              });
+              queryParams: { [this.paramName()]: id },
+              queryParamsHandling: 'merge',
+              replaceUrl: true,
+            });
         navigation.catch?.((err: unknown) => this.syncError.emit(err));
       });
     });

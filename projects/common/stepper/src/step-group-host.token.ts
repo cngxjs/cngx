@@ -14,7 +14,7 @@ import type { CngxStepRegistration } from './stepper-host.token';
  * registration-forwarding chain) but no cross-component consumer
  * needs them through the token.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 export interface CngxStepGroupHost {
   register(handle: CngxStepRegistration): void;

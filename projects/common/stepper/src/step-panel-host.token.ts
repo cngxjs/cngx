@@ -9,7 +9,7 @@ import type { CngxStepNode } from './stepper-host.token';
  * what they need to project step labels / content templates and
  * react to active-step changes.
  *
- * @category interactive
+ * @category interactive/stepper
  */
 export interface CngxStepPanelHost {
   readonly flatSteps: Signal<readonly CngxStepNode[]>;
