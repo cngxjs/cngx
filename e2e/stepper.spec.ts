@@ -19,6 +19,8 @@ const HIERARCHICAL = '/#/ui/stepper/stepper-hierarchical';
 const ERRORS = '/#/ui/stepper/stepper-error-aggregation';
 const COMMIT_ACTION = '/#/ui/stepper/stepper-commit-action';
 const ROUTER_SYNC = '/#/ui/stepper/stepper-router-sync';
+const MAT_COMMIT = '/#/ui/mat-stepper/mat-stepper';
+const MAT_ROUTER_SYNC = '/#/ui/mat-stepper/mat-stepper-router-sync';
 
 function stepper(page: Page): Locator {
   return page.locator('cngx-stepper').first();
@@ -213,6 +215,41 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
     const reloaded = stepButtons(page);
     await expect(reloaded).toHaveCount(4);
     await expect(reloaded.nth(2)).toHaveAttribute('aria-current', 'step');
+  });
+
+  test('(i) mat-stepper: renders <mat-stepper> with one <mat-step> per cngxStep child', async ({
+    page,
+  }) => {
+    await page.goto(MAT_COMMIT);
+    const matStepper = page.locator('cngx-mat-stepper mat-stepper');
+    await expect(matStepper).toHaveCount(1);
+    const matSteps = page.locator('cngx-mat-stepper mat-step-header');
+    await expect(matSteps).toHaveCount(3);
+  });
+
+  test('(i) mat-stepper: pessimistic commitAction holds Material on origin until success', async ({
+    page,
+  }) => {
+    await page.goto(MAT_COMMIT);
+    const headers = page.locator('cngx-mat-stepper mat-step-header');
+    await expect(headers).toHaveCount(3);
+    // Click step 2 — pessimistic mode is default; Material should NOT
+    // advance immediately.
+    await headers.nth(1).click();
+    // After ~800ms latency the commit resolves and Material moves.
+    await expect(headers.nth(1)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 4000,
+    });
+  });
+
+  test('(i) mat-stepper + router-sync: clicking a Material step writes ?step=<id>', async ({
+    page,
+  }) => {
+    await page.goto(MAT_ROUTER_SYNC);
+    const headers = page.locator('cngx-mat-stepper mat-step-header');
+    await expect(headers).toHaveCount(4);
+    await headers.nth(2).click();
+    await expect.poll(() => page.url()).toMatch(/(step=security|#step=security)/);
   });
 
   test('(f) error-aggregation: toggling validity flips the badge + descriptor announcement', async ({
