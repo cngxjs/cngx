@@ -138,7 +138,14 @@ function resolveFeatures(
 
 /**
  * Root-level provider for the stepper config. Apply once in the
- * application providers array.
+ * application providers array (`bootstrapApplication` /
+ * `appConfig.providers`).
+ *
+ * Returns the same `Provider` shape as
+ * {@link provideStepperConfigAt} — the difference is the placement
+ * site, not the provider literal. Library convention: use this name
+ * when the call site is the application root, use the `At` twin
+ * inside `viewProviders`.
  *
  * @category interactive
  */
@@ -150,7 +157,19 @@ export function provideStepperConfig(
 
 /**
  * Component-scoped provider for the stepper config. Apply via
- * `viewProviders` to override config for a specific stepper subtree.
+ * `viewProviders` on a component to override the config for the
+ * subtree rooted at that component.
+ *
+ * Resolution priority across both helpers:
+ *   per-instance Input > viewProviders (`At`) > root provider >
+ *   library default
+ *
+ * The provider literal returned here is identical to the one from
+ * {@link provideStepperConfig} — Angular's DI hierarchy chooses
+ * which copy wins based on where the helper is placed (root
+ * `providers` vs component `viewProviders`). The naming is the
+ * usage hint, the library does not (and cannot) enforce the
+ * placement at the type level.
  *
  * @category interactive
  */
