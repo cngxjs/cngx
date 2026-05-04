@@ -1,5 +1,5 @@
 import { InjectionToken, type Signal } from '@angular/core';
-import { isObservable, type Observable } from 'rxjs';
+import { isObservable, type Observable, type Subscription } from 'rxjs';
 
 import {
   type CngxCommitController,
@@ -125,14 +125,18 @@ function runStepperAction(
   }
 
   if (isObservable(result)) {
-    const sub = result.subscribe({
+    // Synchronous Observables (`of(true)`) emit inside `.subscribe`
+    // before the assignment binds — `sub` is in TDZ if we close
+    // over it directly. Hold the handle on `let` declared first.
+    let sub: Subscription | null = null;
+    sub = result.subscribe({
       next: (accept) => {
         safeSuccess(accept);
-        sub.unsubscribe();
+        sub?.unsubscribe();
       },
       error: (err: unknown) => safeError(err),
     });
-    unsubscribe = () => sub.unsubscribe();
+    unsubscribe = () => sub?.unsubscribe();
   } else if (result != null && typeof (result as { then?: unknown }).then === 'function') {
     (result as Promise<boolean>).then(safeSuccess, safeError);
   } else {
