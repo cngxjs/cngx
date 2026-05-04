@@ -7,3 +7,5 @@
  * region via `hostDirectives`. Material consumers reach for
  * `@cngx/ui/mat-stepper` instead.
  */
+
+export { CngxStepper } from './src/stepper.component';
