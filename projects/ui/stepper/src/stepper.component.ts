@@ -108,7 +108,9 @@ export class CngxStepper implements CngxStepPanelHost {
 
   protected readonly panelClassList = computed<readonly string[]>(() => {
     const cls = this.panelClass();
-    if (!cls) return [];
+    if (!cls) {
+      return [];
+    }
     return Array.isArray(cls) ? (cls as readonly string[]) : [String(cls)];
   });
 
@@ -180,9 +182,13 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   protected handleHeaderClick(node: CngxStepNode): void {
-    if (node.kind !== 'step' || node.disabled()) return;
+    if (node.kind !== 'step' || node.disabled()) {
+      return;
+    }
     const idx = this.stepIndexOf(node);
-    if (idx >= 0) this.presenter.select(idx);
+    if (idx >= 0) {
+      this.presenter.select(idx);
+    }
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
