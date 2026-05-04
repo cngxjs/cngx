@@ -28,11 +28,13 @@ import { CngxStepper } from '@cngx/ui/stepper';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+  <div role="group" aria-label="URL sync mode" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
+            [attr.aria-pressed]="mode() === 'fragment'"
             [style.background]="mode() === 'fragment' ? '#c8e6c9' : ''"
             (click)="mode.set('fragment')">fragment (#)</button>
     <button type="button" class="chip"
+            [attr.aria-pressed]="mode() === 'queryParam'"
             [style.background]="mode() === 'queryParam' ? '#c8e6c9' : ''"
             (click)="mode.set('queryParam')">queryParam (?)</button>
   </div>
@@ -41,7 +43,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
     cngxStepperRouterSync
     [mode]="mode()"
     paramName="step"
-    (syncError)="lastError.set($any($event)?.message ?? String($event))"
+    (syncError)="onSyncError($event)"
     aria-label="Onboarding wizard"
   >
     <div cngxStep id="profile" label="Profile">
@@ -60,9 +62,11 @@ import { CngxStepper } from '@cngx/ui/stepper';
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">URL mode</span><span class="event-value">{{ mode() }}</span></div>
-    @if (lastError()) {
-      <div class="event-row"><span class="event-label">syncError</span><span class="event-value">{{ lastError() }}</span></div>
-    }
+    <div role="status" aria-live="polite" aria-atomic="true">
+      @if (lastError()) {
+        <div class="event-row"><span class="event-label">syncError</span><span class="event-value">{{ lastError() }}</span></div>
+      }
+    </div>
   </div>
       </app-example-card>
     </app-doc-shell>
@@ -70,11 +74,13 @@ import { CngxStepper } from '@cngx/ui/stepper';
 })
 export class StepperRouterSyncDemoComponent {
   protected readonly _s0 = 'Click any step — the URL updates to match. Reload the demo page with the fragment / query-param intact and the wizard lands on that step. Browser-back replays visited steps. The <code>(syncError)</code> output captures Router rejections (rare in practice, e.g. a guard refusing the navigation).';
-  protected readonly _srcHtml0 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+  protected readonly _srcHtml0 = `<div role="group" aria-label="URL sync mode" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
+            [attr.aria-pressed]="mode() === 'fragment'"
             [style.background]="mode() === 'fragment' ? '#c8e6c9' : ''"
             (click)="mode.set('fragment')">fragment (#)</button>
     <button type="button" class="chip"
+            [attr.aria-pressed]="mode() === 'queryParam'"
             [style.background]="mode() === 'queryParam' ? '#c8e6c9' : ''"
             (click)="mode.set('queryParam')">queryParam (?)</button>
   </div>
@@ -83,7 +89,7 @@ export class StepperRouterSyncDemoComponent {
     cngxStepperRouterSync
     [mode]="mode()"
     paramName="step"
-    (syncError)="lastError.set($any($event)?.message ?? String($event))"
+    (syncError)="onSyncError($event)"
     aria-label="Onboarding wizard"
   >
     <div cngxStep id="profile" label="Profile">
@@ -102,9 +108,11 @@ export class StepperRouterSyncDemoComponent {
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">URL mode</span><span class="event-value">{{ mode() }}</span></div>
-    @if (lastError()) {
-      <div class="event-row"><span class="event-label">syncError</span><span class="event-value">{{ lastError() }}</span></div>
-    }
+    <div role="status" aria-live="polite" aria-atomic="true">
+      @if (lastError()) {
+        <div class="event-row"><span class="event-label">syncError</span><span class="event-value">{{ lastError() }}</span></div>
+      }
+    </div>
   </div>`;
   protected readonly _srcTs0 = `import { CngxStep, CngxStepContent, CngxStepperRouterSync } from '@cngx/common/stepper';
 import { CngxStepper } from '@cngx/ui/stepper';
@@ -112,10 +120,18 @@ import { CngxStepper } from '@cngx/ui/stepper';
 
   protected readonly active = signal(0);
   protected readonly mode = signal<'fragment' | 'queryParam'>('fragment');
-  protected readonly lastError = signal<string | null>(null);`;
+  protected readonly lastError = signal<string | null>(null);
+
+  protected onSyncError(err: unknown): void {
+    this.lastError.set(err instanceof Error ? err.message : String(err));
+  }`;
 
   protected readonly active = signal(0);
   protected readonly mode = signal<'fragment' | 'queryParam'>('fragment');
   protected readonly lastError = signal<string | null>(null);
+
+  protected onSyncError(err: unknown): void {
+    this.lastError.set(err instanceof Error ? err.message : String(err));
+  }
   
 }
