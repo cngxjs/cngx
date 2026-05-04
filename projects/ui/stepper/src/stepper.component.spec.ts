@@ -3,7 +3,14 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import { CngxStep, CngxStepGroup } from '@cngx/common/stepper';
+import {
+  CngxStep,
+  CngxStepGroup,
+  provideStepperConfig,
+  provideStepperI18n,
+  withStepperAriaLabels,
+  withStepperFallbackLabels,
+} from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
 
@@ -199,6 +206,89 @@ describe('CngxStepper organism', () => {
     ) as NodeListOf<HTMLElement>;
     expect(badges.length).toBe(1);
     expect(badges[0].getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('host aria-label falls back to CNGX_STEPPER_CONFIG.ariaLabels.stepperRegion when no input bound', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper>
+          <div cngxStep label="A"></div>
+        </cngx-stepper>
+      `,
+    })
+    class NoLabelHost {}
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperAriaLabels({ stepperRegion: 'Order Wizard' }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(NoLabelHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Order Wizard');
+  });
+
+  it('host aria-label falls back to i18n.stepperLabel when ariaLabels.stepperRegion is explicitly cleared', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper>
+          <div cngxStep label="A"></div>
+        </cngx-stepper>
+      `,
+    })
+    class BareHost {}
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        // Override clears stepperRegion so the cascade falls through
+        // to the i18n bundle. Without this override the library
+        // default 'Stepper' for ariaLabels.stepperRegion wins.
+        provideStepperConfig(
+          withStepperAriaLabels({ stepperRegion: undefined }),
+        ),
+        provideStepperI18n({ stepperLabel: 'Schrittfolge' }),
+      ],
+    });
+    const fixture = TestBed.createComponent(BareHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector('cngx-stepper') as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Schrittfolge');
+  });
+
+  it('group aria-roledescription resolves from config.fallbackLabels.groupRoleDescription', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep, CngxStepGroup],
+      template: `
+        <cngx-stepper aria-label="x">
+          <div cngxStepGroup label="g">
+            <div cngxStep label="A"></div>
+          </div>
+        </cngx-stepper>
+      `,
+    })
+    class GroupRoleHost {}
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withStepperFallbackLabels({ groupRoleDescription: 'Schritt-Gruppe' }),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(GroupRoleHost);
+    fixture.detectChanges();
+    const group = fixture.nativeElement.querySelector(
+      '.cngx-stepper__group-header',
+    ) as HTMLElement;
+    expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
   it('descriptor span carries the i18n "Step N of M: <label>" phrase', () => {

@@ -39,7 +39,6 @@ export interface CngxStepperFallbackLabels {
 export interface CngxStepperConfig {
   readonly defaultOrientation?: 'horizontal' | 'vertical';
   readonly defaultLinear?: boolean;
-  readonly rovingLoop?: boolean;
   readonly defaultCommitMode?: 'optimistic' | 'pessimistic';
   readonly routerSyncMode?: 'fragment' | 'queryParam';
   readonly routerSyncParam?: string;
@@ -52,7 +51,6 @@ const STEPPER_CONFIG_DEFAULTS: Required<
 > & { ariaLabels: CngxStepperAriaLabels; fallbackLabels: CngxStepperFallbackLabels } = {
   defaultOrientation: 'horizontal',
   defaultLinear: false,
-  rovingLoop: false,
   defaultCommitMode: 'pessimistic',
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
@@ -93,10 +91,6 @@ export function withDefaultOrientation(
 
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return (cfg) => ({ ...cfg, defaultLinear: linear });
-}
-
-export function withStepperRovingLoop(loop: boolean): CngxStepperConfigFeature {
-  return (cfg) => ({ ...cfg, rovingLoop: loop });
 }
 
 export function withStepperCommitMode(

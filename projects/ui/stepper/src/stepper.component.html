@@ -4,7 +4,7 @@
       <div
         class="cngx-stepper__group-header"
         role="group"
-        aria-roledescription="step group"
+        [attr.aria-roledescription]="groupRoleDescription()"
         [attr.data-step-depth]="node.depth"
         [attr.data-state]="node.state()"
         [attr.aria-disabled]="node.disabled() ? 'true' : null"

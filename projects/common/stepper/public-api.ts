@@ -60,7 +60,6 @@ export {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
-  withStepperRovingLoop,
 } from './src/stepper-config';
 
 export {

@@ -20,6 +20,7 @@ import {
   CngxStep,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
   type CngxStepPanelHost,
@@ -69,10 +70,10 @@ import {
   templateUrl: './stepper.component.html',
   host: {
     'role': 'group',
-    'aria-roledescription': 'stepper',
+    '[attr.aria-roledescription]': 'stepperRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-stepper]': 'true',
   },
@@ -84,7 +85,37 @@ export class CngxStepper implements CngxStepPanelHost {
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST) as CngxStepperPresenter;
   protected readonly i18n = injectStepperI18n();
+  protected readonly config = injectStepperConfig();
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
+
+  /** Stepper landmark role-description with config + i18n cascade. */
+  protected readonly stepperRoleDescription = computed<string>(
+    () =>
+      this.config.fallbackLabels?.stepRoleDescription ??
+      this.i18n.stepperLabel,
+  );
+
+  /** Group landmark role-description with config + i18n cascade. */
+  protected readonly groupRoleDescription = computed<string>(
+    () =>
+      this.config.fallbackLabels?.groupRoleDescription ?? 'step group',
+  );
+
+  /**
+   * `aria-label` resolves Input → ariaLabels.stepperRegion config →
+   * i18n.stepperLabel. Pillar 2 — the surface declared by config /
+   * i18n must reach the DOM.
+   */
+  protected readonly resolvedAriaLabel = computed<string | null>(() => {
+    if (this.ariaLabelledBy()) {
+      return null; // labelledby trumps label
+    }
+    return (
+      this.ariaLabel() ??
+      this.config.ariaLabels?.stepperRegion ??
+      this.i18n.stepperLabel
+    );
+  });
 
   // Pre-build a Map<id, CngxStep> so labelTemplateFor /
   // contentTemplateFor are O(1) per call instead of O(N) linear
