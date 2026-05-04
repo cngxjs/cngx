@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { Subject, of, throwError } from 'rxjs';
+
 import { CngxStepperPresenter } from './presenter.directive';
 import { provideStepperConfig, withDefaultOrientation, withStepperLinear } from './stepper-config';
 import type { CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
@@ -179,6 +181,95 @@ describe('CngxStepperPresenter', () => {
     const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
     expect(presenter.linear()).toBe(true);
     expect(presenter.orientation()).toBe('vertical');
+  });
+
+  describe('commit-action lifecycle', () => {
+    function commitFixture(
+      mode: 'optimistic' | 'pessimistic',
+      action: (from: number, to: number) => unknown,
+    ): { presenter: CngxStepperPresenter } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [
+          {
+            directive: CngxStepperPresenter,
+            inputs: ['commitAction', 'commitMode'],
+          },
+        ],
+        template: '',
+      })
+      class CommitHost {}
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentRef.setInput('commitAction', action);
+      fixture.componentRef.setInput('commitMode', mode);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      return { presenter };
+    }
+
+    it('pessimistic + sync success: advances on resolution', () => {
+      const { presenter } = commitFixture('pessimistic', () => true);
+      expect(presenter.activeStepIndex()).toBe(0);
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(2);
+    });
+
+    it('pessimistic + sync rejection: stays on origin', () => {
+      const { presenter } = commitFixture('pessimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('optimistic + sync rejection: rolls back to origin', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('optimistic + Observable success: advances', () => {
+      const { presenter } = commitFixture('optimistic', () => of(true));
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(2);
+    });
+
+    it('error path: rejects via thrown observable + rolls back in optimistic', () => {
+      const { presenter } = commitFixture('optimistic', () =>
+        throwError(() => new Error('refused')),
+      );
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(0);
+    });
+
+    it('supersede: rapid second select cancels the first commit', () => {
+      // The first action never resolves (Subject); the second
+      // action resolves true. Supersede semantics from the lifted
+      // controller mean the first never advances; only the second's
+      // outcome lands.
+      const subj = new Subject<boolean>();
+      let toggle = 0;
+      const { presenter } = commitFixture('pessimistic', (_from, to) => {
+        if (toggle === 0) {
+          toggle = 1;
+          return subj;
+        }
+        return to === 1 ? true : false;
+      });
+      presenter.select(2);
+      expect(presenter.activeStepIndex()).toBe(0); // first in flight
+      presenter.select(1); // supersedes
+      expect(presenter.activeStepIndex()).toBe(1); // second resolved synchronously
+      // First subject's late emit must be ignored.
+      subj.next(true);
+      subj.complete();
+      expect(presenter.activeStepIndex()).toBe(1);
+    });
   });
 
   it('per-instance Input wins over the config default', () => {

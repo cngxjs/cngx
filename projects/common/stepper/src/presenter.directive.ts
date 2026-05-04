@@ -15,6 +15,10 @@ import {
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
+import {
+  CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
+  type CngxStepperCommitHandler,
+} from './commit-handler';
 import { injectStepperConfig } from './stepper-config';
 import { CNGX_STEPPER_HOST, type CngxStepperHost, type CngxStepNode, type CngxStepRegistration, type CngxStepStatus } from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
@@ -105,6 +109,9 @@ export class CngxStepperPresenter implements CngxStepperHost {
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
   private readonly commitController: CngxCommitController<number> =
     this.genericFactory<number>();
+  private readonly commitHandler: CngxStepperCommitHandler = inject(
+    CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
+  )({ controller: this.commitController });
 
   /** Producer surface for the `CNGX_STATEFUL` bridge contract. */
   readonly state: CngxAsyncState<number | undefined> = this.commitController.state;
@@ -245,7 +252,33 @@ export class CngxStepperPresenter implements CngxStepperHost {
     if (stepsOnly[target].disabled()) {
       return;
     }
-    this.activeStepIndex.set(target);
+    const previous = this.activeStepIndex();
+    if (target === previous) {
+      return;
+    }
+
+    const action = this.commitAction();
+    if (!action) {
+      this.activeStepIndex.set(target);
+      return;
+    }
+
+    // Commit-action gated transition. Pessimistic mode keeps the
+    // index at `previous` until the action resolves; optimistic
+    // advances now and rolls back on rejection. Supersede semantics
+    // come from the lifted commit-controller — a rapid second
+    // select() cancels the in-flight runner.
+    const mode = this.commitMode();
+    if (mode === 'optimistic') {
+      this.activeStepIndex.set(target);
+    }
+    this.commitHandler.beginTransition(previous, target, action, (accept) => {
+      if (accept && mode === 'pessimistic') {
+        this.activeStepIndex.set(target);
+      } else if (!accept && mode === 'optimistic') {
+        this.activeStepIndex.set(previous);
+      }
+    });
   }
 
   selectNext(): void {
