@@ -68,6 +68,11 @@ export function stepTreeEqual(
  * fields as {@link stepTreeEqual} plus `flatIndex` (which can shift
  * when a sibling is inserted before this node).
  *
+ * Use this for the presenter's `flatSteps` computed where every
+ * step carries a real DFS-assigned `flatIndex` and `depth`. NOT
+ * suitable for projections that synthesise `-1` placeholders for
+ * those fields — use {@link stepNodesEqual} instead.
+ *
  * @category interactive
  */
 export function flatStepsEqual(
@@ -86,6 +91,36 @@ export function flatStepsEqual(
       a[i].kind !== b[i].kind ||
       a[i].depth !== b[i].depth ||
       a[i].flatIndex !== b[i].flatIndex
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Structural equality for any flat node array — compares identity
+ * fields (`id`, `kind`, `parentId`) without consulting `flatIndex`
+ * or `depth`. Use for `CngxStepGroup.children` and any other
+ * projection that synthesises constant `-1` for those fields.
+ *
+ * @category interactive
+ */
+export function stepNodesEqual(
+  a: readonly CngxStepNode[],
+  b: readonly CngxStepNode[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (
+      a[i].id !== b[i].id ||
+      a[i].kind !== b[i].kind ||
+      a[i].parentId !== b[i].parentId
     ) {
       return false;
     }

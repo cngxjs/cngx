@@ -1,7 +1,12 @@
 import { computed, signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
-import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
+import {
+  flatStepsEqual,
+  flattenStepTree,
+  stepNodesEqual,
+  stepTreeEqual,
+} from './step-tree.util';
 import type { CngxStepNode } from './stepper-host.token';
 
 function step(id: string, depth: number, parentId: string | null = null): CngxStepNode {
@@ -113,5 +118,47 @@ describe('flatStepsEqual', () => {
     const after = flattenStepTree([step('x', 0), step('a', 0), step('b', 0)]);
     // 'a' moves from flatIndex 0 to 1.
     expect(flatStepsEqual(before, after)).toBe(false);
+  });
+});
+
+describe('stepNodesEqual', () => {
+  it('returns true for identical id+kind+parentId triples', () => {
+    const a = [step('a', 1, 'g'), step('b', 1, 'g')];
+    const b = [step('a', 1, 'g'), step('b', 1, 'g')];
+    expect(stepNodesEqual(a, b)).toBe(true);
+  });
+
+  it('returns false on length mismatch (regression for group-children)', () => {
+    // The bug: flatStepsEqual would return true when both arrays
+    // synthesise depth=-1 + flatIndex=-1 even on add/remove. The
+    // group-side comparator must catch length deltas.
+    const a = [step('a', 1, 'g')];
+    const b = [step('a', 1, 'g'), step('b', 1, 'g')];
+    expect(stepNodesEqual(a, b)).toBe(false);
+  });
+
+  it('returns false on parentId change (re-parenting)', () => {
+    const a = [step('a', 1, 'g1')];
+    const b = [step('a', 1, 'g2')];
+    expect(stepNodesEqual(a, b)).toBe(false);
+  });
+
+  it('catches re-parenting that flatStepsEqual misses (synthetic depth=-1 case)', () => {
+    // Group children synthesise depth=-1 + flatIndex=-1, so
+    // flatStepsEqual reduces to (id, kind) — silently ignoring
+    // a parent change. stepNodesEqual adds parentId to the
+    // comparison so a child re-parented from group A to group B
+    // is detected.
+    const synthetic = (id: string, parentId: string | null): ReturnType<typeof step> => ({
+      ...step(id, -1, parentId),
+      depth: -1,
+      flatIndex: -1,
+    });
+    const a = [synthetic('shared', 'g1')];
+    const b = [synthetic('shared', 'g2')];
+    // flatStepsEqual misses the parentId change.
+    expect(flatStepsEqual(a, b)).toBe(true);
+    // stepNodesEqual catches it.
+    expect(stepNodesEqual(a, b)).toBe(false);
   });
 });

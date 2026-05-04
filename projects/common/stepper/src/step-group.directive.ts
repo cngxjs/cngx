@@ -14,7 +14,7 @@ import {
   CNGX_STEP_GROUP_HOST,
   type CngxStepGroupHost,
 } from './step-group-host.token';
-import { flatStepsEqual } from './step-tree.util';
+import { stepNodesEqual } from './step-tree.util';
 import {
   CNGX_STEPPER_HOST,
   type CngxStepNode,
@@ -64,12 +64,12 @@ export class CngxStepGroup implements CngxStepGroupHost {
         parentId: this.id(),
         flatIndex: -1,
       })),
-    // Reuse the shipped step-shape comparator so unchanged
-    // membership doesn't cascade into downstream reads (presenter
-    // tree-rebuild, organism @for re-render). For group children
-    // depth + flatIndex are constant -1 — equality reduces to
-    // (id, kind) which matches the registry's identity contract.
-    { equal: flatStepsEqual },
+    // Use the depth/flatIndex-agnostic comparator. Group children
+    // synthesise constant -1 for those fields, so flatStepsEqual
+    // would short-circuit on every emission and mask real
+    // membership changes. stepNodesEqual compares (id, kind,
+    // parentId) — the registry's actual identity contract.
+    { equal: stepNodesEqual },
   );
 
   readonly aggregatedStatus: Signal<CngxStepStatus> = computed(() => {
