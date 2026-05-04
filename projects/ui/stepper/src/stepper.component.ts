@@ -104,7 +104,6 @@ function stepDirectiveMapEqual(
   },
 })
 export class CngxStepper implements CngxStepPanelHost {
-  readonly panelClass = input<string | readonly string[] | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined, { alias: 'aria-label' });
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
@@ -167,14 +166,6 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly stepsOnly = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
   );
-
-  protected readonly panelClassList = computed<readonly string[]>(() => {
-    const cls = this.panelClass();
-    if (!cls) {
-      return [];
-    }
-    return Array.isArray(cls) ? (cls as readonly string[]) : [String(cls)];
-  });
 
   /**
    * Step's position in the flat step-only projection. Reads
