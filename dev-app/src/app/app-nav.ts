@@ -148,6 +148,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Progress', path: 'ui/feedback/progress' },
       { label: 'Toast', path: 'ui/feedback/toast' },
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
+      { label: 'Async commit', path: 'ui/mat-stepper/mat-stepper' },
+      { label: 'Router sync', path: 'ui/mat-stepper/mat-stepper-router-sync' },
       { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'Skeleton', path: 'ui/skeleton' },
       { label: 'SpeakButton', path: 'ui/speak-button' },

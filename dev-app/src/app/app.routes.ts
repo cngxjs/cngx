@@ -633,6 +633,16 @@ export const routes: Routes = [
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
       },
       {
+        path: 'mat-stepper/mat-stepper',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-demo/mat-stepper-demo.component').then((m) => m.MatStepperDemoComponent),
+      },
+      {
+        path: 'mat-stepper/mat-stepper-router-sync',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-router-sync-demo/mat-stepper-router-sync-demo.component').then((m) => m.MatStepperRouterSyncDemoComponent),
+      },
+      {
         path: 'sidenav',
         loadComponent: () =>
           import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
