@@ -155,6 +155,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Errors', path: 'ui/stepper/stepper-error-aggregation' },
       { label: 'Hierarchical', path: 'ui/stepper/stepper-hierarchical' },
       { label: 'Horizontal', path: 'ui/stepper/stepper-horizontal' },
+      { label: 'Router sync', path: 'ui/stepper/stepper-router-sync' },
       { label: 'Vertical', path: 'ui/stepper/stepper-vertical' },
     ],
   },

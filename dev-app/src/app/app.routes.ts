@@ -668,6 +668,11 @@ export const routes: Routes = [
           import('./demos/ui/stepper/stepper-horizontal-demo/stepper-horizontal-demo.component').then((m) => m.StepperHorizontalDemoComponent),
       },
       {
+        path: 'stepper/stepper-router-sync',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-router-sync-demo/stepper-router-sync-demo.component').then((m) => m.StepperRouterSyncDemoComponent),
+      },
+      {
         path: 'stepper/stepper-vertical',
         loadComponent: () =>
           import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
