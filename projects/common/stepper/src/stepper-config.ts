@@ -1,15 +1,18 @@
 import { inject, InjectionToken, type Provider } from '@angular/core';
 
 /**
- * Aria-label overrides for stepper-specific surfaces. Library
+ * Aria-label overrides for the stepper landmark region. Library
  * defaults are English (per `feedback_en_default_locale`); German /
  * other locales come from consumer overrides.
+ *
+ * Per-step navigation labels (`previousStep`, `nextStep`) live in
+ * {@link CngxStepperI18n} — they're SR phrasing, not landmark
+ * naming, and belong with the rest of the i18n surface to avoid a
+ * dual-override path for the same string.
  *
  * @category interactive
  */
 export interface CngxStepperAriaLabels {
-  readonly previousStep?: string;
-  readonly nextStep?: string;
   readonly stepperRegion?: string;
 }
 
@@ -54,8 +57,6 @@ const STEPPER_CONFIG_DEFAULTS: Required<
   routerSyncMode: 'fragment',
   routerSyncParam: 'step',
   ariaLabels: {
-    previousStep: 'Previous step',
-    nextStep: 'Next step',
     stepperRegion: 'Stepper',
   },
   fallbackLabels: {

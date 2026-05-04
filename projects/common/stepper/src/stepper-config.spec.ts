@@ -12,7 +12,7 @@ import {
 } from './stepper-config';
 
 describe('CngxStepperConfig', () => {
-  it('library default is horizontal + non-linear + pessimistic + EN labels', () => {
+  it('library default is horizontal + non-linear + pessimistic + EN region label', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -20,7 +20,7 @@ describe('CngxStepperConfig', () => {
     expect(cfg.defaultOrientation).toBe('horizontal');
     expect(cfg.defaultLinear).toBe(false);
     expect(cfg.defaultCommitMode).toBe('pessimistic');
-    expect(cfg.ariaLabels?.previousStep).toBe('Previous step');
+    expect(cfg.ariaLabels?.stepperRegion).toBe('Stepper');
   });
 
   it('provideStepperConfig merges with* features in order', () => {
@@ -30,16 +30,14 @@ describe('CngxStepperConfig', () => {
         provideStepperConfig(
           withDefaultOrientation('vertical'),
           withStepperCommitMode('optimistic'),
-          withStepperAriaLabels({ previousStep: 'Vorheriger Schritt' }),
+          withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
         ),
       ],
     });
     const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
     expect(cfg.defaultOrientation).toBe('vertical');
     expect(cfg.defaultCommitMode).toBe('optimistic');
-    expect(cfg.ariaLabels?.previousStep).toBe('Vorheriger Schritt');
-    // Unset keys keep their defaults.
-    expect(cfg.ariaLabels?.nextStep).toBe('Next step');
+    expect(cfg.ariaLabels?.stepperRegion).toBe('Schrittfolge');
   });
 
   it('injectStepperConfig works inside an injection context', () => {
