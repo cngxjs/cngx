@@ -4,6 +4,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxStepperPresenter } from './presenter.directive';
+import { provideStepperConfig, withDefaultOrientation, withStepperLinear } from './stepper-config';
 import type { CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
 
 function reg(id: string, kind: 'step' | 'group' = 'step', stateValue: CngxStepStatus = 'idle', disabled = false): CngxStepRegistration {
@@ -160,5 +161,47 @@ describe('CngxStepperPresenter', () => {
     const { presenter } = setup();
     expect(presenter.commitState.status()).toBe('idle');
     expect(presenter.state).toBe(presenter.commitState);
+  });
+
+  it('linear / orientation / commitMode resolve from CNGX_STEPPER_CONFIG when input is unset', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(
+          withDefaultOrientation('vertical'),
+          withStepperLinear(true),
+        ),
+      ],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+    expect(presenter.linear()).toBe(true);
+    expect(presenter.orientation()).toBe('vertical');
+  });
+
+  it('per-instance Input wins over the config default', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperConfig(withDefaultOrientation('vertical')),
+      ],
+    });
+    @Component({
+      standalone: true,
+      hostDirectives: [
+        { directive: CngxStepperPresenter, inputs: ['orientation'] },
+      ],
+      template: '',
+    })
+    class InputWinsHost {}
+    const fixture = TestBed.createComponent(InputWinsHost);
+    fixture.componentRef.setInput('orientation', 'horizontal');
+    fixture.detectChanges();
+    const p = fixture.debugElement.injector.get(CngxStepperPresenter);
+    // Input='horizontal' wins over config default='vertical'.
+    expect(p.orientation()).toBe('horizontal');
   });
 });

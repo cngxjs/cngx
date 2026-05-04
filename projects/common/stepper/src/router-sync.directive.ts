@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  computed,
   DestroyRef,
   Directive,
   effect,
@@ -12,6 +13,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
+import { injectStepperConfig } from './stepper-config';
 import { CNGX_STEPPER_HOST } from './stepper-host.token';
 
 /**
@@ -36,8 +38,24 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
   standalone: true,
 })
 export class CngxStepperRouterSync {
-  readonly mode = input<'fragment' | 'queryParam'>('fragment');
-  readonly paramName = input<string>('step');
+  // Inputs default to undefined so the cascade resolves through
+  // {@link CNGX_STEPPER_CONFIG} when unset (per-instance Input >
+  // viewProviders > root > library default).
+  protected readonly modeInput = input<
+    'fragment' | 'queryParam' | undefined
+  >(undefined, { alias: 'mode' });
+  protected readonly paramNameInput = input<string | undefined>(undefined, {
+    alias: 'paramName',
+  });
+
+  private readonly config = injectStepperConfig();
+
+  readonly mode = computed<'fragment' | 'queryParam'>(
+    () => this.modeInput() ?? this.config.routerSyncMode ?? 'fragment',
+  );
+  readonly paramName = computed<string>(
+    () => this.paramNameInput() ?? this.config.routerSyncParam ?? 'step',
+  );
 
   /** Emits when a `router.navigate` rejection is observed. */
   readonly syncError = output<unknown>();

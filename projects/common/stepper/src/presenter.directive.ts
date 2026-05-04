@@ -15,6 +15,7 @@ import {
 import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
+import { injectStepperConfig } from './stepper-config';
 import { CNGX_STEPPER_HOST, type CngxStepperHost, type CngxStepNode, type CngxStepRegistration, type CngxStepStatus } from './stepper-host.token';
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
 
@@ -59,9 +60,28 @@ export type CngxStepperCommitAction = (
   ],
 })
 export class CngxStepperPresenter implements CngxStepperHost {
+  private readonly config = injectStepperConfig();
+
   readonly activeStepIndex = model<number>(0);
-  readonly linear = input<boolean>(false);
-  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  // Inputs default to `undefined` so `computed` can fall through to
+  // the {@link CNGX_STEPPER_CONFIG} cascade (per-instance Input >
+  // viewProviders > root > library default). Public types expose
+  // the resolved value as `Signal<...>`.
+  protected readonly linearInput = input<boolean | undefined>(undefined, {
+    alias: 'linear',
+  });
+  readonly linear = computed<boolean>(
+    () => this.linearInput() ?? this.config.defaultLinear ?? false,
+  );
+
+  protected readonly orientationInput = input<
+    'horizontal' | 'vertical' | undefined
+  >(undefined, { alias: 'orientation' });
+  readonly orientation = computed<'horizontal' | 'vertical'>(
+    () =>
+      this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
+  );
+
   /**
    * @experimental Phase 1 declares the input shape; the
    * commit-controller wiring (gating `select()` on the action's
@@ -74,7 +94,13 @@ export class CngxStepperPresenter implements CngxStepperHost {
    * @experimental Companion to `commitAction`; only consulted once
    * the Phase 3 wiring lands.
    */
-  readonly commitMode = input<'optimistic' | 'pessimistic'>('pessimistic');
+  protected readonly commitModeInput = input<
+    'optimistic' | 'pessimistic' | undefined
+  >(undefined, { alias: 'commitMode' });
+  readonly commitMode = computed<'optimistic' | 'pessimistic'>(
+    () =>
+      this.commitModeInput() ?? this.config.defaultCommitMode ?? 'pessimistic',
+  );
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
   private readonly commitController: CngxCommitController<number> =
