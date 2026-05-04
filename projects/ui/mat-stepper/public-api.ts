@@ -6,3 +6,4 @@
  * via `hostDirectives`, so commit-action lifecycle, router sync, and
  * error aggregation all work identically against `<mat-stepper>`.
  */
+export { CngxMatStepper } from './src/mat-stepper.component';

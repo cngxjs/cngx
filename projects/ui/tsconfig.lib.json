@@ -21,6 +21,6 @@
       "@cngx/ui/feedback": ["dist/ui/types/cngx-ui-feedback.d.ts"]
     }
   },
-  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts"],
+  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

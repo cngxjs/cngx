@@ -1,0 +1,25 @@
+<mat-stepper
+  [orientation]="matOrientation()"
+  [linear]="presenter.linear()"
+>
+  @for (node of stepsOnly(); track node.id) {
+    <mat-step
+      [completed]="isCompleted(node)"
+      [hasError]="hasError(node)"
+      [editable]="isEditable(node)"
+    >
+      <ng-template matStepLabel>
+        @let labelTpl = labelTemplateFor(node.id);
+        @if (labelTpl) {
+          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+        } @else {
+          <span [attr.data-step-depth]="stepDepth(node)">{{ stepLabel(node) }}</span>
+        }
+      </ng-template>
+      @let contentTpl = contentTemplateFor(node.id);
+      @if (contentTpl) {
+        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      }
+    </mat-step>
+  }
+</mat-stepper>
