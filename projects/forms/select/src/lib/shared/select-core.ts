@@ -24,7 +24,7 @@ import { CngxSelectAnnouncer } from './announcer';
 import {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
-} from './commit-controller';
+} from './commit-controller.token';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitErrorDisplay,

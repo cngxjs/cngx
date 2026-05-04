@@ -267,7 +267,7 @@ export {
   type CngxCommitController,
   type CngxCommitBeginHandlers,
   createCommitController,
-} from './src/lib/shared/commit-controller';
+} from './src/lib/shared/commit-controller.token';
 
 // ── Field sync factory ────────────────────────────────────────────────
 export {

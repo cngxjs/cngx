@@ -66,7 +66,7 @@ import {
   type CngxSelectPanelShellTemplates,
   type CngxSelectPanelViewHost,
 } from '../shared/panel-host';
-import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
+import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import { CNGX_DISMISS_HANDLER_FACTORY } from '../shared/dismiss-handler';
 import { CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY } from '../shared/panel-lifecycle-emitter';
 import { resolveSelectConfig } from '../shared/resolve-config';
