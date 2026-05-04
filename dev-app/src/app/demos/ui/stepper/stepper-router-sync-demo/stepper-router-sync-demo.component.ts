@@ -28,7 +28,9 @@ import { CngxStepper } from '@cngx/ui/stepper';
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0">
         
-  <fieldset class="event-row" style="border:0;padding:0;margin:0 0 8px;gap:8px;align-items:center;flex-wrap:wrap">
+  <fieldset class="event-row"
+            aria-label="URL sync mode"
+            style="border:0;padding:0;margin:0 0 var(--demo-row-gap, 8px);gap:8px;align-items:center;flex-wrap:wrap">
     <legend class="cngx-sr-only">URL sync mode</legend>
     <label class="chip"
            [style.background]="mode() === 'fragment' ? 'var(--demo-chip-active-bg, #c8e6c9)' : ''">
@@ -81,7 +83,9 @@ import { CngxStepper } from '@cngx/ui/stepper';
 })
 export class StepperRouterSyncDemoComponent {
   protected readonly _s0 = 'Click any step — the URL updates to match. Reload the demo page with the fragment / query-param intact and the wizard lands on that step. Browser-back replays visited steps. The <code>(syncError)</code> output captures Router rejections (rare in practice, e.g. a guard refusing the navigation).';
-  protected readonly _srcHtml0 = `<fieldset class="event-row" style="border:0;padding:0;margin:0 0 8px;gap:8px;align-items:center;flex-wrap:wrap">
+  protected readonly _srcHtml0 = `<fieldset class="event-row"
+            aria-label="URL sync mode"
+            style="border:0;padding:0;margin:0 0 var(--demo-row-gap, 8px);gap:8px;align-items:center;flex-wrap:wrap">
     <legend class="cngx-sr-only">URL sync mode</legend>
     <label class="chip"
            [style.background]="mode() === 'fragment' ? 'var(--demo-chip-active-bg, #c8e6c9)' : ''">
@@ -138,8 +142,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 
   protected onSyncError(err: unknown): void {
     const message = err instanceof Error ? err.message : String(err);
-    const n = (this.lastError()?.n ?? 0) + 1;
-    this.lastError.set({ message, n });
+    this.lastError.update((prev) => ({ message, n: (prev?.n ?? 0) + 1 }));
   }`;
 
   protected readonly active = signal(0);
@@ -148,8 +151,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 
   protected onSyncError(err: unknown): void {
     const message = err instanceof Error ? err.message : String(err);
-    const n = (this.lastError()?.n ?? 0) + 1;
-    this.lastError.set({ message, n });
+    this.lastError.update((prev) => ({ message, n: (prev?.n ?? 0) + 1 }));
   }
   
 }
