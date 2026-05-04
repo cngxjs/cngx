@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxTypeahead } from './typeahead.component';
 import type { CngxSelectOptionsInput } from '../shared/option.model';
 import type { CngxSelectCommitAction } from '../shared/commit-action.types';
@@ -465,3 +466,5 @@ describe('CngxTypeahead — glyph inputs + input prefix/suffix', () => {
     expect(children.indexOf(suffixWrapper)).toBeGreaterThan(children.indexOf(input));
   });
 });
+
+describeCommitControllerCascade('CngxTypeahead');

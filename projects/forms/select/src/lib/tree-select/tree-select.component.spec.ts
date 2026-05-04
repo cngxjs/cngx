@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import type { CngxTreeNode } from '@cngx/utils';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxTreeSelect } from './tree-select.component';
 import { CngxTreeSelectChip } from './tree-select-chip.directive';
 import { CngxTreeSelectTriggerLabel } from './tree-select-trigger-label.directive';
@@ -384,3 +385,5 @@ describe('CngxTreeSelect', () => {
     expect(root.querySelector<HTMLElement>('[role="combobox"]')?.getAttribute('aria-disabled')).toBe('true');
   });
 });
+
+describeCommitControllerCascade('CngxTreeSelect');

@@ -12,6 +12,7 @@ import { CNGX_FORM_FIELD_CONTROL, CngxFormField } from '@cngx/forms/field';
 import { createMockField, type MockFieldRef } from '@cngx/forms/field/testing';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxSelect, type CngxSelectChange } from './select.component';
 import { injectSelectConfig, injectSelectAnnouncer } from '../shared/inject-helpers';
 import { CngxSelectAnnouncer } from '../shared/announcer';
@@ -1158,3 +1159,5 @@ describe('CngxSelect — config cascade (input > component-scope > app-scope > d
     expect(raw.panelWidth).toBe(500);
   });
 });
+
+describeCommitControllerCascade('CngxSelect');

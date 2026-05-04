@@ -11,6 +11,7 @@ import { CNGX_STATEFUL } from '@cngx/core/utils';
 
 import { CngxFormField } from '@cngx/forms/field';
 
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select.component';
 import type { CngxSelectOptionDef } from '../shared/option.model';
 import type {
@@ -1001,4 +1002,6 @@ describe('CngxMultiSelect — withAriaLabels config override', () => {
     expect(clearBtn.getAttribute('aria-label')).toBe('Instance-level label');
   });
 });
+
+describeCommitControllerCascade('CngxMultiSelect');
 
