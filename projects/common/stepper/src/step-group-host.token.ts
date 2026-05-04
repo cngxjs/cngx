@@ -1,6 +1,6 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 
-import type { CngxStepNode, CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
+import type { CngxStepRegistration } from './stepper-host.token';
 
 /**
  * Public contract a `CngxStep` sees when it injects a parent group
@@ -8,13 +8,15 @@ import type { CngxStepNode, CngxStepRegistration, CngxStepStatus } from './stepp
  * the presenter's surface so atoms can be agnostic about whether
  * they're rooted at the presenter or nested inside a group.
  *
+ * Surface is intentionally minimal — only the registration
+ * lifecycle. The group's own `id` / `aggregatedStatus` are
+ * concrete-class details (used by the status roll-up and the
+ * registration-forwarding chain) but no cross-component consumer
+ * needs them through the token.
+ *
  * @category interactive
  */
 export interface CngxStepGroupHost {
-  readonly id: Signal<string>;
-  readonly children: Signal<readonly CngxStepNode[]>;
-  readonly aggregatedStatus: Signal<CngxStepStatus>;
-
   register(handle: CngxStepRegistration): void;
   unregister(id: string): void;
 }

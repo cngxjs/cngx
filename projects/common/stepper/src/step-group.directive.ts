@@ -14,10 +14,8 @@ import {
   CNGX_STEP_GROUP_HOST,
   type CngxStepGroupHost,
 } from './step-group-host.token';
-import { stepNodesEqual } from './step-tree.util';
 import {
   CNGX_STEPPER_HOST,
-  type CngxStepNode,
   type CngxStepRegistration,
   type CngxStepStatus,
 } from './stepper-host.token';
@@ -46,31 +44,10 @@ export class CngxStepGroup implements CngxStepGroupHost {
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
 
+  // Internal child registry — drives `aggregatedStatus`. The
+  // presenter owns the canonical tree; this signal exists only to
+  // observe child status changes for the roll-up computed below.
   private readonly childRegistry = signal<readonly CngxStepRegistration[]>([]);
-  readonly children: Signal<readonly CngxStepNode[]> = computed(
-    () =>
-      // Group-host clients consume the registration handles directly;
-      // the presenter rebuilds CngxStepNode from them. Wrap in node-
-      // shape for symmetry with the host contract.
-      this.childRegistry().map((reg) => ({
-        id: reg.id,
-        kind: reg.kind,
-        label: reg.label,
-        disabled: reg.disabled,
-        state: reg.state,
-        errorAggregator: reg.errorAggregator,
-        children: [],
-        depth: -1,
-        parentId: this.id(),
-        flatIndex: -1,
-      })),
-    // Use the depth/flatIndex-agnostic comparator. Group children
-    // synthesise constant -1 for those fields, so flatStepsEqual
-    // would short-circuit on every emission and mask real
-    // membership changes. stepNodesEqual compares (id, kind,
-    // parentId) — the registry's actual identity contract.
-    { equal: stepNodesEqual },
-  );
 
   readonly aggregatedStatus: Signal<CngxStepStatus> = computed(() => {
     const states = this.childRegistry().map((c) => c.state());
