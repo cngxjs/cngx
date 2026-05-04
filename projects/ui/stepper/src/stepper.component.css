@@ -13,8 +13,8 @@
 .cngx-stepper__indicator {
   background: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 10%, transparent));
   color: var(--cngx-step-indicator-color, currentColor);
-  font-size: 0.85em;
-  font-weight: 600;
+  font-size: var(--cngx-step-indicator-font-size, 0.85em);
+  font-weight: var(--cngx-step-indicator-font-weight, 600);
   transition: background-color 120ms ease;
 }
 

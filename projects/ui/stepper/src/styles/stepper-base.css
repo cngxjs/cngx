@@ -79,7 +79,7 @@
   display: inline-flex;
   align-items: center;
   padding: var(--cngx-step-padding, 0.5rem 0.75rem);
-  font-weight: 600;
+  font-weight: var(--cngx-step-group-font-weight, 600);
 }
 
 .cngx-stepper__badge {
@@ -91,8 +91,8 @@
   border-radius: 50%;
   background: var(--cngx-step-error-badge-color, #c62828);
   color: var(--cngx-step-error-badge-text-color, white);
-  font-size: 0.75em;
-  font-weight: 700;
+  font-size: var(--cngx-step-badge-font-size, 0.75em);
+  font-weight: var(--cngx-step-badge-font-weight, 700);
   flex: 0 0 auto;
   margin-inline-start: var(--cngx-step-gap, 0.5rem);
 }
