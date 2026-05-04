@@ -291,6 +291,39 @@ describe('CngxStepper organism', () => {
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
+  it('label/content template lookup is stable across redundant re-renders (Map equality)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper [(activeStepIndex)]="active" aria-label="Stable">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class StableHost {
+      readonly active = signal(0);
+    }
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(StableHost);
+    fixture.detectChanges();
+    const stepperEl = fixture.debugElement.children[0];
+    const stepper = stepperEl.componentInstance as CngxStepper;
+    // labelTemplateFor reads the Map computed; calling it twice on
+    // an unchanged registry must hit the same Map reference (the
+    // stepDirectiveMapEqual guard short-circuits the computed).
+    const flat = stepper.flatSteps();
+    const firstId = flat[0].id;
+    const a1 = stepper.labelTemplateFor(firstId);
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    const a2 = stepper.labelTemplateFor(firstId);
+    expect(a1).toBe(a2);
+  });
+
   it('busy spinner is absent + aria-busy is null when no commit is in flight', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
