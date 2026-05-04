@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
@@ -138,5 +138,82 @@ describe('CngxStepper organism', () => {
     expect(panels[0].hidden).toBe(false);
     expect(panels[1].hidden).toBe(true);
     expect(panels[2].hidden).toBe(true);
+  });
+
+  it('hierarchical: group header carries data-step-depth=0 + sub-step buttons depth=1', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HierarchicalHost);
+    fixture.detectChanges();
+    const group = fixture.nativeElement.querySelector(
+      '.cngx-stepper__group-header',
+    ) as HTMLElement;
+    expect(group.getAttribute('data-step-depth')).toBe('0');
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'button.cngx-stepper__step',
+    ) as NodeListOf<HTMLButtonElement>;
+    // First two buttons are sub-steps of the group → depth=1.
+    expect(buttons[0].getAttribute('data-step-depth')).toBe('1');
+    expect(buttons[1].getAttribute('data-step-depth')).toBe('1');
+    // Trailing root step → depth=0.
+    expect(buttons[2].getAttribute('data-step-depth')).toBe('0');
+  });
+
+  it('error-aggregator badge shows when [errorAggregator]?.shouldShow() is true', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper aria-label="Errors">
+          <div cngxStep label="A" [errorAggregator]="agg"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class ErrHost {
+      readonly aggShow = signal(false);
+      readonly agg = {
+        hasError: this.aggShow,
+        shouldShow: this.aggShow,
+        announcement: signal('Two validation errors'),
+        errorCount: signal(2),
+        errorLabels: signal(['email', 'phone'] as readonly string[]),
+        activeErrors: signal(['email', 'phone'] as readonly string[]),
+        addSource: () => {},
+        removeSource: () => {},
+      };
+    }
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(ErrHost);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelectorAll('.cngx-stepper__badge').length,
+    ).toBe(0);
+    fixture.componentInstance.aggShow.set(true);
+    fixture.detectChanges();
+    const badges = fixture.nativeElement.querySelectorAll(
+      '.cngx-stepper__badge',
+    ) as NodeListOf<HTMLElement>;
+    expect(badges.length).toBe(1);
+    expect(badges[0].getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('descriptor span carries the i18n "Step N of M: <label>" phrase', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector(
+      'button.cngx-stepper__step',
+    ) as HTMLButtonElement;
+    const descId = button.getAttribute('aria-describedby')!;
+    const desc = fixture.nativeElement.querySelector(
+      `#${descId}`,
+    ) as HTMLElement;
+    expect(desc.textContent?.trim()).toBe('Step 1 of 3: A');
   });
 });

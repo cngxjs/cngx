@@ -82,6 +82,33 @@
   font-weight: 600;
 }
 
+.cngx-stepper__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-step-badge-size, 1.25rem);
+  height: var(--cngx-step-badge-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-step-error-badge-color, #c62828);
+  color: var(--cngx-step-error-badge-text-color, white);
+  font-size: 0.75em;
+  font-weight: 700;
+  flex: 0 0 auto;
+  margin-inline-start: var(--cngx-step-gap, 0.5rem);
+}
+
+.cngx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Hierarchical depth indent — horizontal layout indents the
    indicator, vertical indents the whole row. */
 :host([data-orientation='horizontal']) .cngx-stepper__step[data-step-depth='1'],

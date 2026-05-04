@@ -20,6 +20,7 @@ import {
   CngxStep,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  injectStepperI18n,
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
@@ -82,6 +83,7 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly ariaLabelledBy = input<string | undefined>(undefined, { alias: 'aria-labelledby' });
 
   protected readonly presenter = inject(CNGX_STEPPER_HOST) as CngxStepperPresenter;
+  protected readonly i18n = injectStepperI18n();
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
 
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
@@ -122,6 +124,48 @@ export class CngxStepper implements CngxStepPanelHost {
 
   protected stepPanelId(node: CngxStepNode): string {
     return `${node.id}-panel`;
+  }
+
+  protected stepDescriptorId(node: CngxStepNode): string {
+    return `${node.id}-desc`;
+  }
+
+  /**
+   * SR descriptor phrase for a step header. Reads the aggregator's
+   * announcement when one is bound and the aggregator opted-in to
+   * showing errors; otherwise falls back to a "Step N of M:
+   * <label>" phrase from the i18n bundle.
+   */
+  protected statusPhrase(node: CngxStepNode): string {
+    const aggregator = node.errorAggregator?.();
+    if (aggregator?.shouldShow?.() && aggregator.announcement) {
+      return aggregator.announcement();
+    }
+    if (node.kind !== 'step') {
+      return '';
+    }
+    const idx = this.stepIndexOf(node);
+    if (idx < 0) {
+      return '';
+    }
+    return this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
+  }
+
+  /** Group descriptor — rolls up children's aggregated status. */
+  protected groupStatusPhrase(node: CngxStepNode): string {
+    const status = node.state();
+    if (status === 'error') {
+      return this.i18n.stepErrored;
+    }
+    if (status === 'success') {
+      return this.i18n.stepCompleted;
+    }
+    return '';
+  }
+
+  /** Whether to render the error badge for a step node. */
+  protected showErrorBadge(node: CngxStepNode): boolean {
+    return !!node.errorAggregator?.()?.shouldShow?.();
   }
 
   protected handleHeaderClick(node: CngxStepNode): void {

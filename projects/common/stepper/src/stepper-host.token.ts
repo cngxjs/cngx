@@ -33,8 +33,8 @@ export interface CngxStepNode {
   readonly disabled: Signal<boolean>;
   /** Live step status. Reactive to commit-controller + aggregator. */
   readonly state: Signal<CngxStepStatus>;
-  /** Optional error aggregator handle for badge / SR phrasing. */
-  readonly errorAggregator?: CngxErrorAggregatorContract;
+  /** Optional error aggregator signal for badge / SR phrasing. */
+  readonly errorAggregator?: Signal<CngxErrorAggregatorContract | undefined>;
   /** Direct children for group nodes; empty for step nodes. */
   readonly children: readonly CngxStepNode[];
   /** DFS depth (root = 0). */
@@ -58,7 +58,7 @@ export interface CngxStepRegistration {
   readonly label: Signal<string>;
   readonly disabled: Signal<boolean>;
   readonly state: Signal<CngxStepStatus>;
-  readonly errorAggregator?: CngxErrorAggregatorContract;
+  readonly errorAggregator?: Signal<CngxErrorAggregatorContract | undefined>;
 }
 
 /**

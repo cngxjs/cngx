@@ -6,9 +6,12 @@
         role="group"
         aria-roledescription="step group"
         [attr.data-step-depth]="node.depth"
+        [attr.data-state]="node.state()"
         [attr.aria-disabled]="node.disabled() ? 'true' : null"
+        [attr.aria-describedby]="stepDescriptorId(node)"
       >
         <span class="cngx-stepper__group-label">{{ node.label() }}</span>
+        <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ groupStatusPhrase(node) }}</span>
       </div>
     } @else {
       <button
@@ -22,6 +25,7 @@
         [attr.aria-controls]="stepPanelId(node)"
         [attr.aria-disabled]="node.disabled() ? 'true' : null"
         [attr.aria-busy]="isStepBusy(node) ? 'true' : null"
+        [attr.aria-describedby]="stepDescriptorId(node)"
         [cngxRovingItemDisabled]="node.disabled()"
         (click)="handleHeaderClick(node)"
       >
@@ -33,6 +37,10 @@
           <span class="cngx-stepper__indicator-glyph">{{ stepIndexOf(node) + 1 }}</span>
         </span>
         <span class="cngx-stepper__label">{{ node.label() }}</span>
+        @if (showErrorBadge(node)) {
+          <span class="cngx-stepper__badge" aria-hidden="true">!</span>
+        }
+        <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ statusPhrase(node) }}</span>
       </button>
     }
   }

@@ -100,7 +100,7 @@ export class CngxStep {
       label: this.label,
       disabled: this.disabled,
       state: this.state,
-      errorAggregator: this.errorAggregator(),
+      errorAggregator: this.errorAggregator,
     });
     inject(DestroyRef).onDestroy(() => host.unregister(stepId));
   }
