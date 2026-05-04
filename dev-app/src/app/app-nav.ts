@@ -151,6 +151,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'Skeleton', path: 'ui/skeleton' },
       { label: 'SpeakButton', path: 'ui/speak-button' },
+      { label: 'Errors', path: 'ui/stepper/stepper-error-aggregation' },
+      { label: 'Hierarchical', path: 'ui/stepper/stepper-hierarchical' },
+      { label: 'Horizontal', path: 'ui/stepper/stepper-horizontal' },
+      { label: 'Vertical', path: 'ui/stepper/stepper-vertical' },
     ],
   },
 ];

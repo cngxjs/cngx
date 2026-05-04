@@ -647,6 +647,26 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
       },
+      {
+        path: 'stepper/stepper-error-aggregation',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-error-aggregation-demo/stepper-error-aggregation-demo.component').then((m) => m.StepperErrorAggregationDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-hierarchical',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-hierarchical-demo/stepper-hierarchical-demo.component').then((m) => m.StepperHierarchicalDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-horizontal',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-horizontal-demo/stepper-horizontal-demo.component').then((m) => m.StepperHorizontalDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-vertical',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
+      },
       { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],
   },
