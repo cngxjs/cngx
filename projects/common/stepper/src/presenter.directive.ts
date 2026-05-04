@@ -119,9 +119,21 @@ export class CngxStepperPresenter implements CngxStepperHost {
     { equal: flatStepsEqual },
   );
 
+  /**
+   * Step-only flat projection — terminal nodes only, in DFS order.
+   * Memoised behind a structural-equal `flatStepsEqual` so downstream
+   * computeds don't cascade on shape-stable re-emits. Single source
+   * for every `select*` / `clamp` / `activeStepId` lookup; consumers
+   * inside the presenter MUST read this rather than re-filtering
+   * `flatSteps()` themselves.
+   */
+  private readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
+    () => this.flatSteps().filter((n) => n.kind === 'step'),
+    { equal: flatStepsEqual },
+  );
+
   private readonly clampedIndex = computed(() => {
-    const flat = this.flatSteps();
-    const stepCount = flat.filter((n) => n.kind === 'step').length;
+    const stepCount = this.stepsOnly().length;
     if (stepCount === 0) {
       return 0;
     }
@@ -131,8 +143,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   readonly activeStepId: Signal<string | null> = computed(() => {
     const idx = this.clampedIndex();
-    const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
-    return stepsOnly[idx]?.id ?? null;
+    return this.stepsOnly()[idx]?.id ?? null;
   });
 
   readonly commitState = this.commitController.state;
@@ -208,7 +219,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 
   select(index: number): void {
-    const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
+    const stepsOnly = this.stepsOnly();
     if (stepsOnly.length === 0) {
       return;
     }
@@ -229,7 +240,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 
   selectNext(): void {
-    const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
+    const stepsOnly = this.stepsOnly();
     let next = this.activeStepIndex() + 1;
     while (next < stepsOnly.length && stepsOnly[next].disabled()) {
       next++;
@@ -240,7 +251,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 
   selectPrevious(): void {
-    const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
+    const stepsOnly = this.stepsOnly();
     let prev = this.activeStepIndex() - 1;
     while (prev >= 0 && stepsOnly[prev].disabled()) {
       prev--;
@@ -251,7 +262,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   }
 
   selectById(id: string): void {
-    const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
+    const stepsOnly = this.stepsOnly();
     const idx = stepsOnly.findIndex((n) => n.id === id);
     if (idx >= 0) {
       this.select(idx);
