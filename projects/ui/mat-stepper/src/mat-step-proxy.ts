@@ -4,6 +4,7 @@ import {
   type Injector,
   runInInjectionContext,
   signal,
+  type Signal,
   type WritableSignal,
 } from '@angular/core';
 import { type MatStep } from '@angular/material/stepper';
@@ -76,15 +77,19 @@ export class MatStepProxy {
 
   /**
    * Returns the registration shape consumed by `CngxStepperHost.register`.
+   * Slots are narrowed to `Signal<T>` so consumers cannot widen-and-mutate
+   * the proxy's writable backing — the proxy is the only writer, the rest
+   * of the graph is read-only by contract.
+   *
    * Always returns the same signal references — safe to call repeatedly.
    */
   toRegistration(): CngxStepRegistration {
     return {
       id: this.id,
       kind: 'step',
-      label: this.label,
-      disabled: this.disabled,
-      state: this.state,
+      label: this.label as Signal<string>,
+      disabled: this.disabled as Signal<boolean>,
+      state: this.state as Signal<CngxStepStatus>,
     };
   }
 
@@ -102,11 +107,9 @@ export class MatStepProxy {
   }
 
   private readDisabled(): boolean {
-    // CdkStep does not expose a `disabled` Input directly; the linear
-    // policy lives on the parent stepper. We surface `editable === false`
-    // OR `optional === false && completed === false` as a heuristic, but
-    // for the registration contract `disabled` mirrors the user-facing
-    // editable flag so consumer overrides via `[editable]` propagate.
+    // The linear policy lives on the parent stepper; the registration
+    // contract just mirrors `editable` so consumer overrides via
+    // `[editable]` propagate into the cngx flatSteps projection.
     return this.matStep.editable === false;
   }
 
