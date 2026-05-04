@@ -29,8 +29,8 @@ export type CngxStepStatus =
 export interface CngxStepNode {
   readonly id: string;
   readonly kind: 'step' | 'group';
-  readonly label: string;
-  readonly disabled: boolean;
+  readonly label: Signal<string>;
+  readonly disabled: Signal<boolean>;
   /** Live step status. Reactive to commit-controller + aggregator. */
   readonly state: Signal<CngxStepStatus>;
   /** Optional error aggregator handle for badge / SR phrasing. */

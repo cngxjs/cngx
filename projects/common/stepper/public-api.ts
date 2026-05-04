@@ -36,3 +36,8 @@ export {
   stepTreeEqual,
   flatStepsEqual,
 } from './src/step-tree.util';
+
+export { CngxStep } from './src/step.directive';
+export { CngxStepGroup } from './src/step-group.directive';
+export { CngxStepLabel } from './src/step-label.directive';
+export { CngxStepContent } from './src/step-content.directive';

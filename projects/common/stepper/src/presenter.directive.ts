@@ -153,8 +153,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
       return {
         id,
         kind: entry.reg.kind,
-        label: entry.reg.label(),
-        disabled: entry.reg.disabled(),
+        label: entry.reg.label,
+        disabled: entry.reg.disabled,
         state: entry.reg.state,
         errorAggregator: entry.reg.errorAggregator,
         children,
@@ -179,12 +179,12 @@ export class CngxStepperPresenter implements CngxStepperHost {
       // Linear mode: refuse jumps that skip over an incomplete step.
       const blocking = stepsOnly
         .slice(this.activeStepIndex(), target)
-        .find((n) => n.state() !== 'success' && !n.disabled);
+        .find((n) => n.state() !== 'success' && !n.disabled());
       if (blocking) {
         return;
       }
     }
-    if (stepsOnly[target].disabled) {
+    if (stepsOnly[target].disabled()) {
       return;
     }
     this.activeStepIndex.set(target);
@@ -193,7 +193,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   selectNext(): void {
     const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
     let next = this.activeStepIndex() + 1;
-    while (next < stepsOnly.length && stepsOnly[next].disabled) {
+    while (next < stepsOnly.length && stepsOnly[next].disabled()) {
       next++;
     }
     if (next < stepsOnly.length) {
@@ -204,7 +204,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
   selectPrevious(): void {
     const stepsOnly = this.flatSteps().filter((n) => n.kind === 'step');
     let prev = this.activeStepIndex() - 1;
-    while (prev >= 0 && stepsOnly[prev].disabled) {
+    while (prev >= 0 && stepsOnly[prev].disabled()) {
       prev--;
     }
     if (prev >= 0) {

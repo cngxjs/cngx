@@ -11,7 +11,7 @@ import type { CngxStepNode, CngxStepRegistration, CngxStepStatus } from './stepp
  * @category interactive
  */
 export interface CngxStepGroupHost {
-  readonly id: string;
+  readonly id: Signal<string>;
   readonly children: Signal<readonly CngxStepNode[]>;
   readonly aggregatedStatus: Signal<CngxStepStatus>;
 

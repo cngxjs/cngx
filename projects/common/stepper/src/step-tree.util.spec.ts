@@ -8,8 +8,8 @@ function step(id: string, depth: number, parentId: string | null = null): CngxSt
   return {
     id,
     kind: 'step',
-    label: id,
-    disabled: false,
+    label: signal(id),
+    disabled: signal(false),
     state: signal('idle'),
     children: [],
     depth,
@@ -27,8 +27,8 @@ function group(
   return {
     id,
     kind: 'group',
-    label: id,
-    disabled: false,
+    label: signal(id),
+    disabled: signal(false),
     state: computed(() => 'idle'),
     children,
     depth,
