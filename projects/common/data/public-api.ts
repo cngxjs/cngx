@@ -51,3 +51,15 @@ export { CngxVirtualItem } from './src/recycler/virtual-item.directive';
 export { CngxRecyclerAnnouncer } from './src/recycler/recycler-announcer.component';
 export { connectRecyclerToRoving } from './src/recycler/connect-recycler-roving';
 export { connectRecyclerToActiveDescendant } from './src/recycler/connect-recycler-active-descendant';
+
+// Commit controller — generic async-commit state machine shared by
+// the select family and the stepper / wizard family.
+export {
+  createCommitController,
+  type CngxCommitController,
+  type CngxCommitBeginHandlers,
+  type CngxCommitHandle,
+  type CngxCommitRunner,
+  CNGX_COMMIT_CONTROLLER_FACTORY,
+  type CngxCommitControllerFactory,
+} from './src/commit';
