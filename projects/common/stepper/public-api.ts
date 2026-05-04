@@ -43,3 +43,28 @@ export { CngxStepLabel } from './src/step-label.directive';
 export { CngxStepContent } from './src/step-content.directive';
 
 export { CngxStepperRouterSync } from './src/router-sync.directive';
+
+export {
+  CNGX_STEPPER_CONFIG,
+  type CngxStepperAriaLabels,
+  type CngxStepperConfig,
+  type CngxStepperConfigFeature,
+  type CngxStepperFallbackLabels,
+  injectStepperConfig,
+  provideStepperConfig,
+  provideStepperConfigAt,
+  withDefaultOrientation,
+  withStepperAriaLabels,
+  withStepperCommitMode,
+  withStepperFallbackLabels,
+  withStepperLinear,
+  withStepperRouterSync,
+  withStepperRovingLoop,
+} from './src/stepper-config';
+
+export {
+  CNGX_STEPPER_I18N,
+  type CngxStepperI18n,
+  injectStepperI18n,
+  provideStepperI18n,
+} from './src/i18n/stepper-i18n';
