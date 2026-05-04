@@ -29,18 +29,15 @@ export const STORY: DemoSpec = {
       imports: ['CngxStepper', 'CngxStep', 'CngxStepContent', 'CngxStepperRouterSync'],
       template: `
   <fieldset class="event-row"
-            aria-label="URL sync mode"
             style="border:0;padding:0;margin:0 0 var(--demo-row-gap, 8px);gap:8px;align-items:center;flex-wrap:wrap">
     <legend class="cngx-sr-only">URL sync mode</legend>
-    <label class="chip"
-           [style.background]="mode() === 'fragment' ? 'var(--demo-chip-active-bg, #c8e6c9)' : ''">
+    <label class="chip" [class.chip--active]="mode() === 'fragment'">
       <input type="radio" name="router-sync-mode" value="fragment"
              [checked]="mode() === 'fragment'"
              (change)="mode.set('fragment')" />
       fragment (#)
     </label>
-    <label class="chip"
-           [style.background]="mode() === 'queryParam' ? 'var(--demo-chip-active-bg, #c8e6c9)' : ''">
+    <label class="chip" [class.chip--active]="mode() === 'queryParam'">
       <input type="radio" name="router-sync-mode" value="queryParam"
              [checked]="mode() === 'queryParam'"
              (change)="mode.set('queryParam')" />
@@ -68,7 +65,7 @@ export const STORY: DemoSpec = {
       <ng-template cngxStepContent><p>Review your choices and finish.</p></ng-template>
     </div>
   </cngx-stepper>
-  <div class="event-grid" style="margin-top:12px">
+  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">URL mode</span><span class="event-value">{{ mode() }}</span></div>
     <div role="status" aria-live="polite" aria-atomic="true">
