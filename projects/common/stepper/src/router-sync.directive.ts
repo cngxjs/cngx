@@ -41,10 +41,10 @@ export class CngxStepperRouterSync {
   // Inputs default to undefined so the cascade resolves through
   // {@link CNGX_STEPPER_CONFIG} when unset (per-instance Input >
   // viewProviders > root > library default).
-  protected readonly modeInput = input<
+  readonly modeInput = input<
     'fragment' | 'queryParam' | undefined
   >(undefined, { alias: 'mode' });
-  protected readonly paramNameInput = input<string | undefined>(undefined, {
+  readonly paramNameInput = input<string | undefined>(undefined, {
     alias: 'paramName',
   });
 

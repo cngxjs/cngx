@@ -71,14 +71,18 @@ export class CngxStepperPresenter implements CngxStepperHost {
   // the {@link CNGX_STEPPER_CONFIG} cascade (per-instance Input >
   // viewProviders > root > library default). Public types expose
   // the resolved value as `Signal<...>`.
-  protected readonly linearInput = input<boolean | undefined>(undefined, {
+  // Public — the alias `linear` is what external consumers bind via
+  // hostDirective forwarding; Angular's template type-checker
+  // resolves the alias to this field at the binding site, so it
+  // must be visible.
+  readonly linearInput = input<boolean | undefined>(undefined, {
     alias: 'linear',
   });
   readonly linear = computed<boolean>(
     () => this.linearInput() ?? this.config.defaultLinear ?? false,
   );
 
-  protected readonly orientationInput = input<
+  readonly orientationInput = input<
     'horizontal' | 'vertical' | undefined
   >(undefined, { alias: 'orientation' });
   readonly orientation = computed<'horizontal' | 'vertical'>(
@@ -98,7 +102,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
    * @experimental Companion to `commitAction`; only consulted once
    * the Phase 3 wiring lands.
    */
-  protected readonly commitModeInput = input<
+  readonly commitModeInput = input<
     'optimistic' | 'pessimistic' | undefined
   >(undefined, { alias: 'commitMode' });
   readonly commitMode = computed<'optimistic' | 'pessimistic'>(
