@@ -17,6 +17,7 @@ const HORIZONTAL = '/#/ui/stepper/stepper-horizontal';
 const VERTICAL = '/#/ui/stepper/stepper-vertical';
 const HIERARCHICAL = '/#/ui/stepper/stepper-hierarchical';
 const ERRORS = '/#/ui/stepper/stepper-error-aggregation';
+const COMMIT_ACTION = '/#/ui/stepper/stepper-commit-action';
 
 function stepper(page: Page): Locator {
   return page.locator('cngx-stepper').first();
@@ -122,6 +123,51 @@ test.describe('CngxStepper W3C step pattern (Phase 2 baseline)', () => {
     // Sub-step buttons indent at depth=1.
     const depth = await buttons.nth(0).getAttribute('data-step-depth');
     expect(depth).toBe('1');
+  });
+
+  test('(g) pessimistic commit: spinner appears + step stays on origin until success', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    const buttons = stepButtons(page);
+    await expect(buttons).toHaveCount(3);
+    // Default mode is pessimistic. Click step 2 — controller begins
+    // a commit; the second step row should carry aria-busy="true"
+    // and a spinner glyph for ~800ms while the action runs.
+    await buttons.nth(1).click();
+    const targetButton = buttons.nth(1);
+    await expect(targetButton).toHaveAttribute('aria-busy', 'true');
+    await expect(
+      targetButton.locator('.cngx-stepper__busy-spinner'),
+    ).toBeVisible();
+    // Origin step retains aria-current="step" while pending.
+    await expect(buttons.nth(0)).toHaveAttribute('aria-current', 'step');
+    // After resolution the active step advances.
+    await expect(buttons.nth(1)).toHaveAttribute('aria-current', 'step', {
+      timeout: 4000,
+    });
+    await expect(targetButton).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  test('(g) optimistic commit + simulate error: rolls back to origin', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    // Switch to optimistic mode + simulate error.
+    await page.getByRole('button', { name: 'optimistic', exact: true }).click();
+    const errCheckbox = page.getByLabel('simulate error');
+    await errCheckbox.click();
+
+    const buttons = stepButtons(page);
+    // Capture the pre-click active.
+    await expect(buttons.nth(0)).toHaveAttribute('aria-current', 'step');
+    await buttons.nth(2).click();
+    // Optimistic — step 2 becomes active immediately.
+    await expect(buttons.nth(2)).toHaveAttribute('aria-current', 'step');
+    // After ~800ms the action rejects → rollback to origin.
+    await expect(buttons.nth(0)).toHaveAttribute('aria-current', 'step', {
+      timeout: 4000,
+    });
   });
 
   test('(f) error-aggregation: toggling validity flips the badge + descriptor announcement', async ({
