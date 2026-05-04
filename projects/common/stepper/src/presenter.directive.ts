@@ -62,7 +62,18 @@ export class CngxStepperPresenter implements CngxStepperHost {
   readonly activeStepIndex = model<number>(0);
   readonly linear = input<boolean>(false);
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /**
+   * @experimental Phase 1 declares the input shape; the
+   * commit-controller wiring (gating `select()` on the action's
+   * resolution, optimistic/pessimistic UX) lands in Phase 3 of the
+   * stepper-wizard plan. Binding `[commitAction]` in Phase 1 is a
+   * no-op.
+   */
   readonly commitAction = input<CngxStepperCommitAction | null>(null);
+  /**
+   * @experimental Companion to `commitAction`; only consulted once
+   * the Phase 3 wiring lands.
+   */
   readonly commitMode = input<'optimistic' | 'pessimistic'>('pessimistic');
 
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
@@ -221,15 +232,22 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
   }
 
+  /**
+   * @experimental Phase 1 ships the method shape on the
+   * {@link CngxStepperHost} contract. The active body — coordinating
+   * commit lifecycle and the per-step `state` linkedSignal —
+   * lands in Phase 3. Calls in Phase 1 no-op.
+   */
   markCompleted(_id: string): void {
-    // Placeholder — the per-step `state` signal is owned by the
-    // atom (driven by `[completed]` Input + linkedSignal). The
-    // presenter's role here is the advance-on-success policy in
-    // commit lifecycle, wired in Phase 3.
+    // No-op until Phase 3 wires the commit lifecycle.
   }
 
+  /**
+   * @experimental Companion to `markCompleted`; same Phase 3 wiring
+   * window. No-op in Phase 1.
+   */
   markErrored(_id: string, _err?: unknown): void {
-    // Placeholder — same rationale as markCompleted.
+    // No-op until Phase 3 wires the commit lifecycle.
   }
 
   reset(): void {
