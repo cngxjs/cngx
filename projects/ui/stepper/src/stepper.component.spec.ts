@@ -291,6 +291,22 @@ describe('CngxStepper organism', () => {
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
+  it('busy spinner is absent + aria-busy is null when no commit is in flight', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelectorAll('.cngx-stepper__busy-spinner'),
+    ).toHaveLength(0);
+    const button = fixture.nativeElement.querySelector(
+      'button.cngx-stepper__step',
+    ) as HTMLButtonElement;
+    // No pending commit → aria-busy attribute absent (null binding).
+    expect(button.getAttribute('aria-busy')).toBeNull();
+  });
+
   it('descriptor span carries the i18n "Step N of M: <label>" phrase', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

@@ -163,7 +163,7 @@ export class CngxStepper implements CngxStepPanelHost {
     return (
       node.kind === 'step' &&
       this.presenter.commitState.status() === 'pending' &&
-      this.presenter.commitState.data() === this.stepIndexOf(node)
+      this.presenter.intendedStepIndex() === node.flatIndex
     );
   }
 

@@ -76,6 +76,7 @@ export interface CngxStepperHost {
   readonly linear: Signal<boolean>;
   readonly orientation: Signal<'horizontal' | 'vertical'>;
   readonly commitState: CngxAsyncState<number | undefined>;
+  readonly intendedStepIndex: Signal<number | undefined>;
 
   select(index: number): void;
   selectNext(): void;

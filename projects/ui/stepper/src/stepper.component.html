@@ -40,6 +40,9 @@
         @if (showErrorBadge(node)) {
           <span class="cngx-stepper__badge" aria-hidden="true">!</span>
         }
+        @if (isStepBusy(node)) {
+          <span class="cngx-stepper__busy-spinner" aria-hidden="true"></span>
+        }
         <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ statusPhrase(node) }}</span>
       </button>
     }

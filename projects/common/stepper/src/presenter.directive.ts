@@ -109,6 +109,15 @@ export class CngxStepperPresenter implements CngxStepperHost {
   /** Producer surface for the `CNGX_STATEFUL` bridge contract. */
   readonly state: CngxAsyncState<number | undefined> = this.commitController.state;
 
+  /**
+   * The step index the user is currently trying to commit to —
+   * tracked separately from `state.data()` because the AsyncState
+   * data slot only updates on success. Drives per-step
+   * `aria-busy` rendering in the organism.
+   */
+  readonly intendedStepIndex: Signal<number | undefined> =
+    this.commitController.intendedValue;
+
   private readonly treeState = signal<readonly CngxStepNode[]>([], {
     equal: stepTreeEqual,
   });
