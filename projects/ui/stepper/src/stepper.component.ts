@@ -46,6 +46,7 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet, CngxRovingItem],
+  styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   hostDirectives: [
     {
       directive: CngxStepperPresenter,
