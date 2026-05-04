@@ -258,23 +258,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
   }
 
-  /**
-   * @experimental Phase 1 ships the method shape on the
-   * {@link CngxStepperHost} contract. The active body — coordinating
-   * commit lifecycle and the per-step `state` linkedSignal —
-   * lands in Phase 3. Calls in Phase 1 no-op.
-   */
-  markCompleted(_id: string): void {
-    // No-op until Phase 3 wires the commit lifecycle.
-  }
-
-  /**
-   * @experimental Companion to `markCompleted`; same Phase 3 wiring
-   * window. No-op in Phase 1.
-   */
-  markErrored(_id: string, _err?: unknown): void {
-    // No-op until Phase 3 wires the commit lifecycle.
-  }
+  // markCompleted / markErrored are deliberately NOT on the
+  // presenter until Phase 3 wires the commit lifecycle. The
+  // `CngxStepperHost` contract also omits them — see the comment
+  // on the interface for the rationale.
 
   reset(): void {
     this.activeStepIndex.set(0);

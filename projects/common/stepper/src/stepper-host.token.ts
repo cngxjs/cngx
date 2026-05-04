@@ -81,9 +81,12 @@ export interface CngxStepperHost {
   selectNext(): void;
   selectPrevious(): void;
   selectById(id: string): void;
-  markCompleted(id: string): void;
-  markErrored(id: string, err?: unknown): void;
   reset(): void;
+
+  // markCompleted / markErrored are intentionally NOT on the host
+  // contract until Phase 3 wires the commit lifecycle. Surfacing
+  // them as no-op placeholders would make consumer code silently
+  // do nothing — re-introduce only with a working implementation.
 
   register(handle: CngxStepRegistration, parentId?: string | null): void;
   unregister(id: string): void;
