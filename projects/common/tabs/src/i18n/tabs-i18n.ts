@@ -29,8 +29,8 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   moreTabsLabel: (count) => `${count} more`,
   previousTab: 'Previous tab',
   nextTab: 'Next tab',
-  commitFailedRetry: 'Commit failed — retry?',
-  commitInFlight: 'Saving…',
+  commitFailedRetry: 'Tab change refused — retry?',
+  commitInFlight: 'Switching tab…',
 };
 
 /**

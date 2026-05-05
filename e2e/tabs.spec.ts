@@ -231,6 +231,6 @@ test.describe('CngxTabGroup W3C tabs pattern (Phase 2 baseline)', () => {
     await expect(region).toHaveAttribute('role', 'status');
     const buttons = tabButtons(page);
     await buttons.nth(1).click();
-    await expect(region).toHaveText(/Saving/);
+    await expect(region).toHaveText(/Switching tab/);
   });
 });

@@ -22,8 +22,8 @@ describe('CngxTabsI18n', () => {
     expect(i18n.tabsLabel).toBe('Tabs');
     expect(i18n.previousTab).toBe('Previous tab');
     expect(i18n.nextTab).toBe('Next tab');
-    expect(i18n.commitFailedRetry).toBe('Commit failed — retry?');
-    expect(i18n.commitInFlight).toBe('Saving…');
+    expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
+    expect(i18n.commitInFlight).toBe('Switching tab…');
     expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
     expect(i18n.tabHasErrors(1)).toBe('1 error');
     expect(i18n.tabHasErrors(3)).toBe('3 errors');
@@ -46,7 +46,7 @@ describe('CngxTabsI18n', () => {
     expect(i18n.previousTab).toBe('Vorheriger Reiter');
     expect(i18n.nextTab).toBe('Nächster Reiter');
     // Unset keys keep their English defaults.
-    expect(i18n.commitInFlight).toBe('Saving…');
+    expect(i18n.commitInFlight).toBe('Switching tab…');
     expect(i18n.tabHasErrors(2)).toBe('2 errors');
   });
 

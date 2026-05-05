@@ -485,7 +485,7 @@ describe('CngxTabGroup organism', () => {
       // Trigger a transition.
       tabs[1].click();
       fixture.detectChanges();
-      expect(region.textContent?.trim()).toBe('Saving…');
+      expect(region.textContent?.trim()).toBe('Switching tab…');
     });
 
     it('optimistic + sync error: rolls back to origin and clears aria-busy', () => {
@@ -530,7 +530,7 @@ describe('CngxTabGroup organism', () => {
       tabs[1].click();
       fixture.detectChanges();
       // Pending → error transition lands the retry phrase.
-      expect(region.textContent?.trim()).toBe('Commit failed — retry?');
+      expect(region.textContent?.trim()).toBe('Tab change refused — retry?');
     });
   });
 
