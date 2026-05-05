@@ -23,11 +23,20 @@
   display: block;
 }
 
+.cngx-tabs__strip-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: relative;
+}
+
 .cngx-tabs__strip {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: var(--cngx-tab-gap, 0.5rem);
   padding: var(--cngx-tab-strip-padding, 0.5rem 0);
   background: var(--cngx-tab-strip-bg, transparent);

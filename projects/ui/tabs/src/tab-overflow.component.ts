@@ -114,12 +114,27 @@ export class CngxTabOverflow {
   private observer: IntersectionObserver | null = null;
 
   constructor() {
-    // Set up the observer once the parent organism has rendered the
-    // tab buttons — `afterNextRender` defers until the DOM is mounted.
-    afterNextRender(() => {
-      this.setupObserver();
-      this.observeCurrentTabs();
-    });
+    // Lazy-attach the IntersectionObserver. `afterNextRender` fires
+    // after change-detection commits but content-projected elements
+    // can land in their slot on a later microtask — closest() may
+    // still return null on the first attempt. `requestAnimationFrame`
+    // retry loop keeps polling until the host is connected to the
+    // strip; cancelled on destroy.
+    let frameHandle: number | null = null;
+    const tryAttach = (): void => {
+      const root = this.findStripContainer();
+      if (root) {
+        this.observer = new IntersectionObserver(
+          (entries) => this.handleIntersections(entries),
+          { root, threshold: 1.0 },
+        );
+        this.observeCurrentTabs();
+        frameHandle = null;
+        return;
+      }
+      frameHandle = requestAnimationFrame(tryAttach);
+    };
+    afterNextRender(() => tryAttach());
 
     // Re-observe whenever the tab list changes. The presenter's
     // structural-equal `tabsState` short-circuits no-op re-emissions,
@@ -146,6 +161,10 @@ export class CngxTabOverflow {
     });
 
     this.destroyRef.onDestroy(() => {
+      if (frameHandle !== null) {
+        cancelAnimationFrame(frameHandle);
+        frameHandle = null;
+      }
       this.observer?.disconnect();
       this.observer = null;
     });
@@ -154,17 +173,6 @@ export class CngxTabOverflow {
   protected pickTab(tab: CngxTabHandle): void {
     this.panelHost.selectById(tab.id);
     this.popover().hide();
-  }
-
-  private setupObserver(): void {
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-    const root = this.findStripContainer();
-    this.observer = new IntersectionObserver(
-      (entries) => this.handleIntersections(entries),
-      { root, threshold: 1.0 },
-    );
   }
 
   private observeCurrentTabs(): void {
@@ -201,20 +209,15 @@ export class CngxTabOverflow {
   }
 
   /**
-   * Walks up from this molecule's host to find the parent organism's
-   * scroll container (`.cngx-tabs__strip`). The molecule lives as a
-   * sibling of the strip inside `<cngx-tab-group>`, so a single
-   * ancestor lookup + `querySelector` reaches it.
+   * Resolves the parent organism's scroll container
+   * (`.cngx-tabs__strip`). The molecule sits as a sibling of the
+   * strip inside `.cngx-tabs__strip-wrapper`, so we walk up to the
+   * wrapper and then queryselect the strip child.
    */
   private findStripContainer(): HTMLElement | null {
-    let node: HTMLElement | null = this.hostElement;
-    while (node) {
-      const strip = node.querySelector<HTMLElement>('.cngx-tabs__strip');
-      if (strip) {
-        return strip;
-      }
-      node = node.parentElement;
-    }
-    return null;
+    const wrapper = this.hostElement.closest<HTMLElement>(
+      '.cngx-tabs__strip-wrapper',
+    );
+    return wrapper?.querySelector<HTMLElement>('.cngx-tabs__strip') ?? null;
   }
 }

@@ -8,9 +8,20 @@
  */
 
 :host {
+  /*
+   * The molecule lives inside `.cngx-tabs__strip-wrapper` as a
+   * sibling of the actual `<div role="tablist">`. Static flow
+   * positions it at the right edge of the wrapper without the
+   * absolute-positioning quirks of the previous design (which
+   * occluded tab buttons and intercepted pointer events).
+   */
   display: inline-flex;
   align-items: center;
-  margin-inline-start: var(--cngx-tab-overflow-margin-start, 0.25rem);
+  flex: 0 0 auto;
+  background: var(
+    --cngx-tab-overflow-bg,
+    var(--cngx-tab-strip-bg, transparent)
+  );
 }
 
 .cngx-tab-overflow__trigger {
