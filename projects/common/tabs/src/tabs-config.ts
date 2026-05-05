@@ -1,4 +1,10 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import {
+  type EnvironmentProviders,
+  inject,
+  InjectionToken,
+  makeEnvironmentProviders,
+  type Provider,
+} from '@angular/core';
 
 /**
  * Aria-label overrides for the tab-group landmark region. Library
@@ -142,32 +148,44 @@ function resolveFeatures(
  * application providers array (`bootstrapApplication` /
  * `appConfig.providers`).
  *
- * Returns the same `Provider` shape as {@link provideTabsConfigAt} —
- * the difference is the placement site, not the provider literal.
+ * Returns {@link EnvironmentProviders} per the canonical cngx
+ * config-cascade signature — matches `provideSelectConfig` /
+ * `provideRecyclerI18n` and the architecture-summary contract.
  *
  * @category interactive
  */
 export function provideTabsConfig(
   ...features: readonly CngxTabsConfigFeature[]
-): Provider {
-  return { provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) };
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) },
+  ]);
 }
 
 /**
- * Component-scoped provider for the tabs config. Apply via
- * `viewProviders` on a component to override the config for the
- * subtree rooted at that component.
+ * Component-scoped config override. The returned `Provider[]` goes
+ * into a component's `providers` or `viewProviders` via spread —
+ * `viewProviders` cannot accept opaque {@link EnvironmentProviders},
+ * so this twin keeps the same merge semantics with a list shape
+ * (matches `provideSelectConfigAt`).
  *
  * Resolution priority across both helpers:
  *   per-instance Input > viewProviders (`At`) > root provider >
  *   library default.
  *
+ * @example
+ * ```ts
+ * @Component({
+ *   viewProviders: [...provideTabsConfigAt(withDefaultOrientation('vertical'))],
+ * })
+ * ```
+ *
  * @category interactive
  */
 export function provideTabsConfigAt(
   ...features: readonly CngxTabsConfigFeature[]
-): Provider {
-  return { provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) };
+): Provider[] {
+  return [{ provide: CNGX_TABS_CONFIG, useValue: resolveFeatures(features) }];
 }
 
 /**

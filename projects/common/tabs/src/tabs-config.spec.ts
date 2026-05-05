@@ -124,7 +124,7 @@ describe('CngxTabsConfig', () => {
       standalone: true,
       selector: 'scope-cmp',
       template: '',
-      viewProviders: [provideTabsConfigAt(withDefaultOrientation('vertical'))],
+      viewProviders: [...provideTabsConfigAt(withDefaultOrientation('vertical'))],
     })
     class ScopeCmp {}
 
