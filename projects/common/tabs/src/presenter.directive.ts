@@ -12,7 +12,12 @@ import {
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
 } from '@cngx/common/data';
-import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  createTransitionTracker,
+  type CngxAsyncState,
+  type StatusTransition,
+} from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
 import {
@@ -106,10 +111,22 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
    * The tab index the user is currently trying to commit to —
    * tracked separately from `state.data()` because the AsyncState
    * data slot only updates on success. Drives per-tab `aria-busy`
-   * rendering once Phase 3 lands.
+   * rendering.
    */
   readonly intendedIndex: Signal<number | undefined> =
     this.commitController.intendedValue;
+
+  /**
+   * Reactive current/previous pair for the commit-state status.
+   * Skin sub-components mount a `<span cngxLiveRegion>` whose
+   * content reads from this tracker — declarative SR announcements
+   * driven by the same source of truth as `commitState`. Shared
+   * across consumers so the tracker's `linkedSignal` is allocated
+   * once per presenter instance, never per consumer.
+   */
+  readonly commitTransition: StatusTransition = createTransitionTracker(
+    () => this.commitController.state.status(),
+  );
 
   private readonly tabsState = signal<readonly CngxTabHandle[]>([], {
     equal: tabsEqual,

@@ -197,6 +197,42 @@ describe('CngxTabGroupPresenter', () => {
     expect(presenter.intendedIndex()).toBeUndefined();
   });
 
+  it('commitTransition exposes a current/previous pair anchored to commitState.status', () => {
+    const { presenter } = setup();
+    expect(presenter.commitTransition.current()).toBe('idle');
+    expect(presenter.commitTransition.previous()).toBe('idle');
+  });
+
+  it('commitTransition reflects pending → error after a sync-rejecting commit', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      hostDirectives: [
+        {
+          directive: CngxTabGroupPresenter,
+          inputs: ['commitAction', 'commitMode'],
+        },
+      ],
+      template: '',
+    })
+    class TransitionHost {}
+    const fixture = TestBed.createComponent(TransitionHost);
+    fixture.componentRef.setInput('commitAction', () => false);
+    fixture.componentRef.setInput('commitMode', 'optimistic');
+    fixture.detectChanges();
+    const p = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+    p.register(handle('a'));
+    p.register(handle('b'));
+    expect(p.commitTransition.current()).toBe('idle');
+    p.select(1);
+    // Sync-reject collapses idle → pending → error in one tick;
+    // the tracker captures the latest status.
+    expect(p.commitTransition.current()).toBe('error');
+  });
+
   it('orientation defaults to "horizontal"', () => {
     const { presenter } = setup();
     expect(presenter.orientation()).toBe('horizontal');

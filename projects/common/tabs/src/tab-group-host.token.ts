@@ -1,6 +1,6 @@
 import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
+import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -40,6 +40,14 @@ export interface CngxTabGroupHost {
   readonly loop: Signal<boolean>;
   readonly commitState: CngxAsyncState<number | undefined>;
   readonly intendedIndex: Signal<number | undefined>;
+  /**
+   * Reactive current/previous pair for the commit-state status —
+   * lets organisms and skin sub-components derive declarative
+   * transition-driven announcements (`pending` → `success`,
+   * `pending` → `error`, sync `idle` → `error`) without
+   * re-instantiating the tracker per consumer.
+   */
+  readonly commitTransition: StatusTransition;
 
   register(handle: CngxTabHandle): void;
   unregister(id: string): void;
