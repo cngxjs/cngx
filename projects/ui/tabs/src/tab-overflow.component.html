@@ -1,0 +1,33 @@
+<button
+  type="button"
+  class="cngx-tab-overflow__trigger"
+  [cngxPopoverTrigger]="overflowPopover"
+  haspopup="menu"
+  [hidden]="!hasHiddenTabs()"
+  [attr.aria-label]="i18n.moreTabsLabel(hiddenTabs().length)"
+  (click)="overflowPopover.toggle()"
+>
+  {{ i18n.moreTabsLabel(hiddenTabs().length) }}
+</button>
+
+<div
+  cngxPopover
+  #overflowPopover="cngxPopover"
+  class="cngx-tab-overflow__panel"
+  placement="bottom-end"
+  panelClass="cngx-tab-overflow__panel-surface"
+>
+  <ul class="cngx-tab-overflow__list" role="menu">
+    @for (tab of hiddenTabs(); track tab.id) {
+      <li
+        role="menuitem"
+        class="cngx-tab-overflow__item"
+        [attr.data-tab-id]="tab.id"
+        [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+        (click)="!tab.disabled() && pickTab(tab)"
+      >
+        {{ tab.label() ?? tab.id }}
+      </li>
+    }
+  </ul>
+</div>

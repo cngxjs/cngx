@@ -59,3 +59,11 @@
 <span class="cngx-tabs__live-region cngx-sr-only" cngxLiveRegion>{{
   liveAnnouncement()
 }}</span>
+
+<!--
+  Slot for opt-in skin sub-components (e.g. <cngx-tab-overflow>) —
+  projected content sees CNGX_TAB_PANEL_HOST via the organism's
+  provider, so molecules inject the contract without reaching for
+  the concrete CngxTabGroup class.
+-->
+<ng-content></ng-content>
