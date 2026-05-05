@@ -40,7 +40,15 @@
   gap: var(--cngx-tab-gap, 0.5rem);
   padding: var(--cngx-tab-strip-padding, 0.5rem 0);
   background: var(--cngx-tab-strip-bg, transparent);
-  overflow-x: auto;
+  /*
+   * Strip is the clip box, NOT a user-scrollable container. The
+   * `<cngx-tab-overflow>` molecule is the canonical access path to
+   * tabs that don't fit; programmatic `scrollIntoView` on the active
+   * tab keeps it in view without a visible scrollbar. Setting
+   * overflow-y: hidden too keeps focus rings from leaking vertically
+   * into the panel container below.
+   */
+  overflow-x: hidden;
   overflow-y: hidden;
   scroll-snap-type: x proximity;
 }
