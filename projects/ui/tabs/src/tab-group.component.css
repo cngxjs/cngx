@@ -1,14 +1,22 @@
 /*
  * `<cngx-tab-group>` thematic skin. Structural rules (flex / grid /
- * positioning, scroll-snap, sr-only) come from the shared
- * `tabs-base.css` in `@cngx/common/tabs`. This file owns colours,
- * typography hooks, the ink-bar indicator, hover / active state
- * affordances. Every visual value goes through a `--cngx-tab-*`
- * custom property with fallback default per the cngx CSS rule.
+ * positioning, scroll-snap, sr-only, base color / background / sizes)
+ * come from the shared `tabs-base.css` in `@cngx/common/tabs` —
+ * single source of truth for the structural token defaults
+ * (`--cngx-tab-color`, `--cngx-tab-bg`, `--cngx-tab-active-color`,
+ * `--cngx-tab-padding`, `--cngx-tab-gap`, `--cngx-tab-focus-ring`,
+ * `--cngx-tab-disabled-opacity`, `--cngx-tab-error-badge-color`,
+ * `--cngx-tab-busy-spinner-*`). This file owns the skin-exclusive
+ * tokens (ink-bar indicator, transition timing, hover affordance,
+ * strip border) — those carry their fallbacks here.
+ *
+ * Tokens consumed but defined in tabs-base.css read with bare
+ * `var(--cngx-tab-*)` (no second fallback) — the structural cascade
+ * provides the default and a duplicate fallback would create a
+ * second source of truth.
  */
 
 :host {
-  color: var(--cngx-tab-color, currentColor);
   font: inherit;
 }
 
@@ -26,11 +34,11 @@
 }
 
 .cngx-tabs__tab:hover:not([aria-disabled='true']) {
-  color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color, currentColor));
+  color: var(--cngx-tab-hover-color, var(--cngx-tab-active-color));
 }
 
 .cngx-tabs__tab[aria-selected='true'] {
-  color: var(--cngx-tab-active-color, currentColor);
+  color: var(--cngx-tab-active-color);
   border-bottom-color: var(--cngx-tab-active-indicator-color, currentColor);
 }
 
