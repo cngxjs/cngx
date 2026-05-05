@@ -12,9 +12,11 @@ import {
 
 import {
   CngxFocusRestore,
+  CngxLiveRegion,
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
+import { createTransitionTracker } from '@cngx/core/utils';
 import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
@@ -79,7 +81,7 @@ function tabDirectiveMapEqual(
   exportAs: 'cngxTabGroup',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: [
     '../../../common/tabs/src/styles/tabs-base.css',
     './tab-group.component.css',
@@ -188,6 +190,38 @@ export class CngxTabGroup implements CngxTabPanelHost {
     }
     return this.tabs()[intended]?.id === tab.id;
   }
+
+  // Live-region announce for the commit lifecycle. Reads commit-state
+  // status transitions via createTransitionTracker so the announcement
+  // fires once per transition, never duplicated when the source signal
+  // re-emits an unchanged status. Phase-3 deliverable per `tab-system-plan`.
+  private readonly commitTransition = createTransitionTracker(() =>
+    this.presenter.commitState.status(),
+  );
+
+  /**
+   * SR-friendly text rendered inside the polite live-region span. Drives
+   * the announcer through declarative content updates — never an
+   * imperative announce() call. Empty string between transitions so the
+   * region stays quiet on no-op CD ticks.
+   */
+  protected readonly liveAnnouncement = computed<string>(() => {
+    const current = this.commitTransition.current();
+    if (current === 'pending') {
+      return this.i18n.commitInFlight;
+    }
+    if (current === 'error') {
+      // `previous` reads stay reactive but are not gated — synchronous
+      // commit-handler errors collapse pending → error in a single
+      // signal-flush tick, so the tracker captures
+      // `previous = 'idle'` rather than `'pending'`. Loosening the
+      // guard keeps the announcement reachable for sync-rejection
+      // actions (`commitAction = () => false`) while staying silent
+      // on `idle` and `success`.
+      return this.i18n.commitFailedRetry;
+    }
+    return '';
+  });
 
   protected tabHeaderId(tab: CngxTabHandle): string {
     return `${tab.id}-header`;

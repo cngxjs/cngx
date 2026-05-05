@@ -13,6 +13,7 @@ import {
   provideTabsI18n,
   withDefaultOrientation,
   withTabsAriaLabels,
+  type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
 
 import { CngxTabGroup } from './tab-group.component';
@@ -411,6 +412,125 @@ describe('CngxTabGroup organism', () => {
       ) as HTMLElement;
       expect(span).not.toBeNull();
       expect(span.textContent?.trim()).toBe('');
+    });
+  });
+
+  describe('commit-action busy state + live region', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group
+          aria-label="X"
+          [commitAction]="action"
+          [commitMode]="mode"
+        >
+          <div cngxTab [label]="'A'"></div>
+          <div cngxTab [label]="'B'"></div>
+          <div cngxTab [label]="'C'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class CommitHost {
+      action: CngxTabsCommitAction | null = () => true;
+      mode: 'optimistic' | 'pessimistic' = 'pessimistic';
+    }
+
+    it('renders aria-busy + spinner on the target tab in pessimistic mode (in-flight)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      // Action that never resolves — synchronous Subject would also
+      // work but `new Promise(() => {})` keeps the runtime simple.
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>(() => undefined);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(tabs[2].getAttribute('aria-busy')).toBe('true');
+      expect(tabs[2].querySelector('.cngx-tabs__busy-spinner')).not.toBeNull();
+      // Origin stays selected during pending.
+      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('mounts a polite live-region span that carries the in-flight phrase', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>(() => undefined);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      expect(region).not.toBeNull();
+      expect(region.getAttribute('aria-live')).toBe('polite');
+      expect(region.getAttribute('role')).toBe('status');
+      // Idle: announcement is empty.
+      expect(region.textContent?.trim()).toBe('');
+      // Trigger a transition.
+      tabs[1].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('Saving…');
+    });
+
+    it('optimistic + sync error: rolls back to origin and clears aria-busy', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      // Sync false → roll back to origin, no pending state lingers.
+      expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+      expect(tabs[2].getAttribute('aria-selected')).toBe('false');
+      expect(tabs[2].getAttribute('aria-busy')).toBeNull();
+    });
+
+    it('error transition surfaces commitFailedRetry on the live region', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      tabs[1].click();
+      fixture.detectChanges();
+      // Pending → error transition lands the retry phrase.
+      expect(region.textContent?.trim()).toBe('Commit failed — retry?');
     });
   });
 
