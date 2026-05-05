@@ -40,3 +40,10 @@ export {
   provideTabsI18n,
   type CngxTabsI18n,
 } from './src/i18n/tabs-i18n';
+export {
+  createTabsCommitHandler,
+  CNGX_TABS_COMMIT_HANDLER_FACTORY,
+  type CngxTabsCommitHandler,
+  type CngxTabsCommitHandlerFactory,
+  type CngxTabsCommitHandlerOptions,
+} from './src/commit-handler';

@@ -16,6 +16,10 @@ import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
 import {
+  CNGX_TABS_COMMIT_HANDLER_FACTORY,
+  type CngxTabsCommitHandler,
+} from './commit-handler';
+import {
   CNGX_TAB_GROUP_HOST,
   type CngxTabGroupHost,
   type CngxTabHandle,
@@ -82,6 +86,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   private readonly genericFactory = inject(CNGX_COMMIT_CONTROLLER_FACTORY);
   private readonly commitController: CngxCommitController<number> =
     this.genericFactory<number>();
+  private readonly commitHandler: CngxTabsCommitHandler = inject(
+    CNGX_TABS_COMMIT_HANDLER_FACTORY,
+  )({ controller: this.commitController });
 
   /** Producer surface for the `CNGX_STATEFUL` bridge contract. */
   readonly state: CngxAsyncState<number | undefined> = this.commitController.state;
@@ -143,13 +150,35 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     if (tabs[target].disabled()) {
       return;
     }
-    if (target === this.activeIndex()) {
+    const previous = this.activeIndex();
+    if (target === previous) {
       return;
     }
-    // Phase 3 will route through the commit-handler when
-    // `commitAction()` is non-null; today the action is declarative
-    // only (see the @experimental note on the input).
-    this.activeIndex.set(target);
+
+    const action = this.commitAction();
+    if (!action) {
+      this.activeIndex.set(target);
+      return;
+    }
+
+    // Commit-action gated transition. Optimistic mode (default —
+    // tab change is a navigation, not a save; eager visual feedback
+    // matches the user's mental model) writes immediately and rolls
+    // back on rejection. Pessimistic mode keeps `activeIndex` at
+    // `previous` until the action resolves. Supersede semantics
+    // come from the lifted commit-controller — a rapid second
+    // select() cancels the in-flight runner.
+    const mode = this.commitMode();
+    if (mode === 'optimistic') {
+      this.activeIndex.set(target);
+    }
+    this.commitHandler.beginTransition(previous, target, action, (accept) => {
+      if (accept && mode === 'pessimistic') {
+        this.activeIndex.set(target);
+      } else if (!accept && mode === 'optimistic') {
+        this.activeIndex.set(previous);
+      }
+    });
   }
 
   selectNext(): void {

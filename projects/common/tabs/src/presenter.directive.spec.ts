@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
+import { Subject, of, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { CngxTabGroupPresenter } from './presenter.directive';
@@ -221,6 +222,100 @@ describe('CngxTabGroupPresenter', () => {
     fixture.detectChanges();
     const p = fixture.debugElement.injector.get(CngxTabGroupPresenter);
     expect(p.orientation()).toBe('vertical');
+  });
+
+  describe('commit-action lifecycle', () => {
+    function commitFixture(
+      mode: 'optimistic' | 'pessimistic',
+      action: (from: number, to: number) => unknown,
+    ): { presenter: CngxTabGroupPresenter } {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [
+          {
+            directive: CngxTabGroupPresenter,
+            inputs: ['commitAction', 'commitMode'],
+          },
+        ],
+        template: '',
+      })
+      class CommitHost {}
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentRef.setInput('commitAction', action);
+      fixture.componentRef.setInput('commitMode', mode);
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxTabGroupPresenter);
+      presenter.register(handle('a'));
+      presenter.register(handle('b'));
+      presenter.register(handle('c'));
+      return { presenter };
+    }
+
+    it('optimistic + sync success: stays advanced', () => {
+      const { presenter } = commitFixture('optimistic', () => true);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(2);
+    });
+
+    it('optimistic + sync rejection: rolls back to origin', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+    });
+
+    it('pessimistic + sync success: advances on resolution', () => {
+      const { presenter } = commitFixture('pessimistic', () => true);
+      expect(presenter.activeIndex()).toBe(0);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(2);
+    });
+
+    it('pessimistic + sync rejection: stays on origin', () => {
+      const { presenter } = commitFixture('pessimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+    });
+
+    it('optimistic + Observable success: stays advanced', () => {
+      const { presenter } = commitFixture('optimistic', () => of(true));
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(2);
+    });
+
+    it('optimistic + Observable error: rolls back to origin', () => {
+      const { presenter } = commitFixture('optimistic', () =>
+        throwError(() => new Error('refused')),
+      );
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+    });
+
+    it('supersede: rapid second select cancels the first commit', () => {
+      // First action never resolves (Subject); second action resolves
+      // true. Supersede semantics from the lifted controller mean the
+      // first never advances; only the second's outcome lands.
+      const subj = new Subject<boolean>();
+      let toggle = 0;
+      const { presenter } = commitFixture('pessimistic', (_from, to) => {
+        if (toggle === 0) {
+          toggle = 1;
+          return subj;
+        }
+        return to === 1 ? true : false;
+      });
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+      presenter.select(1);
+      expect(presenter.activeIndex()).toBe(1);
+      // Late emit on the first subject must be ignored.
+      subj.next(true);
+      subj.complete();
+      expect(presenter.activeIndex()).toBe(1);
+    });
   });
 
   it('activeId rejoins the live tab after unregister + re-register', () => {
