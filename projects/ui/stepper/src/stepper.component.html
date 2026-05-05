@@ -36,7 +36,14 @@
         >
           <span class="cngx-stepper__indicator-glyph">{{ stepIndexOf(node) + 1 }}</span>
         </span>
-        <span class="cngx-stepper__label">{{ node.label() }}</span>
+        <span class="cngx-stepper__label">
+          @let labelTpl = labelTemplateFor(node.id);
+          @if (labelTpl) {
+            <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+          } @else {
+            {{ node.label() }}
+          }
+        </span>
         @if (showErrorBadge(node)) {
           <span class="cngx-stepper__badge" aria-hidden="true">!</span>
         }
