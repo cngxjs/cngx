@@ -154,6 +154,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Skeleton', path: 'ui/skeleton' },
       { label: 'SpeakButton', path: 'ui/speak-button' },
       { label: 'Commit action', path: 'ui/stepper/stepper-commit-action' },
+      { label: 'Custom labels', path: 'ui/stepper/stepper-custom-labels' },
       { label: 'Errors', path: 'ui/stepper/stepper-error-aggregation' },
       { label: 'Hierarchical', path: 'ui/stepper/stepper-hierarchical' },
       { label: 'Horizontal', path: 'ui/stepper/stepper-horizontal' },
