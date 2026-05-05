@@ -60,8 +60,12 @@ function tabIdListEqual(
  * here because it attaches to a single element, while this
  * molecule needs to observe N tab buttons that live in a sibling
  * component's view (`viewChildren` would never reach them). The
- * observer treats `intersectionRatio < 1` as "hidden" so partially
- * clipped tabs are surfaced through the More dropdown.
+ * observer runs at `threshold: 0` so any visible pixel of a tab
+ * counts as "in the strip" — only fully-clipped entries land in
+ * the More dropdown. Combined with the organism's
+ * `scrollIntoView` effect on `activeId` change, this forms the
+ * self-healing loop: pick a hidden tab → strip scrolls it in →
+ * IO fires `isIntersecting=true` → `hiddenTabs` self-trims.
  *
  * @category interactive
  */

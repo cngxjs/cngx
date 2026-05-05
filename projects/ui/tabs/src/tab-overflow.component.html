@@ -2,7 +2,7 @@
   type="button"
   class="cngx-tab-overflow__trigger"
   [cngxPopoverTrigger]="overflowPopover"
-  haspopup="menu"
+  [haspopup]="'menu'"
   [hidden]="!hasHiddenTabs()"
   [attr.aria-label]="i18n.moreTabsLabel(hiddenTabs().length)"
   (click)="overflowPopover.toggle()"

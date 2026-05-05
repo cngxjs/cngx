@@ -65,10 +65,10 @@
 
 <!--
   Generic slot for opt-in skin sub-components other than the
-  overflow molecule (which projects into the tablist via the named
-  `select="cngx-tab-overflow,[cngxTabOverflow]"` slot above).
-  Projected content sees `CNGX_TAB_PANEL_HOST` via the organism's
-  provider, so molecules inject the contract without reaching for
-  the concrete `CngxTabGroup` class.
+  overflow molecule (which projects into the strip-wrapper via the
+  named `select="cngx-tab-overflow"` slot above). Projected content
+  sees `CNGX_TAB_PANEL_HOST` via the organism's provider, so
+  molecules inject the contract without reaching for the concrete
+  `CngxTabGroup` class.
 -->
 <ng-content></ng-content>
