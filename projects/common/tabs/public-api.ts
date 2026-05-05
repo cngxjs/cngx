@@ -1,4 +1,16 @@
 /**
  * @module @cngx/common/tabs
  */
-export {};
+export {
+  CngxTabGroupPresenter,
+  type CngxTabsCommitAction,
+} from './src/presenter.directive';
+export {
+  CNGX_TAB_GROUP_HOST,
+  type CngxTabGroupHost,
+  type CngxTabHandle,
+} from './src/tab-group-host.token';
+export {
+  CNGX_TAB_PANEL_HOST,
+  type CngxTabPanelHost,
+} from './src/tab-panel-host.token';
