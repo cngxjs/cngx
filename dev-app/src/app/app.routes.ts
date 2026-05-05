@@ -697,6 +697,21 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
       },
+      {
+        path: 'tabs/tab-error-aggregation',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-error-aggregation-demo/tab-error-aggregation-demo.component').then((m) => m.TabErrorAggregationDemoComponent),
+      },
+      {
+        path: 'tabs/tab-group',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-group-demo/tab-group-demo.component').then((m) => m.TabGroupDemoComponent),
+      },
+      {
+        path: 'tabs/tab-group-vertical',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-group-vertical-demo/tab-group-vertical-demo.component').then((m) => m.TabGroupVerticalDemoComponent),
+      },
       { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],
   },

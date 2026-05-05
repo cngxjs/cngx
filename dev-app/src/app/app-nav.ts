@@ -161,6 +161,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Linear', path: 'ui/stepper/stepper-linear' },
       { label: 'Router sync', path: 'ui/stepper/stepper-router-sync' },
       { label: 'Vertical', path: 'ui/stepper/stepper-vertical' },
+      { label: 'Errors', path: 'ui/tabs/tab-error-aggregation' },
+      { label: 'Horizontal', path: 'ui/tabs/tab-group' },
+      { label: 'Vertical', path: 'ui/tabs/tab-group-vertical' },
     ],
   },
 ];
