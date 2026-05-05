@@ -72,14 +72,22 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly loop = input<boolean>(true);
 
   /**
-   * @experimental Phase 1 declares the input shape; Phase 3 wires
-   * the commit-controller into `select(...)`. Binding
-   * `[commitAction]` in Phase 1 is a no-op.
+   * Async-commit action gating the tab transition. When non-null,
+   * `select(...)` routes through {@link CngxTabsCommitHandler} so
+   * the action's resolution decides whether the change lands.
+   * Optimistic mode (the default) writes immediately and rolls back
+   * on rejection; pessimistic mode keeps the origin index until the
+   * action resolves. Supersede semantics come from the lifted
+   * commit-controller — a rapid second `select(...)` cancels the
+   * in-flight runner.
    */
   readonly commitAction = input<CngxTabsCommitAction | null>(null);
   /**
-   * @experimental Companion to `commitAction`; only consulted once
-   * the Phase 3 wiring lands.
+   * Companion to {@link commitAction}. Default `'optimistic'` —
+   * tab change is a navigation, not a save; eager visual feedback
+   * matches the user's mental model. Switch to `'pessimistic'` for
+   * save-style transitions where the new tab must wait for the
+   * action to confirm.
    */
   readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
 
