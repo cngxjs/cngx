@@ -16,6 +16,7 @@ const HORIZONTAL = '/#/ui/tabs/tab-group';
 const VERTICAL = '/#/ui/tabs/tab-group-vertical';
 const ERRORS = '/#/ui/tabs/tab-error-aggregation';
 const COMMIT_ACTION = '/#/ui/tabs/tab-commit-action';
+const OVERFLOW = '/#/ui/tabs/tab-overflow';
 
 function tabGroup(page: Page): Locator {
   return page.locator('cngx-tab-group').first();
@@ -217,6 +218,43 @@ test.describe('CngxTabGroup W3C tabs pattern (Phase 2 baseline)', () => {
       timeout: 4000,
     });
     await expect(targetButton).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  test('(i) overflow: More trigger appears with hidden-tab count + popover lists them', async ({
+    page,
+  }) => {
+    await page.goto(OVERFLOW);
+    // Demo wraps the tab-group in a 320px container — the strip
+    // can hold ~3 tabs; the rest land in the overflow popover.
+    const trigger = page.locator(
+      'cngx-tab-overflow .cngx-tab-overflow__trigger',
+    );
+    await expect(trigger).toHaveCount(1);
+    await expect(trigger).toBeVisible({ timeout: 4000 });
+    const triggerText = await trigger.innerText();
+    expect(triggerText).toMatch(/\d+ more/);
+    await trigger.click();
+    const items = page.locator('cngx-tab-overflow .cngx-tab-overflow__item');
+    await expect(items.first()).toBeVisible();
+  });
+
+  test('(i) overflow: picking a hidden tab updates aria-selected', async ({
+    page,
+  }) => {
+    await page.goto(OVERFLOW);
+    const trigger = page.locator(
+      'cngx-tab-overflow .cngx-tab-overflow__trigger',
+    );
+    await expect(trigger).toBeVisible({ timeout: 4000 });
+    await trigger.click();
+    const lastItem = page
+      .locator('cngx-tab-overflow .cngx-tab-overflow__item')
+      .last();
+    const targetId = await lastItem.getAttribute('data-tab-id');
+    expect(targetId).toBeTruthy();
+    await lastItem.click();
+    const targetTab = page.locator(`cngx-tab-group #${targetId}-header`);
+    await expect(targetTab).toHaveAttribute('aria-selected', 'true');
   });
 
   test('(h) live-region carries the in-flight phrase during pending', async ({
