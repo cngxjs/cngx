@@ -2,7 +2,7 @@ import { InjectionToken, type Signal } from '@angular/core';
 
 import type { AsyncStatus } from '@cngx/core/utils';
 
-import type { CngxCommitController } from './commit-controller';
+import type { CngxCommitController } from './commit-controller.token';
 import type { CngxSelectCreateAction } from './create-action.types';
 import type { LocalItemsBuffer } from './local-items-buffer';
 import type { CngxSelectOptionDef } from './option.model';

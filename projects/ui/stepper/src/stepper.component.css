@@ -1,0 +1,75 @@
+/*
+ * @cngx/ui/stepper — thematic skin. Indicator state colours,
+ * connector lines, hover / active states, badge positioning,
+ * busy spinner. All values via --cngx-step-* custom properties
+ * with fallbacks; consumers override per project / theme.
+ */
+
+:host {
+  color: var(--cngx-step-color, currentColor);
+  background: var(--cngx-step-bg, transparent);
+}
+
+.cngx-stepper__indicator {
+  background: var(--cngx-step-indicator-bg, color-mix(in srgb, currentColor 10%, transparent));
+  color: var(--cngx-step-indicator-color, currentColor);
+  font-size: var(--cngx-step-indicator-font-size, 0.85em);
+  font-weight: var(--cngx-step-indicator-font-weight, 600);
+  transition: background-color 120ms ease;
+}
+
+.cngx-stepper__indicator[data-state='success'] {
+  background: var(--cngx-step-completed-color, #2e7d32);
+  color: var(--cngx-step-indicator-active-color, white);
+}
+
+.cngx-stepper__indicator[data-state='error'] {
+  background: var(--cngx-step-errored-color, #c62828);
+  color: var(--cngx-step-indicator-active-color, white);
+}
+
+.cngx-stepper__indicator[data-state='disabled'] {
+  background: var(--cngx-step-indicator-disabled-bg, color-mix(in srgb, currentColor 5%, transparent));
+}
+
+.cngx-stepper__step[aria-current='step'] .cngx-stepper__indicator {
+  background: var(--cngx-step-active-color, currentColor);
+  color: var(--cngx-step-indicator-active-color, white);
+}
+
+.cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator {
+  background: var(--cngx-step-pending-color, var(--cngx-step-active-color, currentColor));
+  animation: cngx-stepper-pulse 1.2s ease-in-out infinite;
+}
+
+.cngx-stepper__busy-spinner {
+  display: inline-block;
+  width: var(--cngx-step-busy-spinner-size, 0.875rem);
+  height: var(--cngx-step-busy-spinner-size, 0.875rem);
+  border-radius: 50%;
+  border: 2px solid var(--cngx-step-busy-spinner-color, currentColor);
+  border-top-color: transparent;
+  animation: cngx-stepper-spin 0.8s linear infinite;
+  flex: 0 0 auto;
+  margin-inline-start: var(--cngx-step-gap, 0.5rem);
+}
+
+@keyframes cngx-stepper-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cngx-stepper__step:hover:not([aria-disabled='true']) {
+  background: var(--cngx-step-hover-bg, color-mix(in srgb, currentColor 4%, transparent));
+}
+
+@keyframes cngx-stepper-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-stepper__step[aria-busy='true'] .cngx-stepper__indicator,
+  .cngx-stepper__busy-spinner {
+    animation: none;
+  }
+}

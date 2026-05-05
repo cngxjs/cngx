@@ -2,8 +2,8 @@ import { signal, type WritableSignal } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { createArrayCommitHandler } from './array-commit-handler';
-import { createCommitController } from './commit-controller';
-import type { CngxCommitController } from './commit-controller';
+import { createCommitController } from './commit-controller.token';
+import type { CngxCommitController } from './commit-controller.token';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,

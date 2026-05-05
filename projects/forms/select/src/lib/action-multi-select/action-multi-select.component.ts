@@ -60,7 +60,7 @@ import {
   type CngxSelectRefreshingVariant,
   type CngxSelectSelectionIndicatorVariant,
 } from '../shared/config';
-import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller';
+import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../shared/commit-controller.token';
 import {
   CNGX_CREATE_COMMIT_HANDLER_FACTORY,
   type CreateCommitHandler,

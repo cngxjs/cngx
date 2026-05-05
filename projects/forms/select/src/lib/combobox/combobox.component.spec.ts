@@ -10,6 +10,7 @@ import { CngxPopover } from '@cngx/common/popover';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import { CngxCombobox, type CngxComboboxChange } from './combobox.component';
 import { CngxComboboxChip } from '../shared/template-slots';
 import {
@@ -940,3 +941,5 @@ describe('CngxCombobox — *cngxComboboxChip slot', () => {
     expect(combo.chipRemoveFor(opt)).toBe(combo.chipRemoveFor(opt));
   });
 });
+
+describeCommitControllerCascade('CngxCombobox');

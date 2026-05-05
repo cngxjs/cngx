@@ -633,6 +633,16 @@ export const routes: Routes = [
           import('./demos/ui/mat-paginator-demo/mat-paginator-demo.component').then((m) => m.MatPaginatorDemoComponent),
       },
       {
+        path: 'mat-stepper/mat-stepper',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-demo/mat-stepper-demo.component').then((m) => m.MatStepperDemoComponent),
+      },
+      {
+        path: 'mat-stepper/mat-stepper-router-sync',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-router-sync-demo/mat-stepper-router-sync-demo.component').then((m) => m.MatStepperRouterSyncDemoComponent),
+      },
+      {
         path: 'sidenav',
         loadComponent: () =>
           import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
@@ -646,6 +656,46 @@ export const routes: Routes = [
         path: 'speak-button',
         loadComponent: () =>
           import('./demos/ui/speak-button-demo/speak-button-demo.component').then((m) => m.SpeakButtonDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-commit-action',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-commit-action-demo/stepper-commit-action-demo.component').then((m) => m.StepperCommitActionDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-custom-labels',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-custom-labels-demo/stepper-custom-labels-demo.component').then((m) => m.StepperCustomLabelsDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-error-aggregation',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-error-aggregation-demo/stepper-error-aggregation-demo.component').then((m) => m.StepperErrorAggregationDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-hierarchical',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-hierarchical-demo/stepper-hierarchical-demo.component').then((m) => m.StepperHierarchicalDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-horizontal',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-horizontal-demo/stepper-horizontal-demo.component').then((m) => m.StepperHorizontalDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-linear',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-linear-demo/stepper-linear-demo.component').then((m) => m.StepperLinearDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-router-sync',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-router-sync-demo/stepper-router-sync-demo.component').then((m) => m.StepperRouterSyncDemoComponent),
+      },
+      {
+        path: 'stepper/stepper-vertical',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
       },
       { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],

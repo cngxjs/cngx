@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualState } from '@cngx/common/data';
 
 import { createReorderCommitHandler } from './reorder-commit-handler';
-import type { CngxCommitController } from './commit-controller';
+import type { CngxCommitController } from './commit-controller.token';
 import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,

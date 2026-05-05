@@ -16,9 +16,11 @@
       "@cngx/common/interactive": ["dist/common/types/cngx-common-interactive.d.ts"],
       "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
       "@cngx/common/card": ["dist/common/types/cngx-common-card.d.ts"],
+      "@cngx/common/a11y": ["dist/common/types/cngx-common-a11y.d.ts"],
+      "@cngx/common/stepper": ["dist/common/types/cngx-common-stepper.d.ts"],
       "@cngx/ui/feedback": ["dist/ui/types/cngx-ui-feedback.d.ts"]
     }
   },
-  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts"],
+  "include": ["src/**/*.ts", "layout/**/*.ts", "overlay/**/*.ts", "material/**/*.ts", "empty-state/**/*.ts", "feedback/**/*.ts", "stepper/**/*.ts", "mat-stepper/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

@@ -1,0 +1,74 @@
+<div class="cngx-stepper__strip" role="presentation">
+  @for (node of flatSteps(); track node.id) {
+    @if (node.kind === 'group') {
+      <div
+        class="cngx-stepper__group-header"
+        role="group"
+        [attr.aria-roledescription]="groupRoleDescription()"
+        [attr.data-step-depth]="node.depth"
+        [attr.data-state]="node.state()"
+        [attr.aria-disabled]="node.disabled() ? 'true' : null"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+      >
+        <span class="cngx-stepper__group-label">{{ node.label() }}</span>
+        <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ groupStatusPhrase(node) }}</span>
+      </div>
+    } @else {
+      <button
+        type="button"
+        cngxRovingItem
+        class="cngx-stepper__step"
+        [id]="stepHeaderId(node)"
+        [attr.data-step-depth]="node.depth"
+        [attr.data-state]="node.state()"
+        [attr.aria-current]="isActive(node) ? 'step' : null"
+        [attr.aria-controls]="stepPanelId(node)"
+        [attr.aria-disabled]="node.disabled() ? 'true' : null"
+        [attr.aria-busy]="isStepBusy(node) ? 'true' : null"
+        [attr.aria-describedby]="stepDescriptorId(node)"
+        [cngxRovingItemDisabled]="node.disabled()"
+        (click)="handleHeaderClick(node)"
+      >
+        <span
+          class="cngx-stepper__indicator"
+          aria-hidden="true"
+          [attr.data-state]="node.state()"
+        >
+          <span class="cngx-stepper__indicator-glyph">{{ stepIndexOf(node) + 1 }}</span>
+        </span>
+        <span class="cngx-stepper__label">
+          @let labelTpl = labelTemplateFor(node.id);
+          @if (labelTpl) {
+            <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+          } @else {
+            {{ node.label() }}
+          }
+        </span>
+        @if (showErrorBadge(node)) {
+          <span class="cngx-stepper__badge" aria-hidden="true">!</span>
+        }
+        @if (isStepBusy(node)) {
+          <span class="cngx-stepper__busy-spinner" aria-hidden="true"></span>
+        }
+        <span class="cngx-sr-only" [id]="stepDescriptorId(node)">{{ statusPhrase(node) }}</span>
+      </button>
+    }
+  }
+</div>
+
+<div class="cngx-stepper__panels">
+  @for (node of stepsOnly(); track node.id) {
+    <div
+      class="cngx-stepper__panel"
+      role="region"
+      [id]="stepPanelId(node)"
+      [attr.aria-labelledby]="stepHeaderId(node)"
+      [hidden]="!isActive(node)"
+    >
+      @let contentTpl = contentTemplateFor(node.id);
+      @if (contentTpl) {
+        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      }
+    </div>
+  }
+</div>

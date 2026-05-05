@@ -1,0 +1,145 @@
+/*
+ * @cngx/ui/stepper — structural CSS shared by every stepper skin.
+ * Layout-only — no colours / sizes / borders / fonts beyond what's
+ * controlled via --cngx-step-* custom properties (with fallbacks).
+ *
+ * Two layouts: data-orientation="horizontal" (default) renders the
+ * strip + panels stacked vertically with a horizontal flex strip;
+ * data-orientation="vertical" renders a 2-column grid (sidebar
+ * strip + panel column).
+ */
+
+:host {
+  display: block;
+}
+
+.cngx-stepper__strip {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--cngx-step-gap, 0.5rem);
+  padding: var(--cngx-step-strip-padding, 0.5rem 0);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.cngx-stepper__step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-step-gap, 0.5rem);
+  padding: var(--cngx-step-padding, 0.5rem 0.75rem);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  white-space: nowrap;
+}
+
+.cngx-stepper__step[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: var(--cngx-step-disabled-opacity, 0.55);
+}
+
+.cngx-stepper__step:focus-visible {
+  outline: var(--cngx-step-focus-ring, 2px solid currentColor);
+  outline-offset: var(--cngx-step-focus-offset, 2px);
+}
+
+.cngx-stepper__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-step-indicator-size, 1.75rem);
+  height: var(--cngx-step-indicator-size, 1.75rem);
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.cngx-stepper__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cngx-stepper__panels {
+  display: block;
+}
+
+.cngx-stepper__panel {
+  display: block;
+  padding: var(--cngx-step-padding, 0.5rem 0.75rem);
+}
+
+.cngx-stepper__panel[hidden] {
+  display: none;
+}
+
+.cngx-stepper__group-header {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--cngx-step-padding, 0.5rem 0.75rem);
+  font-weight: var(--cngx-step-group-font-weight, 600);
+}
+
+.cngx-stepper__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-step-badge-size, 1.25rem);
+  height: var(--cngx-step-badge-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-step-error-badge-color, #c62828);
+  color: var(--cngx-step-error-badge-text-color, white);
+  font-size: var(--cngx-step-badge-font-size, 0.75em);
+  font-weight: var(--cngx-step-badge-font-weight, 700);
+  flex: 0 0 auto;
+  margin-inline-start: var(--cngx-step-gap, 0.5rem);
+}
+
+.cngx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Hierarchical depth indent — horizontal layout indents the
+   indicator, vertical indents the whole row. */
+:host([data-orientation='horizontal']) .cngx-stepper__step[data-step-depth='1'],
+:host([data-orientation='horizontal']) .cngx-stepper__group-header[data-step-depth='1'] {
+  margin-inline-start: var(--cngx-step-group-indent, 1.5rem);
+}
+
+:host([data-orientation='vertical']) .cngx-stepper__strip {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+:host([data-orientation='vertical']) {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--cngx-step-gap, 0.5rem);
+  align-items: start;
+}
+
+:host([data-orientation='vertical']) .cngx-stepper__step[data-step-depth='1'],
+:host([data-orientation='vertical']) .cngx-stepper__group-header[data-step-depth='1'] {
+  padding-inline-start: calc(
+    var(--cngx-step-padding-inline, 0.75rem) + var(--cngx-step-group-indent, 1.5rem)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-stepper__step,
+  .cngx-stepper__indicator {
+    transition: none !important;
+  }
+}

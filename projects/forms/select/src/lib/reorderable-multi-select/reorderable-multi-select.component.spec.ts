@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -475,3 +476,5 @@ describe('CngxReorderableMultiSelect — panel Escape handling', () => {
     expect(cmp.panelOpen()).toBe(false);
   });
 });
+
+describeCommitControllerCascade('CngxReorderableMultiSelect');

@@ -6,7 +6,7 @@ import type {
   CngxSelectCommitAction,
   CngxSelectCommitMode,
 } from './commit-action.types';
-import type { CngxCommitController } from './commit-controller';
+import type { CngxCommitController } from './commit-controller.token';
 import type { CngxSelectOptionDef } from './option.model';
 
 /**

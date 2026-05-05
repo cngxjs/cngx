@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { describe, expect, it, vi } from 'vitest';
 
 import { CngxSelectAction } from '../shared/template-slots';
+import { describeCommitControllerCascade } from '../shared/__test-helpers/commit-controller-cascade';
 import {
   CngxActionMultiSelect,
   type CngxActionMultiSelectChange,
@@ -356,3 +357,5 @@ describe('CngxActionMultiSelect — dismiss guard', () => {
     expect(select.actionDirty()).toBe(false);
   });
 });
+
+describeCommitControllerCascade('CngxActionMultiSelect');
