@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CngxStepperPresenter } from './presenter.directive';
 import { CngxStep } from './step.directive';
@@ -24,20 +24,48 @@ import {
 })
 class HostCmp {}
 
+// Drains pending microtasks so the directive's effect() chain (which
+// reads activeStepId, then calls router.navigate inside untracked()) has
+// a chance to fire and the spy captures the call. Avoids
+// `fixture.whenStable()` because it has been observed to hang under
+// Node 20 + zoneless tests with a Router in providers.
+async function flushMicrotasks(rounds = 5): Promise<void> {
+  for (let i = 0; i < rounds; i++) {
+    await Promise.resolve();
+  }
+}
+
 describe('CngxStepperRouterSync', () => {
-  it('navigates with fragment when activeStepId changes', async () => {
+  beforeEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('calls router.navigate with a fragment when activeStepId changes', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection(), provideRouter([])],
     });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi
+      .spyOn(router, 'navigate')
+      .mockResolvedValue(true);
+
     const fixture = TestBed.createComponent(HostCmp);
     fixture.detectChanges();
-    await fixture.whenStable();
-    const router = TestBed.inject(Router);
+    await flushMicrotasks();
     const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
     presenter.select(1);
     fixture.detectChanges();
-    await fixture.whenStable();
-    expect(router.url).toMatch(/#step=cngx-step-/);
+    await flushMicrotasks();
+
+    const calls = navigateSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    const lastCall = calls[calls.length - 1];
+    const extras = lastCall[1] as { fragment?: string; queryParams?: Record<string, string> };
+    expect(extras.fragment).toMatch(/^step=cngx-step-/);
   });
 
   it('is a graceful no-op when Router is not provided', () => {
@@ -58,16 +86,25 @@ describe('CngxStepperRouterSync', () => {
         provideStepperConfig(withStepperRouterSync('queryParam', 'phase')),
       ],
     });
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi
+      .spyOn(router, 'navigate')
+      .mockResolvedValue(true);
+
     const fixture = TestBed.createComponent(HostCmp);
     fixture.detectChanges();
-    await fixture.whenStable();
-    const router = TestBed.inject(Router);
+    await flushMicrotasks();
     const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
     presenter.select(1);
     fixture.detectChanges();
-    await fixture.whenStable();
-    expect(router.url).toMatch(/\?phase=cngx-step-/);
-    expect(router.url).not.toMatch(/#step=/);
+    await flushMicrotasks();
+
+    const calls = navigateSpy.mock.calls;
+    expect(calls.length).toBeGreaterThan(0);
+    const lastCall = calls[calls.length - 1];
+    const extras = lastCall[1] as { fragment?: string; queryParams?: Record<string, string> };
+    expect(extras.queryParams).toEqual({ phase: expect.stringMatching(/^cngx-step-/) });
+    expect(extras.fragment).toBeUndefined();
   });
 
   it('emits (syncError) when router.navigate rejects', async () => {
@@ -80,7 +117,7 @@ describe('CngxStepperRouterSync', () => {
 
     const fixture = TestBed.createComponent(HostCmp);
     fixture.detectChanges();
-    await fixture.whenStable();
+    await flushMicrotasks();
     const sync = fixture.debugElement.injector.get(CngxStepperRouterSync);
     const errors: unknown[] = [];
     sync.syncError.subscribe((err) => errors.push(err));
@@ -88,8 +125,7 @@ describe('CngxStepperRouterSync', () => {
     const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
     presenter.select(1);
     fixture.detectChanges();
-    await fixture.whenStable();
-    await Promise.resolve();
+    await flushMicrotasks();
     expect(errors).toEqual([failure]);
   });
 });
