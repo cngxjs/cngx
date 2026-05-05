@@ -124,9 +124,16 @@ export class CngxTabOverflow {
     const tryAttach = (): void => {
       const root = this.findStripContainer();
       if (root) {
+        // threshold: 0 — any pixel of the tab inside the strip
+        // counts as "visible". Combined with the organism's
+        // `scrollIntoView` effect, this means once a hidden tab is
+        // selected the strip scrolls it in, the IO fires
+        // `isIntersecting=true`, the visibility map updates, and the
+        // entry self-removes from `hiddenTabs`. The plan's
+        // "self-healing" loop.
         this.observer = new IntersectionObserver(
           (entries) => this.handleIntersections(entries),
-          { root, threshold: 1.0 },
+          { root, threshold: 0 },
         );
         this.observeCurrentTabs();
         frameHandle = null;
@@ -202,7 +209,10 @@ export class CngxTabOverflow {
         const tabId = headerId.endsWith('-header')
           ? headerId.slice(0, -'-header'.length)
           : headerId;
-        next.set(tabId, entry.isIntersecting && entry.intersectionRatio >= 1);
+        // threshold: 0 — any visible pixel = "in the strip". A
+        // partially-clipped tab stays out of the dropdown; only
+        // fully-clipped entries surface as "hidden".
+        next.set(tabId, entry.isIntersecting);
       }
       return next;
     });

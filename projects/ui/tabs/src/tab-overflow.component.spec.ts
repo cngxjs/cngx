@@ -56,6 +56,12 @@ function stubPopoverApi(): void {
   }
 }
 
+async function flushMicrotasks(rounds = 5): Promise<void> {
+  for (let i = 0; i < rounds; i++) {
+    await Promise.resolve();
+  }
+}
+
 function installMockIntersectionObserver(): { instances: MockObserverInstance[] } {
   const instances: MockObserverInstance[] = [];
 
@@ -131,10 +137,11 @@ describe('CngxTabOverflow', () => {
     stubPopoverApi();
   });
 
-  it('hides the More trigger when no tabs are clipped', () => {
+  it('hides the More trigger when no tabs are clipped', async () => {
     installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
+    await flushMicrotasks();
     const trigger = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__trigger',
     ) as HTMLElement;
@@ -142,10 +149,11 @@ describe('CngxTabOverflow', () => {
     expect(trigger.hidden).toBe(true);
   });
 
-  it('reveals the More trigger when at least one tab reports intersection ratio < 1', () => {
+  it('reveals the More trigger when a tab reports isIntersecting=false (fully clipped)', async () => {
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
+    await flushMicrotasks();
     const observer = instances[0];
     expect(observer).toBeDefined();
     const buttons = Array.from(
@@ -154,7 +162,10 @@ describe('CngxTabOverflow', () => {
       ) as NodeListOf<HTMLButtonElement>,
     );
     expect(buttons.length).toBe(4);
-    // Mark the last two as clipped.
+    // Mark the last two as clipped. Partial-clip cases
+    // (isIntersecting=true, ratio<1) count as visible under
+    // threshold-0 semantics — the user can still see *some*
+    // pixels of the tab, no need to surface it in the dropdown.
     observer.fire([
       { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
@@ -166,14 +177,15 @@ describe('CngxTabOverflow', () => {
       '.cngx-tab-overflow__trigger',
     ) as HTMLElement;
     expect(trigger.hidden).toBe(false);
-    // Trigger label includes the count.
-    expect(trigger.textContent?.trim()).toMatch(/2 more/);
+    // Trigger label includes the count of fully-clipped tabs.
+    expect(trigger.textContent?.trim()).toMatch(/1 more/);
   });
 
-  it('clicking a hidden-tab row delegates selectById through the panel host', () => {
+  it('clicking a hidden-tab row delegates selectById through the panel host', async () => {
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
+    await flushMicrotasks();
     const observer = instances[0];
     const buttons = Array.from(
       fixture.nativeElement.querySelectorAll(
@@ -204,10 +216,11 @@ describe('CngxTabOverflow', () => {
     expect(buttons[2].getAttribute('aria-selected')).toBe('true');
   });
 
-  it('drops stale visibility entries when a tab is removed from the registry', () => {
+  it('drops stale visibility entries when a tab is removed from the registry', async () => {
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
+    await flushMicrotasks();
     const observer = instances[0];
     const buttons = Array.from(
       fixture.nativeElement.querySelectorAll(
