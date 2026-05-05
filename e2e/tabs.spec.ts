@@ -15,6 +15,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 const HORIZONTAL = '/#/ui/tabs/tab-group';
 const VERTICAL = '/#/ui/tabs/tab-group-vertical';
 const ERRORS = '/#/ui/tabs/tab-error-aggregation';
+const COMMIT_ACTION = '/#/ui/tabs/tab-commit-action';
 
 function tabGroup(page: Page): Locator {
   return page.locator('cngx-tab-group').first();
@@ -161,5 +162,75 @@ test.describe('CngxTabGroup W3C tabs pattern (Phase 2 baseline)', () => {
     const span = page.locator(`#${descId}`);
     await expect(span).toHaveCount(1);
     await expect(span).toHaveClass(/cngx-sr-only/);
+  });
+
+  test('(h) optimistic (default): clicking advances immediately and stays on success', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    const buttons = tabButtons(page);
+    await expect(buttons).toHaveCount(3);
+    await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await buttons.nth(1).click();
+    // Optimistic — selection lands immediately.
+    await expect(buttons.nth(1)).toHaveAttribute('aria-selected', 'true');
+    // After ~600ms the action resolves true → stays on tab 1.
+    await expect(buttons.nth(1)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 4000,
+    });
+  });
+
+  test('(h) optimistic + simulate error: rolls back to origin', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    await page.getByLabel('simulate error').click();
+    const buttons = tabButtons(page);
+    await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await buttons.nth(2).click();
+    // Optimistic — tab 2 becomes active immediately.
+    await expect(buttons.nth(2)).toHaveAttribute('aria-selected', 'true');
+    // After the action rejects → rollback to tab 0.
+    await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 4000,
+    });
+  });
+
+  test('(h) pessimistic: spinner + aria-busy on target while pending; advances on success', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    await page
+      .getByRole('button', { name: 'pessimistic', exact: true })
+      .click();
+    const buttons = tabButtons(page);
+    await buttons.nth(1).click();
+    const targetButton = buttons.nth(1);
+    await expect(targetButton).toHaveAttribute('aria-busy', 'true');
+    await expect(
+      targetButton.locator('.cngx-tabs__busy-spinner'),
+    ).toBeVisible();
+    // Origin retains aria-selected="true" while pending.
+    await expect(buttons.nth(0)).toHaveAttribute('aria-selected', 'true');
+    // After resolution the target advances.
+    await expect(buttons.nth(1)).toHaveAttribute('aria-selected', 'true', {
+      timeout: 4000,
+    });
+    await expect(targetButton).not.toHaveAttribute('aria-busy', 'true');
+  });
+
+  test('(h) live-region carries the in-flight phrase during pending', async ({
+    page,
+  }) => {
+    await page.goto(COMMIT_ACTION);
+    await page
+      .getByRole('button', { name: 'pessimistic', exact: true })
+      .click();
+    const region = page.locator('cngx-tab-group .cngx-tabs__live-region');
+    await expect(region).toHaveCount(1);
+    await expect(region).toHaveAttribute('role', 'status');
+    const buttons = tabButtons(page);
+    await buttons.nth(1).click();
+    await expect(region).toHaveText(/Saving/);
   });
 });
