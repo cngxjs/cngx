@@ -1,4 +1,4 @@
-import { InjectionToken, type Signal } from '@angular/core';
+import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 
 import type { CngxTabHandle } from './tab-group-host.token';
 
@@ -14,6 +14,11 @@ import type { CngxTabHandle } from './tab-group-host.token';
  * presenter run its full `select(...)` policy (clamping, disabled
  * skip, commit-action gating).
  *
+ * Template resolution methods (`labelTemplateFor` /
+ * `contentTemplateFor`) let consumer-authored skin sub-components
+ * project the `*cngxTabLabel` / `*cngxTabContent` slots without
+ * injecting the concrete `CngxTabGroup` class.
+ *
  * @category interactive
  */
 export interface CngxTabPanelHost {
@@ -22,6 +27,11 @@ export interface CngxTabPanelHost {
   readonly orientation: Signal<'horizontal' | 'vertical'>;
 
   selectById(id: string): void;
+
+  /** Resolves a tab id to its `*cngxTabLabel` template (consumer-supplied). */
+  labelTemplateFor(id: string): TemplateRef<unknown> | null;
+  /** Resolves a tab id to its `*cngxTabContent` template (consumer-supplied). */
+  contentTemplateFor(id: string): TemplateRef<unknown> | null;
 }
 
 /**

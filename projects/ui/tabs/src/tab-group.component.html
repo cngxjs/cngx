@@ -1,0 +1,50 @@
+<div
+  class="cngx-tabs__strip"
+  role="tablist"
+  [attr.aria-orientation]="presenter.orientation()"
+>
+  @for (tab of tabs(); track tab.id) {
+    <button
+      type="button"
+      cngxRovingItem
+      class="cngx-tabs__tab"
+      role="tab"
+      [id]="tabHeaderId(tab)"
+      [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
+      [attr.aria-controls]="tabPanelId(tab)"
+      [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+      [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
+      [cngxRovingItemDisabled]="tab.disabled()"
+      (click)="handleHeaderClick(tab)"
+    >
+      <span class="cngx-tabs__label">
+        @let labelTpl = labelTemplateFor(tab.id);
+        @if (labelTpl) {
+          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+        } @else {
+          {{ tab.label() }}
+        }
+      </span>
+      @if (isTabBusy(tab)) {
+        <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
+      }
+    </button>
+  }
+</div>
+
+<div class="cngx-tabs__panels">
+  @for (tab of tabs(); track tab.id) {
+    <div
+      class="cngx-tabs__panel"
+      role="tabpanel"
+      [id]="tabPanelId(tab)"
+      [attr.aria-labelledby]="tabHeaderId(tab)"
+      [hidden]="!isSelected(tab)"
+    >
+      @let contentTpl = contentTemplateFor(tab.id);
+      @if (contentTpl) {
+        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      }
+    </div>
+  }
+</div>

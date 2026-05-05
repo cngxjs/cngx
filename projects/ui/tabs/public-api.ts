@@ -1,4 +1,4 @@
 /**
  * @module @cngx/ui/tabs
  */
-export {};
+export { CngxTabGroup } from './src/tab-group.component';
