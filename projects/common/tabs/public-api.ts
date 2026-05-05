@@ -17,3 +17,4 @@ export {
 export { CngxTab } from './src/tab.directive';
 export { CngxTabLabel } from './src/tab-label.directive';
 export { CngxTabContent } from './src/tab-content.directive';
+export { CngxTabsFragmentSync } from './src/router-sync.directive';
