@@ -16,7 +16,6 @@ import {
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
-import { createTransitionTracker } from '@cngx/core/utils';
 import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
@@ -191,22 +190,19 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return this.tabs()[intended]?.id === tab.id;
   }
 
-  // Live-region announce for the commit lifecycle. Reads commit-state
-  // status transitions via createTransitionTracker so the announcement
-  // fires once per transition, never duplicated when the source signal
-  // re-emits an unchanged status. Phase-3 deliverable per `tab-system-plan`.
-  private readonly commitTransition = createTransitionTracker(() =>
-    this.presenter.commitState.status(),
-  );
-
   /**
    * SR-friendly text rendered inside the polite live-region span. Drives
    * the announcer through declarative content updates — never an
    * imperative announce() call. Empty string between transitions so the
    * region stays quiet on no-op CD ticks.
+   *
+   * Reads `presenter.commitTransition` directly — the presenter
+   * allocates one `linkedSignal`-backed tracker per instance and
+   * exposes it on the host contract for skin reuse. Pillar 1: derive,
+   * never duplicate.
    */
   protected readonly liveAnnouncement = computed<string>(() => {
-    const current = this.commitTransition.current();
+    const current = this.presenter.commitTransition.current();
     if (current === 'pending') {
       return this.i18n.commitInFlight;
     }
