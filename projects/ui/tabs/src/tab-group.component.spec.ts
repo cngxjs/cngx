@@ -534,6 +534,31 @@ describe('CngxTabGroup organism', () => {
     });
   });
 
+  it('scrolls the active tab button into view when activeId changes', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const calls: HTMLButtonElement[] = [];
+    for (const btn of tabs) {
+      Object.defineProperty(btn, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: () => calls.push(btn),
+      });
+    }
+    tabs[2].click();
+    fixture.detectChanges();
+    expect(calls).toContain(tabs[2]);
+  });
+
   it('aria-roledescription is reactive (config / i18n cascade)', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({

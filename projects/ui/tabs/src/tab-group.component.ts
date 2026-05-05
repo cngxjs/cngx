@@ -4,8 +4,11 @@ import {
   Component,
   computed,
   contentChildren,
+  effect,
+  ElementRef,
   inject,
   input,
+  untracked,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -126,9 +129,44 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
+  private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
+    ElementRef,
+  ).nativeElement;
   private readonly tabDirectives = contentChildren(CngxTab, {
     descendants: true,
   });
+
+  constructor() {
+    // Self-healing scroll loop — when the active tab changes (via
+    // direct click on a visible tab, keyboard nav, or selectById from
+    // the overflow molecule), bring the matching button into the
+    // strip's visible area. The IntersectionObserver in
+    // <cngx-tab-overflow> picks up the new visibility on the next
+    // tick and the More dropdown self-trims. Plan §"Selection Loop".
+    //
+    // Service call (`scrollIntoView`) wrapped in `untracked` per
+    // `reference_signal_architecture` rule 2; effect tracks only
+    // `presenter.activeId()`.
+    effect(() => {
+      const id = this.presenter.activeId();
+      if (!id) {
+        return;
+      }
+      untracked(() => {
+        const button = this.hostElement.querySelector<HTMLElement>(
+          `[id="${id}-header"]`,
+        );
+        // jsdom (test env) doesn't implement scrollIntoView — guard
+        // the call so unit specs don't blow up. Real browsers always
+        // have it.
+        button?.scrollIntoView?.({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        });
+      });
+    });
+  }
 
   /** Tabs landmark role-description — i18n / config cascade. */
   protected readonly tabsRoleDescription = computed<string>(
