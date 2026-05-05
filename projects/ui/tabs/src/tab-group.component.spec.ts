@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
+
+import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import {
   CngxTab,
@@ -264,6 +266,152 @@ describe('CngxTabGroup organism', () => {
     // is documented as Phase 5 polish; this test pins the current
     // behaviour so we notice when the cascade lands.
     expect(host.getAttribute('aria-orientation')).toBe('horizontal');
+  });
+
+  describe('error-aggregation badge + descriptor', () => {
+    function stubAggregator(opts: {
+      hasError: boolean;
+      revealed: boolean;
+      announcement: string;
+    }): CngxErrorAggregatorContract {
+      return {
+        hasError: signal(opts.hasError),
+        errorCount: signal(opts.hasError ? 1 : 0),
+        activeErrors: signal<readonly string[]>([]),
+        errorLabels: signal<readonly string[]>([]),
+        shouldShow: signal(opts.revealed),
+        announcement: signal(opts.announcement),
+        addSource: () => {},
+        removeSource: () => {},
+      };
+    }
+
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group aria-label="X">
+          <div cngxTab [label]="'A'" [errorAggregator]="aggA"></div>
+          <div cngxTab [label]="'B'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class BadgeHost {
+      aggA = stubAggregator({
+        hasError: true,
+        revealed: true,
+        announcement: '2 errors',
+      });
+      aggB: CngxErrorAggregatorContract | undefined = undefined;
+      setRevealed(value: boolean) {
+        (this.aggA.shouldShow as ReturnType<typeof signal<boolean>>).set(value);
+      }
+    }
+
+    it('renders the badge only when shouldShow() is true', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(BadgeHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      expect(tabs[0].querySelector('.cngx-tabs__badge')).not.toBeNull();
+      expect(tabs[1].querySelector('.cngx-tabs__badge')).toBeNull();
+    });
+
+    it('aria-describedby ID is always present in the DOM (sr-only span lives even when empty)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(BadgeHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      for (const tab of tabs) {
+        const descId = tab.getAttribute('aria-describedby');
+        expect(descId).toBeTruthy();
+        const span = fixture.nativeElement.querySelector(
+          `#${descId}`,
+        ) as HTMLElement;
+        expect(span).not.toBeNull();
+        expect(span.classList.contains('cngx-sr-only')).toBe(true);
+      }
+    });
+
+    it('descriptor content reflects the aggregator announcement when revealed', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(BadgeHost);
+      fixture.detectChanges();
+      const tabA = fixture.nativeElement.querySelectorAll(
+        'button[role="tab"]',
+      )[0] as HTMLButtonElement;
+      const descId = tabA.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('2 errors');
+    });
+
+    it('descriptor content collapses to empty when shouldShow() flips to false', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(BadgeHost);
+      fixture.detectChanges();
+      fixture.componentInstance.setRevealed(false);
+      fixture.detectChanges();
+      const tabA = fixture.nativeElement.querySelectorAll(
+        'button[role="tab"]',
+      )[0] as HTMLButtonElement;
+      expect(tabA.querySelector('.cngx-tabs__badge')).toBeNull();
+      const descId = tabA.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span.textContent?.trim()).toBe('');
+    });
+
+    it('no aggregator → no badge, descriptor span empty (graceful fallback)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class NoAggHost {}
+      const fixture = TestBed.createComponent(NoAggHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      expect(tab.querySelector('.cngx-tabs__badge')).toBeNull();
+      const descId = tab.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      expect(span).not.toBeNull();
+      expect(span.textContent?.trim()).toBe('');
+    });
   });
 
   it('aria-roledescription is reactive (config / i18n cascade)', () => {

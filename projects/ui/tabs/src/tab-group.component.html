@@ -14,6 +14,7 @@
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
       [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
+      [attr.aria-describedby]="tabDescriptorId(tab)"
       [cngxRovingItemDisabled]="tab.disabled()"
       (click)="handleHeaderClick(tab)"
     >
@@ -25,9 +26,15 @@
           {{ tab.label() }}
         }
       </span>
+      @if (showErrorBadge(tab)) {
+        <span class="cngx-tabs__badge" aria-hidden="true">!</span>
+      }
       @if (isTabBusy(tab)) {
         <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
       }
+      <span class="cngx-sr-only" [id]="tabDescriptorId(tab)">{{
+        statusPhrase(tab)
+      }}</span>
     </button>
   }
 </div>

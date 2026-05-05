@@ -54,6 +54,16 @@
   );
 }
 
+.cngx-tabs__badge {
+  width: var(--cngx-tab-badge-size, 1.25rem);
+  height: var(--cngx-tab-badge-size, 1.25rem);
+  border-radius: 50%;
+  color: var(--cngx-tab-error-badge-text-color, white);
+  font-size: var(--cngx-tab-badge-font-size, 0.75em);
+  font-weight: var(--cngx-tab-badge-font-weight, 700);
+  line-height: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cngx-tabs__tab {
     transition: none !important;

@@ -197,6 +197,29 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return `${tab.id}-panel`;
   }
 
+  protected tabDescriptorId(tab: CngxTabHandle): string {
+    return `${tab.id}-desc`;
+  }
+
+  /** `true` when a bound error-aggregator opted in to revealing errors. */
+  protected showErrorBadge(tab: CngxTabHandle): boolean {
+    return !!tab.errorAggregator()?.shouldShow();
+  }
+
+  /**
+   * SR descriptor phrase. Reads the aggregator's `announcement()`
+   * when one is bound and revealed; otherwise empty (the descriptor
+   * span ID stays in the DOM either way per the cngx A11y rule —
+   * IDs always present, content reactive).
+   */
+  protected statusPhrase(tab: CngxTabHandle): string {
+    const aggregator = tab.errorAggregator();
+    if (aggregator?.shouldShow()) {
+      return aggregator.announcement();
+    }
+    return '';
+  }
+
   protected handleHeaderClick(tab: CngxTabHandle): void {
     if (tab.disabled()) {
       return;
