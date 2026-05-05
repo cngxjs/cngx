@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'stepper',
   description:
     'Bind <code>[linear]="true"</code> to enforce sequential progression: the user must complete each step in order before advancing. Steps are toggled <code>completed</code> via the per-step <code>state</code> aggregator (here exposed via per-step checkboxes for the demo). The strip\'s <code>aria-disabled</code> + <code>aria-current</code> reflect the editability rule reactively — non-completed forward steps reject clicks, but past completed steps remain navigable.',
-  apiComponents: ['CngxStepper'],
+  apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

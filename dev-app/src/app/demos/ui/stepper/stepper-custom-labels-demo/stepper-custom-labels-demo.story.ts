@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'stepper',
   description:
     'Use <code>&lt;ng-template cngxStepLabel&gt;</code> to override the per-step label rendering with arbitrary content — icons, badges, counters, multi-line text. The first step uses the simple <code>[label]="..."</code> Input (default string rendering); the remaining steps use the slot template to demonstrate icon + text + counter composition. Both paths render inside the same strip button — the slot is purely additive.',
-  apiComponents: ['CngxStepper'],
+  apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepLabel', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepLabel } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

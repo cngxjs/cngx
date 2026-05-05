@@ -21,7 +21,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — vertical"
       description="<code>[orientation]=&quot;'vertical'&quot;</code> swaps the layout to a 2-column grid: strip in the sidebar, panels on the right. ArrowUp/ArrowDown for keyboard nav."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Vertical sidebar layout"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

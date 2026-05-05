@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'mat-stepper',
   description:
     '<code>&lt;cngx-mat-stepper&gt;</code> wraps Material\'s <code>&lt;mat-stepper&gt;</code> while sharing the same <code>CngxStepperPresenter</code> brain as <code>&lt;cngx-stepper&gt;</code>. Material consumers gain commit-action lifecycle, router sync, and error aggregation for free. Toggle <code>[commitMode]</code> + <code>simulate error</code> to exercise the four quadrants — the gate works identically against Material\'s own state machine.',
-  apiComponents: ['CngxMatStepper'],
+  apiComponents: ['CngxMatStepper', 'CngxStepperPresenter', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { Observable } from 'rxjs';",
     "import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';",

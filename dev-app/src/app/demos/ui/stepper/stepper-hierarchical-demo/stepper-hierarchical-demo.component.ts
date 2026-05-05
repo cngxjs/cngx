@@ -22,7 +22,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — hierarchical sub-steps"
       description="Compose <code>[cngxStepGroup]</code> on a container to nest <code>[cngxStep]</code> children. Group headers carry <code>role=&quot;group&quot; aria-roledescription=&quot;step group&quot;</code> and roll up child status. Sub-step indicators indent via <code>data-step-depth</code>."
-      [apiComponents]="['CngxStepper', 'CngxStepGroup']">
+      [apiComponents]="['CngxStepper', 'CngxStepGroup', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Group + nested steps + trailing root step"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'stepper',
   description:
     'Bind <code>[commitAction]</code> to gate every step transition through an async write. <code>[commitMode]="pessimistic"</code> (default) keeps the user on the origin step until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target step row. <code>[commitMode]="optimistic"</code> advances immediately and rolls back on rejection. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract.',
-  apiComponents: ['CngxStepper'],
+  apiComponents: ['CngxStepper', 'CngxStepperPresenter', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { Observable } from 'rxjs';",
     "import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';",

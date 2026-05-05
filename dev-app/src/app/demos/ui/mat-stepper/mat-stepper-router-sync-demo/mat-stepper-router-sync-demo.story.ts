@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'mat-stepper',
   description:
     'Cross-cutting compose: <code>&lt;cngx-mat-stepper&gt;</code> + <code>cngxStepperRouterSync</code>. Clicking a Material step updates the URL fragment; reloading lands on that step. Same brain, Material skin — proves the layer split.',
-  apiComponents: ['CngxMatStepper'],
+  apiComponents: ['CngxMatStepper', 'CngxStepperRouterSync', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepperRouterSync } from '@cngx/common/stepper';",
     "import { CngxMatStepper } from '@cngx/ui/mat-stepper';",

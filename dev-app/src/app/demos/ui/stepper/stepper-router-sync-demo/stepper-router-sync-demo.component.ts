@@ -22,7 +22,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — router sync"
       description="Bind <code>cngxStepperRouterSync</code> to deep-link the active step into the URL. Clicking a step updates the fragment (<code>#step=&lt;id&gt;</code>) by default; reloading the page lands on that step; browser-back walks the visited history without reload. Toggle <code>[mode]</code> to swap to query-param mode (<code>?step=&lt;id&gt;</code>). The directive becomes a no-op when <code>@angular/router</code> is not provided — log surfaces a one-time dev warning."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStepperRouterSync', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Deep-linking with fragment + queryParam modes"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

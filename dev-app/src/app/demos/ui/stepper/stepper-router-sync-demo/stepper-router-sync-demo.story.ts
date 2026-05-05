@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'stepper',
   description:
     'Bind <code>cngxStepperRouterSync</code> to deep-link the active step into the URL. Clicking a step updates the fragment (<code>#step=&lt;id&gt;</code>) by default; reloading the page lands on that step; browser-back walks the visited history without reload. Toggle <code>[mode]</code> to swap to query-param mode (<code>?step=&lt;id&gt;</code>). The directive becomes a no-op when <code>@angular/router</code> is not provided — log surfaces a one-time dev warning.',
-  apiComponents: ['CngxStepper'],
+  apiComponents: ['CngxStepper', 'CngxStepperRouterSync', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent, CngxStepperRouterSync } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

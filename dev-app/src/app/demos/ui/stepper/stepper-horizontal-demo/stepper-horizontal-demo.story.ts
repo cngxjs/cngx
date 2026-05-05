@@ -6,7 +6,7 @@ export const STORY: DemoSpec = {
   navCategory: 'stepper',
   description:
     '<code>&lt;cngx-stepper&gt;</code> in horizontal orientation (default). Strip + panels stacked. Reactive ARIA + roving tabindex via composed host-directives.',
-  apiComponents: ['CngxStepper'],
+  apiComponents: ['CngxStepper', 'CngxStep', 'CngxStepContent'],
   moduleImports: [
     "import { CngxStep, CngxStepContent } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",

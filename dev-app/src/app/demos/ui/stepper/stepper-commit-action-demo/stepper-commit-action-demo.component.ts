@@ -25,7 +25,7 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
   template: `
     <app-doc-shell title="Stepper — async commitAction"
       description="Bind <code>[commitAction]</code> to gate every step transition through an async write. <code>[commitMode]=&quot;pessimistic&quot;</code> (default) keeps the user on the origin step until the action resolves and renders <code>aria-busy=&quot;true&quot;</code> + a spinner on the target step row. <code>[commitMode]=&quot;optimistic&quot;</code> advances immediately and rolls back on rejection. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter's <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStepperPresenter', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Pessimistic + optimistic commits with bridge directives"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

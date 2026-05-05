@@ -1,0 +1,13 @@
+{
+    "$schema": "./node_modules/@cngxjs/compodocx/src/config/schema.json",
+    "tsconfig": "./tsconfig.doc.json",
+    "output": "./docs",
+    "theme": "gitbook",
+    "hideGenerator": true,
+    "disablePrivate": true,
+    "disableInternal": true,
+    "disableSourceCode": true,
+    "disableStyleTab": true,
+    "disableRoutesGraph": true,
+    "groupDepth": 3
+}

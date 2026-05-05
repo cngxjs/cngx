@@ -21,7 +21,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — horizontal"
       description="<code>&lt;cngx-stepper&gt;</code> in horizontal orientation (default). Strip + panels stacked. Reactive ARIA + roving tabindex via composed host-directives."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Three-step wizard"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

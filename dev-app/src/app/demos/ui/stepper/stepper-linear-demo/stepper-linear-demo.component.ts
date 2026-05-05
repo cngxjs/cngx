@@ -21,7 +21,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — linear mode"
       description="Bind <code>[linear]=&quot;true&quot;</code> to enforce sequential progression: the user must complete each step in order before advancing. Steps are toggled <code>completed</code> via the per-step <code>state</code> aggregator (here exposed via per-step checkboxes for the demo). The strip's <code>aria-disabled</code> + <code>aria-current</code> reflect the editability rule reactively — non-completed forward steps reject clicks, but past completed steps remain navigable."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Linear gating with completion checkboxes"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

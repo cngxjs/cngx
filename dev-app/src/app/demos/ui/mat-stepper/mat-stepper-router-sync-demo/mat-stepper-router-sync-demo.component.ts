@@ -22,7 +22,7 @@ import { CngxMatStepper } from '@cngx/ui/mat-stepper';
   template: `
     <app-doc-shell title="Mat-Stepper — router sync"
       description="Cross-cutting compose: <code>&lt;cngx-mat-stepper&gt;</code> + <code>cngxStepperRouterSync</code>. Clicking a Material step updates the URL fragment; reloading lands on that step. Same brain, Material skin — proves the layer split."
-      [apiComponents]="['CngxMatStepper']">
+      [apiComponents]="['CngxMatStepper', 'CngxStepperRouterSync', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Deep-linking against Material"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

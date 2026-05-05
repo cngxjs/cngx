@@ -22,7 +22,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
   template: `
     <app-doc-shell title="Stepper — custom labels"
       description="Use <code>&lt;ng-template cngxStepLabel&gt;</code> to override the per-step label rendering with arbitrary content — icons, badges, counters, multi-line text. The first step uses the simple <code>[label]=&quot;...&quot;</code> Input (default string rendering); the remaining steps use the slot template to demonstrate icon + text + counter composition. Both paths render inside the same strip button — the slot is purely additive."
-      [apiComponents]="['CngxStepper']">
+      [apiComponents]="['CngxStepper', 'CngxStep', 'CngxStepLabel', 'CngxStepContent']">
       <app-example-card title="Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"

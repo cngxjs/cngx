@@ -24,7 +24,7 @@ import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
   template: `
     <app-doc-shell title="Stepper — error aggregation"
       description="Bind <code>[errorAggregator]</code> on a step to surface a badge + SR phrase whenever the aggregator opts to show errors. Compose <code>CngxErrorAggregator</code> on a fieldset; the step reads <code>shouldShow()</code> and <code>announcement()</code> reactively."
-      [apiComponents]="['CngxStepper', 'CngxErrorAggregator']">
+      [apiComponents]="['CngxStepper', 'CngxErrorAggregator', 'CngxStep', 'CngxStepContent']">
       <app-example-card title="Per-step error badges"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
