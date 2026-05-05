@@ -25,7 +25,7 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
   template: `
     <app-doc-shell title="Tabs — async commitAction"
       description="Bind <code>[commitAction]</code> to gate every tab transition through an async write. <code>[commitMode]=&quot;optimistic&quot;</code> (default — tab change is a navigation, not a save) advances immediately and rolls back on rejection. <code>[commitMode]=&quot;pessimistic&quot;</code> keeps the user on the origin tab until the action resolves and renders <code>aria-busy=&quot;true&quot;</code> + a spinner on the target tab. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter's <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract."
-      [apiComponents]="['CngxTabGroup', 'CngxTabGroupPresenter', 'CngxTab', 'CngxTabContent']">
+      [apiComponents]="['CngxTabGroup', 'CngxTabGroupPresenter', 'CngxTab', 'CngxTabContent', 'CngxToastOn', 'CngxBannerOn']">
       <app-example-card title="Optimistic + pessimistic commits with bridge directives"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
