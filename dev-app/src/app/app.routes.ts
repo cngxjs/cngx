@@ -717,6 +717,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./demos/ui/tabs/tab-group-vertical-demo/tab-group-vertical-demo.component').then((m) => m.TabGroupVerticalDemoComponent),
       },
+      {
+        path: 'tabs/tab-overflow',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-overflow-demo/tab-overflow-demo.component').then((m) => m.TabOverflowDemoComponent),
+      },
       { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],
   },

@@ -165,6 +165,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Errors', path: 'ui/tabs/tab-error-aggregation' },
       { label: 'Horizontal', path: 'ui/tabs/tab-group' },
       { label: 'Vertical', path: 'ui/tabs/tab-group-vertical' },
+      { label: 'Overflow', path: 'ui/tabs/tab-overflow' },
     ],
   },
 ];
