@@ -28,6 +28,7 @@
       "@cngx/common/popover": ["projects/common/popover/public-api.ts"],
       "@cngx/common/card": ["projects/common/card/public-api.ts"],
       "@cngx/common/chart": ["projects/common/chart/public-api.ts"],
+      "@cngx/common/tabs": ["projects/common/tabs/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"],
       "@cngx/common/stepper": ["projects/common/stepper/public-api.ts"],
       "@cngx/core": ["projects/core/src/public-api.ts"],
