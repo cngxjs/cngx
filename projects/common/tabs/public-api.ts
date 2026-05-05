@@ -14,3 +14,6 @@ export {
   CNGX_TAB_PANEL_HOST,
   type CngxTabPanelHost,
 } from './src/tab-panel-host.token';
+export { CngxTab } from './src/tab.directive';
+export { CngxTabLabel } from './src/tab-label.directive';
+export { CngxTabContent } from './src/tab-content.directive';
