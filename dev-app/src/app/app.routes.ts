@@ -698,6 +698,11 @@ export const routes: Routes = [
           import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
       },
       {
+        path: 'tabs/tab-commit-action',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-commit-action-demo/tab-commit-action-demo.component').then((m) => m.TabCommitActionDemoComponent),
+      },
+      {
         path: 'tabs/tab-error-aggregation',
         loadComponent: () =>
           import('./demos/ui/tabs/tab-error-aggregation-demo/tab-error-aggregation-demo.component').then((m) => m.TabErrorAggregationDemoComponent),
