@@ -19,11 +19,17 @@ export interface CngxTabsI18n {
   readonly nextTab: string;
   /**
    * @deprecated for tabs commit rollback — superseded by
-   * {@link commitRolledBackTo}. Retained as the generic-error
-   * fallback in the organism's `liveAnnouncement` computed when
-   * the origin label is unresolvable, and for non-rollback
-   * consumers that bind this key directly. Removing it would
-   * break consumer overrides currently in the wild.
+   * {@link commitRolledBackTo}. Retained as the **defensive
+   * fallback** in the organism's `liveAnnouncement` priority
+   * chain when the origin label is unresolvable. Reachability
+   * note: under the current `select()` flow the
+   * `originIndexDuringCommit` slot is always written before the
+   * commit window opens (`presenter.directive.ts:234`), so the
+   * fallback path fires only when `tabs()[originIdx]?.label()`
+   * resolves to falsy (unlabeled tab) OR a future producer feeds
+   * `commitState` outside `select()` (programmatic state
+   * mutation on the host contract). See `tabs-accepted-debt §4`
+   * for the rationale on retaining-vs-removing this key.
    */
   readonly commitFailedRetry: string;
   readonly commitInFlight: string;
