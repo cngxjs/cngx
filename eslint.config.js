@@ -5,6 +5,7 @@ const angular = require('@angular-eslint/eslint-plugin');
 const angularTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 const sheriff = require('@softarc/eslint-plugin-sheriff');
+const localRules = require('./tools/eslint-rules');
 
 module.exports = tseslint.config(
 
@@ -226,6 +227,28 @@ module.exports = tseslint.config(
     ignores: ['dev-app/**/*.ts'],
     rules: {
       curly: ['error', 'all'],
+    },
+  },
+
+  // Level-4 organism class-body LOC guard. Pillar 3 contract:
+  // organism shells stay thin (under 150 source lines of class
+  // body) so brain logic decomposes into Level-2 helper factories
+  // under @cngx/common/<lib>. Scoped to component/directive files
+  // in the five organism libs.
+  {
+    files: [
+      'projects/ui/tabs/src/**/*.component.ts',
+      'projects/ui/tabs/src/**/*.directive.ts',
+      'projects/ui/stepper/src/**/*.component.ts',
+      'projects/ui/stepper/src/**/*.directive.ts',
+      'projects/ui/mat-stepper/src/**/*.component.ts',
+      'projects/ui/mat-stepper/src/**/*.directive.ts',
+      'projects/ui/mat-tabs/src/**/*.component.ts',
+      'projects/ui/mat-tabs/src/**/*.directive.ts',
+    ],
+    plugins: { local: localRules },
+    rules: {
+      'local/level-4-organism-loc-guard': ['error', { threshold: 150 }],
     },
   },
 );
