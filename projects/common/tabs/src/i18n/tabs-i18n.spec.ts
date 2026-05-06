@@ -24,10 +24,31 @@ describe('CngxTabsI18n', () => {
     expect(i18n.nextTab).toBe('Next tab');
     expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
     expect(i18n.commitInFlight).toBe('Switching tab…');
+    expect(i18n.commitRolledBackTo('Profile')).toBe(
+      'Could not save changes — reverted to "Profile".',
+    );
     expect(i18n.selectedTab('Settings', 2, 5)).toBe('Tab 2 of 5: Settings');
     expect(i18n.tabHasErrors(1)).toBe('1 error');
     expect(i18n.tabHasErrors(3)).toBe('3 errors');
     expect(i18n.moreTabsLabel(4)).toBe('4 more');
+  });
+
+  it('provideTabsI18n can override commitRolledBackTo with a localised template', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsI18n({
+          commitRolledBackTo: (label) =>
+            `Speichern fehlgeschlagen — zurück auf „${label}".`,
+        }),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_TABS_I18N);
+    expect(i18n.commitRolledBackTo('Einstellungen')).toBe(
+      'Speichern fehlgeschlagen — zurück auf „Einstellungen".',
+    );
+    // Other keys keep their defaults.
+    expect(i18n.commitFailedRetry).toBe('Tab change refused — retry?');
   });
 
   it('provideTabsI18n shallow-merges over the defaults — unset keys keep English', () => {

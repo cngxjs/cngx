@@ -17,8 +17,25 @@ export interface CngxTabsI18n {
   readonly moreTabsLabel: (count: number) => string;
   readonly previousTab: string;
   readonly nextTab: string;
+  /**
+   * @deprecated for tabs commit rollback — superseded by
+   * {@link commitRolledBackTo}. Retained as the generic-error
+   * fallback in the organism's `liveAnnouncement` computed when
+   * the origin label is unresolvable, and for non-rollback
+   * consumers that bind this key directly. Removing it would
+   * break consumer overrides currently in the wild.
+   */
   readonly commitFailedRetry: string;
   readonly commitInFlight: string;
+  /**
+   * Origin-aware rollback announcement. Receives the label of the
+   * tab the user was returned to (the "safe-harbour" tab) and
+   * yields a phrase like `Could not save changes — reverted to
+   * "Profile".`. Read by the organism's `liveAnnouncement`
+   * computed on the `pending → error` transition when both
+   * `lastFailedIndex` and `originIndexDuringCommit` are set.
+   */
+  readonly commitRolledBackTo: (originLabel: string) => string;
 }
 
 const TABS_I18N_DEFAULTS: CngxTabsI18n = {
@@ -31,6 +48,8 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
   nextTab: 'Next tab',
   commitFailedRetry: 'Tab change refused — retry?',
   commitInFlight: 'Switching tab…',
+  commitRolledBackTo: (originLabel) =>
+    `Could not save changes — reverted to "${originLabel}".`,
 };
 
 /**
