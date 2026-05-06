@@ -106,6 +106,21 @@ export interface CngxMaterialBidirectionalSyncOptions {
  * mirror — same outcome as the gate version for pessimistic, and the
  * correct outcome for optimistic.
  *
+ * **Material-eager-advance reconciliation.** Material's MDC click
+ * handler advances `selectedIndex` synchronously *before* the
+ * Material→presenter subscription forwards the click to
+ * `onMaterialSelection`. When the presenter HOLDS its index
+ * (pessimistic mode + bound `commitAction`, or any future contract
+ * that refuses a select), the presenter→Material `effect()` does
+ * NOT fire — `presenterIndex` did not change — so Material's
+ * eager-advance is never reverted, and the visual diverges from the
+ * cngx semantic state. Closes `tabs-accepted-debt §6` by force-
+ * writing Material back to the presenter's value when the
+ * forwarding callback returns and the values still diverge. Idempotent
+ * with the regular presenter→Material effect (the read-equality guard
+ * at the effect site suppresses a duplicate write when the presenter
+ * later changes to the same value).
+ *
  * @category material-bridge
  */
 export function createMaterialBidirectionalSync(
@@ -140,5 +155,21 @@ export function createMaterialBidirectionalSync(
         return;
       }
       onMaterialSelection(idx);
+      // Material-eager-advance reconciliation (tabs-accepted-debt §6).
+      // The forwarding callback above lets the presenter run its
+      // commit-action gate; in pessimistic mode the presenter holds
+      // `activeIndex` at origin instead of advancing. The
+      // presenter→Material effect only fires on signal CHANGE, so a
+      // hold-at-origin leaves Material at the user-clicked target —
+      // out of sync with the cngx semantic state. Detect the
+      // post-callback divergence and force a Material write so the
+      // visual snaps back to the presenter's authoritative index.
+      // Loop-safe: writing `selectedIndex` re-emits `selectionChange$`,
+      // but the early-return guard at the top of this subscriber
+      // (`presenterIndex() === idx`) drops the re-entrant emission.
+      const reconciled = presenterIndex();
+      if (readSelectedIndex() !== reconciled) {
+        writeSelectedIndex(reconciled);
+      }
     });
 }

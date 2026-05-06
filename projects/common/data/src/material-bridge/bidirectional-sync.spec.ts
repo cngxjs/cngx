@@ -153,6 +153,54 @@ describe('createMaterialBidirectionalSync', () => {
     expect(h.onMaterialSelectionSpy).not.toHaveBeenCalled();
   });
 
+  test('axis 4b: Material-eager-advance reconciliation — when the forwarding callback returns and the presenter held its index (pessimistic-mode shape), Material is force-written back', () => {
+    const h = makeHarness(0);
+    // Simulate the pessimistic-mode user-side click contract: Material
+    // advanced eagerly to 2 BEFORE the subscriber fires; the
+    // presenter holds activeIndex at origin (does NOT call
+    // onMaterialSelection's default presenterIndex.set).
+    const holdingHandler = vi.fn((_idx: number) => {
+      // Presenter intentionally holds — no presenterIndex.set call.
+      // (Mirrors `presenter.select(idx)` in pessimistic + bound
+      // commitAction: writes originIndexDuringCommit, calls
+      // beginTransition, but does NOT advance activeIndex.)
+    });
+    h.install({ onMaterialSelection: holdingHandler });
+    TestBed.flushEffects();
+
+    // Material's MDC click handler advances first; selectionChange
+    // emits 2 with matIndex.value already at 2 (Material-side state).
+    h.matIndex.value = 2;
+    h.selectionChange$.next(2);
+
+    // Forwarding callback ran; presenter held its index; reconciliation
+    // detects matIndex (2) !== presenterIndex (0) and force-writes 0.
+    expect(holdingHandler).toHaveBeenCalledTimes(1);
+    expect(holdingHandler).toHaveBeenCalledWith(2);
+    expect(h.writeSpy).toHaveBeenCalledTimes(1);
+    expect(h.writeSpy).toHaveBeenCalledWith(0);
+    expect(h.matIndex.value).toBe(0);
+    expect(h.presenterIndex()).toBe(0);
+  });
+
+  test('axis 4c: reconciliation no-op — when the forwarding callback advances the presenter (optimistic-mode shape), no force-write happens', () => {
+    const h = makeHarness(0);
+    // Default onMaterialSelectionSpy already advances presenterIndex
+    // to the forwarded value (mirrors optimistic-mode select).
+    h.install();
+    TestBed.flushEffects();
+
+    h.matIndex.value = 2;
+    h.selectionChange$.next(2);
+
+    // Forwarding advanced the presenter to 2 → matches matIndex →
+    // reconciliation guard short-circuits; no extra writeSpy call.
+    expect(h.onMaterialSelectionSpy).toHaveBeenCalledTimes(1);
+    expect(h.writeSpy).not.toHaveBeenCalled();
+    expect(h.matIndex.value).toBe(2);
+    expect(h.presenterIndex()).toBe(2);
+  });
+
   test('axis 5: re-entrancy guard — Material event during presenter→Material write does not double-fire', () => {
     const h = makeHarness(0);
     // Simulate the natural loop: presenter writes 2 → Material setter

@@ -246,18 +246,13 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     // NOTE: final `mdc-tab--active` selection is NOT asserted here.
     // Optimistic supersede: the second click captures the just-
     // advanced activeIndex (1) as origin, so the rollback target is
-    // tab 1 — not the original tab 0. Plus, in this configuration
-    // Material's eager-advance + the bidirectional-sync's
-    // change-only effect leave a divergence between
-    // MatTabGroup.selectedIndex and presenter.activeIndex visible to
-    // a user-side click sequence (tracked as
-    // `tabs-accepted-debt §6`). The decoration state IS the cngx
-    // contract this directive owns; the active-tab final state is
-    // governed by Material's own MDC click handler + bidirectional
-    // sync semantics, audited separately.
+    // tab 1 — NOT the original tab 0. The decoration state IS the
+    // cngx contract this directive owns; the active-tab final state
+    // is governed by the optimistic-mode origin-capture timing,
+    // audited via the presenter unit specs.
   });
 
-  test('(j) pessimistic + simulate-error via Material click: decoration lands on tab 2 (visual selectedIndex divergence is tracked debt §6)', async ({
+  test('(j) pessimistic + simulate-error via Material click: decoration lands on tab 2', async ({
     page,
   }) => {
     await page.goto(ROUTE);
@@ -270,29 +265,17 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     // The cngx contract this directive owns: rejected target is
     // decorated, aria-invalid is set. Both must hold regardless of
     // mode and regardless of whether the click came via Material or
-    // programmatic.
+    // programmatic. Test (j2) below covers the related Material-
+    // rollback contract that the §6 fix restored.
     await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/, {
       timeout: 4000,
     });
     await expect(buttons.nth(2)).toHaveAttribute('aria-invalid', 'true');
-    // KNOWN DIVERGENCE: in pessimistic mode + Material-side click,
-    // Material's MDC handler advances `selectedIndex` to the target
-    // synchronously BEFORE the bidirectional sync forwards the click
-    // to `presenter.select()`. The presenter holds activeIndex at
-    // origin per pessimistic semantics, but the bidirectional sync's
-    // presenter→Material effect only fires when activeIndex CHANGES —
-    // so Material is never written back. The visual ends up at tab 2
-    // even though the cngx contract is "Material stays at origin
-    // until the action resolves" (per the demo description). Tracked
-    // as `tabs-accepted-debt §6`. The cngx-owned decoration above is
-    // unaffected — but the active-tab final state is left
-    // unasserted here pending the §6 fix.
   });
 
-  test('(j-fixme) pessimistic + Material-side click: Material SHOULD roll selectedIndex back to origin after reject — currently broken (tabs-accepted-debt §6)', async ({
+  test('(j2) pessimistic + Material-side click: Material rolls selectedIndex back to origin during pending AND keeps it after reject (tabs-accepted-debt §6 — CLOSED)', async ({
     page,
   }) => {
-    test.fixme(true, 'tabs-accepted-debt §6 — Material eager-advance not reverted by bidirectional sync on user-side click');
     await page.goto(ROUTE);
     await page
       .getByRole('button', { name: 'pessimistic', exact: true })
@@ -300,13 +283,17 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     await enableSimulateError(page);
     const buttons = matTabButtons(page);
     await buttons.nth(2).click();
+    // Decoration lands on tab 2 after the ~600ms reject.
     await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/, {
       timeout: 4000,
     });
-    // The promise the demo description makes: `[commitMode]="pessimistic"
-    // keeps Material on the origin until the action resolves.` This
-    // test pins the contract; flip from `test.fixme` to active when §6
-    // ships.
+    // §6 fix: bidirectional sync's Material-eager-advance
+    // reconciliation force-writes selectedIndex back to origin (0)
+    // immediately after the forwarding callback held the presenter.
+    // The promise the demo description makes — `[commitMode]="pessimistic"
+    // keeps Material on the origin until the action resolves` — now
+    // holds for user-side clicks (the unit-spec at axis 4 already
+    // covered the programmatic path).
     await expect(buttons.nth(0)).toHaveClass(/mdc-tab--active/, {
       timeout: 4000,
     });
