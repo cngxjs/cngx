@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, effect, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -246,15 +246,22 @@ describe('CngxTabOverflow', () => {
     expect(triggerAfter.hidden).toBe(true);
   });
 
-  it('hiddenTabs computed is reference-stable across identity-only IO emissions (mapBoolEqual gate)', async () => {
-    // Reactivity-stability gate per `reference_signal_architecture`
-    // Equality Rule. The IO callback rebuilds the visibilityState
-    // Map on every fire (`update((prev) => new Map(prev))`); without
-    // structural-equal `mapBoolEqual` on the signal, every IO event
-    // would invalidate `hiddenTabs` even when no tab actually flipped
-    // visibility — cascading into the popover-list outlet on every
-    // scroll. Two IO fires with identical entries must produce the
-    // same `hiddenTabs` Signal value (reference equality).
+  it('visibilityState signal is identity-stable across same-shape IO emissions (mapBoolEqual gate)', async () => {
+    // Regression-fence for `reference_signal_architecture` Equality
+    // Rule. The IO callback's `update((prev) => new Map(prev))`
+    // produces a fresh Map reference on every fire. Without
+    // `mapBoolEqual` on the source `visibilityState` signal, every
+    // IO event would invalidate the signal — and every downstream
+    // `effect`/`computed` that reads it would re-fire / recompute,
+    // even when no tab actually flipped visibility. The cascading
+    // recompute is the cost we want to avoid. Asserting against
+    // `hiddenTabs` (which already carries `tabIdListEqual` on its
+    // computed) does NOT prove the source-signal gate works —
+    // `tabIdListEqual` would suppress the value write regardless,
+    // producing a coincidence pass. Instead, install an
+    // `effect()` that reads `visibilityState` directly via the
+    // private field and count its invocations: if `mapBoolEqual`
+    // works, two identical IO fires produce one effect run, not two.
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
@@ -269,29 +276,49 @@ describe('CngxTabOverflow', () => {
       (el) => el.componentInstance instanceof CngxTabOverflow,
     ).componentInstance as InstanceType<typeof CngxTabOverflow>;
 
+    // Install a tracking effect against the private signal. If
+    // `mapBoolEqual` correctly suppresses identity-only writes, the
+    // effect runs ONCE per real change — not once per IO emission.
+    const visibilityRef = (
+      overflow as unknown as {
+        visibilityState: () => ReadonlyMap<string, boolean>;
+      }
+    ).visibilityState;
+    let runs = 0;
+    TestBed.runInInjectionContext(() => {
+      effect(() => {
+        visibilityRef();
+        runs++;
+      });
+    });
+    TestBed.flushEffects();
+    const baseline = runs;
+
     observer.fire([
       { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
-    fixture.detectChanges();
-    const first = (overflow as unknown as { hiddenTabs: () => unknown[] })
-      .hiddenTabs();
+    TestBed.flushEffects();
+    const afterFirst = runs;
 
-    // Second emission with IDENTICAL entries — `mapBoolEqual` must
-    // suppress the signal write, so `hiddenTabs` returns the same
-    // reference (Object.is true).
+    // Second fire with IDENTICAL entries. `mapBoolEqual` MUST gate
+    // the source signal — effect run count must NOT increment.
     observer.fire([
       { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
-    fixture.detectChanges();
-    const second = (overflow as unknown as { hiddenTabs: () => unknown[] })
-      .hiddenTabs();
+    TestBed.flushEffects();
+    const afterSecond = runs;
 
-    expect(Object.is(first, second)).toBe(true);
+    // First IO fire flipped two tabs from "not yet observed" to
+    // "false" → real change → effect re-fired. afterFirst > baseline.
+    expect(afterFirst).toBeGreaterThan(baseline);
+    // Second IO fire with identical entries → no real change →
+    // `mapBoolEqual` suppresses the write → effect did NOT re-fire.
+    expect(afterSecond).toBe(afterFirst);
   });
 });

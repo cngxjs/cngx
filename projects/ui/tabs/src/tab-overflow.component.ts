@@ -46,8 +46,8 @@ function tabIdListEqual(
 /**
  * Structural equality for the `visibilityState` map: identical when
  * both maps carry the same key-set with the same boolean visibility
- * per key. Without this, the IO callback's `update((prev) => new Map(prev))`
- * cycle (lines 207-220) produces a fresh Map reference on every
+ * per key. Without this, `handleIntersections`'s `update((prev) =>
+ * new Map(prev))` cycle produces a fresh Map reference on every
  * IntersectionObserver fire — `hiddenTabs` would re-derive on every
  * scroll even when no tab actually flipped visibility, cascading
  * into the popover-list outlet.
