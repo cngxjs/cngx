@@ -62,11 +62,17 @@ export interface CngxTabGroupHost {
   /**
    * The "safe-harbour" index captured at the start of an active
    * commit window — written when a `commitAction` is bound and
-   * `select()` opens a transition, retained across the error
-   * window so the live-region announcement can resolve the origin
-   * tab's label for the rich rollback phrase, cleared on commit
-   * success. Always `undefined` outside a commit window or after a
-   * successful settlement; gated by `lastFailedIndex` at read time.
+   * `select()` opens a transition; retained when the commit
+   * settles to `error` so the live-region announcement can
+   * resolve the origin tab's label for the rich rollback phrase;
+   * cleared when the commit settles to `success`. The producer
+   * does not gate the value — outside the commit window the slot
+   * may carry a stale-but-undefined value (initial state) or a
+   * stale-from-prior-error value (after a rejected commit until
+   * the next successful one). Consumers (the organism's
+   * `liveAnnouncement` computed and any sibling SR pipeline)
+   * gate reads by joining with `lastFailedIndex` — origin is
+   * meaningful only when `lastFailedIndex !== undefined`.
    */
   readonly originIndexDuringCommit: Signal<number | undefined>;
 
