@@ -245,4 +245,53 @@ describe('CngxTabOverflow', () => {
     ) as HTMLElement;
     expect(triggerAfter.hidden).toBe(true);
   });
+
+  it('hiddenTabs computed is reference-stable across identity-only IO emissions (mapBoolEqual gate)', async () => {
+    // Reactivity-stability gate per `reference_signal_architecture`
+    // Equality Rule. The IO callback rebuilds the visibilityState
+    // Map on every fire (`update((prev) => new Map(prev))`); without
+    // structural-equal `mapBoolEqual` on the signal, every IO event
+    // would invalidate `hiddenTabs` even when no tab actually flipped
+    // visibility — cascading into the popover-list outlet on every
+    // scroll. Two IO fires with identical entries must produce the
+    // same `hiddenTabs` Signal value (reference equality).
+    const { instances } = installMockIntersectionObserver();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    fixture.detectChanges();
+    const first = (overflow as unknown as { hiddenTabs: () => unknown[] })
+      .hiddenTabs();
+
+    // Second emission with IDENTICAL entries — `mapBoolEqual` must
+    // suppress the signal write, so `hiddenTabs` returns the same
+    // reference (Object.is true).
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    fixture.detectChanges();
+    const second = (overflow as unknown as { hiddenTabs: () => unknown[] })
+      .hiddenTabs();
+
+    expect(Object.is(first, second)).toBe(true);
+  });
 });

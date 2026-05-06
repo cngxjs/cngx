@@ -44,6 +44,33 @@ function tabIdListEqual(
 }
 
 /**
+ * Structural equality for the `visibilityState` map: identical when
+ * both maps carry the same key-set with the same boolean visibility
+ * per key. Without this, the IO callback's `update((prev) => new Map(prev))`
+ * cycle (lines 207-220) produces a fresh Map reference on every
+ * IntersectionObserver fire — `hiddenTabs` would re-derive on every
+ * scroll even when no tab actually flipped visibility, cascading
+ * into the popover-list outlet.
+ */
+function mapBoolEqual(
+  a: ReadonlyMap<string, boolean>,
+  b: ReadonlyMap<string, boolean>,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const [key, value] of a) {
+    if (b.get(key) !== value) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Opt-in overflow indicator for `<cngx-tab-group>`. Detects tab
  * buttons that have scrolled out of the strip viewport (or never
  * fit) and surfaces them through a "More" `CngxPopover` dropdown.
@@ -97,9 +124,12 @@ export class CngxTabOverflow {
 
   // Maps tab id -> visibility. `undefined` = not yet observed (treat
   // as visible until proven otherwise so the More button never flashes
-  // on first render).
+  // on first render). Structural-equal `mapBoolEqual` prevents
+  // identity-only re-emissions (the IO callback below allocates a
+  // fresh Map every fire) from cascading into `hiddenTabs`.
   private readonly visibilityState = signal<ReadonlyMap<string, boolean>>(
     new Map(),
+    { equal: mapBoolEqual },
   );
 
   protected readonly hiddenTabs = computed<readonly CngxTabHandle[]>(
