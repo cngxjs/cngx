@@ -49,6 +49,27 @@ export interface CngxTabGroupHost {
    */
   readonly commitTransition: StatusTransition;
 
+  /**
+   * The tab index whose last commit attempt was refused. Set by
+   * the presenter on commit reject (both optimistic and pessimistic
+   * modes). Cleared on the next successful re-pick of that same
+   * index, or on explicit consumer dismissal via
+   * {@link clearLastFailed}. Drives the persistent rejection-icon
+   * decoration in Level-4 organism shells.
+   */
+  readonly lastFailedIndex: Signal<number | undefined>;
+
+  /**
+   * The "safe-harbour" index captured at the start of an active
+   * commit window — written when a `commitAction` is bound and
+   * `select()` opens a transition, retained across the error
+   * window so the live-region announcement can resolve the origin
+   * tab's label for the rich rollback phrase, cleared on commit
+   * success. Always `undefined` outside a commit window or after a
+   * successful settlement; gated by `lastFailedIndex` at read time.
+   */
+  readonly originIndexDuringCommit: Signal<number | undefined>;
+
   register(handle: CngxTabHandle): void;
   unregister(id: string): void;
 
@@ -56,6 +77,15 @@ export interface CngxTabGroupHost {
   selectNext(): void;
   selectPrevious(): void;
   selectById(id: string): void;
+
+  /**
+   * Clear the persisted {@link lastFailedIndex} flag without
+   * unwinding {@link originIndexDuringCommit} (which remains
+   * gated by `lastFailedIndex` in any consumer that reads it).
+   * Consumers call this when their bound data source changes and
+   * the rollback marker is no longer meaningful.
+   */
+  clearLastFailed(): void;
 }
 
 /**

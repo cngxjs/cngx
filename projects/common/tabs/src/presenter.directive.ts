@@ -128,6 +128,25 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     () => this.commitController.state.status(),
   );
 
+  // Persistence-of-error surface (Pillar 2 — Kommunikation als
+  // First-Class Concern). `lastFailedIndex` flags the refused
+  // target until the user re-picks it successfully or explicitly
+  // dismisses via `clearLastFailed()`. `originIndexDuringCommit`
+  // is the safe-harbour captured at commit-window open; the
+  // organism's `liveAnnouncement` computed reads both to resolve
+  // the rich rollback phrase. Both are primitives, so default
+  // `Object.is` equality is correct — no `equal` fn needed.
+  private readonly lastFailedIndexState = signal<number | undefined>(undefined);
+  private readonly originIndexDuringCommitState = signal<number | undefined>(
+    undefined,
+  );
+  /** {@inheritDoc CngxTabGroupHost.lastFailedIndex} */
+  readonly lastFailedIndex: Signal<number | undefined> =
+    this.lastFailedIndexState.asReadonly();
+  /** {@inheritDoc CngxTabGroupHost.originIndexDuringCommit} */
+  readonly originIndexDuringCommit: Signal<number | undefined> =
+    this.originIndexDuringCommitState.asReadonly();
+
   private readonly tabsState = signal<readonly CngxTabHandle[]>([], {
     equal: tabsEqual,
   });
@@ -166,6 +185,11 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     }
   }
 
+  /** {@inheritDoc CngxTabGroupHost.clearLastFailed} */
+  clearLastFailed(): void {
+    this.lastFailedIndexState.set(undefined);
+  }
+
   select(index: number): void {
     const tabs = this.tabs();
     if (tabs.length === 0) {
@@ -182,7 +206,16 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
     const action = this.commitAction();
     if (!action) {
+      // No-action fast path — activeIndex moves synchronously, no
+      // commit window opens, so `originIndexDuringCommit` stays
+      // untouched (the live-region computed gates origin reads on
+      // `lastFailedIndex`, so a stale origin can never leak into
+      // the announcement). If the user is re-picking a previously-
+      // failed target, clear the rejection flag.
       this.activeIndex.set(target);
+      if (this.lastFailedIndexState() === target) {
+        this.lastFailedIndexState.set(undefined);
+      }
       return;
     }
 
@@ -193,15 +226,37 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     // `previous` until the action resolves. Supersede semantics
     // come from the lifted commit-controller — a rapid second
     // select() cancels the in-flight runner.
+    //
+    // Open the commit window: capture the safe-harbour origin
+    // exactly once. Written ONLY here (not on the no-action fast
+    // path) so a stale origin never lingers into a non-commit
+    // navigation.
+    this.originIndexDuringCommitState.set(previous);
     const mode = this.commitMode();
     if (mode === 'optimistic') {
       this.activeIndex.set(target);
     }
     this.commitHandler.beginTransition(previous, target, action, (accept) => {
-      if (accept && mode === 'pessimistic') {
-        this.activeIndex.set(target);
-      } else if (!accept && mode === 'optimistic') {
-        this.activeIndex.set(previous);
+      if (accept) {
+        // Window closes on success — origin label no longer needed;
+        // clear the rejection flag if the user re-picked the failed
+        // target successfully (axis 4a).
+        this.originIndexDuringCommitState.set(undefined);
+        if (this.lastFailedIndexState() === target) {
+          this.lastFailedIndexState.set(undefined);
+        }
+        if (mode === 'pessimistic') {
+          this.activeIndex.set(target);
+        }
+      } else {
+        // Reject — flag the refused target; RETAIN the origin so
+        // the organism's `liveAnnouncement` computed can resolve
+        // the origin label for the rich rollback phrase. Optimistic
+        // rolls back; pessimistic never moved.
+        this.lastFailedIndexState.set(target);
+        if (mode === 'optimistic') {
+          this.activeIndex.set(previous);
+        }
       }
     });
   }

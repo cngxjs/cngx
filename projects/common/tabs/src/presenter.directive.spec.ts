@@ -330,6 +330,80 @@ describe('CngxTabGroupPresenter', () => {
       expect(presenter.activeIndex()).toBe(0);
     });
 
+    // Persistence-of-error + origin-tracking surface (Phase 1 of
+    // tabs-commit-ux-refine plan). Six axes, each isolated so a
+    // failure points to one invariant.
+    it('axis 1 — lastFailedIndex and originIndexDuringCommit are undefined initially', () => {
+      const { presenter } = setup();
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+    });
+
+    it('axis 2 — originIndexDuringCommit is NOT written on the no-action fast path', () => {
+      const { presenter } = setup();
+      presenter.register(handle('a'));
+      presenter.register(handle('b'));
+      presenter.select(1);
+      expect(presenter.activeIndex()).toBe(1);
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+    });
+
+    it('axis 3a — optimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+    });
+
+    it('axis 3b — pessimistic reject sets lastFailedIndex AND retains originIndexDuringCommit', () => {
+      const { presenter } = commitFixture('pessimistic', () => false);
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(0);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+    });
+
+    it('axis 4a — successful re-pick of the failed target clears BOTH lastFailedIndex and originIndexDuringCommit', () => {
+      let next = false;
+      const { presenter } = commitFixture('optimistic', () => next);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+      next = true;
+      presenter.select(2);
+      expect(presenter.activeIndex()).toBe(2);
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+    });
+
+    it('axis 4b — successful navigation to a non-failed target clears originIndexDuringCommit but RETAINS lastFailedIndex', () => {
+      let next = false;
+      const { presenter } = commitFixture('optimistic', () => next);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+      next = true;
+      presenter.select(1);
+      expect(presenter.activeIndex()).toBe(1);
+      // Failed target stays flagged for visual decoration.
+      expect(presenter.lastFailedIndex()).toBe(2);
+      // Successful commit window closed — origin no longer needed.
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+    });
+
+    it('axis 5 — clearLastFailed() clears lastFailedIndex without unwinding originIndexDuringCommit', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+      presenter.clearLastFailed();
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      // Programmatic dismissal does not unwind the safe-harbour;
+      // origin stays gated by lastFailedIndex in any consumer.
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+    });
+
     it('supersede: rapid second select cancels the first commit', () => {
       // First action never resolves (Subject); second action resolves
       // true. Supersede semantics from the lifted controller mean the
