@@ -1,6 +1,6 @@
 import { Component, signal, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatTabsModule, MatTabGroup } from '@angular/material/tabs';
+import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -326,6 +326,41 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(ids.length).toBe(3);
     // Set semantics confirms uniqueness.
     expect(new Set(ids).size).toBe(3);
+  });
+
+  test('axis 9b: Material API contract pin — MatTab._stateChanges Subject exists at runtime', () => {
+    // Load-bearing coupling check. The directive subscribes to
+    // `MatTab._stateChanges` (Material-internal underscore field) to
+    // pump live `label`/`disabled` projections; if Material renames
+    // or removes this field on upgrade, axis 10 fails silently with
+    // stale snapshots. This spec fails LOUD at the upgrade boundary
+    // so the JSDoc-acknowledged coupling note in
+    // `handle.ts:39-42` has a regression gate.
+    const proto = MatTab.prototype as unknown as {
+      _stateChanges?: unknown;
+    };
+    // Constructed instances expose it (it's an instance field
+    // initialised in MatTab's constructor body). We can't construct
+    // MatTab without DI plumbing, so verify via a TestBed render
+    // that the field is present on a real instance.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const matTabGroup = matEl.componentInstance as MatTabGroup;
+    const firstTab = matTabGroup._allTabs.first;
+    expect(firstTab._stateChanges).toBeDefined();
+    expect(typeof firstTab._stateChanges.subscribe).toBe('function');
+    // Belt-and-suspenders: prototype-level absence is also accepted
+    // (instance-only fields are valid Material patterns), but at
+    // least one of the two paths must surface the field.
+    expect(
+      proto._stateChanges !== undefined || firstTab._stateChanges !== undefined,
+    ).toBe(true);
   });
 
   test('axis 10: live MatTab.disabled — toggling Material input propagates to presenter handle', async () => {

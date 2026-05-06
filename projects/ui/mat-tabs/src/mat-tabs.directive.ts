@@ -58,24 +58,27 @@ export class CngxMatTabs {
   private readonly injector = inject(Injector);
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
-  private readonly setupsByTab = new WeakMap<MatTab, CngxMatTabHandleSetup>();
-  private stateChangeSubs: Subscription[] = [];
+  // Per-tab registries — strong refs are bounded by the directive's
+  // lifetime (every entry is explicitly deleted when the matching
+  // MatTab leaves the children set, AND the maps go away on
+  // directive destroy). Map (not WeakMap) so the diff loop in
+  // `syncHandles` can iterate to find removed tabs without a
+  // parallel `Set<MatTab>`.
+  private readonly setupsByTab = new Map<MatTab, CngxMatTabHandleSetup>();
+  private readonly stateChangeSubsByTab = new Map<MatTab, Subscription>();
 
   constructor() {
-    // Sync handles + (re)subscribe to each live MatTab's
-    // `_stateChanges`. The subscription set is rebuilt on every
-    // children-set emission so removed MatTabs drop their
-    // subscription cleanly; cached setups in the WeakMap survive,
-    // so handle ids stay stable across re-emissions of the same
-    // MatTab instance.
     effect(() => {
       const tabs = this.matTabs();
       untracked(() => this.syncHandles(tabs));
     });
 
     this.destroyRef.onDestroy(() => {
-      this.stateChangeSubs.forEach((s) => s.unsubscribe());
-      this.stateChangeSubs = [];
+      for (const sub of this.stateChangeSubsByTab.values()) {
+        sub.unsubscribe();
+      }
+      this.stateChangeSubsByTab.clear();
+      this.setupsByTab.clear();
     });
 
     createMaterialBidirectionalSync({
@@ -92,44 +95,39 @@ export class CngxMatTabs {
   }
 
   private syncHandles(tabs: readonly MatTab[]): void {
-    // Tear down state-change subs before rebuilding — closures hold
-    // strong refs to MatTab instances, so subs from removed tabs
-    // would leak otherwise.
-    this.stateChangeSubs.forEach((s) => s.unsubscribe());
-    this.stateChangeSubs = [];
+    const liveTabs = new Set<MatTab>(tabs);
 
-    const liveIds = new Set<string>();
+    // Add: only fresh MatTabs get a setup + handle registration +
+    // `_stateChanges` subscription. Cached MatTabs survive untouched
+    // — no register-churn, no resubscribe-churn.
     for (const tab of tabs) {
-      let setup = this.setupsByTab.get(tab);
-      if (!setup) {
-        setup = createMatTabHandle(tab, () => nextUid('cngx-mat-tab-'));
-        this.setupsByTab.set(tab, setup);
-        // First time we see this MatTab — register the handle. On
-        // subsequent emissions of the same instance we skip the
-        // re-register so the presenter's `tabsState` doesn't churn
-        // with identity-only re-emissions.
-        this.presenter.register(setup.handle);
+      if (this.setupsByTab.has(tab)) {
+        continue;
       }
-      liveIds.add(setup.handle.id);
-
+      const setup = createMatTabHandle(tab, () => nextUid('cngx-mat-tab-'));
+      this.setupsByTab.set(tab, setup);
+      this.presenter.register(setup.handle);
       // Live projection of MatTab.disabled / textLabel via
-      // `_stateChanges`. See `handle.ts` JSDoc for the underscore-
-      // prefix coupling note.
-      const localSetup = setup;
-      this.stateChangeSubs.push(
-        tab._stateChanges.subscribe(() => {
-          localSetup.label.set(tab.textLabel);
-          localSetup.disabled.set(tab.disabled);
-        }),
-      );
+      // `_stateChanges`. See `handle.ts` JSDoc for the
+      // underscore-prefix coupling note.
+      const sub = tab._stateChanges.subscribe(() => {
+        setup.label.set(tab.textLabel);
+        setup.disabled.set(tab.disabled);
+      });
+      this.stateChangeSubsByTab.set(tab, sub);
     }
 
-    // Single-pass unregister of stale ids — anything currently in
-    // the presenter that's not a live id must have been removed.
-    for (const id of this.presenter.tabs().map((h) => h.id)) {
-      if (!liveIds.has(id)) {
-        this.presenter.unregister(id);
+    // Remove: any MatTab in our registry that's no longer in the
+    // children-set is gone — unsubscribe + unregister. Single pass
+    // over our own registry, no walk over the presenter's array.
+    for (const [tab, setup] of this.setupsByTab) {
+      if (liveTabs.has(tab)) {
+        continue;
       }
+      this.stateChangeSubsByTab.get(tab)?.unsubscribe();
+      this.stateChangeSubsByTab.delete(tab);
+      this.setupsByTab.delete(tab);
+      this.presenter.unregister(setup.handle.id);
     }
   }
 }
