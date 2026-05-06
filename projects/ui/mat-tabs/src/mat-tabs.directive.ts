@@ -118,9 +118,12 @@ export class CngxMatTabs {
     }
 
     // Remove: any MatTab in our registry that's no longer in the
-    // children-set is gone — unsubscribe + unregister. Single pass
-    // over our own registry, no walk over the presenter's array.
-    for (const [tab, setup] of this.setupsByTab) {
+    // children-set is gone — unsubscribe + unregister. Snapshot
+    // entries before the loop so multi-key deletes inside the body
+    // never collide with iterator state (current-key delete is
+    // spec-safe; the snapshot is defensive against future-edit
+    // regressions that introduce non-current-key deletes).
+    for (const [tab, setup] of Array.from(this.setupsByTab.entries())) {
       if (liveTabs.has(tab)) {
         continue;
       }

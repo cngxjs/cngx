@@ -1,8 +1,21 @@
-import { signal, type WritableSignal } from '@angular/core';
+import { signal, type Signal, type WritableSignal } from '@angular/core';
 import type { MatTab } from '@angular/material/tabs';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import type { CngxTabHandle } from '@cngx/common/tabs';
+
+/**
+ * Shared `signal(undefined)` constant used as the `errorAggregator`
+ * slot for every Material-instrumented tab handle. The instrumentation
+ * path does not bind cngx error-aggregation per `MatTab` (Material's
+ * own visual error surface stays authoritative), so per-tab allocation
+ * of a writable signal would be dead capacity — every read returns
+ * `undefined`. One module-level constant suffices for the contract.
+ *
+ * @internal
+ */
+const NO_ERROR_AGGREGATOR: Signal<CngxErrorAggregatorContract | undefined> =
+  signal<CngxErrorAggregatorContract | undefined>(undefined).asReadonly();
 
 /**
  * Wiring bundle returned from {@link createMatTabHandle}. The
@@ -17,7 +30,6 @@ export interface CngxMatTabHandleSetup {
   readonly handle: CngxTabHandle;
   readonly label: WritableSignal<string | undefined>;
   readonly disabled: WritableSignal<boolean>;
-  readonly errorAggregator: WritableSignal<CngxErrorAggregatorContract | undefined>;
 }
 
 /**
@@ -40,10 +52,13 @@ export interface CngxMatTabHandleSetup {
  *   stable across Material 19/20/21 — the only practical reactive
  *   surface for `MatTab` input changes. Tracked as a coupling point
  *   to revisit on Material upgrades.
- * - `errorAggregator` — defaulted to `signal(undefined)` (the
- *   instrumentation path does not bind cngx error-aggregation
- *   per `MatTab`; Material's own visual error surface stays
- *   authoritative).
+ * - `errorAggregator` — points at the shared {@link NO_ERROR_AGGREGATOR}
+ *   constant. The instrumentation path does not bind cngx
+ *   error-aggregation per `MatTab` (Material's own visual error
+ *   surface stays authoritative), so a per-tab writable signal would
+ *   be dead capacity. Sharing one read-only constant across every
+ *   handle keeps `presenter.tabs()[i].errorAggregator()` on the
+ *   contract while saving N-per-instance allocations.
  *
  * @category material-bridge
  */
@@ -53,17 +68,15 @@ export function createMatTabHandle(
 ): CngxMatTabHandleSetup {
   const label = signal<string | undefined>(matTab.textLabel);
   const disabled = signal<boolean>(matTab.disabled);
-  const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(undefined);
   const id = idSeed();
   return {
     handle: {
       id,
       label: label.asReadonly(),
       disabled: disabled.asReadonly(),
-      errorAggregator: errorAggregator.asReadonly(),
+      errorAggregator: NO_ERROR_AGGREGATOR,
     },
     label,
     disabled,
-    errorAggregator,
   };
 }
