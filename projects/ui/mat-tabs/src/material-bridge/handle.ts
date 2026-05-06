@@ -50,8 +50,10 @@ export interface CngxMatTabHandleSetup {
  *   Material's typings (Material-internal convention) but is
  *   declared `readonly` on the public class surface and has been
  *   stable across Material 19/20/21 — the only practical reactive
- *   surface for `MatTab` input changes. Tracked as a coupling point
- *   to revisit on Material upgrades.
+ *   surface for `MatTab` input changes. Tracked as
+ *   `tabs-accepted-debt §5` (Material-private surface couplings) for
+ *   the upgrade-watch and re-evaluation triggers; alongside the
+ *   `.mat-mdc-tab` selector usage in `mat-tabs.directive.ts`.
  * - `errorAggregator` — points at the shared {@link NO_ERROR_AGGREGATOR}
  *   constant. The instrumentation path does not bind cngx
  *   error-aggregation per `MatTab` (Material's own visual error

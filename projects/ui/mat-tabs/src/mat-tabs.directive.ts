@@ -187,7 +187,12 @@ export class CngxMatTabs {
     // element. Index drift on dynamic tab removal is the same risk
     // the cngx-native variant carries via `[class.X]="failedIdx === i"`
     // — accepted (Pillar 1: index-driven binding is idempotent on
-    // re-render).
+    // re-render). The `.mat-mdc-tab` selector is a Material-internal
+    // CSS class — tracked as `tabs-accepted-debt §5` (Material-private
+    // surface couplings) alongside `MatTab._stateChanges` in
+    // `handle.ts:43-54`. Re-evaluation triggers: Material upgrades
+    // that break the selector OR a future public per-MatTab-header
+    // element accessor.
     const buttons = this.hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
     const targetEl = buttons.item(failedIdx);
     if (!targetEl) {
