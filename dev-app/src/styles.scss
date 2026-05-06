@@ -24,6 +24,13 @@
 @use '../../projects/forms/input/src/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
+// Sticky-error decoration skin shipped as a standalone stylesheet
+// asset by `@cngx/ui/mat-tabs` (Material instrumentation directive
+// has no template surface for `styleUrls`). Pulled in via
+// project-relative path during dev; production consumers import
+// from `@cngx/ui/mat-tabs/styles/mat-tabs.css`.
+@import '../../projects/ui/mat-tabs/styles/mat-tabs.css';
+
 // Material theme — light, untouched (demo components rely on this)
 @include mat.core();
 

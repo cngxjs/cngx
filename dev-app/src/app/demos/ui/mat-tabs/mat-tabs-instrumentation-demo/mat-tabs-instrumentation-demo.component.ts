@@ -24,7 +24,7 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
   ],
   template: `
     <app-doc-shell title="Mat-tabs — instrumentation directive"
-      description="Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]=&quot;optimistic&quot;</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]=&quot;pessimistic&quot;</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit."
+      description="Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]=&quot;optimistic&quot;</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]=&quot;pessimistic&quot;</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid=&quot;true&quot;</code> until the user successfully re-picks it OR clicks the &quot;Clear last failed&quot; button. In optimistic mode, the decoration appears in the same microtask as the rollback; Material's ink-bar transition then visually slides back to the origin tab — the user sees the marker land before the bar moves. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>."
       [apiComponents]="['CngxMatTabs', 'CngxToastOn', 'CngxBannerOn']">
       <app-example-card title="Vanilla <mat-tab-group> upgraded by adding cngxMatTabs"
         [subtitle]="_s0"
@@ -53,6 +53,7 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
     </label>
   </div>
   <mat-tab-group
+    #mt="cngxMatTabs"
     cngxMatTabs
     [(activeIndex)]="active"
     [commitAction]="commitAction"
@@ -74,6 +75,14 @@ import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
       <p>Notification preferences.</p>
     </mat-tab>
   </mat-tab-group>
+  <div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="mt.clearLastFailed()">
+      Clear last failed
+    </button>
+    <span style="opacity:0.7;font-size:12px">
+      programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
+    </span>
+  </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>
@@ -105,6 +114,7 @@ export class MatTabsInstrumentationDemoComponent {
     </label>
   </div>
   <mat-tab-group
+    #mt="cngxMatTabs"
     cngxMatTabs
     [(activeIndex)]="active"
     [commitAction]="commitAction"
@@ -126,6 +136,14 @@ export class MatTabsInstrumentationDemoComponent {
       <p>Notification preferences.</p>
     </mat-tab>
   </mat-tab-group>
+  <div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="mt.clearLastFailed()">
+      Clear last failed
+    </button>
+    <span style="opacity:0.7;font-size:12px">
+      programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
+    </span>
+  </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`;
