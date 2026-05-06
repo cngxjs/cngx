@@ -4,11 +4,10 @@ import {
   Component,
   computed,
   contentChildren,
-  effect,
   ElementRef,
   inject,
+  Injector,
   input,
-  untracked,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -24,6 +23,7 @@ import {
   CNGX_TAB_PANEL_HOST,
   CngxTab,
   CngxTabGroupPresenter,
+  createOrganismScrollSync,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabHandle,
@@ -132,6 +132,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
     ElementRef,
   ).nativeElement;
+  private readonly injector = inject(Injector);
   private readonly tabDirectives = contentChildren(CngxTab, {
     descendants: true,
   });
@@ -143,28 +144,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
     // strip's visible area. The IntersectionObserver in
     // <cngx-tab-overflow> picks up the new visibility on the next
     // tick and the More dropdown self-trims. Plan §"Selection Loop".
-    //
-    // Service call (`scrollIntoView`) wrapped in `untracked` per
-    // `reference_signal_architecture` rule 2; effect tracks only
-    // `presenter.activeId()`.
-    effect(() => {
-      const id = this.presenter.activeId();
-      if (!id) {
-        return;
-      }
-      untracked(() => {
-        const button = this.hostElement.querySelector<HTMLElement>(
-          `[id="${id}-header"]`,
-        );
-        // jsdom (test env) doesn't implement scrollIntoView — guard
-        // the call so unit specs don't blow up. Real browsers always
-        // have it.
-        button?.scrollIntoView?.({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
-        });
-      });
+    // Extracted to `createOrganismScrollSync` in `@cngx/common/tabs`
+    // so future organisms can share the shape.
+    createOrganismScrollSync({
+      activeId: this.presenter.activeId,
+      hostElement: this.hostElement,
+      injector: this.injector,
     });
   }
 

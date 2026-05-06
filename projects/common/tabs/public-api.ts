@@ -47,3 +47,14 @@ export {
   type CngxTabsCommitHandlerFactory,
   type CngxTabsCommitHandlerOptions,
 } from './src/commit-handler';
+
+// Organism helpers — extracted from the Level-4 organism shells so
+// the same shape can be reused (`<cngx-tab-group>` today; future
+// `<cngx-stepper>` / `<cngx-mat-stepper>` if they grow scrolling
+// strips). Behaviour-preserving extraction; not a public-consumer API
+// surface, but exported because the schematic decompose target
+// flattens these helpers into the consumer's project.
+export {
+  createOrganismScrollSync,
+  type CngxOrganismScrollSyncOptions,
+} from './src/scroll-sync/organism-scroll-sync';
