@@ -1,4 +1,5 @@
 import {
+  computed,
   contentChildren,
   DestroyRef,
   Directive,
@@ -79,6 +80,23 @@ export class CngxMatTabs {
   // cleared on directive destroy.
   private decoratedEl: HTMLElement | null = null;
 
+  // Resolves the failed handle's stable id (or `null` when no
+  // failure). Collapses spurious effect re-fires when `tabs()`
+  // re-emits without a meaningful target change — e.g. dynamic
+  // `<mat-tab>` add/remove during normal navigation while
+  // `lastFailedIndex` stays `undefined`. The presenter guarantees
+  // unique handle ids (`nextUid('cngx-mat-tab-')`) so id-equality
+  // implies same-target; default `Object.is` on `string | null` is
+  // the correct equality predicate (Pillar 1: derive once, never
+  // re-fire on irrelevant input changes).
+  private readonly failedHandleId = computed<string | null>(() => {
+    const idx = this.presenter.lastFailedIndex();
+    if (idx === undefined) {
+      return null;
+    }
+    return this.presenter.tabs()[idx]?.id ?? null;
+  });
+
   constructor() {
     effect(() => {
       const tabs = this.matTabs();
@@ -87,20 +105,36 @@ export class CngxMatTabs {
 
     // Persistent rejection decoration (Pillar 2 — Kommunikation als
     // First-Class Concern) projected onto the matching <mat-tab>
-    // element via Renderer2. The effect derives the decoration target
-    // from a single source signal (`presenter.lastFailedIndex`); the
-    // registry walk + DOM mutation run inside `untracked()` so the
-    // dependency graph stays flat — only `lastFailedIndex` and
-    // `tabs()` (read at the top) are tracked. Sanctioned `effect()`
-    // + `Renderer2` pattern per `reference_signal_architecture` hook
-    // matrix: signal projection onto DOM is a side-effect, not a
-    // derivation. Material consumers gain the persistent error visual
-    // + standard `aria-invalid="true"` ARIA without touching their
-    // <mat-tab> templates.
+    // element via Renderer2. The effect tracks ONLY the
+    // `failedHandleId` computed — that derivation collapses spurious
+    // `tabs()` re-emits where the resolved target hasn't changed
+    // (Pillar 1: derivation, not re-projection on every upstream
+    // tick). DOM mutation runs inside `untracked()`, including the
+    // `lastFailedIndex()` re-read for the index-based DOM lookup
+    // (idx and id move in lockstep — handle ids are unique, so
+    // id-change implies idx-change and vice versa). Sanctioned
+    // `effect()` + `Renderer2` pattern per
+    // `reference_signal_architecture` hook matrix: signal projection
+    // onto DOM is a side-effect, not a derivation. Material consumers
+    // gain the persistent error visual + standard `aria-invalid="true"`
+    // ARIA without touching their <mat-tab> templates.
     effect(() => {
-      const failedIdx = this.presenter.lastFailedIndex();
-      const tabs = this.presenter.tabs();
-      untracked(() => this.applyRejectionDecoration(failedIdx, tabs));
+      const id = this.failedHandleId();
+      untracked(() => {
+        if (id === null) {
+          this.clearDecoration();
+          return;
+        }
+        const idx = this.presenter.lastFailedIndex();
+        if (idx === undefined) {
+          // Race-safety: failedHandleId returned non-null but
+          // lastFailedIndex flipped to undefined inside the same
+          // microtask. Clear and bail.
+          this.clearDecoration();
+          return;
+        }
+        this.applyRejectionDecorationAt(idx);
+      });
     });
 
     this.destroyRef.onDestroy(() => {
@@ -165,18 +199,12 @@ export class CngxMatTabs {
     }
   }
 
-  private applyRejectionDecoration(
-    failedIdx: number | undefined,
-    tabs: readonly { readonly id: string }[],
-  ): void {
+  private applyRejectionDecorationAt(failedIdx: number): void {
     // Clear any prior decoration first — keeps the contract that
     // `cngx-mat-tab--error` lives on at most one element at any time
     // (matches the presenter's single-slot `lastFailedIndex` shape).
     this.clearDecoration();
 
-    if (failedIdx === undefined || !tabs[failedIdx]) {
-      return;
-    }
     // Material renders the clickable tab buttons inside `MatTabHeader`
     // (NOT on each `<mat-tab>` declaration — `MatTab.elementRef` is
     // not part of the public API). The buttons land in declaration
