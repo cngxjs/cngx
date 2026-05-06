@@ -419,12 +419,20 @@ describe('CngxTabGroupPresenter', () => {
       });
       presenter.select(2);
       expect(presenter.activeIndex()).toBe(0);
+      // First select opens a commit window; origin captures previous (0).
+      expect(presenter.originIndexDuringCommit()).toBe(0);
       presenter.select(1);
       expect(presenter.activeIndex()).toBe(1);
+      // Second select supersedes the first and synchronously accepts;
+      // the accept-path clears origin. The cancelled first runner
+      // never fires its callback, so origin cannot be re-written by
+      // the late emit below.
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
       // Late emit on the first subject must be ignored.
       subj.next(true);
       subj.complete();
       expect(presenter.activeIndex()).toBe(1);
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
     });
   });
 
