@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   navLabel: 'Commit action',
   navCategory: 'tabs',
   description:
-    'Bind <code>[commitAction]</code> to gate every tab transition through an async write. <code>[commitMode]="optimistic"</code> (default — tab change is a navigation, not a save) advances immediately and rolls back on rejection. <code>[commitMode]="pessimistic"</code> keeps the user on the origin tab until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target tab. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract.',
+    'Bind <code>[commitAction]</code> to gate every tab transition through an async write. <code>[commitMode]="optimistic"</code> (default — tab change is a navigation, not a save) advances immediately and rolls back on rejection. <code>[commitMode]="pessimistic"</code> keeps the user on the origin tab until the action resolves and renders <code>aria-busy="true"</code> + a spinner on the target tab. Rapid consecutive picks supersede any in-flight commit. <code>&lt;cngx-toast-on /&gt;</code> + <code>&lt;cngx-banner-on /&gt;</code> compose against the presenter\'s <code>CNGX_STATEFUL</code> producer with zero <code>[state]</code> wiring — proving the bridge fallback contract. <strong>Rejection persistence:</strong> the failed-target tab keeps a red <code>!</code> rejection icon + outline (one-shot pulse on the transition) until you successfully re-pick it, or click the "Clear last failed" button to dismiss programmatically. The polite live-region phrase is origin-aware — <code>commitRolledBackTo</code> reads "Could not save changes — reverted to <em>&lt;origin tab label&gt;</em>" so AT users hear both the failure and the destination. The consumer-side <code>&lt;cngx-toast-on /&gt;</code> reads the same <code>CNGX_STATEFUL</code> source as the in-organism live region — three communication channels (icon decoration + live region + toast) of one state.',
   apiComponents: [
     'CngxTabGroup',
     'CngxTabGroupPresenter',
@@ -77,6 +77,7 @@ export const STORY: DemoSpec = {
     </label>
   </div>
   <cngx-tab-group
+    #tg="cngxTabGroup"
     [(activeIndex)]="active"
     [commitAction]="commitAction"
     [commitMode]="mode()"
@@ -97,6 +98,14 @@ export const STORY: DemoSpec = {
       <ng-template cngxTabContent><p>Notification preferences.</p></ng-template>
     </div>
   </cngx-tab-group>
+  <div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="tg.clearLastFailed()">
+      Clear last failed
+    </button>
+    <span style="opacity:0.7;font-size:12px">
+      programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
+    </span>
+  </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,

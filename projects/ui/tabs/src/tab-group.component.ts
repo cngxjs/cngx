@@ -275,6 +275,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
     this.presenter.selectById(id);
   }
 
+  /**
+   * Clear the persisted `lastFailedIndex` rejection flag on the
+   * presenter — public delegator mirroring the {@link selectById}
+   * pass-through pattern so consumers using a template ref
+   * (`#tg="cngxTabGroup"`) can dismiss the rejection decoration
+   * programmatically without injecting the host token.
+   */
+  clearLastFailed(): void {
+    this.presenter.clearLastFailed();
+  }
+
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
     return (
       this.tabDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null
