@@ -180,3 +180,59 @@
     animation: none !important;
   }
 }
+
+/*
+ * Persistent rejection decoration (Pillar 2 — Kommunikation als
+ * First-Class Concern). The class is bound by the organism to
+ * `presenter.lastFailedIndex() === $index`; it persists until the
+ * user re-picks the failed target successfully or dismisses
+ * programmatically. The icon is the durable signal — the pulse
+ * animation below adds transient emphasis when the class is
+ * applied, but does NOT retrigger on rapid supersede sequences
+ * (CSS animations only fire when a class is added, not when the
+ * same class is re-applied). See `tabs-accepted-debt §3` for the
+ * tracked limitation rationale.
+ */
+.cngx-tabs__rejection-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--cngx-tab-rejection-icon-size, 1.25rem);
+  height: var(--cngx-tab-rejection-icon-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-tab-rejection-icon-color, #c62828);
+  color: var(--cngx-tab-rejection-icon-text, #fff);
+  font-size: var(--cngx-tab-rejection-icon-font-size, 0.875rem);
+  font-weight: 700;
+  line-height: 1;
+  margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+}
+
+.cngx-tabs__tab.cngx-tab--rejected {
+  outline: var(
+    --cngx-tab-rejected-outline,
+    2px solid var(--cngx-tab-rejection-icon-color, #c62828)
+  );
+  outline-offset: var(--cngx-tab-rejected-outline-offset, 1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cngx-tabs__tab.cngx-tab--rejected {
+    animation: cngx-tab-pulse-error
+      var(--cngx-tab-rejected-pulse-duration, 600ms)
+      ease-out;
+  }
+
+  @keyframes cngx-tab-pulse-error {
+    0% {
+      background: var(--cngx-tab-bg, transparent);
+    }
+    50% {
+      background: var(--cngx-tab-rejected-pulse-bg, rgba(198, 40, 40, 0.18));
+    }
+    100% {
+      background: var(--cngx-tab-bg, transparent);
+    }
+  }
+}
