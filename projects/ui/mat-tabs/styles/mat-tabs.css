@@ -1,0 +1,43 @@
+/*
+ * @cngx/ui/mat-tabs — Material-themed sticky-error skin.
+ *
+ * Applied imperatively by `[cngxMatTabs]` (via Renderer2) onto the
+ * `<button>.mat-mdc-tab` element whose index matches
+ * `presenter.lastFailedIndex()`. The class persists until the user
+ * successfully re-picks the failed target OR programmatically
+ * dismisses via `clearLastFailed()`.
+ *
+ * Themed via `--mat-sys-error` by default with `--cngx-mat-tab-error-*`
+ * consumer overrides. Three-tier fallback: consumer override →
+ * Material design token → hard-coded `#c62828`.
+ *
+ * No animation: `tabs-accepted-debt §3` covers the cngx-native pulse
+ * keyframe limitation; the Material variant ships no pulse for the
+ * same architectural reason (avoids competing with Material's
+ * existing ink-bar transition + ripple). Re-evaluate when ≥1 consumer
+ * issue requests a pulse OR a sibling cngx feature adopts a shared
+ * `createPulseOnEdge` factory the Material variant can compose
+ * against.
+ *
+ * Shipped as a standalone stylesheet asset (NOT folded into JS via
+ * `styleUrls` — Angular only honours `styleUrls` on `@Component`,
+ * not on `@Directive`). Consumer imports once in their global
+ * stylesheet — Material-ecosystem prebuilt-themes pattern.
+ */
+
+.cngx-mat-tab--error {
+  color: var(--cngx-mat-tab-error-color, var(--mat-sys-error, #c62828));
+  outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
+  outline-offset: var(--cngx-mat-tab-error-outline-offset, 1px);
+  font-weight: var(--cngx-mat-tab-error-font-weight, 600);
+}
+
+.mat-mdc-tab-disabled.cngx-mat-tab--error {
+  /*
+   * A disabled-and-rejected tab keeps the rejection signal but
+   * fades to disambiguate it from a healthy disabled tab. Material
+   * itself dims disabled tabs via the `--mat-tab-header-disabled-*`
+   * tokens; this overlay multiplies the dimming.
+   */
+  opacity: 0.7;
+}
