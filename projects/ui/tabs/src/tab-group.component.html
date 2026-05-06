@@ -1,4 +1,5 @@
 <div class="cngx-tabs__strip-wrapper">
+@let failedIdx = presenter.lastFailedIndex();
 <div
   class="cngx-tabs__strip"
   role="tablist"
@@ -9,7 +10,7 @@
       type="button"
       cngxRovingItem
       class="cngx-tabs__tab"
-      [class.cngx-tab--rejected]="presenter.lastFailedIndex() === i"
+      [class.cngx-tab--rejected]="failedIdx === i"
       role="tab"
       [id]="tabHeaderId(tab)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
@@ -31,7 +32,7 @@
       @if (showErrorBadge(tab)) {
         <span class="cngx-tabs__badge" aria-hidden="true">!</span>
       }
-      @if (presenter.lastFailedIndex() === i) {
+      @if (failedIdx === i) {
         <span class="cngx-tabs__rejection-icon" aria-hidden="true">!</span>
       }
       @if (isTabBusy(tab)) {

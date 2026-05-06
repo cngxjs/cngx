@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import {
+  CNGX_TAB_GROUP_HOST,
   CngxTab,
   CngxTabContent,
   CngxTabLabel,
@@ -510,7 +511,7 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[2].getAttribute('aria-busy')).toBeNull();
     });
 
-    it('error transition surfaces commitFailedRetry on the live region', () => {
+    it('error transition surfaces commitRolledBackTo on the live region with the origin tab label', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [provideZonelessChangeDetection()],
@@ -527,10 +528,16 @@ describe('CngxTabGroup organism', () => {
       const region = fixture.nativeElement.querySelector(
         '.cngx-tabs__live-region',
       ) as HTMLElement;
+      // Origin tab is index 0 (label 'A'). Reject sets lastFailedIndex
+      // and retains originIndexDuringCommit; liveAnnouncement's priority
+      // chain resolves the origin label and emits the rich phrase
+      // (commitRolledBackTo wins over the generic commitFailedRetry
+      // fallback whenever both gate signals are set).
       tabs[1].click();
       fixture.detectChanges();
-      // Pending → error transition lands the retry phrase.
-      expect(region.textContent?.trim()).toBe('Tab change refused — retry?');
+      expect(region.textContent?.trim()).toBe(
+        'Could not save changes — reverted to "A".',
+      );
     });
 
     it('rejected commit decorates the failed tab with cngx-tab--rejected + rejection-icon span', () => {
@@ -555,6 +562,47 @@ describe('CngxTabGroup organism', () => {
       expect(tabs[0].classList.contains('cngx-tab--rejected')).toBe(false);
       expect(tabs[1].classList.contains('cngx-tab--rejected')).toBe(false);
       expect(tabs[0].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
+    });
+
+    it('liveAnnouncement falls back to commitFailedRetry when lastFailedIndex is unset', () => {
+      // Idempotent case: a sync rejection on `select(target === activeIndex)`
+      // is filtered upstream by the no-op guard. To force the
+      // `error`-branch fallback we'd need an originIndexDuringCommit ===
+      // undefined error edge — which currently happens only in a torn
+      // state (programmatic rejection without a prior select() opening
+      // the window). Cover the contract by clearLastFailed-then-error:
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      tabs[1].click();
+      fixture.detectChanges();
+      // First reject — rich phrase fires.
+      expect(region.textContent?.trim()).toBe(
+        'Could not save changes — reverted to "A".',
+      );
+      // Sanity: clearing lastFailedIndex while still in the error
+      // state collapses the rich resolution back to the generic phrase
+      // (failedIdx is now undefined; origin retained but gated). This
+      // is the contract-defined fallback path.
+      const host = fixture.debugElement.children[0].injector.get(
+        CNGX_TAB_GROUP_HOST,
+      );
+      host.clearLastFailed();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('Tab change refused — retry?');
     });
 
     it('successful re-pick of the failed tab clears cngx-tab--rejected + rejection-icon span', () => {

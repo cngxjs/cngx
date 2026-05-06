@@ -188,6 +188,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * imperative announce() call. Empty string between transitions so the
    * region stays quiet on no-op CD ticks.
    *
+   * Priority chain on the `error` arm:
+   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
+   *      a `lastFailedIndex` and a resolvable origin label — the rich,
+   *      origin-aware rollback phrase carries the destination so the
+   *      user understands both *what failed* and *where they are*.
+   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
+   *      undefined, label unresolvable, or non-rollback error path.
+   *
    * Reads `presenter.commitTransition` directly — the presenter
    * allocates one `linkedSignal`-backed tracker per instance and
    * exposes it on the host contract for skin reuse. Pillar 1: derive,
@@ -206,6 +214,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
       // guard keeps the announcement reachable for sync-rejection
       // actions (`commitAction = () => false`) while staying silent
       // on `idle` and `success`.
+      const failedIdx = this.presenter.lastFailedIndex();
+      const originIdx = this.presenter.originIndexDuringCommit();
+      if (failedIdx !== undefined && originIdx !== undefined) {
+        const originLabel = this.presenter.tabs()[originIdx]?.label();
+        if (originLabel) {
+          return this.i18n.commitRolledBackTo(originLabel);
+        }
+      }
       return this.i18n.commitFailedRetry;
     }
     return '';
