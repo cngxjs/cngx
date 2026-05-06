@@ -23,37 +23,13 @@ import {
   CNGX_TAB_PANEL_HOST,
   CngxTab,
   CngxTabGroupPresenter,
+  createDirectiveByIdMap,
   createOrganismScrollSync,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabHandle,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
-
-/**
- * Structural equality for `tabDirectiveById` Map. Two maps are equal
- * when they share size, identical id-set, and identical directive
- * reference per id (`Object.is` per pair). Prevents the Map signal
- * from cascading downstream when `contentChildren` re-emits with an
- * unchanged child set.
- */
-function tabDirectiveMapEqual(
-  a: Map<string, CngxTab>,
-  b: Map<string, CngxTab>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const [id, dir] of a) {
-    if (b.get(id) !== dir) {
-      return false;
-    }
-  }
-  return true;
-}
 
 /**
  * CNGX-standard tab-group organism. Thin shell composing the
@@ -181,16 +157,9 @@ export class CngxTabGroup implements CngxTabPanelHost {
   // id-set + per-id directive identity prevents the Map from
   // cascading downstream every time `contentChildren` re-emits with
   // an unchanged child set.
-  private readonly tabDirectiveById = computed<Map<string, CngxTab>>(
-    () => {
-      const map = new Map<string, CngxTab>();
-      for (const dir of this.tabDirectives()) {
-        map.set(dir.id(), dir);
-      }
-      return map;
-    },
-    { equal: tabDirectiveMapEqual },
-  );
+  private readonly tabDirectiveById = createDirectiveByIdMap<CngxTab>({
+    source: this.tabDirectives,
+  });
 
   readonly tabs: Signal<readonly CngxTabHandle[]> = this.presenter.tabs;
   readonly activeIndex: Signal<number> = this.presenter.activeIndex;

@@ -58,3 +58,7 @@ export {
   createOrganismScrollSync,
   type CngxOrganismScrollSyncOptions,
 } from './src/scroll-sync/organism-scroll-sync';
+export {
+  createDirectiveByIdMap,
+  type CngxDirectiveByIdMapOptions,
+} from './src/registry/directive-by-id-map';

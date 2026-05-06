@@ -26,24 +26,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-
-function stepDirectiveMapEqual(
-  a: Map<string, CngxStep>,
-  b: Map<string, CngxStep>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const [id, dir] of a) {
-    if (b.get(id) !== dir) {
-      return false;
-    }
-  }
-  return true;
-}
+import { createDirectiveByIdMap } from '@cngx/common/tabs';
 
 /**
  * Material-twin stepper organism. Wraps `<mat-stepper>` while sharing
@@ -100,16 +83,9 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * map from cascading downstream when `contentChildren` re-emits
    * with an unchanged child set.
    */
-  private readonly stepDirectiveById = computed<Map<string, CngxStep>>(
-    () => {
-      const map = new Map<string, CngxStep>();
-      for (const dir of this.stepDirectives()) {
-        map.set(dir.id(), dir);
-      }
-      return map;
-    },
-    { equal: stepDirectiveMapEqual },
-  );
+  private readonly stepDirectiveById = createDirectiveByIdMap<CngxStep>({
+    source: this.stepDirectives,
+  });
 
   /**
    * Step-only flat projection. Material's `<mat-step>` does not
