@@ -8,16 +8,19 @@ import {
   untracked,
 } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import type { Subscription } from 'rxjs';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_TAB_GROUP_HOST,
   CngxTabGroupPresenter,
-  type CngxTabHandle,
 } from '@cngx/common/tabs';
 import { nextUid } from '@cngx/core/utils';
 
-import { createMatTabHandle } from './material-bridge/handle';
+import {
+  createMatTabHandle,
+  type CngxMatTabHandleSetup,
+} from './material-bridge/handle';
 
 /**
  * Material instrumentation directive — attaches to an existing
@@ -55,15 +58,24 @@ export class CngxMatTabs {
   private readonly injector = inject(Injector);
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
-  private readonly handlesByTab = new WeakMap<MatTab, CngxTabHandle>();
+  private readonly setupsByTab = new WeakMap<MatTab, CngxMatTabHandleSetup>();
+  private stateChangeSubs: Subscription[] = [];
 
   constructor() {
-    // Register / unregister handles whenever the children query
-    // emits. The presenter's `tabsState` carries `tabsEqual` so
-    // identity-only re-emissions don't cascade downstream.
+    // Sync handles + (re)subscribe to each live MatTab's
+    // `_stateChanges`. The subscription set is rebuilt on every
+    // children-set emission so removed MatTabs drop their
+    // subscription cleanly; cached setups in the WeakMap survive,
+    // so handle ids stay stable across re-emissions of the same
+    // MatTab instance.
     effect(() => {
       const tabs = this.matTabs();
       untracked(() => this.syncHandles(tabs));
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.stateChangeSubs.forEach((s) => s.unsubscribe());
+      this.stateChangeSubs = [];
     });
 
     createMaterialBidirectionalSync({
@@ -80,27 +92,44 @@ export class CngxMatTabs {
   }
 
   private syncHandles(tabs: readonly MatTab[]): void {
+    // Tear down state-change subs before rebuilding — closures hold
+    // strong refs to MatTab instances, so subs from removed tabs
+    // would leak otherwise.
+    this.stateChangeSubs.forEach((s) => s.unsubscribe());
+    this.stateChangeSubs = [];
+
     const liveIds = new Set<string>();
-    tabs.forEach((tab, index) => {
-      let handle = this.handlesByTab.get(tab);
-      if (!handle) {
-        handle = createMatTabHandle(tab, index, () => nextUid('cngx-mat-tab-'));
-        this.handlesByTab.set(tab, handle);
+    for (const tab of tabs) {
+      let setup = this.setupsByTab.get(tab);
+      if (!setup) {
+        setup = createMatTabHandle(tab, () => nextUid('cngx-mat-tab-'));
+        this.setupsByTab.set(tab, setup);
+        // First time we see this MatTab — register the handle. On
+        // subsequent emissions of the same instance we skip the
+        // re-register so the presenter's `tabsState` doesn't churn
+        // with identity-only re-emissions.
+        this.presenter.register(setup.handle);
       }
-      liveIds.add(handle.id);
-      this.presenter.register(handle);
-    });
-    // Unregister any handle whose tab is no longer in the children
-    // set. The WeakMap drops references for GC'd MatTab instances;
-    // the presenter side needs an explicit unregister.
-    for (const id of this.knownIds()) {
+      liveIds.add(setup.handle.id);
+
+      // Live projection of MatTab.disabled / textLabel via
+      // `_stateChanges`. See `handle.ts` JSDoc for the underscore-
+      // prefix coupling note.
+      const localSetup = setup;
+      this.stateChangeSubs.push(
+        tab._stateChanges.subscribe(() => {
+          localSetup.label.set(tab.textLabel);
+          localSetup.disabled.set(tab.disabled);
+        }),
+      );
+    }
+
+    // Single-pass unregister of stale ids — anything currently in
+    // the presenter that's not a live id must have been removed.
+    for (const id of this.presenter.tabs().map((h) => h.id)) {
       if (!liveIds.has(id)) {
         this.presenter.unregister(id);
       }
     }
-  }
-
-  private knownIds(): readonly string[] {
-    return this.presenter.tabs().map((h) => h.id);
   }
 }

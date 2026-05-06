@@ -36,6 +36,40 @@ class HostCmp {
   imports: [MatTabsModule, CngxMatTabs],
   template: `
     <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      <mat-tab label="Same">First content</mat-tab>
+      <mat-tab label="Same">Second content</mat-tab>
+      <mat-tab label="Same">Third content</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class DuplicateLabelHostCmp {
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs],
+  template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      <mat-tab label="One" [disabled]="firstDisabled()">One content</mat-tab>
+      <mat-tab label="Two">Two content</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class ReactiveDisabledHostCmp {
+  protected readonly firstDisabled = signal<boolean>(false);
+  protected active = 0;
+
+  setFirstDisabled(next: boolean): void {
+    this.firstDisabled.set(next);
+  }
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs],
+  template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
       <mat-tab label="One">One content</mat-tab>
       <mat-tab label="Two">Two content</mat-tab>
       @if (showThird()) {
@@ -273,5 +307,51 @@ describe('CngxMatTabs instrumentation directive', () => {
     // Material (no effect, no subscription).
     presenter.select(2);
     expect(matTabGroup.selectedIndex).toBe(1);
+  });
+
+  test('axis 9: duplicate-label MatTabs get distinct handle ids — no presenter-registry collision', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DuplicateLabelHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const ids = presenter.tabs().map((h) => h.id);
+    expect(ids.length).toBe(3);
+    // Set semantics confirms uniqueness.
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  test('axis 10: live MatTab.disabled — toggling Material input propagates to presenter handle', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(ReactiveDisabledHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    expect(presenter.tabs().length).toBe(2);
+    expect(presenter.tabs()[0].disabled()).toBe(false);
+
+    fixture.componentInstance['setFirstDisabled'](true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[0].disabled()).toBe(true);
+
+    fixture.componentInstance['setFirstDisabled'](false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[0].disabled()).toBe(false);
   });
 });
