@@ -150,6 +150,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'MatPaginator', path: 'ui/mat-paginator' },
       { label: 'Async commit', path: 'ui/mat-stepper/mat-stepper' },
       { label: 'Router sync', path: 'ui/mat-stepper/mat-stepper-router-sync' },
+      { label: 'Instrumentation', path: 'ui/mat-tabs/mat-tabs-instrumentation' },
       { label: 'Sidenav', path: 'ui/sidenav' },
       { label: 'Skeleton', path: 'ui/skeleton' },
       { label: 'SpeakButton', path: 'ui/speak-button' },

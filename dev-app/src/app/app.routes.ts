@@ -643,6 +643,11 @@ export const routes: Routes = [
           import('./demos/ui/mat-stepper/mat-stepper-router-sync-demo/mat-stepper-router-sync-demo.component').then((m) => m.MatStepperRouterSyncDemoComponent),
       },
       {
+        path: 'mat-tabs/mat-tabs-instrumentation',
+        loadComponent: () =>
+          import('./demos/ui/mat-tabs/mat-tabs-instrumentation-demo/mat-tabs-instrumentation-demo.component').then((m) => m.MatTabsInstrumentationDemoComponent),
+      },
+      {
         path: 'sidenav',
         loadComponent: () =>
           import('./demos/ui/sidenav-demo/sidenav-demo.component').then((m) => m.SidenavDemoComponent),
