@@ -9,8 +9,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import type { Observable } from 'rxjs';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
-
 /**
  * Options for {@link createMaterialBidirectionalSync}.
  *
@@ -26,7 +24,8 @@ export interface CngxMaterialBidirectionalSyncOptions {
   /**
    * Reactive source for the presenter's current index. The factory's
    * `effect()` tracks this signal — when it changes, Material is
-   * written (subject to the gate and the equality guard).
+   * written (subject to the equality guard against the Material
+   * read-side).
    */
   readonly presenterIndex: Signal<number>;
 
@@ -51,14 +50,6 @@ export interface CngxMaterialBidirectionalSyncOptions {
    * `.pipe(map(e => e.selectedIndex))`).
    */
   readonly selectionChange$: Observable<number>;
-
-  /**
-   * Presenter's commit-state. The factory reads `commitState.isPending()`
-   * inside the effect to gate the Material write — while a commit is
-   * pending, presenter→Material writes are suppressed so the Material
-   * surface stays on the origin until the commit resolves.
-   */
-  readonly commitState: CngxAsyncState<unknown>;
 
   /**
    * Routes a Material→presenter selection event into the presenter's
@@ -88,11 +79,10 @@ export interface CngxMaterialBidirectionalSyncOptions {
  * Installs:
  *
  * 1. A presenter→Material `effect()` that tracks `presenterIndex` and
- *    writes through `writeSelectedIndex` (gated on
- *    `commitState.isPending()` to suppress writes while a commit is in
- *    flight; equality-guarded against `readSelectedIndex()` to
- *    suppress redundant writes; both reads on the Material side are
- *    wrapped in `untracked()`).
+ *    writes through `writeSelectedIndex`, equality-guarded against
+ *    `readSelectedIndex()` to suppress redundant writes. The Material
+ *    read+write pair runs inside `untracked()` per
+ *    `reference_signal_architecture` rule 2.
  * 2. A Material→presenter subscription that forwards each
  *    `selectionChange$` emission to `onMaterialSelection`
  *    (equality-guarded against `presenterIndex()` so a Material event
@@ -100,6 +90,21 @@ export interface CngxMaterialBidirectionalSyncOptions {
  *    the re-entrancy loop).
  *
  * Both sides clean up via `destroyRef`.
+ *
+ * **Pessimistic-commit gate (deliberately absent).** An earlier draft
+ * carried a third option `commitState: CngxAsyncState<unknown>` that
+ * gated the Material write while `commitState.isPending()`. The plan
+ * (`global-material-bridge-and-architecture-hardening-plan` §54)
+ * specified this gate "for the pessimistic flow." Implementation
+ * showed the gate is redundant: cngx commit handlers already keep
+ * `presenter.activeIndex` at the origin during pessimistic-pending,
+ * so the equality guard alone suppresses the Material write.
+ * Conversely, in optimistic mode the presenter advances IMMEDIATELY
+ * (before the commit settles); a `pending`-keyed gate would suppress
+ * that legitimate advance and break the optimistic UX. Dropping the
+ * gate makes both modes work via the simple presenter→Material
+ * mirror — same outcome as the gate version for pessimistic, and the
+ * correct outcome for optimistic.
  *
  * @category material-bridge
  */
@@ -111,7 +116,6 @@ export function createMaterialBidirectionalSync(
     readSelectedIndex,
     writeSelectedIndex,
     selectionChange$,
-    commitState,
     onMaterialSelection,
     injector,
     destroyRef,
@@ -119,17 +123,8 @@ export function createMaterialBidirectionalSync(
 
   runInInjectionContext(injector, () => {
     effect(() => {
-      // Track BOTH presenter index and pending — flipping the gate
-      // from pending→success must re-fire the effect so a queued
-      // intent lands on Material once the commit settles. Reading
-      // both inside the tracked block (not inside `untracked`) is
-      // load-bearing for axis 4 (gate release on resolution).
       const desired = presenterIndex();
-      const pending = commitState.isPending();
       untracked(() => {
-        if (pending) {
-          return;
-        }
         if (readSelectedIndex() === desired) {
           return;
         }
