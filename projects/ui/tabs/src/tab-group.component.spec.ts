@@ -532,6 +532,55 @@ describe('CngxTabGroup organism', () => {
       // Pending → error transition lands the retry phrase.
       expect(region.textContent?.trim()).toBe('Tab change refused — retry?');
     });
+
+    it('rejected commit decorates the failed tab with cngx-tab--rejected + rejection-icon span', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(true);
+      expect(tabs[2].querySelector('.cngx-tabs__rejection-icon')).not.toBeNull();
+      // Untouched tabs stay clean — visual decoration is index-precise.
+      expect(tabs[0].classList.contains('cngx-tab--rejected')).toBe(false);
+      expect(tabs[1].classList.contains('cngx-tab--rejected')).toBe(false);
+      expect(tabs[0].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
+    });
+
+    it('successful re-pick of the failed tab clears cngx-tab--rejected + rejection-icon span', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      let next = false;
+      fixture.componentInstance.action = () => next;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(true);
+      next = true;
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(false);
+      expect(tabs[2].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
+    });
   });
 
   it('scrolls the active tab button into view when activeId changes', () => {

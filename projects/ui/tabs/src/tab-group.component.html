@@ -4,11 +4,12 @@
   role="tablist"
   [attr.aria-orientation]="presenter.orientation()"
 >
-  @for (tab of tabs(); track tab.id) {
+  @for (tab of tabs(); track tab.id; let i = $index) {
     <button
       type="button"
       cngxRovingItem
       class="cngx-tabs__tab"
+      [class.cngx-tab--rejected]="presenter.lastFailedIndex() === i"
       role="tab"
       [id]="tabHeaderId(tab)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
@@ -29,6 +30,9 @@
       </span>
       @if (showErrorBadge(tab)) {
         <span class="cngx-tabs__badge" aria-hidden="true">!</span>
+      }
+      @if (presenter.lastFailedIndex() === i) {
+        <span class="cngx-tabs__rejection-icon" aria-hidden="true">!</span>
       }
       @if (isTabBusy(tab)) {
         <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
