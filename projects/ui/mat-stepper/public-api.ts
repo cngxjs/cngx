@@ -7,3 +7,5 @@
  * error aggregation all work identically against `<mat-stepper>`.
  */
 export { CngxMatStepper } from './src/mat-stepper.component';
+export { CngxMatStepperBridge } from './src/mat-stepper.directive';
+export { createMatStepHandle } from './src/material-bridge/handle';
