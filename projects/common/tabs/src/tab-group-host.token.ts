@@ -56,6 +56,16 @@ export interface CngxTabGroupHost {
    * index, or on explicit consumer dismissal via
    * {@link clearLastFailed}. Drives the persistent rejection-icon
    * decoration in Level-4 organism shells.
+   *
+   * @remarks
+   * Visual emphasis on the `pending → error` transition is a
+   * one-shot CSS keyframe (`cngx-tab-pulse-error`) bound to the
+   * `.cngx-tab--rejected` class; the keyframe does NOT retrigger
+   * on rapid supersede sequences (CSS animations only fire on
+   * fresh class application, not re-application). Tracked as
+   * `tabs-accepted-debt §3`. The persistent rejection icon plus
+   * the static red outline carry the durable visual signal in
+   * every state, including the supersede no-pulse case.
    */
   readonly lastFailedIndex: Signal<number | undefined>;
 

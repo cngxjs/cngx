@@ -192,6 +192,14 @@
  * (CSS animations only fire when a class is added, not when the
  * same class is re-applied). See `tabs-accepted-debt §3` for the
  * tracked limitation rationale.
+ *
+ * Keyframe `0%` and `100%` resolve `var(--cngx-tab-bg, transparent)`
+ * at animation-start; consumers that theme `--cngx-tab-bg` per-state
+ * (e.g. `[aria-selected='true']` setting a different background)
+ * see the keyframe's start/end colour captured once at the moment
+ * the class is applied — mid-animation state changes do not update
+ * the from/to frames. Acceptable for a 600ms one-shot; the durable
+ * outline + icon carry the signal regardless of pulse colour.
  */
 .cngx-tabs__rejection-icon {
   display: inline-flex;
