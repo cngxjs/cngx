@@ -453,6 +453,38 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
   });
 
+  test('axis 13a: clearLastFailed() delegator strips both class and aria-invalid attribute', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const directive = matEl.injector.get(CngxMatTabs);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+
+    directive.clearLastFailed();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+    expect(presenter.lastFailedIndex()).toBeUndefined();
+  });
+
   test('axis 13: rejection decoration follows index shift — decorated element moves when lastFailedIndex changes', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

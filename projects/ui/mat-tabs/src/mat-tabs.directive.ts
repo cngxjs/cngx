@@ -206,4 +206,16 @@ export class CngxMatTabs {
     this.renderer.removeAttribute(this.decoratedEl, 'aria-invalid');
     this.decoratedEl = null;
   }
+
+  /**
+   * Clear the persisted `lastFailedIndex` rejection flag on the
+   * presenter — public delegator mirroring the
+   * {@link https://cngx.dev/api/CngxTabGroup#clearLastFailed
+   * `CngxTabGroup.clearLastFailed()`} pattern so consumers using a
+   * template ref (`#mt="cngxMatTabs"`) can dismiss the rejection
+   * decoration programmatically without injecting the host token.
+   */
+  clearLastFailed(): void {
+    this.presenter.clearLastFailed();
+  }
 }
