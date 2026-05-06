@@ -63,3 +63,14 @@ export {
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitControllerFactory,
 } from './src/commit';
+
+// Material bidirectional sync — shared factory consumed by cngx
+// organisms / directives that bridge a cngx presenter against a
+// Material parent (`<mat-tab-group>`, `<mat-stepper>`, etc.).
+// Material types never enter the signature; the caller maps at the
+// directive boundary so `@cngx/common/data` stays Sheriff-Level-2
+// compliant (no `@angular/material` import).
+export {
+  createMaterialBidirectionalSync,
+  type CngxMaterialBidirectionalSyncOptions,
+} from './src/material-bridge/bidirectional-sync';
