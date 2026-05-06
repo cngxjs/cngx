@@ -7,7 +7,8 @@ import {
   effect,
   ElementRef,
   inject,
-  signal,
+  isDevMode,
+  linkedSignal,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -124,13 +125,36 @@ export class CngxTabOverflow {
 
   // Maps tab id -> visibility. `undefined` = not yet observed (treat
   // as visible until proven otherwise so the More button never flashes
-  // on first render). Structural-equal `mapBoolEqual` prevents
-  // identity-only re-emissions (the IO callback below allocates a
-  // fresh Map every fire) from cascading into `hiddenTabs`.
-  private readonly visibilityState = signal<ReadonlyMap<string, boolean>>(
-    new Map(),
-    { equal: mapBoolEqual },
-  );
+  // on first render). `linkedSignal` derives stale-id pruning from
+  // the panel-host tabs list — when a tab is removed, its
+  // visibility entry drops automatically; user writes via the IO
+  // callback persist until the next tabs-list change. Splits the
+  // two responsibilities (derived pruning vs imperative observer
+  // rewire) cleanly: stale-id removal lives here, observer
+  // re-attachment lives in the effect below.
+  // Structural-equal `mapBoolEqual` prevents identity-only
+  // re-emissions (the IO callback allocates a fresh Map every fire)
+  // from cascading into `hiddenTabs`.
+  private readonly visibilityState = linkedSignal<
+    readonly CngxTabHandle[],
+    ReadonlyMap<string, boolean>
+  >({
+    source: () => this.panelHost.tabs(),
+    computation: (tabs, prev) => {
+      if (!prev) {
+        return new Map();
+      }
+      const liveIds = new Set(tabs.map((t) => t.id));
+      const next = new Map<string, boolean>();
+      for (const [id, vis] of prev.value) {
+        if (liveIds.has(id)) {
+          next.set(id, vis);
+        }
+      }
+      return next;
+    },
+    equal: mapBoolEqual,
+  });
 
   protected readonly hiddenTabs = computed<readonly CngxTabHandle[]>(
     () => {
@@ -181,9 +205,22 @@ export class CngxTabOverflow {
       attachAttempts++;
       if (attachAttempts >= MAX_ATTACH_ATTEMPTS) {
         // Give up — the molecule is mounted somewhere the strip
-        // wrapper never materialises. Any future projection would
-        // re-construct the directive, restarting the attempt loop
-        // with a fresh budget.
+        // wrapper never materialises. Recovery requires an
+        // unmount/remount cycle (parent `*ngIf` flipping false→true,
+        // structural directive removing+re-creating the host) so
+        // Angular re-instantiates this directive with a fresh
+        // attempt budget. A `display:none` flip on the same mount
+        // does NOT recover — the directive's constructor never
+        // re-runs.
+        if (isDevMode()) {
+          console.warn(
+            '[CngxTabOverflow] Strip wrapper not found after ' +
+              `${MAX_ATTACH_ATTEMPTS} attach attempts; the More popover ` +
+              'will not surface clipped tabs. Verify the molecule is ' +
+              'projected inside <cngx-tab-group> via its <ng-content> ' +
+              'slot.',
+          );
+        }
         frameHandle = null;
         return;
       }
@@ -191,25 +228,18 @@ export class CngxTabOverflow {
     };
     afterNextRender(() => tryAttach());
 
-    // Re-observe whenever the tab list changes. The presenter's
-    // structural-equal `tabsState` short-circuits no-op re-emissions,
-    // so this fires only on real add / remove / replace.
+    // Re-observe whenever the tab list changes. Stale-id pruning is
+    // derived through `visibilityState`'s `linkedSignal` source —
+    // this effect's only remaining responsibility is the imperative
+    // observer rewire (disconnect + observe-current-tabs), which
+    // cannot live inside a derived signal. Reading
+    // `panelHost.tabs()` is the tracking trigger.
     effect(() => {
-      const tabs = this.panelHost.tabs();
+      this.panelHost.tabs();
       untracked(() => {
         if (!this.observer) {
           return;
         }
-        // Drop visibility entries for tabs that no longer exist so
-        // `hiddenTabs` doesn't stay populated with stale ids.
-        const liveIds = new Set(tabs.map((t) => t.id));
-        const next = new Map<string, boolean>();
-        for (const [id, vis] of this.visibilityState()) {
-          if (liveIds.has(id)) {
-            next.set(id, vis);
-          }
-        }
-        this.visibilityState.set(next);
         this.observer.disconnect();
         this.observeCurrentTabs();
       });
