@@ -638,6 +638,11 @@ export const routes: Routes = [
           import('./demos/ui/mat-stepper/mat-stepper-demo/mat-stepper-demo.component').then((m) => m.MatStepperDemoComponent),
       },
       {
+        path: 'mat-stepper/mat-stepper-instrumentation',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-instrumentation-demo/mat-stepper-instrumentation-demo.component').then((m) => m.MatStepperInstrumentationDemoComponent),
+      },
+      {
         path: 'mat-stepper/mat-stepper-router-sync',
         loadComponent: () =>
           import('./demos/ui/mat-stepper/mat-stepper-router-sync-demo/mat-stepper-router-sync-demo.component').then((m) => m.MatStepperRouterSyncDemoComponent),
