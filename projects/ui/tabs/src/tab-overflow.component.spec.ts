@@ -262,6 +262,19 @@ describe('CngxTabOverflow', () => {
     // `effect()` that reads `visibilityState` directly via the
     // private field and count its invocations: if `mapBoolEqual`
     // works, two identical IO fires produce one effect run, not two.
+    //
+    // Implementation-detail trade-off (intentional): the cast at
+    // line ~292 reaches into the private `visibilityState` field via
+    // a type assertion. cngx testing convention discourages
+    // implementation-detail coupling — but this regression-fence
+    // CANNOT be expressed against the public surface (`hiddenTabs`)
+    // without relying on the very downstream gate (`tabIdListEqual`)
+    // that masks the bug we're testing for. Exposing a public
+    // testing proxy for `visibilityState` would be worse: it
+    // architecturally formalises a private slot. Future readers
+    // tempted to "clean this up" by routing through `hiddenTabs`
+    // should re-read this paragraph first — the cast is the price
+    // of admission for a load-bearing fence.
     const { instances } = installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();

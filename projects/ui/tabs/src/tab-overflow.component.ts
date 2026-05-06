@@ -153,8 +153,13 @@ export class CngxTabOverflow {
     // can land in their slot on a later microtask — closest() may
     // still return null on the first attempt. `requestAnimationFrame`
     // retry loop keeps polling until the host is connected to the
-    // strip; cancelled on destroy.
+    // strip, capped at MAX_ATTACH_ATTEMPTS (~1s @ 60fps) so a
+    // detached host inside a never-rendered ancestor (e.g. an
+    // `*ngIf="false"` parent) cannot loop forever; cancelled on
+    // destroy.
+    const MAX_ATTACH_ATTEMPTS = 60;
     let frameHandle: number | null = null;
+    let attachAttempts = 0;
     const tryAttach = (): void => {
       const root = this.findStripContainer();
       if (root) {
@@ -170,6 +175,15 @@ export class CngxTabOverflow {
           { root, threshold: 0 },
         );
         this.observeCurrentTabs();
+        frameHandle = null;
+        return;
+      }
+      attachAttempts++;
+      if (attachAttempts >= MAX_ATTACH_ATTEMPTS) {
+        // Give up — the molecule is mounted somewhere the strip
+        // wrapper never materialises. Any future projection would
+        // re-construct the directive, restarting the attempt loop
+        // with a fresh budget.
         frameHandle = null;
         return;
       }
