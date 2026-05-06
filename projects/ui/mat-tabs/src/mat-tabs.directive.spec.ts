@@ -389,4 +389,101 @@ describe('CngxMatTabs instrumentation directive', () => {
     await fixture.whenStable();
     expect(presenter.tabs()[0].disabled()).toBe(false);
   });
+
+  test('axis 11: rejection decoration set — reject decorates the matching <mat-tab> with cngx-mat-tab--error + aria-invalid="true"', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(matTabEls.length).toBe(3);
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBe('true');
+    // Untouched tabs stay clean.
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
+    expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(false);
+  });
+
+  test('axis 12: rejection decoration cleared — successful re-pick of the failed tab strips both the class and the attribute', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    let next = false;
+    fixture.componentInstance['commit'] = (() => next) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBe('true');
+
+    next = true;
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+  });
+
+  test('axis 13: rejection decoration follows index shift — decorated element moves when lastFailedIndex changes', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+
+    // Reject a different target — decoration should move.
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[1].getAttribute('aria-invalid')).toBe('true');
+    // Prior target is clean — only one decorated element at a time.
+    expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+  });
 });
