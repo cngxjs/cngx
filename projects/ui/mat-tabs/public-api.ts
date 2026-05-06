@@ -1,7 +1,7 @@
 /**
  * @module @cngx/ui/mat-tabs
  *
- * Material instrumentation directive for `<mat-tab-group>`. Filled by
- * Phase 1 commit 3 of the global-material-bridge plan.
+ * Material instrumentation directive for `<mat-tab-group>`.
  */
-export {};
+export { CngxMatTabs } from './src/mat-tabs.directive';
+export { createMatTabHandle } from './src/material-bridge/handle';
