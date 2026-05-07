@@ -251,4 +251,19 @@ export class CngxMatTabs {
   clearLastFailed(): void {
     this.presenter.clearLastFailed();
   }
+
+  /**
+   * Look up the {@link CngxMatTabHandleSetup} for a given `MatTab`.
+   * Returns `undefined` when the tab has not been registered yet
+   * (the directive's `contentChildren(MatTab)` query lands during
+   * Angular's content-init pass, so a same-microtask injection from
+   * a per-tab attribute directive can race the registration). The
+   * `[cngxMatTabError]` directive uses this to reach the per-handle
+   * `errorAggregator` writable; race-recovery happens by tracking
+   * `presenter.tabs()` in the consumer's effect so a later sync tick
+   * re-attempts the lookup.
+   */
+  getHandleSetup(matTab: MatTab): CngxMatTabHandleSetup | undefined {
+    return this.setupsByTab.get(matTab);
+  }
 }
