@@ -15,6 +15,7 @@ import {
 
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
+  CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   injectTabsI18n,
   type CngxTabHandle,
@@ -123,6 +124,15 @@ export class CngxTabOverflow {
   ).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
 
+  // DOM-resolution strategy. The default factory mirrors the
+  // cngx-native `<cngx-tab-group>` selector contract (walks up to
+  // `.cngx-tabs__strip-wrapper`, looks up `[id="${handle.id}-header"]`);
+  // overrides via the directive's `providers` swap in Material or
+  // custom-skin variants without forking the molecule.
+  private readonly adapter = inject(
+    CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+  )();
+
   // Maps tab id -> visibility. `undefined` = not yet observed (treat
   // as visible until proven otherwise so the More button never flashes
   // on first render). `linkedSignal` derives stale-id pruning from
@@ -185,7 +195,7 @@ export class CngxTabOverflow {
     let frameHandle: number | null = null;
     let attachAttempts = 0;
     const tryAttach = (): void => {
-      const root = this.findStripContainer();
+      const root = this.resolveStrip();
       if (root) {
         // threshold: 0 — any pixel of the tab inside the strip
         // counts as "visible". Combined with the organism's
@@ -264,14 +274,13 @@ export class CngxTabOverflow {
     if (!this.observer) {
       return;
     }
-    const root = this.findStripContainer();
+    const root = this.resolveStrip();
     if (!root) {
       return;
     }
-    for (const tab of this.panelHost.tabs()) {
-      const button = root.querySelector<HTMLElement>(
-        `[id="${tab.id}-header"]`,
-      );
+    const tabs = this.panelHost.tabs();
+    for (let idx = 0; idx < tabs.length; idx++) {
+      const button = this.adapter.resolveTabButton(tabs[idx], root, idx);
       if (button) {
         this.observer.observe(button);
       }
@@ -297,15 +306,16 @@ export class CngxTabOverflow {
   }
 
   /**
-   * Resolves the parent organism's scroll container
-   * (`.cngx-tabs__strip`). The molecule sits as a sibling of the
-   * strip inside `.cngx-tabs__strip-wrapper`, so we walk up to the
-   * wrapper and then queryselect the strip child.
+   * Delegates IntersectionObserver-root resolution to the injected
+   * adapter. The default adapter mirrors the cngx-native organism's
+   * `.cngx-tabs__strip-wrapper` → `.cngx-tabs__strip` walk; the
+   * Material adapter shipped from `@cngx/ui/mat-tabs` walks
+   * `.mat-mdc-tab-header` → `.mat-mdc-tab-label-container` instead.
+   * Either path returns `null` when the molecule's host has not yet
+   * been anchored inside the variant's scroll container — the rAF
+   * retry loop polls again on the next frame.
    */
-  private findStripContainer(): HTMLElement | null {
-    const wrapper = this.hostElement.closest<HTMLElement>(
-      '.cngx-tabs__strip-wrapper',
-    );
-    return wrapper?.querySelector<HTMLElement>('.cngx-tabs__strip') ?? null;
+  private resolveStrip(): HTMLElement | null {
+    return this.adapter.resolveStripRoot(this.panelHost, this.hostElement);
   }
 }

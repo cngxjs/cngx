@@ -3,7 +3,11 @@ import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CngxTab } from '@cngx/common/tabs';
+import {
+  CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+  CngxTab,
+  type CngxTabOverflowDomAdapter,
+} from '@cngx/common/tabs';
 
 import { CngxTabGroup } from './tab-group.component';
 import { CngxTabOverflow } from './tab-overflow.component';
@@ -333,5 +337,70 @@ describe('CngxTabOverflow', () => {
     // Second IO fire with identical entries → no real change →
     // `mapBoolEqual` suppresses the write → effect did NOT re-fire.
     expect(afterSecond).toBe(afterFirst);
+  });
+
+  it('delegates DOM resolution to the injected adapter (cascade axis — default vs override)', async () => {
+    // The default `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` mirrors the
+    // cngx-native selector contract, so the existing axes already
+    // pin the default cascade. This axis pins the OTHER side of the
+    // cascade: a custom adapter override flows through the molecule
+    // unchanged. The contract is structural (host element passed +
+    // panelHost reference + per-tab idx), so a delegation spy is the
+    // right shape — driving the IO callback through a fabricated
+    // strip would test IO plumbing again, not the adapter swap.
+    installMockIntersectionObserver();
+    const customStrip = document.createElement('div');
+    customStrip.className = 'custom-overflow-strip';
+    document.body.appendChild(customStrip);
+
+    const resolveStripRootSpy = vi.fn();
+    const resolveTabButtonSpy = vi.fn();
+    const customAdapter: CngxTabOverflowDomAdapter = {
+      resolveStripRoot: (panelHost, host) => {
+        resolveStripRootSpy(panelHost, host);
+        return customStrip;
+      },
+      resolveTabButton: (handle, root, idx) => {
+        resolveTabButtonSpy(handle, root, idx);
+        const button = document.createElement('button');
+        button.id = `${handle.id}-custom`;
+        customStrip.appendChild(button);
+        return button;
+      },
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        {
+          provide: CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+          useValue: () => customAdapter,
+        },
+      ],
+    });
+    stubPopoverApi();
+
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(resolveStripRootSpy).toHaveBeenCalled();
+    // Adapter receives the molecule's <cngx-tab-overflow> host element
+    // — pins the contract that variants like the Material adapter rely
+    // on for `closest('.mat-mdc-tab-header')` walks.
+    const stripCall = resolveStripRootSpy.mock.calls[0];
+    expect(stripCall[1]).toBeInstanceOf(HTMLElement);
+    expect((stripCall[1] as HTMLElement).tagName).toBe('CNGX-TAB-OVERFLOW');
+
+    // Each of the four registered tab handles flows through
+    // `resolveTabButton` with its positional idx — pins the index
+    // contract the Material adapter consumes.
+    expect(resolveTabButtonSpy).toHaveBeenCalledTimes(4);
+    const indices = resolveTabButtonSpy.mock.calls.map((c) => c[2]);
+    expect(indices).toEqual([0, 1, 2, 3]);
+
+    customStrip.remove();
   });
 });
