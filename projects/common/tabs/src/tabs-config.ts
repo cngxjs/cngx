@@ -100,51 +100,82 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
 
 /**
  * Feature signature — each `with*` builder returns a partial config
- * the aggregator merges into the final value.
+ * the aggregator merges into the final value. Carries a hidden
+ * `_target` discriminator so the family aggregator
+ * {@link provideCngxTabs} can dispatch config features to
+ * {@link provideTabsConfig} alongside i18n features routed to
+ * {@link provideTabsI18n}.
  *
  * @category interactive
  */
-export type CngxTabsConfigFeature = (config: CngxTabsConfig) => CngxTabsConfig;
+export type CngxTabsConfigFeature = ((
+  config: CngxTabsConfig,
+) => CngxTabsConfig) & {
+  readonly _target?: 'config';
+};
+
+/**
+ * Internal helper that brands a config-mutator function with the
+ * `_target` discriminator. Every `with*` config feature returns one
+ * of these.
+ *
+ * @internal
+ */
+function defineTabsConfigFeature(
+  fn: (config: CngxTabsConfig) => CngxTabsConfig,
+): CngxTabsConfigFeature {
+  return Object.assign(fn, { _target: 'config' as const });
+}
 
 export function withDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
 ): CngxTabsConfigFeature {
-  return (cfg) => ({ ...cfg, defaultOrientation: orientation });
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    defaultOrientation: orientation,
+  }));
 }
 
 export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
-  return (cfg) => ({ ...cfg, defaultLoop: loop });
+  return defineTabsConfigFeature((cfg) => ({ ...cfg, defaultLoop: loop }));
 }
 
 export function withTabsCommitMode(
   mode: 'optimistic' | 'pessimistic',
 ): CngxTabsConfigFeature {
-  return (cfg) => ({ ...cfg, defaultCommitMode: mode });
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    defaultCommitMode: mode,
+  }));
 }
 
 export function withTabsRouterSync(
   mode: 'fragment' | 'queryParam',
   param = 'tab',
 ): CngxTabsConfigFeature {
-  return (cfg) => ({ ...cfg, routerSyncMode: mode, routerSyncParam: param });
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    routerSyncMode: mode,
+    routerSyncParam: param,
+  }));
 }
 
 export function withTabsAriaLabels(
   labels: CngxTabsAriaLabels,
 ): CngxTabsConfigFeature {
-  return (cfg) => ({
+  return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...labels },
-  });
+  }));
 }
 
 export function withTabsFallbackLabels(
   labels: CngxTabsFallbackLabels,
 ): CngxTabsConfigFeature {
-  return (cfg) => ({
+  return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     fallbackLabels: { ...cfg.fallbackLabels, ...labels },
-  });
+  }));
 }
 
 /**
@@ -155,7 +186,10 @@ export function withTabsFallbackLabels(
  * @category interactive
  */
 export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
-  return (cfg) => ({ ...cfg, overflowStabilizeMs: ms });
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    overflowStabilizeMs: ms,
+  }));
 }
 
 function resolveFeatures(

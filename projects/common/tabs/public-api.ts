@@ -36,6 +36,11 @@ export {
   type CngxTabsFallbackLabels,
 } from './src/tabs-config';
 export {
+  provideCngxTabs,
+  provideCngxTabsAt,
+  type CngxTabsFeature,
+} from './src/provide-cngx-tabs';
+export {
   CNGX_TABS_I18N,
   injectTabsI18n,
   provideTabsI18n,
