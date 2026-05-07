@@ -1,41 +1,18 @@
 /*
- * select-base.css — shared structural styles for the CngxSelect family.
+ * Structural styles shared across the CngxSelect family. Imported via
+ * `styleUrls` from every variant (CngxSelect, CngxMultiSelect, CngxCombobox,
+ * CngxTypeahead, CngxTreeSelect, CngxReorderableMultiSelect, the panel
+ * components).
  *
- * This file ships with `@cngx/forms/select` and is referenced via
- * `styleUrls: ['./shared/select-base.css', ...]` from every select-family
- * component (CngxSelect, CngxSelectPanel, and — in the future —
- * CngxMultiSelect, CngxCombobox, CngxAutocomplete).
+ * Decompose splits skin from brain: the consumer ejects the component CSS,
+ * but this file stays linked from the library so all variants keep one
+ * visual baseline. Structure (layout, keyframes, animations) lives here;
+ * colors and sizes come from `--cngx-*` custom properties so consumers
+ * can theme without forking.
  *
- * **Why this file exists.**
- * Atomic Decompose ejects the skin (component template + component-local
- * styles) into the consumer's project while keeping the library brain
- * linked. Structural rules that every select-type shares (panel frame,
- * option row layout, skeleton shimmer, spinner, error banner layout)
- * live here so:
- *
- *   1. The decompose schematic can either keep the `styleUrls` reference
- *      pointing at the library, OR flatten the shared CSS into the
- *      ejected component — either way the consumer gets a consistent
- *      visual baseline without having to re-author 200+ lines.
- *
- *   2. The same CSS applies to CngxSelect and CngxSelectPanel and — when
- *      they land — to CngxMultiSelect's option row and CngxCombobox's
- *      listbox panel. No duplicated animations, no drift between
- *      variants.
- *
- * **Thematic vs. structural.**
- * - Structural rules (flex/grid, padding, keyframes, animation defs)
- *   live here.
- * - Thematic values (colors, dimensions, border widths) come from
- *   `--cngx-*` custom properties with sensible fallback defaults.
- *   Consumers override at the :root or component level without forking
- *   this file.
- *
- * **Angular view-encapsulation.**
- * Each importing component inlines its own copy of these rules at build
- * time. The `_ngcontent-xxx` attributes differ between components, which
- * is exactly what we want — each component's DOM gets its own scoped
- * version. Keyframes share a global namespace and don't conflict.
+ * Each importing component inlines its own copy under view encapsulation,
+ * so `_ngcontent-*` attributes scope per component. Keyframe names are
+ * global, which is fine since they're namespaced with `cngx-select-`.
  */
 
 /* ── Panel frame ──────────────────────────────────────────────────── */

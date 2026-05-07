@@ -16,9 +16,12 @@ export const STORY: DemoSpec = {
     "import { type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { injectErrorAggregator } from '@cngx/common/interactive';",
     "import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';",
-    "import { CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
+    "import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
   ],
   setup: `
+  private readonly toaster = inject(CngxToaster);
+  private readonly banner = inject(CngxBanner);
+
   protected readonly active = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly shouldFail = signal(false);
@@ -64,6 +67,12 @@ export const STORY: DemoSpec = {
     undefined,
     { account: 'Account email must be valid' },
   );
+
+  protected clearAllFailureFeedback(matTabs: CngxMatTabs): void {
+    matTabs.clearLastFailed();
+    this.toaster.dismissAll();
+    this.banner.dismiss('mat-tabs:commit-error');
+  }
 
   protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
     const ms = this.latencyMs();
@@ -117,8 +126,8 @@ export const STORY: DemoSpec = {
     </label>
     <button type="button" class="chip"
             style="margin-inline-start:auto"
-            title="programmatic dismissal — calls presenter.clearLastFailed()"
-            (click)="mt.clearLastFailed()">
+            title="presenter.clearLastFailed() + toaster.dismissAll() + banner.dismiss(...) — clears all three failure-feedback channels at once"
+            (click)="clearAllFailureFeedback(mt)">
       Clear last failed
     </button>
   </div>
