@@ -179,6 +179,14 @@ export class CngxTabOverflow {
     { equal: Object.is },
   );
 
+  // Stable counter signal — the More button's label and aria-label
+  // both project this value. The default `Object.is` equality on a
+  // primitive number is the correct distinct-until-changed gate;
+  // making the signal explicit ensures the trigger button never
+  // re-renders the counter text when `hiddenTabs` has emitted an
+  // identity-different but length-equal value (flicker prevention).
+  protected readonly hiddenCount = computed(() => this.hiddenTabs().length);
+
   private observer: IntersectionObserver | null = null;
   // Maps an observed DOM target back to the cngx handle id whose
   // visibility it represents. Populated in `observeCurrentTabs` (where

@@ -4,10 +4,10 @@
   [cngxPopoverTrigger]="overflowPopover"
   [haspopup]="'menu'"
   [hidden]="!hasHiddenTabs()"
-  [attr.aria-label]="i18n.moreTabsLabel(hiddenTabs().length)"
+  [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
   (click)="overflowPopover.toggle()"
 >
-  {{ i18n.moreTabsLabel(hiddenTabs().length) }}
+  {{ i18n.moreTabsLabel(hiddenCount()) }}
 </button>
 
 <div
