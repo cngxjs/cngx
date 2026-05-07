@@ -23,7 +23,7 @@
         role="menuitem"
         class="cngx-tab-overflow__item"
         [attr.data-tab-id]="tab.id"
-        [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+        [attr.aria-disabled]="tab.disabled() ? 'true' : 'false'"
         (click)="!tab.disabled() && pickTab(tab)"
       >
         {{ tab.label() ?? tab.id }}

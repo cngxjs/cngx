@@ -357,6 +357,50 @@ describe('CngxTabOverflow', () => {
     expect(afterSecond).toBe(afterFirst);
   });
 
+  it('hidden-tab rows emit aria-disabled by value (true / false), never by attribute presence (cngx ARIA-by-value rule)', async () => {
+    // Pillar 2 + cngx-rule: ARIA attributes toggled by value, never
+    // by add/remove. Absence of `aria-disabled` is technically valid
+    // per W3C, but the cngx convention is structural presence so
+    // AT can read state directly without inferring "not present"
+    // means false.
+    const { instances } = installMockIntersectionObserver();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(items.length).toBe(2);
+    for (const item of items) {
+      const aria = item.getAttribute('aria-disabled');
+      expect(aria).not.toBeNull();
+      expect(['true', 'false']).toContain(aria);
+    }
+  });
+
   it('quiescence timer caps at MAX_DEFER_MS so the visibility map commits even under sustained IO churn', async () => {
     // Pillar-2 regression fence: without a max-defer cap, an IO
     // churn pattern (entries arriving every <STABILIZE_MS) would
