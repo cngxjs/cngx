@@ -364,7 +364,16 @@ export class CngxMatTabs {
     // `.mat-mdc-tab` indexing matches `presenter.tabs()` order — same
     // assumption the rejection-decoration path documents at length
     // (`tabs-accepted-debt §5`). Index drift on dynamic tab removal
-    // is the same accepted risk.
+    // is the same accepted risk and compounds here: aggregator
+    // decoration is multi-target (any number of handles can carry
+    // `--has-errors` simultaneously, vs the single rejected tab),
+    // so a removal that shifts all remaining indices left causes
+    // each retained badge to land on a now-stale button until the
+    // next computed re-fire prunes the registry. The next sync tick
+    // (driven by the dependent `presenter.tabs()` re-emit on
+    // remove) repaints correctly. Re-evaluation triggers same as
+    // §5: a public per-MatTab-header element accessor would let us
+    // resolve targets by id instead of index.
     const buttons = this.hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
     let needsRetry = false;
     for (const { idx, id, announcement } of errorTabs) {

@@ -9,9 +9,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatTabsModule, MatTabGroup } from '@angular/material/tabs';
 import { describe, expect, test } from 'vitest';
 
-import {
-  CngxTabGroupPresenter,
-} from '@cngx/common/tabs';
+import { CngxTabGroupPresenter } from '@cngx/common/tabs';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
@@ -20,11 +18,10 @@ import type {
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 
-// Minimal aggregator stub: stable reference, identity-only equality
-// is what `CngxMatTabError`'s computed asserts. Sources are not
+// Minimal aggregator stub with a stable reference. Sources are not
 // exercised — the directive only writes the contract reference into
-// the handle slot; downstream effects (Phase 3 badge projection) read
-// `shouldShow` / `announcement` directly off the slot.
+// the handle slot; downstream consumers (Renderer2 badge effect, AT)
+// read `shouldShow` / `announcement` directly off the slot.
 function makeStubAggregator(
   showSignal: Signal<boolean> = signal(false),
 ): CngxErrorAggregatorContract {
@@ -62,20 +59,17 @@ class PlainHostCmp {
   imports: [MatTabsModule, CngxMatTabs, CngxMatTabError],
   template: `
     <mat-tab-group cngxMatTabs [(activeIndex)]="active">
-      <mat-tab label="One" [cngxMatTabError]="aggSignal">One content</mat-tab>
+      <mat-tab label="One" cngxMatTabError>One content</mat-tab>
       <mat-tab label="Two">Two content</mat-tab>
     </mat-tab-group>
   `,
 })
-class SignalShapeHostCmp {
-  protected readonly aggSignal: WritableSignal<
-    CngxErrorAggregatorContract | undefined
-  > = signal(makeStubAggregator());
+class BareAttributeHostCmp {
   protected active = 0;
 }
 
 describe('CngxMatTabError attribute directive', () => {
-  test('axis 1: bound plain-object aggregator writes through to presenter.tabs()[i].errorAggregator()', async () => {
+  test('axis 1: bound contract writes through to presenter.tabs()[i].errorAggregator()', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -102,11 +96,11 @@ describe('CngxMatTabError attribute directive', () => {
     expect(presenter.tabs()[1].errorAggregator()).toBeUndefined();
   });
 
-  test('axis 2: updating the bound input swaps the registered aggregator (signal-shape input)', async () => {
+  test('axis 2: bare cngxMatTabError attribute coerces empty string to undefined and the slot stays clean', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    const fixture = TestBed.createComponent(SignalShapeHostCmp);
+    const fixture = TestBed.createComponent(BareAttributeHostCmp);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -116,22 +110,14 @@ describe('CngxMatTabError attribute directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
-    const aggSignal = (
-      fixture.componentInstance as unknown as {
-        aggSignal: WritableSignal<CngxErrorAggregatorContract | undefined>;
-      }
-    ).aggSignal;
 
-    const initial = aggSignal();
-    expect(presenter.tabs()[0].errorAggregator()).toBe(initial);
-
-    // Swap the inner signal to a fresh aggregator — the directive's
-    // resolvedAggregator computed re-fires, the effect re-pumps.
-    const replacement = makeStubAggregator();
-    aggSignal.set(replacement);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    expect(presenter.tabs()[0].errorAggregator()).toBe(replacement);
+    // Bare attribute (`cngxMatTabError` without a value) binds the
+    // empty string per Angular's attribute-binding semantics. The
+    // input transform coerces strings to `undefined`, so the slot
+    // never receives a non-contract value — `shouldShow()` is never
+    // called on a `''` reference and the badge effect stays at its
+    // default no-op state.
+    expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
   });
 
   test('axis 3: setting the bound input to undefined clears the handle slot', async () => {
