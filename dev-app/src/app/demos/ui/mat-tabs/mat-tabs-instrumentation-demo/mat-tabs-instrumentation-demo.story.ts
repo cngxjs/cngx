@@ -63,6 +63,12 @@ export const STORY: DemoSpec = {
              (input)="latencyMs.set(+$any($event.target).value)" />
       {{ latencyMs() }}ms
     </label>
+    <button type="button" class="chip"
+            style="margin-inline-start:auto"
+            title="programmatic dismissal — calls presenter.clearLastFailed()"
+            (click)="mt.clearLastFailed()">
+      Clear last failed
+    </button>
   </div>
   <mat-tab-group
     #mt="cngxMatTabs"
@@ -87,14 +93,6 @@ export const STORY: DemoSpec = {
       <p>Notification preferences.</p>
     </mat-tab>
   </mat-tab-group>
-  <div class="event-row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap">
-    <button type="button" class="chip" (click)="mt.clearLastFailed()">
-      Clear last failed
-    </button>
-    <span style="opacity:0.7;font-size:12px">
-      programmatic dismissal — calls <code>presenter.clearLastFailed()</code>
-    </span>
-  </div>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
