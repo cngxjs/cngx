@@ -1,0 +1,79 @@
+<div class="cngx-tabs__strip-wrapper">
+@let failedIdx = presenter.lastFailedIndex();
+<div
+  class="cngx-tabs__strip"
+  role="tablist"
+  [attr.aria-orientation]="presenter.orientation()"
+>
+  @for (tab of tabs(); track tab.id; let i = $index) {
+    <button
+      type="button"
+      cngxRovingItem
+      class="cngx-tabs__tab"
+      [class.cngx-tab--rejected]="failedIdx === i"
+      role="tab"
+      [id]="tabHeaderId(tab)"
+      [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
+      [attr.aria-controls]="tabPanelId(tab)"
+      [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+      [attr.aria-busy]="isTabBusy(tab) ? 'true' : null"
+      [attr.aria-describedby]="tabDescriptorId(tab)"
+      [cngxRovingItemDisabled]="tab.disabled()"
+      (click)="handleHeaderClick(tab)"
+    >
+      <span class="cngx-tabs__label">
+        @let labelTpl = labelTemplateFor(tab.id);
+        @if (labelTpl) {
+          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+        } @else {
+          {{ tab.label() }}
+        }
+      </span>
+      @if (showErrorBadge(tab)) {
+        <span class="cngx-tabs__badge" aria-hidden="true">!</span>
+      }
+      @if (failedIdx === i) {
+        <span class="cngx-tabs__rejection-icon" aria-hidden="true">!</span>
+      }
+      @if (isTabBusy(tab)) {
+        <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
+      }
+      <span class="cngx-sr-only" [id]="tabDescriptorId(tab)">{{
+        statusPhrase(tab)
+      }}</span>
+    </button>
+  }
+</div>
+<ng-content select="cngx-tab-overflow"></ng-content>
+</div>
+
+<div class="cngx-tabs__panels">
+  @for (tab of tabs(); track tab.id) {
+    <div
+      class="cngx-tabs__panel"
+      role="tabpanel"
+      [id]="tabPanelId(tab)"
+      [attr.aria-labelledby]="tabHeaderId(tab)"
+      [hidden]="!isSelected(tab)"
+    >
+      @let contentTpl = contentTemplateFor(tab.id);
+      @if (contentTpl) {
+        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+      }
+    </div>
+  }
+</div>
+
+<span class="cngx-tabs__live-region cngx-sr-only" cngxLiveRegion>{{
+  liveAnnouncement()
+}}</span>
+
+<!--
+  Generic slot for opt-in skin sub-components other than the
+  overflow molecule (which projects into the strip-wrapper via the
+  named `select="cngx-tab-overflow"` slot above). Projected content
+  sees `CNGX_TAB_PANEL_HOST` via the organism's provider, so
+  molecules inject the contract without reaching for the concrete
+  `CngxTabGroup` class.
+-->
+<ng-content></ng-content>

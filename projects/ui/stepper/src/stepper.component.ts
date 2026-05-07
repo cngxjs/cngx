@@ -25,31 +25,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-
-/**
- * Structural equality for `stepDirectiveById` Map. Two maps are
- * equal when they share size, identical id-set, and identical
- * directive references per id — `Object.is` per pair. Prevents
- * the Map signal from cascading downstream when `contentChildren`
- * re-emits with an unchanged child set.
- */
-function stepDirectiveMapEqual(
-  a: Map<string, CngxStep>,
-  b: Map<string, CngxStep>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const [id, dir] of a) {
-    if (b.get(id) !== dir) {
-      return false;
-    }
-  }
-  return true;
-}
+import { createDirectiveByIdMap } from '@cngx/common/tabs';
 
 /**
  * CNGX-standard stepper organism. Thin shell composing the
@@ -147,16 +123,9 @@ export class CngxStepper implements CngxStepPanelHost {
   // id-set + per-id directive identity prevents the Map from
   // cascading downstream every time `contentChildren` re-emits with
   // an unchanged child set.
-  private readonly stepDirectiveById = computed<Map<string, CngxStep>>(
-    () => {
-      const map = new Map<string, CngxStep>();
-      for (const dir of this.stepDirectives()) {
-        map.set(dir.id(), dir);
-      }
-      return map;
-    },
-    { equal: stepDirectiveMapEqual },
-  );
+  private readonly stepDirectiveById = createDirectiveByIdMap<CngxStep>({
+    source: this.stepDirectives,
+  });
 
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;

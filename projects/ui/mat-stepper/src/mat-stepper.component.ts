@@ -6,18 +6,15 @@ import {
   computed,
   contentChildren,
   DestroyRef,
-  effect,
   inject,
   Injector,
-  runInInjectionContext,
   type Signal,
   type TemplateRef,
-  untracked,
   viewChild,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 
+import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_STEP_PANEL_HOST,
   CngxStep,
@@ -26,24 +23,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-
-function stepDirectiveMapEqual(
-  a: Map<string, CngxStep>,
-  b: Map<string, CngxStep>,
-): boolean {
-  if (a === b) {
-    return true;
-  }
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const [id, dir] of a) {
-    if (b.get(id) !== dir) {
-      return false;
-    }
-  }
-  return true;
-}
+import { createDirectiveByIdMap } from '@cngx/common/tabs';
 
 /**
  * Material-twin stepper organism. Wraps `<mat-stepper>` while sharing
@@ -100,16 +80,9 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * map from cascading downstream when `contentChildren` re-emits
    * with an unchanged child set.
    */
-  private readonly stepDirectiveById = computed<Map<string, CngxStep>>(
-    () => {
-      const map = new Map<string, CngxStep>();
-      for (const dir of this.stepDirectives()) {
-        map.set(dir.id(), dir);
-      }
-      return map;
-    },
-    { equal: stepDirectiveMapEqual },
-  );
+  private readonly stepDirectiveById = createDirectiveByIdMap<CngxStep>({
+    source: this.stepDirectives,
+  });
 
   /**
    * Step-only flat projection. Material's `<mat-step>` does not
@@ -161,35 +134,28 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   constructor() {
-    // Bidirectional sync. Both directions guard with an equality check
-    // so a write that would trigger the other direction's effect is
-    // suppressed before it lands. Material writes are wrapped in
-    // `untracked()` per `reference_signal_architecture` rule 2 —
-    // service / external-state writes inside an effect must be
-    // untracked, otherwise the side-effect's read graph would track
-    // any signals the service touches.
+    // Bidirectional sync between `presenter.activeStepIndex` and
+    // `MatStepper.selectedIndex`. Delegated to the shared
+    // `createMaterialBidirectionalSync` factory in `@cngx/common/data`
+    // — same primitive that drives `[cngxMatStepper]` and
+    // `[cngxMatTabs]` instrumentation directives. `afterNextRender`
+    // is required because the `MatStepper` viewChild isn't resolved
+    // until the view commits; the factory installs its `effect()`
+    // inside `runInInjectionContext` so the sub-call runs in this
+    // organism's injector.
     afterNextRender(() => {
-      // presenter -> Material
-      runInInjectionContext(this.injector, () => {
-        effect(() => {
-          const desired = this.presenter.activeStepIndex();
-          const stepper = this.matStepper();
-          untracked(() => {
-            if (stepper.selectedIndex !== desired) {
-              stepper.selectedIndex = desired;
-            }
-          });
-        });
+      const stepper = this.matStepper();
+      createMaterialBidirectionalSync({
+        presenterIndex: this.presenter.activeStepIndex,
+        readSelectedIndex: () => stepper.selectedIndex,
+        writeSelectedIndex: (i) => {
+          stepper.selectedIndex = i;
+        },
+        selectionChange$: stepper.selectedIndexChange.asObservable(),
+        onMaterialSelection: (i) => this.presenter.select(i),
+        injector: this.injector,
+        destroyRef: this.destroyRef,
       });
-
-      // Material -> presenter
-      this.matStepper()
-        .selectionChange.pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((event) => {
-          if (this.presenter.activeStepIndex() !== event.selectedIndex) {
-            this.presenter.select(event.selectedIndex);
-          }
-        });
     });
   }
 }

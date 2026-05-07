@@ -24,6 +24,15 @@
 @use '../../projects/forms/input/src/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
+// `@cngx/ui/mat-tabs` ships its sticky-error skin as a standalone
+// stylesheet asset (`projects/ui/mat-tabs/styles/mat-tabs.css`).
+// It is loaded via `angular.json`'s `styles` array (project-relative
+// path during dev; consumers use `@cngx/ui/mat-tabs/styles/mat-tabs.css`)
+// — see the lib's README for the recommended pattern. Importing it
+// here via SCSS would either trigger Sass's `@import` deprecation
+// warning OR couple the dev-app's SCSS pipeline to a plain-CSS asset
+// for no benefit.
+
 // Material theme — light, untouched (demo components rely on this)
 @include mat.core();
 

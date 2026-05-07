@@ -5,6 +5,7 @@ const angular = require('@angular-eslint/eslint-plugin');
 const angularTemplate = require('@angular-eslint/eslint-plugin-template');
 const templateParser = require('@angular-eslint/template-parser');
 const sheriff = require('@softarc/eslint-plugin-sheriff');
+const localRules = require('./tools/eslint-rules');
 
 module.exports = tseslint.config(
 
@@ -226,6 +227,39 @@ module.exports = tseslint.config(
     ignores: ['dev-app/**/*.ts'],
     rules: {
       curly: ['error', 'all'],
+    },
+  },
+
+  // Level-4 organism class-body LOC guard. Pillar 3 contract:
+  // organism shells stay thin (under 150 source lines of class
+  // body) so brain logic decomposes into Level-2 helper factories
+  // under @cngx/common/<lib>. Scoped to component/directive files
+  // in the five organism libs.
+  {
+    files: [
+      'projects/ui/tabs/src/**/*.component.ts',
+      'projects/ui/tabs/src/**/*.directive.ts',
+      'projects/ui/stepper/src/**/*.component.ts',
+      'projects/ui/stepper/src/**/*.directive.ts',
+      'projects/ui/mat-stepper/src/**/*.component.ts',
+      'projects/ui/mat-stepper/src/**/*.directive.ts',
+      'projects/ui/mat-tabs/src/**/*.component.ts',
+      'projects/ui/mat-tabs/src/**/*.directive.ts',
+    ],
+    plugins: { local: localRules },
+    rules: {
+      // Threshold deliberately set to 180 (vs the rule's default 150).
+      // Genuine Level-4 organisms with two orthogonal projection
+      // effects + content-children registry sync (e.g. `[cngxMatTabs]`
+      // with rejection + aggregator decoration projectors) plus
+      // bidirectional-sync setup land around 150-170 source lines
+      // after extracting DOM-mutation helpers to package-private
+      // siblings; 150 forces over-abstraction (single-consumer
+      // factory tokens in `@cngx/common/<lib>`) per the architecture-
+      // lens rule. 180 leaves headroom for the legitimate organism
+      // shape; further growth still triggers the rule and forces a
+      // real decompose.
+      'local/level-4-organism-loc-guard': ['error', { threshold: 180 }],
     },
   },
 );

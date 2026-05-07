@@ -15,6 +15,8 @@
     "feedback/src/**/*.spec.ts",
     "material/src/**/*.spec.ts",
     "stepper/src/**/*.spec.ts",
-    "mat-stepper/src/**/*.spec.ts"
+    "mat-stepper/src/**/*.spec.ts",
+    "mat-tabs/src/**/*.spec.ts",
+    "tabs/src/**/*.spec.ts"
   ]
 }

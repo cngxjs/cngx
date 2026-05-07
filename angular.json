@@ -58,7 +58,10 @@
                 "output": "/assets"
               }
             ],
-            "styles": ["dev-app/src/styles.scss"],
+            "styles": [
+              "dev-app/src/styles.scss",
+              "projects/ui/mat-tabs/styles/mat-tabs.css"
+            ],
             "polyfills": ["zone.js"]
           },
           "configurations": {

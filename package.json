@@ -67,7 +67,7 @@
     "@angular/build": "^21.2.2",
     "@angular/cli": "^21.2.2",
     "@angular/compiler-cli": "^21.2.4",
-    "@cngxjs/compodocx": "^0.0.4",
+    "@cngxjs/compodocx": "^0.0.5",
     "@floating-ui/dom": "^1.7.6",
     "@playwright/test": "1.59.1",
     "@softarc/eslint-plugin-sheriff": "^0.19.6",

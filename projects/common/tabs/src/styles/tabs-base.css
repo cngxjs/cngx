@@ -1,0 +1,246 @@
+/*
+ * @cngx/common/tabs — structural CSS shared by every tab-group skin.
+ *
+ * Layout-only — no colours / sizes / borders / fonts beyond what's
+ * controlled via --cngx-tab-* custom properties (with fallbacks).
+ * The Level-4 organism (`<cngx-tab-group>`) references this file via
+ * styleUrls; ng-packagr inlines it at publish time so consumers of
+ * `@cngx/ui/tabs` don't need `@cngx/common/tabs` at runtime for
+ * styling.
+ *
+ * Two layouts:
+ * - data-orientation="horizontal" (default): horizontal flex strip
+ *   over a panel container.
+ * - data-orientation="vertical": 2-column grid with a vertical strip
+ *   sidebar and a panel column.
+ *
+ * Headless directive use (`[cngxTabGroup]` on consumer-authored DOM)
+ * deliberately gets no styling from this file — consumers bring
+ * their own visual opinion.
+ */
+
+:host {
+  display: block;
+}
+
+.cngx-tabs__strip-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  position: relative;
+}
+
+.cngx-tabs__strip {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: var(--cngx-tab-gap, 0.5rem);
+  padding: var(--cngx-tab-strip-padding, 0.5rem 0);
+  background: var(--cngx-tab-strip-bg, transparent);
+  /*
+   * Strip is the clip box, NOT a user-scrollable container. The
+   * `<cngx-tab-overflow>` molecule is the canonical access path to
+   * tabs that don't fit; programmatic `scrollIntoView` on the active
+   * tab keeps it in view without a visible scrollbar. Setting
+   * overflow-y: hidden too keeps focus rings from leaking vertically
+   * into the panel container below.
+   */
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+}
+
+.cngx-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cngx-tab-gap, 0.5rem);
+  padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+  border: 0;
+  background: var(--cngx-tab-bg, transparent);
+  color: var(--cngx-tab-color, currentColor);
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.cngx-tabs__tab[aria-selected='true'] {
+  color: var(--cngx-tab-active-color, currentColor);
+}
+
+.cngx-tabs__tab[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: var(--cngx-tab-disabled-opacity, 0.55);
+}
+
+.cngx-tabs__tab:focus-visible {
+  outline: var(--cngx-tab-focus-ring, 2px solid currentColor);
+  outline-offset: var(--cngx-tab-focus-offset, 2px);
+}
+
+.cngx-tabs__tab[aria-busy='true'] {
+  cursor: progress;
+}
+
+.cngx-tabs__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cngx-tabs__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  /*
+   * Real error-tone fallback — must NOT inherit `currentColor`. The
+   * thematic skin (`tab-group.component.css`) sets `color: white` on
+   * the same element so the `!` glyph stays legible; if this fallback
+   * resolved to `currentColor`, both background and text would
+   * collapse to white and the badge would render invisible. Mirrors
+   * the stepper precedent at `projects/ui/stepper/src/styles/stepper-base.css`.
+   */
+  background: var(--cngx-tab-error-badge-color, #c62828);
+  margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+}
+
+.cngx-tabs__busy-spinner {
+  display: inline-block;
+  width: var(--cngx-tab-busy-spinner-size, 1rem);
+  height: var(--cngx-tab-busy-spinner-size, 1rem);
+  border: 2px solid transparent;
+  border-top-color: var(--cngx-tab-busy-spinner-color, currentColor);
+  border-right-color: var(--cngx-tab-busy-spinner-color, currentColor);
+  border-radius: 50%;
+  flex: 0 0 auto;
+  margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+  animation: cngx-tabs-spin 0.75s linear infinite;
+}
+
+@keyframes cngx-tabs-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cngx-tabs__panels {
+  display: block;
+}
+
+.cngx-tabs__panel {
+  display: block;
+  padding: var(--cngx-tab-padding, 0.5rem 0.75rem);
+}
+
+.cngx-tabs__panel[hidden] {
+  display: none;
+}
+
+.cngx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:host([data-orientation='vertical']) {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--cngx-tab-gap, 0.5rem);
+  align-items: start;
+}
+
+:host([data-orientation='vertical']) .cngx-tabs__strip {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+}
+
+:host([data-orientation='vertical']) .cngx-tabs__tab {
+  scroll-snap-align: start;
+  white-space: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cngx-tabs__busy-spinner {
+    animation: none !important;
+  }
+}
+
+/*
+ * Persistent rejection decoration (Pillar 2 — Kommunikation als
+ * First-Class Concern). The class is bound by the organism to
+ * `presenter.lastFailedIndex() === $index`; it persists until the
+ * user re-picks the failed target successfully or dismisses
+ * programmatically. The icon is the durable signal — the pulse
+ * animation below adds transient emphasis when the class is
+ * applied, but does NOT retrigger on rapid supersede sequences
+ * (CSS animations only fire when a class is added, not when the
+ * same class is re-applied). See `tabs-accepted-debt §3` for the
+ * tracked limitation rationale.
+ *
+ * Keyframe `0%` and `100%` resolve `var(--cngx-tab-bg, transparent)`
+ * at animation-start; consumers that theme `--cngx-tab-bg` per-state
+ * (e.g. `[aria-selected='true']` setting a different background)
+ * see the keyframe's start/end colour captured once at the moment
+ * the class is applied — mid-animation state changes do not update
+ * the from/to frames. Acceptable for a 600ms one-shot; the durable
+ * outline + icon carry the signal regardless of pulse colour.
+ */
+.cngx-tabs__rejection-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--cngx-tab-rejection-icon-size, 1.25rem);
+  height: var(--cngx-tab-rejection-icon-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-tab-rejection-icon-color, #c62828);
+  color: var(--cngx-tab-rejection-icon-text, #fff);
+  font-size: var(--cngx-tab-rejection-icon-font-size, 0.875rem);
+  font-weight: 700;
+  line-height: 1;
+  margin-inline-start: var(--cngx-tab-gap, 0.5rem);
+}
+
+.cngx-tabs__tab.cngx-tab--rejected {
+  outline: var(
+    --cngx-tab-rejected-outline,
+    2px solid var(--cngx-tab-rejection-icon-color, #c62828)
+  );
+  outline-offset: var(--cngx-tab-rejected-outline-offset, 1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cngx-tabs__tab.cngx-tab--rejected {
+    animation: cngx-tab-pulse-error
+      var(--cngx-tab-rejected-pulse-duration, 600ms)
+      ease-out;
+  }
+
+  @keyframes cngx-tab-pulse-error {
+    0% {
+      background: var(--cngx-tab-bg, transparent);
+    }
+    50% {
+      background: var(--cngx-tab-rejected-pulse-bg, rgba(198, 40, 40, 0.18));
+    }
+    100% {
+      background: var(--cngx-tab-bg, transparent);
+    }
+  }
+}

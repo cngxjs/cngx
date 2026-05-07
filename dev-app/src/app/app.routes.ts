@@ -638,9 +638,19 @@ export const routes: Routes = [
           import('./demos/ui/mat-stepper/mat-stepper-demo/mat-stepper-demo.component').then((m) => m.MatStepperDemoComponent),
       },
       {
+        path: 'mat-stepper/mat-stepper-instrumentation',
+        loadComponent: () =>
+          import('./demos/ui/mat-stepper/mat-stepper-instrumentation-demo/mat-stepper-instrumentation-demo.component').then((m) => m.MatStepperInstrumentationDemoComponent),
+      },
+      {
         path: 'mat-stepper/mat-stepper-router-sync',
         loadComponent: () =>
           import('./demos/ui/mat-stepper/mat-stepper-router-sync-demo/mat-stepper-router-sync-demo.component').then((m) => m.MatStepperRouterSyncDemoComponent),
+      },
+      {
+        path: 'mat-tabs/mat-tabs-instrumentation',
+        loadComponent: () =>
+          import('./demos/ui/mat-tabs/mat-tabs-instrumentation-demo/mat-tabs-instrumentation-demo.component').then((m) => m.MatTabsInstrumentationDemoComponent),
       },
       {
         path: 'sidenav',
@@ -696,6 +706,31 @@ export const routes: Routes = [
         path: 'stepper/stepper-vertical',
         loadComponent: () =>
           import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),
+      },
+      {
+        path: 'tabs/tab-commit-action',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-commit-action-demo/tab-commit-action-demo.component').then((m) => m.TabCommitActionDemoComponent),
+      },
+      {
+        path: 'tabs/tab-error-aggregation',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-error-aggregation-demo/tab-error-aggregation-demo.component').then((m) => m.TabErrorAggregationDemoComponent),
+      },
+      {
+        path: 'tabs/tab-group',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-group-demo/tab-group-demo.component').then((m) => m.TabGroupDemoComponent),
+      },
+      {
+        path: 'tabs/tab-group-vertical',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-group-vertical-demo/tab-group-vertical-demo.component').then((m) => m.TabGroupVerticalDemoComponent),
+      },
+      {
+        path: 'tabs/tab-overflow',
+        loadComponent: () =>
+          import('./demos/ui/tabs/tab-overflow-demo/tab-overflow-demo.component').then((m) => m.TabOverflowDemoComponent),
       },
       { path: '', redirectTo: 'async-button', pathMatch: 'full' },
     ],
