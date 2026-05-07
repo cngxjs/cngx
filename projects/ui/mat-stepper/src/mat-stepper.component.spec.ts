@@ -134,9 +134,19 @@ describe('CngxMatStepper organism', () => {
         },
       });
     }
-    // Idle for two ticks; if a loop existed, writeCount would diverge.
-    await fixture.whenStable();
-    await fixture.whenStable();
+    // Drain effects + microtasks twice deterministically. Earlier
+    // versions of this test used `await fixture.whenStable()` here,
+    // but that path proved CI-flaky in zoneless mode — `whenStable`
+    // can occasionally hang when no Angular task is pending and the
+    // resolver awaits an idle signal that never arrives. The pattern
+    // below is the cngx-testing convention (per `feedback_test_command`
+    // + `feedback_afternextrender_in_zoneless_tests`): synchronously
+    // flush effects, then yield once to drain microtasks. Two cycles
+    // — if a loop existed, writeCount would diverge well past 3.
+    TestBed.flushEffects();
+    await Promise.resolve();
+    TestBed.flushEffects();
+    await Promise.resolve();
     expect(writeCount).toBeLessThan(3);
   });
 
