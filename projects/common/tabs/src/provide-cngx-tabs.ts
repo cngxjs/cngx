@@ -1,5 +1,6 @@
 import {
   type EnvironmentProviders,
+  isDevMode,
   makeEnvironmentProviders,
   type Provider,
 } from '@angular/core';
@@ -38,14 +39,29 @@ function partitionFeatures(
   for (const feat of features) {
     if (feat._target === 'i18n') {
       i18n.push(feat);
-    } else {
-      // Default to 'config' when the discriminator is absent — keeps
-      // the door open for stale `(cfg) => cfg` features written before
-      // `defineTabsConfigFeature` landed. The narrowing else-branch
-      // does not exclude `CngxTabsI18nFeature` from the union (a stale
-      // feature could carry no `_target`), so a structural cast is
-      // required for the call-site signature.
-      config.push(feat as CngxTabsConfigFeature);
+      continue;
+    }
+    if (feat._target === 'config') {
+      config.push(feat);
+      continue;
+    }
+    // Unbranded feature — caller wired a stale `(cfg) => cfg` (pre-
+    // `defineTabsConfigFeature`) or a hand-rolled mutator without a
+    // discriminator. Routing it blind to the config bucket is a
+    // Pillar-3 silent-mutation hazard: an i18n-shaped override could
+    // land in `CNGX_TABS_CONFIG` instead of `CNGX_TABS_I18N` and the
+    // consumer would never see the difference. Dev mode warns
+    // loudly so the wiring gets fixed; prod silently drops so a
+    // mis-authored feature never crashes a deployed app. Both
+    // directions communicate the violation per the
+    // honest-failure rule.
+    if (isDevMode()) {
+      console.warn(
+        '[provideCngxTabs] Dropped feature without a `_target` ' +
+          'discriminator. Brand config-side mutators with ' +
+          '`defineTabsConfigFeature(...)` (or use a `with*` helper) ' +
+          'and i18n-side mutators with `withTabsI18nLabels(...)`.',
+      );
     }
   }
   return { config, i18n };
