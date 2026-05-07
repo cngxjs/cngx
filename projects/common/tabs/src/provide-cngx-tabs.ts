@@ -41,8 +41,11 @@ function partitionFeatures(
     } else {
       // Default to 'config' when the discriminator is absent — keeps
       // the door open for stale `(cfg) => cfg` features written before
-      // `defineTabsConfigFeature` landed.
-      config.push(feat);
+      // `defineTabsConfigFeature` landed. The narrowing else-branch
+      // does not exclude `CngxTabsI18nFeature` from the union (a stale
+      // feature could carry no `_target`), so a structural cast is
+      // required for the call-site signature.
+      config.push(feat as CngxTabsConfigFeature);
     }
   }
   return { config, i18n };
