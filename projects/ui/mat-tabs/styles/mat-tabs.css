@@ -182,31 +182,19 @@
 }
 
 /*
- * Auto-hide Material's pagination buttons when the cngx overflow
- * molecule is mounted in the same header. The More popover supersedes
- * both pagination affordances (it lists every clipped tab in one
- * click vs. Material's "scroll one page at a time"). Consumers who
- * want both visible — pagination arrows alongside the More button —
- * can opt back in via theme-level CSS:
+ * Material's pagination arrows (`<` / `>`) remain visible alongside
+ * the More button: both are flex siblings of `.mat-mdc-tab-label-container`
+ * inside `.mat-mdc-tab-header`, so the available width is split across
+ * all of them and the IntersectionObserver picks up the new container
+ * width automatically. Consumers who want to hide Material's
+ * pagination (More button as the only overflow affordance) can do so
+ * with a one-line theme-level override:
  *
  *   .mat-mdc-tab-header:has(cngx-tab-overflow)
  *     .mat-mdc-tab-header-pagination {
- *     display: revert;
+ *     display: none;
  *   }
- *
- * Or via the CSS custom property below (set to `flex` to mirror
- * Material's default). Because the More button is now a flex sibling,
- * pagination-after becoming visible just adds another flex item
- * between the label-container and the More button — the layout
- * accounts for its width automatically and the IntersectionObserver
- * re-derives `hiddenTabs` against the new container width.
- *
- * Falls back to "no-op" on browsers that do not implement `:has()`
- * — the More button still works; pagination just remains visible.
  */
-.mat-mdc-tab-header:has(cngx-tab-overflow) .mat-mdc-tab-header-pagination {
-  display: var(--cngx-mat-tabs-more-pagination-display, none);
-}
 
 /*
  * SR-only utility for the per-tab error descriptor span

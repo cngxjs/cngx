@@ -157,24 +157,26 @@ selector couplings are tracked under `tabs-accepted-debt §5`.
 </mat-tab-group>
 ```
 
-Material's built-in horizontal scroll buttons (`<` / `>`) are
-**auto-hidden** when the cngx overflow molecule is mounted in the
-same header — the More popover supersedes both (one click reveals
-every clipped tab, vs. Material's "scroll one page at a time"), and
-the trailing pagination arrow would otherwise collide visually with
-the More button at the trailing edge. Consumers who want both
-affordances visible can opt back in via theme-level CSS:
+Material's built-in horizontal scroll buttons (`<` / `>`) remain
+visible alongside the More button. The More button is laid out as a
+flex sibling of `.mat-mdc-tab-label-container` inside
+`.mat-mdc-tab-header`, so the available width is split across the
+pagination arrows, the label-container, and the More button — and
+the `IntersectionObserver` rooted on the label-container picks up
+the new container width automatically (`hiddenTabs` re-derives as
+the container shrinks).
+
+Consumers who prefer the More popover as the only overflow affordance
+(no Material pagination arrows) can hide them with a one-line
+theme-level override:
 
 ```css
-/* In your global stylesheet, AFTER importing @cngx/ui/mat-tabs/styles/mat-tabs.css */
+/* AFTER importing @cngx/ui/mat-tabs/styles/mat-tabs.css */
 .mat-mdc-tab-header:has(cngx-tab-overflow)
   .mat-mdc-tab-header-pagination {
-  display: revert;
+  display: none;
 }
 ```
-
-Or via the CSS custom property `--cngx-mat-tabs-more-pagination-display`
-(set to `flex` to mirror Material's default).
 
 ### CSS custom properties
 
