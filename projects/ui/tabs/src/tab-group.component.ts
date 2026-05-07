@@ -136,6 +136,18 @@ export class CngxTabGroup implements CngxTabPanelHost {
   );
 
   /**
+   * Tab-panel role-description — read by the per-panel
+   * `aria-roledescription` binding. Cascades through
+   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → library default
+   * `'tab panel'`. Mirrors the `tabsRoleDescription` computed so
+   * AT-facing role descriptors flow through one config surface
+   * regardless of which scope (button vs panel) declares them.
+   */
+  protected readonly tabPanelRoleDescription = computed<string>(
+    () => this.config.fallbackLabels?.tabPanelRoleDescription ?? 'tab panel',
+  );
+
+  /**
    * `aria-label` resolves Input → ariaLabels.tabsRegion config →
    * i18n.tabsLabel. Pillar 2 — the surface declared by config /
    * i18n must reach the DOM.

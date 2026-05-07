@@ -14,6 +14,7 @@ import {
   provideTabsI18n,
   withDefaultOrientation,
   withTabsAriaLabels,
+  withTabsFallbackLabels,
   withTabsI18nLabels,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
@@ -655,6 +656,62 @@ describe('CngxTabGroup organism', () => {
     tabs[2].click();
     fixture.detectChanges();
     expect(calls).toContain(tabs[2]);
+  });
+
+  it('per-panel aria-roledescription reflects fallbackLabels.tabPanelRoleDescription', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsFallbackLabels({ tabPanelRoleDescription: 'Bereichspanel' }),
+        ),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab, CngxTabContent],
+      template: `
+        <cngx-tab-group aria-label="X">
+          <div cngxTab [label]="'A'">
+            <ng-template *cngxTabContent>A content</ng-template>
+          </div>
+        </cngx-tab-group>
+      `,
+    })
+    class PanelDescHost {}
+    const fixture = TestBed.createComponent(PanelDescHost);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '[role="tabpanel"]',
+    ) as HTMLElement;
+    expect(panel).not.toBeNull();
+    expect(panel.getAttribute('aria-roledescription')).toBe('Bereichspanel');
+  });
+
+  it('per-panel aria-roledescription falls back to "tab panel" when unset', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab, CngxTabContent],
+      template: `
+        <cngx-tab-group aria-label="X">
+          <div cngxTab [label]="'A'">
+            <ng-template *cngxTabContent>A content</ng-template>
+          </div>
+        </cngx-tab-group>
+      `,
+    })
+    class DefaultPanelDescHost {}
+    const fixture = TestBed.createComponent(DefaultPanelDescHost);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '[role="tabpanel"]',
+    ) as HTMLElement;
+    expect(panel.getAttribute('aria-roledescription')).toBe('tab panel');
   });
 
   it('aria-roledescription is reactive (config / i18n cascade)', () => {
