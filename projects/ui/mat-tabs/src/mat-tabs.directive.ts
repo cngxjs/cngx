@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   contentChildren,
   DestroyRef,
@@ -97,6 +98,19 @@ export class CngxMatTabs {
       priorAriaDescribedby: string | null;
     }
   >();
+
+  // Retry guard for the aggregator-decoration effect's race window
+  // against Material's own view-render. The effect fires when our
+  // `aggregatedErrorTabs` computed transitions from empty to
+  // populated (`[cngxMatTabError]` directive writes its bound
+  // aggregator into the per-handle slot, which flips
+  // `aggregator.shouldShow()` true). That can land before
+  // `MatTabHeader` has rendered the matching `.mat-mdc-tab`
+  // buttons — `hostEl.querySelectorAll('.mat-mdc-tab')` returns 0
+  // items, the decoration is silently skipped. The retry flag pins
+  // a single `afterNextRender` callback that re-runs the sync after
+  // Material's view has settled. Cleared on directive destroy.
+  private pendingAggregatorRetry = false;
 
   // Resolves the failed handle's stable id (or `null` when no
   // failure). Collapses spurious effect re-fires when `tabs()`
@@ -352,9 +366,16 @@ export class CngxMatTabs {
     // (`tabs-accepted-debt §5`). Index drift on dynamic tab removal
     // is the same accepted risk.
     const buttons = this.hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
+    let needsRetry = false;
     for (const { idx, id, announcement } of errorTabs) {
       const targetEl = buttons.item(idx);
       if (!targetEl) {
+        // Race window: our effect ran before MatTabHeader rendered
+        // the matching button. Schedule a one-shot retry via
+        // `afterNextRender` (guarded by the pendingAggregatorRetry
+        // flag so concurrent missing-button entries collapse to one
+        // retry callback).
+        needsRetry = true;
         continue;
       }
       const existing = this.decoratedAggregatorEls.get(id);
@@ -379,6 +400,17 @@ export class CngxMatTabs {
         this.removeAggregatorDecoration(id);
       }
       this.applyAggregatorDecoration(targetEl, id, announcement);
+    }
+
+    if (needsRetry && !this.pendingAggregatorRetry) {
+      this.pendingAggregatorRetry = true;
+      afterNextRender(
+        () => {
+          this.pendingAggregatorRetry = false;
+          this.syncAggregatorDecoration(this.aggregatedErrorTabs());
+        },
+        { injector: this.injector },
+      );
     }
   }
 
