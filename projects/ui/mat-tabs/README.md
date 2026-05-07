@@ -124,3 +124,63 @@ two signals read as distinct.
 | `--cngx-mat-tab-has-errors-glyph-offset` | `4px` | Top + trailing offset (single-state) |
 | `--cngx-mat-tab-has-errors-glyph-offset-stacked` | `6px` | Top + trailing offset when both `--error` + `--has-errors` co-occur |
 | `--cngx-mat-tab-has-errors-font-weight` | `700` | Glyph stroke weight |
+
+## Smart overflow
+
+`[cngxMatTabs]` ships a smart overflow story: when Material's tab
+strip overflows the available width, a `<cngx-tab-overflow>` "More"
+button appears at the trailing edge of `.mat-mdc-tab-header`,
+listing the hidden tabs in a `<cngx-popover>` panel. Picking a
+hidden tab routes through `presenter.selectById(...)` so the cngx
+commit-action lifecycle, rejection decoration, and aggregator
+visuals all stay coherent across the click.
+
+**Consumer wiring: none.** The molecule is created programmatically
+via `ViewContainerRef.createComponent` inside the directive's
+constructor and physically anchored inside `.mat-mdc-tab-header`
+via `Renderer2.appendChild` in an `afterNextRender` block. The
+directive provides a Material-specific
+`CngxTabOverflowDomAdapter` (`createCngxMatTabOverflowDomAdapter`)
+on its `providers` array so the molecule's `IntersectionObserver`
+attaches against `.mat-mdc-tab-label-container` (Material's
+IO-friendly scroll viewport) and resolves per-tab buttons by
+positional index into `.mat-mdc-tab` (Material owns the rendered
+DOM; cngx handle ids never appear on the buttons). All four
+selector couplings are tracked under `tabs-accepted-debt §5`.
+
+```html
+<!-- Just add cngxMatTabs — overflow is automatic. -->
+<mat-tab-group cngxMatTabs [(activeIndex)]="active">
+  <mat-tab label="Profile">…</mat-tab>
+  <mat-tab label="Settings">…</mat-tab>
+  <!-- … many more tabs that overflow the viewport … -->
+</mat-tab-group>
+```
+
+Material's built-in horizontal scroll buttons remain visible and
+functional; consumers who want pure cngx overflow can hide the
+Material pagination via theme-level CSS in their own stylesheet.
+
+### CSS custom properties
+
+The skin is targeted by the `cngx-mat-tabs-more` class on the
+mounted molecule's host element. Three-tier fallback: consumer
+override → Material design token → hard-coded value.
+
+| Variable | Default | Purpose |
+|-|-|-|
+| `--cngx-mat-tabs-more-bg` | `var(--mat-app-background-color, #ffffff)` | Background fill of the More affordance — should match the page surface so scrolled tabs fade out cleanly. |
+| `--cngx-mat-tabs-more-shadow` | `-8px 0 8px -4px rgba(0,0,0,0.1)` | Inline-start fade gradient simulating the scroll-mask. |
+| `--cngx-mat-tabs-more-z` | `2` | Stack order above the strip but below Material's pagination buttons. |
+| `--cngx-mat-tabs-more-top` | `0` | Trailing-edge offsets — rarely overridden; useful for asymmetric headers. |
+| `--cngx-mat-tabs-more-right` | `0` | |
+| `--cngx-mat-tabs-more-bottom` | `0` | |
+
+### Idempotent positioning
+
+The directive's afterNextRender block sets `position: relative` on
+`.mat-mdc-tab-header` only when the header's computed `position` is
+not already a positioning context (`relative` / `absolute` /
+`fixed` / `sticky`). Consumers who themed the header with their own
+non-static positioning keep their value — the directive does not
+overwrite.

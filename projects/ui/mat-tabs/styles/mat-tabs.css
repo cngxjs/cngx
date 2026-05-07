@@ -118,6 +118,38 @@
 }
 
 /*
+ * Sticky-end skin for the dynamically-mounted `<cngx-tab-overflow>`
+ * molecule. `[cngxMatTabs]` programmatically appends the molecule
+ * into `.mat-mdc-tab-header` and adds the `cngx-mat-tabs-more` class
+ * via `Renderer2` (`mat-tabs.directive.ts`'s afterNextRender block);
+ * this rule pins the More button to the trailing edge of Material's
+ * strip with a fade gradient so scrolled tabs visually recede behind
+ * the affordance.
+ *
+ * Three-tier fallback per CSS var: consumer override → Material
+ * design token → hard-coded value. The opinionated surface is
+ * `--cngx-mat-tabs-more-{bg,shadow,z}`; structural edge offsets get
+ * `0` defaults consumers rarely need to override.
+ */
+.cngx-mat-tabs-more {
+  position: absolute;
+  top: var(--cngx-mat-tabs-more-top, 0);
+  right: var(--cngx-mat-tabs-more-right, 0);
+  bottom: var(--cngx-mat-tabs-more-bottom, 0);
+  z-index: var(--cngx-mat-tabs-more-z, 2);
+  display: flex;
+  align-items: center;
+  background: var(
+    --cngx-mat-tabs-more-bg,
+    var(--mat-app-background-color, #ffffff)
+  );
+  box-shadow: var(
+    --cngx-mat-tabs-more-shadow,
+    -8px 0 8px -4px rgba(0, 0, 0, 0.1)
+  );
+}
+
+/*
  * SR-only utility for the per-tab error descriptor span
  * (`<span class="cngx-sr-only" id="${handle.id}-errors">` mounted by
  * the aggregator-decoration effect). The span carries the consumer-
