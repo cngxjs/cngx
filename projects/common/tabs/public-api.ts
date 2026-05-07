@@ -53,6 +53,12 @@ export {
   type CngxTabOverflowDomAdapter,
   type CngxTabOverflowDomAdapterFactory,
 } from './src/overflow/dom-adapter';
+export {
+  createDomAnchorRetry,
+  type CngxDomAnchorRetryHandle,
+  type CngxDomAnchorRetryOptions,
+  type CngxDomAnchorRetryResult,
+} from './src/overflow/dom-anchor-retry';
 
 // Organism helpers — extracted from the Level-4 organism shells so
 // the same shape can be reused (`<cngx-tab-group>` today; future

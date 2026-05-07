@@ -17,7 +17,9 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
+  createDomAnchorRetry,
   injectTabsI18n,
+  type CngxDomAnchorRetryHandle,
   type CngxTabHandle,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
@@ -230,22 +232,21 @@ export class CngxTabOverflow {
   // cap above.
   private firstPendingAt: number | null = null;
 
-  constructor() {
-    // Lazy-attach the IntersectionObserver. `afterNextRender` fires
-    // after change-detection commits but content-projected elements
-    // can land in their slot on a later microtask — closest() may
-    // still return null on the first attempt. `requestAnimationFrame`
-    // retry loop keeps polling until the host is connected to the
-    // strip, capped at MAX_ATTACH_ATTEMPTS (~1s @ 60fps) so a
-    // detached host inside a never-rendered ancestor (e.g. an
-    // `*ngIf="false"` parent) cannot loop forever; cancelled on
-    // destroy.
-    const MAX_ATTACH_ATTEMPTS = 60;
-    let frameHandle: number | null = null;
-    let attachAttempts = 0;
-    const tryAttach = (): void => {
-      const root = this.resolveStrip();
-      if (root) {
+  // rAF-scheduled retry loop for the IntersectionObserver attach.
+  // Field-init reference; .start() is called from `afterNextRender`
+  // below; .cancel() runs on destroy. The give-up branch dev-warns
+  // and bails — a detached host inside a never-rendered ancestor
+  // (e.g. `*ngIf="false"` parent) requires an unmount/remount cycle
+  // so Angular re-instantiates the directive with a fresh budget.
+  // `display: none` toggles do NOT recover — constructor never
+  // re-runs.
+  private readonly attachRetry: CngxDomAnchorRetryHandle =
+    createDomAnchorRetry({
+      attempt: () => {
+        const root = this.resolveStrip();
+        if (!root) {
+          return null;
+        }
         // threshold: 0 — any pixel of the tab inside the strip
         // counts as "visible". Combined with the organism's
         // `scrollIntoView` effect, this means once a hidden tab is
@@ -258,34 +259,27 @@ export class CngxTabOverflow {
           { root, threshold: 0 },
         );
         this.observeCurrentTabs();
-        frameHandle = null;
-        return;
-      }
-      attachAttempts++;
-      if (attachAttempts >= MAX_ATTACH_ATTEMPTS) {
-        // Give up — the molecule is mounted somewhere the strip
-        // wrapper never materialises. Recovery requires an
-        // unmount/remount cycle (parent `*ngIf` flipping false→true,
-        // structural directive removing+re-creating the host) so
-        // Angular re-instantiates this directive with a fresh
-        // attempt budget. A `display:none` flip on the same mount
-        // does NOT recover — the directive's constructor never
-        // re-runs.
+        return true;
+      },
+      maxAttempts: 60,
+      schedule: (cb) => {
+        const handle = requestAnimationFrame(cb);
+        return () => cancelAnimationFrame(handle);
+      },
+      onGiveUp: () => {
         if (isDevMode()) {
           console.warn(
-            '[CngxTabOverflow] Strip wrapper not found after ' +
-              `${MAX_ATTACH_ATTEMPTS} attach attempts; the More popover ` +
-              'will not surface clipped tabs. Verify the molecule is ' +
-              'projected inside <cngx-tab-group> via its <ng-content> ' +
-              'slot.',
+            '[CngxTabOverflow] Strip wrapper not found after 60 attach ' +
+              'attempts; the More popover will not surface clipped tabs. ' +
+              'Verify the molecule is projected inside <cngx-tab-group> ' +
+              'via its <ng-content> slot.',
           );
         }
-        frameHandle = null;
-        return;
-      }
-      frameHandle = requestAnimationFrame(tryAttach);
-    };
-    afterNextRender(() => tryAttach());
+      },
+    });
+
+  constructor() {
+    afterNextRender(() => this.attachRetry.start());
 
     // Re-observe whenever the tab list changes. Stale-id pruning is
     // derived through `visibilityState`'s `linkedSignal` source —
@@ -305,10 +299,7 @@ export class CngxTabOverflow {
     });
 
     this.destroyRef.onDestroy(() => {
-      if (frameHandle !== null) {
-        cancelAnimationFrame(frameHandle);
-        frameHandle = null;
-      }
+      this.attachRetry.cancel();
       if (this.stabilizeHandle !== null) {
         clearTimeout(this.stabilizeHandle);
         this.stabilizeHandle = null;

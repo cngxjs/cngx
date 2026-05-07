@@ -23,6 +23,7 @@ import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   CngxTabGroupPresenter,
+  createDomAnchorRetry,
   type CngxTabGroupHost,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
@@ -262,45 +263,51 @@ export class CngxMatTabs {
     // ceiling matches the aggregator-decoration retry cap (5) — well
     // above any normal Material render lag, low enough to dev-warn
     // promptly when the consumer DOM never materialises.
-    const MAX_ANCHOR_ATTEMPTS = 5;
-    let anchorAttempts = 0;
-    const tryAnchor = (): void => {
-      const headerEl = this.hostEl.querySelector<HTMLElement>(
-        '.mat-mdc-tab-header',
-      );
-      if (!headerEl) {
-        anchorAttempts++;
-        if (anchorAttempts >= MAX_ANCHOR_ATTEMPTS) {
-          if (isDevMode()) {
-            console.warn(
-              '[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ' +
-                `${MAX_ANCHOR_ATTEMPTS} attempts — .mat-mdc-tab-header ` +
-                'was not found inside the host. The More popover will ' +
-                'fall back to a sibling-of-<mat-tab-group> position; ' +
-                'verify Material rendered the strip (e.g. consumer is ' +
-                'not gating <mat-tab-group> behind a never-true ' +
-                '*ngIf / @defer).',
-            );
-          }
-          return;
+    // Bounded retry via `createDomAnchorRetry` — same counter contract
+    // as `CngxTabOverflow`'s rAF attach loop, with `afterNextRender`
+    // as the scheduler. afterNextRender is one-shot (no cancellation
+    // closure); the factory accepts a noop. Cap at 5 attempts: well
+    // above normal Material render lag, low enough to dev-warn
+    // promptly when consumer DOM never materialises (e.g.
+    // `<mat-tab-group>` gated behind a never-true `*ngIf` / `@defer`).
+    //
+    // The flex-layout skin in `mat-tabs.css` does the rest: the More
+    // button sits next to `.mat-mdc-tab-label-container` rather than
+    // overlaying it, so no imperative positioning is needed here.
+    const anchorRetry = createDomAnchorRetry({
+      attempt: () => {
+        const headerEl = this.hostEl.querySelector<HTMLElement>(
+          '.mat-mdc-tab-header',
+        );
+        if (!headerEl) {
+          return null;
         }
-        afterNextRender(tryAnchor, { injector: this.injector });
-        return;
-      }
-      const overflowEl = this.overflowRef.location.nativeElement as HTMLElement;
-      this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
-      this.renderer.appendChild(headerEl, overflowEl);
-      // No imperative positioning needed: the More button is a flex
-      // sibling of `.mat-mdc-tab-label-container` (Material's header
-      // itself is `display: flex`), so the label-container shrinks to
-      // fit and the affordance sits next to the strip rather than
-      // overlaying it. Re-enabling Material's pagination (see the
-      // `--cngx-mat-tabs-more-pagination-display` CSS var in
-      // mat-tabs.css) just adds another flex item; the IO root
-      // (label-container) shrinks accordingly and `hiddenTabs`
-      // re-derives.
-    };
-    afterNextRender(tryAnchor);
+        const overflowEl = this.overflowRef.location
+          .nativeElement as HTMLElement;
+        this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
+        this.renderer.appendChild(headerEl, overflowEl);
+        return true;
+      },
+      maxAttempts: 5,
+      schedule: (cb) => {
+        afterNextRender(cb, { injector: this.injector });
+        return () => undefined;
+      },
+      onGiveUp: () => {
+        if (isDevMode()) {
+          console.warn(
+            '[CngxMatTabs] Could not anchor <cngx-tab-overflow> after 5 ' +
+              'attempts — .mat-mdc-tab-header was not found inside the ' +
+              'host. The More popover will fall back to a sibling-of-' +
+              '<mat-tab-group> position; verify Material rendered the ' +
+              'strip (e.g. consumer is not gating <mat-tab-group> behind ' +
+              'a never-true *ngIf / @defer).',
+          );
+        }
+      },
+    });
+    afterNextRender(() => anchorRetry.start());
+    this.destroyRef.onDestroy(() => anchorRetry.cancel());
 
     createMaterialBidirectionalSync({
       presenterIndex: this.presenter.activeIndex,
