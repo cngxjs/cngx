@@ -365,4 +365,68 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     // Account stays invalid — its badge is independent of Profile.
     await expect(buttons.nth(1)).toHaveClass(/cngx-mat-tab--has-errors/);
   });
+
+  test('(m) tabs-accepted-debt §5+§7 canary: Material-private surfaces resolve as documented (.mat-mdc-tab buttons live inside MatTabHeader, count matches presenter handles)', async ({
+    page,
+  }) => {
+    // Upgrade-watch CI canary: when Angular Material breaks the
+    // `.mat-mdc-tab` selector or relocates the rendered buttons out
+    // of `MatTabHeader`, this single test fails with a clear pointer
+    // at the accepted-debt entries (§5: Material-private surface
+    // couplings; §7: getHandleSetup convention-only narrowing).
+    // Pair to the `_stateChanges` unit-test canary at
+    // projects/ui/mat-tabs/src/mat-tabs.directive.spec.ts axis 4.
+    await page.goto(ROUTE);
+    const buttons = matTabButtons(page);
+    // Demo declares 3 <mat-tab>: Profile, Account, Notifications.
+    await expect(buttons).toHaveCount(3);
+
+    // §5b — every `.mat-mdc-tab` button must be a descendant of the
+    // Material-rendered `.mat-mdc-tab-header` element. If Material
+    // moves the button into a different host (e.g. a sibling-strip
+    // refactor), the rejection-decoration + aggregator-decoration
+    // index lookups break silently. Fail loudly here instead.
+    const buttonsLiveInTabHeader = await page.evaluate(() => {
+      const found = document.querySelectorAll<HTMLElement>(
+        'mat-tab-group .mat-mdc-tab',
+      );
+      if (found.length === 0) {
+        return false;
+      }
+      return Array.from(found).every(
+        (el) => el.closest('.mat-mdc-tab-header') !== null,
+      );
+    });
+    expect(buttonsLiveInTabHeader).toBe(true);
+
+    // §5a + §7 — count of `.mat-mdc-tab` buttons must match the
+    // count of registered cngx handles in the presenter. If
+    // `MatTab._stateChanges` stops driving registration OR
+    // `getHandleSetup`'s setupsByTab loses entries, the counts
+    // diverge.
+    const counts = await page.evaluate(() => {
+      const matTabGroup = document.querySelector('mat-tab-group');
+      if (!matTabGroup) {
+        return { domButtons: -1, presenterTabs: -1 };
+      }
+      const ng = (window as { ng?: { getDirectives(el: Element): unknown[] } })
+        .ng;
+      if (!ng) {
+        return { domButtons: -1, presenterTabs: -1 };
+      }
+      const dirs = ng.getDirectives(matTabGroup);
+      const presenter = dirs.find(
+        (d) =>
+          (d as { constructor?: { name?: string } }).constructor?.name ===
+          '_CngxTabGroupPresenter',
+      ) as { tabs?: () => readonly unknown[] } | undefined;
+      const presenterTabs = presenter?.tabs?.()?.length ?? -1;
+      const domButtons = document.querySelectorAll(
+        'mat-tab-group .mat-mdc-tab',
+      ).length;
+      return { domButtons, presenterTabs };
+    });
+    expect(counts.presenterTabs).toBe(3);
+    expect(counts.domButtons).toBe(counts.presenterTabs);
+  });
 });
