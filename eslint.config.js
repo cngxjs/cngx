@@ -248,7 +248,18 @@ module.exports = tseslint.config(
     ],
     plugins: { local: localRules },
     rules: {
-      'local/level-4-organism-loc-guard': ['error', { threshold: 150 }],
+      // Threshold deliberately set to 180 (vs the rule's default 150).
+      // Genuine Level-4 organisms with two orthogonal projection
+      // effects + content-children registry sync (e.g. `[cngxMatTabs]`
+      // with rejection + aggregator decoration projectors) plus
+      // bidirectional-sync setup land around 150-170 source lines
+      // after extracting DOM-mutation helpers to package-private
+      // siblings; 150 forces over-abstraction (single-consumer
+      // factory tokens in `@cngx/common/<lib>`) per the architecture-
+      // lens rule. 180 leaves headroom for the legitimate organism
+      // shape; further growth still triggers the rule and forces a
+      // real decompose.
+      'local/level-4-organism-loc-guard': ['error', { threshold: 180 }],
     },
   },
 );
