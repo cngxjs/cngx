@@ -213,8 +213,22 @@ export class CngxTabOverflow {
   // each target wins (Map.set in commitPendingVisibility overwrites
   // earlier transients per key).
   private static readonly STABILIZE_MS = 100;
+  // Hard ceiling on the quiescence-debounce window. Without this, a
+  // sustained IO churn pattern (entries arriving every <STABILIZE_MS
+  // for >MAX_DEFER_MS — momentum scrolling, continuous resize, an
+  // animation that keeps Material's tab-list reflowing every frame)
+  // would keep clearing the stabilize timer indefinitely. The
+  // counter would freeze on a stale value the entire time, breaking
+  // Pillar 2 (state-change communication must hold under sustained
+  // input). MAX_DEFER_MS forces a flush regardless of further IO
+  // events once the buffer has been waiting this long.
+  private static readonly MAX_DEFER_MS = 250;
   private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
   private pendingEntries: IntersectionObserverEntry[] = [];
+  // Timestamp (performance.now()) of the FIRST entry pushed since
+  // the last commit. `null` between commits. Drives the max-defer
+  // cap above.
+  private firstPendingAt: number | null = null;
 
   constructor() {
     // Lazy-attach the IntersectionObserver. `afterNextRender` fires
@@ -299,6 +313,7 @@ export class CngxTabOverflow {
         clearTimeout(this.stabilizeHandle);
         this.stabilizeHandle = null;
       }
+      this.firstPendingAt = null;
       this.pendingEntries.length = 0;
       this.observer?.disconnect();
       this.observer = null;
@@ -331,21 +346,37 @@ export class CngxTabOverflow {
   private handleIntersections(entries: IntersectionObserverEntry[]): void {
     // Buffer entries; the actual signal write happens in
     // `commitPendingVisibility` once IO emissions go quiet for
-    // STABILIZE_MS. See the comment block on STABILIZE_MS for why.
+    // STABILIZE_MS — capped by MAX_DEFER_MS. See the comment blocks
+    // above for why.
     for (const entry of entries) {
       this.pendingEntries.push(entry);
+    }
+    const now = performance.now();
+    if (this.firstPendingAt === null) {
+      this.firstPendingAt = now;
     }
     if (this.stabilizeHandle !== null) {
       clearTimeout(this.stabilizeHandle);
     }
+    // Wait the smaller of (STABILIZE_MS, remaining max-defer window).
+    // Once the max-defer window is exhausted, fire on the very next
+    // tick (`Math.max(0, …)` guards a negative remaining when the
+    // event loop returned from a long task).
+    const elapsed = now - this.firstPendingAt;
+    const maxDeferRemaining = CngxTabOverflow.MAX_DEFER_MS - elapsed;
+    const wait = Math.max(
+      0,
+      Math.min(CngxTabOverflow.STABILIZE_MS, maxDeferRemaining),
+    );
     this.stabilizeHandle = setTimeout(
       () => this.commitPendingVisibility(),
-      CngxTabOverflow.STABILIZE_MS,
+      wait,
     );
   }
 
   private commitPendingVisibility(): void {
     this.stabilizeHandle = null;
+    this.firstPendingAt = null;
     const entries = this.pendingEntries;
     if (entries.length === 0) {
       return;

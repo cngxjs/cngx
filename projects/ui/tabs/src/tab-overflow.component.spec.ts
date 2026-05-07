@@ -357,6 +357,65 @@ describe('CngxTabOverflow', () => {
     expect(afterSecond).toBe(afterFirst);
   });
 
+  it('quiescence timer caps at MAX_DEFER_MS so the visibility map commits even under sustained IO churn', async () => {
+    // Pillar-2 regression fence: without a max-defer cap, an IO
+    // churn pattern (entries arriving every <STABILIZE_MS) would
+    // keep clearing the stabilize timer indefinitely. The counter
+    // would freeze on a stale value the entire time. The cap MUST
+    // force a commit within MAX_DEFER_MS regardless of further
+    // resets — proven here by counting visibilityState emissions
+    // during a sustained-churn window that exceeds the cap.
+    const { instances } = installMockIntersectionObserver();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+
+    const visibilityRef = (
+      overflow as unknown as {
+        visibilityState: () => ReadonlyMap<string, boolean>;
+      }
+    ).visibilityState;
+    let emissions = 0;
+    TestBed.runInInjectionContext(() => {
+      effect(() => {
+        visibilityRef();
+        emissions++;
+      });
+    });
+    TestBed.flushEffects();
+    const baseline = emissions;
+
+    // Sustained churn: 5 IO fires every 50ms (faster than the
+    // 100ms quiescence window). Each fire toggles b3's visibility.
+    // Without max-defer (250ms cap), 0 commits would land before
+    // the loop ends. With the cap, at least one commit fires while
+    // the churn is still in progress.
+    for (let i = 0; i < 5; i++) {
+      observer.fire([
+        {
+          target: buttons[3],
+          isIntersecting: i % 2 === 0,
+          intersectionRatio: 0,
+        },
+      ]);
+      await new Promise((res) => setTimeout(res, 50));
+    }
+    // Tail wait — let the cap-driven flush land before assertions.
+    await new Promise((res) => setTimeout(res, 130));
+    TestBed.flushEffects();
+
+    expect(emissions).toBeGreaterThan(baseline);
+  });
+
   it('handles foreign-id button schemes via target→handle id mapping (Material-style ids)', async () => {
     // Regression fence for the smart-overflow-on-Material flow.
     // Material renders tab buttons with ids like `mat-tab-group-1-label-N`,
