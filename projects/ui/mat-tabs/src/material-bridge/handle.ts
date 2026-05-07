@@ -68,6 +68,13 @@ export function createMatTabHandle(
   const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(
     undefined,
   );
+  // `idSeed` is `() => nextUid('cngx-mat-tab-')` per the directive's
+  // injection. `nextUid` (`@cngx/core/utils`) draws from a single
+  // monotonic counter shared across the whole application — every
+  // `id` returned here is globally unique even when multiple
+  // `[cngxMatTabs]` instances coexist, so the descriptor span id
+  // `${id}-errors` minted in the parent directive cannot collide
+  // across instances either.
   const id = idSeed();
   return {
     handle: {
