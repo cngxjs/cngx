@@ -1,4 +1,10 @@
-import { Component, signal, provideZonelessChangeDetection } from '@angular/core';
+import {
+  Component,
+  signal,
+  type Signal,
+  type WritableSignal,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
 import { describe, expect, test } from 'vitest';
@@ -7,8 +13,40 @@ import {
   CngxTabGroupPresenter,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
+import type {
+  CngxErrorAggregatorContract,
+  CngxErrorAggregatorSourceEntry,
+} from '@cngx/common/interactive';
 
 import { CngxMatTabs } from './mat-tabs.directive';
+import { CngxMatTabError } from './mat-tab-error.directive';
+
+interface StubAggregatorHandle {
+  contract: CngxErrorAggregatorContract;
+  show: WritableSignal<boolean>;
+  announcement: WritableSignal<string>;
+}
+
+function makeStubAggregator(
+  initialShow = false,
+  initialAnnouncement = '',
+): StubAggregatorHandle {
+  const show = signal(initialShow);
+  const announcement = signal(initialAnnouncement);
+  const showSig: Signal<boolean> = show.asReadonly();
+  const announceSig: Signal<string> = announcement.asReadonly();
+  const contract: CngxErrorAggregatorContract = {
+    hasError: showSig,
+    errorCount: signal(0),
+    activeErrors: signal([]),
+    errorLabels: signal([]),
+    shouldShow: showSig,
+    announcement: announceSig,
+    addSource: (_entry: CngxErrorAggregatorSourceEntry) => undefined,
+    removeSource: (_key: string) => undefined,
+  };
+  return { contract, show, announcement };
+}
 
 interface Plumbing {
   fixture: ReturnType<typeof TestBed.createComponent<HostCmp>>;
@@ -106,6 +144,32 @@ class DynamicHostCmp {
 class CommitHostCmp {
   protected commit: CngxTabsCommitAction = () => new Promise<boolean>(() => undefined);
   protected mode: 'optimistic' | 'pessimistic' = 'pessimistic';
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [MatTabsModule, CngxMatTabs, CngxMatTabError],
+  template: `
+    <mat-tab-group
+      cngxMatTabs
+      [commitAction]="commit"
+      [commitMode]="mode"
+      [(activeIndex)]="active"
+    >
+      <mat-tab label="One" [cngxMatTabError]="aggOne">One content</mat-tab>
+      <mat-tab label="Two" [cngxMatTabError]="aggTwo">Two content</mat-tab>
+      <mat-tab label="Three">Three content</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class AggregatorHostCmp {
+  readonly aggOneHandle = makeStubAggregator();
+  readonly aggTwoHandle = makeStubAggregator();
+  protected aggOne = this.aggOneHandle.contract;
+  protected aggTwo = this.aggTwoHandle.contract;
+  protected commit: CngxTabsCommitAction = () => new Promise<boolean>(() => undefined);
+  protected mode: 'optimistic' | 'pessimistic' = 'optimistic';
   protected active = 0;
 }
 
@@ -509,12 +573,16 @@ describe('CngxMatTabs instrumentation directive', () => {
 
     // The writable is reachable through setupsByTab so the per-tab
     // attribute directive can pump bound aggregators into the slot.
+    // Use a minimal contract-shaped stub — the parent's
+    // `aggregatedErrorTabs` computed reads `shouldShow()` /
+    // `announcement()` whenever any handle's slot is non-undefined,
+    // so an opaque marker would crash the downstream effect.
     const firstSetup = Array.from(setupsByTab.values())[0];
-    const fakeAggregator = { sentinel: true } as unknown;
-    firstSetup.errorAggregator.set(fakeAggregator);
+    const stub = makeStubAggregator();
+    firstSetup.errorAggregator.set(stub.contract as unknown);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(presenter.tabs()[0].errorAggregator()).toBe(fakeAggregator);
+    expect(presenter.tabs()[0].errorAggregator()).toBe(stub.contract);
 
     // Resetting back to undefined restores the default — used by the
     // attribute directive's destroyRef cleanup path.
@@ -556,5 +624,150 @@ describe('CngxMatTabs instrumentation directive', () => {
     // Prior target is clean — only one decorated element at a time.
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+  });
+
+  test('axis 15: aggregator shouldShow=true applies .cngx-mat-tab--has-errors class + descriptor span + aria-describedby', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+
+    // Defaults: no aggregator wants reveal → no decoration on any tab.
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
+      false,
+    );
+    expect(matTabEls[0].getAttribute('aria-describedby')).toBeNull();
+
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.componentInstance.aggOneHandle.announcement.set(
+      'Profile name is required',
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const handleId = presenter.tabs()[0].id;
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
+      true,
+    );
+    const describedBy = matTabEls[0].getAttribute('aria-describedby');
+    expect(describedBy).toContain(`${handleId}-errors`);
+    const spanId = `${handleId}-errors`;
+    const span = Array.from(
+      matTabEls[0].querySelectorAll('span'),
+    ).find((s) => s.id === spanId) as HTMLElement | undefined;
+    expect(span).toBeDefined();
+    expect(span?.classList.contains('cngx-sr-only')).toBe(true);
+    expect(span?.textContent).toBe('Profile name is required');
+  });
+
+  test('axis 16: aggregator shouldShow flipping false removes class + span + attribute and restores prior aria-describedby', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    const handleId = presenter.tabs()[0].id;
+    const priorDescribedBy = matTabEls[0].getAttribute('aria-describedby');
+
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.componentInstance.aggOneHandle.announcement.set('Errors here');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
+      true,
+    );
+
+    // Flip back — class drops, span goes away, aria-describedby
+    // returns to whatever Material had set originally (may be null).
+    fixture.componentInstance.aggOneHandle.show.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
+      false,
+    );
+    const stillThere = Array.from(
+      matTabEls[0].querySelectorAll('span'),
+    ).find((s) => s.id === `${handleId}-errors`);
+    expect(stillThere).toBeUndefined();
+    if (priorDescribedBy === null) {
+      expect(matTabEls[0].getAttribute('aria-describedby')).toBeNull();
+    } else {
+      expect(matTabEls[0].getAttribute('aria-describedby')).toBe(
+        priorDescribedBy,
+      );
+    }
+  });
+
+  test('axis 17: rejection (.cngx-mat-tab--error) and has-errors (.cngx-mat-tab--has-errors) coexist on the same tab without conflict', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorHostCmp);
+    // Start on tab 1 so the rejection target (tab 0, which carries
+    // the bound aggregator) is reachable via a single failing select.
+    fixture.componentInstance['active'] = 1;
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+
+    // Aggregator surface: tab 0 wants reveal.
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.componentInstance.aggOneHandle.announcement.set(
+      'Form invalid',
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Reject a transition INTO tab 0 — commit returns false →
+    // lastFailedIndex pins on 0, optimistic mode rolls active back
+    // to the prior tab (1).
+    presenter.select(0);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
+      true,
+    );
+    expect(matTabEls[0].getAttribute('aria-invalid')).toBe('true');
+    const handleId = presenter.tabs()[0].id;
+    expect(matTabEls[0].getAttribute('aria-describedby')).toContain(
+      `${handleId}-errors`,
+    );
   });
 });

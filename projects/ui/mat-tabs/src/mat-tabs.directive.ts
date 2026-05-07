@@ -80,6 +80,24 @@ export class CngxMatTabs {
   // cleared on directive destroy.
   private decoratedEl: HTMLElement | null = null;
 
+  // Per-handle registry of currently-decorated aggregator elements.
+  // Keyed by stable handle id so a target-element re-emit (Material
+  // re-renders the strip on dynamic tab add/remove) can be detected
+  // and the prior class + descriptor span + aria-describedby state
+  // restored. `priorAriaDescribedby` captures whatever Material set
+  // before we appended our `${id}-errors` token so cleanup restores
+  // the original value (or removes the attribute entirely when no
+  // prior value existed). Persists across effect runs; cleared on
+  // directive destroy.
+  private readonly decoratedAggregatorEls = new Map<
+    string,
+    {
+      el: HTMLElement;
+      descriptorSpan: HTMLElement;
+      priorAriaDescribedby: string | null;
+    }
+  >();
+
   // Resolves the failed handle's stable id (or `null` when no
   // failure). Collapses spurious effect re-fires when `tabs()`
   // re-emits without a meaningful target change — e.g. dynamic
@@ -96,6 +114,55 @@ export class CngxMatTabs {
     }
     return this.presenter.tabs()[idx]?.id ?? null;
   });
+
+  // Resolves the current set of tabs whose bound aggregator wants to
+  // be revealed (`shouldShow() === true`). Reads each handle's
+  // `errorAggregator()` signal, then `aggregator.shouldShow()` and
+  // `aggregator.announcement()` — every tracked dependency feeds the
+  // downstream Renderer2 effect (Pillar 1: derive once, project
+  // once). Structural `equal` fn drops re-runs whose returned shape
+  // is identical to the previous one — keeps the DOM-mutation effect
+  // idempotent against `tabs()` re-emits where no aggregator state
+  // actually changed (e.g. dynamic tab add/remove during normal
+  // navigation while no aggregator is bound, or while bound
+  // aggregators stay clean).
+  private readonly aggregatedErrorTabs = computed<
+    readonly { idx: number; id: string; announcement: string }[]
+  >(
+    () => {
+      const tabs = this.presenter.tabs();
+      const acc: { idx: number; id: string; announcement: string }[] = [];
+      for (let i = 0; i < tabs.length; i++) {
+        const handle = tabs[i];
+        const aggregator = handle.errorAggregator();
+        if (aggregator?.shouldShow()) {
+          acc.push({
+            idx: i,
+            id: handle.id,
+            announcement: aggregator.announcement(),
+          });
+        }
+      }
+      return acc;
+    },
+    {
+      equal: (a, b) => {
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+          if (
+            a[i].idx !== b[i].idx ||
+            a[i].id !== b[i].id ||
+            a[i].announcement !== b[i].announcement
+          ) {
+            return false;
+          }
+        }
+        return true;
+      },
+    },
+  );
 
   constructor() {
     effect(() => {
@@ -137,6 +204,25 @@ export class CngxMatTabs {
       });
     });
 
+    // Per-tab form-error aggregation decoration (Pillar 2 — three
+    // communication channels for the same per-tab aggregator state:
+    // `.cngx-mat-tab--has-errors` class for the visual badge, an
+    // `<span class="cngx-sr-only" id="${handle.id}-errors">` carrying
+    // the `aggregator.announcement()` phrase, and an `aria-describedby`
+    // patch on the rendered button that references the span). The
+    // effect tracks ONLY the `aggregatedErrorTabs` computed — that
+    // derivation collapses spurious `tabs()` re-emits where no
+    // aggregator-state changed (Pillar 1). DOM mutation runs inside
+    // `untracked()`. Sanctioned `effect()` + `Renderer2` pattern per
+    // `reference_signal_architecture` hook matrix; orthogonal to the
+    // rejection effect above (independent state sources, independent
+    // target-resolution paths, both projecting onto the same `<button>`
+    // element via additive class flags + `aria-*` attributes).
+    effect(() => {
+      const errorTabs = this.aggregatedErrorTabs();
+      untracked(() => this.syncAggregatorDecoration(errorTabs));
+    });
+
     this.destroyRef.onDestroy(() => {
       for (const sub of this.stateChangeSubsByTab.values()) {
         sub.unsubscribe();
@@ -144,6 +230,9 @@ export class CngxMatTabs {
       this.stateChangeSubsByTab.clear();
       this.setupsByTab.clear();
       this.clearDecoration();
+      for (const id of Array.from(this.decoratedAggregatorEls.keys())) {
+        this.removeAggregatorDecoration(id);
+      }
     });
 
     createMaterialBidirectionalSync({
@@ -240,6 +329,112 @@ export class CngxMatTabs {
     this.decoratedEl = null;
   }
 
+  private syncAggregatorDecoration(
+    errorTabs: readonly { idx: number; id: string; announcement: string }[],
+  ): void {
+    const liveIds = new Set<string>();
+    for (const t of errorTabs) {
+      liveIds.add(t.id);
+    }
+
+    // Drop decorations for handles that left the result set —
+    // either the consumer flipped `shouldShow` back to false, or the
+    // tab was removed from the children-set entirely.
+    for (const id of Array.from(this.decoratedAggregatorEls.keys())) {
+      if (!liveIds.has(id)) {
+        this.removeAggregatorDecoration(id);
+      }
+    }
+
+    // Apply or refresh decorations for current error-bearing tabs.
+    // `.mat-mdc-tab` indexing matches `presenter.tabs()` order — same
+    // assumption the rejection-decoration path documents at length
+    // (`tabs-accepted-debt §5`). Index drift on dynamic tab removal
+    // is the same accepted risk.
+    const buttons = this.hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
+    for (const { idx, id, announcement } of errorTabs) {
+      const targetEl = buttons.item(idx);
+      if (!targetEl) {
+        continue;
+      }
+      const existing = this.decoratedAggregatorEls.get(id);
+      if (existing && existing.el === targetEl) {
+        // Same element, possibly new announcement text — patch the
+        // descriptor span content without re-creating the element so
+        // AT live-region implementations don't re-announce on every
+        // identity-only refresh.
+        if (existing.descriptorSpan.textContent !== announcement) {
+          this.renderer.setProperty(
+            existing.descriptorSpan,
+            'textContent',
+            announcement,
+          );
+        }
+        continue;
+      }
+      // Different element (Material re-rendered the strip) — clean up
+      // the prior entry's class + span + aria-describedby first so we
+      // don't leak the visual onto a now-stale button.
+      if (existing) {
+        this.removeAggregatorDecoration(id);
+      }
+      this.applyAggregatorDecoration(targetEl, id, announcement);
+    }
+  }
+
+  private applyAggregatorDecoration(
+    targetEl: HTMLElement,
+    id: string,
+    announcement: string,
+  ): void {
+    this.renderer.addClass(targetEl, 'cngx-mat-tab--has-errors');
+
+    const spanId = `${id}-errors`;
+    const descriptorSpan = this.renderer.createElement('span') as HTMLElement;
+    this.renderer.addClass(descriptorSpan, 'cngx-sr-only');
+    this.renderer.setAttribute(descriptorSpan, 'id', spanId);
+    this.renderer.setProperty(descriptorSpan, 'textContent', announcement);
+    this.renderer.appendChild(targetEl, descriptorSpan);
+
+    // Preserve any existing `aria-describedby` token list — Material
+    // and consumer code may have set it for unrelated descriptor
+    // elements; we only ever append our own `${id}-errors` token and
+    // restore the original value on cleanup.
+    const priorAriaDescribedby = targetEl.getAttribute('aria-describedby');
+    const tokens = priorAriaDescribedby
+      ? priorAriaDescribedby.split(/\s+/).filter(Boolean)
+      : [];
+    if (!tokens.includes(spanId)) {
+      tokens.push(spanId);
+    }
+    this.renderer.setAttribute(targetEl, 'aria-describedby', tokens.join(' '));
+
+    this.decoratedAggregatorEls.set(id, {
+      el: targetEl,
+      descriptorSpan,
+      priorAriaDescribedby,
+    });
+  }
+
+  private removeAggregatorDecoration(id: string): void {
+    const entry = this.decoratedAggregatorEls.get(id);
+    if (!entry) {
+      return;
+    }
+    this.renderer.removeClass(entry.el, 'cngx-mat-tab--has-errors');
+    this.renderer.removeChild(entry.el, entry.descriptorSpan);
+    if (entry.priorAriaDescribedby === null) {
+      this.renderer.removeAttribute(entry.el, 'aria-describedby');
+    } else {
+      this.renderer.setAttribute(
+        entry.el,
+        'aria-describedby',
+        entry.priorAriaDescribedby,
+      );
+    }
+    this.decoratedAggregatorEls.delete(id);
+  }
+
   /**
    * Clear the persisted `lastFailedIndex` rejection flag on the
    * presenter — public delegator mirroring the
@@ -262,6 +457,12 @@ export class CngxMatTabs {
    * `errorAggregator` writable; race-recovery happens by tracking
    * `presenter.tabs()` in the consumer's effect so a later sync tick
    * re-attempts the lookup.
+   *
+   * @internal — exposed for the in-library `[cngxMatTabError]`
+   * directive only. Public consumers should bind `[cngxMatTabError]`
+   * on each `<mat-tab>` rather than walking the registry by hand.
+   * Re-evaluate when ≥1 documented external consumer needs the
+   * per-handle setup directly.
    */
   getHandleSetup(matTab: MatTab): CngxMatTabHandleSetup | undefined {
     return this.setupsByTab.get(matTab);

@@ -41,3 +41,61 @@
    */
   opacity: 0.7;
 }
+
+/*
+ * Per-tab form-error aggregation badge. Distinct semantic from
+ * `--error` — `--error` means "your last commit was refused";
+ * `--has-errors` means "this tab contains form-validation errors
+ * right now". The two coexist (different sources, different
+ * lifecycles, different remediation paths) and a tab can carry both
+ * simultaneously.
+ *
+ * Three-tier fallback per CSS var: consumer override → Material
+ * design token → hard-coded value. The badge glyph is a `::before`
+ * pseudo-element so it stacks cleanly with Material's own focus
+ * ring and ripple — Material's button uses neither `::before` nor
+ * `::after` for its core visuals.
+ *
+ * No animation: same `tabs-accepted-debt §3` rationale as
+ * `--error` — pulse-on-edge is deferred to a future shared
+ * `createPulseOnEdge` factory.
+ */
+.cngx-mat-tab--has-errors {
+  position: relative;
+}
+
+.cngx-mat-tab--has-errors::before {
+  content: '!';
+  position: absolute;
+  top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+  inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+  height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+  border-radius: 50%;
+  background: var(
+    --cngx-mat-tab-has-errors-color,
+    var(--mat-sys-error, #c62828)
+  );
+  color: var(
+    --cngx-mat-tab-has-errors-glyph-color,
+    var(--mat-sys-on-error, #ffffff)
+  );
+  font-size: calc(var(--cngx-mat-tab-has-errors-glyph-size, 16px) * 0.75);
+  font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/*
+ * Co-occurrence: when a tab is BOTH rejected and carries form
+ * errors, the rejection outline already draws focus to the edges;
+ * shift the has-errors badge slightly inward so the two signals
+ * read as distinct rather than visually merging.
+ */
+.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
+  top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+  inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+}

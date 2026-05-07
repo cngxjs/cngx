@@ -100,9 +100,12 @@ export class CngxMatTabError {
       // our `MatTab` (parent's `contentChildren(MatTab)` lands in the
       // same microtask as our injection). The presenter emission re-
       // fires this effect on the next sync tick, retrying the lookup
-      // until the handle exists. DOM-side write is untracked — the
-      // setter is a signal mutation we own, but `getHandleSetup` is a
-      // plain Map lookup so wrapping is mostly hygiene.
+      // until the handle exists. The signal write below runs inside
+      // `untracked()` for correctness — pre-empts a future regression
+      // where `getHandleSetup` reads a signal (e.g. a switch from the
+      // current Map lookup to a `computed()` projection); without the
+      // wrap, that change would silently introduce a same-effect
+      // re-fire on every aggregator pump.
       const aggregator = this.resolvedAggregator();
       this.presenter.tabs();
 
