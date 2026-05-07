@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   contentChildren,
   DestroyRef,
@@ -7,6 +8,7 @@ import {
   ElementRef,
   inject,
   Injector,
+  isDevMode,
   Renderer2,
   untracked,
   ViewContainerRef,
@@ -122,10 +124,10 @@ export class CngxMatTabs {
   // IntersectionObserver attaches against `.mat-mdc-tab-label-container`
   // (Material's IO-friendly scroll viewport) rather than the cngx-native
   // `.cngx-tabs__strip` selector. The component lands as a sibling of
-  // `<mat-tab-group>` in the parent's view here; a follow-up
-  // `afterNextRender` block physically moves the rendered element into
-  // `.mat-mdc-tab-header` so the More button pins to the trailing edge
-  // of Material's strip.
+  // `<mat-tab-group>` in the parent's view here; the constructor's
+  // `afterNextRender` block below physically moves the rendered element
+  // into `.mat-mdc-tab-header` so the More button pins to the trailing
+  // edge of Material's strip.
   //
   // Passing `injector: this.injector` makes the molecule's parent
   // injector chain inherit from THIS directive's element injector —
@@ -245,6 +247,54 @@ export class CngxMatTabs {
     // DestroyRef callbacks (IntersectionObserver disconnect, rAF
     // cancellation) and removes its rendered element from the DOM.
     this.destroyRef.onDestroy(() => this.overflowRef.destroy());
+
+    // Anchor the molecule's rendered element inside Material's
+    // `.mat-mdc-tab-header` so the More button pins to the trailing
+    // edge of the strip. Same hook (`afterNextRender`) the aggregator-
+    // decoration projector uses for one-shot post-render DOM writes.
+    // The host-template's `MatTabHeader` may not have committed its
+    // children yet when the directive constructor runs, but by this
+    // callback the rendered button list and the header element are
+    // both present.
+    //
+    // Idempotent positioning: only set `position: relative` when the
+    // header's computed position is `static` (Material's default).
+    // Consumers who already gave the header non-static positioning via
+    // their own theme keep their value — we don't trample.
+    afterNextRender(() => {
+      const headerEl = this.hostEl.querySelector<HTMLElement>(
+        '.mat-mdc-tab-header',
+      );
+      if (!headerEl) {
+        if (isDevMode()) {
+          console.warn(
+            '[CngxMatTabs] Could not anchor <cngx-tab-overflow> — ' +
+              '.mat-mdc-tab-header was not found inside the host. ' +
+              'The More popover will fall back to a sibling-of-' +
+              '<mat-tab-group> position; verify Material rendered the ' +
+              'strip.',
+          );
+        }
+        return;
+      }
+      const overflowEl = this.overflowRef.location.nativeElement as HTMLElement;
+      this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
+      this.renderer.appendChild(headerEl, overflowEl);
+      // Only set when the header is NOT already a positioning context.
+      // Browsers return 'static' for the default; jsdom returns ''.
+      // Both mean "no consumer-supplied positioning" and warrant the
+      // write. An explicit allow-list of positioned values (rather than
+      // an exact 'static' match) is the portable shape across runtimes.
+      const computedPos = getComputedStyle(headerEl).position;
+      const alreadyPositioned =
+        computedPos === 'absolute' ||
+        computedPos === 'relative' ||
+        computedPos === 'fixed' ||
+        computedPos === 'sticky';
+      if (!alreadyPositioned) {
+        this.renderer.setStyle(headerEl, 'position', 'relative');
+      }
+    });
 
     createMaterialBidirectionalSync({
       presenterIndex: this.presenter.activeIndex,

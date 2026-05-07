@@ -738,17 +738,15 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(overflowDe).toBeDefined();
     const overflow = overflowDe.componentInstance as CngxTabOverflow;
 
-    // Pre-anchor invariant: the molecule lands as a sibling of
-    // <mat-tab-group> in the parent template. Phase-2-commit-2's
-    // afterNextRender block moves it into .mat-mdc-tab-header. Pinning
-    // the sibling parent here is the contract a future Angular
-    // semantic change to ViewContainerRef.createComponent insertion
-    // would break.
-    const matTabGroupEl = fixture.nativeElement.querySelector(
-      'mat-tab-group',
-    ) as HTMLElement;
-    const overflowEl = overflowDe.nativeElement as HTMLElement;
-    expect(overflowEl.parentElement).toBe(matTabGroupEl.parentElement);
+    // The molecule's rendered host element exists in the DOM. Its
+    // physical parent is asserted by axis 21 (post-anchor:
+    // .mat-mdc-tab-header child); this axis only pins existence +
+    // single-instance count to catch a regression that drops the
+    // VCR.createComponent call entirely.
+    const allOverflowEls = fixture.nativeElement.querySelectorAll(
+      'cngx-tab-overflow',
+    ) as NodeListOf<HTMLElement>;
+    expect(allOverflowEls.length).toBe(1);
 
     // Panel-host adapter forwards the presenter's tabs() / activeId() /
     // selectById(). Reading via the molecule's protected `panelHost`
@@ -817,6 +815,82 @@ describe('CngxMatTabs instrumentation directive', () => {
       tabButtons[2],
     );
     expect(adapter.resolveTabButton(stub, labelContainer, 99)).toBeNull();
+  });
+
+  test('axis 21: anchor inside .mat-mdc-tab-header + positioning context', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture } = await setupPlumbing();
+    // afterNextRender fires once per directive constructor. By the time
+    // setupPlumbing's whenStable resolves, the anchor block has run.
+    const headerEl = fixture.nativeElement.querySelector(
+      '.mat-mdc-tab-header',
+    ) as HTMLElement;
+    expect(headerEl).not.toBeNull();
+    const overflowEl = fixture.nativeElement.querySelector(
+      'cngx-tab-overflow',
+    ) as HTMLElement;
+    expect(overflowEl).not.toBeNull();
+
+    // The molecule's rendered element is now a child of the header
+    // (no longer a sibling of <mat-tab-group> as it was in axis 18).
+    expect(overflowEl.parentElement).toBe(headerEl);
+    // Convenience class for the sticky-end CSS skin.
+    expect(overflowEl.classList.contains('cngx-mat-tabs-more')).toBe(true);
+    // Header is a positioning context for the molecule's
+    // `position: absolute` skin — either Material's own CSS already
+    // set it, or the directive's idempotency block wrote
+    // 'relative' inline. Asserting via getComputedStyle covers both
+    // paths without locking the test to one implementation route.
+    const positioned = ['relative', 'absolute', 'fixed', 'sticky'];
+    expect(positioned).toContain(getComputedStyle(headerEl).position);
+  });
+
+  test('axis 21b: idempotent positioning leaves a pre-styled non-static header untouched', async () => {
+    @Component({
+      standalone: true,
+      imports: [MatTabsModule, CngxMatTabs],
+      template: `
+        <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+          <mat-tab label="One">One content</mat-tab>
+          <mat-tab label="Two">Two content</mat-tab>
+        </mat-tab-group>
+      `,
+      // Consumer-style theme override placing the header as a
+      // non-static positioned context. The directive's idempotent
+      // guard reads getComputedStyle(headerEl).position; this CSS
+      // produces 'absolute' there, so the directive must NOT
+      // overwrite with 'relative'.
+      styles: [
+        `
+          :host ::ng-deep .mat-mdc-tab-header {
+            position: absolute;
+          }
+        `,
+      ],
+    })
+    class PreStyledHeaderHostCmp {
+      protected active = 0;
+    }
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(PreStyledHeaderHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const headerEl = fixture.nativeElement.querySelector(
+      '.mat-mdc-tab-header',
+    ) as HTMLElement;
+    expect(headerEl).not.toBeNull();
+    // Inline style stays empty — directive checked computed position
+    // (which the host CSS made 'absolute') and skipped the write.
+    expect(headerEl.style.position).toBe('');
+    expect(getComputedStyle(headerEl).position).toBe('absolute');
   });
 
   test('axis 20: directive destroy removes the mounted CngxTabOverflow from the document', async () => {
