@@ -80,7 +80,12 @@ const TABS_CONFIG_DEFAULTS: Required<
     tabsRegion: 'Tabs',
   },
   fallbackLabels: {
-    tabRoleDescription: 'tab',
+    // 'tab list' (W3C ARIA tablist convention) — deliberately distinct
+    // from `i18n.tabsLabel` so `aria-roledescription` and `aria-label`
+    // never collapse onto the same string. AT reads them
+    // back-to-back; identical strings make the announcement
+    // ungrammatical ("Bereiche, Bereiche, A selected").
+    tabRoleDescription: 'tab list',
     tabPanelRoleDescription: 'tab panel',
   },
   overflowStabilizeMs: 100,
