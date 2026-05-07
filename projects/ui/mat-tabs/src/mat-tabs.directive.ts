@@ -110,7 +110,18 @@ export class CngxMatTabs {
   // items, the decoration is silently skipped. The retry flag pins
   // a single `afterNextRender` callback that re-runs the sync after
   // Material's view has settled. Cleared on directive destroy.
+  //
+  // Bounded ceiling: a pathological Material render-stall (multi-
+  // frame layout deferral) could re-arm the flag indefinitely. The
+  // attempt counter caps recursion at `AGGREGATOR_RETRY_MAX_ATTEMPTS`
+  // and surfaces a single dev-mode warning when the ceiling fires —
+  // signal of either Material upgrade breaking the `.mat-mdc-tab`
+  // selector contract (`tabs-accepted-debt §5`) or a consumer-side
+  // stall worth investigating. Reset on success (any successful
+  // sync that did not need a retry).
   private pendingAggregatorRetry = false;
+  private aggregatorRetryAttempts = 0;
+  private static readonly AGGREGATOR_RETRY_MAX_ATTEMPTS = 5;
 
   // Resolves the failed handle's stable id (or `null` when no
   // failure). Collapses spurious effect re-fires when `tabs()`
@@ -411,16 +422,44 @@ export class CngxMatTabs {
       this.applyAggregatorDecoration(targetEl, id, announcement);
     }
 
-    if (needsRetry && !this.pendingAggregatorRetry) {
-      this.pendingAggregatorRetry = true;
-      afterNextRender(
-        () => {
-          this.pendingAggregatorRetry = false;
-          this.syncAggregatorDecoration(this.aggregatedErrorTabs());
-        },
-        { injector: this.injector },
-      );
+    if (!needsRetry) {
+      // Successful sync clears the attempt counter — every transient
+      // race recovers on the next pass; we only treat "still racing
+      // after N attempts" as the pathological case.
+      this.aggregatorRetryAttempts = 0;
+      return;
     }
+    if (this.pendingAggregatorRetry) {
+      return;
+    }
+    if (
+      this.aggregatorRetryAttempts >=
+      CngxMatTabs.AGGREGATOR_RETRY_MAX_ATTEMPTS
+    ) {
+      if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
+            `(${CngxMatTabs.AGGREGATOR_RETRY_MAX_ATTEMPTS} attempts) — ` +
+            'MatTabHeader did not render `.mat-mdc-tab` buttons within ' +
+            'the expected window. Likely cause: Material upgrade broke ' +
+            'the `.mat-mdc-tab` selector contract (tabs-accepted-debt §5) ' +
+            'or a consumer-side render stall. Bound aggregators may ' +
+            'remain visually undecorated until the next state change.',
+        );
+      }
+      this.aggregatorRetryAttempts = 0;
+      return;
+    }
+    this.pendingAggregatorRetry = true;
+    this.aggregatorRetryAttempts++;
+    afterNextRender(
+      () => {
+        this.pendingAggregatorRetry = false;
+        this.syncAggregatorDecoration(this.aggregatedErrorTabs());
+      },
+      { injector: this.injector },
+    );
   }
 
   private applyAggregatorDecoration(
@@ -508,7 +547,11 @@ export class CngxMatTabs {
    * directive only. Public consumers should bind `[cngxMatTabError]`
    * on each `<mat-tab>` rather than walking the registry by hand.
    * Re-evaluate when ≥1 documented external consumer needs the
-   * per-handle setup directly.
+   * per-handle setup directly OR a second `[cngxMatTab*]`-shaped
+   * per-tab attribute directive lands. Tracked as
+   * `tabs-accepted-debt §7` (convention-only narrowing — TypeScript
+   * visibility is `public` because no library-private modifier
+   * exists; alternative options are over-abstraction).
    */
   getHandleSetup(
     matTab: MatTab,
