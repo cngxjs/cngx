@@ -483,6 +483,55 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     });
     expect(anchored).toBe(true);
 
+    // Material pagination auto-hide: the library CSS (`.mat-mdc-tab-header:has(cngx-tab-overflow)
+    // .mat-mdc-tab-header-pagination { display: none }`) MUST take
+    // effect when the cngx overflow molecule is mounted in the
+    // header — otherwise the trailing `>` pagination arrow collides
+    // visually with the More button's right-edge position. Consumers
+    // who want both affordances opt back in via the documented
+    // CSS override (see mat-tabs README).
+    const paginationDisplay = await page.evaluate(() => {
+      const groups = document.querySelectorAll<HTMLElement>('mat-tab-group');
+      const second = groups[1];
+      if (!second) {
+        return null;
+      }
+      const after = second.querySelector<HTMLElement>(
+        '.mat-mdc-tab-header-pagination-after',
+      );
+      return after ? getComputedStyle(after).display : null;
+    });
+    expect(paginationDisplay).toBe('none');
+
+    // The More button's host AND trigger MUST have an opaque
+    // background — without it, scrolled tabs bleed through the More
+    // button area and the visual reads as "Billing 4 more" rather
+    // than a clean affordance. The `--cngx-tab-overflow-bg` and
+    // `--cngx-tab-overflow-button-bg` variable cascades drive both
+    // through the molecule's component-API surface so the bgs land
+    // at the right specificity tier without an !important shout.
+    const opaqueBackgrounds = await page.evaluate(() => {
+      const groups = document.querySelectorAll<HTMLElement>('mat-tab-group');
+      const second = groups[1];
+      if (!second) {
+        return null;
+      }
+      const overflow = second.querySelector<HTMLElement>('cngx-tab-overflow');
+      const trigger = overflow?.querySelector<HTMLElement>(
+        '.cngx-tab-overflow__trigger',
+      );
+      return {
+        host: overflow ? getComputedStyle(overflow).backgroundColor : null,
+        trigger: trigger ? getComputedStyle(trigger).backgroundColor : null,
+      };
+    });
+    // `rgba(0, 0, 0, 0)` is the transparent default — fail loud if
+    // the variable cascade regresses. Material's surface tone in the
+    // dev-app theme is `rgb(250, 249, 253)`; assert non-transparent
+    // without locking to a specific palette.
+    expect(opaqueBackgrounds?.host).not.toBe('rgba(0, 0, 0, 0)');
+    expect(opaqueBackgrounds?.trigger).not.toBe('rgba(0, 0, 0, 0)');
+
     // Open the More popover.
     await moreBtn.click();
     // Items live inside the molecule's cngxPopover panel; scope to the

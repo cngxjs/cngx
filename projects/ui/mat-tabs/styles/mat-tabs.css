@@ -139,14 +139,53 @@
   z-index: var(--cngx-mat-tabs-more-z, 2);
   display: flex;
   align-items: center;
-  background: var(
+
+  /*
+   * Drive the molecule's own component-API cascade variables. The
+   * `<cngx-tab-overflow>` :host CSS defaults `--cngx-tab-overflow-bg`
+   * to `transparent` (sensible for the cngx-native variant that sits
+   * in a flow-positioned strip wrapper), but the Material variant
+   * pins the molecule to an absolute trailing-edge position so the
+   * backgrounds MUST be opaque to mask scrolled tabs underneath. The
+   * component's :host rule reads these variables, so resolution
+   * happens at the right specificity tier without us shouting through
+   * a higher-specificity selector.
+   */
+  --cngx-tab-overflow-bg: var(
     --cngx-mat-tabs-more-bg,
     var(--mat-app-background-color, #ffffff)
   );
+  --cngx-tab-overflow-button-bg: var(
+    --cngx-mat-tabs-more-bg,
+    var(--mat-app-background-color, #ffffff)
+  );
+
   box-shadow: var(
     --cngx-mat-tabs-more-shadow,
     -8px 0 8px -4px rgba(0, 0, 0, 0.1)
   );
+}
+
+/*
+ * Auto-hide Material's pagination buttons when the cngx overflow
+ * molecule is mounted in the same header. The More popover supersedes
+ * both pagination affordances (it lists every clipped tab in one
+ * click vs. Material's "scroll one page at a time"), and the visual
+ * overlap between the trailing pagination arrow and the trailing-edge
+ * More button is unworkable. Consumers who want both visible can
+ * opt back in via theme-level CSS:
+ *
+ *   .mat-mdc-tab-header:has(cngx-tab-overflow)
+ *     .mat-mdc-tab-header-pagination {
+ *     display: revert;
+ *   }
+ *
+ * Falls back to "no-op" on browsers that do not implement `:has()`
+ * — the More button still works; pagination just remains visible
+ * (the original cngx-mat-tabs-more-plan §Out-of-Scope semantics).
+ */
+.mat-mdc-tab-header:has(cngx-tab-overflow) .mat-mdc-tab-header-pagination {
+  display: var(--cngx-mat-tabs-more-pagination-display, none);
 }
 
 /*
