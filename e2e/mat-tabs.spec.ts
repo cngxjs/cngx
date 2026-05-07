@@ -29,8 +29,23 @@ const ROUTE = '/#/ui/mat-tabs/mat-tabs-instrumentation';
 
 // Material renders the clickable tab buttons inside `MatTabHeader`
 // as `<button class="mat-mdc-tab">` siblings of the active-bar.
+// Scoped to the FIRST mat-tab-group on the demo page — the
+// instrumentation demo now ships a second mat-tab-group below for
+// the smart-overflow showcase (10 tabs in a 600px container).
 function matTabButtons(page: Page): Locator {
-  return page.locator('mat-tab-group .mat-mdc-tab');
+  return page.locator('mat-tab-group').first().locator('.mat-mdc-tab');
+}
+
+// Locator for the smart-overflow demo's mat-tab-group + the cngx More
+// affordance pinned inside its .mat-mdc-tab-header.
+function overflowTabGroup(page: Page): Locator {
+  return page.locator('mat-tab-group').nth(1);
+}
+
+function overflowMoreButton(page: Page): Locator {
+  return overflowTabGroup(page).locator(
+    '.mat-mdc-tab-header cngx-tab-overflow .cngx-tab-overflow__trigger',
+  );
 }
 
 function activeTab(page: Page): Locator {
@@ -378,18 +393,21 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     // projects/ui/mat-tabs/src/mat-tabs.directive.spec.ts axis 4.
     await page.goto(ROUTE);
     const buttons = matTabButtons(page);
-    // Demo declares 3 <mat-tab>: Profile, Account, Notifications.
+    // First demo group declares 3 <mat-tab>: Profile, Account, Notifications.
     await expect(buttons).toHaveCount(3);
 
-    // §5b — every `.mat-mdc-tab` button must be a descendant of the
-    // Material-rendered `.mat-mdc-tab-header` element. If Material
-    // moves the button into a different host (e.g. a sibling-strip
-    // refactor), the rejection-decoration + aggregator-decoration
-    // index lookups break silently. Fail loudly here instead.
+    // §5b — every `.mat-mdc-tab` button in the first group must be a
+    // descendant of the Material-rendered `.mat-mdc-tab-header`
+    // element. If Material moves the button into a different host
+    // (e.g. a sibling-strip refactor), the rejection-decoration +
+    // aggregator-decoration index lookups break silently. Fail loudly
+    // here instead.
     const buttonsLiveInTabHeader = await page.evaluate(() => {
-      const found = document.querySelectorAll<HTMLElement>(
-        'mat-tab-group .mat-mdc-tab',
-      );
+      const firstGroup = document.querySelector<HTMLElement>('mat-tab-group');
+      if (!firstGroup) {
+        return false;
+      }
+      const found = firstGroup.querySelectorAll<HTMLElement>('.mat-mdc-tab');
       if (found.length === 0) {
         return false;
       }
@@ -400,7 +418,7 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     expect(buttonsLiveInTabHeader).toBe(true);
 
     // §5a + §7 — count of `.mat-mdc-tab` buttons must match the
-    // count of registered cngx handles in the presenter. If
+    // count of registered cngx handles in the FIRST presenter. If
     // `MatTab._stateChanges` stops driving registration OR
     // `getHandleSetup`'s setupsByTab loses entries, the counts
     // diverge.
@@ -421,12 +439,94 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
           '_CngxTabGroupPresenter',
       ) as { tabs?: () => readonly unknown[] } | undefined;
       const presenterTabs = presenter?.tabs?.()?.length ?? -1;
-      const domButtons = document.querySelectorAll(
-        'mat-tab-group .mat-mdc-tab',
-      ).length;
+      const domButtons = matTabGroup.querySelectorAll('.mat-mdc-tab').length;
       return { domButtons, presenterTabs };
     });
     expect(counts.presenterTabs).toBe(3);
     expect(counts.domButtons).toBe(counts.presenterTabs);
+  });
+
+  test('(n) smart-overflow canary: under constrained viewport the cngx-tab-overflow molecule mounts inside .mat-mdc-tab-header; popover lists the trailing hidden tabs of presenter.tabs()', async ({
+    page,
+  }) => {
+    // tabs-accepted-debt §5 covers the `.mat-mdc-tab-header` mount
+    // anchor + `.mat-mdc-tab-label-container` IO root + index-based
+    // per-tab resolution. This canary catches a Material upgrade
+    // breaking ANY of those three surfaces by exercising the visible
+    // overflow flow end-to-end. Pairs with the unit-spec axes 18–21
+    // at projects/ui/mat-tabs/src/mat-tabs.directive.spec.ts.
+    await page.setViewportSize({ width: 800, height: 800 });
+    await page.goto(ROUTE);
+
+    // The smart-overflow demo lives in the second section: 10 tabs
+    // inside a 600px-wide container. Material's strip cannot fit
+    // them all → cngx-tab-overflow's More button engages.
+    await expect(overflowTabGroup(page)).toBeVisible();
+    const moreBtn = overflowMoreButton(page);
+    await expect(moreBtn).toBeVisible({ timeout: 4000 });
+
+    // Mount-anchor invariant: the cngx-tab-overflow component's
+    // rendered host element MUST be a descendant of the second
+    // mat-tab-group's .mat-mdc-tab-header — proves the directive's
+    // afterNextRender appendChild ran and resolved the right anchor.
+    const anchored = await page.evaluate(() => {
+      const groups = document.querySelectorAll<HTMLElement>('mat-tab-group');
+      const second = groups[1];
+      if (!second) {
+        return false;
+      }
+      const overflow = second.querySelector<HTMLElement>('cngx-tab-overflow');
+      if (!overflow) {
+        return false;
+      }
+      return overflow.closest('.mat-mdc-tab-header') !== null;
+    });
+    expect(anchored).toBe(true);
+
+    // Open the More popover.
+    await moreBtn.click();
+    // Items live inside the molecule's cngxPopover panel; scope to the
+    // overflow component to avoid colliding with the first demo
+    // section's own popovers (none today, but defensive).
+    const popoverItems = overflowTabGroup(page).locator(
+      'cngx-tab-overflow .cngx-tab-overflow__item',
+    );
+    await expect(popoverItems.first()).toBeVisible({ timeout: 4000 });
+    // At least 1 hidden tab — the exact count depends on viewport
+    // metrics across browsers but the demo's 10-tabs-in-600px is
+    // narrow enough that ≥1 always overflows.
+    const itemCount = await popoverItems.count();
+    expect(itemCount).toBeGreaterThan(0);
+
+    // The hidden-tabs list MUST be a contiguous trailing slice of
+    // presenter.tabs() — overflow happens at the end of the strip,
+    // never the middle.
+    const hiddenIds = await popoverItems.evaluateAll((els) =>
+      els.map((el) => el.getAttribute('data-tab-id')).filter((s): s is string => !!s),
+    );
+    const presenterTabIds = await page.evaluate(() => {
+      const groups = document.querySelectorAll<HTMLElement>('mat-tab-group');
+      const second = groups[1];
+      if (!second) {
+        return [];
+      }
+      const ng = (window as { ng?: { getDirectives(el: Element): unknown[] } })
+        .ng;
+      if (!ng) {
+        return [];
+      }
+      const dirs = ng.getDirectives(second);
+      const presenter = dirs.find(
+        (d) =>
+          (d as { constructor?: { name?: string } }).constructor?.name ===
+          '_CngxTabGroupPresenter',
+      ) as { tabs?: () => readonly { id: string }[] } | undefined;
+      return presenter?.tabs?.()?.map((t) => t.id) ?? [];
+    });
+    expect(presenterTabIds.length).toBe(10);
+    if (hiddenIds.length > 0) {
+      const trailingSlice = presenterTabIds.slice(-hiddenIds.length);
+      expect(hiddenIds).toEqual(trailingSlice);
+    }
   });
 });
