@@ -290,26 +290,15 @@ export class CngxMatTabs {
       const overflowEl = this.overflowRef.location.nativeElement as HTMLElement;
       this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
       this.renderer.appendChild(headerEl, overflowEl);
-      // `getComputedStyle` (vs `headerEl.style.position`) is intentional:
-      // Material gives `.mat-mdc-tab-header` a positioning context via
-      // its own stylesheet rule, not via inline style. An inline-style-
-      // only check would falsely classify a Material-positioned header
-      // as static and overwrite a value the user's stylesheet (or
-      // Material's CSS) is responsible for. The forced sync layout cost
-      // is one-time at directive construction and not a hot path.
-      // Browsers return 'static' for the default; jsdom returns ''.
-      // Both mean "no consumer-supplied positioning" and warrant the
-      // write — an explicit allow-list of positioned values is the
-      // portable shape across runtimes.
-      const computedPos = getComputedStyle(headerEl).position;
-      const alreadyPositioned =
-        computedPos === 'absolute' ||
-        computedPos === 'relative' ||
-        computedPos === 'fixed' ||
-        computedPos === 'sticky';
-      if (!alreadyPositioned) {
-        this.renderer.setStyle(headerEl, 'position', 'relative');
-      }
+      // No imperative positioning needed: the More button is a flex
+      // sibling of `.mat-mdc-tab-label-container` (Material's header
+      // itself is `display: flex`), so the label-container shrinks to
+      // fit and the affordance sits next to the strip rather than
+      // overlaying it. Re-enabling Material's pagination (see the
+      // `--cngx-mat-tabs-more-pagination-display` CSS var in
+      // mat-tabs.css) just adds another flex item; the IO root
+      // (label-container) shrinks accordingly and `hiddenTabs`
+      // re-derives.
     };
     afterNextRender(tryAnchor);
 

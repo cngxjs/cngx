@@ -817,13 +817,11 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(adapter.resolveTabButton(stub, labelContainer, 99)).toBeNull();
   });
 
-  test('axis 21: anchor inside .mat-mdc-tab-header + positioning context', async () => {
+  test('axis 21: anchor inside .mat-mdc-tab-header as a flex sibling of .mat-mdc-tab-label-container', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
     const { fixture } = await setupPlumbing();
-    // afterNextRender fires once per directive constructor. By the time
-    // setupPlumbing's whenStable resolves, the anchor block has run.
     const headerEl = fixture.nativeElement.querySelector(
       '.mat-mdc-tab-header',
     ) as HTMLElement;
@@ -833,64 +831,25 @@ describe('CngxMatTabs instrumentation directive', () => {
     ) as HTMLElement;
     expect(overflowEl).not.toBeNull();
 
-    // The molecule's rendered element is now a child of the header
+    // The molecule's rendered element is a direct child of the header
     // (no longer a sibling of <mat-tab-group> as it was in axis 18).
     expect(overflowEl.parentElement).toBe(headerEl);
-    // Convenience class for the sticky-end CSS skin.
+    // Convenience class for the trailing-edge CSS skin.
     expect(overflowEl.classList.contains('cngx-mat-tabs-more')).toBe(true);
-    // Header is a positioning context for the molecule's
-    // `position: absolute` skin — either Material's own CSS already
-    // set it, or the directive's idempotency block wrote
-    // 'relative' inline. Asserting via getComputedStyle covers both
-    // paths without locking the test to one implementation route.
-    const positioned = ['relative', 'absolute', 'fixed', 'sticky'];
-    expect(positioned).toContain(getComputedStyle(headerEl).position);
-  });
-
-  test('axis 21b: idempotent positioning leaves a pre-styled non-static header untouched', async () => {
-    @Component({
-      standalone: true,
-      imports: [MatTabsModule, CngxMatTabs],
-      template: `
-        <mat-tab-group cngxMatTabs [(activeIndex)]="active">
-          <mat-tab label="One">One content</mat-tab>
-          <mat-tab label="Two">Two content</mat-tab>
-        </mat-tab-group>
-      `,
-      // Consumer-style theme override placing the header as a
-      // non-static positioned context. The directive's idempotent
-      // guard reads getComputedStyle(headerEl).position; this CSS
-      // produces 'absolute' there, so the directive must NOT
-      // overwrite with 'relative'.
-      styles: [
-        `
-          :host ::ng-deep .mat-mdc-tab-header {
-            position: absolute;
-          }
-        `,
-      ],
-    })
-    class PreStyledHeaderHostCmp {
-      protected active = 0;
-    }
-
-    TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection()],
-    });
-    const fixture = TestBed.createComponent(PreStyledHeaderHostCmp);
-    fixture.detectChanges();
-    await fixture.whenStable();
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const headerEl = fixture.nativeElement.querySelector(
-      '.mat-mdc-tab-header',
+    // The molecule sits AFTER the label-container in the flex flow —
+    // the appendChild ordering controls visual placement (right of the
+    // tab list). The label-container is the IO root, so the molecule
+    // being AFTER it in DOM order matches the visual "trailing-edge
+    // affordance" intent and lets the IntersectionObserver pick up
+    // clipped tabs as the label-container shrinks to make room.
+    const labelContainerEl = headerEl.querySelector(
+      '.mat-mdc-tab-label-container',
     ) as HTMLElement;
-    expect(headerEl).not.toBeNull();
-    // Inline style stays empty — directive checked computed position
-    // (which the host CSS made 'absolute') and skipped the write.
-    expect(headerEl.style.position).toBe('');
-    expect(getComputedStyle(headerEl).position).toBe('absolute');
+    expect(labelContainerEl).not.toBeNull();
+    const headerChildren = Array.from(headerEl.children);
+    expect(headerChildren.indexOf(overflowEl)).toBeGreaterThan(
+      headerChildren.indexOf(labelContainerEl),
+    );
   });
 
   test('axis 20: directive destroy removes the mounted CngxTabOverflow from the document', async () => {
