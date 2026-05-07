@@ -66,6 +66,19 @@ async function flushMicrotasks(rounds = 5): Promise<void> {
   }
 }
 
+// Wait out the molecule's IO-debounce window plus a microtask drain
+// so the visibilityState write has committed before assertions run.
+// Real-timer based — the molecule uses setTimeout, and per
+// `feedback_afternextrender_in_zoneless_tests` we avoid mixing fake
+// timers with whenStable. CngxTabOverflow.STABILIZE_MS is 100ms;
+// 130ms gives a safety margin for jsdom timer jitter.
+async function flushStabilize(): Promise<void> {
+  await new Promise((res) => setTimeout(res, 130));
+  for (let i = 0; i < 3; i++) {
+    await Promise.resolve();
+  }
+}
+
 function installMockIntersectionObserver(): { instances: MockObserverInstance[] } {
   const instances: MockObserverInstance[] = [];
 
@@ -176,6 +189,7 @@ describe('CngxTabOverflow', () => {
       { target: buttons[2], isIntersecting: true, intersectionRatio: 0.4 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     fixture.detectChanges();
     const trigger = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__trigger',
@@ -202,6 +216,7 @@ describe('CngxTabOverflow', () => {
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     fixture.detectChanges();
     // Open the popover.
     const trigger = fixture.nativeElement.querySelector(
@@ -235,6 +250,7 @@ describe('CngxTabOverflow', () => {
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     fixture.detectChanges();
     const triggerBefore = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__trigger',
@@ -317,6 +333,7 @@ describe('CngxTabOverflow', () => {
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     TestBed.flushEffects();
     const afterFirst = runs;
 
@@ -328,6 +345,7 @@ describe('CngxTabOverflow', () => {
       { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     TestBed.flushEffects();
     const afterSecond = runs;
 
@@ -408,6 +426,7 @@ describe('CngxTabOverflow', () => {
       { target: foreignButtons[2], isIntersecting: false, intersectionRatio: 0 },
       { target: foreignButtons[3], isIntersecting: false, intersectionRatio: 0 },
     ]);
+    await flushStabilize();
     fixture.detectChanges();
 
     const trigger = fixture.nativeElement.querySelector(

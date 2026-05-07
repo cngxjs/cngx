@@ -199,6 +199,23 @@ export class CngxTabOverflow {
   // GC freely; entries auto-drop with the DOM nodes.
   private readonly targetToHandleId = new WeakMap<HTMLElement, string>();
 
+  // Quiescence window (ms) for the IO-driven visibility map. Strip
+  // animations (Material's mat-tab transition; the cngx-native
+  // active-bar slide; pagination scroll; tab-list reflow on resize)
+  // emit a burst of IntersectionObserver events through the
+  // animation's keyframes — the boolean `isIntersecting` for any
+  // particular tab can flip multiple times before settling. Without
+  // a quiescence gate, the More button's counter flickers through
+  // the intermediate states. This timer collapses bursts: every IO
+  // event resets the timer; commit happens only after `STABILIZE_MS`
+  // of silence — i.e. effectively at animation-end. The accumulated
+  // entries are replayed in arrival order so the FINAL state for
+  // each target wins (Map.set in commitPendingVisibility overwrites
+  // earlier transients per key).
+  private static readonly STABILIZE_MS = 100;
+  private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
+  private pendingEntries: IntersectionObserverEntry[] = [];
+
   constructor() {
     // Lazy-attach the IntersectionObserver. `afterNextRender` fires
     // after change-detection commits but content-projected elements
@@ -278,6 +295,11 @@ export class CngxTabOverflow {
         cancelAnimationFrame(frameHandle);
         frameHandle = null;
       }
+      if (this.stabilizeHandle !== null) {
+        clearTimeout(this.stabilizeHandle);
+        this.stabilizeHandle = null;
+      }
+      this.pendingEntries.length = 0;
       this.observer?.disconnect();
       this.observer = null;
     });
@@ -307,6 +329,28 @@ export class CngxTabOverflow {
   }
 
   private handleIntersections(entries: IntersectionObserverEntry[]): void {
+    // Buffer entries; the actual signal write happens in
+    // `commitPendingVisibility` once IO emissions go quiet for
+    // STABILIZE_MS. See the comment block on STABILIZE_MS for why.
+    for (const entry of entries) {
+      this.pendingEntries.push(entry);
+    }
+    if (this.stabilizeHandle !== null) {
+      clearTimeout(this.stabilizeHandle);
+    }
+    this.stabilizeHandle = setTimeout(
+      () => this.commitPendingVisibility(),
+      CngxTabOverflow.STABILIZE_MS,
+    );
+  }
+
+  private commitPendingVisibility(): void {
+    this.stabilizeHandle = null;
+    const entries = this.pendingEntries;
+    if (entries.length === 0) {
+      return;
+    }
+    this.pendingEntries = [];
     this.visibilityState.update((prev) => {
       const next = new Map(prev);
       for (const entry of entries) {
