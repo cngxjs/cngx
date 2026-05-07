@@ -64,16 +64,31 @@
   position: relative;
 }
 
-.cngx-mat-tab--has-errors::before {
+/*
+ * Specificity is `.mat-mdc-tab.cngx-mat-tab--has-errors` (0,2,1)
+ * to beat Material's own `.mat-focus-indicator::before` (0,1,1)
+ * which sets `inset: 0` on the same pseudo-element. Without the
+ * boost, the `top` / `inset-inline-end` declarations get collapsed
+ * to 0 by Material's later-cascade rule and the badge sits dead-
+ * centred under the focus ring instead of at the trailing-top
+ * corner. Right + transform fall back for older inset-inline-end
+ * support.
+ */
+.mat-mdc-tab.cngx-mat-tab--has-errors::before {
   content: '!';
   position: absolute;
   top: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+  right: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
   inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset, 4px);
+  inset-inline-start: auto;
+  bottom: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
   height: var(--cngx-mat-tab-has-errors-glyph-size, 16px);
+  margin: 0;
+  border: 0;
   border-radius: 50%;
   background: var(
     --cngx-mat-tab-has-errors-color,
@@ -87,6 +102,7 @@
   font-weight: var(--cngx-mat-tab-has-errors-font-weight, 700);
   line-height: 1;
   pointer-events: none;
+  z-index: 1;
 }
 
 /*
@@ -95,7 +111,8 @@
  * shift the has-errors badge slightly inward so the two signals
  * read as distinct rather than visually merging.
  */
-.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
+.mat-mdc-tab.cngx-mat-tab--error.cngx-mat-tab--has-errors::before {
   top: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
+  right: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
   inset-inline-end: var(--cngx-mat-tab-has-errors-glyph-offset-stacked, 6px);
 }
