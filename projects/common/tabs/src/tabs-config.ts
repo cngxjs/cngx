@@ -51,6 +51,18 @@ export interface CngxTabsConfig {
   readonly routerSyncParam?: string;
   readonly ariaLabels?: CngxTabsAriaLabels;
   readonly fallbackLabels?: CngxTabsFallbackLabels;
+  /**
+   * Quiescence window (ms) for `<cngx-tab-overflow>`'s
+   * IntersectionObserver-driven visibility map. Burst emissions
+   * during strip animations (Material tab transitions, cngx
+   * active-bar slide, pagination scroll) collapse to one signal
+   * write — the More button's counter only re-renders once IO has
+   * been quiet for this many ms. Library default is 100ms; raise
+   * to ~250ms for slower strip animations or content-driven reflow.
+   * The molecule's max-defer cap (250ms) caps how long a sustained
+   * burst can delay the commit regardless of this value.
+   */
+  readonly overflowStabilizeMs?: number;
 }
 
 const TABS_CONFIG_DEFAULTS: Required<
@@ -71,6 +83,7 @@ const TABS_CONFIG_DEFAULTS: Required<
     tabRoleDescription: 'tab',
     tabPanelRoleDescription: 'tab panel',
   },
+  overflowStabilizeMs: 100,
 };
 
 /**
@@ -132,6 +145,17 @@ export function withTabsFallbackLabels(
     ...cfg,
     fallbackLabels: { ...cfg.fallbackLabels, ...labels },
   });
+}
+
+/**
+ * Override `<cngx-tab-overflow>`'s IntersectionObserver-debounce
+ * window (ms). See {@link CngxTabsConfig.overflowStabilizeMs} for the
+ * full semantics. Library default is 100ms.
+ *
+ * @category interactive
+ */
+export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
+  return (cfg) => ({ ...cfg, overflowStabilizeMs: ms });
 }
 
 function resolveFeatures(

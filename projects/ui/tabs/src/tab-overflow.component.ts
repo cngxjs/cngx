@@ -18,6 +18,7 @@ import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   createDomAnchorRetry,
+  injectTabsConfig,
   injectTabsI18n,
   type CngxDomAnchorRetryHandle,
   type CngxTabHandle,
@@ -209,21 +210,28 @@ export class CngxTabOverflow {
   // particular tab can flip multiple times before settling. Without
   // a quiescence gate, the More button's counter flickers through
   // the intermediate states. This timer collapses bursts: every IO
-  // event resets the timer; commit happens only after `STABILIZE_MS`
+  // event resets the timer; commit happens only after `stabilizeMs`
   // of silence — i.e. effectively at animation-end. The accumulated
   // entries are replayed in arrival order so the FINAL state for
   // each target wins (Map.set in commitPendingVisibility overwrites
   // earlier transients per key).
-  private static readonly STABILIZE_MS = 100;
+  //
+  // `stabilizeMs` reads from `CngxTabsConfig.overflowStabilizeMs` so
+  // consumers can tune it via `withTabOverflowStabilizeMs(...)` to
+  // match their strip animation duration. Library default is 100ms.
+  private readonly stabilizeMs =
+    injectTabsConfig().overflowStabilizeMs ?? 100;
   // Hard ceiling on the quiescence-debounce window. Without this, a
-  // sustained IO churn pattern (entries arriving every <STABILIZE_MS
+  // sustained IO churn pattern (entries arriving every <stabilizeMs
   // for >MAX_DEFER_MS — momentum scrolling, continuous resize, an
   // animation that keeps Material's tab-list reflowing every frame)
   // would keep clearing the stabilize timer indefinitely. The
   // counter would freeze on a stale value the entire time, breaking
   // Pillar 2 (state-change communication must hold under sustained
   // input). MAX_DEFER_MS forces a flush regardless of further IO
-  // events once the buffer has been waiting this long.
+  // events once the buffer has been waiting this long. Hardcoded
+  // (not config-tuned) — the cap exists to bound worst-case staleness
+  // independent of any quiescence preference.
   private static readonly MAX_DEFER_MS = 250;
   private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
   private pendingEntries: IntersectionObserverEntry[] = [];
@@ -355,7 +363,7 @@ export class CngxTabOverflow {
     const maxDeferRemaining = CngxTabOverflow.MAX_DEFER_MS - elapsed;
     const wait = Math.max(
       0,
-      Math.min(CngxTabOverflow.STABILIZE_MS, maxDeferRemaining),
+      Math.min(this.stabilizeMs, maxDeferRemaining),
     );
     this.stabilizeHandle = setTimeout(
       () => this.commitPendingVisibility(),

@@ -9,6 +9,7 @@ import {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabOverflowStabilizeMs,
   withTabsRovingLoop,
   withTabsCommitMode,
   withTabsRouterSync,
@@ -150,5 +151,24 @@ describe('CngxTabsConfig', () => {
     const injector = TestBed.inject(EnvironmentInjector);
     const cfg = runInInjectionContext(injector, () => injectTabsConfig());
     expect(cfg.defaultOrientation).toBe('vertical');
+  });
+
+  it('overflowStabilizeMs defaults to 100ms', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.overflowStabilizeMs).toBe(100);
+  });
+
+  it('withTabOverflowStabilizeMs overrides the molecule debounce window', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabOverflowStabilizeMs(250)),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.overflowStabilizeMs).toBe(250);
   });
 });

@@ -24,6 +24,7 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabOverflowStabilizeMs,
   withTabsRovingLoop,
   withTabsCommitMode,
   withTabsRouterSync,
