@@ -485,6 +485,45 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.lastFailedIndex()).toBeUndefined();
   });
 
+  test('axis 14: per-handle errorAggregator slot defaults to undefined and is writable through setupsByTab', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture, presenter } = await setupPlumbing();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const directive = matEl.injector.get(CngxMatTabs);
+    const setupsByTab = (
+      directive as unknown as {
+        setupsByTab: Map<unknown, { errorAggregator: { set(v: unknown): void } }>;
+      }
+    ).setupsByTab;
+
+    // Default slot for every registered handle is `undefined` —
+    // the read-only-by-default behaviour the prior shared constant
+    // produced is preserved when no consumer binds [cngxMatTabError].
+    for (const tab of presenter.tabs()) {
+      expect(tab.errorAggregator()).toBeUndefined();
+    }
+
+    // The writable is reachable through setupsByTab so the per-tab
+    // attribute directive can pump bound aggregators into the slot.
+    const firstSetup = Array.from(setupsByTab.values())[0];
+    const fakeAggregator = { sentinel: true } as unknown;
+    firstSetup.errorAggregator.set(fakeAggregator);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[0].errorAggregator()).toBe(fakeAggregator);
+
+    // Resetting back to undefined restores the default — used by the
+    // attribute directive's destroyRef cleanup path.
+    firstSetup.errorAggregator.set(undefined);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
+  });
+
   test('axis 13: rejection decoration follows index shift — decorated element moves when lastFailedIndex changes', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

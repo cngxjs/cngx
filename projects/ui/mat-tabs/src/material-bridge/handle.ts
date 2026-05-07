@@ -1,28 +1,18 @@
-import { signal, type Signal, type WritableSignal } from '@angular/core';
+import { signal, type WritableSignal } from '@angular/core';
 import type { MatTab } from '@angular/material/tabs';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import type { CngxTabHandle } from '@cngx/common/tabs';
 
 /**
- * Shared `signal(undefined)` constant used as the `errorAggregator`
- * slot for every Material-instrumented tab handle. The instrumentation
- * path does not bind cngx error-aggregation per `MatTab` (Material's
- * own visual error surface stays authoritative), so per-tab allocation
- * of a writable signal would be dead capacity — every read returns
- * `undefined`. One module-level constant suffices for the contract.
- *
- * @internal
- */
-const NO_ERROR_AGGREGATOR: Signal<CngxErrorAggregatorContract | undefined> =
-  signal<CngxErrorAggregatorContract | undefined>(undefined).asReadonly();
-
-/**
  * Wiring bundle returned from {@link createMatTabHandle}. The
  * directive holds the writable backing signals so it can pump them
  * from `MatTab._stateChanges` whenever Material's reactive inputs
  * change at runtime; the presenter only sees the read-only contract
- * via `handle`.
+ * via `handle`. The `errorAggregator` writable is the binding target
+ * for the `[cngxMatTabError]` per-tab attribute directive — when no
+ * consumer binds an aggregator the slot stays at `undefined` and the
+ * Renderer2-driven badge effect is a no-op.
  *
  * @category material-bridge
  */
@@ -30,12 +20,16 @@ export interface CngxMatTabHandleSetup {
   readonly handle: CngxTabHandle;
   readonly label: WritableSignal<string | undefined>;
   readonly disabled: WritableSignal<boolean>;
+  readonly errorAggregator: WritableSignal<
+    CngxErrorAggregatorContract | undefined
+  >;
 }
 
 /**
  * Translates a Material `MatTab` into a cngx {@link CngxTabHandle}
  * plus the writable backing signals the directive uses to keep
- * `label` / `disabled` in sync with Material's runtime inputs.
+ * `label` / `disabled` / `errorAggregator` in sync with consumer
+ * inputs and Material's runtime inputs.
  *
  * - `id` — always a fresh `idSeed()` value. The id is an internal
  *   registry key, not a label-derived slug; a label-keyed id would
@@ -54,13 +48,14 @@ export interface CngxMatTabHandleSetup {
  *   `tabs-accepted-debt §5` (Material-private surface couplings) for
  *   the upgrade-watch and re-evaluation triggers; alongside the
  *   `.mat-mdc-tab` selector usage in `mat-tabs.directive.ts`.
- * - `errorAggregator` — points at the shared {@link NO_ERROR_AGGREGATOR}
- *   constant. The instrumentation path does not bind cngx
- *   error-aggregation per `MatTab` (Material's own visual error
- *   surface stays authoritative), so a per-tab writable signal would
- *   be dead capacity. Sharing one read-only constant across every
- *   handle keeps `presenter.tabs()[i].errorAggregator()` on the
- *   contract while saving N-per-instance allocations.
+ * - `errorAggregator` — per-handle writable signal seeded at
+ *   `undefined`. The `[cngxMatTabError]` attribute directive locates
+ *   its target in `setupsByTab` and writes the bound
+ *   `CngxErrorAggregatorContract` into this slot reactively; on
+ *   directive teardown it resets the slot to `undefined`. The
+ *   handle's public `errorAggregator` slot is the `.asReadonly()`
+ *   projection of this writable, preserving the `CngxTabHandle`
+ *   contract shape.
  *
  * @category material-bridge
  */
@@ -70,15 +65,19 @@ export function createMatTabHandle(
 ): CngxMatTabHandleSetup {
   const label = signal<string | undefined>(matTab.textLabel);
   const disabled = signal<boolean>(matTab.disabled);
+  const errorAggregator = signal<CngxErrorAggregatorContract | undefined>(
+    undefined,
+  );
   const id = idSeed();
   return {
     handle: {
       id,
       label: label.asReadonly(),
       disabled: disabled.asReadonly(),
-      errorAggregator: NO_ERROR_AGGREGATOR,
+      errorAggregator: errorAggregator.asReadonly(),
     },
     label,
     disabled,
+    errorAggregator,
   };
 }
