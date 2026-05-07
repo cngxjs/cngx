@@ -330,4 +330,39 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
       .poll(async () => await toastCards(page).count(), { timeout: 5000 })
       .toBeGreaterThanOrEqual(1);
   });
+
+  test('(l) [cngxMatTabError] surfaces .cngx-mat-tab--has-errors when a Reactive form is invalid; clears when the form becomes valid', async ({
+    page,
+  }) => {
+    await page.goto(ROUTE);
+    const buttons = matTabButtons(page);
+
+    // Profile form starts INVALID (empty + required + minLength 2)
+    // → Profile tab (idx 0) carries the has-errors badge at page load.
+    await expect(buttons.nth(0)).toHaveClass(/cngx-mat-tab--has-errors/, {
+      timeout: 4000,
+    });
+    // Account form is also invalid by default → tab 1 likewise.
+    await expect(buttons.nth(1)).toHaveClass(/cngx-mat-tab--has-errors/);
+    // Notifications has no aggregator binding → never gains the badge.
+    await expect(buttons.nth(2)).not.toHaveClass(/cngx-mat-tab--has-errors/);
+
+    // SR descriptor: the per-tab descriptor span exists and is
+    // referenced by aria-describedby. The span text comes from
+    // `aggregator.announcement()` — the consumer-supplied phrase.
+    const profileDescribedBy = await buttons
+      .nth(0)
+      .getAttribute('aria-describedby');
+    expect(profileDescribedBy).toBeTruthy();
+
+    // Fill the name to make the Profile form VALID → badge drops.
+    await buttons.nth(0).click();
+    await page.locator('input[formcontrolname="name"]').fill('Alice');
+    await expect(buttons.nth(0)).not.toHaveClass(
+      /cngx-mat-tab--has-errors/,
+      { timeout: 4000 },
+    );
+    // Account stays invalid — its badge is independent of Profile.
+    await expect(buttons.nth(1)).toHaveClass(/cngx-mat-tab--has-errors/);
+  });
 });
