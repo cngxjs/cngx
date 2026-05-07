@@ -158,6 +158,27 @@ describe('CngxTabOverflow', () => {
     stubPopoverApi();
   });
 
+  it('mounts role=menu on the popover surface, role=presentation on the <ul> (APG flattened landmark)', async () => {
+    // Pre-fix: <div cngxPopover>...<ul role="menu"><li role="menuitem">
+    // — AT reported a generic group then drilled into a separate menu
+    // landmark, doubling the depth. Post-fix: role=menu sits on the
+    // popover surface itself, <ul> is flattened via role=presentation,
+    // menuitems are direct children of the menu landmark.
+    installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const popoverSurface = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__panel',
+    ) as HTMLElement;
+    const list = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__list',
+    ) as HTMLElement;
+    expect(popoverSurface.getAttribute('role')).toBe('menu');
+    expect(list.getAttribute('role')).toBe('presentation');
+  });
+
   it('hides the More trigger when no tabs are clipped', async () => {
     installMockIntersectionObserver();
     const fixture = TestBed.createComponent(OverflowHost);
