@@ -352,9 +352,7 @@ export class CngxTabOverflow {
       this.pendingEntries.push(entry);
     }
     const now = performance.now();
-    if (this.firstPendingAt === null) {
-      this.firstPendingAt = now;
-    }
+    this.firstPendingAt ??= now;
     if (this.stabilizeHandle !== null) {
       clearTimeout(this.stabilizeHandle);
     }
