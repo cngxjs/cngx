@@ -39,7 +39,9 @@ export {
   CNGX_TABS_I18N,
   injectTabsI18n,
   provideTabsI18n,
+  withTabsI18nLabels,
   type CngxTabsI18n,
+  type CngxTabsI18nFeature,
 } from './src/i18n/tabs-i18n';
 export {
   createTabsCommitHandler,

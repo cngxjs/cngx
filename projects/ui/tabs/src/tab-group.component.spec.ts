@@ -14,6 +14,7 @@ import {
   provideTabsI18n,
   withDefaultOrientation,
   withTabsAriaLabels,
+  withTabsI18nLabels,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
 
@@ -661,7 +662,7 @@ describe('CngxTabGroup organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({ tabsLabel: 'Reiter' }),
+        provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Reiter' })),
       ],
     });
     @Component({
