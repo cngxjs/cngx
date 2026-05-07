@@ -339,6 +339,86 @@ describe('CngxTabOverflow', () => {
     expect(afterSecond).toBe(afterFirst);
   });
 
+  it('handles foreign-id button schemes via target→handle id mapping (Material-style ids)', async () => {
+    // Regression fence for the smart-overflow-on-Material flow.
+    // Material renders tab buttons with ids like `mat-tab-group-1-label-N`,
+    // NOT the cngx-native `${handle.id}-header` convention. The
+    // molecule's IO-callback used to recover the cngx handle id by
+    // string-stripping the `-header` suffix from `target.id`; that
+    // failed for Material because the foreign ids carry no `-header`
+    // suffix and don't match any cngx handle. The fix keys the
+    // visibility map via a target→handle id WeakMap populated at
+    // observe time. This axis pins that contract by simulating a
+    // custom adapter that returns buttons whose DOM ids deliberately
+    // do NOT correlate to the cngx handle ids — the popover must
+    // still surface the right hidden tabs.
+    const { instances } = installMockIntersectionObserver();
+    const customStrip = document.createElement('div');
+    customStrip.className = 'custom-overflow-strip';
+    document.body.appendChild(customStrip);
+
+    // Pre-create 4 buttons with foreign-scheme ids, in registration
+    // order, that the custom adapter will hand back via positional
+    // index (Material-style resolution).
+    const foreignButtons: HTMLButtonElement[] = ['alpha', 'bravo', 'charlie', 'delta'].map(
+      (codeName) => {
+        const btn = document.createElement('button');
+        btn.id = `foreign-scheme-${codeName}`;
+        customStrip.appendChild(btn);
+        return btn;
+      },
+    );
+
+    const customAdapter = {
+      resolveStripRoot: () => customStrip,
+      resolveTabButton: (
+        _handle: unknown,
+        _root: HTMLElement,
+        idx: number,
+      ): HTMLElement | null => foreignButtons[idx] ?? null,
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        {
+          provide: CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+          useValue: () => customAdapter,
+        },
+      ],
+    });
+    stubPopoverApi();
+
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+
+    const observer = instances[0];
+    expect(observer).toBeDefined();
+    // Mark trailing 2 buttons as fully clipped — the IO entry's
+    // target.id is `foreign-scheme-charlie` / `-delta`, which has
+    // no relationship to the cngx handle ids of the 'C' / 'D' tabs
+    // (those are nextUid-generated). Without the WeakMap fix, the
+    // molecule would key the visibility map by the foreign ids and
+    // hiddenTabs() would find zero matches.
+    observer.fire([
+      { target: foreignButtons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: foreignButtons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: foreignButtons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: foreignButtons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLElement;
+    expect(trigger.hidden).toBe(false);
+    expect(trigger.textContent?.trim()).toMatch(/2 more/);
+
+    customStrip.remove();
+  });
+
   it('delegates DOM resolution to the injected adapter (cascade axis — default vs override)', async () => {
     // The default `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` mirrors the
     // cngx-native selector contract, so the existing axes already

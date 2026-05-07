@@ -180,6 +180,16 @@ export class CngxTabOverflow {
   );
 
   private observer: IntersectionObserver | null = null;
+  // Maps an observed DOM target back to the cngx handle id whose
+  // visibility it represents. Populated in `observeCurrentTabs` (where
+  // we already have both the target and the handle in scope), read in
+  // `handleIntersections`. Decouples the molecule from any specific
+  // DOM-id convention — cngx-native renders buttons with id
+  // `${handle.id}-header`; Material owns the rendered DOM and uses
+  // `mat-tab-group-N-label-M`. Either flow works as long as the
+  // adapter resolves the right element. WeakMap so detached buttons
+  // GC freely; entries auto-drop with the DOM nodes.
+  private readonly targetToHandleId = new WeakMap<HTMLElement, string>();
 
   constructor() {
     // Lazy-attach the IntersectionObserver. `afterNextRender` fires
@@ -282,6 +292,7 @@ export class CngxTabOverflow {
     for (let idx = 0; idx < tabs.length; idx++) {
       const button = this.adapter.resolveTabButton(tabs[idx], root, idx);
       if (button) {
+        this.targetToHandleId.set(button, tabs[idx].id);
         this.observer.observe(button);
       }
     }
@@ -292,10 +303,14 @@ export class CngxTabOverflow {
       const next = new Map(prev);
       for (const entry of entries) {
         const target = entry.target as HTMLElement;
-        const headerId = target.id;
-        const tabId = headerId.endsWith('-header')
-          ? headerId.slice(0, -'-header'.length)
-          : headerId;
+        const tabId = this.targetToHandleId.get(target);
+        if (tabId === undefined) {
+          // Unknown target — possible during a tabs-list churn between
+          // observer.disconnect() and the next observeCurrentTabs(),
+          // or for a target observed by a stale registration. Skip
+          // rather than mis-key the visibility map.
+          continue;
+        }
         // threshold: 0 — any visible pixel = "in the strip". A
         // partially-clipped tab stays out of the dropdown; only
         // fully-clipped entries surface as "hidden".
