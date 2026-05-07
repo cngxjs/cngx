@@ -1,8 +1,10 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   ElementRef,
@@ -17,7 +19,10 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
+  CngxTabOverflowItem,
+  CngxTabOverflowTrigger,
   createDomAnchorRetry,
+  createTabOverflowTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
   type CngxDomAnchorRetryHandle,
@@ -75,6 +80,7 @@ function mapBoolEqual(
   return true;
 }
 
+
 /**
  * Opt-in overflow indicator for `<cngx-tab-group>`. Detects tab
  * buttons that have scrolled out of the strip viewport (or never
@@ -106,7 +112,7 @@ function mapBoolEqual(
   exportAs: 'cngxTabOverflow',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxPopover, CngxPopoverTrigger],
+  imports: [NgTemplateOutlet, CngxPopover, CngxPopoverTrigger],
   templateUrl: './tab-overflow.component.html',
   styleUrls: ['./tab-overflow.component.css'],
   host: {
@@ -190,6 +196,29 @@ export class CngxTabOverflow {
   // identity-different but length-equal value (flicker prevention).
   protected readonly hiddenCount = computed(() => this.hiddenTabs().length);
 
+  // Resolved tabs config — read once at construction so downstream
+  // field-init reads (`stabilizeMs`, `maxDeferMs`, `templates`) all
+  // see the same snapshot. Declared here ahead of those fields
+  // because TypeScript class fields execute in declaration order.
+  private readonly tabsConfig = injectTabsConfig();
+
+  // Family-standard 3-stage template cascade — per-instance
+  // directive > config.templates.overflow* > built-in markup. The
+  // `contentChild` queries must be field-direct initializers per
+  // Angular's compile-time contract; the factory absorbs the
+  // resolution + context-builder logic so the organism stays under
+  // the 180-LOC class-body guard.
+  private readonly triggerSlot = contentChild(CngxTabOverflowTrigger);
+  private readonly itemSlot = contentChild(CngxTabOverflowItem);
+  protected readonly templates = createTabOverflowTemplateBindings({
+    triggerSlot: this.triggerSlot,
+    itemSlot: this.itemSlot,
+    config: this.tabsConfig,
+    hiddenCount: this.hiddenCount,
+    hiddenTabs: this.hiddenTabs,
+    pickTab: (tab) => this.pickTab(tab),
+  });
+
   private observer: IntersectionObserver | null = null;
   // Maps an observed DOM target back to the cngx handle id whose
   // visibility it represents. Populated in `observeCurrentTabs` (where
@@ -221,10 +250,10 @@ export class CngxTabOverflow {
   // `withTabOverflowMaxDeferMs(...)` to match their strip animation
   // duration and freshness contract. Library defaults: 100ms
   // quiescence, 250ms max-defer ceiling. Field-init reads — the
-  // resolved config is captured once at construction; runtime config
+  // resolved config is captured once at construction (see
+  // `tabsConfig` above for the canonical snapshot); runtime config
   // swaps would require a re-instantiation regardless because
   // IntersectionObserver attachment is one-shot.
-  private readonly tabsConfig = injectTabsConfig();
   private readonly stabilizeMs = this.tabsConfig.overflowStabilizeMs ?? 100;
   // Hard ceiling on the quiescence-debounce window. Without this, a
   // sustained IO churn pattern (entries arriving every <stabilizeMs

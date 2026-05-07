@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CngxTab,
+  CngxTabOverflowItem,
+  CngxTabOverflowTrigger,
   provideTabsConfig,
   withTabOverflowMaxDeferMs,
   type CngxTabOverflowDomAdapter,
@@ -671,5 +673,147 @@ describe('CngxTabOverflow', () => {
     expect(indices).toEqual([0, 1, 2, 3]);
 
     customStrip.remove();
+  });
+
+  describe('template-cascade slot directives', () => {
+    @Component({
+      standalone: true,
+      imports: [
+        CngxTabGroup,
+        CngxTab,
+        CngxTabOverflow,
+        CngxTabOverflowTrigger,
+        CngxTabOverflowItem,
+      ],
+      template: `
+        <cngx-tab-group aria-label="Per-instance host">
+          @for (label of labels(); track label) {
+            <div cngxTab [label]="label"></div>
+          }
+          <cngx-tab-overflow>
+            <ng-template
+              cngxTabOverflowTrigger
+              let-count
+              let-hidden="hiddenTabs"
+            >
+              <span class="instance-trigger">
+                INST(#{{ count }} | first={{ hidden[0]?.id ?? 'none' }})
+              </span>
+            </ng-template>
+            <ng-template cngxTabOverflowItem let-tab let-index="index">
+              <span class="instance-item">
+                INST({{ index }}:{{ tab.id }})
+              </span>
+            </ng-template>
+          </cngx-tab-overflow>
+        </cngx-tab-group>
+      `,
+    })
+    class PerInstanceHost {
+      readonly labels = signal(['A', 'B', 'C', 'D']);
+    }
+
+    it('per-instance *cngxTabOverflowTrigger / *cngxTabOverflowItem win the cascade', async () => {
+      installMockIntersectionObserver();
+      stubPopoverApi();
+      const fixture = TestBed.createComponent(PerInstanceHost);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      const overflow = fixture.debugElement.query(
+        (el) => el.componentInstance instanceof CngxTabOverflow,
+      ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+      // Pull a real tab id from the molecule's panel-host registry —
+      // CngxTab auto-generates ids; hardcoding 'A'/'B' would not match.
+      const realIds = (
+        overflow as unknown as {
+          panelHost: { tabs: () => readonly { id: string }[] };
+        }
+      ).panelHost.tabs().map((t) => t.id);
+      const targetId = realIds[1];
+
+      // Force a hidden state by writing the visibility map directly —
+      // bypasses IO-debounce timing and pins the cascade contract
+      // independent of intersection observer plumbing.
+      (
+        overflow as unknown as {
+          visibilityState: {
+            update: (
+              fn: (
+                prev: ReadonlyMap<string, boolean>,
+              ) => ReadonlyMap<string, boolean>,
+            ) => void;
+          };
+        }
+      ).visibilityState.update(() => new Map([[targetId, false]]));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      const triggerHtml = (
+        fixture.nativeElement.querySelector(
+          '.cngx-tab-overflow__trigger',
+        ) as HTMLElement
+      ).innerHTML;
+      expect(triggerHtml).toContain(`INST(#1 | first=${targetId})`);
+      const itemHtml = (
+        fixture.nativeElement.querySelector(
+          '.cngx-tab-overflow__item',
+        ) as HTMLElement
+      ).innerHTML;
+      expect(itemHtml).toContain(`INST(0:${targetId})`);
+    });
+
+    // Middle-tier (config) cascade is covered by the factory-level
+    // spec at projects/common/tabs/src/overflow/overflow-template-cascade.spec.ts —
+    // reproducing the TemplateRef-through-config integration here adds
+    // jsdom plumbing complexity without proving anything beyond what
+    // the factory spec already pins. Per-instance + default tiers stay
+    // covered as integration axes because they touch the molecule's
+    // template path directly.
+
+    it('falls through to the default built-in label when neither tier supplies a template', async () => {
+      installMockIntersectionObserver();
+      stubPopoverApi();
+      const fixture = TestBed.createComponent(OverflowHost);
+      fixture.detectChanges();
+      await flushMicrotasks();
+
+      const overflow = fixture.debugElement.query(
+        (el) => el.componentInstance instanceof CngxTabOverflow,
+      ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+      const realIds = (
+        overflow as unknown as {
+          panelHost: { tabs: () => readonly { id: string }[] };
+        }
+      ).panelHost.tabs().map((t) => t.id);
+
+      (
+        overflow as unknown as {
+          visibilityState: {
+            update: (
+              fn: (
+                prev: ReadonlyMap<string, boolean>,
+              ) => ReadonlyMap<string, boolean>,
+            ) => void;
+          };
+        }
+      ).visibilityState.update(() => new Map([[realIds[3], false]]));
+      TestBed.flushEffects();
+      fixture.detectChanges();
+
+      // Default branch — built-in span renders the i18n moreTabsLabel
+      // (English library default `${count} more`). The exact phrasing
+      // is brittle to lock; assert the fallback fired by checking for
+      // the EN keyword `more` and absence of any consumer-template
+      // markers.
+      const triggerHtml = (
+        fixture.nativeElement.querySelector(
+          '.cngx-tab-overflow__trigger',
+        ) as HTMLElement
+      ).innerHTML.toLowerCase();
+      expect(triggerHtml).toMatch(/\bmore\b/);
+      expect(triggerHtml).not.toContain('inst(');
+      expect(triggerHtml).not.toContain('cfg(');
+    });
   });
 });

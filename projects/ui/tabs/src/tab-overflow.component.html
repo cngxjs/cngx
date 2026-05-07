@@ -7,7 +7,14 @@
   [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
   (click)="overflowPopover.toggle()"
 >
-  {{ i18n.moreTabsLabel(hiddenCount()) }}
+  @let triggerTpl = templates.triggerTemplate();
+  @if (triggerTpl) {
+    <ng-container
+      *ngTemplateOutlet="triggerTpl; context: templates.triggerContext()"
+    />
+  } @else {
+    {{ i18n.moreTabsLabel(hiddenCount()) }}
+  }
 </button>
 
 <div
@@ -18,7 +25,7 @@
   panelClass="cngx-tab-overflow__panel-surface"
 >
   <ul class="cngx-tab-overflow__list" role="menu">
-    @for (tab of hiddenTabs(); track tab.id) {
+    @for (tab of hiddenTabs(); track tab.id; let i = $index) {
       <li
         role="menuitem"
         class="cngx-tab-overflow__item"
@@ -26,7 +33,14 @@
         [attr.aria-disabled]="tab.disabled() ? 'true' : 'false'"
         (click)="!tab.disabled() && pickTab(tab)"
       >
-        {{ tab.label() ?? tab.id }}
+        @let itemTpl = templates.itemTemplate();
+        @if (itemTpl) {
+          <ng-container
+            *ngTemplateOutlet="itemTpl; context: templates.buildItemContext(tab, i)"
+          />
+        } @else {
+          {{ tab.label() ?? tab.id }}
+        }
       </li>
     }
   </ul>

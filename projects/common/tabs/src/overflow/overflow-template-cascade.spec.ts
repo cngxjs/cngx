@@ -1,0 +1,159 @@
+import {
+  Component,
+  provideZonelessChangeDetection,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import type { CngxTabHandle } from '../tab-group-host.token';
+import type { CngxTabsConfig } from '../tabs-config';
+import {
+  createTabOverflowTemplateBindings,
+  type CngxTabOverflowTemplateBindings,
+} from './overflow-template-cascade';
+import {
+  CngxTabOverflowItem,
+  type CngxTabOverflowItemContext,
+} from './tab-overflow-item.directive';
+import {
+  CngxTabOverflowTrigger,
+  type CngxTabOverflowTriggerContext,
+} from './tab-overflow-trigger.directive';
+
+@Component({
+  standalone: true,
+  template: `
+    <ng-template #trig let-count>trigger:{{ count }}</ng-template>
+    <ng-template #itm let-tab>item:{{ tab.id }}</ng-template>
+  `,
+})
+class TemplateHarness {
+  @ViewChild('trig', { static: true })
+  trig!: TemplateRef<CngxTabOverflowTriggerContext>;
+  @ViewChild('itm', { static: true })
+  itm!: TemplateRef<CngxTabOverflowItemContext>;
+}
+
+interface FakeHandle {
+  readonly id: string;
+  readonly disabled: () => boolean;
+}
+
+function makeHandle(id: string, disabled = false): CngxTabHandle {
+  return {
+    id,
+    label: () => id,
+    disabled: () => disabled,
+    errorAggregator: () => null,
+  } as unknown as CngxTabHandle;
+}
+
+describe('createTabOverflowTemplateBindings', () => {
+  let triggerTpl: TemplateRef<CngxTabOverflowTriggerContext>;
+  let itemTpl: TemplateRef<CngxTabOverflowItemContext>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(TemplateHarness);
+    fixture.detectChanges();
+    triggerTpl = fixture.componentInstance.trig;
+    itemTpl = fixture.componentInstance.itm;
+  });
+
+  function build(
+    overrides: Partial<{
+      triggerSlot: CngxTabOverflowTrigger | undefined;
+      itemSlot: CngxTabOverflowItem | undefined;
+      config: CngxTabsConfig;
+      tabs: readonly FakeHandle[];
+      pickTab: (tab: CngxTabHandle) => void;
+    }> = {},
+  ): CngxTabOverflowTemplateBindings {
+    const tabs = (overrides.tabs ?? [makeHandle('A')]) as readonly CngxTabHandle[];
+    return createTabOverflowTemplateBindings({
+      triggerSlot: signal(overrides.triggerSlot).asReadonly(),
+      itemSlot: signal(overrides.itemSlot).asReadonly(),
+      config: overrides.config ?? {},
+      hiddenCount: signal(tabs.length).asReadonly(),
+      hiddenTabs: signal(tabs).asReadonly(),
+      pickTab: overrides.pickTab ?? (() => {}),
+    });
+  }
+
+  it('per-instance directive wins over config tier', () => {
+    const slotDir = { templateRef: triggerTpl } as CngxTabOverflowTrigger;
+    const cfgTpl = {} as TemplateRef<CngxTabOverflowTriggerContext>;
+    const bindings = build({
+      triggerSlot: slotDir,
+      config: { templates: { overflowTrigger: cfgTpl } },
+    });
+    expect(bindings.triggerTemplate()).toBe(triggerTpl);
+  });
+
+  it('config tier wins when no per-instance directive is set', () => {
+    const bindings = build({
+      config: {
+        templates: {
+          overflowTrigger: triggerTpl,
+          overflowItem: itemTpl,
+        },
+      },
+    });
+    expect(bindings.triggerTemplate()).toBe(triggerTpl);
+    expect(bindings.itemTemplate()).toBe(itemTpl);
+  });
+
+  it('returns null when neither tier supplies a template (default-fallback signal)', () => {
+    const bindings = build({});
+    expect(bindings.triggerTemplate()).toBeNull();
+    expect(bindings.itemTemplate()).toBeNull();
+  });
+
+  it('triggerContext is structural-equal — stable identity across no-op re-derivations', () => {
+    const tabs = [makeHandle('A')] as readonly CngxTabHandle[];
+    const hiddenCount = signal(1);
+    const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
+    const bindings = createTabOverflowTemplateBindings({
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
+        undefined,
+      ).asReadonly(),
+      itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
+      config: {},
+      hiddenCount: hiddenCount.asReadonly(),
+      hiddenTabs: hiddenTabs.asReadonly(),
+      pickTab: () => {},
+    });
+    const ctx1 = bindings.triggerContext();
+    // Re-emit `hiddenTabs` with the same reference and re-read count.
+    hiddenTabs.set(tabs);
+    const ctx2 = bindings.triggerContext();
+    // Same reference identity — structural-equal short-circuited.
+    expect(ctx2).toBe(ctx1);
+  });
+
+  it('buildItemContext invokes pickTab(tab) when context.pick() is called', () => {
+    const calls: string[] = [];
+    const tab = makeHandle('B', false);
+    const bindings = build({ pickTab: (t) => calls.push(t.id) });
+    const ctx = bindings.buildItemContext(tab, 2);
+    expect(ctx.tab).toBe(tab);
+    expect(ctx.$implicit).toBe(tab);
+    expect(ctx.index).toBe(2);
+    expect(ctx.disabled).toBe(false);
+    ctx.pick();
+    expect(calls).toEqual(['B']);
+  });
+
+  it('buildItemContext.disabled mirrors tab.disabled() at the build moment', () => {
+    const tab = makeHandle('C', true);
+    const bindings = build({});
+    const ctx = bindings.buildItemContext(tab, 0);
+    expect(ctx.disabled).toBe(true);
+  });
+});
+

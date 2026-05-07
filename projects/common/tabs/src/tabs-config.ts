@@ -4,7 +4,11 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type Provider,
+  type TemplateRef,
 } from '@angular/core';
+
+import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.directive';
+import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
 
 /**
  * Aria-label overrides for the tab-group landmark region. Library
@@ -33,6 +37,22 @@ export interface CngxTabsAriaLabels {
 export interface CngxTabsFallbackLabels {
   readonly tabRoleDescription?: string;
   readonly tabPanelRoleDescription?: string;
+}
+
+/**
+ * App-wide template overrides for `<cngx-tab-overflow>` regions.
+ * Sit in the middle tier of the family-standard 3-stage cascade:
+ * per-instance `*cngxTabOverflowTrigger` / `*cngxTabOverflowItem`
+ * directive (instance Input) > this `templates` field (root /
+ * viewProviders) > the molecule's built-in markup (default). Apply
+ * via {@link withTabOverflowTriggerTemplate} /
+ * {@link withTabOverflowItemTemplate}.
+ *
+ * @category interactive
+ */
+export interface CngxTabsTemplates {
+  readonly overflowTrigger?: TemplateRef<CngxTabOverflowTriggerContext>;
+  readonly overflowItem?: TemplateRef<CngxTabOverflowItemContext>;
 }
 
 /**
@@ -80,13 +100,20 @@ export interface CngxTabsConfig {
    * staleness* cap.
    */
   readonly overflowMaxDeferMs?: number;
+  /**
+   * App-wide template overrides for `<cngx-tab-overflow>` regions.
+   * Middle tier of the family-standard 3-stage cascade. See
+   * {@link CngxTabsTemplates}.
+   */
+  readonly templates?: CngxTabsTemplates;
 }
 
 const TABS_CONFIG_DEFAULTS: Required<
-  Omit<CngxTabsConfig, 'ariaLabels' | 'fallbackLabels'>
+  Omit<CngxTabsConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
 > & {
   ariaLabels: CngxTabsAriaLabels;
   fallbackLabels: CngxTabsFallbackLabels;
+  templates: CngxTabsTemplates;
 } = {
   defaultOrientation: 'horizontal',
   defaultLoop: true,
@@ -107,6 +134,7 @@ const TABS_CONFIG_DEFAULTS: Required<
   },
   overflowStabilizeMs: 100,
   overflowMaxDeferMs: 250,
+  templates: {},
 };
 
 /**
@@ -228,6 +256,48 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     overflowMaxDeferMs: ms,
+  }));
+}
+
+/**
+ * App-wide template override for the `<cngx-tab-overflow>` More-button
+ * label. Middle tier of the 3-stage cascade — projected as the
+ * default when no per-instance `*cngxTabOverflowTrigger` directive is
+ * present. Per-instance still wins.
+ *
+ * @example
+ * ```ts
+ * @ViewChild('moreTrigger', { static: true, read: TemplateRef })
+ * moreTrigger!: TemplateRef<CngxTabOverflowTriggerContext>;
+ *
+ * providers: [provideTabsConfig(withTabOverflowTriggerTemplate(this.moreTrigger))]
+ * ```
+ *
+ * @category interactive
+ */
+export function withTabOverflowTriggerTemplate(
+  template: TemplateRef<CngxTabOverflowTriggerContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, overflowTrigger: template },
+  }));
+}
+
+/**
+ * App-wide template override for each row inside the
+ * `<cngx-tab-overflow>` popover. Middle tier of the 3-stage cascade —
+ * projected as the default when no per-instance
+ * `*cngxTabOverflowItem` directive is present. Per-instance still wins.
+ *
+ * @category interactive
+ */
+export function withTabOverflowItemTemplate(
+  template: TemplateRef<CngxTabOverflowItemContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, overflowItem: template },
   }));
 }
 
