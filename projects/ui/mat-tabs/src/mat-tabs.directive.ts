@@ -138,7 +138,7 @@ export class CngxMatTabs {
   // host-template's view container parent, NOT this element's
   // injector — and `inject(CNGX_TAB_PANEL_HOST)` inside the molecule
   // would NG0201.
-  protected readonly overflowRef: ComponentRef<CngxTabOverflow> = inject(
+  private readonly overflowRef: ComponentRef<CngxTabOverflow> = inject(
     ViewContainerRef,
   ).createComponent(CngxTabOverflow, { injector: this.injector });
 
@@ -252,39 +252,55 @@ export class CngxMatTabs {
     // `.mat-mdc-tab-header` so the More button pins to the trailing
     // edge of the strip. Same hook (`afterNextRender`) the aggregator-
     // decoration projector uses for one-shot post-render DOM writes.
-    // The host-template's `MatTabHeader` may not have committed its
-    // children yet when the directive constructor runs, but by this
-    // callback the rendered button list and the header element are
-    // both present.
     //
-    // Idempotent positioning: only set `position: relative` when the
-    // header's computed position is `static` (Material's default).
-    // Consumers who already gave the header non-static positioning via
-    // their own theme keep their value — we don't trample.
-    afterNextRender(() => {
+    // Retry loop symmetrical to `CngxTabOverflow`'s rAF attach budget:
+    // when the consumer wraps `<mat-tab-group>` in a deferred `*ngIf`
+    // / `@defer` block, the header may not have rendered on the first
+    // afterNextRender frame. Re-schedule via the same hook (passing
+    // `injector` because the second invocation is no longer in the
+    // constructor's injection context) up to MAX_ANCHOR_ATTEMPTS. The
+    // ceiling matches the aggregator-decoration retry cap (5) — well
+    // above any normal Material render lag, low enough to dev-warn
+    // promptly when the consumer DOM never materialises.
+    const MAX_ANCHOR_ATTEMPTS = 5;
+    let anchorAttempts = 0;
+    const tryAnchor = (): void => {
       const headerEl = this.hostEl.querySelector<HTMLElement>(
         '.mat-mdc-tab-header',
       );
       if (!headerEl) {
-        if (isDevMode()) {
-          console.warn(
-            '[CngxMatTabs] Could not anchor <cngx-tab-overflow> — ' +
-              '.mat-mdc-tab-header was not found inside the host. ' +
-              'The More popover will fall back to a sibling-of-' +
-              '<mat-tab-group> position; verify Material rendered the ' +
-              'strip.',
-          );
+        anchorAttempts++;
+        if (anchorAttempts >= MAX_ANCHOR_ATTEMPTS) {
+          if (isDevMode()) {
+            console.warn(
+              '[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ' +
+                `${MAX_ANCHOR_ATTEMPTS} attempts — .mat-mdc-tab-header ` +
+                'was not found inside the host. The More popover will ' +
+                'fall back to a sibling-of-<mat-tab-group> position; ' +
+                'verify Material rendered the strip (e.g. consumer is ' +
+                'not gating <mat-tab-group> behind a never-true ' +
+                '*ngIf / @defer).',
+            );
+          }
+          return;
         }
+        afterNextRender(tryAnchor, { injector: this.injector });
         return;
       }
       const overflowEl = this.overflowRef.location.nativeElement as HTMLElement;
       this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
       this.renderer.appendChild(headerEl, overflowEl);
-      // Only set when the header is NOT already a positioning context.
+      // `getComputedStyle` (vs `headerEl.style.position`) is intentional:
+      // Material gives `.mat-mdc-tab-header` a positioning context via
+      // its own stylesheet rule, not via inline style. An inline-style-
+      // only check would falsely classify a Material-positioned header
+      // as static and overwrite a value the user's stylesheet (or
+      // Material's CSS) is responsible for. The forced sync layout cost
+      // is one-time at directive construction and not a hot path.
       // Browsers return 'static' for the default; jsdom returns ''.
       // Both mean "no consumer-supplied positioning" and warrant the
-      // write. An explicit allow-list of positioned values (rather than
-      // an exact 'static' match) is the portable shape across runtimes.
+      // write — an explicit allow-list of positioned values is the
+      // portable shape across runtimes.
       const computedPos = getComputedStyle(headerEl).position;
       const alreadyPositioned =
         computedPos === 'absolute' ||
@@ -294,7 +310,8 @@ export class CngxMatTabs {
       if (!alreadyPositioned) {
         this.renderer.setStyle(headerEl, 'position', 'relative');
       }
-    });
+    };
+    afterNextRender(tryAnchor);
 
     createMaterialBidirectionalSync({
       presenterIndex: this.presenter.activeIndex,
