@@ -47,6 +47,12 @@ export {
   type CngxTabsCommitHandlerFactory,
   type CngxTabsCommitHandlerOptions,
 } from './src/commit-handler';
+export {
+  CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+  createCngxTabOverflowDefaultDomAdapter,
+  type CngxTabOverflowDomAdapter,
+  type CngxTabOverflowDomAdapterFactory,
+} from './src/overflow/dom-adapter';
 
 // Organism helpers — extracted from the Level-4 organism shells so
 // the same shape can be reused (`<cngx-tab-group>` today; future
