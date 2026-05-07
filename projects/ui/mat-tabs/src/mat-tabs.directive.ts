@@ -489,15 +489,20 @@ export class CngxMatTabs {
   }
 
   /**
-   * Look up the {@link CngxMatTabHandleSetup} for a given `MatTab`.
-   * Returns `undefined` when the tab has not been registered yet
-   * (the directive's `contentChildren(MatTab)` query lands during
-   * Angular's content-init pass, so a same-microtask injection from
-   * a per-tab attribute directive can race the registration). The
-   * `[cngxMatTabError]` directive uses this to reach the per-handle
-   * `errorAggregator` writable; race-recovery happens by tracking
+   * Look up the per-handle `errorAggregator` writable slot for a
+   * given `MatTab`. Returns `undefined` when the tab has not been
+   * registered yet (the directive's `contentChildren(MatTab)` query
+   * lands during Angular's content-init pass, so a same-microtask
+   * injection from a per-tab attribute directive can race the
+   * registration). The `[cngxMatTabError]` directive uses this to
+   * reach the per-handle slot; race-recovery happens by tracking
    * `presenter.tabs()` in the consumer's effect so a later sync tick
    * re-attempts the lookup.
+   *
+   * Return type is narrowed to `Pick<CngxMatTabHandleSetup,
+   * 'errorAggregator'>` — the rest of the setup (handle, label,
+   * disabled writables) is internal bookkeeping the directive owns
+   * and should not leak through this access path.
    *
    * @internal — exposed for the in-library `[cngxMatTabError]`
    * directive only. Public consumers should bind `[cngxMatTabError]`
@@ -505,7 +510,9 @@ export class CngxMatTabs {
    * Re-evaluate when ≥1 documented external consumer needs the
    * per-handle setup directly.
    */
-  getHandleSetup(matTab: MatTab): CngxMatTabHandleSetup | undefined {
+  getHandleSetup(
+    matTab: MatTab,
+  ): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined {
     return this.setupsByTab.get(matTab);
   }
 }

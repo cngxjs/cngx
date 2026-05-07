@@ -83,10 +83,12 @@ decoration.
 
 ## Per-tab error aggregation
 
-`[cngxMatTabError]` binds a `CngxErrorAggregatorContract` (or a
-`Signal<CngxErrorAggregatorContract | undefined>`) to a single
-`<mat-tab>`. When the bound aggregator's `shouldShow()` flips `true`
-the matching Material tab button gains:
+`[cngxMatTabError]` binds a `CngxErrorAggregatorContract` to a
+single `<mat-tab>`. The contract carries its own reactive surface
+(`shouldShow`, `announcement` are Signals); consumers pass the
+aggregator instance directly — no outer Signal wrapper required.
+When the bound aggregator's `shouldShow()` flips `true` the
+matching Material tab button gains:
 
 - A `cngx-mat-tab--has-errors` class — visual badge (`!` glyph at
   the trailing-top corner of the button).

@@ -37,7 +37,16 @@ import { CngxMatTabs } from './mat-tabs.directive';
  * `undefined` so the slot stays clean — pattern reference per
  * `feedback_bridge_input_not_required` (no required-input on
  * attribute-shaped bridges; empty-string normalisation is the
- * defensive default).
+ * defensive default). Divergence-by-design vs the cngx-native
+ * `[cngxTab] [errorAggregator]` sibling at
+ * `projects/common/tabs/src/tab.directive.ts:45` — that input
+ * lives on a property-binding-only directive (`[cngxTab]`
+ * declares structural surface; `[errorAggregator]` is its data
+ * input), so a bare attribute is not a reachable misuse. The
+ * Material variant attaches `[cngxMatTabError]` directly to a
+ * Material-owned `<mat-tab>` element where any developer can
+ * type the attribute name without the brackets, so the
+ * defensive transform earns its place here only.
  *
  * Locates its target via {@link CngxMatTabs.getHandleSetup} —
  * `setupsByTab` registry keyed by `MatTab` instance, populated by
