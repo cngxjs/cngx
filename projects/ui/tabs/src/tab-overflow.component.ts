@@ -216,23 +216,26 @@ export class CngxTabOverflow {
   // each target wins (Map.set in commitPendingVisibility overwrites
   // earlier transients per key).
   //
-  // `stabilizeMs` reads from `CngxTabsConfig.overflowStabilizeMs` so
-  // consumers can tune it via `withTabOverflowStabilizeMs(...)` to
-  // match their strip animation duration. Library default is 100ms.
-  private readonly stabilizeMs =
-    injectTabsConfig().overflowStabilizeMs ?? 100;
+  // Both timing knobs read from the resolved `CngxTabsConfig` so
+  // consumers can tune them via `withTabOverflowStabilizeMs(...)` /
+  // `withTabOverflowMaxDeferMs(...)` to match their strip animation
+  // duration and freshness contract. Library defaults: 100ms
+  // quiescence, 250ms max-defer ceiling. Field-init reads — the
+  // resolved config is captured once at construction; runtime config
+  // swaps would require a re-instantiation regardless because
+  // IntersectionObserver attachment is one-shot.
+  private readonly tabsConfig = injectTabsConfig();
+  private readonly stabilizeMs = this.tabsConfig.overflowStabilizeMs ?? 100;
   // Hard ceiling on the quiescence-debounce window. Without this, a
   // sustained IO churn pattern (entries arriving every <stabilizeMs
-  // for >MAX_DEFER_MS — momentum scrolling, continuous resize, an
+  // for >maxDeferMs — momentum scrolling, continuous resize, an
   // animation that keeps Material's tab-list reflowing every frame)
   // would keep clearing the stabilize timer indefinitely. The
   // counter would freeze on a stale value the entire time, breaking
   // Pillar 2 (state-change communication must hold under sustained
-  // input). MAX_DEFER_MS forces a flush regardless of further IO
-  // events once the buffer has been waiting this long. Hardcoded
-  // (not config-tuned) — the cap exists to bound worst-case staleness
-  // independent of any quiescence preference.
-  private static readonly MAX_DEFER_MS = 250;
+  // input). `maxDeferMs` forces a flush regardless of further IO
+  // events once the buffer has been waiting this long.
+  private readonly maxDeferMs = this.tabsConfig.overflowMaxDeferMs ?? 250;
   private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
   private pendingEntries: IntersectionObserverEntry[] = [];
   // Timestamp (performance.now()) of the FIRST entry pushed since
@@ -360,7 +363,7 @@ export class CngxTabOverflow {
     // tick (`Math.max(0, …)` guards a negative remaining when the
     // event loop returned from a long task).
     const elapsed = now - this.firstPendingAt;
-    const maxDeferRemaining = CngxTabOverflow.MAX_DEFER_MS - elapsed;
+    const maxDeferRemaining = this.maxDeferMs - elapsed;
     const wait = Math.max(
       0,
       Math.min(this.stabilizeMs, maxDeferRemaining),

@@ -24,6 +24,7 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
   withTabsRovingLoop,
   withTabsCommitMode,

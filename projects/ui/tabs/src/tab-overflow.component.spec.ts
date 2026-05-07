@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CngxTab,
+  provideTabsConfig,
+  withTabOverflowMaxDeferMs,
   type CngxTabOverflowDomAdapter,
 } from '@cngx/common/tabs';
 
@@ -455,6 +457,71 @@ describe('CngxTabOverflow', () => {
     }
     // Tail wait — let the cap-driven flush land before assertions.
     await new Promise((res) => setTimeout(res, 130));
+    TestBed.flushEffects();
+
+    expect(emissions).toBeGreaterThan(baseline);
+  });
+
+  it('respects withTabOverflowMaxDeferMs override — a tighter cap forces a commit sooner', async () => {
+    // Pins the cascade contract: per-instance > viewProviders >
+    // root provider > library default. Library default is 250ms.
+    // Override to 80ms — under sustained 50ms-period IO churn, the
+    // tighter cap MUST flush at least one commit within ~120ms
+    // wall-clock (well below the library default that would never
+    // flush in this window).
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabOverflowMaxDeferMs(80)),
+      ],
+    });
+    stubPopoverApi();
+    const { instances } = installMockIntersectionObserver();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+    const visibilityRef = (
+      overflow as unknown as {
+        visibilityState: () => ReadonlyMap<string, boolean>;
+      }
+    ).visibilityState;
+    let emissions = 0;
+    TestBed.runInInjectionContext(() => {
+      effect(() => {
+        visibilityRef();
+        emissions++;
+      });
+    });
+    TestBed.flushEffects();
+    const baseline = emissions;
+
+    // Drive the same churn pattern as the library-default test: 5
+    // IO fires every 50ms (faster than the 100ms quiescence). With
+    // the 80ms cap, the very first cycle exhausts the budget and
+    // the next IO event triggers the cap-driven flush — at least
+    // one emission lands within the loop.
+    for (let i = 0; i < 4; i++) {
+      observer.fire([
+        {
+          target: buttons[3],
+          isIntersecting: i % 2 === 0,
+          intersectionRatio: 0,
+        },
+      ]);
+      await new Promise((res) => setTimeout(res, 50));
+    }
+    // Tail wait — short, just enough to drain the cap-driven flush.
+    await new Promise((res) => setTimeout(res, 30));
     TestBed.flushEffects();
 
     expect(emissions).toBeGreaterThan(baseline);

@@ -9,6 +9,7 @@ import {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
   withTabsRovingLoop,
   withTabsCommitMode,
@@ -170,5 +171,39 @@ describe('CngxTabsConfig', () => {
     });
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
     expect(cfg.overflowStabilizeMs).toBe(250);
+  });
+
+  it('overflowMaxDeferMs defaults to 250ms', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.overflowMaxDeferMs).toBe(250);
+  });
+
+  it('withTabOverflowMaxDeferMs overrides the worst-case staleness cap', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabOverflowMaxDeferMs(500)),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.overflowMaxDeferMs).toBe(500);
+  });
+
+  it('stabilize and max-defer features compose independently in one provideTabsConfig call', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabOverflowStabilizeMs(150),
+          withTabOverflowMaxDeferMs(400),
+        ),
+      ],
+    });
+    const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+    expect(cfg.overflowStabilizeMs).toBe(150);
+    expect(cfg.overflowMaxDeferMs).toBe(400);
   });
 });

@@ -59,10 +59,27 @@ export interface CngxTabsConfig {
    * write — the More button's counter only re-renders once IO has
    * been quiet for this many ms. Library default is 100ms; raise
    * to ~250ms for slower strip animations or content-driven reflow.
-   * The molecule's max-defer cap (250ms) caps how long a sustained
-   * burst can delay the commit regardless of this value.
+   * The molecule's max-defer cap ({@link overflowMaxDeferMs}) caps
+   * how long a sustained burst can delay the commit regardless of
+   * this value.
    */
   readonly overflowStabilizeMs?: number;
+  /**
+   * Hard ceiling (ms) on how long `<cngx-tab-overflow>` may defer
+   * the visibility-map commit while IntersectionObserver bursts keep
+   * arriving. Without this cap, a sustained churn pattern (momentum
+   * scrolling, continuous resize, an animation that keeps Material's
+   * tab-list reflowing every frame) would keep clearing the
+   * stabilize timer indefinitely — the More button's counter would
+   * freeze on a stale value, breaking Pillar 2 (state-change
+   * communication must hold under sustained input). Library default
+   * is 250ms; raise to bound looser staleness, lower if strip
+   * animations are short and a stricter freshness contract is
+   * required. Sibling knob to {@link overflowStabilizeMs} — that
+   * value is the *quiescence* window, this is the *worst-case
+   * staleness* cap.
+   */
+  readonly overflowMaxDeferMs?: number;
 }
 
 const TABS_CONFIG_DEFAULTS: Required<
@@ -89,6 +106,7 @@ const TABS_CONFIG_DEFAULTS: Required<
     tabPanelRoleDescription: 'tab panel',
   },
   overflowStabilizeMs: 100,
+  overflowMaxDeferMs: 250,
 };
 
 /**
@@ -194,6 +212,22 @@ export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     overflowStabilizeMs: ms,
+  }));
+}
+
+/**
+ * Override `<cngx-tab-overflow>`'s max-defer cap (ms) — the worst-
+ * case staleness ceiling on the visibility-map commit. See
+ * {@link CngxTabsConfig.overflowMaxDeferMs} for the full semantics.
+ * Library default is 250ms. Sibling knob to
+ * {@link withTabOverflowStabilizeMs}.
+ *
+ * @category interactive
+ */
+export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    overflowMaxDeferMs: ms,
   }));
 }
 
