@@ -30,7 +30,7 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
   ],
   template: `
     <app-doc-shell title="Mat-tabs — instrumentation directive"
-      description="Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]=&quot;optimistic&quot;</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]=&quot;pessimistic&quot;</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid=&quot;true&quot;</code> until the user successfully re-picks it OR clicks the &quot;Clear last failed&quot; button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>."
+      description="Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]=&quot;optimistic&quot;</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]=&quot;pessimistic&quot;</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid=&quot;true&quot;</code> until the user successfully re-picks it OR clicks the &quot;Clear last failed&quot; button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. <strong>Smart overflow:</strong> when the strip overflows the available width, a <code>&lt;cngx-tab-overflow&gt;</code> More button appears at the trailing edge — listing all hidden tabs in a popover. The molecule mounts itself programmatically via the instrumentation directive; consumers add nothing. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>."
       [apiComponents]="['CngxMatTabs', 'CngxMatTabError', 'CngxToastOn', 'CngxBannerOn']">
       <app-example-card title="Vanilla <mat-tab-group> upgraded by adding cngxMatTabs"
         [subtitle]="_s0"
@@ -105,11 +105,35 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
     <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
   </div>
       </app-example-card>
+      <app-example-card title="Smart overflow under viewport constraint"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
+    <mat-tab-group cngxMatTabs [(activeIndex)]="overflowActive" aria-label="Smart-overflow demo">
+      <mat-tab label="Profile">Profile</mat-tab>
+      <mat-tab label="Account">Account</mat-tab>
+      <mat-tab label="Notifications">Notifications</mat-tab>
+      <mat-tab label="Privacy">Privacy</mat-tab>
+      <mat-tab label="Billing">Billing</mat-tab>
+      <mat-tab label="Connections">Connections</mat-tab>
+      <mat-tab label="Devices">Devices</mat-tab>
+      <mat-tab label="Sessions">Sessions</mat-tab>
+      <mat-tab label="Audit">Audit</mat-tab>
+      <mat-tab label="Advanced">Advanced</mat-tab>
+    </mat-tab-group>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Active overflow tab</span><span class="event-value">{{ overflowActive() }}</span></div>
+  </div>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class MatTabsInstrumentationDemoComponent {
   protected readonly _s0 = 'The <code>&lt;mat-tab-group&gt;</code> stays unchanged — <code>cngxMatTabs</code> is the only addition. The commit lifecycle, the <code>CNGX_STATEFUL</code> producer, and the toast + banner bridges work identically to <code>&lt;cngx-tab-group&gt;</code>. The Profile and Account tabs each bind <code>[cngxMatTabError]</code> to a per-tab <code>CngxErrorAggregator</code> whose source reads the form\'s <code>statusChanges</code> — type into the form to see the badge appear / disappear in real time. Toggle the simulate-error checkbox and pick a tab to see the orthogonal rejection signal land alongside.';
+  protected readonly _s1 = 'Ten tabs inside a 600px-wide container — the strip cannot fit them all, so <code>[cngxMatTabs]</code> programmatically mounts a <code>&lt;cngx-tab-overflow&gt;</code> "More" button pinned to the trailing edge of <code>.mat-mdc-tab-header</code>. Click the More button to see the popover list of hidden tabs; clicking a hidden tab routes through <code>presenter.selectById(...)</code> so the cngx commit-action lifecycle, rejection decoration, and aggregator visuals stay coherent across the click. Material\'s built-in horizontal scroll buttons remain functional alongside; consumers who want pure cngx overflow can hide them via theme-level CSS in their own stylesheet. Resize the browser to see the More button engage and disengage as the strip width crosses the overflow threshold.';
   protected readonly _srcHtml0 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
             [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -192,6 +216,106 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
   private readonly banner = inject(CngxBanner);
 
   protected readonly active = signal(0);
+  protected readonly overflowActive = signal(0);
+  protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly shouldFail = signal(false);
+  protected readonly latencyMs = signal(600);
+
+  protected readonly profileForm = new FormGroup({
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+  });
+  protected readonly accountForm = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+  });
+
+  private readonly profileStatus = toSignal(
+    this.profileForm.statusChanges.pipe(startWith(this.profileForm.status)),
+    { initialValue: this.profileForm.status },
+  );
+  private readonly accountStatus = toSignal(
+    this.accountForm.statusChanges.pipe(startWith(this.accountForm.status)),
+    { initialValue: this.accountForm.status },
+  );
+  protected readonly profileInvalid = computed(
+    () => this.profileStatus() === 'INVALID',
+  );
+  protected readonly accountInvalid = computed(
+    () => this.accountStatus() === 'INVALID',
+  );
+
+  protected readonly profileErrors = injectErrorAggregator(
+    undefined,
+    { profile: this.profileInvalid },
+    undefined,
+    { profile: 'Profile name is required (min 2 chars)' },
+  );
+  protected readonly accountErrors = injectErrorAggregator(
+    undefined,
+    { account: this.accountInvalid },
+    undefined,
+    { account: 'Account email must be valid' },
+  );
+
+  protected clearAllFailureFeedback(matTabs: CngxMatTabs): void {
+    matTabs.clearLastFailed();
+    this.toaster.dismissAll();
+    this.banner.dismiss('mat-tabs:commit-error');
+  }
+
+  protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
+    const ms = this.latencyMs();
+    const fail = this.shouldFail();
+    return new Observable<boolean>((sub) => {
+      const handle = setTimeout(() => {
+        if (fail) {
+          sub.error(new Error('Server refused tab ' + from + ' → ' + to));
+        } else {
+          sub.next(true);
+          sub.complete();
+        }
+      }, ms);
+      return () => clearTimeout(handle);
+    });
+  };`;
+  protected readonly _srcHtml1 = `<div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
+    <mat-tab-group cngxMatTabs [(activeIndex)]="overflowActive" aria-label="Smart-overflow demo">
+      <mat-tab label="Profile">Profile</mat-tab>
+      <mat-tab label="Account">Account</mat-tab>
+      <mat-tab label="Notifications">Notifications</mat-tab>
+      <mat-tab label="Privacy">Privacy</mat-tab>
+      <mat-tab label="Billing">Billing</mat-tab>
+      <mat-tab label="Connections">Connections</mat-tab>
+      <mat-tab label="Devices">Devices</mat-tab>
+      <mat-tab label="Sessions">Sessions</mat-tab>
+      <mat-tab label="Audit">Audit</mat-tab>
+      <mat-tab label="Advanced">Advanced</mat-tab>
+    </mat-tab-group>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Active overflow tab</span><span class="event-value">{{ overflowActive() }}</span></div>
+  </div>`;
+  protected readonly _srcTs1 = `import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith } from 'rxjs/operators';
+import { MatTabsModule } from '@angular/material/tabs';
+import { type CngxTabsCommitAction } from '@cngx/common/tabs';
+import { injectErrorAggregator } from '@cngx/common/interactive';
+import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';
+import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
+
+
+  private readonly toaster = inject(CngxToaster);
+  private readonly banner = inject(CngxBanner);
+
+  protected readonly active = signal(0);
+  protected readonly overflowActive = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly shouldFail = signal(false);
   protected readonly latencyMs = signal(600);
@@ -263,6 +387,7 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
   private readonly banner = inject(CngxBanner);
 
   protected readonly active = signal(0);
+  protected readonly overflowActive = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly shouldFail = signal(false);
   protected readonly latencyMs = signal(600);
