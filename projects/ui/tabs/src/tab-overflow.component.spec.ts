@@ -158,6 +158,31 @@ describe('CngxTabOverflow', () => {
     stubPopoverApi();
   });
 
+  it('binds aria-label on the popover surface from i18n.moreTabsLabel for landmark naming', async () => {
+    // WAI-ARIA 1.2 §5.2.6.4 — every landmark must be nameable. The
+    // trigger button's aria-label names the BUTTON; the popover
+    // surface needs its own accessible name reflecting the same i18n
+    // string so AT consistently identifies the popup landmark.
+    installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const popoverSurface = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__panel',
+    ) as HTMLElement;
+    expect(popoverSurface.getAttribute('aria-label')).toBeTruthy();
+    // Default English fallback for moreTabsLabel(0) is "0 more"; the
+    // exact phrasing is locale-dependent, so just pin that the binding
+    // fires and matches the trigger's aria-label.
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLElement;
+    expect(popoverSurface.getAttribute('aria-label')).toBe(
+      trigger.getAttribute('aria-label'),
+    );
+  });
+
   it('mounts role=menu on the popover surface, role=presentation on the <ul> (APG flattened landmark)', async () => {
     // Pre-fix: <div cngxPopover>...<ul role="menu"><li role="menuitem">
     // — AT reported a generic group then drilled into a separate menu
