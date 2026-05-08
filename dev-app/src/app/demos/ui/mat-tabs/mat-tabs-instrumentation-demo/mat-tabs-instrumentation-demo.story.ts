@@ -6,7 +6,13 @@ export const STORY: DemoSpec = {
   navCategory: 'mat-tabs',
   description:
     'Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]="optimistic"</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]="pessimistic"</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid="true"</code> until the user successfully re-picks it OR clicks the "Clear last failed" button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. <strong>Smart overflow:</strong> when the strip overflows the available width, a <code>&lt;cngx-tab-overflow&gt;</code> More button appears at the trailing edge — listing all hidden tabs in a popover. The molecule mounts itself programmatically via the instrumentation directive; consumers add nothing. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>.',
-  apiComponents: ['CngxMatTabs', 'CngxMatTabError', 'CngxToastOn', 'CngxBannerOn'],
+  apiComponents: [
+    'CngxMatTabs',
+    'CngxMatTabError',
+    'CngxMatTabAggregatorContent',
+    'CngxToastOn',
+    'CngxBannerOn',
+  ],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
     "import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';",
@@ -15,7 +21,7 @@ export const STORY: DemoSpec = {
     "import { MatTabsModule } from '@angular/material/tabs';",
     "import { type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { injectErrorAggregator } from '@cngx/common/interactive';",
-    "import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';",
+    "import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';",
     "import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
   ],
   setup: `
@@ -169,6 +175,49 @@ export const STORY: DemoSpec = {
   </mat-tab-group>
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
+    <div class="event-row"><span class="event-label">Profile invalid</span><span class="event-value">{{ profileInvalid() }}</span></div>
+    <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Custom aggregator descriptor via <code>*cngxMatTabAggregatorContent</code>',
+      subtitle:
+        'Override the SR descriptor body that <code>[cngxMatTabs]</code> projects into the per-tab <code>cngx-sr-only</code> span when an aggregator wants reveal. Slot context is <code>{ count, label }</code>; the surrounding span (with its <code>cngx-sr-only</code> class, stable id, and <code>aria-describedby</code> wiring on the button) stays library-owned — the slot only customises the descriptor text or markup. Type into the Profile or Account form to flip the aggregator and watch the SR descriptor (visible via DevTools \u2192 Accessibility tree, or via a screen reader) carry the consumer-authored phrase rather than the default <code>aggregator.announcement()</code> string.',
+      imports: [
+        'MatTabsModule',
+        'ReactiveFormsModule',
+        'CngxMatTabs',
+        'CngxMatTabError',
+        'CngxMatTabAggregatorContent',
+      ],
+      template: `
+  <mat-tab-group cngxMatTabs aria-label="Aggregator-content slot demo">
+    <ng-template cngxMatTabAggregatorContent let-count="count" let-label="label">
+      {{ label }} \u2014 {{ count }} validation issue(s) detected
+    </ng-template>
+    <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
+      <form [formGroup]="profileForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Name</span>
+          <input type="text" formControlName="name" placeholder="Enter your name" />
+        </label>
+        <small style="opacity:0.7">Required, min 2 characters</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Account" [cngxMatTabError]="accountErrors">
+      <form [formGroup]="accountForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" />
+        </label>
+        <small style="opacity:0.7">Required, valid email format</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Notifications">
+      <p style="padding:12px">No aggregator bound \u2014 no decoration on this tab.</p>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Profile invalid</span><span class="event-value">{{ profileInvalid() }}</span></div>
     <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
   </div>`,
