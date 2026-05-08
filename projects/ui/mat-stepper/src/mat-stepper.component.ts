@@ -136,6 +136,17 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
+  // Note: only the *cngxStepLabel and *cngxStepContent slots are
+  // honoured on this Material twin. The six Phase-3 slot directives
+  // (`*cngxStepIndicator` / `*cngxStepBadge` / `*cngxStepBusySpinner`
+  // / `*cngxStepRejection` / `*cngxStepGroupHeader` /
+  // `*cngxStepperEmpty`) are silently dropped here — Material owns
+  // the indicator/badge/busy chrome via `<mat-stepper>`'s own
+  // template, and the proper override path on this variant is
+  // Material's `<ng-template matStepperIcon>`. See
+  // `stepper-accepted-debt.md` §4 for the closure trigger
+  // (Phase 5 of `tabs-stepper-cleanup-plan` adds matStepperIcon
+  // forwarding).
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
