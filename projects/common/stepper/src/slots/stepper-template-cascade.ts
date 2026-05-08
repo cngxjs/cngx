@@ -72,6 +72,12 @@ export interface CngxStepperTemplateBindings {
  * `createTabOverflowTemplateBindings` (the molecule-scoped tabs
  * sibling) and the family-wide `createTemplateRegistry` pattern.
  *
+ * Sibling-family asymmetry note: `<cngx-tab-group>` does not yet
+ * ship the parallel slot surface (no `withTabIndicatorTemplate` /
+ * `withTabErrorBadgeTemplate` / `withTabRejectionIconTemplate` /
+ * `withTabBusySpinnerTemplate`); see `stepper-accepted-debt.md` §3
+ * for the planned Phase-4 closure trigger.
+ *
  * @category interactive
  */
 export function createStepperTemplateBindings(
