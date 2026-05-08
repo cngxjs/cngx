@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
@@ -14,6 +14,12 @@ import {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
+  withStepIndicatorTemplate,
+  withStepBadgeTemplate,
+  withStepBusySpinnerTemplate,
+  withStepRejectionTemplate,
+  withStepGroupHeaderTemplate,
+  withStepperEmptyTemplate,
 } from './stepper-config';
 
 describe('CngxStepperConfig', () => {
@@ -92,5 +98,83 @@ describe('CngxStepperConfig', () => {
     fixture.detectChanges();
     const scopedCfg = fixture.debugElement.injector.get(CNGX_STEPPER_CONFIG);
     expect(scopedCfg.defaultOrientation).toBe('vertical');
+  });
+
+  describe('CngxStepperTemplates cascade middle tier', () => {
+    @Component({
+      standalone: true,
+      selector: 'tpl-host',
+      template: `
+        <ng-template #indicatorTpl>indicator</ng-template>
+        <ng-template #badgeTpl>badge</ng-template>
+        <ng-template #busyTpl>busy</ng-template>
+        <ng-template #rejTpl>rej</ng-template>
+        <ng-template #groupTpl>group</ng-template>
+        <ng-template #emptyTpl>empty</ng-template>
+      `,
+    })
+    class TplHost {
+      @ViewChild('indicatorTpl', { static: true }) indicatorTpl!: TemplateRef<unknown>;
+      @ViewChild('badgeTpl', { static: true }) badgeTpl!: TemplateRef<unknown>;
+      @ViewChild('busyTpl', { static: true }) busyTpl!: TemplateRef<unknown>;
+      @ViewChild('rejTpl', { static: true }) rejTpl!: TemplateRef<unknown>;
+      @ViewChild('groupTpl', { static: true }) groupTpl!: TemplateRef<unknown>;
+      @ViewChild('emptyTpl', { static: true }) emptyTpl!: TemplateRef<void>;
+    }
+
+    it('library default leaves every templates.<key> undefined', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.templates).toBeDefined();
+      expect(cfg.templates?.indicator).toBeUndefined();
+      expect(cfg.templates?.badge).toBeUndefined();
+      expect(cfg.templates?.busySpinner).toBeUndefined();
+      expect(cfg.templates?.rejection).toBeUndefined();
+      expect(cfg.templates?.groupHeader).toBeUndefined();
+      expect(cfg.templates?.empty).toBeUndefined();
+    });
+
+    it('with*Template features populate the matching templates.<key>', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(TplHost);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideStepperConfig(
+            withStepIndicatorTemplate(host.indicatorTpl as TemplateRef<never>),
+            withStepBadgeTemplate(host.badgeTpl as TemplateRef<never>),
+            withStepBusySpinnerTemplate(host.busyTpl as TemplateRef<never>),
+            withStepRejectionTemplate(host.rejTpl as TemplateRef<never>),
+            withStepGroupHeaderTemplate(host.groupTpl as TemplateRef<never>),
+            withStepperEmptyTemplate(host.emptyTpl),
+          ),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_STEPPER_CONFIG);
+      expect(cfg.templates?.indicator).toBe(host.indicatorTpl);
+      expect(cfg.templates?.badge).toBe(host.badgeTpl);
+      expect(cfg.templates?.busySpinner).toBe(host.busyTpl);
+      expect(cfg.templates?.rejection).toBe(host.rejTpl);
+      expect(cfg.templates?.groupHeader).toBe(host.groupTpl);
+      expect(cfg.templates?.empty).toBe(host.emptyTpl);
+    });
+
+    it('every with*Template feature carries the _target=config discriminator', () => {
+      const stub = {} as TemplateRef<never>;
+      expect(withStepIndicatorTemplate(stub)._target).toBe('config');
+      expect(withStepBadgeTemplate(stub)._target).toBe('config');
+      expect(withStepBusySpinnerTemplate(stub)._target).toBe('config');
+      expect(withStepRejectionTemplate(stub)._target).toBe('config');
+      expect(withStepGroupHeaderTemplate(stub)._target).toBe('config');
+      expect(withStepperEmptyTemplate(stub)._target).toBe('config');
+    });
   });
 });

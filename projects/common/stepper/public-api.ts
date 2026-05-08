@@ -78,6 +78,7 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperTemplates,
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
@@ -87,6 +88,12 @@ export {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
+  withStepIndicatorTemplate,
+  withStepBadgeTemplate,
+  withStepBusySpinnerTemplate,
+  withStepRejectionTemplate,
+  withStepGroupHeaderTemplate,
+  withStepperEmptyTemplate,
 } from './src/stepper-config';
 
 export {
