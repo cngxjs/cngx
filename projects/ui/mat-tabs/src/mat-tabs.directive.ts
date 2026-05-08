@@ -27,6 +27,7 @@ import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   CngxTabGroupPresenter,
+  injectTabsI18n,
   type CngxTabGroupHost,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
@@ -173,6 +174,8 @@ export class CngxMatTabs {
   private readonly setupsByTab = new Map<MatTab, CngxMatTabHandleSetup>();
   private readonly stateChangeSubsByTab = new Map<MatTab, Subscription>();
 
+  private readonly i18n = injectTabsI18n();
+
   // Resolves the failed handle's stable id (or `null` when no
   // failure). Collapses spurious effect re-fires when `tabs()`
   // re-emits without a meaningful target change. Default `Object.is`
@@ -183,6 +186,33 @@ export class CngxMatTabs {
       return null;
     }
     return this.presenter.tabs()[idx]?.id ?? null;
+  });
+
+  // SR descriptor phrase rendered into the rejection-decoration's
+  // hidden `<span>` referenced by `aria-describedby` on the rejected
+  // tab. Mirrors the cngx-native organism's `liveAnnouncement`
+  // priority chain (tab-group.component.ts:280-304) so the
+  // visual+SR phrasing matches across both tab variants:
+  //   1. `commitRolledBackTo(originLabel)` when the rollback origin
+  //      is resolvable (typical optimistic-mode path).
+  //   2. `commitFailedRetry` fallback otherwise — covers the unlabeled
+  //      origin tab edge case + the synchronous-rejection path.
+  // Empty string between rejections — the projector clears the
+  // decoration entirely on `failedHandleId === null`, so this
+  // signal's value is only consulted while a rejection is pinned.
+  private readonly rejectionDescriptorText = computed<string>(() => {
+    const failedIdx = this.presenter.lastFailedIndex();
+    if (failedIdx === undefined) {
+      return '';
+    }
+    const originIdx = this.presenter.originIndexDuringCommit();
+    if (originIdx !== undefined) {
+      const originLabel = this.presenter.tabs()[originIdx]?.label();
+      if (originLabel) {
+        return this.i18n.commitRolledBackTo(originLabel);
+      }
+    }
+    return this.i18n.commitFailedRetry;
   });
 
   // Resolves the current set of tabs whose bound aggregator wants
@@ -246,6 +276,7 @@ export class CngxMatTabs {
       hostEl: this.hostEl,
       failedHandleId: this.failedHandleId,
       failedIndex: this.presenter.lastFailedIndex,
+      descriptorText: this.rejectionDescriptorText,
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,

@@ -22,12 +22,25 @@ import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-co
  *
  * - {@link createMatTabRejectionDecoration} mirrors
  *   `presenter.lastFailedIndex` onto the matching `.mat-mdc-tab` as a
- *   class flag + `aria-invalid="true"`.
+ *   class flag plus a hidden `<span class="cngx-sr-only">` descriptor
+ *   referenced through `aria-describedby`. The descriptor's
+ *   `textContent` is driven by a reactive `descriptorText` signal —
+ *   typically the i18n `commitRolledBackTo(originLabel)` phrase
+ *   resolved at the directive site (mirrors the cngx-native
+ *   organism's `liveAnnouncement` chain). `aria-invalid` is NOT used:
+ *   per ARIA 1.2 the attribute is form-field vocabulary and does not
+ *   apply to a `<button role="tab">`.
  * - {@link createMatTabAggregatorDecoration} projects each handle's
  *   per-tab error-aggregator `shouldShow()` flag onto the matching
  *   button as a `cngx-mat-tab--has-errors` class plus an
  *   `<span class="cngx-sr-only">` descriptor + `aria-describedby`
  *   token append.
+ *
+ * The two projectors land different descriptor spans (`-rejected` vs
+ * `-errors` id suffixes) on the same target when both flags coexist;
+ * the shared aria-describedby token-list append pattern preserves
+ * consumer-supplied tokens AND supports both descriptors stacking
+ * cleanly without collision.
  *
  * Both factories live as siblings of `CngxMatTabs` (NOT exported from
  * `public-api.ts`) — single in-package consumer; promoting them to a
@@ -56,7 +69,8 @@ export interface CngxMatTabRejectionDecorationOptions {
    * Stable id of the currently-failed target — `null` when no
    * rejection is pinned. The factory's `effect()` tracks ONLY this
    * computed; the index-based DOM lookup happens inside `untracked()`
-   * after the trigger fires.
+   * after the trigger fires. The id is also the prefix for the
+   * descriptor span's DOM id (`${id}-rejected`).
    */
   readonly failedHandleId: Signal<string | null>;
   /**
@@ -65,6 +79,22 @@ export interface CngxMatTabRejectionDecorationOptions {
    * `failedHandleId` triggers.
    */
   readonly failedIndex: Signal<number | undefined>;
+  /**
+   * Reactive descriptor phrase rendered into the hidden SR-only span
+   * referenced by the rejected button's `aria-describedby` token list.
+   * Typical resolution at the caller: i18n `commitRolledBackTo(originLabel)`
+   * when the rollback origin is resolvable, falling back to
+   * `commitFailedRetry` otherwise — same priority chain the
+   * cngx-native organism's `liveAnnouncement` uses, so the AT
+   * announcement and the persistent descriptor stay phrased
+   * identically. A separate effect tracks this signal so text
+   * mutations during a held rejection (e.g. origin label resolves
+   * later) update the existing span in place rather than recreating
+   * it. Empty string is honoured — the span stays present so the
+   * `aria-describedby` reference never becomes a dangling pointer
+   * (cngx ARIA-by-value rule: ids always present, content reactive).
+   */
+  readonly descriptorText: Signal<string>;
   readonly renderer: Renderer2;
   readonly injector: Injector;
   readonly destroyRef: DestroyRef;
@@ -72,13 +102,33 @@ export interface CngxMatTabRejectionDecorationOptions {
   readonly buttonSelector?: string;
   /** Default: `cngx-mat-tab--error`. */
   readonly className?: string;
+  /** Default: `cngx-sr-only`. */
+  readonly srOnlyClassName?: string;
+  /**
+   * Suffix appended to `failedHandleId` to form the descriptor span's
+   * DOM id (full id: `${failedHandleId}-${descriptorIdSuffix}`).
+   * Default `'rejected'` — chosen to coexist with the aggregator
+   * projector's `'-errors'` suffix on the same target without
+   * collision.
+   */
+  readonly descriptorIdSuffix?: string;
 }
 
 /**
- * Mounts the sticky-rejection decoration projector. The class +
- * `aria-invalid` follow `failedHandleId` reactively; cleared on
- * directive destroy. Single-target by contract (matches the
- * presenter's single-slot `lastFailedIndex` shape).
+ * Mounts the sticky-rejection decoration projector. The class plus a
+ * hidden `aria-describedby`-linked descriptor span follow
+ * `failedHandleId` reactively; cleared on directive destroy.
+ * Single-target by contract (matches the presenter's single-slot
+ * `lastFailedIndex` shape).
+ *
+ * `aria-describedby` token-list append mirrors the aggregator
+ * projector — consumer-supplied tokens are preserved across decorate
+ * / clear cycles. Two effects: one tracks `failedHandleId` and
+ * mounts/unmounts the span; the other tracks `descriptorText` and
+ * mutates the live span's `textContent` in place. The split keeps
+ * text updates O(1) (no DOM rebuild) when the descriptor phrase
+ * resolves later than the trigger flag — typical when the origin
+ * label arrives via a downstream `tabs()` re-emission.
  *
  * @internal
  */
@@ -87,18 +137,33 @@ export function createMatTabRejectionDecoration(
 ): void {
   const buttonSelector = opts.buttonSelector ?? '.mat-mdc-tab';
   const className = opts.className ?? 'cngx-mat-tab--error';
+  const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
+  const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
   let decoratedEl: HTMLElement | null = null;
+  let decoratedSpan: HTMLElement | null = null;
+  let priorAriaDescribedby: string | null = null;
 
   const clearDecoration = (): void => {
-    if (!decoratedEl) {
+    if (!decoratedEl || !decoratedSpan) {
       return;
     }
     opts.renderer.removeClass(decoratedEl, className);
-    opts.renderer.removeAttribute(decoratedEl, 'aria-invalid');
+    opts.renderer.removeChild(decoratedEl, decoratedSpan);
+    if (priorAriaDescribedby === null) {
+      opts.renderer.removeAttribute(decoratedEl, 'aria-describedby');
+    } else {
+      opts.renderer.setAttribute(
+        decoratedEl,
+        'aria-describedby',
+        priorAriaDescribedby,
+      );
+    }
     decoratedEl = null;
+    decoratedSpan = null;
+    priorAriaDescribedby = null;
   };
 
-  const applyDecorationAt = (failedIdx: number): void => {
+  const applyDecorationAt = (failedIdx: number, handleId: string): void => {
     clearDecoration();
     const buttons = opts.hostEl.querySelectorAll<HTMLElement>(buttonSelector);
     const targetEl = buttons.item(failedIdx);
@@ -106,8 +171,27 @@ export function createMatTabRejectionDecoration(
       return;
     }
     opts.renderer.addClass(targetEl, className);
-    opts.renderer.setAttribute(targetEl, 'aria-invalid', 'true');
+
+    const spanId = `${handleId}-${descriptorIdSuffix}`;
+    const span = opts.renderer.createElement('span') as HTMLElement;
+    opts.renderer.addClass(span, srOnlyClassName);
+    opts.renderer.setAttribute(span, 'id', spanId);
+    // Initial content read inside `untracked()` (the caller wraps the
+    // whole apply path); the live-text effect below picks up
+    // subsequent changes without recreating the span.
+    opts.renderer.setProperty(span, 'textContent', opts.descriptorText());
+    opts.renderer.appendChild(targetEl, span);
+
+    const prior = targetEl.getAttribute('aria-describedby');
+    const tokens = prior ? prior.split(/\s+/).filter(Boolean) : [];
+    if (!tokens.includes(spanId)) {
+      tokens.push(spanId);
+    }
+    opts.renderer.setAttribute(targetEl, 'aria-describedby', tokens.join(' '));
+
     decoratedEl = targetEl;
+    decoratedSpan = span;
+    priorAriaDescribedby = prior;
   };
 
   runInInjectionContext(opts.injector, () => {
@@ -123,7 +207,20 @@ export function createMatTabRejectionDecoration(
           clearDecoration();
           return;
         }
-        applyDecorationAt(idx);
+        applyDecorationAt(idx, id);
+      });
+    });
+
+    // Live-text effect — tracks `descriptorText` only. Decorated
+    // span is a non-signal slot, so its read lives inside
+    // `untracked()` (the read is a check, not a dependency).
+    effect(() => {
+      const text = opts.descriptorText();
+      untracked(() => {
+        if (decoratedSpan === null) {
+          return;
+        }
+        opts.renderer.setProperty(decoratedSpan, 'textContent', text);
       });
     });
   });

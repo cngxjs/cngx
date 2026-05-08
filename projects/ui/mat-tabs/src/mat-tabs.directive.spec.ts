@@ -493,7 +493,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.tabs()[0].disabled()).toBe(false);
   });
 
-  test('axis 11: rejection decoration set — reject decorates the matching <mat-tab> with cngx-mat-tab--error + aria-invalid="true"', async () => {
+  test('axis 11: rejection decoration set — reject decorates the matching <mat-tab> with cngx-mat-tab--error + aria-describedby descriptor span (no aria-invalid)', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -516,14 +516,28 @@ describe('CngxMatTabs instrumentation directive', () => {
     ) as NodeListOf<HTMLElement>;
     expect(matTabEls.length).toBe(3);
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
-    expect(matTabEls[2].getAttribute('aria-invalid')).toBe('true');
+    // ARIA 1.2 contract — aria-invalid is form-field vocabulary and
+    // does not apply to a tab button. The new contract uses
+    // aria-describedby + a hidden descriptor span instead.
+    expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+    const handleId = presenter.tabs()[2].id;
+    const descriptorId = `${handleId}-rejected`;
+    expect(matTabEls[2].getAttribute('aria-describedby')).toContain(
+      descriptorId,
+    );
+    const descriptorSpan = matTabEls[2].querySelector<HTMLSpanElement>(
+      `span.cngx-sr-only#${descriptorId}`,
+    );
+    expect(descriptorSpan).not.toBeNull();
+    expect(descriptorSpan?.textContent ?? '').not.toBe('');
     // Untouched tabs stay clean.
     expect(matTabEls[0].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
+    expect(matTabEls[0].querySelector('span.cngx-sr-only')).toBeNull();
     expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(false);
   });
 
-  test('axis 12: rejection decoration cleared — successful re-pick of the failed tab strips both the class and the attribute', async () => {
+  test('axis 12: rejection decoration cleared — successful re-pick of the failed tab strips the class, removes the descriptor span, and restores aria-describedby', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -545,8 +559,14 @@ describe('CngxMatTabs instrumentation directive', () => {
     const matTabEls = fixture.nativeElement.querySelectorAll(
       '.mat-mdc-tab',
     ) as NodeListOf<HTMLElement>;
+    const handleId = presenter.tabs()[2].id;
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
-    expect(matTabEls[2].getAttribute('aria-invalid')).toBe('true');
+    expect(
+      matTabEls[2].querySelector(`span.cngx-sr-only#${handleId}-rejected`),
+    ).not.toBeNull();
+    expect(matTabEls[2].getAttribute('aria-describedby')).toContain(
+      `${handleId}-rejected`,
+    );
 
     next = true;
     presenter.select(2);
@@ -554,9 +574,15 @@ describe('CngxMatTabs instrumentation directive', () => {
     await fixture.whenStable();
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+    expect(
+      matTabEls[2].querySelector(`span.cngx-sr-only#${handleId}-rejected`),
+    ).toBeNull();
+    // No prior consumer-supplied tokens → aria-describedby restores
+    // to the absent default.
+    expect(matTabEls[2].getAttribute('aria-describedby')).toBeNull();
   });
 
-  test('axis 13a: clearLastFailed() delegator strips both class and aria-invalid attribute', async () => {
+  test('axis 13a: clearLastFailed() delegator strips the class and removes the descriptor span', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
@@ -578,13 +604,20 @@ describe('CngxMatTabs instrumentation directive', () => {
     const matTabEls = fixture.nativeElement.querySelectorAll(
       '.mat-mdc-tab',
     ) as NodeListOf<HTMLElement>;
+    const handleId = presenter.tabs()[2].id;
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(true);
+    expect(
+      matTabEls[2].querySelector(`span.cngx-sr-only#${handleId}-rejected`),
+    ).not.toBeNull();
 
     directive.clearLastFailed();
     fixture.detectChanges();
     await fixture.whenStable();
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+    expect(
+      matTabEls[2].querySelector(`span.cngx-sr-only#${handleId}-rejected`),
+    ).toBeNull();
     expect(presenter.lastFailedIndex()).toBeUndefined();
   });
 
@@ -658,11 +691,26 @@ describe('CngxMatTabs instrumentation directive', () => {
     presenter.select(1);
     fixture.detectChanges();
     await fixture.whenStable();
+    const movedHandleId = presenter.tabs()[1].id;
+    const priorHandleId = presenter.tabs()[2].id;
     expect(matTabEls[1].classList.contains('cngx-mat-tab--error')).toBe(true);
-    expect(matTabEls[1].getAttribute('aria-invalid')).toBe('true');
+    expect(matTabEls[1].getAttribute('aria-invalid')).toBeNull();
+    expect(
+      matTabEls[1].querySelector(
+        `span.cngx-sr-only#${movedHandleId}-rejected`,
+      ),
+    ).not.toBeNull();
+    expect(matTabEls[1].getAttribute('aria-describedby')).toContain(
+      `${movedHandleId}-rejected`,
+    );
     // Prior target is clean — only one decorated element at a time.
     expect(matTabEls[2].classList.contains('cngx-mat-tab--error')).toBe(false);
     expect(matTabEls[2].getAttribute('aria-invalid')).toBeNull();
+    expect(
+      matTabEls[2].querySelector(
+        `span.cngx-sr-only#${priorHandleId}-rejected`,
+      ),
+    ).toBeNull();
   });
 
   test('axis 15: aggregator shouldShow=true applies .cngx-mat-tab--has-errors class + descriptor span + aria-describedby', async () => {
@@ -948,11 +996,22 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[0].classList.contains('cngx-mat-tab--has-errors')).toBe(
       true,
     );
-    expect(matTabEls[0].getAttribute('aria-invalid')).toBe('true');
+    expect(matTabEls[0].getAttribute('aria-invalid')).toBeNull();
     const handleId = presenter.tabs()[0].id;
-    expect(matTabEls[0].getAttribute('aria-describedby')).toContain(
-      `${handleId}-errors`,
-    );
+    // Both projector descriptor ids land in the aria-describedby
+    // token list together — the rejection projector's `-rejected`
+    // suffix and the aggregator projector's `-errors` suffix coexist
+    // without collision (distinct ids; both follow the shared
+    // token-list-append pattern).
+    const describedby = matTabEls[0].getAttribute('aria-describedby') ?? '';
+    expect(describedby).toContain(`${handleId}-errors`);
+    expect(describedby).toContain(`${handleId}-rejected`);
+    expect(
+      matTabEls[0].querySelector(`span.cngx-sr-only#${handleId}-errors`),
+    ).not.toBeNull();
+    expect(
+      matTabEls[0].querySelector(`span.cngx-sr-only#${handleId}-rejected`),
+    ).not.toBeNull();
   });
 
   test('axis 18: *cngxMatTabAggregatorContent slot renders an embedded view inside the descriptor span when bound', async () => {
