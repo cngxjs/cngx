@@ -183,7 +183,7 @@ describe('CngxTabOverflow', () => {
     );
   });
 
-  it('opens the popover with the first option pre-highlighted (APG combobox open contract)', async () => {
+  it('opens the popover via mouse click with no pre-selected highlight (mouse-only users see a clean list)', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -212,17 +212,24 @@ describe('CngxTabOverflow', () => {
     await Promise.resolve();
     fixture.detectChanges();
 
-    // First hidden option carries the --active class via the wireOverflowPopoverHighlight effect.
+    // Mouse-driven open should not pre-highlight any option — pre-
+    // highlighting on every open looks like "something is already
+    // selected" to mouse-only users. AD's keydown handler still
+    // highlights on first ArrowDown.
     const items = Array.from(
       fixture.nativeElement.querySelectorAll(
         '.cngx-tab-overflow__item',
       ) as NodeListOf<HTMLElement>,
     );
     expect(items.length).toBeGreaterThan(0);
-    expect(items[0].classList.contains('cngx-tab-overflow__item--active')).toBe(true);
+    expect(
+      items.some((li) =>
+        li.classList.contains('cngx-tab-overflow__item--active'),
+      ),
+    ).toBe(false);
   });
 
-  it('resets the highlight on close so re-open re-anchors at first', async () => {
+  it('resets the highlight on close so re-open starts clean (no stale-index leak)', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -283,7 +290,15 @@ describe('CngxTabOverflow', () => {
         '.cngx-tab-overflow__item',
       ) as NodeListOf<HTMLElement>,
     );
-    expect(itemsAfterReopen[0].classList.contains('cngx-tab-overflow__item--active')).toBe(true);
+    // After mouse-driven re-open, no option should be pre-highlighted
+    // — the previous keyboard-set "last" index from the End press
+    // before close must NOT leak into the new open. AD's keydown
+    // handler will highlight again on the next ArrowDown / etc.
+    expect(
+      itemsAfterReopen.some((li) =>
+        li.classList.contains('cngx-tab-overflow__item--active'),
+      ),
+    ).toBe(false);
   });
 
   it('clicking outside the popover surface dismisses it', async () => {

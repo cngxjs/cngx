@@ -226,14 +226,16 @@ export function createTabOverflowTemplateBindings(
 }
 
 /**
- * APG-combobox open/close highlight wiring for the overflow popover.
- * On open with no AD highlight set, calls `highlightFirst()` so Enter
- * picks the first option. On close, calls `resetHighlight()` so the
- * next open re-anchors at first. The `=== -1` guard preserves
- * keyboard-driven open paths (End / ArrowUp on closed trigger): AD's
- * host listener bumps `activeIndex` BEFORE the template-driven
- * `popover.show()` resolves, so the index is already user-set when
- * this effect fires.
+ * Resets the AD highlight whenever the overflow popover transitions
+ * to closed. Keyboard-driven open paths (ArrowDown / End / typeahead
+ * on the closed trigger) already set `activeIndex` via AD's own host
+ * keydown listener BEFORE the popover opens — those paths are
+ * untouched. Mouse-driven open paths (click on the trigger button)
+ * leave `activeIndex === -1`, so the popover renders without a
+ * pre-selected highlight; the user can ArrowDown to start nav or
+ * click any option directly. Without this reset on close, the next
+ * open would inherit a stale index from the previous keyboard
+ * session and show a confusing "already selected" highlight.
  *
  * Must run in injection context (`effect()` requirement). Returns
  * nothing — the effect cleans up via the host's `DestroyRef`.
@@ -255,9 +257,7 @@ export function wireOverflowPopoverHighlight(
       if (!adRef) {
         return;
       }
-      if (visible && adRef.activeIndex() === -1) {
-        adRef.highlightFirst();
-      } else if (!visible) {
+      if (!visible) {
         adRef.resetHighlight();
       }
     });
