@@ -1,6 +1,11 @@
-import { Component, signal } from '@angular/core';
+import {
+  Component,
+  TemplateRef,
+  ViewChild,
+  provideZonelessChangeDetection,
+  signal,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -9,15 +14,20 @@ import {
   CNGX_TAB_GROUP_HOST,
   CNGX_TABS_CONFIG,
   CngxTab,
+  CngxTabBusySpinner,
   CngxTabContent,
+  CngxTabErrorBadge,
   CngxTabLabel,
+  CngxTabRejectionIcon,
   provideCngxTabs,
   provideTabsConfig,
   provideTabsI18n,
-  withTabsDefaultOrientation,
+  withTabErrorBadgeTemplate,
   withTabsAriaLabels,
+  withTabsDefaultOrientation,
   withTabsFallbackLabels,
   withTabsI18nLabels,
+  type CngxTabErrorBadgeContext,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
 
@@ -828,5 +838,283 @@ describe('CngxTabGroup organism', () => {
     ) as HTMLElement;
     expect(host.getAttribute('aria-label')).toBe('Bereiche');
     expect(host.getAttribute('aria-roledescription')).toBe('tab list');
+  });
+
+  describe('skin-slot 3-stage cascade', () => {
+    function aggregator(reveal = true): CngxErrorAggregatorContract {
+      return {
+        hasError: signal(true),
+        errorCount: signal(1),
+        activeErrors: signal<readonly string[]>([]),
+        errorLabels: signal<readonly string[]>([]),
+        shouldShow: signal(reveal),
+        announcement: signal('1 error'),
+        addSource: () => {},
+        removeSource: () => {},
+      };
+    }
+
+    it('per-instance *cngxTabErrorBadge wins over the built-in default', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab, CngxTabErrorBadge],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <ng-template cngxTabErrorBadge let-tab="tab">
+              <span data-testid="custom-badge">{{ tab.id }}-bad</span>
+            </ng-template>
+            <div cngxTab [label]="'A'" [errorAggregator]="agg"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class CustomBadgeHost {
+        agg = aggregator(true);
+      }
+      const fixture = TestBed.createComponent(CustomBadgeHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      const custom = tab.querySelector(
+        '[data-testid="custom-badge"]',
+      ) as HTMLElement;
+      expect(custom).not.toBeNull();
+      expect(custom.textContent).toContain('-bad');
+      // Default span no longer renders.
+      expect(tab.querySelector('.cngx-tabs__badge')).toBeNull();
+    });
+
+    it('CNGX_TABS_CONFIG.templates.errorBadge wins over the built-in default when no per-instance directive is bound', () => {
+      TestBed.resetTestingModule();
+      @Component({
+        standalone: true,
+        template: `<ng-template #cfgTpl><span data-testid="cfg-badge">cfg</span></ng-template>`,
+      })
+      class TplFactory {
+        @ViewChild('cfgTpl', { static: true })
+        cfgTpl!: TemplateRef<unknown>;
+      }
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const tplFixture = TestBed.createComponent(TplFactory);
+      tplFixture.detectChanges();
+      const cfgTpl = tplFixture.componentInstance.cfgTpl;
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(
+            withTabErrorBadgeTemplate(
+              cfgTpl as unknown as TemplateRef<CngxTabErrorBadgeContext>,
+            ),
+          ),
+        ],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [errorAggregator]="agg"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class ConfigBadgeHost {
+        agg = aggregator(true);
+      }
+      const fixture = TestBed.createComponent(ConfigBadgeHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      const custom = tab.querySelector(
+        '[data-testid="cfg-badge"]',
+      ) as HTMLElement;
+      expect(custom).not.toBeNull();
+      // Default span no longer renders when config template is bound.
+      expect(tab.querySelector('.cngx-tabs__badge')).toBeNull();
+    });
+
+    it('per-instance directive wins over CNGX_TABS_CONFIG.templates entry', () => {
+      TestBed.resetTestingModule();
+      @Component({
+        standalone: true,
+        template: `<ng-template #cfgTpl><span data-testid="cfg-badge">cfg</span></ng-template>`,
+      })
+      class TplFactory {
+        @ViewChild('cfgTpl', { static: true })
+        cfgTpl!: TemplateRef<unknown>;
+      }
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const tplFixture = TestBed.createComponent(TplFactory);
+      tplFixture.detectChanges();
+      const cfgTpl = tplFixture.componentInstance.cfgTpl;
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(
+            withTabErrorBadgeTemplate(
+              cfgTpl as unknown as TemplateRef<CngxTabErrorBadgeContext>,
+            ),
+          ),
+        ],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab, CngxTabErrorBadge],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <ng-template cngxTabErrorBadge>
+              <span data-testid="instance-badge">instance</span>
+            </ng-template>
+            <div cngxTab [label]="'A'" [errorAggregator]="agg"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class WinHost {
+        agg = aggregator(true);
+      }
+      const fixture = TestBed.createComponent(WinHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      expect(tab.querySelector('[data-testid="instance-badge"]')).not.toBeNull();
+      expect(tab.querySelector('[data-testid="cfg-badge"]')).toBeNull();
+    });
+
+    it('built-in default span renders when neither slot nor config template is bound', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [errorAggregator]="agg"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class DefaultHost {
+        agg = aggregator(true);
+      }
+      const fixture = TestBed.createComponent(DefaultHost);
+      fixture.detectChanges();
+      const tab = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      const span = tab.querySelector('.cngx-tabs__badge') as HTMLElement;
+      expect(span).not.toBeNull();
+      expect(span.textContent?.trim()).toBe('!');
+    });
+
+    it('per-instance *cngxTabRejectionIcon receives failedIndex + originLabel context', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab, CngxTabRejectionIcon],
+        template: `
+          <cngx-tab-group
+            aria-label="X"
+            [commitAction]="action"
+            commitMode="optimistic"
+          >
+            <ng-template
+              cngxTabRejectionIcon
+              let-failedIndex="failedIndex"
+              let-originLabel="originLabel"
+            >
+              <span data-testid="custom-rej">{{ failedIndex }}@if (originLabel) { →{{ originLabel }} }</span>
+            </ng-template>
+            <div cngxTab [label]="'A'"></div>
+            <div cngxTab [label]="'B'"></div>
+            <div cngxTab [label]="'C'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class CustomRejHost {
+        action: CngxTabsCommitAction | null = () => false;
+      }
+      const fixture = TestBed.createComponent(CustomRejHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      const custom = tabs[2].querySelector(
+        '[data-testid="custom-rej"]',
+      ) as HTMLElement;
+      expect(custom).not.toBeNull();
+      expect(custom.textContent?.replace(/\s+/g, '')).toContain('2→A');
+      // Default rejection-icon span suppressed.
+      expect(tabs[2].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
+    });
+
+    it('per-instance *cngxTabBusySpinner receives tab + intendedIndex context', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab, CngxTabBusySpinner],
+        template: `
+          <cngx-tab-group
+            aria-label="X"
+            [commitAction]="action"
+            commitMode="pessimistic"
+          >
+            <ng-template
+              cngxTabBusySpinner
+              let-tab="tab"
+              let-intendedIndex="intendedIndex"
+            >
+              <span data-testid="custom-spin">{{ tab.id }}@{{ intendedIndex }}</span>
+            </ng-template>
+            <div cngxTab [label]="'A'"></div>
+            <div cngxTab [label]="'B'"></div>
+            <div cngxTab [label]="'C'"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class CustomSpinHost {
+        action: CngxTabsCommitAction | null = () =>
+          new Promise<boolean>(() => undefined);
+      }
+      const fixture = TestBed.createComponent(CustomSpinHost);
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      tabs[2].click();
+      fixture.detectChanges();
+      const custom = tabs[2].querySelector(
+        '[data-testid="custom-spin"]',
+      ) as HTMLElement;
+      expect(custom).not.toBeNull();
+      // Tab id default is `cngx-tab-N` (presenter auto-id) — assert the
+      // intendedIndex segment instead which is a stable integer.
+      expect(custom.textContent).toContain('@2');
+      // Default spinner span suppressed.
+      expect(tabs[2].querySelector('.cngx-tabs__busy-spinner')).toBeNull();
+    });
   });
 });

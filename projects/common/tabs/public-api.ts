@@ -97,6 +97,11 @@ export {
   CngxTabBusySpinner,
   type CngxTabBusySpinnerContext,
 } from './src/slots/tab-busy-spinner.directive';
+export {
+  createTabGroupTemplateBindings,
+  type CngxTabGroupTemplateBindings,
+  type CngxTabGroupTemplateBindingsOptions,
+} from './src/slots/tab-group-template-cascade';
 // `CNGX_TABS_GLYPHS` is exported with an `@internal` JSDoc tag —
 // the cngx-tab-group organism in `@cngx/ui/tabs` reads the single
 // source of truth for default glyphs across the cross-package

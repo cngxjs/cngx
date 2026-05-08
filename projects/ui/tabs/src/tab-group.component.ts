@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   contentChildren,
   ElementRef,
   inject,
@@ -21,14 +22,23 @@ import {
 import {
   CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
+  CNGX_TABS_GLYPHS,
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
   CngxTab,
+  CngxTabBusySpinner,
+  CngxTabErrorBadge,
   CngxTabGroupPresenter,
+  CngxTabRejectionIcon,
+  createTabGroupTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
+  type CngxTabBusySpinnerContext,
+  type CngxTabErrorBadgeContext,
+  type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
   type CngxTabPanelHost,
+  type CngxTabRejectionIconContext,
 } from '@cngx/common/tabs';
 
 /**
@@ -105,6 +115,14 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
+  /**
+   * Internal default-glyph table read inside the template's
+   * built-in fallback spans (`{{ glyphs.errorBadge }}` /
+   * `{{ glyphs.rejectionIcon }}`). Exposed as a protected field so
+   * the host markup stays declarative — Pillar 1 (no inline literals
+   * driving Pillar-2 visual surfaces).
+   */
+  protected readonly glyphs = CNGX_TABS_GLYPHS;
   private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
     ElementRef,
   ).nativeElement;
@@ -112,6 +130,20 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly tabDirectives = contentChildren(CngxTab, {
     descendants: true,
   });
+
+  /**
+   * Per-instance skin slots. Resolved through the 3-stage cascade in
+   * {@link templates}: per-instance `*cngxTab*` directive >
+   * `CNGX_TABS_CONFIG.templates.<key>` > organism's built-in default.
+   *
+   * AOT requires `contentChild()` calls to be direct field
+   * initialisers on the variant component (NG8110 rejects them from
+   * helper functions); the resolved cascade signals live in
+   * {@link templates} via `createTabGroupTemplateBindings`.
+   */
+  private readonly errorBadgeSlot = contentChild(CngxTabErrorBadge);
+  private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
+  private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
 
   constructor() {
     // Self-healing scroll loop — when the active tab changes (via
@@ -183,6 +215,27 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly tabDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.tabDirectives,
   });
+
+  /**
+   * Resolved 3-stage template cascade for the three visible-region
+   * skin slots: `errorBadge`, `rejectionIcon`, `busySpinner`. Each
+   * field is a `Signal<TemplateRef | null>` — `null` signals the
+   * template should render the built-in default span.
+   *
+   * Mirrors the Phase-3 stepper sibling (`createStepperTemplateBindings`).
+   * Single-consumer note: tracked as `tabs-accepted-debt §9` —
+   * `<cngx-mat-tabs>` does NOT consume this factory because Material
+   * owns the tab-button chrome via its own MDC template. The factory
+   * stays uniform with the family pattern; the staging is
+   * acknowledged debt.
+   */
+  protected readonly templates: CngxTabGroupTemplateBindings =
+    createTabGroupTemplateBindings({
+      errorBadgeSlot: this.errorBadgeSlot,
+      rejectionIconSlot: this.rejectionIconSlot,
+      busySpinnerSlot: this.busySpinnerSlot,
+      config: this.config,
+    });
 
   readonly tabs: Signal<readonly CngxTabHandle[]> = this.presenter.tabs;
   readonly activeIndex: Signal<number> = this.presenter.activeIndex;
@@ -265,6 +318,44 @@ export class CngxTabGroup implements CngxTabPanelHost {
   /** `true` when a bound error-aggregator opted in to revealing errors. */
   protected showErrorBadge(tab: CngxTabHandle): boolean {
     return !!tab.errorAggregator()?.shouldShow();
+  }
+
+  /**
+   * Context object passed to the `*cngxTabErrorBadge` slot template.
+   * Re-derived on every CD tick — outlets memoise their embedded
+   * views by template + context-by-key, so the rebuild cost is the
+   * `tab` reference comparison only.
+   */
+  protected errorBadgeContextFor(tab: CngxTabHandle): CngxTabErrorBadgeContext {
+    return { tab };
+  }
+
+  /**
+   * Context object passed to the `*cngxTabBusySpinner` slot template.
+   * `intendedIndex` is asserted non-undefined because the gate
+   * `isTabBusy(tab)` already returned `true` (which requires the
+   * presenter's `intendedIndex()` to be defined and to point at the
+   * matching handle).
+   */
+  protected busySpinnerContextFor(
+    tab: CngxTabHandle,
+  ): CngxTabBusySpinnerContext {
+    return { tab, intendedIndex: this.presenter.intendedIndex() ?? -1 };
+  }
+
+  /**
+   * Context object passed to the `*cngxTabRejectionIcon` slot template.
+   * `originLabel` resolves through the same priority chain as
+   * `liveAnnouncement` — `originIndexDuringCommit` -> `tabs()[idx].label()`
+   * — so the visual decoration phrasing matches the SR announcement.
+   */
+  protected rejectionIconContextFor(
+    failedIndex: number,
+  ): CngxTabRejectionIconContext {
+    const originIdx = this.presenter.originIndexDuringCommit();
+    const originLabel =
+      originIdx !== undefined ? this.presenter.tabs()[originIdx]?.label() : undefined;
+    return { failedIndex, originLabel };
   }
 
   /**
