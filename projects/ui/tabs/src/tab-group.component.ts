@@ -19,12 +19,12 @@ import {
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
 import {
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_PANEL_HOST,
   CngxTab,
   CngxTabGroupPresenter,
   createDirectiveByIdMap,
-  createOrganismScrollSync,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabHandle,
@@ -121,8 +121,11 @@ export class CngxTabGroup implements CngxTabPanelHost {
     // <cngx-tab-overflow> picks up the new visibility on the next
     // tick and the More dropdown self-trims. Plan §"Selection Loop".
     // Extracted to `createOrganismScrollSync` in `@cngx/common/tabs`
-    // so future organisms can share the shape.
-    createOrganismScrollSync({
+    // so future organisms can share the shape; routed through
+    // `CNGX_ORGANISM_SCROLL_SYNC_FACTORY` so consumers can swap the
+    // scroll policy (instant, custom selector, reduced-motion opt-out)
+    // without forking the organism.
+    inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
       activeId: this.presenter.activeId,
       hostElement: this.hostElement,
       injector: this.injector,

@@ -98,7 +98,9 @@ export {
 // surface, but exported because the schematic decompose target
 // flattens these helpers into the consumer's project.
 export {
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
   createOrganismScrollSync,
+  type CngxOrganismScrollSyncFactory,
   type CngxOrganismScrollSyncOptions,
 } from './src/scroll-sync/organism-scroll-sync';
 export {
