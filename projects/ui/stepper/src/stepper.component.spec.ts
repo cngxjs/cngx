@@ -574,6 +574,41 @@ describe('CngxStepper organism', () => {
       });
     });
 
+    it('binds cngx-stepper__step--rejected on the rejected step row when lastFailedIndex matches its flatIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      // Rejected row carries the modifier; siblings do not.
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
+        true,
+      );
+      expect(buttons[0].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
+      expect(buttons[2].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
+      // Modifier clears once the rejection state is dismissed.
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        clearLastFailed(): void;
+      };
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
+    });
+
     it('clearLastFailed delegator forwards to the presenter and zeroes lastFailedIndex', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
