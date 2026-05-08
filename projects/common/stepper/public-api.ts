@@ -43,6 +43,11 @@ export { CngxStepGroup } from './src/step-group.directive';
 export { CngxStepLabel } from './src/step-label.directive';
 export { CngxStepContent } from './src/step-content.directive';
 
+export {
+  CngxStepIndicator,
+  type CngxStepIndicatorContext,
+} from './src/slots/step-indicator.directive';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {
