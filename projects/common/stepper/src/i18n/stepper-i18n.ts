@@ -18,7 +18,34 @@ export interface CngxStepperI18n {
   readonly stepHasErrors: (count: number) => string;
   readonly previousStep: string;
   readonly nextStep: string;
+  /**
+   * @deprecated for stepper commit rollback — superseded by
+   * {@link commitRolledBackTo}. Retained as the **defensive fallback**
+   * in the organism's `liveAnnouncement` priority chain when the
+   * origin label is unresolvable. Reachability mirrors the tabs
+   * family: under the current `select()` flow the
+   * `originIndexDuringCommit` slot is always written before the
+   * commit window opens, so the fallback path fires only when the
+   * origin label resolves to falsy (unlabeled step) OR a future
+   * producer feeds `commitState` outside `select()` (programmatic
+   * state mutation on the host contract).
+   */
   readonly commitFailedRetry: string;
+  /**
+   * Polite SR announcement while a commit is in flight. Read by the
+   * organism's `liveAnnouncement` computed on the `idle → pending`
+   * arm. Pillar 2: every state change reaches AT.
+   */
+  readonly commitInFlight: string;
+  /**
+   * Origin-aware rollback announcement. Receives the label of the
+   * step the user was returned to (the "safe-harbour" step) and
+   * yields a phrase like `Reverted to step "Customer".`. Read by the
+   * organism's `liveAnnouncement` computed on the `pending → error`
+   * transition when both `lastFailedIndex` and
+   * `originIndexDuringCommit` are set.
+   */
+  readonly commitRolledBackTo: (originLabel: string) => string;
 }
 
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
@@ -31,6 +58,8 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   previousStep: 'Previous step',
   nextStep: 'Next step',
   commitFailedRetry: 'Commit failed — retry?',
+  commitInFlight: 'Committing step…',
+  commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
 };
 
 /**

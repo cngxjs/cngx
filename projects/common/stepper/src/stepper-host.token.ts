@@ -1,6 +1,6 @@
 import { InjectionToken, type Signal } from '@angular/core';
 
-import type { CngxAsyncState } from '@cngx/core/utils';
+import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
@@ -78,11 +78,52 @@ export interface CngxStepperHost {
   readonly commitState: CngxAsyncState<number | undefined>;
   readonly intendedStepIndex: Signal<number | undefined>;
 
+  /**
+   * Reactive current/previous pair for the commit-state status. The
+   * organism's `<span cngxLiveRegion>` reads this tracker to derive
+   * the SR announcement on every `pending → success / error`
+   * transition. Allocated once per presenter instance — consumers
+   * MUST read this rather than calling `createTransitionTracker`
+   * locally so the underlying `linkedSignal` is shared.
+   *
+   * Mirrors `CngxTabGroupHost.commitTransition` (see
+   * `projects/common/tabs/src/presenter.directive.ts:127-129`).
+   */
+  readonly commitTransition: StatusTransition;
+
+  /**
+   * Index of the most recently refused commit target, or `undefined`
+   * when no rejection is pending. Set by the rejection arm of
+   * `select()` and cleared either by a successful re-pick of the
+   * same target or an explicit {@link clearLastFailed} call.
+   * Drives persistence-of-error decoration on the strip and the
+   * `commitRolledBackTo` priority chain in the organism's
+   * `liveAnnouncement` computed.
+   */
+  readonly lastFailedIndex: Signal<number | undefined>;
+
+  /**
+   * Origin index captured at commit-window open — the safe-harbour
+   * the user is returned to on optimistic rollback. Read by the
+   * organism's `liveAnnouncement` computed to resolve the rich
+   * `commitRolledBackTo(originLabel)` phrase. Cleared on successful
+   * commit; retained on rejection so the rich announcement remains
+   * derivable for the duration of the persistence window.
+   */
+  readonly originIndexDuringCommit: Signal<number | undefined>;
+
   select(index: number): void;
   selectNext(): void;
   selectPrevious(): void;
   selectById(id: string): void;
   reset(): void;
+
+  /**
+   * Drop the persisted {@link lastFailedIndex} flag. Idempotent
+   * no-op when no rejection is pending; safe to wire to a Dismiss
+   * button or to fire on aggregator-cleared.
+   */
+  clearLastFailed(): void;
 
   // markCompleted / markErrored are intentionally NOT on the host
   // contract until Phase 3 wires the commit lifecycle. Surfacing

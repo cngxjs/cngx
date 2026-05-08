@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CngxStep,
   CngxStepGroup,
+  type CngxStepperCommitAction,
   provideStepperConfig,
   provideStepperI18n,
   withStepperAriaLabels,
@@ -114,6 +115,51 @@ describe('CngxStepper organism', () => {
     ) as HTMLElement;
     expect(panel?.getAttribute('role')).toBe('region');
     expect(panel?.getAttribute('aria-labelledby')).toBe(button.id);
+  });
+
+  it('scrolls the active step button into view when activeStepId changes', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const calls: HTMLButtonElement[] = [];
+    for (const btn of buttons) {
+      Object.defineProperty(btn, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: () => calls.push(btn),
+      });
+    }
+    buttons[2].click();
+    fixture.detectChanges();
+    expect(calls).toContain(buttons[2]);
+  });
+
+  it('panel carries aria-describedby pointing at the step descriptor span (always-rendered)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '.cngx-stepper__panel',
+    ) as HTMLElement;
+    const descId = panel.getAttribute('aria-describedby');
+    expect(descId).toBeTruthy();
+    // Descriptor span lives in the step button (single source of truth)
+    // and is always rendered — Pillar 2 + cngx A11y rule "IDs always
+    // present".
+    const desc = fixture.nativeElement.querySelector(
+      `#${descId}`,
+    ) as HTMLElement;
+    expect(desc).not.toBeNull();
+    expect(desc.classList.contains('cngx-sr-only')).toBe(true);
   });
 
   it('hierarchical: group renders with role="group" + aria-roledescription="step group"', () => {
@@ -292,6 +338,38 @@ describe('CngxStepper organism', () => {
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
+  it('organism stepsOnly is reference-stable across shape-stable re-emits (flatStepsEqual)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper [(activeStepIndex)]="active" aria-label="Stable">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class StableHost {
+      readonly active = signal(0);
+    }
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(StableHost);
+    fixture.detectChanges();
+    const stepperEl = fixture.debugElement.children[0];
+    const stepper = stepperEl.componentInstance as {
+      readonly stepsOnly: () => readonly unknown[];
+    };
+    const before = stepper.stepsOnly();
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    const after = stepper.stepsOnly();
+    // No registry change — flatStepsEqual short-circuits the computed
+    // and downstream consumers see the same reference.
+    expect(after).toBe(before);
+  });
+
   it('label/content template lookup is stable across redundant re-renders (Map equality)', () => {
     @Component({
       standalone: true,
@@ -355,5 +433,193 @@ describe('CngxStepper organism', () => {
       `#${descId}`,
     ) as HTMLElement;
     expect(desc.textContent?.trim()).toBe('Step 1 of 3: A');
+  });
+
+  describe('commit-action live region', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper
+          aria-label="Wizard"
+          [commitAction]="action"
+          [commitMode]="mode"
+        >
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+          <div cngxStep label="C"></div>
+        </cngx-stepper>
+      `,
+    })
+    class CommitHost {
+      action: CngxStepperCommitAction | null = () => true;
+      mode: 'optimistic' | 'pessimistic' = 'pessimistic';
+    }
+
+    it('mounts a polite live-region span (role=status, aria-live=polite, empty when idle)', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      expect(region).not.toBeNull();
+      expect(region.getAttribute('aria-live')).toBe('polite');
+      expect(region.getAttribute('role')).toBe('status');
+      expect(region.textContent?.trim()).toBe('');
+    });
+
+    it('announces commitInFlight while a pessimistic commit is pending', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>(() => undefined);
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[2].click();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      expect(region.textContent?.trim()).toBe('Committing step…');
+    });
+
+    it('error transition surfaces commitRolledBackTo with the origin step label', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      expect(region.textContent?.trim()).toBe('Reverted to step "A".');
+    });
+
+    it('error transition falls back to commitFailedRetry when origin is unresolvable', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      // Rich phrase first.
+      expect(region.textContent?.trim()).toBe('Reverted to step "A".');
+      // Dismiss the rejection — clearing lastFailedIndex collapses the
+      // priority chain to the generic fallback. The organism exposes
+      // `clearLastFailed()` as a public delegator so consumers using
+      // `#s="cngxStepper"` don't need to inject CNGX_STEPPER_HOST.
+      const stepperEl = fixture.debugElement.children[0];
+      const stepper = stepperEl.componentInstance as {
+        clearLastFailed(): void;
+      };
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      // After clearLastFailed the priority chain falls through to the
+      // generic message — origin slot still set but failedIdx undefined.
+      expect(region.textContent?.trim()).toBe('Commit failed — retry?');
+    });
+
+    it('host carries aria-busy="true" while a commit is pending and clears on resolve', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      let resolve!: (value: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((r) => {
+          resolve = r;
+        });
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector(
+        'cngx-stepper',
+      ) as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      resolve(true);
+      return Promise.resolve().then(() => {
+        fixture.detectChanges();
+        expect(host.getAttribute('aria-busy')).toBeNull();
+      });
+    });
+
+    it('clearLastFailed delegator forwards to the presenter and zeroes lastFailedIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const stepperEl = fixture.debugElement.children[0];
+      const stepper = stepperEl.componentInstance as {
+        clearLastFailed(): void;
+        readonly presenter: { lastFailedIndex(): number | undefined };
+      };
+      // Reject set lastFailedIndex on the presenter contract.
+      expect(stepper.presenter.lastFailedIndex()).toBe(1);
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      expect(stepper.presenter.lastFailedIndex()).toBeUndefined();
+    });
+
+    it('returns to empty when commitTransition settles back to idle', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.action = () => true;
+      fixture.detectChanges();
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-stepper__live-region',
+      ) as HTMLElement;
+      expect(region.textContent?.trim()).toBe('');
+      // Sync success collapses pending → success in one tick; tracker's
+      // current is `success` not `idle`, so the region stays quiet.
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('');
+    });
   });
 });

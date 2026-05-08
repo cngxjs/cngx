@@ -19,6 +19,32 @@ describe('CngxStepperI18n', () => {
     expect(i18n.selectedStep('Customer', 1, 3)).toBe('Step 1 of 3: Customer');
     expect(i18n.stepHasErrors(1)).toBe('1 error');
     expect(i18n.stepHasErrors(2)).toBe('2 errors');
+    expect(i18n.commitInFlight).toBe('Committing step…');
+    expect(i18n.commitRolledBackTo('Customer')).toBe(
+      'Reverted to step "Customer".',
+    );
+  });
+
+  it('withStepperI18nLabels can override commitInFlight + commitRolledBackTo', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideStepperI18n(
+          withStepperI18nLabels({
+            commitInFlight: 'Speichere Schritt…',
+            commitRolledBackTo: (label) =>
+              `Konnte nicht speichern — zurück zu „${label}".`,
+          }),
+        ),
+      ],
+    });
+    const i18n = TestBed.inject(CNGX_STEPPER_I18N);
+    expect(i18n.commitInFlight).toBe('Speichere Schritt…');
+    expect(i18n.commitRolledBackTo('Kunde')).toBe(
+      'Konnte nicht speichern — zurück zu „Kunde".',
+    );
+    // Defensive fallback unset — keeps its English default.
+    expect(i18n.commitFailedRetry).toBe('Commit failed — retry?');
   });
 
   it('withStepperI18nLabels composes partial overrides on top of defaults', () => {

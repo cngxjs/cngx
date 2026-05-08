@@ -4,7 +4,9 @@ import {
   Component,
   computed,
   contentChildren,
+  ElementRef,
   inject,
+  Injector,
   input,
   type Signal,
   type TemplateRef,
@@ -12,6 +14,7 @@ import {
 
 import {
   CngxFocusRestore,
+  CngxLiveRegion,
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
@@ -20,12 +23,16 @@ import {
   CngxStep,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  flatStepsEqual,
   injectStepperConfig,
   injectStepperI18n,
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
+import {
+  CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
+} from '@cngx/common/tabs';
 
 /**
  * CNGX-standard stepper organism. Thin shell composing the
@@ -48,7 +55,7 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   hostDirectives: [
     {
@@ -61,11 +68,11 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
       inputs: ['orientation'],
     },
     { directive: CngxFocusRestore },
-    // CngxLiveRegion is NOT composed here — its host binding sets
-    // role="status", which would clobber the stepper's role="group"
-    // landmark. The Phase 3 commit-lifecycle wiring will mount a
-    // dedicated `<span cngxLiveRegion>` inside the template for SR
-    // announcements (selected-step changes, commit success/failure).
+    // CngxLiveRegion is intentionally NOT composed here — its host
+    // binding sets role="status", which would clobber the wrapper's
+    // role="group" landmark. A dedicated `<span cngxLiveRegion>` is
+    // mounted inside the template (driven by `liveAnnouncement`) for
+    // SR announcements on commit transitions.
   ],
   providers: [{ provide: CNGX_STEP_PANEL_HOST, useExisting: CngxStepper }],
   templateUrl: './stepper.component.html',
@@ -76,6 +83,7 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-busy]': 'isCommitting() ? "true" : null',
     '[class.cngx-stepper]': 'true',
   },
 })
@@ -86,7 +94,27 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
+  private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
+    ElementRef,
+  ).nativeElement;
+  private readonly injector = inject(Injector);
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
+
+  constructor() {
+    // Self-healing scroll loop — when the active step changes (via
+    // direct click on a visible step, keyboard nav, or selectById from
+    // a future overflow molecule), bring the matching button into the
+    // strip's visible area. Vertical layouts benefit equally — the
+    // factory's default `scrollIntoView` block:'nearest' keeps both
+    // axes covered. Routed through `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`
+    // so consumers can swap the scroll policy (instant, custom
+    // selector, reduced-motion opt-out) without forking the organism.
+    inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
+      activeId: this.presenter.activeStepId,
+      hostElement: this.hostElement,
+      injector: this.injector,
+    });
+  }
 
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(
@@ -131,9 +159,17 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
 
-  /** Step-only flat projection (excludes group nodes). */
+  /**
+   * Step-only flat projection (excludes group nodes). Memoised behind
+   * `flatStepsEqual` so downstream consumers (`statusPhrase`,
+   * `liveAnnouncement` origin lookup, group/step `@for` iteration)
+   * don't re-walk the array on every shape-stable re-emit of
+   * `flatSteps()`. Mirrors the presenter's private twin at
+   * `presenter.directive.ts:186-189`.
+   */
   protected readonly stepsOnly = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
+    { equal: flatStepsEqual },
   );
 
   /**
@@ -158,6 +194,16 @@ export class CngxStepper implements CngxStepPanelHost {
     );
   }
 
+  /**
+   * `true` while the presenter has a commit in flight. Drives the
+   * landmark `aria-busy` host binding so AT consumers know the
+   * stepper region is mid-transition (Pillar 2 — every state change
+   * communicates).
+   */
+  protected readonly isCommitting = computed<boolean>(
+    () => this.presenter.commitState.status() === 'pending',
+  );
+
   protected stepHeaderId(node: CngxStepNode): string {
     return `${node.id}-header`;
   }
@@ -169,6 +215,50 @@ export class CngxStepper implements CngxStepPanelHost {
   protected stepDescriptorId(node: CngxStepNode): string {
     return `${node.id}-desc`;
   }
+
+  /**
+   * SR-friendly text rendered inside the polite live-region span. Drives
+   * the announcer through declarative content updates — never an
+   * imperative announce() call. Empty string between transitions so the
+   * region stays quiet on no-op CD ticks.
+   *
+   * Priority chain on the `error` arm:
+   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
+   *      a `lastFailedIndex` and a resolvable origin label — the rich,
+   *      origin-aware rollback phrase carries the destination so the
+   *      user understands both *what failed* and *where they are*.
+   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
+   *      undefined, label unresolvable, or non-rollback error path.
+   *
+   * Reads `presenter.commitTransition` directly — the presenter
+   * allocates one `linkedSignal`-backed tracker per instance and
+   * exposes it on the host contract for skin reuse. Pillar 1: derive,
+   * never duplicate.
+   */
+  protected readonly liveAnnouncement = computed<string>(() => {
+    const current = this.presenter.commitTransition.current();
+    if (current === 'pending') {
+      return this.i18n.commitInFlight;
+    }
+    if (current === 'error') {
+      // Synchronous commit-handler errors collapse pending → error in a
+      // single signal-flush tick, so the tracker captures
+      // `previous = 'idle'` rather than `'pending'`. Loosening the
+      // guard keeps the announcement reachable for sync-rejection
+      // actions (`commitAction = () => false`) while staying silent on
+      // `idle` and `success`.
+      const failedIdx = this.presenter.lastFailedIndex();
+      const originIdx = this.presenter.originIndexDuringCommit();
+      if (failedIdx !== undefined && originIdx !== undefined) {
+        const originLabel = this.stepsOnly()[originIdx]?.label();
+        if (originLabel) {
+          return this.i18n.commitRolledBackTo(originLabel);
+        }
+      }
+      return this.i18n.commitFailedRetry;
+    }
+    return '';
+  });
 
   /**
    * SR descriptor phrase for a step header. Reads the aggregator's
@@ -216,6 +306,18 @@ export class CngxStepper implements CngxStepPanelHost {
     if (idx >= 0) {
       this.presenter.select(idx);
     }
+  }
+
+  /**
+   * Clear the persisted `lastFailedIndex` rejection flag on the
+   * presenter — public delegator mirroring the
+   * {@link CngxTabGroup.clearLastFailed} pass-through pattern so
+   * consumers using a template ref (`#s="cngxStepper"`) can dismiss
+   * the rejection decoration programmatically without injecting
+   * {@link CNGX_STEPPER_HOST}.
+   */
+  clearLastFailed(): void {
+    this.presenter.clearLastFailed();
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
