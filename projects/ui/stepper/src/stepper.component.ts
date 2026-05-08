@@ -12,6 +12,7 @@ import {
 
 import {
   CngxFocusRestore,
+  CngxLiveRegion,
   CngxRovingItem,
   CngxRovingTabindex,
 } from '@cngx/common/a11y';
@@ -48,7 +49,7 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
   exportAs: 'cngxStepper',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxRovingItem],
+  imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: ['./styles/stepper-base.css', './stepper.component.css'],
   hostDirectives: [
     {
@@ -61,11 +62,11 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
       inputs: ['orientation'],
     },
     { directive: CngxFocusRestore },
-    // CngxLiveRegion is NOT composed here — its host binding sets
-    // role="status", which would clobber the stepper's role="group"
-    // landmark. The Phase 3 commit-lifecycle wiring will mount a
-    // dedicated `<span cngxLiveRegion>` inside the template for SR
-    // announcements (selected-step changes, commit success/failure).
+    // CngxLiveRegion is intentionally NOT composed here — its host
+    // binding sets role="status", which would clobber the wrapper's
+    // role="group" landmark. A dedicated `<span cngxLiveRegion>` is
+    // mounted inside the template (driven by `liveAnnouncement`) for
+    // SR announcements on commit transitions.
   ],
   providers: [{ provide: CNGX_STEP_PANEL_HOST, useExisting: CngxStepper }],
   templateUrl: './stepper.component.html',
@@ -169,6 +170,50 @@ export class CngxStepper implements CngxStepPanelHost {
   protected stepDescriptorId(node: CngxStepNode): string {
     return `${node.id}-desc`;
   }
+
+  /**
+   * SR-friendly text rendered inside the polite live-region span. Drives
+   * the announcer through declarative content updates — never an
+   * imperative announce() call. Empty string between transitions so the
+   * region stays quiet on no-op CD ticks.
+   *
+   * Priority chain on the `error` arm:
+   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
+   *      a `lastFailedIndex` and a resolvable origin label — the rich,
+   *      origin-aware rollback phrase carries the destination so the
+   *      user understands both *what failed* and *where they are*.
+   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
+   *      undefined, label unresolvable, or non-rollback error path.
+   *
+   * Reads `presenter.commitTransition` directly — the presenter
+   * allocates one `linkedSignal`-backed tracker per instance and
+   * exposes it on the host contract for skin reuse. Pillar 1: derive,
+   * never duplicate.
+   */
+  protected readonly liveAnnouncement = computed<string>(() => {
+    const current = this.presenter.commitTransition.current();
+    if (current === 'pending') {
+      return this.i18n.commitInFlight;
+    }
+    if (current === 'error') {
+      // Synchronous commit-handler errors collapse pending → error in a
+      // single signal-flush tick, so the tracker captures
+      // `previous = 'idle'` rather than `'pending'`. Loosening the
+      // guard keeps the announcement reachable for sync-rejection
+      // actions (`commitAction = () => false`) while staying silent on
+      // `idle` and `success`.
+      const failedIdx = this.presenter.lastFailedIndex();
+      const originIdx = this.presenter.originIndexDuringCommit();
+      if (failedIdx !== undefined && originIdx !== undefined) {
+        const originLabel = this.stepsOnly()[originIdx]?.label();
+        if (originLabel) {
+          return this.i18n.commitRolledBackTo(originLabel);
+        }
+      }
+      return this.i18n.commitFailedRetry;
+    }
+    return '';
+  });
 
   /**
    * SR descriptor phrase for a step header. Reads the aggregator's
