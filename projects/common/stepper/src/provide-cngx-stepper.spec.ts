@@ -20,7 +20,7 @@ import {
 import {
   CNGX_STEPPER_CONFIG,
   injectStepperConfig,
-  withDefaultOrientation,
+  withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperLinear,
   type CngxStepperConfig,
@@ -37,7 +37,7 @@ describe('provideCngxStepper', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideCngxStepper(
-          withDefaultOrientation('vertical'),
+          withStepperDefaultOrientation('vertical'),
           withStepperLinear(true),
           withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
           withStepperI18nLabels({
@@ -71,7 +71,7 @@ describe('provideCngxStepper', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideCngxStepper(withDefaultOrientation('vertical')),
+        provideCngxStepper(withStepperDefaultOrientation('vertical')),
       ],
     });
     const i18n = TestBed.inject(CNGX_STEPPER_I18N);
@@ -153,7 +153,7 @@ describe('provideCngxStepper', () => {
           provideZonelessChangeDetection(),
           provideCngxStepper(
             stale satisfies CngxStepperFeature,
-            withDefaultOrientation('vertical'),
+            withStepperDefaultOrientation('vertical'),
             withStepperI18nLabels({ stepperLabel: 'Schrittfolge' }),
           ),
         ],
@@ -178,7 +178,7 @@ describe('provideCngxStepperAt', () => {
       template: '',
       viewProviders: [
         ...provideCngxStepperAt(
-          withDefaultOrientation('vertical'),
+          withStepperDefaultOrientation('vertical'),
           withStepperI18nLabels({ stepperLabel: 'Schrittfolge' }),
         ),
       ],

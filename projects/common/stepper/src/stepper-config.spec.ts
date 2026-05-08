@@ -8,7 +8,7 @@ import {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
-  withDefaultOrientation,
+  withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
@@ -33,7 +33,7 @@ describe('CngxStepperConfig', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideStepperConfig(
-          withDefaultOrientation('vertical'),
+          withStepperDefaultOrientation('vertical'),
           withStepperCommitMode('optimistic'),
           withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
         ),
@@ -59,7 +59,7 @@ describe('CngxStepperConfig', () => {
     // Branding axis — guards against accidental loss of the
     // `_target` brand on any config feature, which would let
     // provideCngxStepper silently drop the feature in dev-mode.
-    expect(withDefaultOrientation('vertical')._target).toBe('config');
+    expect(withStepperDefaultOrientation('vertical')._target).toBe('config');
     expect(withStepperLinear(true)._target).toBe('config');
     expect(withStepperCommitMode('optimistic')._target).toBe('config');
     expect(withStepperRouterSync('queryParam', 'phase')._target).toBe('config');
@@ -77,7 +77,7 @@ describe('CngxStepperConfig', () => {
       selector: 'scope-cmp',
       template: '',
       viewProviders: [
-        ...provideStepperConfigAt(withDefaultOrientation('vertical')),
+        ...provideStepperConfigAt(withStepperDefaultOrientation('vertical')),
       ],
     })
     class ScopeCmp {}
@@ -85,7 +85,7 @@ describe('CngxStepperConfig', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideStepperConfig(withDefaultOrientation('horizontal')),
+        provideStepperConfig(withStepperDefaultOrientation('horizontal')),
       ],
     });
     const fixture = TestBed.createComponent(ScopeCmp);

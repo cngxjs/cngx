@@ -178,7 +178,14 @@ function defineTabsConfigFeature(
   return Object.assign(fn, { _target: 'config' as const });
 }
 
-export function withDefaultOrientation(
+/**
+ * Override the default orientation for `<cngx-tab-group>` /
+ * `[cngxMatTabs]` consumers. Per-instance `[orientation]` Input still
+ * wins; this feature only changes the cascade default.
+ *
+ * @category interactive
+ */
+export function withTabsDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
 ): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -186,6 +193,16 @@ export function withDefaultOrientation(
     defaultOrientation: orientation,
   }));
 }
+
+/**
+ * @deprecated Use {@link withTabsDefaultOrientation}. The unprefixed name
+ * collides with the stepper family's identical symbol when both libs
+ * are auto-imported. The alias stays for one minor release before
+ * removal.
+ *
+ * @category interactive
+ */
+export const withDefaultOrientation = withTabsDefaultOrientation;
 
 export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, defaultLoop: loop }));
@@ -343,7 +360,7 @@ export function provideTabsConfig(
  * @example
  * ```ts
  * @Component({
- *   viewProviders: [...provideTabsConfigAt(withDefaultOrientation('vertical'))],
+ *   viewProviders: [...provideTabsConfigAt(withTabsDefaultOrientation('vertical'))],
  * })
  * ```
  *

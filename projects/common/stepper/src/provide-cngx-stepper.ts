@@ -83,7 +83,7 @@ function partitionFeatures(
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideCngxStepper(
- *       withDefaultOrientation('vertical'),
+ *       withStepperDefaultOrientation('vertical'),
  *       withStepperLinear(true),
  *       withStepperAriaLabels({ stepperRegion: 'Schrittfolge' }),
  *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge', previousStep: 'Vorheriger' }),
@@ -121,7 +121,7 @@ export function provideCngxStepper(
  * @Component({
  *   viewProviders: [
  *     ...provideCngxStepperAt(
- *       withDefaultOrientation('vertical'),
+ *       withStepperDefaultOrientation('vertical'),
  *       withStepperI18nLabels({ stepperLabel: 'Schrittfolge' }),
  *     ),
  *   ],

@@ -81,7 +81,7 @@ function partitionFeatures(
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideCngxTabs(
- *       withDefaultOrientation('vertical'),
+ *       withTabsDefaultOrientation('vertical'),
  *       withTabsAriaLabels({ tabsRegion: 'Bereiche' }),
  *       withTabsI18nLabels({ tabsLabel: 'Bereiche', moreTabsLabel: (n) => `${n} mehr` }),
  *       withTabOverflowStabilizeMs(150),
@@ -119,7 +119,7 @@ export function provideCngxTabs(
  * @Component({
  *   viewProviders: [
  *     ...provideCngxTabsAt(
- *       withDefaultOrientation('vertical'),
+ *       withTabsDefaultOrientation('vertical'),
  *       withTabsI18nLabels({ tabsLabel: 'Bereiche' }),
  *     ),
  *   ],

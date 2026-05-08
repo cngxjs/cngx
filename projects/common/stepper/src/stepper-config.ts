@@ -110,7 +110,14 @@ function defineStepperConfigFeature(
   return Object.assign(fn, { _target: 'config' as const });
 }
 
-export function withDefaultOrientation(
+/**
+ * Override the default orientation for `<cngx-stepper>` /
+ * `<cngx-mat-stepper>` consumers. Per-instance `[orientation]` Input
+ * still wins; this feature only changes the cascade default.
+ *
+ * @category interactive
+ */
+export function withStepperDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
 ): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({
@@ -118,6 +125,16 @@ export function withDefaultOrientation(
     defaultOrientation: orientation,
   }));
 }
+
+/**
+ * @deprecated Use {@link withStepperDefaultOrientation}. The unprefixed
+ * name collides with the tabs family's identical symbol when both
+ * libs are auto-imported. The alias stays for one minor release
+ * before removal.
+ *
+ * @category interactive
+ */
+export const withDefaultOrientation = withStepperDefaultOrientation;
 
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));

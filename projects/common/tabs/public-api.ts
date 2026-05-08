@@ -24,6 +24,7 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabsDefaultOrientation,
   withTabOverflowItemTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
