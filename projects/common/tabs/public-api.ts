@@ -80,9 +80,9 @@ export {
   type CngxTabOverflowItemContext,
 } from './src/overflow/tab-overflow-item.directive';
 export {
+  createOverflowPopoverHighlightSync,
   createTabOverflowTemplateBindings,
   tabOverflowOptionId,
-  wireOverflowPopoverHighlight,
   type CngxTabOverflowTemplateBindings,
   type CngxTabOverflowTemplateBindingsOptions,
 } from './src/overflow/overflow-template-cascade';

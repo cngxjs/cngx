@@ -242,23 +242,15 @@ export function createTabOverflowTemplateBindings(
  *
  * @category interactive
  */
-export function wireOverflowPopoverHighlight(
-  popover: Signal<CngxPopover | undefined>,
-  ad: Signal<CngxActiveDescendant | undefined>,
+export function createOverflowPopoverHighlightSync(
+  popover: Signal<CngxPopover>,
+  ad: Signal<CngxActiveDescendant>,
 ): void {
   effect(() => {
-    const pop = popover();
-    if (!pop) {
-      return;
-    }
-    const visible = pop.isVisible();
+    const visible = popover().isVisible();
     untracked(() => {
-      const adRef = ad();
-      if (!adRef) {
-        return;
-      }
       if (!visible) {
-        adRef.resetHighlight();
+        ad().resetHighlight();
       }
     });
   });

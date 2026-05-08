@@ -24,11 +24,11 @@ import {
   CngxTabOverflowItem,
   CngxTabOverflowTrigger,
   createDomAnchorRetry,
+  createOverflowPopoverHighlightSync,
   createTabOverflowTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
   tabOverflowOptionId,
-  wireOverflowPopoverHighlight,
   type CngxDomAnchorRetryHandle,
   type CngxTabHandle,
   type CngxTabPanelHost,
@@ -318,7 +318,7 @@ export class CngxTabOverflow {
       });
     });
 
-    wireOverflowPopoverHighlight(this.popover, this.adRef);
+    createOverflowPopoverHighlightSync(this.popover, this.adRef);
 
     this.destroyRef.onDestroy(() => {
       this.attachRetry.cancel();
