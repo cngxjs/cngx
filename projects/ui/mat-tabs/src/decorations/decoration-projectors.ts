@@ -201,6 +201,16 @@ export interface CngxMatTabAggregatorDecorationOptions {
    * available.
    */
   readonly viewContainerRef?: ViewContainerRef;
+  /**
+   * Optional dev-mode sink invoked when exactly one of
+   * `contentTemplate` / `viewContainerRef` is supplied (the
+   * half-wired-slot misconfiguration). Defaults to a
+   * `console.warn` gated on `ngDevMode`. Override only for testing
+   * — in production the default is what reaches developers.
+   */
+  readonly onHalfWiredSlot?: (
+    missing: 'contentTemplate' | 'viewContainerRef',
+  ) => void;
 }
 
 /**
@@ -229,6 +239,17 @@ export function createMatTabAggregatorDecoration(
   // either alone falls back to the imperative descriptor write so the
   // contract degrades gracefully when consumers wire only one half.
   const slotEnabled = !!opts.contentTemplate && !!opts.viewContainerRef;
+  // Surface the half-wired-slot misconfiguration in dev-mode — the
+  // graceful degradation above hides the mistake at runtime, so the
+  // signal has to come from a deliberate diagnostic. Mirrors the
+  // `onMaxRetriesReached` precedent below: optional injectable sink,
+  // default `ngDevMode`-gated `console.warn`.
+  if (!slotEnabled && (opts.contentTemplate || opts.viewContainerRef)) {
+    const missing: 'contentTemplate' | 'viewContainerRef' =
+      opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
+    const sink = opts.onHalfWiredSlot ?? defaultHalfWiredSlotWarn;
+    sink(missing);
+  }
 
   const decorated = new Map<
     string,
@@ -444,6 +465,21 @@ export function createMatTabAggregatorDecoration(
       removeDecoration(id);
     }
   });
+}
+
+function defaultHalfWiredSlotWarn(
+  missing: 'contentTemplate' | 'viewContainerRef',
+): void {
+  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
+    console.warn(
+      '[cngxMatTabs] aggregator-content slot half-wired — ' +
+        `\`${missing}\` is missing while the other half is supplied. ` +
+        'The decoration projector will silently fall back to the ' +
+        'imperative `textContent` path, and the consumer-projected ' +
+        '`*cngxMatTabAggregatorContent` template will never render. ' +
+        'Wire both halves on the [cngxMatTabs] directive (or neither).',
+    );
+  }
 }
 
 function defaultRetryCeilingWarn(max: number): () => void {
