@@ -3,6 +3,7 @@
   role="combobox"
   class="cngx-tab-overflow__trigger"
   cngxActiveDescendant
+  #ad="cngxActiveDescendant"
   [items]="templates.adItems()"
   [cngxPopoverTrigger]="overflowPopover"
   [haspopup]="'listbox'"
@@ -47,6 +48,7 @@
       <li
         role="option"
         class="cngx-tab-overflow__item"
+        [class.cngx-tab-overflow__item--active]="ad.activeId() === adItemId(tab)"
         [id]="adItemId(tab)"
         [attr.data-tab-id]="tab.id"
         [attr.aria-selected]="false"

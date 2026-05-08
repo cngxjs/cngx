@@ -78,6 +78,26 @@
   background: var(--cngx-tab-overflow-item-hover-bg, rgba(0, 0, 0, 0.05));
 }
 
+/*
+ * Visible feedback for the AD-active option — bound from
+ * `ad.activeId() === adItemId(tab)` in the template. Without this
+ * rule the keyboard contract (ArrowUp/Down/Home/End/typeahead)
+ * still updates `aria-activedescendant` correctly but the user
+ * sees nothing change in the popover. APG combobox pattern requires
+ * visible indication of the highlighted option.
+ */
+.cngx-tab-overflow__item--active {
+  background: var(
+    --cngx-tab-overflow-item-active-bg,
+    var(--cngx-tab-overflow-item-hover-bg, rgba(0, 0, 0, 0.08))
+  );
+  outline: var(
+    --cngx-tab-overflow-item-active-outline,
+    2px solid currentColor
+  );
+  outline-offset: var(--cngx-tab-overflow-item-active-outline-offset, -2px);
+}
+
 .cngx-tab-overflow__item[aria-disabled='true'] {
   cursor: not-allowed;
   opacity: var(--cngx-tab-disabled-opacity, 0.55);

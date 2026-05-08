@@ -262,6 +262,70 @@ describe('CngxTabOverflow', () => {
     expect(lastActive).not.toBe(firstActive);
   });
 
+  it('AD-active option carries the cngx-tab-overflow__item--active class for visible keyboard feedback', async () => {
+    // Without this class binding, ArrowUp/Down/Home/End/typeahead
+    // still update aria-activedescendant correctly but the user sees
+    // nothing change in the popover — APG combobox pattern requires
+    // visible indication of the highlighted option.
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLButtonElement;
+    const items = () =>
+      Array.from(
+        fixture.nativeElement.querySelectorAll(
+          '.cngx-tab-overflow__item',
+        ) as NodeListOf<HTMLElement>,
+      );
+
+    // No nav key pressed yet — no option carries the active class.
+    expect(items().some((li) => li.classList.contains('cngx-tab-overflow__item--active'))).toBe(false);
+
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    fixture.detectChanges();
+    const after1 = items();
+    const active1 = after1.findIndex((li) =>
+      li.classList.contains('cngx-tab-overflow__item--active'),
+    );
+    expect(active1).toBeGreaterThanOrEqual(0);
+
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    fixture.detectChanges();
+    const after2 = items();
+    const active2 = after2.findIndex((li) =>
+      li.classList.contains('cngx-tab-overflow__item--active'),
+    );
+    // The active class moved to a different option after the second
+    // ArrowDown — exact-once invariant: a single option is active at
+    // any given time.
+    expect(active2).toBeGreaterThanOrEqual(0);
+    expect(after2.filter((li) => li.classList.contains('cngx-tab-overflow__item--active')).length).toBe(1);
+    expect(active2).not.toBe(active1);
+  });
+
   it('Enter on the trigger picks the highlighted option via the AD activated event', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();
