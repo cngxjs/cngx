@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 
 import { CngxActiveDescendant } from '@cngx/common/a11y';
+import { CngxClickOutside } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
@@ -27,6 +28,7 @@ import {
   injectTabsConfig,
   injectTabsI18n,
   tabOverflowOptionId,
+  wireOverflowPopoverHighlight,
   type CngxDomAnchorRetryHandle,
   type CngxTabHandle,
   type CngxTabPanelHost,
@@ -120,6 +122,7 @@ function mapBoolEqual(
   imports: [
     NgTemplateOutlet,
     CngxActiveDescendant,
+    CngxClickOutside,
     CngxPopover,
     CngxPopoverTrigger,
   ],
@@ -137,6 +140,7 @@ export class CngxTabOverflow {
   protected readonly panelHost: CngxTabPanelHost = inject(CNGX_TAB_PANEL_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly popover = viewChild.required(CngxPopover);
+  private readonly adRef = viewChild.required(CngxActiveDescendant);
 
   private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
     ElementRef,
@@ -258,14 +262,8 @@ export class CngxTabOverflow {
   // cap above.
   private firstPendingAt: number | null = null;
 
-  // rAF-scheduled retry loop for the IntersectionObserver attach.
-  // Field-init reference; .start() is called from `afterNextRender`
-  // below; .cancel() runs on destroy. The give-up branch dev-warns
-  // and bails — a detached host inside a never-rendered ancestor
-  // (e.g. `*ngIf="false"` parent) requires an unmount/remount cycle
-  // so Angular re-instantiates the directive with a fresh budget.
-  // `display: none` toggles do NOT recover — constructor never
-  // re-runs.
+  // rAF-scheduled IO attach retry. `display: none` toggles do NOT
+  // recover; an unmount/remount cycle is required to re-arm.
   private readonly attachRetry: CngxDomAnchorRetryHandle =
     createDomAnchorRetry({
       attempt: () => {
@@ -308,11 +306,7 @@ export class CngxTabOverflow {
     afterNextRender(() => this.attachRetry.start());
 
     // Re-observe whenever the tab list changes. Stale-id pruning is
-    // derived through `visibilityState`'s `linkedSignal` source —
-    // this effect's only remaining responsibility is the imperative
-    // observer rewire (disconnect + observe-current-tabs), which
-    // cannot live inside a derived signal. Reading
-    // `panelHost.tabs()` is the tracking trigger.
+    // derived through `visibilityState`'s `linkedSignal` source.
     effect(() => {
       this.panelHost.tabs();
       untracked(() => {
@@ -323,6 +317,8 @@ export class CngxTabOverflow {
         this.observeCurrentTabs();
       });
     });
+
+    wireOverflowPopoverHighlight(this.popover, this.adRef);
 
     this.destroyRef.onDestroy(() => {
       this.attachRetry.cancel();

@@ -183,6 +183,145 @@ describe('CngxTabOverflow', () => {
     );
   });
 
+  it('opens the popover with the first option pre-highlighted (APG combobox open contract)', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+    (overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().show();
+    fixture.detectChanges();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    // First hidden option carries the --active class via the wireOverflowPopoverHighlight effect.
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(items.length).toBeGreaterThan(0);
+    expect(items[0].classList.contains('cngx-tab-overflow__item--active')).toBe(true);
+  });
+
+  it('resets the highlight on close so re-open re-anchors at first', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLButtonElement;
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+
+    // First open + navigate to last via End.
+    (overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().show();
+    fixture.detectChanges();
+    await Promise.resolve();
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+    );
+    fixture.detectChanges();
+    const itemsAfterEnd = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(
+      itemsAfterEnd[itemsAfterEnd.length - 1].classList.contains(
+        'cngx-tab-overflow__item--active',
+      ),
+    ).toBe(true);
+
+    // Close + re-open. New open re-anchors at first.
+    (overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().hide();
+    fixture.detectChanges();
+    await Promise.resolve();
+    (overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().show();
+    fixture.detectChanges();
+    await Promise.resolve();
+    fixture.detectChanges();
+
+    const itemsAfterReopen = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(itemsAfterReopen[0].classList.contains('cngx-tab-overflow__item--active')).toBe(true);
+  });
+
+  it('clicking outside the popover surface dismisses it', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const overflow = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    ).componentInstance as InstanceType<typeof CngxTabOverflow>;
+    (overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().show();
+    fixture.detectChanges();
+    await Promise.resolve();
+    expect((overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().isVisible()).toBe(true);
+
+    // Click on the document body (outside the popover surface).
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    await Promise.resolve();
+    expect((overflow as unknown as { popover: () => { show: () => void; hide: () => void; isVisible: () => boolean } }).popover().isVisible()).toBe(false);
+  });
+
   it('option <li> ids follow the tabOverflowOptionId contract — aria-activedescendant resolves to a real DOM element', async () => {
     const { instances } = installMockIntersectionObserver();
     stubPopoverApi();

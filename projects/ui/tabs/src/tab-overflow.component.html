@@ -26,6 +26,10 @@
 <div
   cngxPopover
   #overflowPopover="cngxPopover"
+  cngxClickOutside
+  [eventType]="'click'"
+  [enabled]="overflowPopover.isVisible()"
+  (clickOutside)="overflowPopover.hide()"
   role="listbox"
   class="cngx-tab-overflow__panel"
   placement="bottom-end"

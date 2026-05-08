@@ -1,6 +1,10 @@
-import { computed, type Signal, type TemplateRef } from '@angular/core';
+import { effect, untracked, type Signal, computed, type TemplateRef } from '@angular/core';
 
-import type { ActiveDescendantItem } from '@cngx/common/a11y';
+import type {
+  ActiveDescendantItem,
+  CngxActiveDescendant,
+} from '@cngx/common/a11y';
+import type { CngxPopover } from '@cngx/common/popover';
 
 import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabsConfig } from '../tabs-config';
@@ -219,4 +223,43 @@ export function createTabOverflowTemplateBindings(
     buildItemContext,
     adItems,
   };
+}
+
+/**
+ * APG-combobox open/close highlight wiring for the overflow popover.
+ * On open with no AD highlight set, calls `highlightFirst()` so Enter
+ * picks the first option. On close, calls `resetHighlight()` so the
+ * next open re-anchors at first. The `=== -1` guard preserves
+ * keyboard-driven open paths (End / ArrowUp on closed trigger): AD's
+ * host listener bumps `activeIndex` BEFORE the template-driven
+ * `popover.show()` resolves, so the index is already user-set when
+ * this effect fires.
+ *
+ * Must run in injection context (`effect()` requirement). Returns
+ * nothing — the effect cleans up via the host's `DestroyRef`.
+ *
+ * @category interactive
+ */
+export function wireOverflowPopoverHighlight(
+  popover: Signal<CngxPopover | undefined>,
+  ad: Signal<CngxActiveDescendant | undefined>,
+): void {
+  effect(() => {
+    const pop = popover();
+    if (!pop) {
+      return;
+    }
+    const visible = pop.isVisible();
+    untracked(() => {
+      const adRef = ad();
+      if (!adRef) {
+        return;
+      }
+      if (visible && adRef.activeIndex() === -1) {
+        adRef.highlightFirst();
+      } else if (!visible) {
+        adRef.resetHighlight();
+      }
+    });
+  });
 }

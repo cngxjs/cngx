@@ -82,6 +82,7 @@ export {
 export {
   createTabOverflowTemplateBindings,
   tabOverflowOptionId,
+  wireOverflowPopoverHighlight,
   type CngxTabOverflowTemplateBindings,
   type CngxTabOverflowTemplateBindingsOptions,
 } from './src/overflow/overflow-template-cascade';
