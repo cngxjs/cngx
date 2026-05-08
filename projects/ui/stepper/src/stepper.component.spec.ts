@@ -7,6 +7,7 @@ import {
   CngxStep,
   CngxStepGroup,
   type CngxStepperCommitAction,
+  CNGX_STEPPER_GLYPHS,
   provideStepperConfig,
   provideStepperI18n,
   withStepperAriaLabels,
@@ -572,6 +573,27 @@ describe('CngxStepper organism', () => {
         fixture.detectChanges();
         expect(host.getAttribute('aria-busy')).toBeNull();
       });
+    });
+
+    it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const icon = buttons[1].querySelector(
+        '.cngx-stepper__rejection-icon',
+      ) as HTMLElement | null;
+      expect(icon).not.toBeNull();
+      expect(icon!.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.rejectionIcon);
     });
 
     it('binds cngx-stepper__step--rejected on the rejected step row when lastFailedIndex matches its flatIndex', () => {

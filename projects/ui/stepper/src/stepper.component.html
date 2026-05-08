@@ -127,9 +127,9 @@
 <ng-template #defaultIndicator let-position>
   <span class="cngx-stepper__indicator-glyph">{{ position }}</span>
 </ng-template>
-<ng-template #defaultBadge>!</ng-template>
+<ng-template #defaultBadge>{{ glyphs.errorBadge }}</ng-template>
 <ng-template #defaultBusySpinner></ng-template>
-<ng-template #defaultRejection>!</ng-template>
+<ng-template #defaultRejection>{{ glyphs.rejectionIcon }}</ng-template>
 <ng-template #defaultGroupHeader let-group="group">
   <span class="cngx-stepper__group-label">{{ group.label() }}</span>
 </ng-template>

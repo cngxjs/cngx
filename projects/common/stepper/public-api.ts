@@ -78,6 +78,8 @@ export {
   type CngxStepperTemplateBindingsOptions,
 } from './src/slots/stepper-template-cascade';
 
+export { CNGX_STEPPER_GLYPHS } from './src/glyphs';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {

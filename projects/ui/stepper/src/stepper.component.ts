@@ -36,6 +36,7 @@ import {
   CngxStepperPresenter,
   CngxStepRejection,
   type CngxStepRejectionContext,
+  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
   createStepperTemplateBindings,
   flatStepsEqual,
@@ -121,6 +122,16 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly rejectionSlot = contentChild(CngxStepRejection);
   private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
   private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /**
+   * Internal glyph fallback const, exposed to the template so the
+   * built-in `<ng-template #defaultBadge>` and `#defaultRejection`
+   * outlets render the single source of truth from
+   * `@cngx/common/stepper`. Consumers customise via slot directives
+   * (`*cngxStepBadge`, `*cngxStepRejection`) or the `with*Template`
+   * config cascade — never by overwriting this field.
+   */
+  protected readonly glyphs = CNGX_STEPPER_GLYPHS;
 
   /**
    * Resolved 6-slot template cascade for the indicator / badge /
