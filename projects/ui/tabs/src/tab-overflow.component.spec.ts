@@ -183,24 +183,152 @@ describe('CngxTabOverflow', () => {
     );
   });
 
-  it('mounts role=menu on the popover surface, role=presentation on the <ul> (APG flattened landmark)', async () => {
-    // Pre-fix: <div cngxPopover>...<ul role="menu"><li role="menuitem">
-    // — AT reported a generic group then drilled into a separate menu
-    // landmark, doubling the depth. Post-fix: role=menu sits on the
-    // popover surface itself, <ul> is flattened via role=presentation,
-    // menuitems are direct children of the menu landmark.
+  it('option <li> ids follow the tabOverflowOptionId contract — aria-activedescendant resolves to a real DOM element', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    // Push two tabs into the hidden set.
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(items.length).toBe(2);
+    items.forEach((li) => {
+      const id = li.getAttribute('id');
+      expect(id).toBeTruthy();
+      expect(id?.endsWith('-overflow-option')).toBe(true);
+    });
+  });
+
+  it('ArrowDown / End on the trigger button bumps aria-activedescendant through hidden options (CngxActiveDescendant on combobox)', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-activedescendant')).toBeNull();
+
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    fixture.detectChanges();
+    const firstActive = trigger.getAttribute('aria-activedescendant');
+    expect(firstActive).toBeTruthy();
+    expect(firstActive?.endsWith('-overflow-option')).toBe(true);
+
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
+    );
+    fixture.detectChanges();
+    const lastActive = trigger.getAttribute('aria-activedescendant');
+    expect(lastActive).toBeTruthy();
+    // With 3 hidden tabs, End should land on a different option than ArrowDown.
+    expect(lastActive).not.toBe(firstActive);
+  });
+
+  it('Enter on the trigger picks the highlighted option via the AD activated event', async () => {
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLButtonElement;
+
+    // ArrowDown to highlight the first hidden option, then Enter to pick.
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    fixture.detectChanges();
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    );
+    fixture.detectChanges();
+
+    // Pre-existing tab `buttons[2]` is the first hidden tab — picking
+    // it routes through panelHost.selectById and the strip activates.
+    expect(buttons[2].getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('mounts role=listbox on the popover surface, role=presentation on the <ul>, role=combobox on the trigger (ARIA 1.2 combobox pattern)', async () => {
+    // Three roles travel together under ARIA 1.2:
+    //   trigger button → role="combobox" + aria-haspopup="listbox"
+    //   popover surface → role="listbox" (the popup target)
+    //   <ul> → role="presentation" so each <li role="option"> is a
+    //         direct child of the listbox landmark in the AT tree.
+    // Pre-fix nested role=menu on <ul> + no role on the popover wrapper
+    // doubled the landmark depth; the listbox/combobox swap also
+    // closes the round-5 keyboard concern (AD owns ArrowUp/Down/
+    // Home/End/typeahead/Enter on the trigger).
     installMockIntersectionObserver();
     stubPopoverApi();
     const fixture = TestBed.createComponent(OverflowHost);
     fixture.detectChanges();
     await flushMicrotasks();
+    const trigger = fixture.nativeElement.querySelector(
+      '.cngx-tab-overflow__trigger',
+    ) as HTMLElement;
     const popoverSurface = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__panel',
     ) as HTMLElement;
     const list = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__list',
     ) as HTMLElement;
-    expect(popoverSurface.getAttribute('role')).toBe('menu');
+    expect(trigger.getAttribute('role')).toBe('combobox');
+    expect(trigger.getAttribute('aria-haspopup')).toBe('listbox');
+    expect(popoverSurface.getAttribute('role')).toBe('listbox');
     expect(list.getAttribute('role')).toBe('presentation');
   });
 

@@ -15,6 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
@@ -25,6 +26,7 @@ import {
   createTabOverflowTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
+  tabOverflowOptionId,
   type CngxDomAnchorRetryHandle,
   type CngxTabHandle,
   type CngxTabPanelHost,
@@ -62,6 +64,14 @@ function tabIdListEqual(
  * scroll even when no tab actually flipped visibility, cascading
  * into the popover-list outlet.
  */
+/**
+ * Keyboard keys that should auto-open the More popover when pressed
+ * on a still-collapsed trigger button. Matches the ARIA APG combobox
+ * pattern: ArrowDown/Up + Home/End all reveal the listbox surface so
+ * the user sees the option AD just highlighted.
+ */
+const NAV_OPEN_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Home', 'End']);
+
 function mapBoolEqual(
   a: ReadonlyMap<string, boolean>,
   b: ReadonlyMap<string, boolean>,
@@ -112,7 +122,12 @@ function mapBoolEqual(
   exportAs: 'cngxTabOverflow',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxPopover, CngxPopoverTrigger],
+  imports: [
+    NgTemplateOutlet,
+    CngxActiveDescendant,
+    CngxPopover,
+    CngxPopoverTrigger,
+  ],
   templateUrl: './tab-overflow.component.html',
   styleUrls: ['./tab-overflow.component.css'],
   host: {
@@ -196,6 +211,16 @@ export class CngxTabOverflow {
   // identity-different but length-equal value (flicker prevention).
   protected readonly hiddenCount = computed(() => this.hiddenTabs().length);
 
+  // ARIA 1.2 combobox pattern — the trigger button keeps focus, the
+  // popover surface carries `role="listbox"`, AD steers
+  // `aria-activedescendant` on the trigger as the user navigates with
+  // ArrowUp/Down/Home/End/typeahead. Both the AD-items projection
+  // (with its structural-equal guard) and the option-id formatter
+  // live in the shared cascade factory under `@cngx/common/tabs` so
+  // future consumers (e.g. an alternative tab-strip overflow shell)
+  // can reuse the same DOM-id contract.
+  protected readonly adItemId = tabOverflowOptionId;
+
   // Resolved tabs config — read once at construction so downstream
   // field-init reads (`stabilizeMs`, `maxDeferMs`, `templates`) all
   // see the same snapshot. Declared here ahead of those fields
@@ -220,50 +245,16 @@ export class CngxTabOverflow {
   });
 
   private observer: IntersectionObserver | null = null;
-  // Maps an observed DOM target back to the cngx handle id whose
-  // visibility it represents. Populated in `observeCurrentTabs` (where
-  // we already have both the target and the handle in scope), read in
-  // `handleIntersections`. Decouples the molecule from any specific
-  // DOM-id convention — cngx-native renders buttons with id
-  // `${handle.id}-header`; Material owns the rendered DOM and uses
-  // `mat-tab-group-N-label-M`. Either flow works as long as the
-  // adapter resolves the right element. WeakMap so detached buttons
-  // GC freely; entries auto-drop with the DOM nodes.
+  // Decouples the molecule from any specific DOM-id convention —
+  // cngx-native uses `${handle.id}-header`; Material renders
+  // `mat-tab-group-N-label-M`. WeakMap auto-clears with detached nodes.
   private readonly targetToHandleId = new WeakMap<HTMLElement, string>();
 
-  // Quiescence window (ms) for the IO-driven visibility map. Strip
-  // animations (Material's mat-tab transition; the cngx-native
-  // active-bar slide; pagination scroll; tab-list reflow on resize)
-  // emit a burst of IntersectionObserver events through the
-  // animation's keyframes — the boolean `isIntersecting` for any
-  // particular tab can flip multiple times before settling. Without
-  // a quiescence gate, the More button's counter flickers through
-  // the intermediate states. This timer collapses bursts: every IO
-  // event resets the timer; commit happens only after `stabilizeMs`
-  // of silence — i.e. effectively at animation-end. The accumulated
-  // entries are replayed in arrival order so the FINAL state for
-  // each target wins (Map.set in commitPendingVisibility overwrites
-  // earlier transients per key).
-  //
-  // Both timing knobs read from the resolved `CngxTabsConfig` so
-  // consumers can tune them via `withTabOverflowStabilizeMs(...)` /
-  // `withTabOverflowMaxDeferMs(...)` to match their strip animation
-  // duration and freshness contract. Library defaults: 100ms
-  // quiescence, 250ms max-defer ceiling. Field-init reads — the
-  // resolved config is captured once at construction (see
-  // `tabsConfig` above for the canonical snapshot); runtime config
-  // swaps would require a re-instantiation regardless because
-  // IntersectionObserver attachment is one-shot.
+  // IO-debounce knobs — semantics + library defaults documented on
+  // `CngxTabsConfig.overflowStabilizeMs` / `.overflowMaxDeferMs`.
+  // Field-init reads — config is captured once at construction;
+  // IntersectionObserver attach is one-shot.
   private readonly stabilizeMs = this.tabsConfig.overflowStabilizeMs ?? 100;
-  // Hard ceiling on the quiescence-debounce window. Without this, a
-  // sustained IO churn pattern (entries arriving every <stabilizeMs
-  // for >maxDeferMs — momentum scrolling, continuous resize, an
-  // animation that keeps Material's tab-list reflowing every frame)
-  // would keep clearing the stabilize timer indefinitely. The
-  // counter would freeze on a stale value the entire time, breaking
-  // Pillar 2 (state-change communication must hold under sustained
-  // input). `maxDeferMs` forces a flush regardless of further IO
-  // events once the buffer has been waiting this long.
   private readonly maxDeferMs = this.tabsConfig.overflowMaxDeferMs ?? 250;
   private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
   private pendingEntries: IntersectionObserverEntry[] = [];
@@ -354,6 +345,32 @@ export class CngxTabOverflow {
   protected pickTab(tab: CngxTabHandle): void {
     this.panelHost.selectById(tab.id);
     this.popover().hide();
+  }
+
+  /** AD `(activated)` — Enter / Space on a highlighted option picks. */
+  protected handleAdActivated(value: unknown): void {
+    const tab = value as CngxTabHandle;
+    if (tab?.id) {
+      this.pickTab(tab);
+    }
+  }
+
+  /**
+   * Trigger-button keydown — opens the popover on a navigation key
+   * when it's still collapsed so the highlighted option is visible
+   * before the user presses Enter. AD's own keydown handler runs
+   * first (directive-host listeners fire before template bindings),
+   * so by the time this runs `activeIndex` already points at the
+   * intended option. No-op while the popover is open — AD owns
+   * navigation entirely.
+   */
+  protected handleTriggerKeydown(event: KeyboardEvent): void {
+    if (this.popover().isVisible() || !this.hasHiddenTabs()) {
+      return;
+    }
+    if (NAV_OPEN_KEYS.has(event.key)) {
+      this.popover().show();
+    }
   }
 
   private observeCurrentTabs(): void {

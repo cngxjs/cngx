@@ -81,6 +81,7 @@ export {
 } from './src/overflow/tab-overflow-item.directive';
 export {
   createTabOverflowTemplateBindings,
+  tabOverflowOptionId,
   type CngxTabOverflowTemplateBindings,
   type CngxTabOverflowTemplateBindingsOptions,
 } from './src/overflow/overflow-template-cascade';

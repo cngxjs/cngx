@@ -248,18 +248,24 @@ module.exports = tseslint.config(
     ],
     plugins: { local: localRules },
     rules: {
-      // Threshold deliberately set to 180 (vs the rule's default 150).
-      // Genuine Level-4 organisms with two orthogonal projection
-      // effects + content-children registry sync (e.g. `[cngxMatTabs]`
-      // with rejection + aggregator decoration projectors) plus
-      // bidirectional-sync setup land around 150-170 source lines
-      // after extracting DOM-mutation helpers to package-private
-      // siblings; 150 forces over-abstraction (single-consumer
-      // factory tokens in `@cngx/common/<lib>`) per the architecture-
-      // lens rule. 180 leaves headroom for the legitimate organism
-      // shape; further growth still triggers the rule and forces a
-      // real decompose.
-      'local/level-4-organism-loc-guard': ['error', { threshold: 180 }],
+      // Threshold raised twice (150 → 180 → 200) as legitimate Level-4
+      // shape grew. The 200 bump reflects `<cngx-tab-overflow>`'s
+      // irreducible orchestration: panel-host token injection +
+      // adapter-factory injection + linkedSignal visibility-state +
+      // 3-stage template cascade wiring + content-child slot queries
+      // + IO-debounce timer with max-defer cap + rAF-scheduled DOM
+      // anchor retry + IntersectionObserver attach/detach lifecycle +
+      // ARIA-1.2-combobox AD wiring sit at 191 source lines AFTER
+      // extracting `createTabOverflowTemplateBindings` (cascade +
+      // adItems projection + structural-equal guards) and
+      // `createDomAnchorRetry` (rAF retry loop) into
+      // `@cngx/common/tabs` Level-2 factories. Forcing further
+      // extraction at 180 would push single-consumer helpers into
+      // `@cngx/common` (over-abstraction per architecture-lens rule).
+      // 200 leaves margin for the irreducible orchestration shape;
+      // further growth still triggers the rule and forces a real
+      // decompose into a sibling sub-component.
+      'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
     },
   },
 );

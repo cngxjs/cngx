@@ -1,10 +1,15 @@
 <button
   type="button"
+  role="combobox"
   class="cngx-tab-overflow__trigger"
+  cngxActiveDescendant
+  [items]="templates.adItems()"
   [cngxPopoverTrigger]="overflowPopover"
-  [haspopup]="'menu'"
+  [haspopup]="'listbox'"
   [hidden]="!hasHiddenTabs()"
   [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
+  (activated)="handleAdActivated($event)"
+  (keydown)="handleTriggerKeydown($event)"
   (click)="overflowPopover.toggle()"
 >
   @let triggerTpl = templates.triggerTemplate();
@@ -20,7 +25,7 @@
 <div
   cngxPopover
   #overflowPopover="cngxPopover"
-  role="menu"
+  role="listbox"
   class="cngx-tab-overflow__panel"
   placement="bottom-end"
   panelClass="cngx-tab-overflow__panel-surface"
@@ -28,19 +33,23 @@
 >
   <!--
     `role="presentation"` flattens the <ul> away from the
-    accessibility tree so each <li role="menuitem"> is exposed as a
-    direct child of the popover's role="menu" landmark. Pre-fix layout
-    nested role="menu" on the <ul> AND the popover wrapper carried no
-    role; AT reported a generic group then drilled into a separate
-    menu, doubling the landmark depth. APG menu pattern requires
-    menuitems to be direct children of role="menu".
+    accessibility tree so each <li role="option"> is exposed as a
+    direct child of the role="listbox" landmark on the popover
+    surface. Each option carries a stable id derived from the tab
+    handle id; CngxActiveDescendant on the trigger button steers
+    `aria-activedescendant` at one of these ids while the user
+    navigates with ArrowUp/Down/Home/End/typeahead. ARIA 1.2
+    combobox: trigger button (role="combobox") owns focus + AD;
+    popover surface (role="listbox") is the popup target.
   -->
   <ul class="cngx-tab-overflow__list" role="presentation">
     @for (tab of hiddenTabs(); track tab.id; let i = $index) {
       <li
-        role="menuitem"
+        role="option"
         class="cngx-tab-overflow__item"
+        [id]="adItemId(tab)"
         [attr.data-tab-id]="tab.id"
+        [attr.aria-selected]="false"
         [attr.aria-disabled]="tab.disabled() ? 'true' : 'false'"
         (click)="!tab.disabled() && pickTab(tab)"
       >

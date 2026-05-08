@@ -12,6 +12,7 @@ import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabsConfig } from '../tabs-config';
 import {
   createTabOverflowTemplateBindings,
+  tabOverflowOptionId,
   type CngxTabOverflowTemplateBindings,
 } from './overflow-template-cascade';
 import {
@@ -154,6 +155,56 @@ describe('createTabOverflowTemplateBindings', () => {
     const bindings = build({});
     const ctx = bindings.buildItemContext(tab, 0);
     expect(ctx.disabled).toBe(true);
+  });
+
+  it('tabOverflowOptionId returns a stable suffix per tab id', () => {
+    const a = makeHandle('alpha');
+    const b = makeHandle('bravo');
+    expect(tabOverflowOptionId(a)).toBe('alpha-overflow-option');
+    expect(tabOverflowOptionId(b)).toBe('bravo-overflow-option');
+    expect(tabOverflowOptionId(a)).not.toBe(tabOverflowOptionId(b));
+  });
+
+  it('adItems projects hiddenTabs into ActiveDescendantItem[] with stable ids and disabled flags', () => {
+    const tabs = [
+      makeHandle('A'),
+      makeHandle('B', true),
+      makeHandle('C'),
+    ] as readonly CngxTabHandle[];
+    const bindings = build({ tabs });
+    const items = bindings.adItems();
+    expect(items.length).toBe(3);
+    expect(items[0]).toEqual({
+      id: 'A-overflow-option',
+      value: tabs[0],
+      label: 'A',
+      disabled: false,
+    });
+    expect(items[1].disabled).toBe(true);
+    expect(items[1].id).toBe('B-overflow-option');
+    expect(items[2].id).toBe('C-overflow-option');
+  });
+
+  it('adItems is structural-equal — identity-stable when ids + disabled flags unchanged', () => {
+    const tabs = [makeHandle('A'), makeHandle('B')] as readonly CngxTabHandle[];
+    const hiddenCount = signal(2);
+    const hiddenTabs = signal<readonly CngxTabHandle[]>(tabs);
+    const bindings = createTabOverflowTemplateBindings({
+      triggerSlot: signal<CngxTabOverflowTrigger | undefined>(
+        undefined,
+      ).asReadonly(),
+      itemSlot: signal<CngxTabOverflowItem | undefined>(undefined).asReadonly(),
+      config: {},
+      hiddenCount: hiddenCount.asReadonly(),
+      hiddenTabs: hiddenTabs.asReadonly(),
+      pickTab: () => {},
+    });
+    const items1 = bindings.adItems();
+    // Re-emit hiddenTabs with a fresh array carrying the same handle
+    // identities and disabled flags — structural-equal short-circuits.
+    hiddenTabs.set([...tabs]);
+    const items2 = bindings.adItems();
+    expect(items2).toBe(items1);
   });
 });
 

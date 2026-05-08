@@ -1,5 +1,7 @@
 import { computed, type Signal, type TemplateRef } from '@angular/core';
 
+import type { ActiveDescendantItem } from '@cngx/common/a11y';
+
 import type { CngxTabHandle } from '../tab-group-host.token';
 import type { CngxTabsConfig } from '../tabs-config';
 import type {
@@ -10,6 +12,21 @@ import type {
   CngxTabOverflowTrigger,
   CngxTabOverflowTriggerContext,
 } from './tab-overflow-trigger.directive';
+
+/**
+ * Format the DOM `id` for a hidden-tab option row inside the
+ * `<cngx-tab-overflow>` listbox. Stable across CD passes so
+ * `aria-activedescendant` on the trigger button resolves to the same
+ * `<li>` element each time AD points at the same tab handle. The
+ * `-overflow-option` suffix prevents collision with the strip-button
+ * id (`${id}-header`) and the per-tab descriptor span
+ * (`${id}-desc`) used by the cngx-native organism.
+ *
+ * @category interactive
+ */
+export function tabOverflowOptionId(tab: CngxTabHandle): string {
+  return `${tab.id}-overflow-option`;
+}
 
 /**
  * Inputs to {@link createTabOverflowTemplateBindings}. The molecule
@@ -52,6 +69,21 @@ export interface CngxTabOverflowTemplateBindings {
     tab: CngxTabHandle,
     index: number,
   ) => CngxTabOverflowItemContext;
+  /**
+   * `ActiveDescendantItem[]` projection of `hiddenTabs()` for
+   * `CngxActiveDescendant.items`. Each entry's `id` matches the DOM
+   * id assigned to the row's `<li>` (see {@link tabOverflowOptionId});
+   * `value` carries the tab handle so AD's `(activated)` payload casts
+   * back to {@link CngxTabHandle} without a registry lookup. Carries a
+   * structural-equal guard so no-op IO emissions don't cascade into
+   * AD's `resolvedItems` and re-render the trigger's
+   * `aria-activedescendant` binding. Mutable array shape (not
+   * `readonly`) because `CngxActiveDescendant.items` declares its
+   * input as the mutable type — the array is freshly constructed
+   * inside the computed each time so callers cannot mutate the live
+   * source.
+   */
+  readonly adItems: Signal<ActiveDescendantItem[]>;
 }
 
 /**
@@ -67,6 +99,31 @@ function triggerContextEqual(
   b: CngxTabOverflowTriggerContext,
 ): boolean {
   return a.count === b.count && a.hiddenTabs === b.hiddenTabs;
+}
+
+/**
+ * Structural equality for the `adItems` projection — same length, same
+ * id per index, same disabled flag per index. Without this guard,
+ * every IO emission re-derives a fresh `ActiveDescendantItem[]` with
+ * new object identities and AD's `resolvedItems` cascade fires even
+ * when the visible-tab set hasn't actually changed.
+ */
+function adItemsEqual(
+  a: ActiveDescendantItem[],
+  b: ActiveDescendantItem[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].id !== b[i].id || a[i].disabled !== b[i].disabled) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -121,5 +178,21 @@ export function createTabOverflowTemplateBindings(
     disabled: tab.disabled(),
     index,
   });
-  return { triggerTemplate, itemTemplate, triggerContext, buildItemContext };
+  const adItems = computed<ActiveDescendantItem[]>(
+    () =>
+      opts.hiddenTabs().map((tab) => ({
+        id: tabOverflowOptionId(tab),
+        value: tab,
+        label: tab.label() ?? tab.id,
+        disabled: tab.disabled(),
+      })),
+    { equal: adItemsEqual },
+  );
+  return {
+    triggerTemplate,
+    itemTemplate,
+    triggerContext,
+    buildItemContext,
+    adItems,
+  };
 }
