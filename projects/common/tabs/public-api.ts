@@ -24,6 +24,10 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabOverflowItemTemplate,
+  withTabOverflowMaxDeferMs,
+  withTabOverflowStabilizeMs,
+  withTabOverflowTriggerTemplate,
   withTabsRovingLoop,
   withTabsCommitMode,
   withTabsRouterSync,
@@ -33,12 +37,20 @@ export {
   type CngxTabsConfigFeature,
   type CngxTabsAriaLabels,
   type CngxTabsFallbackLabels,
+  type CngxTabsTemplates,
 } from './src/tabs-config';
+export {
+  provideCngxTabs,
+  provideCngxTabsAt,
+  type CngxTabsFeature,
+} from './src/provide-cngx-tabs';
 export {
   CNGX_TABS_I18N,
   injectTabsI18n,
   provideTabsI18n,
+  withTabsI18nLabels,
   type CngxTabsI18n,
+  type CngxTabsI18nFeature,
 } from './src/i18n/tabs-i18n';
 export {
   createTabsCommitHandler,
@@ -47,6 +59,35 @@ export {
   type CngxTabsCommitHandlerFactory,
   type CngxTabsCommitHandlerOptions,
 } from './src/commit-handler';
+export {
+  CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+  createCngxTabOverflowDefaultDomAdapter,
+  type CngxTabOverflowDomAdapter,
+  type CngxTabOverflowDomAdapterFactory,
+} from './src/overflow/dom-adapter';
+export {
+  createDomAnchorRetry,
+  type CngxDomAnchorRetryHandle,
+  type CngxDomAnchorRetryOptions,
+  type CngxDomAnchorRetryResult,
+} from './src/overflow/dom-anchor-retry';
+export {
+  CngxTabOverflowTrigger,
+  type CngxTabOverflowTriggerContext,
+} from './src/overflow/tab-overflow-trigger.directive';
+export {
+  CngxTabOverflowItem,
+  type CngxTabOverflowItemContext,
+} from './src/overflow/tab-overflow-item.directive';
+export {
+  CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
+  createOverflowPopoverHighlightSync,
+  createTabOverflowTemplateBindings,
+  tabOverflowOptionId,
+  type CngxOverflowPopoverHighlightSyncFactory,
+  type CngxTabOverflowTemplateBindings,
+  type CngxTabOverflowTemplateBindingsOptions,
+} from './src/overflow/overflow-template-cascade';
 
 // Organism helpers — extracted from the Level-4 organism shells so
 // the same shape can be reused (`<cngx-tab-group>` today; future

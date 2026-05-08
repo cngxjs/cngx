@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   computed,
   contentChildren,
   DestroyRef,
@@ -7,8 +8,11 @@ import {
   ElementRef,
   inject,
   Injector,
+  isDevMode,
   Renderer2,
   untracked,
+  ViewContainerRef,
+  type ComponentRef,
 } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import type { Subscription } from 'rxjs';
@@ -16,8 +20,14 @@ import type { Subscription } from 'rxjs';
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_TAB_GROUP_HOST,
+  CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+  CNGX_TAB_PANEL_HOST,
   CngxTabGroupPresenter,
+  createDomAnchorRetry,
+  type CngxTabGroupHost,
+  type CngxTabPanelHost,
 } from '@cngx/common/tabs';
+import { CngxTabOverflow } from '@cngx/ui/tabs';
 import { nextUid } from '@cngx/core/utils';
 
 import {
@@ -29,6 +39,7 @@ import {
   createMatTabHandle,
   type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
+import { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';
 
 /**
  * Material instrumentation directive — attaches to an existing
@@ -65,6 +76,40 @@ import {
       outputs: ['activeIndexChange'],
     },
   ],
+  providers: [
+    // Material variant of the overflow molecule's DOM-resolution
+    // strategy. Swaps `.cngx-tabs__strip-wrapper` walks for the Material
+    // `.mat-mdc-tab-header` → `.mat-mdc-tab-label-container` walk and
+    // index-based `.mat-mdc-tab` resolution. Tracked-debt §5.
+    {
+      provide: CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
+      useValue: createCngxMatTabOverflowDomAdapter,
+    },
+    // Panel-host adapter for the programmatically mounted overflow
+    // molecule. The presenter satisfies the read-mostly tabs / activeId
+    // / orientation / selectById surface; the template-projection
+    // methods (`labelTemplateFor`/`contentTemplateFor`) stub to `null`
+    // because Material owns label rendering through its own
+    // `<mat-tab>.textLabel` input + projected mat-tab-content — the
+    // cngx `*cngxTabLabel` template surface is intentionally absent in
+    // the Material variant. The cngx-native organism's own
+    // `useExisting: CngxTabGroup` provider continues to win for the
+    // `<cngx-tab-group>` path because it sits one layer closer in the
+    // injector chain (organism @Component vs directive providers
+    // here).
+    {
+      provide: CNGX_TAB_PANEL_HOST,
+      useFactory: (presenter: CngxTabGroupHost): CngxTabPanelHost => ({
+        tabs: presenter.tabs,
+        activeId: presenter.activeId,
+        orientation: presenter.orientation,
+        selectById: (id) => presenter.selectById(id),
+        labelTemplateFor: () => null,
+        contentTemplateFor: () => null,
+      }),
+      deps: [CNGX_TAB_GROUP_HOST],
+    },
+  ],
 })
 export class CngxMatTabs {
   private readonly matTabGroup = inject(MatTabGroup, { self: true });
@@ -74,6 +119,29 @@ export class CngxMatTabs {
   private readonly renderer = inject(Renderer2);
   private readonly hostEl =
     inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+
+  // Programmatic mount of the cngx overflow molecule. The directive's
+  // `providers` swap in the Material DOM adapter so the molecule's
+  // IntersectionObserver attaches against `.mat-mdc-tab-label-container`
+  // (Material's IO-friendly scroll viewport) rather than the cngx-native
+  // `.cngx-tabs__strip` selector. The component lands as a sibling of
+  // `<mat-tab-group>` in the parent's view here; the constructor's
+  // `afterNextRender` block below physically moves the rendered element
+  // into `.mat-mdc-tab-header` so the More button pins to the trailing
+  // edge of Material's strip.
+  //
+  // Passing `injector: this.injector` makes the molecule's parent
+  // injector chain inherit from THIS directive's element injector —
+  // which carries both the `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`
+  // override and the `CNGX_TAB_PANEL_HOST` wrapper declared on the
+  // `@Directive` providers above. Without this, the default
+  // `vcr.createComponent` parent-injector resolution would walk the
+  // host-template's view container parent, NOT this element's
+  // injector — and `inject(CNGX_TAB_PANEL_HOST)` inside the molecule
+  // would NG0201.
+  private readonly overflowRef: ComponentRef<CngxTabOverflow> = inject(
+    ViewContainerRef,
+  ).createComponent(CngxTabOverflow, { injector: this.injector });
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
   // Per-tab registries — strong refs are bounded by the directive's
@@ -174,6 +242,72 @@ export class CngxMatTabs {
       this.stateChangeSubsByTab.clear();
       this.setupsByTab.clear();
     });
+
+    // Tear down the dynamically created overflow molecule alongside the
+    // directive. ComponentRef.destroy() runs the molecule's own
+    // DestroyRef callbacks (IntersectionObserver disconnect, rAF
+    // cancellation) and removes its rendered element from the DOM.
+    this.destroyRef.onDestroy(() => this.overflowRef.destroy());
+
+    // Anchor the molecule's rendered element inside Material's
+    // `.mat-mdc-tab-header` so the More button pins to the trailing
+    // edge of the strip. Same hook (`afterNextRender`) the aggregator-
+    // decoration projector uses for one-shot post-render DOM writes.
+    //
+    // Retry loop symmetrical to `CngxTabOverflow`'s rAF attach budget:
+    // when the consumer wraps `<mat-tab-group>` in a deferred `*ngIf`
+    // / `@defer` block, the header may not have rendered on the first
+    // afterNextRender frame. Re-schedule via the same hook (passing
+    // `injector` because the second invocation is no longer in the
+    // constructor's injection context) up to MAX_ANCHOR_ATTEMPTS. The
+    // ceiling matches the aggregator-decoration retry cap (5) — well
+    // above any normal Material render lag, low enough to dev-warn
+    // promptly when the consumer DOM never materialises.
+    // Bounded retry via `createDomAnchorRetry` — same counter contract
+    // as `CngxTabOverflow`'s rAF attach loop, with `afterNextRender`
+    // as the scheduler. afterNextRender is one-shot (no cancellation
+    // closure); the factory accepts a noop. Cap at 5 attempts: well
+    // above normal Material render lag, low enough to dev-warn
+    // promptly when consumer DOM never materialises (e.g.
+    // `<mat-tab-group>` gated behind a never-true `*ngIf` / `@defer`).
+    //
+    // The flex-layout skin in `mat-tabs.css` does the rest: the More
+    // button sits next to `.mat-mdc-tab-label-container` rather than
+    // overlaying it, so no imperative positioning is needed here.
+    const anchorRetry = createDomAnchorRetry({
+      attempt: () => {
+        const headerEl = this.hostEl.querySelector<HTMLElement>(
+          '.mat-mdc-tab-header',
+        );
+        if (!headerEl) {
+          return null;
+        }
+        const overflowEl = this.overflowRef.location
+          .nativeElement as HTMLElement;
+        this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
+        this.renderer.appendChild(headerEl, overflowEl);
+        return true;
+      },
+      maxAttempts: 5,
+      schedule: (cb) => {
+        afterNextRender(cb, { injector: this.injector });
+        return () => undefined;
+      },
+      onGiveUp: () => {
+        if (isDevMode()) {
+          console.warn(
+            '[CngxMatTabs] Could not anchor <cngx-tab-overflow> after 5 ' +
+              'attempts — .mat-mdc-tab-header was not found inside the ' +
+              'host. The More popover will fall back to a sibling-of-' +
+              '<mat-tab-group> position; verify Material rendered the ' +
+              'strip (e.g. consumer is not gating <mat-tab-group> behind ' +
+              'a never-true *ngIf / @defer).',
+          );
+        }
+      },
+    });
+    afterNextRender(() => anchorRetry.start());
+    this.destroyRef.onDestroy(() => anchorRetry.cancel());
 
     createMaterialBidirectionalSync({
       presenterIndex: this.presenter.activeIndex,

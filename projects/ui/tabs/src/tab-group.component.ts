@@ -129,10 +129,30 @@ export class CngxTabGroup implements CngxTabPanelHost {
     });
   }
 
-  /** Tabs landmark role-description — i18n / config cascade. */
+  /**
+   * Tabs landmark `aria-roledescription`. Defaults to the W3C ARIA
+   * tablist convention (`'tab list'`) — deliberately distinct from
+   * `i18n.tabsLabel`, which feeds `aria-label`. Pillar 2: the two
+   * announce different things to AT (the *kind of region* vs *which
+   * region*); collapsing them onto one string makes screen readers
+   * read the same word twice in a row. Consumers who want a localised
+   * role description override via
+   * `withTabsFallbackLabels({ tabRoleDescription: 'Reiterleiste' })`.
+   */
   protected readonly tabsRoleDescription = computed<string>(
-    () =>
-      this.config.fallbackLabels?.tabRoleDescription ?? this.i18n.tabsLabel,
+    () => this.config.fallbackLabels?.tabRoleDescription ?? 'tab list',
+  );
+
+  /**
+   * Tab-panel role-description — read by the per-panel
+   * `aria-roledescription` binding. Cascades through
+   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → library default
+   * `'tab panel'`. Mirrors the `tabsRoleDescription` computed so
+   * AT-facing role descriptors flow through one config surface
+   * regardless of which scope (button vs panel) declares them.
+   */
+  protected readonly tabPanelRoleDescription = computed<string>(
+    () => this.config.fallbackLabels?.tabPanelRoleDescription ?? 'tab panel',
   );
 
   /**

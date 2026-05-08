@@ -5,7 +5,7 @@ export const STORY: DemoSpec = {
   navLabel: 'Instrumentation',
   navCategory: 'mat-tabs',
   description:
-    'Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]="optimistic"</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]="pessimistic"</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid="true"</code> until the user successfully re-picks it OR clicks the "Clear last failed" button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>.',
+    'Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]="optimistic"</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]="pessimistic"</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid="true"</code> until the user successfully re-picks it OR clicks the "Clear last failed" button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. <strong>Smart overflow:</strong> when the strip overflows the available width, a <code>&lt;cngx-tab-overflow&gt;</code> More button appears at the trailing edge — listing all hidden tabs in a popover. The molecule mounts itself programmatically via the instrumentation directive; consumers add nothing. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>.',
   apiComponents: ['CngxMatTabs', 'CngxMatTabError', 'CngxToastOn', 'CngxBannerOn'],
   moduleImports: [
     "import { toSignal } from '@angular/core/rxjs-interop';",
@@ -23,6 +23,7 @@ export const STORY: DemoSpec = {
   private readonly banner = inject(CngxBanner);
 
   protected readonly active = signal(0);
+  protected readonly overflowActive = signal(0);
   protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
   protected readonly shouldFail = signal(false);
   protected readonly latencyMs = signal(600);
@@ -170,6 +171,30 @@ export const STORY: DemoSpec = {
     <div class="event-row"><span class="event-label">Active tab</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Profile invalid</span><span class="event-value">{{ profileInvalid() }}</span></div>
     <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Smart overflow under viewport constraint',
+      subtitle:
+        'Ten tabs inside a 600px-wide container — the strip cannot fit them all, so <code>[cngxMatTabs]</code> programmatically mounts a <code>&lt;cngx-tab-overflow&gt;</code> "More" button as a flex sibling of <code>.mat-mdc-tab-label-container</code> inside <code>.mat-mdc-tab-header</code>. The label-container shrinks to fit, the More button takes its natural width — no overlap with the trailing tab. Material\'s pagination arrows (<code>&lt;</code> / <code>&gt;</code>) remain visible and functional alongside; the available header width is split across all flex siblings and the <code>IntersectionObserver</code> re-derives <code>hiddenTabs</code> against the new container width. Click the More button to see the popover list of hidden tabs; clicking a hidden tab routes through <code>presenter.selectById(...)</code> so the cngx commit-action lifecycle, rejection decoration, and aggregator visuals stay coherent across the click. Consumers who prefer the More popover as the only overflow affordance can hide Material\'s pagination via theme-level CSS (see the README). Resize the browser to see the More button engage and disengage as the strip width crosses the overflow threshold.',
+      imports: ['MatTabsModule', 'CngxMatTabs'],
+      template: `
+  <div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
+    <mat-tab-group cngxMatTabs [(activeIndex)]="overflowActive" aria-label="Smart-overflow demo">
+      <mat-tab label="Profile">Profile</mat-tab>
+      <mat-tab label="Account">Account</mat-tab>
+      <mat-tab label="Notifications">Notifications</mat-tab>
+      <mat-tab label="Privacy">Privacy</mat-tab>
+      <mat-tab label="Billing">Billing</mat-tab>
+      <mat-tab label="Connections">Connections</mat-tab>
+      <mat-tab label="Devices">Devices</mat-tab>
+      <mat-tab label="Sessions">Sessions</mat-tab>
+      <mat-tab label="Audit">Audit</mat-tab>
+      <mat-tab label="Advanced">Advanced</mat-tab>
+    </mat-tab-group>
+  </div>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Active overflow tab</span><span class="event-value">{{ overflowActive() }}</span></div>
   </div>`,
     },
   ],

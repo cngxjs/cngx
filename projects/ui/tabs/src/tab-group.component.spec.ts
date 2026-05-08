@@ -7,13 +7,17 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 import {
   CNGX_TAB_GROUP_HOST,
+  CNGX_TABS_CONFIG,
   CngxTab,
   CngxTabContent,
   CngxTabLabel,
+  provideCngxTabs,
   provideTabsConfig,
   provideTabsI18n,
   withDefaultOrientation,
   withTabsAriaLabels,
+  withTabsFallbackLabels,
+  withTabsI18nLabels,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
 
@@ -656,12 +660,68 @@ describe('CngxTabGroup organism', () => {
     expect(calls).toContain(tabs[2]);
   });
 
+  it('per-panel aria-roledescription reflects fallbackLabels.tabPanelRoleDescription', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(
+          withTabsFallbackLabels({ tabPanelRoleDescription: 'Bereichspanel' }),
+        ),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab, CngxTabContent],
+      template: `
+        <cngx-tab-group aria-label="X">
+          <div cngxTab [label]="'A'">
+            <ng-template *cngxTabContent>A content</ng-template>
+          </div>
+        </cngx-tab-group>
+      `,
+    })
+    class PanelDescHost {}
+    const fixture = TestBed.createComponent(PanelDescHost);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '[role="tabpanel"]',
+    ) as HTMLElement;
+    expect(panel).not.toBeNull();
+    expect(panel.getAttribute('aria-roledescription')).toBe('Bereichspanel');
+  });
+
+  it('per-panel aria-roledescription falls back to "tab panel" when unset', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab, CngxTabContent],
+      template: `
+        <cngx-tab-group aria-label="X">
+          <div cngxTab [label]="'A'">
+            <ng-template *cngxTabContent>A content</ng-template>
+          </div>
+        </cngx-tab-group>
+      `,
+    })
+    class DefaultPanelDescHost {}
+    const fixture = TestBed.createComponent(DefaultPanelDescHost);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '[role="tabpanel"]',
+    ) as HTMLElement;
+    expect(panel.getAttribute('aria-roledescription')).toBe('tab panel');
+  });
+
   it('aria-roledescription is reactive (config / i18n cascade)', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({ tabsLabel: 'Reiter' }),
+        provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Reiter' })),
       ],
     });
     @Component({
@@ -680,9 +740,93 @@ describe('CngxTabGroup organism', () => {
       'cngx-tab-group',
     ) as HTMLElement;
     // tabsRoleDescription falls through fallbackLabels.tabRoleDescription
-    // which defaults to 'tab'. Override of i18n.tabsLabel does not
-    // change the role-description because the fallbackLabels tier
-    // wins. Pin the current behaviour.
-    expect(host.getAttribute('aria-roledescription')).toBe('tab');
+    // (library default 'tab list', the W3C ARIA tablist convention).
+    // Override of i18n.tabsLabel does not change the role-description —
+    // the fallbackLabels tier wins, AND the in-component fallback
+    // (when fallbackLabels.tabRoleDescription is undefined) is also
+    // 'tab list', deliberately distinct from i18n.tabsLabel. Pillar 2:
+    // aria-label and aria-roledescription must never collide on the
+    // same string.
+    expect(host.getAttribute('aria-roledescription')).toBe('tab list');
+  });
+
+  it('aria-label and aria-roledescription do not collide when tabsRegion is localised', () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        // Consumer localises the tabs landmark name — aria-label
+        // resolves through `ariaLabels.tabsRegion`. aria-roledescription
+        // must NOT pick up the same string; it stays at the W3C default
+        // 'tab list'. Pre-fix, when `fallbackLabels.tabRoleDescription`
+        // was unset (hand-rolled config bypassing `with*`), the
+        // role-description cascade fell through to `i18n.tabsLabel` and
+        // collapsed onto 'Bereiche' — Pillar 2 silent collision.
+        provideCngxTabs(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group>
+          <div cngxTab [label]="'A'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class CollisionHost {}
+    const fixture = TestBed.createComponent(CollisionHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Bereiche');
+    expect(host.getAttribute('aria-roledescription')).toBe('tab list');
+    expect(host.getAttribute('aria-label')).not.toBe(
+      host.getAttribute('aria-roledescription'),
+    );
+  });
+
+  it('aria-roledescription stays "tab list" even when fallbackLabels is hand-rolled to omit tabRoleDescription', () => {
+    // Closes the actual collision path: consumers who hand-roll a
+    // CNGX_TABS_CONFIG provider that clears `fallbackLabels.
+    // tabRoleDescription` previously fell through to
+    // `i18n.tabsLabel`. Post-fix, the in-component fallback is
+    // 'tab list' instead — collision impossible regardless of how
+    // fallbackLabels was zeroed.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTabsConfig(withTabsAriaLabels({ tabsRegion: 'Bereiche' })),
+        provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'Bereiche' })),
+        // Override the resolved CNGX_TABS_CONFIG with one that has
+        // `fallbackLabels` cleared — simulates a hand-rolled provider
+        // that bypassed `withTabsFallbackLabels`.
+        {
+          provide: CNGX_TABS_CONFIG,
+          useValue: {
+            ariaLabels: { tabsRegion: 'Bereiche' },
+          },
+        },
+      ],
+    });
+    @Component({
+      standalone: true,
+      imports: [CngxTabGroup, CngxTab],
+      template: `
+        <cngx-tab-group>
+          <div cngxTab [label]="'A'"></div>
+        </cngx-tab-group>
+      `,
+    })
+    class HandRolledHost {}
+    const fixture = TestBed.createComponent(HandRolledHost);
+    fixture.detectChanges();
+    const host = fixture.nativeElement.querySelector(
+      'cngx-tab-group',
+    ) as HTMLElement;
+    expect(host.getAttribute('aria-label')).toBe('Bereiche');
+    expect(host.getAttribute('aria-roledescription')).toBe('tab list');
   });
 });

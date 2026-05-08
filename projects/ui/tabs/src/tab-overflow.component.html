@@ -1,32 +1,72 @@
 <button
   type="button"
+  role="combobox"
   class="cngx-tab-overflow__trigger"
+  cngxActiveDescendant
+  #ad="cngxActiveDescendant"
+  [items]="templates.adItems()"
   [cngxPopoverTrigger]="overflowPopover"
-  [haspopup]="'menu'"
+  [haspopup]="'listbox'"
   [hidden]="!hasHiddenTabs()"
-  [attr.aria-label]="i18n.moreTabsLabel(hiddenTabs().length)"
+  [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
+  (activated)="handleAdActivated($event)"
+  (keydown)="handleTriggerKeydown($event)"
   (click)="overflowPopover.toggle()"
 >
-  {{ i18n.moreTabsLabel(hiddenTabs().length) }}
+  @let triggerTpl = templates.triggerTemplate();
+  @if (triggerTpl) {
+    <ng-container
+      *ngTemplateOutlet="triggerTpl; context: templates.triggerContext()"
+    />
+  } @else {
+    {{ i18n.moreTabsLabel(hiddenCount()) }}
+  }
 </button>
 
 <div
   cngxPopover
   #overflowPopover="cngxPopover"
+  cngxClickOutside
+  [eventType]="'click'"
+  [enabled]="overflowPopover.isVisible()"
+  (clickOutside)="overflowPopover.hide()"
+  role="listbox"
   class="cngx-tab-overflow__panel"
   placement="bottom-end"
   panelClass="cngx-tab-overflow__panel-surface"
+  [attr.aria-label]="i18n.moreTabsLabel(hiddenCount())"
 >
-  <ul class="cngx-tab-overflow__list" role="menu">
-    @for (tab of hiddenTabs(); track tab.id) {
+  <!--
+    `role="presentation"` flattens the <ul> away from the
+    accessibility tree so each <li role="option"> is exposed as a
+    direct child of the role="listbox" landmark on the popover
+    surface. Each option carries a stable id derived from the tab
+    handle id; CngxActiveDescendant on the trigger button steers
+    `aria-activedescendant` at one of these ids while the user
+    navigates with ArrowUp/Down/Home/End/typeahead. ARIA 1.2
+    combobox: trigger button (role="combobox") owns focus + AD;
+    popover surface (role="listbox") is the popup target.
+  -->
+  <ul class="cngx-tab-overflow__list" role="presentation">
+    @for (tab of hiddenTabs(); track tab.id; let i = $index) {
       <li
-        role="menuitem"
+        role="option"
         class="cngx-tab-overflow__item"
+        [class.cngx-tab-overflow__item--active]="ad.activeId() === adItemId(tab)"
+        [id]="adItemId(tab)"
         [attr.data-tab-id]="tab.id"
-        [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+        [attr.aria-selected]="false"
+        [attr.aria-disabled]="tab.disabled() ? 'true' : 'false'"
         (click)="!tab.disabled() && pickTab(tab)"
       >
-        {{ tab.label() ?? tab.id }}
+        @let itemTpl = templates.itemTemplate();
+        @if (itemTpl) {
+          <ng-container
+            *ngTemplateOutlet="itemTpl; context: templates.buildItemContext(tab, i)"
+          />
+        } @else {
+          {{ tab.label() ?? tab.id }}
+        }
       </li>
     }
   </ul>

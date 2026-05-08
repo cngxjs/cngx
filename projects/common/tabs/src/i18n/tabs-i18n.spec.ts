@@ -7,6 +7,7 @@ import {
   CNGX_TABS_I18N,
   injectTabsI18n,
   provideTabsI18n,
+  withTabsI18nLabels,
 } from './tabs-i18n';
 
 describe('CngxTabsI18n', () => {
@@ -37,10 +38,12 @@ describe('CngxTabsI18n', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({
-          commitRolledBackTo: (label) =>
-            `Speichern fehlgeschlagen — zurück auf „${label}".`,
-        }),
+        provideTabsI18n(
+          withTabsI18nLabels({
+            commitRolledBackTo: (label) =>
+              `Speichern fehlgeschlagen — zurück auf „${label}".`,
+          }),
+        ),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
@@ -55,11 +58,13 @@ describe('CngxTabsI18n', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({
-          tabsLabel: 'Reiter',
-          previousTab: 'Vorheriger Reiter',
-          nextTab: 'Nächster Reiter',
-        }),
+        provideTabsI18n(
+          withTabsI18nLabels({
+            tabsLabel: 'Reiter',
+            previousTab: 'Vorheriger Reiter',
+            nextTab: 'Nächster Reiter',
+          }),
+        ),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
@@ -75,10 +80,13 @@ describe('CngxTabsI18n', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({
-          selectedTab: (label, pos, count) => `Aktiv: ${label} (${pos}/${count})`,
-          moreTabsLabel: (n) => `${n} weitere`,
-        }),
+        provideTabsI18n(
+          withTabsI18nLabels({
+            selectedTab: (label, pos, count) =>
+              `Aktiv: ${label} (${pos}/${count})`,
+            moreTabsLabel: (n) => `${n} weitere`,
+          }),
+        ),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
@@ -90,7 +98,7 @@ describe('CngxTabsI18n', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsI18n({ tabsLabel: 'X' }),
+        provideTabsI18n(withTabsI18nLabels({ tabsLabel: 'X' })),
       ],
     });
     const injector = TestBed.inject(EnvironmentInjector);

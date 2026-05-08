@@ -11,12 +11,16 @@ import { describe, expect, test } from 'vitest';
 
 import {
   CngxTabGroupPresenter,
+  type CngxTabHandle,
+  type CngxTabOverflowDomAdapter,
+  type CngxTabPanelHost,
   type CngxTabsCommitAction,
 } from '@cngx/common/tabs';
 import type {
   CngxErrorAggregatorContract,
   CngxErrorAggregatorSourceEntry,
 } from '@cngx/common/interactive';
+import { CngxTabOverflow } from '@cngx/ui/tabs';
 
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
@@ -720,6 +724,151 @@ describe('CngxMatTabs instrumentation directive', () => {
         priorDescribedBy,
       );
     }
+  });
+
+  test('axis 18: programmatic mount creates one CngxTabOverflow with CNGX_TAB_PANEL_HOST resolving to the presenter', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture, presenter } = await setupPlumbing();
+
+    const overflowDe = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    );
+    expect(overflowDe).toBeDefined();
+    const overflow = overflowDe.componentInstance as CngxTabOverflow;
+
+    // The molecule's rendered host element exists in the DOM. Its
+    // physical parent is asserted by axis 21 (post-anchor:
+    // .mat-mdc-tab-header child); this axis only pins existence +
+    // single-instance count to catch a regression that drops the
+    // VCR.createComponent call entirely.
+    const allOverflowEls = fixture.nativeElement.querySelectorAll(
+      'cngx-tab-overflow',
+    ) as NodeListOf<HTMLElement>;
+    expect(allOverflowEls.length).toBe(1);
+
+    // Panel-host adapter forwards the presenter's tabs() / activeId() /
+    // selectById(). Reading via the molecule's protected `panelHost`
+    // accessor proves DI resolution lands on the directive's wrapper,
+    // not the (absent) cngx-native organism token.
+    const panelHost = (
+      overflow as unknown as { panelHost: CngxTabPanelHost }
+    ).panelHost;
+    expect(panelHost.tabs().length).toBe(presenter.tabs().length);
+    expect(panelHost.tabs().map((t) => t.id)).toEqual(
+      presenter.tabs().map((t) => t.id),
+    );
+    // Template-projection methods are stubbed to null in the Material
+    // variant (Material owns label rendering through textLabel +
+    // mat-tab-content; cngx slot directives are intentionally absent).
+    expect(panelHost.labelTemplateFor('any-id')).toBeNull();
+    expect(panelHost.contentTemplateFor('any-id')).toBeNull();
+  });
+
+  test('axis 19: provided adapter is the Material variant — strip-root + index-based per-tab resolution', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture } = await setupPlumbing();
+
+    const overflowDe = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxTabOverflow,
+    );
+    const adapter = (
+      overflowDe.componentInstance as unknown as {
+        adapter: CngxTabOverflowDomAdapter;
+      }
+    ).adapter;
+
+    const header = fixture.nativeElement.querySelector(
+      '.mat-mdc-tab-header',
+    ) as HTMLElement;
+    expect(header).not.toBeNull();
+    const labelContainer = header.querySelector(
+      '.mat-mdc-tab-label-container',
+    ) as HTMLElement;
+    expect(labelContainer).not.toBeNull();
+
+    // resolveStripRoot: walk a host element placed inside the rendered
+    // .mat-mdc-tab-header up to .mat-mdc-tab-label-container — the
+    // structural guarantee Material 19/20/21 ships under
+    // tabs-accepted-debt §5.
+    const probe = document.createElement('div');
+    header.appendChild(probe);
+    expect(
+      adapter.resolveStripRoot({} as CngxTabPanelHost, probe),
+    ).toBe(labelContainer);
+    probe.remove();
+
+    // resolveTabButton: positional index, handle.id ignored. Pin both
+    // ends of the range plus the out-of-bounds null.
+    const tabButtons = header.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    expect(tabButtons.length).toBe(3);
+    const stub = { id: 'unused-by-material-adapter' } as CngxTabHandle;
+    expect(adapter.resolveTabButton(stub, labelContainer, 0)).toBe(
+      tabButtons[0],
+    );
+    expect(adapter.resolveTabButton(stub, labelContainer, 2)).toBe(
+      tabButtons[2],
+    );
+    expect(adapter.resolveTabButton(stub, labelContainer, 99)).toBeNull();
+  });
+
+  test('axis 21: anchor inside .mat-mdc-tab-header as a flex sibling of .mat-mdc-tab-label-container', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture } = await setupPlumbing();
+    const headerEl = fixture.nativeElement.querySelector(
+      '.mat-mdc-tab-header',
+    ) as HTMLElement;
+    expect(headerEl).not.toBeNull();
+    const overflowEl = fixture.nativeElement.querySelector(
+      'cngx-tab-overflow',
+    ) as HTMLElement;
+    expect(overflowEl).not.toBeNull();
+
+    // The molecule's rendered element is a direct child of the header
+    // (no longer a sibling of <mat-tab-group> as it was in axis 18).
+    expect(overflowEl.parentElement).toBe(headerEl);
+    // Convenience class for the trailing-edge CSS skin.
+    expect(overflowEl.classList.contains('cngx-mat-tabs-more')).toBe(true);
+    // The molecule sits AFTER the label-container in the flex flow —
+    // the appendChild ordering controls visual placement (right of the
+    // tab list). The label-container is the IO root, so the molecule
+    // being AFTER it in DOM order matches the visual "trailing-edge
+    // affordance" intent and lets the IntersectionObserver pick up
+    // clipped tabs as the label-container shrinks to make room.
+    const labelContainerEl = headerEl.querySelector(
+      '.mat-mdc-tab-label-container',
+    ) as HTMLElement;
+    expect(labelContainerEl).not.toBeNull();
+    const headerChildren = Array.from(headerEl.children);
+    expect(headerChildren.indexOf(overflowEl)).toBeGreaterThan(
+      headerChildren.indexOf(labelContainerEl),
+    );
+  });
+
+  test('axis 20: directive destroy removes the mounted CngxTabOverflow from the document', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture } = await setupPlumbing();
+    expect(
+      fixture.nativeElement.querySelector('cngx-tab-overflow'),
+    ).not.toBeNull();
+
+    fixture.destroy();
+
+    // ComponentRef.destroy() detaches the rendered element from the
+    // DOM and runs the molecule's own DestroyRef callbacks. Asserting
+    // against `document` rather than `fixture.nativeElement` because
+    // the fixture host is also detached on destroy — only document-
+    // root reachability proves the molecule went away with it.
+    expect(document.querySelector('cngx-tab-overflow')).toBeNull();
   });
 
   test('axis 17: rejection (.cngx-mat-tab--error) and has-errors (.cngx-mat-tab--has-errors) coexist on the same tab without conflict', async () => {

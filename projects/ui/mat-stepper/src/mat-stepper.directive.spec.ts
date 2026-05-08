@@ -229,10 +229,24 @@ describe('CngxMatStepper instrumentation directive', () => {
     await fixture.whenStable();
     expect(matStepper.selectedIndex).toBe(2);
 
+    // Drain the rejection-rollback cycle deterministically. The
+    // commitAction returned `Promise.reject(...)` — the rejection
+    // settles on the next microtask, the rollback effect fires
+    // synchronously off that, and the bidirectional-sync effect
+    // writes back to Material. Earlier versions of this test used
+    // `await fixture.whenStable()` here but that path is CI-flaky
+    // in zoneless mode (whenStable can hang when no Angular task
+    // is pending). The pattern below mirrors the cngx-native
+    // stepper's "does not loop on initial sync" test (commit
+    // 91ea5a9): yield once for the rejection, flush effects, yield
+    // once more, flush again — the rollback + write are guaranteed
+    // to have landed by the second flush.
     await Promise.resolve();
-    await fixture.whenStable();
+    TestBed.flushEffects();
+    await Promise.resolve();
     fixture.detectChanges();
-    await fixture.whenStable();
+    TestBed.flushEffects();
+    await Promise.resolve();
     expect(matStepper.selectedIndex).toBe(0);
   });
 

@@ -70,17 +70,81 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
 );
 
 /**
- * Provider for the tabs i18n bundle. Pass a partial override — unset
- * keys fall back to the English default.
+ * Single feature-flag function consumed by {@link provideTabsI18n} and the
+ * family aggregator {@link provideCngxTabs}. Carries a hidden `_target`
+ * discriminator so the aggregator can dispatch i18n features to
+ * {@link provideTabsI18n} while config features go to
+ * {@link provideTabsConfig}. Mirrors `CngxMenuConfigFeature` from the menu
+ * family's A+ closure.
+ *
+ * @category interactive
+ */
+export type CngxTabsI18nFeature = ((
+  bundle: CngxTabsI18n,
+) => CngxTabsI18n) & {
+  readonly _target?: 'i18n';
+};
+
+/**
+ * Internal helper that brands an i18n-mutator function with the `_target`
+ * discriminator. Every `with*` i18n feature returns one of these.
+ *
+ * @internal
+ */
+function defineTabsI18nFeature(
+  fn: (bundle: CngxTabsI18n) => CngxTabsI18n,
+): CngxTabsI18nFeature {
+  return Object.assign(fn, { _target: 'i18n' as const });
+}
+
+/**
+ * Override one or more i18n labels on the tabs surface. Pass a partial
+ * override — unset keys keep their English default. Mirrors the
+ * `withTabsAriaLabels` / `withTabsFallbackLabels` shape on the
+ * config surface so `provideCngxTabs` can compose features uniformly
+ * across both `CNGX_TABS_CONFIG` and `CNGX_TABS_I18N`.
+ *
+ * @category interactive
+ */
+export function withTabsI18nLabels(
+  overrides: Partial<CngxTabsI18n>,
+): CngxTabsI18nFeature {
+  return defineTabsI18nFeature((bundle) => ({ ...bundle, ...overrides }));
+}
+
+function resolveI18nFeatures(
+  features: readonly CngxTabsI18nFeature[],
+): CngxTabsI18n {
+  return features.reduce<CngxTabsI18n>(
+    (bundle, feat) => feat(bundle),
+    TABS_I18N_DEFAULTS,
+  );
+}
+
+/**
+ * Provider for the tabs i18n bundle. Compose `withTabsI18nLabels(...)`
+ * features (and any future i18n `with*` features) — unset keys fall
+ * back to the English default.
+ *
+ * @example
+ * ```ts
+ * bootstrapApplication(AppComponent, {
+ *   providers: [
+ *     provideTabsI18n(
+ *       withTabsI18nLabels({ tabsLabel: 'Reiter', previousTab: 'Vorheriger' }),
+ *     ),
+ *   ],
+ * });
+ * ```
  *
  * @category interactive
  */
 export function provideTabsI18n(
-  overrides: Partial<CngxTabsI18n>,
+  ...features: readonly CngxTabsI18nFeature[]
 ): Provider {
   return {
     provide: CNGX_TABS_I18N,
-    useValue: { ...TABS_I18N_DEFAULTS, ...overrides },
+    useValue: resolveI18nFeatures(features),
   };
 }
 

@@ -118,6 +118,85 @@
 }
 
 /*
+ * Trailing-edge skin for the dynamically-mounted `<cngx-tab-overflow>`
+ * molecule. `[cngxMatTabs]` programmatically appends the molecule
+ * into `.mat-mdc-tab-header` and adds the `cngx-mat-tabs-more` class
+ * via `Renderer2` (`mat-tabs.directive.ts`'s afterNextRender block).
+ *
+ * Layout: flex item alongside `.mat-mdc-tab-label-container`. Material's
+ * `.mat-mdc-tab-header` is itself a flex container, so the More
+ * affordance flows naturally as a sibling of the label-container —
+ * the label-container shrinks to fit, the More button takes its
+ * natural width, and the trailing tab is no longer occluded by an
+ * absolutely-positioned overlay. If consumers opt back into
+ * Material's pagination (see the auto-hide rule below), the
+ * pagination-after arrow becomes a third flex sibling and the
+ * available width is split across all three; the IntersectionObserver
+ * picks up the new layout automatically.
+ *
+ * Three-tier fallback per CSS var: consumer override → Material
+ * design token → hard-coded value.
+ */
+.cngx-mat-tabs-more {
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  z-index: var(--cngx-mat-tabs-more-z, 2);
+
+  /*
+   * Drive the molecule's own component-API cascade variables. The
+   * `<cngx-tab-overflow>` :host CSS defaults `--cngx-tab-overflow-bg`
+   * to `transparent` (sensible for the cngx-native variant that sits
+   * in a flow-positioned strip wrapper); the Material variant gives
+   * the More button an opaque surface so it reads as a distinct
+   * affordance against Material's strip background even when the
+   * popover panel is closed. The component's :host rule reads these
+   * variables, so resolution happens at the right specificity tier
+   * without us shouting through a higher-specificity selector.
+   */
+  --cngx-tab-overflow-bg: var(
+    --cngx-mat-tabs-more-bg,
+    var(--mat-app-background-color, #ffffff)
+  );
+  --cngx-tab-overflow-button-bg: var(
+    --cngx-mat-tabs-more-bg,
+    var(--mat-app-background-color, #ffffff)
+  );
+
+  box-shadow: var(
+    --cngx-mat-tabs-more-shadow,
+    -8px 0 8px -4px rgba(0, 0, 0, 0.1)
+  );
+}
+
+/*
+ * Collapse the wrapper to zero layout space when the inner trigger
+ * button is hidden (= no clipped tabs). Without this, the molecule's
+ * `display: inline-flex` :host rule keeps reserving width for an
+ * empty wrapper — the label-container would shrink even when no
+ * overflow exists.
+ */
+.cngx-mat-tabs-more:has(.cngx-tab-overflow__trigger[hidden]) {
+  display: none;
+}
+
+/*
+ * Material's pagination arrows (`<` / `>`) remain visible alongside
+ * the More button: both are flex siblings of `.mat-mdc-tab-label-container`
+ * inside `.mat-mdc-tab-header`, so the available width is split across
+ * all of them and the IntersectionObserver picks up the new container
+ * width automatically. Consumers who want to hide Material's
+ * pagination (More button as the only overflow affordance) can do so
+ * with a one-line theme-level override:
+ *
+ *   .mat-mdc-tab-header:has(cngx-tab-overflow)
+ *     .mat-mdc-tab-header-pagination {
+ *     display: none;
+ *   }
+ */
+
+/*
  * SR-only utility for the per-tab error descriptor span
  * (`<span class="cngx-sr-only" id="${handle.id}-errors">` mounted by
  * the aggregator-decoration effect). The span carries the consumer-
