@@ -9,6 +9,9 @@ import {
 
 import type { CngxTabOverflowItemContext } from './overflow/tab-overflow-item.directive';
 import type { CngxTabOverflowTriggerContext } from './overflow/tab-overflow-trigger.directive';
+import type { CngxTabBusySpinnerContext } from './slots/tab-busy-spinner.directive';
+import type { CngxTabErrorBadgeContext } from './slots/tab-error-badge.directive';
+import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 /**
  * Aria-label overrides for the tab-group landmark region. Library
@@ -40,19 +43,30 @@ export interface CngxTabsFallbackLabels {
 }
 
 /**
- * App-wide template overrides for `<cngx-tab-overflow>` regions.
- * Sit in the middle tier of the family-standard 3-stage cascade:
- * per-instance `*cngxTabOverflowTrigger` / `*cngxTabOverflowItem`
- * directive (instance Input) > this `templates` field (root /
- * viewProviders) > the molecule's built-in markup (default). Apply
- * via {@link withTabOverflowTriggerTemplate} /
- * {@link withTabOverflowItemTemplate}.
+ * App-wide template overrides for `<cngx-tab-group>` and
+ * `<cngx-tab-overflow>` skin regions. Sit in the middle tier of the
+ * family-standard 3-stage cascade: per-instance directive (e.g.
+ * `*cngxTabErrorBadge`, `*cngxTabOverflowTrigger`) > this
+ * `templates` field (root / viewProviders) > the organism /
+ * molecule's built-in markup (default). Apply via the matching
+ * `with*Template` feature builders ({@link withTabErrorBadgeTemplate},
+ * {@link withTabRejectionIconTemplate},
+ * {@link withTabBusySpinnerTemplate},
+ * {@link withTabOverflowTriggerTemplate},
+ * {@link withTabOverflowItemTemplate}).
+ *
+ * Mirrors the family-standard `CngxStepperTemplates` shape (Phase 3
+ * stepper sibling) so consumer-authored templates port across
+ * families without re-keying.
  *
  * @category interactive
  */
 export interface CngxTabsTemplates {
   readonly overflowTrigger?: TemplateRef<CngxTabOverflowTriggerContext>;
   readonly overflowItem?: TemplateRef<CngxTabOverflowItemContext>;
+  readonly errorBadge?: TemplateRef<CngxTabErrorBadgeContext>;
+  readonly rejectionIcon?: TemplateRef<CngxTabRejectionIconContext>;
+  readonly busySpinner?: TemplateRef<CngxTabBusySpinnerContext>;
 }
 
 /**
@@ -315,6 +329,64 @@ export function withTabOverflowItemTemplate(
   return defineTabsConfigFeature((cfg) => ({
     ...cfg,
     templates: { ...cfg.templates, overflowItem: template },
+  }));
+}
+
+/**
+ * App-wide template override for the error-badge decoration on a
+ * `<cngx-tab-group>` tab. Middle tier of the 3-stage cascade —
+ * projected as the default when no per-instance `*cngxTabErrorBadge`
+ * directive is present. Per-instance still wins.
+ *
+ * Closes the family-asymmetry gap with the Phase-3 stepper sibling
+ * `withStepBadgeTemplate` (see `stepper-accepted-debt §3`).
+ *
+ * @category interactive
+ */
+export function withTabErrorBadgeTemplate(
+  template: TemplateRef<CngxTabErrorBadgeContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, errorBadge: template },
+  }));
+}
+
+/**
+ * App-wide template override for the rejection-icon decoration on
+ * a `<cngx-tab-group>` tab. Middle tier of the 3-stage cascade —
+ * projected as the default when no per-instance
+ * `*cngxTabRejectionIcon` directive is present. Per-instance still wins.
+ *
+ * Sibling of {@link withStepRejectionTemplate} from the stepper family.
+ *
+ * @category interactive
+ */
+export function withTabRejectionIconTemplate(
+  template: TemplateRef<CngxTabRejectionIconContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, rejectionIcon: template },
+  }));
+}
+
+/**
+ * App-wide template override for the commit-pending busy-spinner
+ * overlay on a `<cngx-tab-group>` tab. Middle tier of the 3-stage
+ * cascade — projected as the default when no per-instance
+ * `*cngxTabBusySpinner` directive is present. Per-instance still wins.
+ *
+ * Sibling of {@link withStepBusySpinnerTemplate} from the stepper family.
+ *
+ * @category interactive
+ */
+export function withTabBusySpinnerTemplate(
+  template: TemplateRef<CngxTabBusySpinnerContext>,
+): CngxTabsConfigFeature {
+  return defineTabsConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, busySpinner: template },
   }));
 }
 
