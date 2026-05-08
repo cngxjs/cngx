@@ -86,9 +86,8 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
  *
  * Override at app `providers` (root) or component `viewProviders`
  * (scoped) to install a different policy — e.g. WeakMap-based
- * resolution, telemetry, custom equality. Real consumers:
- * `<cngx-tab-group>` (today); `<cngx-stepper>` and
- * `<cngx-mat-stepper>` migrate via Phase 1.8.
+ * resolution, telemetry, custom equality. Consumed by
+ * `<cngx-tab-group>`, `<cngx-stepper>`, and `<cngx-mat-stepper>`.
  *
  * Symmetric to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.

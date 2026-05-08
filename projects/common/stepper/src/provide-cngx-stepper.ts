@@ -47,16 +47,8 @@ function partitionFeatures(
       config.push(feat);
       continue;
     }
-    // Unbranded feature — caller wired a stale `(cfg) => cfg` (pre-
-    // `defineStepperConfigFeature`) or a hand-rolled mutator without a
-    // discriminator. Routing it blind to the config bucket is a
-    // Pillar-3 silent-mutation hazard: an i18n-shaped override could
-    // land in `CNGX_STEPPER_CONFIG` instead of `CNGX_STEPPER_I18N` and
-    // the consumer would never see the difference. Dev mode warns
-    // loudly so the wiring gets fixed; prod silently drops so a
-    // mis-authored feature never crashes a deployed app. Both
-    // directions communicate the violation per the
-    // honest-failure rule.
+    // Unbranded feature — see the `provideCngxTabs` partition for the
+    // shared honest-failure rationale (drop + dev-warn).
     if (isDevMode()) {
       console.warn(
         '[provideCngxStepper] Dropped feature without a `_target` ' +

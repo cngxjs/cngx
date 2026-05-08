@@ -56,12 +56,9 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  * factory guards with optional-chaining so unit specs don't blow up
  * (real browsers always have it).
  *
- * Replaces the inline `effect` previously in
- * `<cngx-tab-group>`'s constructor — extracted at Phase 4 of the
- * global-material-bridge plan to thin the organism class body and
- * make the same shape reusable by `<cngx-stepper>` /
- * `<cngx-mat-stepper>` if/when those organisms grow scrolling
- * strips.
+ * Shared by `<cngx-tab-group>`'s active-tab scroll loop and any
+ * organism with the same `${id}-header` strip convention; keeps the
+ * organism class body thin per the decompose contract.
  *
  * @category interactive
  */
@@ -106,9 +103,9 @@ export type CngxOrganismScrollSyncFactory = (
  * Override at app `providers` (root) or component `viewProviders`
  * (scoped) to install a different policy — e.g. instant scroll,
  * custom selector, telemetry on each scroll, opt-out for
- * `prefers-reduced-motion`. Real consumers: `<cngx-tab-group>`
- * (today); `<cngx-stepper>` vertical-strip scroll-into-view (Phase 2
- * wires it).
+ * `prefers-reduced-motion`. Consumed by `<cngx-tab-group>` today;
+ * any organism that surfaces a focusable strip with the
+ * `${itemId}-header` id convention can compose against the same token.
  *
  * Symmetric to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`.
