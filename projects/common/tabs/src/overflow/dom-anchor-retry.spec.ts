@@ -103,6 +103,37 @@ describe('createDomAnchorRetry', () => {
     expect(onGiveUp).toHaveBeenCalledTimes(2);
   });
 
+  it('an attempt-callback that throws is swallowed and terminates the loop', () => {
+    // Host-environment teardown race scenario: rAF fires after the
+    // consumer's destroy hook tore down a required global (e.g.
+    // IntersectionObserver in jsdom between specs). Without the
+    // try/catch in tick(), the throw becomes an unhandled exception
+    // in the rAF/setTimeout callback. This axis pins the contract:
+    // throws are terminal, never re-scheduled, no give-up fired.
+    const attempt = vi.fn(() => {
+      throw new ReferenceError('IntersectionObserver is not defined');
+    });
+    const onGiveUp = vi.fn();
+    const cancelFn = vi.fn();
+    const retry = createDomAnchorRetry({
+      attempt,
+      maxAttempts: 10,
+      schedule: (cb) => {
+        cb();
+        return cancelFn;
+      },
+      onGiveUp,
+    });
+    expect(() => retry.start()).not.toThrow();
+    // Throw is terminal — exactly one attempt, no further schedule,
+    // no give-up signal (give-up means "ran out of retries", which
+    // is a different signal from "host environment broke").
+    expect(attempt).toHaveBeenCalledTimes(1);
+    expect(onGiveUp).not.toHaveBeenCalled();
+    // Subsequent cancel() is idempotent.
+    expect(() => retry.cancel()).not.toThrow();
+  });
+
   it('attempts that flip from null to true mid-loop halt cleanly', () => {
     let attemptCount = 0;
     const succeedAt = 3;

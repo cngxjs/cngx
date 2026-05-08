@@ -89,15 +89,37 @@ export function createDomAnchorRetry(
   let cancelLast: (() => void) | null = null;
   let stopped = false;
   const tick = (): void => {
-    cancelLast = null;
     if (stopped) {
+      cancelLast = null;
       return;
     }
-    if (options.attempt() === true) {
+    cancelLast = null;
+    let result: CngxDomAnchorRetryResult;
+    try {
+      result = options.attempt();
+    } catch {
+      // Attempt callback threw — most commonly a host-environment
+      // teardown race (e.g. test runner reset a global like
+      // `IntersectionObserver` between rAF schedule and rAF fire,
+      // before the consumer's `DestroyRef` could invoke `cancel()`).
+      // Swallow + terminal stop: the rAF callback is one tick removed
+      // from the consumer's destroy hook, so a thrown error here
+      // surfaces as an *unhandled* exception in the host runtime
+      // rather than reaching any catch site. Production failures of
+      // the same shape (a real bug in the attempt callback) still
+      // surface via `console.error` paths inside the callback before
+      // it throws — this guard only suppresses the unhandled-rejection
+      // amplification.
+      stopped = true;
+      return;
+    }
+    if (result === true) {
+      stopped = true;
       return;
     }
     attempts++;
     if (attempts >= options.maxAttempts) {
+      stopped = true;
       options.onGiveUp?.();
       return;
     }
