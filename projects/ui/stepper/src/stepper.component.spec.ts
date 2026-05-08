@@ -7,6 +7,7 @@ import {
   CngxStep,
   CngxStepGroup,
   type CngxStepperCommitAction,
+  CNGX_STEPPER_GLYPHS,
   provideStepperConfig,
   provideStepperI18n,
   withStepperAriaLabels,
@@ -572,6 +573,92 @@ describe('CngxStepper organism', () => {
         fixture.detectChanges();
         expect(host.getAttribute('aria-busy')).toBeNull();
       });
+    });
+
+    it('per-step aria-describedby surfaces stepRolledBackSuffix when lastFailedIndex matches its flatIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const descId = buttons[1].getAttribute('aria-describedby')!;
+      const desc = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      // Persistent suffix appended to the per-step descriptor.
+      expect(desc.textContent?.trim()).toBe(
+        'Step 2 of 3: B This step was rolled back.',
+      );
+      // Sibling steps keep the unmodified phrase.
+      const aDescId = buttons[0].getAttribute('aria-describedby')!;
+      const aDesc = fixture.nativeElement.querySelector(
+        `#${aDescId}`,
+      ) as HTMLElement;
+      expect(aDesc.textContent?.trim()).toBe('Step 1 of 3: A');
+    });
+
+    it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const icon = buttons[1].querySelector(
+        '.cngx-stepper__rejection-icon',
+      ) as HTMLElement | null;
+      expect(icon).not.toBeNull();
+      expect(icon!.textContent?.trim()).toBe(CNGX_STEPPER_GLYPHS.rejectionIcon);
+    });
+
+    it('binds cngx-stepper__step--rejected on the rejected step row when lastFailedIndex matches its flatIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      // Rejected row carries the modifier; siblings do not.
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
+        true,
+      );
+      expect(buttons[0].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
+      expect(buttons[2].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
+      // Modifier clears once the rejection state is dismissed.
+      const stepper = fixture.debugElement.children[0].componentInstance as {
+        clearLastFailed(): void;
+      };
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      expect(buttons[1].classList.contains('cngx-stepper__step--rejected')).toBe(
+        false,
+      );
     });
 
     it('clearLastFailed delegator forwards to the presenter and zeroes lastFailedIndex', () => {

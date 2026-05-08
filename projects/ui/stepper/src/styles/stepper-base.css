@@ -97,6 +97,28 @@
   margin-inline-start: var(--cngx-step-gap, 0.5rem);
 }
 
+.cngx-stepper__step--rejected {
+  outline: var(--cngx-step-rejection-outline-width, 1px) solid
+    var(--cngx-step-rejection-outline-color, #ed6c02);
+  outline-offset: var(--cngx-step-rejection-outline-offset, 2px);
+  background: var(--cngx-step-rejection-bg, transparent);
+}
+
+.cngx-stepper__rejection-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cngx-step-rejection-icon-size, 1.25rem);
+  height: var(--cngx-step-rejection-icon-size, 1.25rem);
+  border-radius: 50%;
+  background: var(--cngx-step-rejection-icon-bg, #ed6c02);
+  color: var(--cngx-step-rejection-icon-color, white);
+  font-size: var(--cngx-step-rejection-icon-font-size, 0.75em);
+  font-weight: var(--cngx-step-rejection-icon-font-weight, 700);
+  flex: 0 0 auto;
+  margin-inline-start: var(--cngx-step-gap, 0.5rem);
+}
+
 .cngx-sr-only {
   position: absolute;
   width: 1px;

@@ -5,6 +5,7 @@ import { MatStepper } from '@angular/material/stepper';
 import { describe, expect, it } from 'vitest';
 
 import {
+  type CngxStepNode,
   CngxStep,
   CngxStepperPresenter,
   type CngxStepperCommitAction,
@@ -161,6 +162,34 @@ describe('CngxMatStepper organism', () => {
       (el) => el.componentInstance instanceof MatStepper,
     ).componentInstance as MatStepper;
     expect(matStepper.linear).toBe(true);
+  });
+
+  it('stepsOnly memoises via flatStepsEqual — shape-stable re-emits preserve the signal reference', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matStepper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepsOnly: () => readonly CngxStepNode[];
+    };
+    const v1 = matStepper.stepsOnly();
+    expect(v1.length).toBe(3);
+
+    // Force another CD cycle + drain effects without changing the
+    // registered children. The computed re-runs lazily on read;
+    // `flatStepsEqual` must keep the returned array identity stable
+    // so downstream consumers (label/content templates, panel @for)
+    // don't cascade-rebind. Sibling-symmetric with CngxStepper at
+    // projects/ui/stepper/src/stepper.component.ts:210-213.
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    await fixture.whenStable();
+    const v2 = matStepper.stepsOnly();
+    expect(v2).toBe(v1);
   });
 
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {

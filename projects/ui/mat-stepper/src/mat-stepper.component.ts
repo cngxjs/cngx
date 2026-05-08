@@ -18,8 +18,11 @@ import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_STEP_PANEL_HOST,
   CngxStep,
+  type CngxStepContentContext,
+  type CngxStepLabelContext,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  flatStepsEqual,
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
@@ -88,9 +91,17 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * Step-only flat projection. Material's `<mat-step>` does not
    * support nesting, so groups flatten into the same level — the
    * presenter's `flatIndex` already gives the linear position.
+   * Memoised behind `flatStepsEqual` so downstream consumers
+   * (`stepLabel`, panel `@for`, `stepLabelContextFor`) don't
+   * re-walk the array on shape-stable re-emits of `flatSteps()`.
+   * Sibling-symmetric with `CngxStepper.stepsOnly`
+   * (`projects/ui/stepper/src/stepper.component.ts:210-213`) and
+   * the presenter's private twin
+   * (`projects/common/stepper/src/presenter.directive.ts:186-188`).
    */
   protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.presenter.flatSteps().filter((n) => n.kind === 'step'),
+    { equal: flatStepsEqual },
   );
 
   /** Material orientation literal — narrows our `'horizontal'|'vertical'` to its own union. */
@@ -125,12 +136,42 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
-  labelTemplateFor(id: string): TemplateRef<unknown> | null {
+  // Note: only the *cngxStepLabel and *cngxStepContent slots are
+  // honoured on this Material twin. The six Phase-3 slot directives
+  // (`*cngxStepIndicator` / `*cngxStepBadge` / `*cngxStepBusySpinner`
+  // / `*cngxStepRejection` / `*cngxStepGroupHeader` /
+  // `*cngxStepperEmpty`) are silently dropped here — Material owns
+  // the indicator/badge/busy chrome via `<mat-stepper>`'s own
+  // template, and the proper override path on this variant is
+  // Material's `<ng-template matStepperIcon>`. See
+  // `stepper-accepted-debt.md` §4 for the closure trigger
+  // (Phase 5 of `tabs-stepper-cleanup-plan` adds matStepperIcon
+  // forwarding).
+  labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
-  contentTemplateFor(id: string): TemplateRef<unknown> | null {
+  contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
+  }
+
+  /** Build the {@link CngxStepLabelContext} for the projected label template. */
+  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
+    const flatStep = node.flatIndex;
+    return {
+      node,
+      index: flatStep + 1,
+      active: node.id === this.presenter.activeStepId(),
+      busy:
+        this.presenter.commitState.status() === 'pending' &&
+        this.presenter.intendedStepIndex() === flatStep,
+      disabled: node.disabled(),
+    };
+  }
+
+  /** Build the {@link CngxStepContentContext} for the projected content template. */
+  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
+    return this.stepLabelContextFor(node);
   }
 
   constructor() {

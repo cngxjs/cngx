@@ -28,6 +28,8 @@ export {
 
 export {
   CNGX_STEP_PANEL_HOST,
+  type CngxStepContentContext,
+  type CngxStepLabelContext,
   type CngxStepPanelHost,
 } from './src/step-panel-host.token';
 
@@ -43,6 +45,41 @@ export { CngxStepGroup } from './src/step-group.directive';
 export { CngxStepLabel } from './src/step-label.directive';
 export { CngxStepContent } from './src/step-content.directive';
 
+export {
+  CngxStepIndicator,
+  type CngxStepIndicatorContext,
+} from './src/slots/step-indicator.directive';
+
+export {
+  CngxStepBadge,
+  type CngxStepBadgeContext,
+} from './src/slots/step-badge.directive';
+
+export {
+  CngxStepBusySpinner,
+  type CngxStepBusySpinnerContext,
+} from './src/slots/step-busy-spinner.directive';
+
+export {
+  CngxStepRejection,
+  type CngxStepRejectionContext,
+} from './src/slots/step-rejection.directive';
+
+export {
+  CngxStepGroupHeader,
+  type CngxStepGroupHeaderContext,
+} from './src/slots/step-group-header.directive';
+
+export { CngxStepperEmpty } from './src/slots/stepper-empty.directive';
+
+export {
+  createStepperTemplateBindings,
+  type CngxStepperTemplateBindings,
+  type CngxStepperTemplateBindingsOptions,
+} from './src/slots/stepper-template-cascade';
+
+export { CNGX_STEPPER_GLYPHS } from './src/glyphs';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {
@@ -51,6 +88,7 @@ export {
   type CngxStepperConfig,
   type CngxStepperConfigFeature,
   type CngxStepperFallbackLabels,
+  type CngxStepperTemplates,
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
@@ -60,6 +98,12 @@ export {
   withStepperFallbackLabels,
   withStepperLinear,
   withStepperRouterSync,
+  withStepIndicatorTemplate,
+  withStepBadgeTemplate,
+  withStepBusySpinnerTemplate,
+  withStepRejectionTemplate,
+  withStepGroupHeaderTemplate,
+  withStepperEmptyTemplate,
 } from './src/stepper-config';
 
 export {

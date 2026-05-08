@@ -703,6 +703,11 @@ export const routes: Routes = [
           import('./demos/ui/stepper/stepper-router-sync-demo/stepper-router-sync-demo.component').then((m) => m.StepperRouterSyncDemoComponent),
       },
       {
+        path: 'stepper/stepper-slot-overrides',
+        loadComponent: () =>
+          import('./demos/ui/stepper/stepper-slot-overrides-demo/stepper-slot-overrides-demo.component').then((m) => m.StepperSlotOverridesDemoComponent),
+      },
+      {
         path: 'stepper/stepper-vertical',
         loadComponent: () =>
           import('./demos/ui/stepper/stepper-vertical-demo/stepper-vertical-demo.component').then((m) => m.StepperVerticalDemoComponent),

@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   contentChildren,
   ElementRef,
   inject,
@@ -21,8 +22,23 @@ import {
 import {
   CNGX_STEP_PANEL_HOST,
   CngxStep,
+  CngxStepBadge,
+  type CngxStepBadgeContext,
+  CngxStepBusySpinner,
+  type CngxStepBusySpinnerContext,
+  type CngxStepContentContext,
+  CngxStepGroupHeader,
+  type CngxStepGroupHeaderContext,
+  CngxStepIndicator,
+  type CngxStepIndicatorContext,
+  type CngxStepLabelContext,
+  CngxStepperEmpty,
   CngxStepperPresenter,
+  CngxStepRejection,
+  type CngxStepRejectionContext,
+  CNGX_STEPPER_GLYPHS,
   CNGX_STEPPER_HOST,
+  createStepperTemplateBindings,
   flatStepsEqual,
   injectStepperConfig,
   injectStepperI18n,
@@ -99,6 +115,34 @@ export class CngxStepper implements CngxStepPanelHost {
   ).nativeElement;
   private readonly injector = inject(Injector);
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
+
+  private readonly indicatorSlot = contentChild(CngxStepIndicator);
+  private readonly badgeSlot = contentChild(CngxStepBadge);
+  private readonly busySpinnerSlot = contentChild(CngxStepBusySpinner);
+  private readonly rejectionSlot = contentChild(CngxStepRejection);
+  private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
+  private readonly emptySlot = contentChild(CngxStepperEmpty);
+
+  /** Default-template glyph source — read by `#defaultBadge` / `#defaultRejection` outlets. */
+  protected readonly glyphs = CNGX_STEPPER_GLYPHS;
+
+  /**
+   * Resolved 6-slot template cascade for the indicator / badge /
+   * busy-spinner / rejection / group-header / empty regions.
+   * Three-stage cascade: per-instance slot directive >
+   * `CNGX_STEPPER_CONFIG.templates.<key>` > `null` (organism falls
+   * back to its built-in default template). Mirrors the
+   * `createTabOverflowTemplateBindings` pattern in `@cngx/common/tabs`.
+   */
+  protected readonly templates = createStepperTemplateBindings({
+    indicatorSlot: this.indicatorSlot,
+    badgeSlot: this.badgeSlot,
+    busySpinnerSlot: this.busySpinnerSlot,
+    rejectionSlot: this.rejectionSlot,
+    groupHeaderSlot: this.groupHeaderSlot,
+    emptySlot: this.emptySlot,
+    config: this.config,
+  });
 
   constructor() {
     // Self-healing scroll loop — when the active step changes (via
@@ -260,25 +304,22 @@ export class CngxStepper implements CngxStepPanelHost {
     return '';
   });
 
-  /**
-   * SR descriptor phrase for a step header. Reads the aggregator's
-   * announcement when one is bound and the aggregator opted-in to
-   * showing errors; otherwise falls back to a "Step N of M:
-   * <label>" phrase from the i18n bundle.
-   */
+  /** SR descriptor phrase. Aggregator-announced or "Step N of M: <label>"; appends stepRolledBackSuffix on the rejected row. */
   protected statusPhrase(node: CngxStepNode): string {
     const aggregator = node.errorAggregator?.();
-    if (aggregator?.shouldShow?.() && aggregator.announcement) {
-      return aggregator.announcement();
+    let base = aggregator?.shouldShow?.() ? (aggregator.announcement?.() ?? '') : '';
+    if (!base && node.kind === 'step') {
+      const idx = this.stepIndexOf(node);
+      if (idx >= 0) {
+        base = this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
+      }
     }
-    if (node.kind !== 'step') {
+    if (!base) {
       return '';
     }
-    const idx = this.stepIndexOf(node);
-    if (idx < 0) {
-      return '';
-    }
-    return this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
+    return node.kind === 'step' && node.flatIndex === this.presenter.lastFailedIndex()
+      ? `${base} ${this.i18n.stepRolledBackSuffix}`
+      : base;
   }
 
   /** Group descriptor — rolls up children's aggregated status. */
@@ -296,6 +337,65 @@ export class CngxStepper implements CngxStepPanelHost {
   /** Whether to render the error badge for a step node. */
   protected showErrorBadge(node: CngxStepNode): boolean {
     return !!node.errorAggregator?.()?.shouldShow?.();
+  }
+
+  /**
+   * Whether to render the rejection-decoration on a strip step.
+   * Mirrors the tabs sibling at `tab-group.component.html:13` —
+   * `presenter.lastFailedIndex()` matches this step's flat-index.
+   * Closes stepper-accepted-debt §2 (Phase 3 absorption of the
+   * deferred visual parity).
+   */
+  protected showRejection(node: CngxStepNode): boolean {
+    return (
+      node.kind === 'step' &&
+      node.flatIndex >= 0 &&
+      node.flatIndex === this.presenter.lastFailedIndex()
+    );
+  }
+
+  /** Build the slot context for `*cngxStepIndicator`. */
+  protected indicatorContextFor(node: CngxStepNode): CngxStepIndicatorContext {
+    const position = node.flatIndex + 1;
+    return {
+      $implicit: position,
+      position,
+      node,
+      active: this.isActive(node),
+      status: node.state(),
+      busy: this.isStepBusy(node),
+    };
+  }
+
+  /** Build the slot context for `*cngxStepBadge`. */
+  protected badgeContextFor(node: CngxStepNode): CngxStepBadgeContext {
+    const aggregator = node.errorAggregator?.();
+    const count = aggregator?.errorCount() ?? 0;
+    return { count, node };
+  }
+
+  /** Build the slot context for `*cngxStepBusySpinner`. */
+  protected busySpinnerContextFor(node: CngxStepNode): CngxStepBusySpinnerContext {
+    return { node };
+  }
+
+  /**
+   * Build the slot context for `*cngxStepRejection`. Resolves the
+   * safe-harbour origin label from `presenter.originIndexDuringCommit()`
+   * via the step-only flat projection — same lookup the
+   * `liveAnnouncement` computed performs for the SR rollback phrase.
+   */
+  protected rejectionContextFor(node: CngxStepNode): CngxStepRejectionContext {
+    const failedIndex = node.flatIndex;
+    const originIdx = this.presenter.originIndexDuringCommit();
+    const originLabel =
+      originIdx !== undefined ? this.stepsOnly()[originIdx]?.label() : undefined;
+    return { failedIndex, originLabel, node };
+  }
+
+  /** Build the slot context for `*cngxStepGroupHeader`. */
+  protected groupHeaderContextFor(node: CngxStepNode): CngxStepGroupHeaderContext {
+    return { group: node, expanded: true, status: node.state() };
   }
 
   protected handleHeaderClick(node: CngxStepNode): void {
@@ -321,11 +421,39 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
-  labelTemplateFor(id: string): TemplateRef<unknown> | null {
+  labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
-  contentTemplateFor(id: string): TemplateRef<unknown> | null {
+  contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
+  }
+
+  /**
+   * Build the {@link CngxStepLabelContext} delivered to consumer
+   * `*cngxStepLabel` templates. The flat-step index is 1-based to
+   * match the indicator-position convention; group nodes carry
+   * `flatIndex === -1` so the calculation correctly returns 0 for
+   * groups (callers only invoke this for `kind === 'step'` nodes
+   * via the template loop).
+   */
+  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
+    return {
+      node,
+      index: node.flatIndex + 1,
+      active: this.isActive(node),
+      busy: this.isStepBusy(node),
+      disabled: node.disabled(),
+    };
+  }
+
+  /**
+   * Build the {@link CngxStepContentContext} delivered to consumer
+   * `*cngxStepContent` templates. Mirrors the label-context shape
+   * 1:1 — content templates frequently need the same derivations
+   * (gate inner controls on `disabled` / `busy`).
+   */
+  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
+    return this.stepLabelContextFor(node);
   }
 }

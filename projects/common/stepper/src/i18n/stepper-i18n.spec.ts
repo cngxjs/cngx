@@ -23,6 +23,7 @@ describe('CngxStepperI18n', () => {
     expect(i18n.commitRolledBackTo('Customer')).toBe(
       'Reverted to step "Customer".',
     );
+    expect(i18n.stepRolledBackSuffix).toBe('This step was rolled back.');
   });
 
   it('withStepperI18nLabels can override commitInFlight + commitRolledBackTo', () => {

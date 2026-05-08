@@ -11,14 +11,18 @@
       <ng-template matStepLabel>
         @let labelTpl = labelTemplateFor(node.id);
         @if (labelTpl) {
-          <ng-container *ngTemplateOutlet="labelTpl"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="labelTpl; context: stepLabelContextFor(node)"
+          ></ng-container>
         } @else {
           <span [attr.data-step-depth]="stepDepth(node)">{{ stepLabel(node) }}</span>
         }
       </ng-template>
       @let contentTpl = contentTemplateFor(node.id);
       @if (contentTpl) {
-        <ng-container *ngTemplateOutlet="contentTpl"></ng-container>
+        <ng-container
+          *ngTemplateOutlet="contentTpl; context: stepContentContextFor(node)"
+        ></ng-container>
       }
     </mat-step>
   }

@@ -4,7 +4,14 @@ import {
   InjectionToken,
   makeEnvironmentProviders,
   type Provider,
+  type TemplateRef,
 } from '@angular/core';
+
+import type { CngxStepBadgeContext } from './slots/step-badge.directive';
+import type { CngxStepBusySpinnerContext } from './slots/step-busy-spinner.directive';
+import type { CngxStepGroupHeaderContext } from './slots/step-group-header.directive';
+import type { CngxStepIndicatorContext } from './slots/step-indicator.directive';
+import type { CngxStepRejectionContext } from './slots/step-rejection.directive';
 
 /**
  * Aria-label overrides for the stepper landmark region. Library
@@ -35,6 +42,24 @@ export interface CngxStepperFallbackLabels {
 }
 
 /**
+ * Per-slot template overrides for `<cngx-stepper>`. The middle tier
+ * of the 3-stage cascade — per-instance directive (e.g.
+ * `*cngxStepIndicator`) wins over this `templates` field, which in
+ * turn wins over the organism's built-in markup. Apply via the
+ * `with*Template` feature builders below.
+ *
+ * @category interactive
+ */
+export interface CngxStepperTemplates {
+  readonly indicator?: TemplateRef<CngxStepIndicatorContext>;
+  readonly badge?: TemplateRef<CngxStepBadgeContext>;
+  readonly busySpinner?: TemplateRef<CngxStepBusySpinnerContext>;
+  readonly rejection?: TemplateRef<CngxStepRejectionContext>;
+  readonly groupHeader?: TemplateRef<CngxStepGroupHeaderContext>;
+  readonly empty?: TemplateRef<void>;
+}
+
+/**
  * Stepper config surface. Resolution priority: per-instance Input
  * → `provideStepperConfigAt` (viewProviders) → `provideStepperConfig`
  * (root) → library default. Mirrors the canonical config shape used
@@ -50,11 +75,16 @@ export interface CngxStepperConfig {
   readonly routerSyncParam?: string;
   readonly ariaLabels?: CngxStepperAriaLabels;
   readonly fallbackLabels?: CngxStepperFallbackLabels;
+  readonly templates?: CngxStepperTemplates;
 }
 
 const STEPPER_CONFIG_DEFAULTS: Required<
-  Omit<CngxStepperConfig, 'ariaLabels' | 'fallbackLabels'>
-> & { ariaLabels: CngxStepperAriaLabels; fallbackLabels: CngxStepperFallbackLabels } = {
+  Omit<CngxStepperConfig, 'ariaLabels' | 'fallbackLabels' | 'templates'>
+> & {
+  ariaLabels: CngxStepperAriaLabels;
+  fallbackLabels: CngxStepperFallbackLabels;
+  templates: CngxStepperTemplates;
+} = {
   defaultOrientation: 'horizontal',
   defaultLinear: false,
   defaultCommitMode: 'pessimistic',
@@ -67,6 +97,7 @@ const STEPPER_CONFIG_DEFAULTS: Required<
     groupRoleDescription: 'step group',
     stepRoleDescription: 'stepper',
   },
+  templates: {},
 };
 
 /**
@@ -165,6 +196,94 @@ export function withStepperFallbackLabels(
   return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     fallbackLabels: { ...cfg.fallbackLabels, ...labels },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepIndicator` template app-wide.
+ * Per-instance `*cngxStepIndicator` directive still wins; this
+ * feature only changes the cascade middle tier.
+ *
+ * @category interactive
+ */
+export function withStepIndicatorTemplate(
+  template: TemplateRef<CngxStepIndicatorContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, indicator: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepBadge` template app-wide.
+ *
+ * @category interactive
+ */
+export function withStepBadgeTemplate(
+  template: TemplateRef<CngxStepBadgeContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, badge: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepBusySpinner` template app-wide.
+ *
+ * @category interactive
+ */
+export function withStepBusySpinnerTemplate(
+  template: TemplateRef<CngxStepBusySpinnerContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, busySpinner: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepRejection` template app-wide.
+ * Closes the rejection-decoration parity with tabs's
+ * `cngxTabRejectionIcon` (Phase 4).
+ *
+ * @category interactive
+ */
+export function withStepRejectionTemplate(
+  template: TemplateRef<CngxStepRejectionContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, rejection: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepGroupHeader` template app-wide.
+ *
+ * @category interactive
+ */
+export function withStepGroupHeaderTemplate(
+  template: TemplateRef<CngxStepGroupHeaderContext>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, groupHeader: template },
+  }));
+}
+
+/**
+ * Override the default `*cngxStepperEmpty` template app-wide.
+ *
+ * @category interactive
+ */
+export function withStepperEmptyTemplate(
+  template: TemplateRef<void>,
+): CngxStepperConfigFeature {
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    templates: { ...cfg.templates, empty: template },
   }));
 }
 
