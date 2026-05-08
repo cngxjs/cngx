@@ -5,5 +5,9 @@
  */
 export { CngxMatTabs } from './src/mat-tabs.directive';
 export { CngxMatTabError } from './src/mat-tab-error.directive';
+export {
+  CngxMatTabAggregatorContent,
+  type CngxMatTabAggregatorContentContext,
+} from './src/decorations/mat-tab-aggregator-content.directive';
 export { createMatTabHandle } from './src/material-bridge/handle';
 export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';

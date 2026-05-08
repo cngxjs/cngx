@@ -30,13 +30,47 @@
         }
       </span>
       @if (showErrorBadge(tab)) {
-        <span class="cngx-tabs__badge" aria-hidden="true">!</span>
+        @let errorBadgeTpl = templates.errorBadge();
+        @if (errorBadgeTpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              errorBadgeTpl;
+              context: errorBadgeContextFor(tab)
+            "
+          ></ng-container>
+        } @else {
+          <span class="cngx-tabs__badge" aria-hidden="true">{{
+            glyphs.errorBadge
+          }}</span>
+        }
       }
       @if (failedIdx === i) {
-        <span class="cngx-tabs__rejection-icon" aria-hidden="true">!</span>
+        @let rejectionIconTpl = templates.rejectionIcon();
+        @if (rejectionIconTpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              rejectionIconTpl;
+              context: rejectionIconContextFor(i)
+            "
+          ></ng-container>
+        } @else {
+          <span class="cngx-tabs__rejection-icon" aria-hidden="true">{{
+            glyphs.rejectionIcon
+          }}</span>
+        }
       }
       @if (isTabBusy(tab)) {
-        <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
+        @let busySpinnerTpl = templates.busySpinner();
+        @if (busySpinnerTpl) {
+          <ng-container
+            *ngTemplateOutlet="
+              busySpinnerTpl;
+              context: busySpinnerContextFor(tab)
+            "
+          ></ng-container>
+        } @else {
+          <span class="cngx-tabs__busy-spinner" aria-hidden="true"></span>
+        }
       }
       <span class="cngx-sr-only" [id]="tabDescriptorId(tab)">{{
         statusPhrase(tab)

@@ -11,7 +11,7 @@ import { startWith } from 'rxjs/operators';
 import { MatTabsModule } from '@angular/material/tabs';
 import { type CngxTabsCommitAction } from '@cngx/common/tabs';
 import { injectErrorAggregator } from '@cngx/common/interactive';
-import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';
+import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';
 import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
 
 @Component({
@@ -27,11 +27,12 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
     CngxMatTabError,
     CngxToastOn,
     CngxBannerOn,
+    CngxMatTabAggregatorContent,
   ],
   template: `
     <app-doc-shell title="Mat-tabs — instrumentation directive"
       description="Add <code>cngxMatTabs</code> to an existing <code>&lt;mat-tab-group&gt;</code> and the cngx commit-action lifecycle, the <code>CNGX_STATEFUL</code> producer, and the bridge directive composition (<code>&lt;cngx-toast-on /&gt;</code>, <code>&lt;cngx-banner-on /&gt;</code>) light up — without rewriting your template. One attribute upgrade. Identical commit semantics to <code>&lt;cngx-tab-group&gt;</code>: <code>[commitMode]=&quot;optimistic&quot;</code> (default) advances Material immediately and rolls back on rejection; <code>[commitMode]=&quot;pessimistic&quot;</code> keeps Material on the origin until the action resolves. Rapid consecutive picks supersede any in-flight commit. <strong>Sticky error UX:</strong> when the commit-action rejects, the failed-target <code>&lt;mat-tab&gt;</code> button keeps a red <code>cngx-mat-tab--error</code> class + <code>aria-invalid=&quot;true&quot;</code> until the user successfully re-picks it OR clicks the &quot;Clear last failed&quot; button. <strong>Per-tab form-error aggregation:</strong> bind <code>[cngxMatTabError]</code> on a <code>&lt;mat-tab&gt;</code> with a <code>CngxErrorAggregator</code> and the matching tab gains a <code>cngx-mat-tab--has-errors</code> badge + an SR descriptor span — fully independent of the commit-action rejection lifecycle, so a tab can carry both signals at once. <strong>Smart overflow:</strong> when the strip overflows the available width, a <code>&lt;cngx-tab-overflow&gt;</code> More button appears at the trailing edge — listing all hidden tabs in a popover. The molecule mounts itself programmatically via the instrumentation directive; consumers add nothing. The CSS skin (<code>@cngx/ui/mat-tabs/styles/mat-tabs.css</code>) is a standalone stylesheet asset; the dev-app imports it once in <code>styles.css</code>."
-      [apiComponents]="['CngxMatTabs', 'CngxMatTabError', 'CngxToastOn', 'CngxBannerOn']">
+      [apiComponents]="['CngxMatTabs', 'CngxMatTabError', 'CngxMatTabAggregatorContent', 'CngxToastOn', 'CngxBannerOn']">
       <app-example-card title="Vanilla <mat-tab-group> upgraded by adding cngxMatTabs"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -105,10 +106,46 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
     <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
   </div>
       </app-example-card>
-      <app-example-card title="Smart overflow under viewport constraint"
+      <app-example-card title="Custom aggregator descriptor via <code>*cngxMatTabAggregatorContent</code>"
         [subtitle]="_s1"
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
+        
+  <mat-tab-group cngxMatTabs aria-label="Aggregator-content slot demo">
+    <ng-template cngxMatTabAggregatorContent let-count="count" let-label="label">
+      {{ label }} — {{ count }} validation issue(s) detected
+    </ng-template>
+    <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
+      <form [formGroup]="profileForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Name</span>
+          <input type="text" formControlName="name" placeholder="Enter your name" />
+        </label>
+        <small style="opacity:0.7">Required, min 2 characters</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Account" [cngxMatTabError]="accountErrors">
+      <form [formGroup]="accountForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" />
+        </label>
+        <small style="opacity:0.7">Required, valid email format</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Notifications">
+      <p style="padding:12px">No aggregator bound — no decoration on this tab.</p>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Profile invalid</span><span class="event-value">{{ profileInvalid() }}</span></div>
+    <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
+  </div>
+      </app-example-card>
+      <app-example-card title="Smart overflow under viewport constraint"
+        [subtitle]="_s2"
+        [sourceHtml]="_srcHtml2"
+        [sourceTs]="_srcTs2">
         
   <div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
     <mat-tab-group cngxMatTabs [(activeIndex)]="overflowActive" aria-label="Smart-overflow demo">
@@ -133,7 +170,8 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
 })
 export class MatTabsInstrumentationDemoComponent {
   protected readonly _s0 = 'The <code>&lt;mat-tab-group&gt;</code> stays unchanged — <code>cngxMatTabs</code> is the only addition. The commit lifecycle, the <code>CNGX_STATEFUL</code> producer, and the toast + banner bridges work identically to <code>&lt;cngx-tab-group&gt;</code>. The Profile and Account tabs each bind <code>[cngxMatTabError]</code> to a per-tab <code>CngxErrorAggregator</code> whose source reads the form\'s <code>statusChanges</code> — type into the form to see the badge appear / disappear in real time. Toggle the simulate-error checkbox and pick a tab to see the orthogonal rejection signal land alongside.';
-  protected readonly _s1 = 'Ten tabs inside a 600px-wide container — the strip cannot fit them all, so <code>[cngxMatTabs]</code> programmatically mounts a <code>&lt;cngx-tab-overflow&gt;</code> "More" button as a flex sibling of <code>.mat-mdc-tab-label-container</code> inside <code>.mat-mdc-tab-header</code>. The label-container shrinks to fit, the More button takes its natural width — no overlap with the trailing tab. Material\'s pagination arrows (<code>&lt;</code> / <code>&gt;</code>) remain visible and functional alongside; the available header width is split across all flex siblings and the <code>IntersectionObserver</code> re-derives <code>hiddenTabs</code> against the new container width. Click the More button to see the popover list of hidden tabs; clicking a hidden tab routes through <code>presenter.selectById(...)</code> so the cngx commit-action lifecycle, rejection decoration, and aggregator visuals stay coherent across the click. Consumers who prefer the More popover as the only overflow affordance can hide Material\'s pagination via theme-level CSS (see the README). Resize the browser to see the More button engage and disengage as the strip width crosses the overflow threshold.';
+  protected readonly _s1 = 'Override the SR descriptor body that <code>[cngxMatTabs]</code> projects into the per-tab <code>cngx-sr-only</code> span when an aggregator wants reveal. Slot context is <code>{ count, label }</code>; the surrounding span (with its <code>cngx-sr-only</code> class, stable id, and <code>aria-describedby</code> wiring on the button) stays library-owned — the slot only customises the descriptor text or markup. Type into the Profile or Account form to flip the aggregator and watch the SR descriptor (visible via DevTools → Accessibility tree, or via a screen reader) carry the consumer-authored phrase rather than the default <code>aggregator.announcement()</code> string.';
+  protected readonly _s2 = 'Ten tabs inside a 600px-wide container — the strip cannot fit them all, so <code>[cngxMatTabs]</code> programmatically mounts a <code>&lt;cngx-tab-overflow&gt;</code> "More" button as a flex sibling of <code>.mat-mdc-tab-label-container</code> inside <code>.mat-mdc-tab-header</code>. The label-container shrinks to fit, the More button takes its natural width — no overlap with the trailing tab. Material\'s pagination arrows (<code>&lt;</code> / <code>&gt;</code>) remain visible and functional alongside; the available header width is split across all flex siblings and the <code>IntersectionObserver</code> re-derives <code>hiddenTabs</code> against the new container width. Click the More button to see the popover list of hidden tabs; clicking a hidden tab routes through <code>presenter.selectById(...)</code> so the cngx commit-action lifecycle, rejection decoration, and aggregator visuals stay coherent across the click. Consumers who prefer the More popover as the only overflow affordance can hide Material\'s pagination via theme-level CSS (see the README). Resize the browser to see the More button engage and disengage as the strip width crosses the overflow threshold.';
   protected readonly _srcHtml0 = `<div class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
             [style.background]="mode() === 'optimistic' ? '#c8e6c9' : ''"
@@ -208,7 +246,7 @@ import { startWith } from 'rxjs/operators';
 import { MatTabsModule } from '@angular/material/tabs';
 import { type CngxTabsCommitAction } from '@cngx/common/tabs';
 import { injectErrorAggregator } from '@cngx/common/interactive';
-import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';
+import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';
 import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
 
 
@@ -283,7 +321,119 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
       return () => clearTimeout(handle);
     });
   };`;
-  protected readonly _srcHtml1 = `<div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
+  protected readonly _srcHtml1 = `<mat-tab-group cngxMatTabs aria-label="Aggregator-content slot demo">
+    <ng-template cngxMatTabAggregatorContent let-count="count" let-label="label">
+      {{ label }} — {{ count }} validation issue(s) detected
+    </ng-template>
+    <mat-tab label="Profile" [cngxMatTabError]="profileErrors">
+      <form [formGroup]="profileForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Name</span>
+          <input type="text" formControlName="name" placeholder="Enter your name" />
+        </label>
+        <small style="opacity:0.7">Required, min 2 characters</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Account" [cngxMatTabError]="accountErrors">
+      <form [formGroup]="accountForm" style="display:flex;flex-direction:column;gap:8px;padding:12px">
+        <label style="display:flex;flex-direction:column;gap:4px">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" />
+        </label>
+        <small style="opacity:0.7">Required, valid email format</small>
+      </form>
+    </mat-tab>
+    <mat-tab label="Notifications">
+      <p style="padding:12px">No aggregator bound — no decoration on this tab.</p>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="event-grid" style="margin-top:12px">
+    <div class="event-row"><span class="event-label">Profile invalid</span><span class="event-value">{{ profileInvalid() }}</span></div>
+    <div class="event-row"><span class="event-label">Account invalid</span><span class="event-value">{{ accountInvalid() }}</span></div>
+  </div>`;
+  protected readonly _srcTs1 = `import { toSignal } from '@angular/core/rxjs-interop';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith } from 'rxjs/operators';
+import { MatTabsModule } from '@angular/material/tabs';
+import { type CngxTabsCommitAction } from '@cngx/common/tabs';
+import { injectErrorAggregator } from '@cngx/common/interactive';
+import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';
+import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
+
+
+  private readonly toaster = inject(CngxToaster);
+  private readonly banner = inject(CngxBanner);
+
+  protected readonly active = signal(0);
+  protected readonly overflowActive = signal(0);
+  protected readonly mode = signal<'optimistic' | 'pessimistic'>('optimistic');
+  protected readonly shouldFail = signal(false);
+  protected readonly latencyMs = signal(600);
+
+  protected readonly profileForm = new FormGroup({
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+  });
+  protected readonly accountForm = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+  });
+
+  private readonly profileStatus = toSignal(
+    this.profileForm.statusChanges.pipe(startWith(this.profileForm.status)),
+    { initialValue: this.profileForm.status },
+  );
+  private readonly accountStatus = toSignal(
+    this.accountForm.statusChanges.pipe(startWith(this.accountForm.status)),
+    { initialValue: this.accountForm.status },
+  );
+  protected readonly profileInvalid = computed(
+    () => this.profileStatus() === 'INVALID',
+  );
+  protected readonly accountInvalid = computed(
+    () => this.accountStatus() === 'INVALID',
+  );
+
+  protected readonly profileErrors = injectErrorAggregator(
+    undefined,
+    { profile: this.profileInvalid },
+    undefined,
+    { profile: 'Profile name is required (min 2 chars)' },
+  );
+  protected readonly accountErrors = injectErrorAggregator(
+    undefined,
+    { account: this.accountInvalid },
+    undefined,
+    { account: 'Account email must be valid' },
+  );
+
+  protected clearAllFailureFeedback(matTabs: CngxMatTabs): void {
+    matTabs.clearLastFailed();
+    this.toaster.dismissAll();
+    this.banner.dismiss('mat-tabs:commit-error');
+  }
+
+  protected readonly commitAction: CngxTabsCommitAction = (from, to) => {
+    const ms = this.latencyMs();
+    const fail = this.shouldFail();
+    return new Observable<boolean>((sub) => {
+      const handle = setTimeout(() => {
+        if (fail) {
+          sub.error(new Error('Server refused tab ' + from + ' → ' + to));
+        } else {
+          sub.next(true);
+          sub.complete();
+        }
+      }, ms);
+      return () => clearTimeout(handle);
+    });
+  };`;
+  protected readonly _srcHtml2 = `<div style="max-width:600px;border:1px dashed var(--mat-sys-outline-variant, #ccc);padding:8px">
     <mat-tab-group cngxMatTabs [(activeIndex)]="overflowActive" aria-label="Smart-overflow demo">
       <mat-tab label="Profile">Profile</mat-tab>
       <mat-tab label="Account">Account</mat-tab>
@@ -300,14 +450,14 @@ import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/fee
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active overflow tab</span><span class="event-value">{{ overflowActive() }}</span></div>
   </div>`;
-  protected readonly _srcTs1 = `import { toSignal } from '@angular/core/rxjs-interop';
+  protected readonly _srcTs2 = `import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { startWith } from 'rxjs/operators';
 import { MatTabsModule } from '@angular/material/tabs';
 import { type CngxTabsCommitAction } from '@cngx/common/tabs';
 import { injectErrorAggregator } from '@cngx/common/interactive';
-import { CngxMatTabs, CngxMatTabError } from '@cngx/ui/mat-tabs';
+import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';
 import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';
 
 

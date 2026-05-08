@@ -24,19 +24,22 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
-  withTabsDefaultOrientation,
+  withTabBusySpinnerTemplate,
+  withTabErrorBadgeTemplate,
   withTabOverflowItemTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
   withTabOverflowTriggerTemplate,
-  withTabsRovingLoop,
-  withTabsCommitMode,
-  withTabsRouterSync,
+  withTabRejectionIconTemplate,
   withTabsAriaLabels,
+  withTabsCommitMode,
+  withTabsDefaultOrientation,
   withTabsFallbackLabels,
+  withTabsRouterSync,
+  withTabsRovingLoop,
+  type CngxTabsAriaLabels,
   type CngxTabsConfig,
   type CngxTabsConfigFeature,
-  type CngxTabsAriaLabels,
   type CngxTabsFallbackLabels,
   type CngxTabsTemplates,
 } from './src/tabs-config';
@@ -82,6 +85,33 @@ export {
   CngxTabOverflowItem,
   type CngxTabOverflowItemContext,
 } from './src/overflow/tab-overflow-item.directive';
+export {
+  CngxTabErrorBadge,
+  type CngxTabErrorBadgeContext,
+} from './src/slots/tab-error-badge.directive';
+export {
+  CngxTabRejectionIcon,
+  type CngxTabRejectionIconContext,
+} from './src/slots/tab-rejection-icon.directive';
+export {
+  CngxTabBusySpinner,
+  type CngxTabBusySpinnerContext,
+} from './src/slots/tab-busy-spinner.directive';
+export {
+  createTabGroupTemplateBindings,
+  type CngxTabGroupTemplateBindings,
+  type CngxTabGroupTemplateBindingsOptions,
+} from './src/slots/tab-group-template-cascade';
+// `CNGX_TABS_GLYPHS` is exported with an `@internal` JSDoc tag —
+// the cngx-tab-group organism in `@cngx/ui/tabs` reads the single
+// source of truth for default glyphs across the cross-package
+// layer boundary (Sheriff forbids deep relative imports). Public-
+// API intent is enforced by the JSDoc tag; consumers customise
+// glyphs via `*cngxTabErrorBadge` / `*cngxTabRejectionIcon` slot
+// directives or the `withTabErrorBadgeTemplate` /
+// `withTabRejectionIconTemplate` config-cascade features. Same
+// shape as Phase-3 `CNGX_STEPPER_GLYPHS`.
+export { CNGX_TABS_GLYPHS } from './src/glyphs';
 export {
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
   createOverflowPopoverHighlightSync,

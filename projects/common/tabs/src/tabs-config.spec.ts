@@ -1,6 +1,12 @@
-import { Component, runInInjectionContext, EnvironmentInjector } from '@angular/core';
+import {
+  Component,
+  EnvironmentInjector,
+  TemplateRef,
+  ViewChild,
+  provideZonelessChangeDetection,
+  runInInjectionContext,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
@@ -8,15 +14,21 @@ import {
   injectTabsConfig,
   provideTabsConfig,
   provideTabsConfigAt,
-  withTabsDefaultOrientation,
+  withTabBusySpinnerTemplate,
+  withTabErrorBadgeTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
-  withTabsRovingLoop,
-  withTabsCommitMode,
-  withTabsRouterSync,
+  withTabRejectionIconTemplate,
   withTabsAriaLabels,
+  withTabsCommitMode,
+  withTabsDefaultOrientation,
   withTabsFallbackLabels,
+  withTabsRouterSync,
+  withTabsRovingLoop,
 } from './tabs-config';
+import type { CngxTabBusySpinnerContext } from './slots/tab-busy-spinner.directive';
+import type { CngxTabErrorBadgeContext } from './slots/tab-error-badge.directive';
+import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.directive';
 
 describe('CngxTabsConfig', () => {
   beforeEach(() => {
@@ -205,5 +217,110 @@ describe('CngxTabsConfig', () => {
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
     expect(cfg.overflowStabilizeMs).toBe(150);
     expect(cfg.overflowMaxDeferMs).toBe(400);
+  });
+
+  describe('skin-slot template features', () => {
+    @Component({
+      standalone: true,
+      template: `
+        <ng-template #errorBadgeTpl />
+        <ng-template #rejectionIconTpl />
+        <ng-template #busySpinnerTpl />
+      `,
+    })
+    class TemplateHostComponent {
+      @ViewChild('errorBadgeTpl', { static: true })
+      errorBadgeTpl!: TemplateRef<CngxTabErrorBadgeContext>;
+      @ViewChild('rejectionIconTpl', { static: true })
+      rejectionIconTpl!: TemplateRef<CngxTabRejectionIconContext>;
+      @ViewChild('busySpinnerTpl', { static: true })
+      busySpinnerTpl!: TemplateRef<CngxTabBusySpinnerContext>;
+    }
+
+    function createTemplates(): {
+      errorBadge: TemplateRef<CngxTabErrorBadgeContext>;
+      rejectionIcon: TemplateRef<CngxTabRejectionIconContext>;
+      busySpinner: TemplateRef<CngxTabBusySpinnerContext>;
+    } {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(TemplateHostComponent);
+      fixture.detectChanges();
+      const host = fixture.componentInstance;
+      TestBed.resetTestingModule();
+      return {
+        errorBadge: host.errorBadgeTpl,
+        rejectionIcon: host.rejectionIconTpl,
+        busySpinner: host.busySpinnerTpl,
+      };
+    }
+
+    it('library default leaves the templates bag empty', () => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+      expect(cfg.templates?.errorBadge).toBeUndefined();
+      expect(cfg.templates?.rejectionIcon).toBeUndefined();
+      expect(cfg.templates?.busySpinner).toBeUndefined();
+    });
+
+    it('withTabErrorBadgeTemplate writes the errorBadge slot', () => {
+      const tpls = createTemplates();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabErrorBadgeTemplate(tpls.errorBadge)),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).templates?.errorBadge).toBe(
+        tpls.errorBadge,
+      );
+    });
+
+    it('withTabRejectionIconTemplate writes the rejectionIcon slot', () => {
+      const tpls = createTemplates();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabRejectionIconTemplate(tpls.rejectionIcon)),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).templates?.rejectionIcon).toBe(
+        tpls.rejectionIcon,
+      );
+    });
+
+    it('withTabBusySpinnerTemplate writes the busySpinner slot', () => {
+      const tpls = createTemplates();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(withTabBusySpinnerTemplate(tpls.busySpinner)),
+        ],
+      });
+      expect(TestBed.inject(CNGX_TABS_CONFIG).templates?.busySpinner).toBe(
+        tpls.busySpinner,
+      );
+    });
+
+    it('three skin-slot features compose independently into the templates bag', () => {
+      const tpls = createTemplates();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideTabsConfig(
+            withTabErrorBadgeTemplate(tpls.errorBadge),
+            withTabRejectionIconTemplate(tpls.rejectionIcon),
+            withTabBusySpinnerTemplate(tpls.busySpinner),
+          ),
+        ],
+      });
+      const cfg = TestBed.inject(CNGX_TABS_CONFIG);
+      expect(cfg.templates?.errorBadge).toBe(tpls.errorBadge);
+      expect(cfg.templates?.rejectionIcon).toBe(tpls.rejectionIcon);
+      expect(cfg.templates?.busySpinner).toBe(tpls.busySpinner);
+    });
   });
 });

@@ -169,6 +169,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Horizontal', path: 'ui/tabs/tab-group' },
       { label: 'Vertical', path: 'ui/tabs/tab-group-vertical' },
       { label: 'Overflow', path: 'ui/tabs/tab-overflow' },
+      { label: 'Slot overrides', path: 'ui/tabs/tab-slot-overrides' },
     ],
   },
 ];
