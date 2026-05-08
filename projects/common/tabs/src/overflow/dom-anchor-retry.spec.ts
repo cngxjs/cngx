@@ -1,6 +1,12 @@
+import { provideZonelessChangeDetection } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createDomAnchorRetry } from './dom-anchor-retry';
+import {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
+  createDomAnchorRetry,
+  type CngxDomAnchorRetryFactory,
+} from './dom-anchor-retry';
 
 describe('createDomAnchorRetry', () => {
   it('stops on the first successful attempt without scheduling another', () => {
@@ -153,5 +159,50 @@ describe('createDomAnchorRetry', () => {
     retry.start();
     expect(attemptCount).toBe(succeedAt);
     expect(onGiveUp).not.toHaveBeenCalled();
+  });
+});
+
+describe('CNGX_DOM_ANCHOR_RETRY_FACTORY', () => {
+  it('default factory resolves to createDomAnchorRetry', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    expect(TestBed.inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)).toBe(
+      createDomAnchorRetry,
+    );
+  });
+
+  it('consumer-provided factory replaces createDomAnchorRetry', () => {
+    // Swap axis — guards the override surface that the molecule and
+    // [cngxMatTabs] route through. A custom policy (e.g. exponential
+    // backoff, telemetry on give-up) injects via this token without
+    // forking the consumer organism.
+    const customFactory: CngxDomAnchorRetryFactory = vi.fn((options) =>
+      createDomAnchorRetry(options),
+    );
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: customFactory },
+      ],
+    });
+    const factory = TestBed.inject(CNGX_DOM_ANCHOR_RETRY_FACTORY);
+    expect(factory).toBe(customFactory);
+
+    let attemptCount = 0;
+    const handle = factory({
+      attempt: () => {
+        attemptCount++;
+        return true;
+      },
+      maxAttempts: 3,
+      schedule: (cb) => {
+        cb();
+        return () => undefined;
+      },
+    });
+    handle.start();
+    expect(attemptCount).toBe(1);
+    expect(customFactory).toHaveBeenCalledTimes(1);
   });
 });

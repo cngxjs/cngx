@@ -66,7 +66,9 @@ export {
   type CngxTabOverflowDomAdapterFactory,
 } from './src/overflow/dom-adapter';
 export {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   createDomAnchorRetry,
+  type CngxDomAnchorRetryFactory,
   type CngxDomAnchorRetryHandle,
   type CngxDomAnchorRetryOptions,
   type CngxDomAnchorRetryResult,

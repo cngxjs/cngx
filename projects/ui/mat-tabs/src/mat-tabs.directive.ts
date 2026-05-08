@@ -19,11 +19,11 @@ import type { Subscription } from 'rxjs';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   CNGX_TAB_GROUP_HOST,
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   CngxTabGroupPresenter,
-  createDomAnchorRetry,
   type CngxTabGroupHost,
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
@@ -274,7 +274,7 @@ export class CngxMatTabs {
     // The flex-layout skin in `mat-tabs.css` does the rest: the More
     // button sits next to `.mat-mdc-tab-label-container` rather than
     // overlaying it, so no imperative positioning is needed here.
-    const anchorRetry = createDomAnchorRetry({
+    const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
         const headerEl = this.hostEl.querySelector<HTMLElement>(
           '.mat-mdc-tab-header',
