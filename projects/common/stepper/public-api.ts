@@ -54,7 +54,6 @@ export {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
-  withDefaultOrientation,
   withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,

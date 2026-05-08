@@ -126,16 +126,6 @@ export function withStepperDefaultOrientation(
   }));
 }
 
-/**
- * @deprecated Use {@link withStepperDefaultOrientation}. The unprefixed
- * name collides with the tabs family's identical symbol when both
- * libs are auto-imported. The alias stays for one minor release
- * before removal.
- *
- * @category interactive
- */
-export const withDefaultOrientation = withStepperDefaultOrientation;
-
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));
 }
