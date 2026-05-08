@@ -26,10 +26,12 @@ import {
   type CngxStepBadgeContext,
   CngxStepBusySpinner,
   type CngxStepBusySpinnerContext,
+  type CngxStepContentContext,
   CngxStepGroupHeader,
   type CngxStepGroupHeaderContext,
   CngxStepIndicator,
   type CngxStepIndicatorContext,
+  type CngxStepLabelContext,
   CngxStepperEmpty,
   CngxStepperPresenter,
   CngxStepRejection,
@@ -418,11 +420,39 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
-  labelTemplateFor(id: string): TemplateRef<unknown> | null {
+  labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
-  contentTemplateFor(id: string): TemplateRef<unknown> | null {
+  contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
+  }
+
+  /**
+   * Build the {@link CngxStepLabelContext} delivered to consumer
+   * `*cngxStepLabel` templates. The flat-step index is 1-based to
+   * match the indicator-position convention; group nodes carry
+   * `flatIndex === -1` so the calculation correctly returns 0 for
+   * groups (callers only invoke this for `kind === 'step'` nodes
+   * via the template loop).
+   */
+  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
+    return {
+      node,
+      index: node.flatIndex + 1,
+      active: this.isActive(node),
+      busy: this.isStepBusy(node),
+      disabled: node.disabled(),
+    };
+  }
+
+  /**
+   * Build the {@link CngxStepContentContext} delivered to consumer
+   * `*cngxStepContent` templates. Mirrors the label-context shape
+   * 1:1 — content templates frequently need the same derivations
+   * (gate inner controls on `disabled` / `busy`).
+   */
+  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
+    return this.stepLabelContextFor(node);
   }
 }

@@ -28,6 +28,8 @@ export {
 
 export {
   CNGX_STEP_PANEL_HOST,
+  type CngxStepContentContext,
+  type CngxStepLabelContext,
   type CngxStepPanelHost,
 } from './src/step-panel-host.token';
 

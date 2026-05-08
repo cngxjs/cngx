@@ -18,6 +18,8 @@ import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_STEP_PANEL_HOST,
   CngxStep,
+  type CngxStepContentContext,
+  type CngxStepLabelContext,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
   type CngxStepNode,
@@ -125,12 +127,31 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   // CngxStepPanelHost contract — O(1) via the pre-built map.
-  labelTemplateFor(id: string): TemplateRef<unknown> | null {
+  labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
 
-  contentTemplateFor(id: string): TemplateRef<unknown> | null {
+  contentTemplateFor(id: string): TemplateRef<CngxStepContentContext> | null {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
+  }
+
+  /** Build the {@link CngxStepLabelContext} for the projected label template. */
+  protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
+    const flatStep = node.flatIndex;
+    return {
+      node,
+      index: flatStep + 1,
+      active: node.id === this.presenter.activeStepId(),
+      busy:
+        this.presenter.commitState.status() === 'pending' &&
+        this.presenter.intendedStepIndex() === flatStep,
+      disabled: node.disabled(),
+    };
+  }
+
+  /** Build the {@link CngxStepContentContext} for the projected content template. */
+  protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
+    return this.stepLabelContextFor(node);
   }
 
   constructor() {
