@@ -78,3 +78,9 @@ export {
   type CngxStepperCommitHandlerOptions,
   createStepperCommitHandler,
 } from './src/commit-handler';
+
+export {
+  provideCngxStepper,
+  provideCngxStepperAt,
+  type CngxStepperFeature,
+} from './src/provide-cngx-stepper';
