@@ -1,4 +1,10 @@
-import { inject, InjectionToken, type Provider } from '@angular/core';
+import {
+  type EnvironmentProviders,
+  inject,
+  InjectionToken,
+  makeEnvironmentProviders,
+  type Provider,
+} from '@angular/core';
 
 /**
  * Aria-label overrides for the stepper landmark region. Library
@@ -77,51 +83,82 @@ export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>(
 
 /**
  * Feature signature — each `with*` builder returns a partial config
- * that the aggregator merges into the final value.
+ * the aggregator merges into the final value. Carries a hidden
+ * `_target` discriminator so the family aggregator
+ * {@link provideCngxStepper} can dispatch config features to
+ * {@link provideStepperConfig} alongside i18n features routed to
+ * {@link provideStepperI18n}.
  *
  * @category interactive
  */
-export type CngxStepperConfigFeature = (config: CngxStepperConfig) => CngxStepperConfig;
+export type CngxStepperConfigFeature = ((
+  config: CngxStepperConfig,
+) => CngxStepperConfig) & {
+  readonly _target?: 'config';
+};
+
+/**
+ * Internal helper that brands a config-mutator function with the
+ * `_target` discriminator. Every `with*` config feature returns one
+ * of these.
+ *
+ * @internal
+ */
+function defineStepperConfigFeature(
+  fn: (config: CngxStepperConfig) => CngxStepperConfig,
+): CngxStepperConfigFeature {
+  return Object.assign(fn, { _target: 'config' as const });
+}
 
 export function withDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
 ): CngxStepperConfigFeature {
-  return (cfg) => ({ ...cfg, defaultOrientation: orientation });
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    defaultOrientation: orientation,
+  }));
 }
 
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
-  return (cfg) => ({ ...cfg, defaultLinear: linear });
+  return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));
 }
 
 export function withStepperCommitMode(
   mode: 'optimistic' | 'pessimistic',
 ): CngxStepperConfigFeature {
-  return (cfg) => ({ ...cfg, defaultCommitMode: mode });
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    defaultCommitMode: mode,
+  }));
 }
 
 export function withStepperRouterSync(
   mode: 'fragment' | 'queryParam',
   param = 'step',
 ): CngxStepperConfigFeature {
-  return (cfg) => ({ ...cfg, routerSyncMode: mode, routerSyncParam: param });
+  return defineStepperConfigFeature((cfg) => ({
+    ...cfg,
+    routerSyncMode: mode,
+    routerSyncParam: param,
+  }));
 }
 
 export function withStepperAriaLabels(
   labels: CngxStepperAriaLabels,
 ): CngxStepperConfigFeature {
-  return (cfg) => ({
+  return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     ariaLabels: { ...cfg.ariaLabels, ...labels },
-  });
+  }));
 }
 
 export function withStepperFallbackLabels(
   labels: CngxStepperFallbackLabels,
 ): CngxStepperConfigFeature {
-  return (cfg) => ({
+  return defineStepperConfigFeature((cfg) => ({
     ...cfg,
     fallbackLabels: { ...cfg.fallbackLabels, ...labels },
-  });
+  }));
 }
 
 function resolveFeatures(
@@ -135,42 +172,44 @@ function resolveFeatures(
  * application providers array (`bootstrapApplication` /
  * `appConfig.providers`).
  *
- * Returns the same `Provider` shape as
- * {@link provideStepperConfigAt} — the difference is the placement
- * site, not the provider literal. Library convention: use this name
- * when the call site is the application root, use the `At` twin
- * inside `viewProviders`.
+ * Returns {@link EnvironmentProviders} per the canonical cngx
+ * config-cascade signature — matches `provideTabsConfig` /
+ * `provideSelectConfig` and the architecture-summary contract.
  *
  * @category interactive
  */
 export function provideStepperConfig(
   ...features: readonly CngxStepperConfigFeature[]
-): Provider {
-  return { provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) };
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) },
+  ]);
 }
 
 /**
- * Component-scoped provider for the stepper config. Apply via
- * `viewProviders` on a component to override the config for the
- * subtree rooted at that component.
+ * Component-scoped config override. The returned `Provider[]` goes
+ * into a component's `providers` or `viewProviders` via spread —
+ * `viewProviders` cannot accept opaque {@link EnvironmentProviders},
+ * so this twin keeps the same merge semantics with a list shape
+ * (matches `provideTabsConfigAt`).
  *
  * Resolution priority across both helpers:
  *   per-instance Input > viewProviders (`At`) > root provider >
- *   library default
+ *   library default.
  *
- * The provider literal returned here is identical to the one from
- * {@link provideStepperConfig} — Angular's DI hierarchy chooses
- * which copy wins based on where the helper is placed (root
- * `providers` vs component `viewProviders`). The naming is the
- * usage hint, the library does not (and cannot) enforce the
- * placement at the type level.
+ * @example
+ * ```ts
+ * @Component({
+ *   viewProviders: [...provideStepperConfigAt(withStepperLinear(true))],
+ * })
+ * ```
  *
  * @category interactive
  */
 export function provideStepperConfigAt(
   ...features: readonly CngxStepperConfigFeature[]
-): Provider {
-  return { provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) };
+): Provider[] {
+  return [{ provide: CNGX_STEPPER_CONFIG, useValue: resolveFeatures(features) }];
 }
 
 /**
