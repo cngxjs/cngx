@@ -9,6 +9,7 @@ import {
   inject,
   Injector,
   input,
+  linkedSignal,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -162,6 +163,15 @@ export class CngxTabGroup implements CngxTabPanelHost {
       hostElement: this.hostElement,
       injector: this.injector,
     });
+
+    // Eager seed for {@link priorActiveIndex} — `linkedSignal` is
+    // lazy: without this read its first computation runs only on the
+    // FIRST live-region announcement, which in test/CD scenarios
+    // already coincides with the post-nav activeIndex, leaving
+    // `prev?.source` undefined and the direction prefix unfired.
+    // Reading once at construction captures the pre-nav activeIndex
+    // so the linkedSignal's `prev.source` carries it forward.
+    this.priorActiveIndex();
   }
 
   /**
@@ -259,6 +269,23 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
+   * Tracks the previous activeIndex value so the live-region's
+   * success-arm announcement can prepend a direction phrase
+   * (`i18n.previousTab` / `i18n.nextTab`) when navigation crosses
+   * tab boundaries. `linkedSignal` with `prev?.source` returns the
+   * SOURCE value at the moment before the most recent change — exactly
+   * the "prior activeIndex" semantic — without duplicating state in an
+   * `effect` (Pillar 1). Initial value coalesces to current so the
+   * first emission compares like-for-like and produces no spurious
+   * direction.
+   */
+  private readonly priorActiveIndex = linkedSignal<number, number>({
+    source: () => this.presenter.activeIndex(),
+    computation: (curr, prev) => prev?.source ?? curr,
+    equal: Object.is,
+  });
+
+  /**
    * SR-friendly text rendered inside the polite live-region span. Drives
    * the announcer through declarative content updates — never an
    * imperative announce() call. Empty string between transitions so the
@@ -271,6 +298,15 @@ export class CngxTabGroup implements CngxTabPanelHost {
    *      user understands both *what failed* and *where they are*.
    *   2. `commitFailedRetry` (generic fallback) otherwise — origin
    *      undefined, label unresolvable, or non-rollback error path.
+   *
+   * Priority chain on the `success` arm:
+   *   1. `${i18n.previousTab} | ${i18n.selectedTab(label, position, count)}`
+   *      when the navigation moved backward (new index < prior index).
+   *   2. `${i18n.nextTab} | ${i18n.selectedTab(...)}` when forward.
+   *   3. Bare `i18n.selectedTab(...)` when the index did not change
+   *      (initial mount or commit-success that lands the user back on
+   *      the same tab) — keeps the announcement non-empty so AT
+   *      consumers receive feedback that the action settled.
    *
    * Reads `presenter.commitTransition` directly — the presenter
    * allocates one `linkedSignal`-backed tracker per instance and
@@ -299,6 +335,24 @@ export class CngxTabGroup implements CngxTabPanelHost {
         }
       }
       return this.i18n.commitFailedRetry;
+    }
+    if (current === 'success') {
+      const tabs = this.presenter.tabs();
+      const idx = this.presenter.activeIndex();
+      const tab = tabs[idx];
+      if (!tab) {
+        return '';
+      }
+      const label = tab.label() ?? '';
+      const positionPhrase = this.i18n.selectedTab(label, idx + 1, tabs.length);
+      const prevIdx = this.priorActiveIndex();
+      if (idx > prevIdx) {
+        return `${this.i18n.nextTab}: ${positionPhrase}`;
+      }
+      if (idx < prevIdx) {
+        return `${this.i18n.previousTab}: ${positionPhrase}`;
+      }
+      return positionPhrase;
     }
     return '';
   });
@@ -360,16 +414,41 @@ export class CngxTabGroup implements CngxTabPanelHost {
 
   /**
    * SR descriptor phrase. Reads the aggregator's `announcement()`
-   * when one is bound and revealed; otherwise empty (the descriptor
-   * span ID stays in the DOM either way per the cngx A11y rule —
-   * IDs always present, content reactive).
+   * when one is bound and revealed; falls back to
+   * `i18n.tabHasErrors(errorCount)` when the aggregator wants reveal
+   * but supplies an empty announcement string — the i18n fallback
+   * surfaces a consistent count phrase instead of leaving the
+   * descriptor span empty (the cngx A11y rule: ids always present,
+   * content reactive). Returns empty string when no aggregator wants
+   * reveal at all (no decoration to describe).
    */
   protected statusPhrase(tab: CngxTabHandle): string {
     const aggregator = tab.errorAggregator();
-    if (aggregator?.shouldShow()) {
-      return aggregator.announcement();
+    if (!aggregator?.shouldShow()) {
+      return '';
     }
-    return '';
+    const announcement = aggregator.announcement();
+    if (announcement) {
+      return announcement;
+    }
+    return this.i18n.tabHasErrors(aggregator.errorCount());
+  }
+
+  /**
+   * Verbose accessible name for each tab button. Replaces the bare
+   * label text content with the i18n `selectedTab(label, position, count)`
+   * phrase so AT users hear "Tab 2 of 5: Settings" instead of just
+   * "Settings, tab" — position context is now in-band rather than
+   * inferred from tablist enumeration.
+   *
+   * The visual label span continues to render the bare `label`
+   * (`tab.label()`); `aria-label` takes precedence over text content
+   * for AT, leaving sighted users unaffected. Reactive — re-derives
+   * when the tab's label or count changes.
+   */
+  protected tabAriaLabel(tab: CngxTabHandle, position: number): string {
+    const tabs = this.tabs();
+    return this.i18n.selectedTab(tab.label() ?? '', position, tabs.length);
   }
 
   protected handleHeaderClick(tab: CngxTabHandle): void {

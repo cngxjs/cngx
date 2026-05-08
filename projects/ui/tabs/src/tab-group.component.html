@@ -13,6 +13,7 @@
       [class.cngx-tab--rejected]="failedIdx === i"
       role="tab"
       [id]="tabHeaderId(tab)"
+      [attr.aria-label]="tabAriaLabel(tab, i + 1)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"

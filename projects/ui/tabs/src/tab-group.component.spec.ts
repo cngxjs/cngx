@@ -108,6 +108,30 @@ describe('CngxTabGroup organism', () => {
     expect(tabs.length).toBe(3);
   });
 
+  it('every tab button carries an i18n.selectedTab(label, position, count) aria-label', () => {
+    // Pillar 2 — verbose accessible name in-band. Without this AT
+    // users hear only the bare label text and the tablist's enumeration
+    // ("Tab 2"); the i18n phrase "Tab 2 of 5: Settings" carries
+    // position context inside the announcement that AT renders on
+    // focus. Visual users still see the bare label span (text content
+    // unchanged); aria-label takes precedence over text-content for
+    // AT only.
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    expect(tabs[0].getAttribute('aria-label')).toBe('Tab 1 of 3: A');
+    expect(tabs[1].getAttribute('aria-label')).toBe('Tab 2 of 3: B');
+    expect(tabs[2].getAttribute('aria-label')).toBe('Tab 3 of 3: C');
+  });
+
   it('first tab is aria-selected="true", others "false"', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -400,6 +424,52 @@ describe('CngxTabGroup organism', () => {
       expect(span.textContent?.trim()).toBe('');
     });
 
+    it('descriptor falls back to i18n.tabHasErrors(count) when shouldShow() is true but announcement is empty', () => {
+      // Pillar 2 — when an aggregator wants reveal but supplies no
+      // announcement string (legacy aggregators, partial integrations,
+      // localisation gaps), the SR descriptor falls back to the i18n
+      // `tabHasErrors(errorCount)` phrase rather than going silent.
+      // The visible badge still renders; the descriptor stays
+      // populated so AT users hear the count even without an
+      // aggregator-supplied phrase.
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        imports: [CngxTabGroup, CngxTab],
+        template: `
+          <cngx-tab-group aria-label="X">
+            <div cngxTab [label]="'A'" [errorAggregator]="aggA"></div>
+          </cngx-tab-group>
+        `,
+      })
+      class EmptyAnnouncementHost {
+        aggA: CngxErrorAggregatorContract = {
+          hasError: signal(true),
+          errorCount: signal(3),
+          activeErrors: signal<readonly string[]>([]),
+          errorLabels: signal<readonly string[]>([]),
+          shouldShow: signal(true),
+          announcement: signal(''),
+          addSource: () => {},
+          removeSource: () => {},
+        };
+      }
+      const fixture = TestBed.createComponent(EmptyAnnouncementHost);
+      fixture.detectChanges();
+      const tabA = fixture.nativeElement.querySelector(
+        'button[role="tab"]',
+      ) as HTMLButtonElement;
+      const descId = tabA.getAttribute('aria-describedby')!;
+      const span = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      // Default English: `${count} error(s)` — 3 → "3 errors".
+      expect(span.textContent?.trim()).toBe('3 errors');
+    });
+
     it('no aggregator → no badge, descriptor span empty (graceful fallback)', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
@@ -642,6 +712,61 @@ describe('CngxTabGroup organism', () => {
       fixture.detectChanges();
       expect(tabs[2].classList.contains('cngx-tab--rejected')).toBe(false);
       expect(tabs[2].querySelector('.cngx-tabs__rejection-icon')).toBeNull();
+    });
+
+    it('liveAnnouncement success arm announces selectedTab with nextTab prefix on forward nav', () => {
+      // Pillar 2 — every state change reaches AT, including the
+      // success transition. Without this binding the live region
+      // collapsed back to empty after a successful commit, leaving
+      // mouse-only sighted users with feedback (the active tab visibly
+      // changed) but AT users with silence on the navigation outcome.
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => true;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      // Forward nav — 0 → 2. Direction prefix uses i18n.nextTab.
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
+    });
+
+    it('liveAnnouncement success arm prepends previousTab on backward nav', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => true;
+      fixture.detectChanges();
+      const tabs = Array.from(
+        fixture.nativeElement.querySelectorAll(
+          'button[role="tab"]',
+        ) as NodeListOf<HTMLButtonElement>,
+      );
+      const region = fixture.nativeElement.querySelector(
+        '.cngx-tabs__live-region',
+      ) as HTMLElement;
+      // Move forward first so the next backward step has a prior > new.
+      tabs[2].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('Next tab: Tab 3 of 3: C');
+      // Backward nav — 2 → 0. Direction prefix uses i18n.previousTab.
+      tabs[0].click();
+      fixture.detectChanges();
+      expect(region.textContent?.trim()).toBe('Previous tab: Tab 1 of 3: A');
     });
   });
 
