@@ -162,7 +162,7 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
 export type CngxTabsConfigFeature = ((
   config: CngxTabsConfig,
 ) => CngxTabsConfig) & {
-  readonly _target?: 'config';
+  readonly _target: 'config';
 };
 
 /**

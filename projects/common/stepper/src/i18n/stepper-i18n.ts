@@ -57,7 +57,7 @@ export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
 export type CngxStepperI18nFeature = ((
   bundle: CngxStepperI18n,
 ) => CngxStepperI18n) & {
-  readonly _target?: 'i18n';
+  readonly _target: 'i18n';
 };
 
 /**

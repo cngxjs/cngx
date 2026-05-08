@@ -94,7 +94,7 @@ export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>(
 export type CngxStepperConfigFeature = ((
   config: CngxStepperConfig,
 ) => CngxStepperConfig) & {
-  readonly _target?: 'config';
+  readonly _target: 'config';
 };
 
 /**
