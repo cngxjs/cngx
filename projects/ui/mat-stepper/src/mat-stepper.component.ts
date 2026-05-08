@@ -22,6 +22,7 @@ import {
   type CngxStepLabelContext,
   CngxStepperPresenter,
   CNGX_STEPPER_HOST,
+  flatStepsEqual,
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
@@ -90,9 +91,17 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * Step-only flat projection. Material's `<mat-step>` does not
    * support nesting, so groups flatten into the same level — the
    * presenter's `flatIndex` already gives the linear position.
+   * Memoised behind `flatStepsEqual` so downstream consumers
+   * (`stepLabel`, panel `@for`, `stepLabelContextFor`) don't
+   * re-walk the array on shape-stable re-emits of `flatSteps()`.
+   * Sibling-symmetric with `CngxStepper.stepsOnly`
+   * (`projects/ui/stepper/src/stepper.component.ts:210-213`) and
+   * the presenter's private twin
+   * (`projects/common/stepper/src/presenter.directive.ts:186-188`).
    */
   protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.presenter.flatSteps().filter((n) => n.kind === 'step'),
+    { equal: flatStepsEqual },
   );
 
   /** Material orientation literal — narrows our `'horizontal'|'vertical'` to its own union. */
