@@ -5,22 +5,28 @@ export const STORY: DemoSpec = {
   navLabel: 'Slot overrides',
   navCategory: 'stepper',
   description:
-    'Override the visual regions inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Three sections demonstrate the consumer-visible triad consumers ask for first: a custom indicator glyph, a custom error badge, and a rejection-decoration that surfaces commit rollback. Each slot has a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / etc.',
+    'Override every visual region inside <code>&lt;cngx-stepper&gt;</code> via the six new slot directives — <code>*cngxStepIndicator</code>, <code>*cngxStepBadge</code>, <code>*cngxStepBusySpinner</code>, <code>*cngxStepRejection</code>, <code>*cngxStepGroupHeader</code>, <code>*cngxStepperEmpty</code>. Each slot ships a typed context object — destructure via <code>let-status="status"</code> / <code>let-failedIndex="failedIndex"</code> / <code>let-group="group"</code> / etc. The library renders sensible defaults; the slots are purely additive.',
   apiComponents: [
     'CngxStepper',
     'CngxStep',
+    'CngxStepGroup',
     'CngxStepContent',
     'CngxStepIndicator',
     'CngxStepBadge',
+    'CngxStepBusySpinner',
+    'CngxStepGroupHeader',
+    'CngxStepperEmpty',
     'CngxStepRejection',
   ],
   moduleImports: [
-    "import { CngxStep, CngxStepBadge, CngxStepContent, CngxStepIndicator, type CngxStepperCommitAction, CngxStepRejection } from '@cngx/common/stepper';",
+    "import { CngxStep, CngxStepBadge, CngxStepBusySpinner, CngxStepContent, CngxStepGroup, CngxStepGroupHeader, CngxStepIndicator, type CngxStepperCommitAction, CngxStepperEmpty, CngxStepRejection } from '@cngx/common/stepper';",
     "import { CngxStepper } from '@cngx/ui/stepper';",
   ],
   setup: `
   protected readonly active = signal(0);
   protected readonly busyAttempts = signal(0);
+  protected readonly slowAttempts = signal(0);
+  protected readonly hasSteps = signal(true);
 
   // Reject the first commit attempt onto step 2 ('Security'); succeed
   // on retry. Drives the *cngxStepRejection slot — presenter sets
@@ -31,6 +37,13 @@ export const STORY: DemoSpec = {
       return Promise.reject(new Error('Security check failed — retry'));
     }
     return Promise.resolve(true);
+  };
+
+  // Slow commit so the busy-spinner slot stays visible long enough to
+  // observe. Resolves after 800ms — drives the *cngxStepBusySpinner slot.
+  protected readonly slowCommit: CngxStepperCommitAction = () => {
+    this.slowAttempts.update((n) => n + 1);
+    return new Promise((resolve) => setTimeout(() => resolve(true), 800));
   };
   `,
   sections: [
@@ -130,6 +143,105 @@ export const STORY: DemoSpec = {
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
     <div class="event-row"><span class="event-label">Commit attempts</span><span class="event-value">{{ busyAttempts() }}</span></div>
   </div>`,
+    },
+    {
+      title: 'Custom busy-spinner via <code>*cngxStepBusySpinner</code>',
+      subtitle:
+        'Replace the default pulse-animation span with branded markup while a commit is in flight. Slot context is <code>{ node }</code>; the slot only fires when the step row matches <code>presenter.intendedStepIndex()</code> with <code>commitState.status() === \'pending\'</code>. Press Next to trigger an 800ms pessimistic commit — the spinner slot replaces the default chrome on the target row.',
+      imports: ['CngxStepper', 'CngxStep', 'CngxStepBusySpinner', 'CngxStepContent'],
+      template: `
+  <cngx-stepper
+    [(activeStepIndex)]="active"
+    [commitAction]="slowCommit"
+    commitMode="pessimistic"
+    aria-label="Slot-overrides — busy spinner"
+  >
+    <ng-template cngxStepBusySpinner>
+      <span aria-hidden="true" class="chip" style="padding:0 6px;font-size:0.7em;background:#1d4ed8;color:#fff">…syncing</span>
+    </ng-template>
+    <div cngxStep label="Form">
+      <ng-template cngxStepContent>
+        <p>Step 1. Press Next to advance — the commit takes ~800ms in pessimistic mode.</p>
+      </ng-template>
+    </div>
+    <div cngxStep label="Review">
+      <ng-template cngxStepContent>
+        <p>Step 2. Defaults restored after commit resolves.</p>
+      </ng-template>
+    </div>
+  </cngx-stepper>
+  <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
+    <div class="event-row"><span class="event-label">Slow commit attempts</span><span class="event-value">{{ slowAttempts() }}</span></div>
+  </div>`,
+    },
+    {
+      title: 'Custom group header via <code>*cngxStepGroupHeader</code>',
+      subtitle:
+        'Replace the built-in group label span with richer markup — heading tag, child-count badge, status indicator. Slot context is <code>{ group, expanded, status }</code>. Group nodes are declared with <code>[cngxStepGroup]</code> wrapping nested <code>[cngxStep]</code> atoms.',
+      imports: ['CngxStepper', 'CngxStep', 'CngxStepGroup', 'CngxStepContent', 'CngxStepGroupHeader'],
+      template: `
+  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides — group header">
+    <ng-template cngxStepGroupHeader let-group="group" let-status="status">
+      <strong style="text-transform:uppercase;letter-spacing:0.05em;font-size:0.8em">
+        {{ group.label() }}
+      </strong>
+      <span class="chip" style="padding:0 6px;font-size:0.7em;margin-inline-start:6px">{{ status }}</span>
+    </ng-template>
+    <div cngxStepGroup label="Onboarding">
+      <div cngxStep label="Profile">
+        <ng-template cngxStepContent>
+          <p>Step inside the Onboarding group.</p>
+        </ng-template>
+      </div>
+      <div cngxStep label="Notifications">
+        <ng-template cngxStepContent>
+          <p>Second step inside Onboarding.</p>
+        </ng-template>
+      </div>
+    </div>
+    <div cngxStepGroup label="Security">
+      <div cngxStep label="Password">
+        <ng-template cngxStepContent>
+          <p>Step inside the Security group.</p>
+        </ng-template>
+      </div>
+    </div>
+  </cngx-stepper>`,
+    },
+    {
+      title: 'Empty-state placeholder via <code>*cngxStepperEmpty</code>',
+      subtitle:
+        'When the registered step list is empty (e.g. async-loaded wizard with no data yet), the slot renders in place of the strip + panels. No context — render static markup or read injected services directly. Toggle the button below to register / unregister all steps and watch the slot swap in.',
+      imports: ['CngxStepper', 'CngxStep', 'CngxStepperEmpty', 'CngxStepContent'],
+      template: `
+  <button
+    type="button"
+    class="chip"
+    style="margin-bottom:var(--demo-grid-gap, 12px)"
+    (click)="hasSteps.update((v) => !v)"
+  >
+    {{ hasSteps() ? 'Unregister all steps' : 'Register steps' }}
+  </button>
+  <cngx-stepper [(activeStepIndex)]="active" aria-label="Slot-overrides — empty state">
+    <ng-template cngxStepperEmpty>
+      <div style="padding:24px;text-align:center;color:var(--mat-sys-on-surface-variant, #666)">
+        <strong>No steps configured yet</strong>
+        <p style="margin:6px 0 0;font-size:0.9em">Steps will appear here once the wizard config loads.</p>
+      </div>
+    </ng-template>
+    @if (hasSteps()) {
+      <div cngxStep label="One">
+        <ng-template cngxStepContent>
+          <p>Step 1.</p>
+        </ng-template>
+      </div>
+      <div cngxStep label="Two">
+        <ng-template cngxStepContent>
+          <p>Step 2.</p>
+        </ng-template>
+      </div>
+    }
+  </cngx-stepper>`,
     },
   ],
 };
