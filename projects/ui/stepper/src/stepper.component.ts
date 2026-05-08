@@ -77,6 +77,7 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
     '[attr.data-orientation]': 'presenter.orientation()',
     '[attr.aria-label]': 'resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-busy]': 'isCommitting() ? "true" : null',
     '[class.cngx-stepper]': 'true',
   },
 })
@@ -158,6 +159,16 @@ export class CngxStepper implements CngxStepPanelHost {
       this.presenter.intendedStepIndex() === node.flatIndex
     );
   }
+
+  /**
+   * `true` while the presenter has a commit in flight. Drives the
+   * landmark `aria-busy` host binding so AT consumers know the
+   * stepper region is mid-transition (Pillar 2 — every state change
+   * communicates).
+   */
+  protected readonly isCommitting = computed<boolean>(
+    () => this.presenter.commitState.status() === 'pending',
+  );
 
   protected stepHeaderId(node: CngxStepNode): string {
     return `${node.id}-header`;

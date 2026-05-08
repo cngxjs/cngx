@@ -63,6 +63,7 @@
       role="region"
       [id]="stepPanelId(node)"
       [attr.aria-labelledby]="stepHeaderId(node)"
+      [attr.aria-describedby]="stepDescriptorId(node)"
       [hidden]="!isActive(node)"
     >
       @let contentTpl = contentTemplateFor(node.id);

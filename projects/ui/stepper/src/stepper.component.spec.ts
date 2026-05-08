@@ -117,6 +117,27 @@ describe('CngxStepper organism', () => {
     expect(panel?.getAttribute('aria-labelledby')).toBe(button.id);
   });
 
+  it('panel carries aria-describedby pointing at the step descriptor span (always-rendered)', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const panel = fixture.nativeElement.querySelector(
+      '.cngx-stepper__panel',
+    ) as HTMLElement;
+    const descId = panel.getAttribute('aria-describedby');
+    expect(descId).toBeTruthy();
+    // Descriptor span lives in the step button (single source of truth)
+    // and is always rendered — Pillar 2 + cngx A11y rule "IDs always
+    // present".
+    const desc = fixture.nativeElement.querySelector(
+      `#${descId}`,
+    ) as HTMLElement;
+    expect(desc).not.toBeNull();
+    expect(desc.classList.contains('cngx-sr-only')).toBe(true);
+  });
+
   it('hierarchical: group renders with role="group" + aria-roledescription="step group"', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -467,6 +488,35 @@ describe('CngxStepper organism', () => {
       // After clearLastFailed the priority chain falls through to the
       // generic message — origin slot still set but failedIdx undefined.
       expect(region.textContent?.trim()).toBe('Commit failed — retry?');
+    });
+
+    it('host carries aria-busy="true" while a commit is pending and clears on resolve', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      let resolve!: (value: boolean) => void;
+      fixture.componentInstance.action = () =>
+        new Promise<boolean>((r) => {
+          resolve = r;
+        });
+      fixture.detectChanges();
+      const host = fixture.nativeElement.querySelector(
+        'cngx-stepper',
+      ) as HTMLElement;
+      expect(host.getAttribute('aria-busy')).toBeNull();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[2].click();
+      fixture.detectChanges();
+      expect(host.getAttribute('aria-busy')).toBe('true');
+      resolve(true);
+      return Promise.resolve().then(() => {
+        fixture.detectChanges();
+        expect(host.getAttribute('aria-busy')).toBeNull();
+      });
     });
 
     it('returns to empty when commitTransition settles back to idle', () => {
