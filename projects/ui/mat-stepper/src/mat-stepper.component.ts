@@ -23,7 +23,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-import { createDirectiveByIdMap } from '@cngx/common/tabs';
+import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
 
 /**
  * Material-twin stepper organism. Wraps `<mat-stepper>` while sharing
@@ -80,7 +80,7 @@ export class CngxMatStepper implements CngxStepPanelHost {
    * map from cascading downstream when `contentChildren` re-emits
    * with an unchanged child set.
    */
-  private readonly stepDirectiveById = createDirectiveByIdMap<CngxStep>({
+  private readonly stepDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.stepDirectives,
   });
 

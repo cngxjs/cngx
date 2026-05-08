@@ -25,7 +25,7 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-import { createDirectiveByIdMap } from '@cngx/common/tabs';
+import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
 
 /**
  * CNGX-standard stepper organism. Thin shell composing the
@@ -123,7 +123,7 @@ export class CngxStepper implements CngxStepPanelHost {
   // id-set + per-id directive identity prevents the Map from
   // cascading downstream every time `contentChildren` re-emits with
   // an unchanged child set.
-  private readonly stepDirectiveById = createDirectiveByIdMap<CngxStep>({
+  private readonly stepDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.stepDirectives,
   });
 
