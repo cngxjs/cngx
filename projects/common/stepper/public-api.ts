@@ -48,6 +48,21 @@ export {
   type CngxStepIndicatorContext,
 } from './src/slots/step-indicator.directive';
 
+export {
+  CngxStepBadge,
+  type CngxStepBadgeContext,
+} from './src/slots/step-badge.directive';
+
+export {
+  CngxStepBusySpinner,
+  type CngxStepBusySpinnerContext,
+} from './src/slots/step-busy-spinner.directive';
+
+export {
+  CngxStepRejection,
+  type CngxStepRejectionContext,
+} from './src/slots/step-rejection.directive';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {
