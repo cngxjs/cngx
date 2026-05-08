@@ -281,10 +281,8 @@ export function createMatTabAggregatorDecoration(
     }
     entry.embeddedView.destroy();
     entry.embeddedView = undefined;
-    // Embedded view destruction does not implicitly empty the
-    // descriptor span — the rendered nodes were appended to it via
-    // appendChild. Clear here so a subsequent imperative-fallback
-    // write (or a fresh mount) starts from a clean slate.
+    // The rendered nodes live under the descriptor span via appendChild;
+    // EmbeddedViewRef.destroy() does not detach them, so clear manually.
     while (entry.descriptorSpan.firstChild) {
       opts.renderer.removeChild(
         entry.descriptorSpan,
