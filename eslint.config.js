@@ -248,23 +248,8 @@ module.exports = tseslint.config(
     ],
     plugins: { local: localRules },
     rules: {
-      // Threshold raised twice (150 → 180 → 200) as legitimate Level-4
-      // shape grew. The 200 bump reflects `<cngx-tab-overflow>`'s
-      // irreducible orchestration: panel-host token injection +
-      // adapter-factory injection + linkedSignal visibility-state +
-      // 3-stage template cascade wiring + content-child slot queries
-      // + IO-debounce timer with max-defer cap + rAF-scheduled DOM
-      // anchor retry + IntersectionObserver attach/detach lifecycle +
-      // ARIA-1.2-combobox AD wiring sit at 191 source lines AFTER
-      // extracting `createTabOverflowTemplateBindings` (cascade +
-      // adItems projection + structural-equal guards) and
-      // `createDomAnchorRetry` (rAF retry loop) into
-      // `@cngx/common/tabs` Level-2 factories. Forcing further
-      // extraction at 180 would push single-consumer helpers into
-      // `@cngx/common` (over-abstraction per architecture-lens rule).
-      // 200 leaves margin for the irreducible orchestration shape;
-      // further growth still triggers the rule and forces a real
-      // decompose into a sibling sub-component.
+      // Threshold ratchet history (150 → 180 → 200) and per-bump
+      // rationale: `.internal/architektur/tabs-accepted-debt.md §8`.
       'local/level-4-organism-loc-guard': ['error', { threshold: 200 }],
     },
   },
