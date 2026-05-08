@@ -1,5 +1,6 @@
 import {
   effect,
+  InjectionToken,
   type Injector,
   runInInjectionContext,
   type Signal,
@@ -55,12 +56,9 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  * factory guards with optional-chaining so unit specs don't blow up
  * (real browsers always have it).
  *
- * Replaces the inline `effect` previously in
- * `<cngx-tab-group>`'s constructor — extracted at Phase 4 of the
- * global-material-bridge plan to thin the organism class body and
- * make the same shape reusable by `<cngx-stepper>` /
- * `<cngx-mat-stepper>` if/when those organisms grow scrolling
- * strips.
+ * Shared by `<cngx-tab-group>`'s active-tab scroll loop and any
+ * organism with the same `${id}-header` strip convention; keeps the
+ * organism class body thin per the decompose contract.
  *
  * @category interactive
  */
@@ -85,3 +83,40 @@ export function createOrganismScrollSync(
     });
   });
 }
+
+/**
+ * Factory signature for {@link CNGX_ORGANISM_SCROLL_SYNC_FACTORY}.
+ * Matches {@link createOrganismScrollSync} exactly so override
+ * implementations can be drop-in.
+ *
+ * @category interactive
+ */
+export type CngxOrganismScrollSyncFactory = (
+  opts: CngxOrganismScrollSyncOptions,
+) => void;
+
+/**
+ * DI token for the active-item scroll-into-view policy. Defaults to
+ * {@link createOrganismScrollSync} (smooth-center, `[id="<itemId>-header"]`
+ * selector convention).
+ *
+ * Override at app `providers` (root) or component `viewProviders`
+ * (scoped) to install a different policy — e.g. instant scroll,
+ * custom selector, telemetry on each scroll, opt-out for
+ * `prefers-reduced-motion`. Consumed by `<cngx-tab-group>` today;
+ * any organism that surfaces a focusable strip with the
+ * `${itemId}-header` id convention can compose against the same token.
+ *
+ * Symmetric to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
+ * `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`.
+ *
+ * @category interactive
+ */
+export const CNGX_ORGANISM_SCROLL_SYNC_FACTORY =
+  new InjectionToken<CngxOrganismScrollSyncFactory>(
+    'CngxOrganismScrollSyncFactory',
+    {
+      providedIn: 'root',
+      factory: () => createOrganismScrollSync,
+    },
+  );

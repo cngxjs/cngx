@@ -20,7 +20,7 @@ import {
 import {
   CNGX_TABS_CONFIG,
   injectTabsConfig,
-  withDefaultOrientation,
+  withTabsDefaultOrientation,
   withTabOverflowStabilizeMs,
   withTabsAriaLabels,
   type CngxTabsConfig,
@@ -37,7 +37,7 @@ describe('provideCngxTabs', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideCngxTabs(
-          withDefaultOrientation('vertical'),
+          withTabsDefaultOrientation('vertical'),
           withTabOverflowStabilizeMs(150),
           withTabsAriaLabels({ tabsRegion: 'Bereiche' }),
           withTabsI18nLabels({
@@ -71,7 +71,7 @@ describe('provideCngxTabs', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideCngxTabs(withDefaultOrientation('vertical')),
+        provideCngxTabs(withTabsDefaultOrientation('vertical')),
       ],
     });
     const i18n = TestBed.inject(CNGX_TABS_I18N);
@@ -153,7 +153,7 @@ describe('provideCngxTabs', () => {
           provideZonelessChangeDetection(),
           provideCngxTabs(
             stale satisfies CngxTabsFeature,
-            withDefaultOrientation('vertical'),
+            withTabsDefaultOrientation('vertical'),
             withTabsI18nLabels({ tabsLabel: 'Bereiche' }),
           ),
         ],
@@ -178,7 +178,7 @@ describe('provideCngxTabsAt', () => {
       template: '',
       viewProviders: [
         ...provideCngxTabsAt(
-          withDefaultOrientation('vertical'),
+          withTabsDefaultOrientation('vertical'),
           withTabsI18nLabels({ tabsLabel: 'Bereiche' }),
         ),
       ],

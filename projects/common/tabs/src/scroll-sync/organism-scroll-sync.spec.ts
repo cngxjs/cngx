@@ -4,9 +4,13 @@ import {
   signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, it, test, vi } from 'vitest';
 
-import { createOrganismScrollSync } from './organism-scroll-sync';
+import {
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
+  createOrganismScrollSync,
+  type CngxOrganismScrollSyncFactory,
+} from './organism-scroll-sync';
 
 interface Harness {
   injector: Injector;
@@ -117,5 +121,37 @@ describe('createOrganismScrollSync', () => {
     h.activeId.set('two');
     TestBed.flushEffects();
     expect(runs).toBe(2);
+  });
+});
+
+describe('CNGX_ORGANISM_SCROLL_SYNC_FACTORY', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  it('default factory resolves to createOrganismScrollSync', () => {
+    expect(TestBed.inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)).toBe(
+      createOrganismScrollSync,
+    );
+  });
+
+  it('consumer-provided factory replaces createOrganismScrollSync', () => {
+    // Swap axis — guards the override surface that organism shells
+    // route through. A custom policy (instant scroll, custom selector,
+    // reduced-motion opt-out, telemetry) installs via this token
+    // without forking the organism.
+    const customFactory: CngxOrganismScrollSyncFactory = vi.fn();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_ORGANISM_SCROLL_SYNC_FACTORY, useValue: customFactory },
+      ],
+    });
+    expect(TestBed.inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)).toBe(
+      customFactory,
+    );
   });
 });

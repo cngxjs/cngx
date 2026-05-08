@@ -1,3 +1,5 @@
+import { InjectionToken } from '@angular/core';
+
 /**
  * Outcome reported by an `attempt` callback to
  * {@link createDomAnchorRetry}. Returning `true` halts the retry
@@ -138,3 +140,43 @@ export function createDomAnchorRetry(
     },
   };
 }
+
+/**
+ * Factory signature for {@link CNGX_DOM_ANCHOR_RETRY_FACTORY}. Matches
+ * {@link createDomAnchorRetry} exactly so override implementations
+ * can be drop-in.
+ *
+ * @category interactive
+ */
+export type CngxDomAnchorRetryFactory = (
+  options: CngxDomAnchorRetryOptions,
+) => CngxDomAnchorRetryHandle;
+
+/**
+ * DI token for the bounded DOM-anchor retry-loop policy. Defaults to
+ * {@link createDomAnchorRetry} (counter + give-up + cancellation,
+ * scheduler supplied by caller).
+ *
+ * Override at app `providers` (root) or component `viewProviders`
+ * (scoped) to install a different policy — e.g. retry-with-backoff,
+ * telemetry on give-up, max-retry instrumentation — without forking
+ * `<cngx-tab-overflow>` or `[cngxMatTabs]`. Two real consumers route
+ * through this token (the molecule's rAF strip-attach loop and
+ * `[cngxMatTabs]`'s afterNextRender header-anchor loop); future
+ * organism shells with the same dom-anchoring shape compose against
+ * it uniformly.
+ *
+ * Symmetric to `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`,
+ * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`, and
+ * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
+ *
+ * @category interactive
+ */
+export const CNGX_DOM_ANCHOR_RETRY_FACTORY =
+  new InjectionToken<CngxDomAnchorRetryFactory>(
+    'CngxDomAnchorRetryFactory',
+    {
+      providedIn: 'root',
+      factory: () => createDomAnchorRetry,
+    },
+  );

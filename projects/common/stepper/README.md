@@ -41,7 +41,7 @@ Resolution priority: per-instance Input → `viewProviders` → root provider �
 | `provideStepperConfig(...features)` | App-wide registration. |
 | `provideStepperConfigAt(...features)` | Component-scoped via `viewProviders`. |
 | `injectStepperConfig()` | Read the resolved config in directives / components. |
-| `withDefaultOrientation('horizontal' \| 'vertical')` | Default orientation when `[orientation]` is unbound. |
+| `withStepperDefaultOrientation('horizontal' \| 'vertical')` | Default orientation when `[orientation]` is unbound. |
 | `withStepperLinear(boolean)` | Default linear-mode flag. |
 | `withStepperCommitMode('optimistic' \| 'pessimistic')` | Default commit mode. |
 | `withStepperRouterSync(mode, paramName?)` | Default router-sync `mode` + `paramName`. |

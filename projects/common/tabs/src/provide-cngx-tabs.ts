@@ -45,16 +45,9 @@ function partitionFeatures(
       config.push(feat);
       continue;
     }
-    // Unbranded feature — caller wired a stale `(cfg) => cfg` (pre-
-    // `defineTabsConfigFeature`) or a hand-rolled mutator without a
-    // discriminator. Routing it blind to the config bucket is a
-    // Pillar-3 silent-mutation hazard: an i18n-shaped override could
-    // land in `CNGX_TABS_CONFIG` instead of `CNGX_TABS_I18N` and the
-    // consumer would never see the difference. Dev mode warns
-    // loudly so the wiring gets fixed; prod silently drops so a
-    // mis-authored feature never crashes a deployed app. Both
-    // directions communicate the violation per the
-    // honest-failure rule.
+    // Unbranded feature — runtime escape from the required `_target`
+    // type. Drop and dev-warn so an i18n-shaped override can never
+    // land silently in `CNGX_TABS_CONFIG` (Pillar 3 / honest-failure).
     if (isDevMode()) {
       console.warn(
         '[provideCngxTabs] Dropped feature without a `_target` ' +
@@ -76,12 +69,18 @@ function partitionFeatures(
  * Mirrors `provideCngxMenu` and `provideCngxSelect`. Apply once in the
  * application providers array.
  *
+ * Returns {@link EnvironmentProviders} for app-root use; the
+ * component-scoped twin {@link provideCngxTabsAt} returns
+ * `Provider[]` because `viewProviders` cannot accept opaque
+ * {@link EnvironmentProviders}. The shape divergence is intentional —
+ * spread the `*At` result into `viewProviders`.
+ *
  * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
  *     provideCngxTabs(
- *       withDefaultOrientation('vertical'),
+ *       withTabsDefaultOrientation('vertical'),
  *       withTabsAriaLabels({ tabsRegion: 'Bereiche' }),
  *       withTabsI18nLabels({ tabsLabel: 'Bereiche', moreTabsLabel: (n) => `${n} mehr` }),
  *       withTabOverflowStabilizeMs(150),
@@ -119,7 +118,7 @@ export function provideCngxTabs(
  * @Component({
  *   viewProviders: [
  *     ...provideCngxTabsAt(
- *       withDefaultOrientation('vertical'),
+ *       withTabsDefaultOrientation('vertical'),
  *       withTabsI18nLabels({ tabsLabel: 'Bereiche' }),
  *     ),
  *   ],

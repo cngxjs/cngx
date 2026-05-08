@@ -82,7 +82,7 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
 export type CngxTabsI18nFeature = ((
   bundle: CngxTabsI18n,
 ) => CngxTabsI18n) & {
-  readonly _target?: 'i18n';
+  readonly _target: 'i18n';
 };
 
 /**

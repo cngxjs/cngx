@@ -1,8 +1,12 @@
 import { provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { beforeEach, describe, expect, test } from 'vitest';
+import { beforeEach, describe, expect, it, test, vi } from 'vitest';
 
-import { createDirectiveByIdMap } from './directive-by-id-map';
+import {
+  CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
+  createDirectiveByIdMap,
+  type CngxDirectiveByIdMapFactory,
+} from './directive-by-id-map';
 
 interface FakeDir {
   id: () => string;
@@ -79,5 +83,37 @@ describe('createDirectiveByIdMap', () => {
     const source = signal<readonly FakeDir[]>([]);
     const map = createDirectiveByIdMap({ source });
     expect(map().size).toBe(0);
+  });
+});
+
+describe('CNGX_DIRECTIVE_BY_ID_MAP_FACTORY', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  it('default factory resolves to createDirectiveByIdMap', () => {
+    expect(TestBed.inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)).toBe(
+      createDirectiveByIdMap,
+    );
+  });
+
+  it('consumer-provided factory replaces createDirectiveByIdMap', () => {
+    // Swap axis — guards the override surface that 3 organism shells
+    // route through (`<cngx-tab-group>` plus `<cngx-stepper>` /
+    // `<cngx-mat-stepper>` post-Phase-1.8). A custom policy
+    // (WeakMap-based, telemetry, custom equality) installs via this
+    // token without forking the consumer organism.
+    const customFactory: CngxDirectiveByIdMapFactory = createDirectiveByIdMap;
+    const spy = vi.fn(customFactory);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_DIRECTIVE_BY_ID_MAP_FACTORY, useValue: spy },
+      ],
+    });
+    expect(TestBed.inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)).toBe(spy);
   });
 });

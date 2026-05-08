@@ -8,7 +8,7 @@ import {
   injectTabsConfig,
   provideTabsConfig,
   provideTabsConfigAt,
-  withDefaultOrientation,
+  withTabsDefaultOrientation,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
   withTabsRovingLoop,
@@ -35,11 +35,11 @@ describe('CngxTabsConfig', () => {
     expect(cfg.routerSyncParam).toBe('tab');
   });
 
-  it('withDefaultOrientation overrides the orientation default', () => {
+  it('withTabsDefaultOrientation overrides the orientation default', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsConfig(withDefaultOrientation('vertical')),
+        provideTabsConfig(withTabsDefaultOrientation('vertical')),
       ],
     });
     const cfg = TestBed.inject(CNGX_TABS_CONFIG);
@@ -109,7 +109,7 @@ describe('CngxTabsConfig', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideTabsConfig(
-          withDefaultOrientation('vertical'),
+          withTabsDefaultOrientation('vertical'),
           withTabsRovingLoop(false),
           withTabsCommitMode('pessimistic'),
         ),
@@ -126,14 +126,14 @@ describe('CngxTabsConfig', () => {
       standalone: true,
       selector: 'scope-cmp',
       template: '',
-      viewProviders: [...provideTabsConfigAt(withDefaultOrientation('vertical'))],
+      viewProviders: [...provideTabsConfigAt(withTabsDefaultOrientation('vertical'))],
     })
     class ScopeCmp {}
 
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsConfig(withDefaultOrientation('horizontal')),
+        provideTabsConfig(withTabsDefaultOrientation('horizontal')),
       ],
     });
     const fixture = TestBed.createComponent(ScopeCmp);
@@ -146,7 +146,7 @@ describe('CngxTabsConfig', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsConfig(withDefaultOrientation('vertical')),
+        provideTabsConfig(withTabsDefaultOrientation('vertical')),
       ],
     });
     const injector = TestBed.inject(EnvironmentInjector);

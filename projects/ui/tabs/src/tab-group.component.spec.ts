@@ -14,7 +14,7 @@ import {
   provideCngxTabs,
   provideTabsConfig,
   provideTabsI18n,
-  withDefaultOrientation,
+  withTabsDefaultOrientation,
   withTabsAriaLabels,
   withTabsFallbackLabels,
   withTabsI18nLabels,
@@ -249,7 +249,7 @@ describe('CngxTabGroup organism', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideTabsConfig(withDefaultOrientation('vertical')),
+        provideTabsConfig(withTabsDefaultOrientation('vertical')),
       ],
     });
     @Component({

@@ -10,6 +10,7 @@ import {
   provideStepperI18n,
   withStepperAriaLabels,
   withStepperFallbackLabels,
+  withStepperI18nLabels,
 } from '@cngx/common/stepper';
 
 import { CngxStepper } from './stepper.component';
@@ -253,7 +254,7 @@ describe('CngxStepper organism', () => {
         provideStepperConfig(
           withStepperAriaLabels({ stepperRegion: undefined }),
         ),
-        provideStepperI18n({ stepperLabel: 'Schrittfolge' }),
+        provideStepperI18n(withStepperI18nLabels({ stepperLabel: 'Schrittfolge' })),
       ],
     });
     const fixture = TestBed.createComponent(BareHost);

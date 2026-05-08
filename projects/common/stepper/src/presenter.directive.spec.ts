@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Subject, of, throwError } from 'rxjs';
 
 import { CngxStepperPresenter } from './presenter.directive';
-import { provideStepperConfig, withDefaultOrientation, withStepperLinear } from './stepper-config';
+import { provideStepperConfig, withStepperDefaultOrientation, withStepperLinear } from './stepper-config';
 import type { CngxStepRegistration, CngxStepStatus } from './stepper-host.token';
 
 function reg(id: string, kind: 'step' | 'group' = 'step', stateValue: CngxStepStatus = 'idle', disabled = false): CngxStepRegistration {
@@ -171,7 +171,7 @@ describe('CngxStepperPresenter', () => {
       providers: [
         provideZonelessChangeDetection(),
         provideStepperConfig(
-          withDefaultOrientation('vertical'),
+          withStepperDefaultOrientation('vertical'),
           withStepperLinear(true),
         ),
       ],
@@ -277,7 +277,7 @@ describe('CngxStepperPresenter', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        provideStepperConfig(withDefaultOrientation('vertical')),
+        provideStepperConfig(withStepperDefaultOrientation('vertical')),
       ],
     });
     @Component({

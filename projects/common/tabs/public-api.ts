@@ -24,6 +24,7 @@ export {
   provideTabsConfig,
   provideTabsConfigAt,
   withDefaultOrientation,
+  withTabsDefaultOrientation,
   withTabOverflowItemTemplate,
   withTabOverflowMaxDeferMs,
   withTabOverflowStabilizeMs,
@@ -66,7 +67,9 @@ export {
   type CngxTabOverflowDomAdapterFactory,
 } from './src/overflow/dom-adapter';
 export {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   createDomAnchorRetry,
+  type CngxDomAnchorRetryFactory,
   type CngxDomAnchorRetryHandle,
   type CngxDomAnchorRetryOptions,
   type CngxDomAnchorRetryResult,
@@ -96,10 +99,14 @@ export {
 // surface, but exported because the schematic decompose target
 // flattens these helpers into the consumer's project.
 export {
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
   createOrganismScrollSync,
+  type CngxOrganismScrollSyncFactory,
   type CngxOrganismScrollSyncOptions,
 } from './src/scroll-sync/organism-scroll-sync';
 export {
+  CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   createDirectiveByIdMap,
+  type CngxDirectiveByIdMapFactory,
   type CngxDirectiveByIdMapOptions,
 } from './src/registry/directive-by-id-map';

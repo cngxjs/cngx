@@ -54,7 +54,7 @@ export {
   injectStepperConfig,
   provideStepperConfig,
   provideStepperConfigAt,
-  withDefaultOrientation,
+  withStepperDefaultOrientation,
   withStepperAriaLabels,
   withStepperCommitMode,
   withStepperFallbackLabels,
@@ -65,8 +65,10 @@ export {
 export {
   CNGX_STEPPER_I18N,
   type CngxStepperI18n,
+  type CngxStepperI18nFeature,
   injectStepperI18n,
   provideStepperI18n,
+  withStepperI18nLabels,
 } from './src/i18n/stepper-i18n';
 
 export {
@@ -76,3 +78,9 @@ export {
   type CngxStepperCommitHandlerOptions,
   createStepperCommitHandler,
 } from './src/commit-handler';
+
+export {
+  provideCngxStepper,
+  provideCngxStepperAt,
+  type CngxStepperFeature,
+} from './src/provide-cngx-stepper';

@@ -19,12 +19,12 @@ import { CngxActiveDescendant } from '@cngx/common/a11y';
 import { CngxClickOutside } from '@cngx/common/interactive';
 import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
   CngxTabOverflowItem,
   CngxTabOverflowTrigger,
-  createDomAnchorRetry,
   createTabOverflowTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
@@ -263,9 +263,12 @@ export class CngxTabOverflow {
   private firstPendingAt: number | null = null;
 
   // rAF-scheduled IO attach retry. `display: none` toggles do NOT
-  // recover; an unmount/remount cycle is required to re-arm.
+  // recover; an unmount/remount cycle is required to re-arm. Routed
+  // through `CNGX_DOM_ANCHOR_RETRY_FACTORY` so consumers can swap the
+  // retry-loop policy (e.g. backoff, telemetry) without forking the
+  // molecule.
   private readonly attachRetry: CngxDomAnchorRetryHandle =
-    createDomAnchorRetry({
+    inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
         const root = this.resolveStrip();
         if (!root) {
