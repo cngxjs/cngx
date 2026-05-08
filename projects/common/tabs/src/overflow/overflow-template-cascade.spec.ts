@@ -157,6 +157,42 @@ describe('createTabOverflowTemplateBindings', () => {
     expect(ctx.disabled).toBe(true);
   });
 
+  it('buildItemContext caches per-tab — same context reference returned when disabled+index unchanged', () => {
+    const tab = makeHandle('A', false);
+    const bindings = build({});
+    const ctx1 = bindings.buildItemContext(tab, 0);
+    const ctx2 = bindings.buildItemContext(tab, 0);
+    expect(ctx2).toBe(ctx1);
+    // Cached `pick` closure identity is stable too — important for
+    // ngTemplateOutlet not re-binding the embedded view.
+    expect(ctx2.pick).toBe(ctx1.pick);
+  });
+
+  it('buildItemContext rebuilds when index changes', () => {
+    const tab = makeHandle('A', false);
+    const bindings = build({});
+    const ctx0 = bindings.buildItemContext(tab, 0);
+    const ctx5 = bindings.buildItemContext(tab, 5);
+    expect(ctx5).not.toBe(ctx0);
+    expect(ctx5.index).toBe(5);
+  });
+
+  it('buildItemContext rebuilds when disabled flips between calls', () => {
+    let isDisabled = false;
+    const tab = {
+      id: 'A',
+      label: () => 'A',
+      disabled: () => isDisabled,
+      errorAggregator: () => null,
+    } as unknown as CngxTabHandle;
+    const bindings = build({});
+    const ctxEnabled = bindings.buildItemContext(tab, 0);
+    isDisabled = true;
+    const ctxDisabled = bindings.buildItemContext(tab, 0);
+    expect(ctxDisabled).not.toBe(ctxEnabled);
+    expect(ctxDisabled.disabled).toBe(true);
+  });
+
   it('tabOverflowOptionId returns a stable suffix per tab id', () => {
     const a = makeHandle('alpha');
     const b = makeHandle('bravo');

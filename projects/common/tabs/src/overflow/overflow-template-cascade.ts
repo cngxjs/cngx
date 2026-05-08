@@ -168,16 +168,40 @@ export function createTabOverflowTemplateBindings(
     },
     { equal: triggerContextEqual },
   );
+  // Per-row context cache — keyed on `tab` via WeakMap so detached
+  // handles GC freely. Cached entry stores the `index` and `disabled`
+  // flag at the build moment; if either changes on a re-emit we
+  // rebuild, otherwise the same context reference is returned.
+  // `pick` is closure-captured per cache entry, so its identity is
+  // stable across CD passes — `ngTemplateOutlet` doesn't re-bind the
+  // embedded view when neither the context nor the captured callback
+  // shift. Mirrors the `nodeContext` / `selectByValue` cache pattern
+  // in `CngxTreeSelectPanel`.
+  interface CachedRow {
+    readonly context: CngxTabOverflowItemContext;
+    readonly disabled: boolean;
+    readonly index: number;
+  }
+  const itemContextCache = new WeakMap<CngxTabHandle, CachedRow>();
   const buildItemContext = (
     tab: CngxTabHandle,
     index: number,
-  ): CngxTabOverflowItemContext => ({
-    $implicit: tab,
-    tab,
-    pick: () => opts.pickTab(tab),
-    disabled: tab.disabled(),
-    index,
-  });
+  ): CngxTabOverflowItemContext => {
+    const disabled = tab.disabled();
+    const cached = itemContextCache.get(tab);
+    if (cached?.disabled === disabled && cached?.index === index) {
+      return cached.context;
+    }
+    const context: CngxTabOverflowItemContext = {
+      $implicit: tab,
+      tab,
+      pick: () => opts.pickTab(tab),
+      disabled,
+      index,
+    };
+    itemContextCache.set(tab, { context, disabled, index });
+    return context;
+  };
   const adItems = computed<ActiveDescendantItem[]>(
     () =>
       opts.hiddenTabs().map((tab) => ({
