@@ -1,4 +1,11 @@
-import { effect, untracked, type Signal, computed, type TemplateRef } from '@angular/core';
+import {
+  effect,
+  InjectionToken,
+  untracked,
+  type Signal,
+  computed,
+  type TemplateRef,
+} from '@angular/core';
 
 import type {
   ActiveDescendantItem,
@@ -255,3 +262,35 @@ export function createOverflowPopoverHighlightSync(
     });
   });
 }
+
+/**
+ * Factory signature for {@link CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY}.
+ *
+ * @category interactive
+ */
+export type CngxOverflowPopoverHighlightSyncFactory = (
+  popover: Signal<CngxPopover>,
+  ad: Signal<CngxActiveDescendant>,
+) => void;
+
+/**
+ * DI token for the overflow popover's highlight-sync wiring strategy.
+ * Defaults to {@link createOverflowPopoverHighlightSync} (mouse-open
+ * shows clean popover, keyboard paths preserved, reset on close).
+ * Override at the molecule's `providers` (or component-scope
+ * `viewProviders`) to install a different policy — e.g. preserve
+ * last-index across re-opens, telemetry on close, custom highlight
+ * rules — without forking `<cngx-tab-overflow>`. Symmetric to
+ * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
+ * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
+ *
+ * @category interactive
+ */
+export const CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY =
+  new InjectionToken<CngxOverflowPopoverHighlightSyncFactory>(
+    'CngxOverflowPopoverHighlightSyncFactory',
+    {
+      providedIn: 'root',
+      factory: () => createOverflowPopoverHighlightSync,
+    },
+  );

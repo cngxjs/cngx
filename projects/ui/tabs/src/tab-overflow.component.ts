@@ -21,10 +21,10 @@ import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import {
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CNGX_TAB_PANEL_HOST,
+  CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
   CngxTabOverflowItem,
   CngxTabOverflowTrigger,
   createDomAnchorRetry,
-  createOverflowPopoverHighlightSync,
   createTabOverflowTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
@@ -318,7 +318,10 @@ export class CngxTabOverflow {
       });
     });
 
-    createOverflowPopoverHighlightSync(this.popover, this.adRef);
+    inject(CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY)(
+      this.popover,
+      this.adRef,
+    );
 
     this.destroyRef.onDestroy(() => {
       this.attachRetry.cancel();

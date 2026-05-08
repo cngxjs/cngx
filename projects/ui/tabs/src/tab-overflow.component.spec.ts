@@ -4,12 +4,14 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
   CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   CngxTab,
   CngxTabOverflowItem,
   CngxTabOverflowTrigger,
   provideTabsConfig,
   withTabOverflowMaxDeferMs,
+  type CngxOverflowPopoverHighlightSyncFactory,
   type CngxTabOverflowDomAdapter,
 } from '@cngx/common/tabs';
 
@@ -299,6 +301,33 @@ describe('CngxTabOverflow', () => {
         li.classList.contains('cngx-tab-overflow__item--active'),
       ),
     ).toBe(false);
+  });
+
+  it('routes the highlight-sync wiring through CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY (swap-test)', async () => {
+    // Pins the consumer-swap contract: providing an alternate factory
+    // via TestBed providers replaces the default highlight-sync
+    // policy. Telemetry / preserve-last-index / custom highlight
+    // policies all hang off this seam without forking the molecule.
+    let factoryCalls = 0;
+    const fakeFactory: CngxOverflowPopoverHighlightSyncFactory = () => {
+      factoryCalls++;
+    };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        {
+          provide: CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
+          useValue: fakeFactory,
+        },
+      ],
+    });
+    installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    expect(factoryCalls).toBe(1);
   });
 
   it('clicking outside the popover surface dismisses it', async () => {
