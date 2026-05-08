@@ -63,6 +63,13 @@ export {
   type CngxStepRejectionContext,
 } from './src/slots/step-rejection.directive';
 
+export {
+  CngxStepGroupHeader,
+  type CngxStepGroupHeaderContext,
+} from './src/slots/step-group-header.directive';
+
+export { CngxStepperEmpty } from './src/slots/stepper-empty.directive';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {
