@@ -4,7 +4,9 @@ import {
   Component,
   computed,
   contentChildren,
+  ElementRef,
   inject,
+  Injector,
   input,
   type Signal,
   type TemplateRef,
@@ -26,7 +28,10 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
-import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
+import {
+  CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
+  CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
+} from '@cngx/common/tabs';
 
 /**
  * CNGX-standard stepper organism. Thin shell composing the
@@ -88,7 +93,27 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly presenter = inject(CNGX_STEPPER_HOST);
   protected readonly i18n = injectStepperI18n();
   protected readonly config = injectStepperConfig();
+  private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
+    ElementRef,
+  ).nativeElement;
+  private readonly injector = inject(Injector);
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
+
+  constructor() {
+    // Self-healing scroll loop — when the active step changes (via
+    // direct click on a visible step, keyboard nav, or selectById from
+    // a future overflow molecule), bring the matching button into the
+    // strip's visible area. Vertical layouts benefit equally — the
+    // factory's default `scrollIntoView` block:'nearest' keeps both
+    // axes covered. Routed through `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`
+    // so consumers can swap the scroll policy (instant, custom
+    // selector, reduced-motion opt-out) without forking the organism.
+    inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
+      activeId: this.presenter.activeStepId,
+      hostElement: this.hostElement,
+      injector: this.injector,
+    });
+  }
 
   /** Stepper landmark role-description with config + i18n cascade. */
   protected readonly stepperRoleDescription = computed<string>(

@@ -117,6 +117,30 @@ describe('CngxStepper organism', () => {
     expect(panel?.getAttribute('aria-labelledby')).toBe(button.id);
   });
 
+  it('scrolls the active step button into view when activeStepId changes', () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    const calls: HTMLButtonElement[] = [];
+    for (const btn of buttons) {
+      Object.defineProperty(btn, 'scrollIntoView', {
+        configurable: true,
+        writable: true,
+        value: () => calls.push(btn),
+      });
+    }
+    buttons[2].click();
+    fixture.detectChanges();
+    expect(calls).toContain(buttons[2]);
+  });
+
   it('panel carries aria-describedby pointing at the step descriptor span (always-rendered)', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
