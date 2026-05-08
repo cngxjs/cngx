@@ -1,4 +1,4 @@
-import { computed, type Signal } from '@angular/core';
+import { computed, InjectionToken, type Signal } from '@angular/core';
 
 /**
  * Structural equality for a `Map<string, T>` where `T` is matched by
@@ -68,3 +68,38 @@ export function createDirectiveByIdMap<T extends { id: () => string }>(
     { equal: directiveMapEqual },
   );
 }
+
+/**
+ * Factory signature for {@link CNGX_DIRECTIVE_BY_ID_MAP_FACTORY}.
+ * Matches {@link createDirectiveByIdMap} exactly so override
+ * implementations can be drop-in.
+ *
+ * @category interactive
+ */
+export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
+  opts: CngxDirectiveByIdMapOptions<T>,
+) => Signal<Map<string, T>>;
+
+/**
+ * DI token for the per-id directive-resolution policy. Defaults to
+ * {@link createDirectiveByIdMap} (structural-equal Map).
+ *
+ * Override at app `providers` (root) or component `viewProviders`
+ * (scoped) to install a different policy — e.g. WeakMap-based
+ * resolution, telemetry, custom equality. Real consumers:
+ * `<cngx-tab-group>` (today); `<cngx-stepper>` and
+ * `<cngx-mat-stepper>` migrate via Phase 1.8.
+ *
+ * Symmetric to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
+ * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
+ *
+ * @category interactive
+ */
+export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY =
+  new InjectionToken<CngxDirectiveByIdMapFactory>(
+    'CngxDirectiveByIdMapFactory',
+    {
+      providedIn: 'root',
+      factory: () => createDirectiveByIdMap,
+    },
+  );

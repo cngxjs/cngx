@@ -104,6 +104,8 @@ export {
   type CngxOrganismScrollSyncOptions,
 } from './src/scroll-sync/organism-scroll-sync';
 export {
+  CNGX_DIRECTIVE_BY_ID_MAP_FACTORY,
   createDirectiveByIdMap,
+  type CngxDirectiveByIdMapFactory,
   type CngxDirectiveByIdMapOptions,
 } from './src/registry/directive-by-id-map';
