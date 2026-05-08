@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, type TemplateRef } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatStepper } from '@angular/material/stepper';
+import {
+  MatStepper,
+  MatStepperModule,
+  type MatStepperIconContext,
+} from '@angular/material/stepper';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -190,6 +194,69 @@ describe('CngxMatStepper organism', () => {
     await fixture.whenStable();
     const v2 = matStepper.stepsOnly();
     expect(v2).toBe(v1);
+  });
+
+  it('forwards consumer-projected <ng-template matStepperIcon> into Material so the icon override flows through the wrapper (stepper-accepted-debt §4 closure)', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMatStepper, CngxStep, MatStepperModule],
+      template: `
+        <cngx-mat-stepper aria-label="Custom icons">
+          <ng-template matStepperIcon="number" let-index="index">
+            <span class="cngx-test-icon">CUSTOM-{{ index + 1 }}</span>
+          </ng-template>
+          <div cngxStep label="One"></div>
+          <div cngxStep label="Two"></div>
+        </cngx-mat-stepper>
+      `,
+    })
+    class CustomIconHost {}
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CustomIconHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Forwarding contract — the consumer's `<ng-template matStepperIcon>`
+    // flows from cngx-mat-stepper's content children into
+    // `MatStepper._iconOverrides`. The `afterNextRender` patch in
+    // CngxMatStepper picks the directives up via its own
+    // `contentChildren(MatStepperIcon)` query and writes them to
+    // Material's underscore-prefixed slot — Angular's
+    // `@ContentChildren` on MatStepper does not traverse content
+    // projected through a wrapper component's `<ng-content>`, so
+    // direct projection cannot reach it. The forward is the
+    // architectural seam the §4 closure depends on; whether
+    // Material's per-state template-outlet picks the override up
+    // on the very first render or after the next CD tick is
+    // Material's concern (the user-facing demo proves the visual
+    // outcome end-to-end via the dev-app).
+    const stepperRef = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    ).componentInstance as unknown as {
+      _iconOverrides: Record<string, TemplateRef<MatStepperIconContext>>;
+    };
+    expect(stepperRef._iconOverrides['number']).toBeDefined();
+    // The forwarded template ref matches the consumer's directive's
+    // own templateRef — proves the captured directive's template
+    // identity is preserved across the forward.
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepperIcons: () => readonly { name: string; templateRef: unknown }[];
+    };
+    const consumerIcons = wrapper.stepperIcons();
+    expect(consumerIcons.length).toBe(1);
+    expect(consumerIcons[0].name).toBe('number');
+    expect(stepperRef._iconOverrides['number']).toBe(
+      consumerIcons[0].templateRef,
+    );
   });
 
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {

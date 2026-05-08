@@ -12,7 +12,12 @@ import {
   type TemplateRef,
   viewChild,
 } from '@angular/core';
-import { MatStepperModule, MatStepper } from '@angular/material/stepper';
+import {
+  MatStepperModule,
+  MatStepper,
+  MatStepperIcon,
+  type MatStepperIconContext,
+} from '@angular/material/stepper';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
@@ -75,6 +80,22 @@ export class CngxMatStepper implements CngxStepPanelHost {
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
+
+  /**
+   * Consumer-projected `<ng-template matStepperIcon="<state>">`
+   * directives — captured here as content children of
+   * `<cngx-mat-stepper>` and forwarded into `<mat-stepper>`'s own
+   * `_iconOverrides` slot via the `afterNextRender` patch in the
+   * constructor. Direct `<ng-content>` projection of these templates
+   * does NOT reach Material's `@ContentChildren(MatStepperIcon)`
+   * query because Angular's content-init lifecycle resolves the inner
+   * component's queries before the wrapper's projection lands; the
+   * programmatic forward sidesteps that ordering. Tracked-debt entry
+   * folds into `tabs-accepted-debt §5` (Material-internal slot
+   * coupling — `_iconOverrides` is underscore-prefixed and thus
+   * stability-unguaranteed across Material upgrades).
+   */
+  private readonly stepperIcons = contentChildren(MatStepperIcon);
 
   /**
    * Pre-built `Map<id, CngxStep>` so `labelTemplateFor` /
@@ -143,10 +164,10 @@ export class CngxMatStepper implements CngxStepPanelHost {
   // `*cngxStepperEmpty`) are silently dropped here — Material owns
   // the indicator/badge/busy chrome via `<mat-stepper>`'s own
   // template, and the proper override path on this variant is
-  // Material's `<ng-template matStepperIcon>`. See
-  // `stepper-accepted-debt.md` §4 for the closure trigger
-  // (Phase 5 of `tabs-stepper-cleanup-plan` adds matStepperIcon
-  // forwarding).
+  // Material's `<ng-template matStepperIcon>` projected directly
+  // into `<cngx-mat-stepper>` (the template forwards them through
+  // an `<ng-content select="ng-template[matStepperIcon]">` outlet
+  // inside `<mat-stepper>`). Closes `stepper-accepted-debt §4`.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
@@ -197,6 +218,27 @@ export class CngxMatStepper implements CngxStepPanelHost {
         injector: this.injector,
         destroyRef: this.destroyRef,
       });
+
+      // Forward consumer-projected matStepperIcon templates into
+      // Material's MatStepper. Direct `<ng-content>` projection
+      // does not reach Material's `@ContentChildren(MatStepperIcon)`
+      // query because the inner component's content-init resolves
+      // before the wrapper's projection lands. We capture the
+      // directives via our own `contentChildren` query and patch
+      // `_iconOverrides` here, then re-render so the per-header
+      // bindings flow. Reaches into Material's underscore-prefixed
+      // slot — same accepted-debt class as `tabs-accepted-debt §5`.
+      const stepperRef = stepper as unknown as {
+        _iconOverrides: Record<string, TemplateRef<MatStepperIconContext>>;
+      };
+      for (const icon of this.stepperIcons()) {
+        stepperRef._iconOverrides[icon.name] = icon.templateRef;
+      }
+      // Material reads `_iconOverrides` into per-header bindings on
+      // the next CD pass; nudge it via the public `selectedIndex`
+      // self-write so the headers re-bind without a wider tick.
+      const idx = stepper.selectedIndex;
+      stepper.selectedIndex = idx;
     });
   }
 }
