@@ -12,7 +12,12 @@ import {
   CNGX_COMMIT_CONTROLLER_FACTORY,
   type CngxCommitController,
 } from '@cngx/common/data';
-import { CNGX_STATEFUL, type CngxAsyncState } from '@cngx/core/utils';
+import {
+  CNGX_STATEFUL,
+  createTransitionTracker,
+  type CngxAsyncState,
+  type StatusTransition,
+} from '@cngx/core/utils';
 import type { Observable } from 'rxjs';
 
 import {
@@ -129,6 +134,37 @@ export class CngxStepperPresenter implements CngxStepperHost {
   readonly intendedStepIndex: Signal<number | undefined> =
     this.commitController.intendedValue;
 
+  /**
+   * Reactive current/previous pair for the commit-state status.
+   * Skin sub-components mount a `<span cngxLiveRegion>` whose
+   * content reads from this tracker — declarative SR announcements
+   * driven by the same source of truth as `commitState`. Shared
+   * across consumers so the tracker's `linkedSignal` is allocated
+   * once per presenter instance, never per consumer.
+   */
+  readonly commitTransition: StatusTransition = createTransitionTracker(
+    () => this.commitController.state.status(),
+  );
+
+  // Persistence-of-error surface (Pillar 2 — Kommunikation als
+  // First-Class Concern). `lastFailedIndex` flags the refused
+  // target until the user re-picks it successfully or explicitly
+  // dismisses via `clearLastFailed()`. `originIndexDuringCommit`
+  // is the safe-harbour captured at commit-window open; the
+  // organism's `liveAnnouncement` computed reads both to resolve
+  // the rich rollback phrase. Both are primitives, so default
+  // `Object.is` equality is correct — no `equal` fn needed.
+  private readonly lastFailedIndexState = signal<number | undefined>(undefined);
+  private readonly originIndexDuringCommitState = signal<number | undefined>(
+    undefined,
+  );
+  /** {@inheritDoc CngxStepperHost.lastFailedIndex} */
+  readonly lastFailedIndex: Signal<number | undefined> =
+    this.lastFailedIndexState.asReadonly();
+  /** {@inheritDoc CngxStepperHost.originIndexDuringCommit} */
+  readonly originIndexDuringCommit: Signal<number | undefined> =
+    this.originIndexDuringCommitState.asReadonly();
+
   private readonly treeState = signal<readonly CngxStepNode[]>([], {
     equal: stepTreeEqual,
   });
@@ -238,6 +274,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
     this.treeState.set(rootIds.map((id) => buildNode(id, 0)));
   }
 
+  /** {@inheritDoc CngxStepperHost.clearLastFailed} */
+  clearLastFailed(): void {
+    this.lastFailedIndexState.set(undefined);
+  }
+
   select(index: number): void {
     const stepsOnly = this.stepsOnly();
     if (stepsOnly.length === 0) {
@@ -263,7 +304,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
     const action = this.commitAction();
     if (!action) {
+      // No-action fast path — activeStepIndex moves synchronously, no
+      // commit window opens, so `originIndexDuringCommit` stays
+      // untouched. If the user is re-picking a previously-failed
+      // target, clear the rejection flag.
       this.activeStepIndex.set(target);
+      if (this.lastFailedIndexState() === target) {
+        this.lastFailedIndexState.set(undefined);
+      }
       return;
     }
 
@@ -272,15 +320,37 @@ export class CngxStepperPresenter implements CngxStepperHost {
     // advances now and rolls back on rejection. Supersede semantics
     // come from the lifted commit-controller — a rapid second
     // select() cancels the in-flight runner.
+    //
+    // Open the commit window: capture the safe-harbour origin
+    // exactly once. Written ONLY here (not on the no-action fast
+    // path) so a stale origin never lingers into a non-commit
+    // navigation.
+    this.originIndexDuringCommitState.set(previous);
     const mode = this.commitMode();
     if (mode === 'optimistic') {
       this.activeStepIndex.set(target);
     }
     this.commitHandler.beginTransition(previous, target, action, (accept) => {
-      if (accept && mode === 'pessimistic') {
-        this.activeStepIndex.set(target);
-      } else if (!accept && mode === 'optimistic') {
-        this.activeStepIndex.set(previous);
+      if (accept) {
+        // Window closes on success — origin no longer needed; clear
+        // the rejection flag if the user re-picked the failed target
+        // successfully.
+        this.originIndexDuringCommitState.set(undefined);
+        if (this.lastFailedIndexState() === target) {
+          this.lastFailedIndexState.set(undefined);
+        }
+        if (mode === 'pessimistic') {
+          this.activeStepIndex.set(target);
+        }
+      } else {
+        // Reject — flag the refused target; RETAIN the origin so
+        // the organism's `liveAnnouncement` computed can resolve
+        // the origin label for the rich rollback phrase. Optimistic
+        // rolls back; pessimistic never moved.
+        this.lastFailedIndexState.set(target);
+        if (mode === 'optimistic') {
+          this.activeStepIndex.set(previous);
+        }
       }
     });
   }

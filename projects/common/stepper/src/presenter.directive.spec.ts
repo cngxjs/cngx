@@ -270,6 +270,113 @@ describe('CngxStepperPresenter', () => {
       subj.complete();
       expect(presenter.activeStepIndex()).toBe(1);
     });
+
+    it('commitTransition tracks pending → success on resolved commit', () => {
+      const { presenter } = commitFixture('pessimistic', () => true);
+      expect(presenter.commitTransition.current()).toBe('idle');
+      presenter.select(2);
+      // Sync resolution collapses pending → success in one tick;
+      // tracker captures the transition's terminal status.
+      expect(presenter.commitTransition.current()).toBe('success');
+    });
+
+    it('commitTransition tracks pending → error on rejected commit', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.commitTransition.current()).toBe('error');
+    });
+
+    it('lastFailedIndex flags the refused target on rejection', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+    });
+
+    it('originIndexDuringCommit captures the origin on commit-window open', () => {
+      // Pending Subject keeps the window open; origin must be the
+      // active index at commit time, captured exactly once.
+      const subj = new Subject<boolean>();
+      const { presenter } = commitFixture('pessimistic', () => subj);
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+      presenter.select(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+      // On success, origin clears (window closes).
+      subj.next(true);
+      subj.complete();
+      expect(presenter.originIndexDuringCommit()).toBeUndefined();
+    });
+
+    it('originIndexDuringCommit is RETAINED on rejection (rich rollback derivable)', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      // Reject keeps origin so liveAnnouncement can resolve the label.
+      expect(presenter.lastFailedIndex()).toBe(2);
+      expect(presenter.originIndexDuringCommit()).toBe(0);
+    });
+
+    it('clearLastFailed() zeros lastFailedIndex but leaves origin slot alone', () => {
+      const { presenter } = commitFixture('optimistic', () => false);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      const originBefore = presenter.originIndexDuringCommit();
+      presenter.clearLastFailed();
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+      // Origin slot is independent — clearLastFailed does not touch it.
+      expect(presenter.originIndexDuringCommit()).toBe(originBefore);
+    });
+
+    it('successful re-pick of the failed target clears lastFailedIndex', () => {
+      // First select rejects; second select on the same index resolves
+      // true. The successful arm clears lastFailedIndex when the
+      // resolved target matches the previously-failed target.
+      let attempt = 0;
+      const { presenter } = commitFixture('optimistic', () => {
+        attempt++;
+        return attempt === 1 ? false : true;
+      });
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+    });
+
+    it('no-action fast path clears lastFailedIndex when re-picking the failed target', () => {
+      // Reject first via commit-action, then unbind the action and
+      // re-pick — the no-action fast path must still close the
+      // rejection state per Pillar 2 (every state change communicates).
+      let action: (() => boolean) | null = () => false;
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      @Component({
+        standalone: true,
+        hostDirectives: [
+          {
+            directive: CngxStepperPresenter,
+            inputs: ['commitAction', 'commitMode'],
+          },
+        ],
+        template: '',
+      })
+      class FastPathHost {}
+      const fixture = TestBed.createComponent(FastPathHost);
+      fixture.componentRef.setInput('commitAction', action);
+      fixture.componentRef.setInput('commitMode', 'optimistic');
+      fixture.detectChanges();
+      const presenter = fixture.debugElement.injector.get(CngxStepperPresenter);
+      presenter.register(reg('a'));
+      presenter.register(reg('b'));
+      presenter.register(reg('c'));
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBe(2);
+      action = null;
+      fixture.componentRef.setInput('commitAction', action);
+      fixture.detectChanges();
+      presenter.select(2);
+      expect(presenter.lastFailedIndex()).toBeUndefined();
+    });
   });
 
   it('per-instance Input wins over the config default', () => {
