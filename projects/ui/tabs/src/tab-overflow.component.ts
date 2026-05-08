@@ -55,6 +55,9 @@ function tabIdListEqual(
   return true;
 }
 
+/** Auto-open keys for the trigger button (APG combobox). */
+const NAV_OPEN_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Home', 'End']);
+
 /**
  * Structural equality for the `visibilityState` map: identical when
  * both maps carry the same key-set with the same boolean visibility
@@ -64,14 +67,6 @@ function tabIdListEqual(
  * scroll even when no tab actually flipped visibility, cascading
  * into the popover-list outlet.
  */
-/**
- * Keyboard keys that should auto-open the More popover when pressed
- * on a still-collapsed trigger button. Matches the ARIA APG combobox
- * pattern: ArrowDown/Up + Home/End all reveal the listbox surface so
- * the user sees the option AD just highlighted.
- */
-const NAV_OPEN_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Home', 'End']);
-
 function mapBoolEqual(
   a: ReadonlyMap<string, boolean>,
   b: ReadonlyMap<string, boolean>,
