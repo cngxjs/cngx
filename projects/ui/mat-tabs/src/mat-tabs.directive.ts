@@ -1,6 +1,7 @@
 import {
   afterNextRender,
   computed,
+  contentChild,
   contentChildren,
   DestroyRef,
   Directive,
@@ -10,6 +11,8 @@ import {
   Injector,
   isDevMode,
   Renderer2,
+  type Signal,
+  type TemplateRef,
   untracked,
   ViewContainerRef,
   type ComponentRef,
@@ -35,6 +38,10 @@ import {
   createMatTabRejectionDecoration,
   type CngxMatTabAggregatorErrorEntry,
 } from './decorations/decoration-projectors';
+import {
+  CngxMatTabAggregatorContent,
+  type CngxMatTabAggregatorContentContext,
+} from './decorations/mat-tab-aggregator-content.directive';
 import {
   createMatTabHandle,
   type CngxMatTabHandleSetup,
@@ -144,6 +151,19 @@ export class CngxMatTabs {
   ).createComponent(CngxTabOverflow, { injector: this.injector });
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
+  // Optional consumer-projected slot template — when bound, the
+  // aggregator-decoration projector renders an embedded view of it
+  // into the SR descriptor span instead of writing the
+  // `aggregator.announcement()` string verbatim. See
+  // `mat-tab-aggregator-content.directive.ts` JSDoc for the slot's
+  // typed context shape and the `tabs-accepted-debt §9` note.
+  private readonly aggregatorContentSlot = contentChild(
+    CngxMatTabAggregatorContent,
+  );
+  private readonly aggregatorContentTemplate: Signal<
+    TemplateRef<CngxMatTabAggregatorContentContext> | null
+  > = computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
+  private readonly viewContainerRef = inject(ViewContainerRef);
   // Per-tab registries — strong refs are bounded by the directive's
   // lifetime (every entry is explicitly deleted when the matching
   // MatTab leaves the children set, AND the maps go away on
@@ -175,7 +195,7 @@ export class CngxMatTabs {
   >(
     () => {
       const tabs = this.presenter.tabs();
-      const acc: { idx: number; id: string; announcement: string }[] = [];
+      const acc: CngxMatTabAggregatorErrorEntry[] = [];
       for (let i = 0; i < tabs.length; i++) {
         const handle = tabs[i];
         const aggregator = handle.errorAggregator();
@@ -184,6 +204,8 @@ export class CngxMatTabs {
             idx: i,
             id: handle.id,
             announcement: aggregator.announcement(),
+            count: aggregator.errorCount(),
+            label: handle.label() ?? '',
           });
         }
       }
@@ -198,7 +220,9 @@ export class CngxMatTabs {
           if (
             a[i].idx !== b[i].idx ||
             a[i].id !== b[i].id ||
-            a[i].announcement !== b[i].announcement
+            a[i].announcement !== b[i].announcement ||
+            a[i].count !== b[i].count ||
+            a[i].label !== b[i].label
           ) {
             return false;
           }
@@ -233,6 +257,8 @@ export class CngxMatTabs {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
+      contentTemplate: this.aggregatorContentTemplate,
+      viewContainerRef: this.viewContainerRef,
     });
 
     this.destroyRef.onDestroy(() => {

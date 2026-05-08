@@ -24,6 +24,7 @@ import { CngxTabOverflow } from '@cngx/ui/tabs';
 
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
+import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
 
 interface StubAggregatorHandle {
   contract: CngxErrorAggregatorContract;
@@ -31,17 +32,23 @@ interface StubAggregatorHandle {
   announcement: WritableSignal<string>;
 }
 
+interface StubAggregatorHandleExt extends StubAggregatorHandle {
+  count: WritableSignal<number>;
+}
+
 function makeStubAggregator(
   initialShow = false,
   initialAnnouncement = '',
-): StubAggregatorHandle {
+  initialCount = 0,
+): StubAggregatorHandleExt {
   const show = signal(initialShow);
   const announcement = signal(initialAnnouncement);
+  const count = signal(initialCount);
   const showSig: Signal<boolean> = show.asReadonly();
   const announceSig: Signal<string> = announcement.asReadonly();
   const contract: CngxErrorAggregatorContract = {
     hasError: showSig,
-    errorCount: signal(0),
+    errorCount: count.asReadonly(),
     activeErrors: signal([]),
     errorLabels: signal([]),
     shouldShow: showSig,
@@ -49,7 +56,7 @@ function makeStubAggregator(
     addSource: (_entry: CngxErrorAggregatorSourceEntry) => undefined,
     removeSource: (_key: string) => undefined,
   };
-  return { contract, show, announcement };
+  return { contract, show, announcement, count };
 }
 
 interface Plumbing {
@@ -174,6 +181,34 @@ class AggregatorHostCmp {
   protected aggTwo = this.aggTwoHandle.contract;
   protected commit: CngxTabsCommitAction = () => new Promise<boolean>(() => undefined);
   protected mode: 'optimistic' | 'pessimistic' = 'optimistic';
+  protected active = 0;
+}
+
+@Component({
+  standalone: true,
+  imports: [
+    MatTabsModule,
+    CngxMatTabs,
+    CngxMatTabError,
+    CngxMatTabAggregatorContent,
+  ],
+  template: `
+    <mat-tab-group cngxMatTabs [(activeIndex)]="active">
+      <ng-template
+        cngxMatTabAggregatorContent
+        let-count="count"
+        let-label="label"
+      >
+        <span data-testid="slot-content">{{ label }}=={{ count }}</span>
+      </ng-template>
+      <mat-tab label="Profile" [cngxMatTabError]="aggOne">Profile</mat-tab>
+      <mat-tab label="Settings">Settings</mat-tab>
+    </mat-tab-group>
+  `,
+})
+class AggregatorSlotHostCmp {
+  readonly aggOneHandle = makeStubAggregator();
+  protected aggOne = this.aggOneHandle.contract;
   protected active = 0;
 }
 
@@ -918,5 +953,112 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(matTabEls[0].getAttribute('aria-describedby')).toContain(
       `${handleId}-errors`,
     );
+  });
+
+  test('axis 18: *cngxMatTabAggregatorContent slot renders an embedded view inside the descriptor span when bound', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorSlotHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    fixture.componentInstance.aggOneHandle.count.set(3);
+    fixture.componentInstance.aggOneHandle.announcement.set(
+      'Profile has 3 errors',
+    );
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    const descriptorSpan = matTabEls[0].querySelector(
+      '.cngx-sr-only',
+    ) as HTMLElement;
+    expect(descriptorSpan).not.toBeNull();
+    // Slot template wins → embedded view is rendered with typed
+    // context (`label` / `count`); the imperative announcement
+    // textContent is replaced by the consumer's markup.
+    const slotContent = descriptorSpan.querySelector(
+      '[data-testid="slot-content"]',
+    ) as HTMLElement;
+    expect(slotContent).not.toBeNull();
+    expect(slotContent.textContent?.trim()).toBe('Profile==3');
+    // The imperative `announcement` text is NOT the descriptor
+    // textContent when the slot owns the body — proves the slot
+    // path replaced the imperative `setProperty(textContent, ...)`
+    // fallback.
+    expect(descriptorSpan.textContent?.trim()).not.toBe(
+      'Profile has 3 errors',
+    );
+  });
+
+  test('axis 19: *cngxMatTabAggregatorContent slot context updates when count / label re-emit', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorSlotHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    fixture.componentInstance.aggOneHandle.count.set(2);
+    fixture.componentInstance.aggOneHandle.announcement.set('a');
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    let slotContent = matTabEls[0].querySelector(
+      '[data-testid="slot-content"]',
+    ) as HTMLElement;
+    expect(slotContent.textContent?.trim()).toBe('Profile==2');
+
+    // Bump count — the projector destroys + remounts the embedded
+    // view with the fresh context.
+    fixture.componentInstance.aggOneHandle.count.set(7);
+    fixture.componentInstance.aggOneHandle.announcement.set('b');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    slotContent = matTabEls[0].querySelector(
+      '[data-testid="slot-content"]',
+    ) as HTMLElement;
+    expect(slotContent.textContent?.trim()).toBe('Profile==7');
+  });
+
+  test('axis 20: when no slot template is bound, the imperative descriptor span fallback writes announcement verbatim', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(AggregatorHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    fixture.componentInstance.aggOneHandle.show.set(true);
+    fixture.componentInstance.aggOneHandle.announcement.set('Form invalid');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const matTabEls = fixture.nativeElement.querySelectorAll(
+      '.mat-mdc-tab',
+    ) as NodeListOf<HTMLElement>;
+    const descriptorSpan = matTabEls[0].querySelector(
+      '.cngx-sr-only',
+    ) as HTMLElement;
+    // Imperative path: descriptor span carries the announcement
+    // string directly, no embedded-view markers inside.
+    expect(descriptorSpan.textContent?.trim()).toBe('Form invalid');
+    expect(
+      descriptorSpan.querySelector('[data-testid="slot-content"]'),
+    ).toBeNull();
   });
 });
