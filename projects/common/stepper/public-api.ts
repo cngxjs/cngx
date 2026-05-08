@@ -70,6 +70,12 @@ export {
 
 export { CngxStepperEmpty } from './src/slots/stepper-empty.directive';
 
+export {
+  createStepperTemplateBindings,
+  type CngxStepperTemplateBindings,
+  type CngxStepperTemplateBindingsOptions,
+} from './src/slots/stepper-template-cascade';
+
 export { CngxStepperRouterSync } from './src/router-sync.directive';
 
 export {
