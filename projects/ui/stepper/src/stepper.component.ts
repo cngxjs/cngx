@@ -308,6 +308,18 @@ export class CngxStepper implements CngxStepPanelHost {
     }
   }
 
+  /**
+   * Clear the persisted `lastFailedIndex` rejection flag on the
+   * presenter — public delegator mirroring the
+   * {@link CngxTabGroup.clearLastFailed} pass-through pattern so
+   * consumers using a template ref (`#s="cngxStepper"`) can dismiss
+   * the rejection decoration programmatically without injecting
+   * {@link CNGX_STEPPER_HOST}.
+   */
+  clearLastFailed(): void {
+    this.presenter.clearLastFailed();
+  }
+
   // CngxStepPanelHost contract — O(1) via the pre-built map.
   labelTemplateFor(id: string): TemplateRef<unknown> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;

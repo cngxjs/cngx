@@ -531,15 +531,14 @@ describe('CngxStepper organism', () => {
       // Rich phrase first.
       expect(region.textContent?.trim()).toBe('Reverted to step "A".');
       // Dismiss the rejection — clearing lastFailedIndex collapses the
-      // priority chain to the generic fallback. Reach the host token via
-      // the component instance to drive the dismissal in-test (the
-      // organism does not surface a clearLastFailed delegate yet —
-      // tracked for the future stepper-accepted-debt).
+      // priority chain to the generic fallback. The organism exposes
+      // `clearLastFailed()` as a public delegator so consumers using
+      // `#s="cngxStepper"` don't need to inject CNGX_STEPPER_HOST.
       const stepperEl = fixture.debugElement.children[0];
       const stepper = stepperEl.componentInstance as {
-        readonly presenter: { clearLastFailed(): void };
+        clearLastFailed(): void;
       };
-      stepper.presenter.clearLastFailed();
+      stepper.clearLastFailed();
       fixture.detectChanges();
       // After clearLastFailed the priority chain falls through to the
       // generic message — origin slot still set but failedIdx undefined.
@@ -573,6 +572,32 @@ describe('CngxStepper organism', () => {
         fixture.detectChanges();
         expect(host.getAttribute('aria-busy')).toBeNull();
       });
+    });
+
+    it('clearLastFailed delegator forwards to the presenter and zeroes lastFailedIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const stepperEl = fixture.debugElement.children[0];
+      const stepper = stepperEl.componentInstance as {
+        clearLastFailed(): void;
+        readonly presenter: { lastFailedIndex(): number | undefined };
+      };
+      // Reject set lastFailedIndex on the presenter contract.
+      expect(stepper.presenter.lastFailedIndex()).toBe(1);
+      stepper.clearLastFailed();
+      fixture.detectChanges();
+      expect(stepper.presenter.lastFailedIndex()).toBeUndefined();
     });
 
     it('returns to empty when commitTransition settles back to idle', () => {
