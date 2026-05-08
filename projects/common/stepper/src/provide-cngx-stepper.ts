@@ -70,6 +70,12 @@ function partitionFeatures(
  * Mirrors `provideCngxTabs` and `provideCngxSelect`. Apply once in the
  * application providers array.
  *
+ * Returns {@link EnvironmentProviders} for app-root use; the
+ * component-scoped twin {@link provideCngxStepperAt} returns
+ * `Provider[]` because `viewProviders` cannot accept opaque
+ * {@link EnvironmentProviders}. The shape divergence is intentional —
+ * spread the `*At` result into `viewProviders`.
+ *
  * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
