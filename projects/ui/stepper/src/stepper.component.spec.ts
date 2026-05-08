@@ -338,6 +338,38 @@ describe('CngxStepper organism', () => {
     expect(group.getAttribute('aria-roledescription')).toBe('Schritt-Gruppe');
   });
 
+  it('organism stepsOnly is reference-stable across shape-stable re-emits (flatStepsEqual)', () => {
+    @Component({
+      standalone: true,
+      imports: [CngxStepper, CngxStep],
+      template: `
+        <cngx-stepper [(activeStepIndex)]="active" aria-label="Stable">
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-stepper>
+      `,
+    })
+    class StableHost {
+      readonly active = signal(0);
+    }
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(StableHost);
+    fixture.detectChanges();
+    const stepperEl = fixture.debugElement.children[0];
+    const stepper = stepperEl.componentInstance as {
+      readonly stepsOnly: () => readonly unknown[];
+    };
+    const before = stepper.stepsOnly();
+    fixture.componentInstance.active.set(1);
+    fixture.detectChanges();
+    const after = stepper.stepsOnly();
+    // No registry change — flatStepsEqual short-circuits the computed
+    // and downstream consumers see the same reference.
+    expect(after).toBe(before);
+  });
+
   it('label/content template lookup is stable across redundant re-renders (Map equality)', () => {
     @Component({
       standalone: true,
