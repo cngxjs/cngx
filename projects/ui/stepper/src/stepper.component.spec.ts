@@ -575,6 +575,36 @@ describe('CngxStepper organism', () => {
       });
     });
 
+    it('per-step aria-describedby surfaces stepRolledBackSuffix when lastFailedIndex matches its flatIndex', () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(CommitHost);
+      fixture.componentInstance.mode = 'optimistic';
+      fixture.componentInstance.action = () => false;
+      fixture.detectChanges();
+      const buttons = fixture.nativeElement.querySelectorAll(
+        'button.cngx-stepper__step',
+      ) as NodeListOf<HTMLButtonElement>;
+      buttons[1].click();
+      fixture.detectChanges();
+      const descId = buttons[1].getAttribute('aria-describedby')!;
+      const desc = fixture.nativeElement.querySelector(
+        `#${descId}`,
+      ) as HTMLElement;
+      // Persistent suffix appended to the per-step descriptor.
+      expect(desc.textContent?.trim()).toBe(
+        'Step 2 of 3: B This step was rolled back.',
+      );
+      // Sibling steps keep the unmodified phrase.
+      const aDescId = buttons[0].getAttribute('aria-describedby')!;
+      const aDesc = fixture.nativeElement.querySelector(
+        `#${aDescId}`,
+      ) as HTMLElement;
+      expect(aDesc.textContent?.trim()).toBe('Step 1 of 3: A');
+    });
+
     it('default rejection-icon outlet renders CNGX_STEPPER_GLYPHS.rejectionIcon (single source of truth)', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({

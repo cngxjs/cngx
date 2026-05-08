@@ -46,6 +46,18 @@ export interface CngxStepperI18n {
    * `originIndexDuringCommit` are set.
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
+  /**
+   * Persistent suffix appended to the per-step `aria-describedby`
+   * descriptor when the step's flat-index matches
+   * `presenter.lastFailedIndex()`. Distinct from
+   * {@link commitRolledBackTo} (the polite live-region phrase that
+   * announces the *transition* once and fades) — this suffix lives
+   * in the per-step descriptor so AT users navigating BACK to the
+   * rejected step after the announcement subsides still hear the
+   * rollback context. Pillar 2: every state change communicates,
+   * even after the moment of change has passed.
+   */
+  readonly stepRolledBackSuffix: string;
 }
 
 const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
@@ -60,6 +72,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
   commitFailedRetry: 'Commit failed — retry?',
   commitInFlight: 'Committing step…',
   commitRolledBackTo: (originLabel) => `Reverted to step "${originLabel}".`,
+  stepRolledBackSuffix: 'This step was rolled back.',
 };
 
 /**

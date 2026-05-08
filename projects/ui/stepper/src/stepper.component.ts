@@ -123,14 +123,7 @@ export class CngxStepper implements CngxStepPanelHost {
   private readonly groupHeaderSlot = contentChild(CngxStepGroupHeader);
   private readonly emptySlot = contentChild(CngxStepperEmpty);
 
-  /**
-   * Internal glyph fallback const, exposed to the template so the
-   * built-in `<ng-template #defaultBadge>` and `#defaultRejection`
-   * outlets render the single source of truth from
-   * `@cngx/common/stepper`. Consumers customise via slot directives
-   * (`*cngxStepBadge`, `*cngxStepRejection`) or the `with*Template`
-   * config cascade — never by overwriting this field.
-   */
+  /** Default-template glyph source — read by `#defaultBadge` / `#defaultRejection` outlets. */
   protected readonly glyphs = CNGX_STEPPER_GLYPHS;
 
   /**
@@ -311,25 +304,22 @@ export class CngxStepper implements CngxStepPanelHost {
     return '';
   });
 
-  /**
-   * SR descriptor phrase for a step header. Reads the aggregator's
-   * announcement when one is bound and the aggregator opted-in to
-   * showing errors; otherwise falls back to a "Step N of M:
-   * <label>" phrase from the i18n bundle.
-   */
+  /** SR descriptor phrase. Aggregator-announced or "Step N of M: <label>"; appends stepRolledBackSuffix on the rejected row. */
   protected statusPhrase(node: CngxStepNode): string {
     const aggregator = node.errorAggregator?.();
-    if (aggregator?.shouldShow?.() && aggregator.announcement) {
-      return aggregator.announcement();
+    let base = aggregator?.shouldShow?.() ? (aggregator.announcement?.() ?? '') : '';
+    if (!base && node.kind === 'step') {
+      const idx = this.stepIndexOf(node);
+      if (idx >= 0) {
+        base = this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
+      }
     }
-    if (node.kind !== 'step') {
+    if (!base) {
       return '';
     }
-    const idx = this.stepIndexOf(node);
-    if (idx < 0) {
-      return '';
-    }
-    return this.i18n.selectedStep(node.label(), idx + 1, this.stepsOnly().length);
+    return node.kind === 'step' && node.flatIndex === this.presenter.lastFailedIndex()
+      ? `${base} ${this.i18n.stepRolledBackSuffix}`
+      : base;
   }
 
   /** Group descriptor — rolls up children's aggregated status. */
