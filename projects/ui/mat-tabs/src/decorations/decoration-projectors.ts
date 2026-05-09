@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
+import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
 
 /**
  * Package-private DOM-mutation projectors for `[cngxMatTabs]`.
@@ -161,6 +162,34 @@ export interface CngxMatTabRejectionDecorationOptions {
    * collision.
    */
   readonly descriptorIdSuffix?: string;
+  /**
+   * Optional reactive `*cngxMatTabRejectionContent` slot template.
+   * When the signal returns a non-null `TemplateRef`, the projector
+   * renders an embedded view of it into the SR descriptor span
+   * instead of writing the imperative `textContent` fallback. When
+   * `null`, the projector falls back to the imperative
+   * `setProperty(textContent, descriptorText)` path — same shape
+   * the pre-Phase-4 contract shipped with.
+   */
+  readonly contentTemplate?: Signal<
+    TemplateRef<CngxMatTabRejectionContentContext> | null
+  >;
+  /**
+   * View container ref used to instantiate embedded views from
+   * `contentTemplate`. Required only when `contentTemplate` is
+   * supplied — when omitted, the projector silently falls back to
+   * the imperative descriptor path even if a template is otherwise
+   * available. Mirrors the aggregator projector's same-name opt.
+   */
+  readonly viewContainerRef?: ViewContainerRef;
+  /**
+   * Optional reactive label of the rollback origin — feeds the
+   * slot context's `originLabel` field. Read inside `untracked()`
+   * during the apply path; the `descriptorText` re-fire effect
+   * destroys + remounts the embedded view so the value picked up
+   * from this signal is always the value at fire time.
+   */
+  readonly originLabel?: Signal<string | undefined>;
 }
 
 /**
@@ -188,6 +217,14 @@ export function createMatTabRejectionDecoration(
   const className = opts.className ?? 'cngx-mat-tab--error';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
+  // Slot path requires both a template signal AND a view container —
+  // either alone falls back to the imperative descriptor write so the
+  // contract degrades gracefully when consumers wire only one half.
+  // Mirrors the aggregator projector's slot wiring; the rejection
+  // projector currently has no half-wired diagnostic sink (single
+  // in-package consumer is `[cngxMatTabs]` which always passes both
+  // when projecting `*cngxMatTabRejectionContent`).
+  const slotEnabled = !!opts.contentTemplate && !!opts.viewContainerRef;
   let decoratedEl: HTMLElement | null = null;
   // The descriptor span is created lazily on first apply and retained
   // across the projector's lifetime — detached on clear, reattached on
@@ -209,12 +246,68 @@ export function createMatTabRejectionDecoration(
   // round-trip, mid-flight clobbering AT readers and adding O(n)
   // DOM work per tab-list churn.
   let lastAppliedId: string | null = null;
+  let embeddedView:
+    | EmbeddedViewRef<CngxMatTabRejectionContentContext>
+    | undefined;
+
+  const destroyEmbeddedView = (): void => {
+    if (!embeddedView) {
+      return;
+    }
+    embeddedView.destroy();
+    embeddedView = undefined;
+    if (cachedSpan) {
+      while (cachedSpan.firstChild) {
+        opts.renderer.removeChild(cachedSpan, cachedSpan.firstChild);
+      }
+    }
+  };
+
+  const writeDescriptorContent = (
+    span: HTMLElement,
+    handleId: string,
+    text: string,
+  ): void => {
+    const tplSignal = opts.contentTemplate;
+    const vcr = opts.viewContainerRef;
+    const tpl = tplSignal && vcr ? tplSignal() : null;
+    if (tpl && vcr) {
+      destroyEmbeddedView();
+      const context: CngxMatTabRejectionContentContext = {
+        failedHandleId: handleId,
+        originLabel: opts.originLabel?.(),
+        fallbackText: text,
+      };
+      const view = vcr.createEmbeddedView(tpl, context, {
+        injector: opts.injector,
+      });
+      // Force CD on the embedded view immediately — the view is
+      // about to be detached from the host's CD tree (we move its
+      // rootNodes under an SR-only span via Renderer2; the span is
+      // not part of the embedded view's logical parent), so the
+      // initial bindings would otherwise wait for the next host CD
+      // pass to evaluate. SR-only content + zoneless / OnPush
+      // scheduling makes the CD wait observable as stale text on
+      // first read.
+      view.detectChanges();
+      for (const node of view.rootNodes) {
+        opts.renderer.appendChild(span, node);
+      }
+      embeddedView = view;
+      return;
+    }
+    // Imperative fallback — also covers the path where a slot was
+    // previously bound and is now removed (destroy any prior view).
+    destroyEmbeddedView();
+    opts.renderer.setProperty(span, 'textContent', text);
+  };
 
   const clearDecoration = (): void => {
     if (!decoratedEl || !cachedSpan) {
       return;
     }
     const ownTokenId = cachedSpan.id;
+    destroyEmbeddedView();
     opts.renderer.removeClass(decoratedEl, className);
     opts.renderer.removeChild(decoratedEl, cachedSpan);
     // `cachedSpan` deliberately retained — reused on the next apply.
@@ -249,8 +342,13 @@ export function createMatTabRejectionDecoration(
     // by definition. The live-text effect below picks up subsequent
     // `descriptorText` changes without recreating the span.
     opts.renderer.setAttribute(span, 'id', spanId);
-    opts.renderer.setProperty(span, 'textContent', opts.descriptorText());
+    // Initial content read inside `untracked()` (the caller wraps the
+    // whole apply path); the live-text effect below picks up
+    // subsequent changes. Slot path renders the embedded view; the
+    // imperative path writes textContent — both go through
+    // `writeDescriptorContent`.
     opts.renderer.appendChild(targetEl, span);
+    writeDescriptorContent(span, handleId, opts.descriptorText());
 
     // Renderer2 exposes `setAttribute`/`removeAttribute` only — there is
     // no read counterpart, so attribute reads go through the native
@@ -291,20 +389,30 @@ export function createMatTabRejectionDecoration(
       });
     });
 
-    // Live-text effect — tracks `descriptorText` only. The
+    // Live-text effect — tracks `descriptorText` (and the slot
+    // template when slotEnabled, so a lazy / late mount of the
+    // template re-renders into the existing decorated span). The
     // attached/detached state is non-signal; both reads live inside
     // `untracked()` (they are check, not dependency). Updates fire
     // only when the cached span is currently mounted (`decoratedEl`
     // non-null) — otherwise the next apply path will write the
-    // current text via `setProperty` before re-attaching, so a
-    // detached-span text update would be redundant.
+    // current text via `writeDescriptorContent` before re-attaching,
+    // so a detached-span text update would be redundant.
     effect(() => {
       const text = opts.descriptorText();
+      const tplSignal = opts.contentTemplate;
+      if (slotEnabled && tplSignal) {
+        tplSignal();
+      }
       untracked(() => {
         if (decoratedEl === null || cachedSpan === null) {
           return;
         }
-        opts.renderer.setProperty(cachedSpan, 'textContent', text);
+        const id = opts.failedHandleId();
+        if (id === null) {
+          return;
+        }
+        writeDescriptorContent(cachedSpan, id, text);
       });
     });
   });

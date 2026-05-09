@@ -9,6 +9,10 @@ export {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
 } from './src/decorations/mat-tab-aggregator-content.directive';
+export {
+  CngxMatTabRejectionContent,
+  type CngxMatTabRejectionContentContext,
+} from './src/decorations/mat-tab-rejection-content.directive';
 export type { CngxMatTabHalfWiredSlotSink } from './src/decorations/half-wired-slot-sink';
 export {
   CNGX_MAT_TABS_CONFIG,

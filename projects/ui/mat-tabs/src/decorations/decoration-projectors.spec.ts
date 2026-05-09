@@ -19,6 +19,7 @@ import {
   type CngxMatTabAggregatorErrorEntry,
 } from './decoration-projectors';
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
+import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
 
 @Component({
   standalone: true,
@@ -573,6 +574,212 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     expect(movedSpan).not.toBeNull();
     expect(buttons[1].getAttribute('aria-describedby')).toBe(
       'cngx-mat-tab-1-rejected',
+    );
+  });
+});
+
+describe('createMatTabRejectionDecoration — *cngxMatTabRejectionContent slot cascade (4.1)', () => {
+  function buildHostWithButtons(): HTMLElement {
+    const hostEl = document.createElement('div');
+    for (let i = 0; i < 3; i++) {
+      const btn = document.createElement('button');
+      btn.classList.add('mat-mdc-tab');
+      hostEl.appendChild(btn);
+    }
+    return hostEl;
+  }
+
+  /**
+   * Spec host that publishes a `*cngxMatTabRejectionContent` template
+   * via a `@ViewChild` so individual axes can pick whether to wire
+   * the slot or leave it unbound. Mirrors the aggregator-slot host
+   * in the same file.
+   */
+  @Component({
+    standalone: true,
+    template: `
+      <ng-template
+        #rejectionTpl
+        let-failedHandleId="failedHandleId"
+        let-originLabel="originLabel"
+        let-fallbackText="fallbackText"
+      >
+        <span data-testid="rejection-slot"
+          >slot {{ failedHandleId }}/{{ originLabel ?? '∅' }}/{{
+            fallbackText
+          }}</span
+        >
+      </ng-template>
+    `,
+  })
+  class RejectionHostCmp {
+    readonly injector = inject(Injector);
+    readonly renderer = inject(Renderer2);
+    readonly destroyRef = inject(DestroyRef);
+    readonly vcr = inject(ViewContainerRef);
+    @ViewChild('rejectionTpl', { static: true })
+    rejectionTpl!: TemplateRef<CngxMatTabRejectionContentContext>;
+  }
+
+  function setupRejectionHost(): {
+    host: RejectionHostCmp;
+    hostEl: HTMLElement;
+  } {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(RejectionHostCmp);
+    fixture.detectChanges();
+    const hostEl = buildHostWithButtons();
+    return { host: fixture.componentInstance, hostEl };
+  }
+
+  it('built-in default — imperative span+textContent when neither contentTemplate nor viewContainerRef is supplied', () => {
+    const { host, hostEl } = setupRejectionHost();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted to "Profile".');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+    const span = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(span).not.toBeNull();
+    // Imperative path: span carries the resolved text directly, no
+    // embedded-view markers inside.
+    expect(span?.textContent).toBe('Reverted to "Profile".');
+    expect(span?.querySelector('[data-testid="rejection-slot"]')).toBeNull();
+  });
+
+  it('per-instance contentTemplate wins — embedded-view rendering picks up failedHandleId / originLabel / fallbackText context', () => {
+    const { host, hostEl } = setupRejectionHost();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted to "Profile".');
+    const originLabel = signal<string | undefined>('Profile');
+    const contentTemplate = signal<TemplateRef<
+      CngxMatTabRejectionContentContext
+    > | null>(host.rejectionTpl);
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      contentTemplate,
+      viewContainerRef: host.vcr,
+      originLabel,
+    });
+
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+    const span = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(span).not.toBeNull();
+    const slotChild = span?.querySelector<HTMLElement>(
+      '[data-testid="rejection-slot"]',
+    );
+    expect(slotChild).not.toBeNull();
+    expect(slotChild?.textContent).toBe(
+      'slot cngx-mat-tab-1/Profile/Reverted to "Profile".',
+    );
+  });
+
+  it('half-wired slot — contentTemplate without viewContainerRef falls back to the imperative path silently', () => {
+    const { host, hostEl } = setupRejectionHost();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted.');
+    const contentTemplate = signal<TemplateRef<
+      CngxMatTabRejectionContentContext
+    > | null>(host.rejectionTpl);
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      contentTemplate,
+      // viewContainerRef intentionally omitted
+    });
+
+    failedHandleId.set('cngx-mat-tab-0');
+    failedIndex.set(0);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
+    const span = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-0-rejected',
+    );
+    expect(span?.textContent).toBe('Reverted.');
+    expect(span?.querySelector('[data-testid="rejection-slot"]')).toBeNull();
+  });
+
+  it('descriptorText re-emit — the embedded-view re-renders with the fresh fallbackText', () => {
+    const { host, hostEl } = setupRejectionHost();
+    const failedHandleId = signal<string | null>('cngx-mat-tab-2');
+    const failedIndex = signal<number | undefined>(2);
+    const descriptorText = signal<string>('Tab change refused — retry?');
+    const originLabel = signal<string | undefined>(undefined);
+    const contentTemplate = signal<TemplateRef<
+      CngxMatTabRejectionContentContext
+    > | null>(host.rejectionTpl);
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+      contentTemplate,
+      viewContainerRef: host.vcr,
+      originLabel,
+    });
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[2];
+    let slotChild = target.querySelector<HTMLElement>(
+      '[data-testid="rejection-slot"]',
+    );
+    expect(slotChild?.textContent).toBe(
+      'slot cngx-mat-tab-2/∅/Tab change refused — retry?',
+    );
+
+    descriptorText.set('Reverted to "Settings".');
+    originLabel.set('Settings');
+    TestBed.flushEffects();
+
+    slotChild = target.querySelector<HTMLElement>(
+      '[data-testid="rejection-slot"]',
+    );
+    expect(slotChild?.textContent).toBe(
+      'slot cngx-mat-tab-2/Settings/Reverted to "Settings".',
     );
   });
 });

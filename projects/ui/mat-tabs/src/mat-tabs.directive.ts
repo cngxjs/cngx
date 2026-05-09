@@ -46,6 +46,11 @@ import {
   type CngxMatTabAggregatorContentContext,
 } from './decorations/mat-tab-aggregator-content.directive';
 import {
+  CngxMatTabRejectionContent,
+  type CngxMatTabRejectionContentContext,
+} from './decorations/mat-tab-rejection-content.directive';
+import { createRejectionState } from './decorations/rejection-state';
+import {
   createMatTabHandle,
   type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
@@ -189,6 +194,20 @@ export class CngxMatTabs {
   private readonly aggregatorContentTemplate: Signal<
     TemplateRef<CngxMatTabAggregatorContentContext> | null
   > = computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
+  // Optional consumer-projected `*cngxMatTabRejectionContent` slot.
+  // When bound, the rejection-decoration projector renders an
+  // embedded view of it into the SR descriptor span instead of
+  // writing the i18n-resolved fallback string verbatim. Three-stage
+  // slot cascade with `CNGX_MAT_TABS_CONFIG.templates.rejection`
+  // is the canonical shape; Phase 4 ships the instance + library-
+  // default tiers, the middle config tier lands as a follow-up
+  // wiring once consumer demand materialises.
+  private readonly rejectionContentSlot = contentChild(
+    CngxMatTabRejectionContent,
+  );
+  private readonly rejectionContentTemplate: Signal<
+    TemplateRef<CngxMatTabRejectionContentContext> | null
+  > = computed(() => this.rejectionContentSlot()?.templateRef ?? null);
   // Per-tab registry — strong refs bounded by the directive's
   // lifetime (every entry is explicitly deleted when the matching
   // MatTab leaves the children set, AND the map goes away on
@@ -221,32 +240,25 @@ export class CngxMatTabs {
     return this.presenter.tabs()[idx]?.id ?? null;
   });
 
-  // SR descriptor phrase rendered into the rejection-decoration's
-  // hidden `<span>` referenced by `aria-describedby` on the rejected
-  // tab. Mirrors the cngx-native organism's `liveAnnouncement`
-  // priority chain (tab-group.component.ts:280-304) so the
-  // visual+SR phrasing matches across both tab variants:
-  //   1. `commitRolledBackTo(originLabel)` when the rollback origin
-  //      is resolvable (typical optimistic-mode path).
-  //   2. `commitFailedRetry` fallback otherwise — covers the unlabeled
-  //      origin tab edge case + the synchronous-rejection path.
-  // Empty string between rejections — the projector clears the
-  // decoration entirely on `failedHandleId === null`, so this
-  // signal's value is only consulted while a rejection is pinned.
-  private readonly rejectionDescriptorText = computed<string>(() => {
-    const failedIdx = this.presenter.lastFailedIndex();
-    if (failedIdx === undefined) {
-      return '';
-    }
-    const originIdx = this.presenter.originIndexDuringCommit();
-    if (originIdx !== undefined) {
-      const originLabel = this.presenter.tabs()[originIdx]?.label();
-      if (originLabel) {
-        return this.i18n.commitRolledBackTo(originLabel);
-      }
-    }
-    return this.i18n.commitFailedRetry;
-  });
+  // SR descriptor phrase + origin label for the rejection decoration.
+  // Both signals share one source-walk (`lastFailedIndex` →
+  // `originIndexDuringCommit` → `tabs[idx].label()`) via the
+  // package-private `createRejectionState` factory — keeps the
+  // organism class body under the level-4 LOC guard while preserving
+  // the pillar-2 phrasing parity with the cngx-native organism's
+  // `liveAnnouncement` priority chain.
+  private readonly rejectionState = createRejectionState(
+    this.presenter,
+    this.i18n,
+  );
+  private readonly rejectionDescriptorText: Signal<string> =
+    this.rejectionState.descriptorText;
+  // Reactive label of the rollback origin — feeds the slot context's
+  // `originLabel` field. Sourced from the same factory as
+  // `rejectionDescriptorText` so the underlying source-walk happens
+  // at most once per state change.
+  private readonly rejectionOriginLabel: Signal<string | undefined> =
+    this.rejectionState.originLabel;
 
   // Resolves the current set of tabs whose bound aggregator wants
   // reveal. Reads each handle's `errorAggregator()` signal, then the
@@ -319,6 +331,9 @@ export class CngxMatTabs {
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
+      contentTemplate: this.rejectionContentTemplate,
+      viewContainerRef: this.viewContainerRef,
+      originLabel: this.rejectionOriginLabel,
     });
 
     createMatTabAggregatorDecoration({
