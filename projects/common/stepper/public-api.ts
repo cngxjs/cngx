@@ -37,7 +37,6 @@ export {
   flattenStepTree,
   stepTreeEqual,
   flatStepsEqual,
-  stepNodesEqual,
 } from './src/step-tree.util';
 
 export { CngxStep } from './src/step.directive';

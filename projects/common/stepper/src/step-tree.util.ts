@@ -6,6 +6,9 @@ import type { CngxStepNode } from './stepper-host.token';
  * to render strip + panels and uses `kind` to decide whether to
  * render a panel container or a group header.
  *
+ * @internal Exported for cross-package consumption inside cngx
+ * (`@cngx/ui/stepper`, `@cngx/ui/mat-stepper`); not part of the
+ * public consumer surface.
  * @category interactive/stepper
  */
 export function flattenStepTree(
@@ -38,6 +41,7 @@ export function flattenStepTree(
  * `errorAggregator`) are signals; their identity changes are
  * tracked by their own subscribers, not by this comparator.
  *
+ * @internal Cross-package internal — see {@link flattenStepTree}.
  * @category interactive
  */
 export function stepTreeEqual(
@@ -73,6 +77,7 @@ export function stepTreeEqual(
  * suitable for projections that synthesise `-1` placeholders for
  * those fields — use {@link stepNodesEqual} instead.
  *
+ * @internal Cross-package internal — see {@link flattenStepTree}.
  * @category interactive
  */
 export function flatStepsEqual(
@@ -104,6 +109,8 @@ export function flatStepsEqual(
  * or `depth`. Use for `CngxStepGroup.children` and any other
  * projection that synthesises constant `-1` for those fields.
  *
+ * @internal Helper kept for spec-coverage and future projections;
+ * not exported from the public-api barrel.
  * @category interactive
  */
 export function stepNodesEqual(
