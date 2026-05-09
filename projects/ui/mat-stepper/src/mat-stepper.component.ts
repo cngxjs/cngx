@@ -78,17 +78,10 @@ export class CngxMatStepper implements CngxStepPanelHost {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   protected readonly matStepper = viewChild.required(MatStepper);
-  // Host ChangeDetectorRef. Used after the `_iconOverrides` patch
-  // lands to nudge Angular into re-running the host view's CD pass —
-  // which re-evaluates the `<mat-stepper>` bindings, including the
-  // per-header `[iconOverrides]` propagation that picks up the freshly
-  // patched `_iconOverrides` map. Replaces a prior
-  // `stepper.selectedIndex = stepper.selectedIndex` self-write that
-  // relied on Material's undocumented same-value setter coercion to
-  // avoid emitting `selectedIndexChange` and echoing through
-  // `createMaterialBidirectionalSync` back into `presenter.select(0)`.
-  // `markForCheck` is documented public API; the no-echo contract is
-  // unconditional because Material's setter is never touched.
+  // Host CD nudge after the `_iconOverrides` patch — Material reads
+  // the map into per-header `[iconOverrides]` bindings on the next
+  // CD pass, so the patch only takes effect once we mark the host
+  // view dirty.
   private readonly hostCdr = inject(ChangeDetectorRef);
 
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
@@ -334,17 +327,10 @@ export class CngxMatStepper implements CngxStepPanelHost {
         stepperRef._iconOverrides[icon.name] = icon.templateRef;
       }
       // Material reads `_iconOverrides` into per-header bindings on
-      // the next CD pass. Mark the host view dirty so Angular re-runs
-      // CD over `<mat-stepper>` and re-propagates its bindings —
-      // documented public API replacing a prior
-      // `stepper.selectedIndex = stepper.selectedIndex` self-write
-      // nudge that depended on Material's undocumented same-value
-      // setter coercion (no patch-version-stable spec) to avoid
-      // emitting `selectedIndexChange`. With `markForCheck`, Material's
-      // setter is never touched, so no spurious echo can reach
-      // `createMaterialBidirectionalSync`. Spec axis pins this contract
-      // (see mat-stepper.component.spec.ts 'matStepperIcon forwarding
-      // nudge').
+      // the next CD pass — mark the host view dirty so Angular
+      // re-runs CD over `<mat-stepper>` and the patched map flows
+      // through. Touching `selectedIndex` would echo through
+      // `createMaterialBidirectionalSync`; `markForCheck` does not.
       this.hostCdr.markForCheck();
     });
   }
