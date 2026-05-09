@@ -1,4 +1,4 @@
-import { InjectionToken, isDevMode } from '@angular/core';
+import { isDevMode } from '@angular/core';
 
 /**
  * Sink callback invoked by `[cngxMatTabs]`'s aggregator-decoration
@@ -10,6 +10,12 @@ import { InjectionToken, isDevMode } from '@angular/core';
  * only deliberate signal that the consumer's slot template will not
  * render.
  *
+ * Override via `provideMatTabsConfig(withHalfWiredSlotSink(fn))` to
+ * wire production telemetry (Sentry breadcrumbs, custom logger, CI
+ * fail-fast). The library default is a dev-mode `console.warn`; the
+ * exported {@link CNGX_DEFAULT_HALF_WIRED_SLOT_SINK} value lets test
+ * doubles compose against a stable reference.
+ *
  * @category interactive
  */
 export type CngxMatTabHalfWiredSlotSink = (
@@ -17,16 +23,17 @@ export type CngxMatTabHalfWiredSlotSink = (
 ) => void;
 
 /**
- * Default {@link CngxMatTabHalfWiredSlotSink} — gated on dev-mode.
- * Production callers see no console output; production telemetry
- * lands only when a consumer overrides the
- * {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} token.
+ * Default sink — gated on dev-mode. Production callers see no
+ * output; production telemetry lands only when a consumer overrides
+ * via `withHalfWiredSlotSink(fn)`.
  *
- * @internal
+ * @internal — exported only for {@link CngxMatTabsConfig.halfWiredSlotSink}'s
+ * library default. Consumers should override via the config feature
+ * rather than reach for this reference directly.
  */
-function defaultHalfWiredSlotSink(
-  missing: 'contentTemplate' | 'viewContainerRef',
-): void {
+export const CNGX_DEFAULT_HALF_WIRED_SLOT_SINK: CngxMatTabHalfWiredSlotSink = (
+  missing,
+) => {
   if (!isDevMode()) {
     return;
   }
@@ -38,29 +45,4 @@ function defaultHalfWiredSlotSink(
       '`*cngxMatTabAggregatorContent` template will never render. ' +
       'Wire both halves on the [cngxMatTabs] directive (or neither).',
   );
-}
-
-/**
- * DI token for the half-wired-slot diagnostic sink. Default behaviour
- * is a dev-mode `console.warn` — production callers see nothing.
- * Override at any level (root via `provideEnvironmentInitializer` /
- * `providers`, component via `viewProviders`) to wire telemetry,
- * Sentry breadcrumbs, or a CI fail-fast in test environments.
- *
- * Symmetrical to the
- * {@link https://cngx.dev/api/CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY
- * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`} swap pattern: cngx-side
- * default suffices for the in-tree consumer, but the seam exists so
- * downstream consumers never need to fork the directive to swap
- * behaviour.
- *
- * @category interactive
- */
-export const CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK =
-  new InjectionToken<CngxMatTabHalfWiredSlotSink>(
-    'CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK',
-    {
-      providedIn: 'root',
-      factory: () => defaultHalfWiredSlotSink,
-    },
-  );
+};

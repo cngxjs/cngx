@@ -15,10 +15,7 @@ import {
   withAnchorRetryAttempts,
   withHalfWiredSlotSink,
 } from './mat-tabs-config';
-import {
-  CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK,
-  type CngxMatTabHalfWiredSlotSink,
-} from './decorations/half-wired-slot-sink';
+import type { CngxMatTabHalfWiredSlotSink } from './decorations/half-wired-slot-sink';
 
 describe('provideMatTabsConfig + injectMatTabsConfig', () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
@@ -85,38 +82,6 @@ describe('provideMatTabsConfig + injectMatTabsConfig', () => {
     const config = inject1(() => injectMatTabsConfig());
     expect(config.anchorMaxAttempts).toBe(11);
     expect(config.halfWiredSlotSink).toBe(second);
-  });
-
-  it('falls back to CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK token when config does not specify halfWiredSlotSink', () => {
-    const tokenSink = vi.fn<CngxMatTabHalfWiredSlotSink>();
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        // Anchor knob set via config; sink left unset so the standalone
-        // token path resolves it. Telemetry-only consumers pick up the
-        // sink without taking a config-tier dependency.
-        provideMatTabsConfig(withAnchorRetryAttempts(8)),
-        { provide: CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK, useValue: tokenSink },
-      ],
-    });
-    const config = inject1(() => injectMatTabsConfig());
-    expect(config.anchorMaxAttempts).toBe(8);
-    expect(config.halfWiredSlotSink).toBe(tokenSink);
-  });
-
-  it('config-tier sink wins over standalone token', () => {
-    const tokenSink = vi.fn<CngxMatTabHalfWiredSlotSink>();
-    const configSink = vi.fn<CngxMatTabHalfWiredSlotSink>();
-    TestBed.configureTestingModule({
-      providers: [
-        provideZonelessChangeDetection(),
-        { provide: CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK, useValue: tokenSink },
-        provideMatTabsConfig(withHalfWiredSlotSink(configSink)),
-      ],
-    });
-    const config = inject1(() => injectMatTabsConfig());
-    expect(config.halfWiredSlotSink).toBe(configSink);
-    expect(config.halfWiredSlotSink).not.toBe(tokenSink);
   });
 
   it('provideMatTabsConfigAt exposes the same merge through component-scope viewProviders', () => {

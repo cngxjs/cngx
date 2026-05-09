@@ -273,9 +273,8 @@ export class CngxMatTabs {
 
   constructor() {
     // Resolve all consumer-tunable knobs once at the top — single
-    // canonical surface (`provideMatTabsConfig` / `provideMatTabsConfigAt`)
-    // plus the standalone `CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK` for
-    // telemetry-only consumers; `injectMatTabsConfig` merges with
+    // canonical surface via `provideMatTabsConfig` /
+    // `provideMatTabsConfigAt`. `injectMatTabsConfig` merges with
     // library defaults so call sites read fully populated values.
     const matTabsConfig = injectMatTabsConfig();
 

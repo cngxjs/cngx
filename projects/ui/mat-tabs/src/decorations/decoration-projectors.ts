@@ -388,14 +388,11 @@ export interface CngxMatTabAggregatorDecorationOptions {
    * misconfiguration). Fires unconditionally — the projector itself
    * is mode-agnostic; the production-vs-dev gate lives in whichever
    * sink the caller passes. The `[cngxMatTabs]` directive resolves
-   * this from the
-   * {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} token, whose default
-   * keeps the dev-only `console.warn` for backward compatibility but
-   * can be overridden via `providers` / `viewProviders` to wire
-   * Sentry breadcrumbs, a CI fail-fast, or any other production
-   * telemetry path. Direct callers of this factory who skip the
-   * directive may pass any sink they like; omitting falls back to a
-   * dev-mode warn so historical behaviour is preserved.
+   * this from `provideMatTabsConfig(withHalfWiredSlotSink(fn))`;
+   * the library default is a dev-mode `console.warn`. Direct
+   * callers of this factory who skip the directive may pass any
+   * sink they like; omitting falls back to a dev-mode warn so
+   * historical behaviour is preserved.
    */
   readonly onHalfWiredSlot?: (
     missing: 'contentTemplate' | 'viewContainerRef',
@@ -427,13 +424,17 @@ export function createMatTabAggregatorDecoration(
   // Slot path requires both a template signal AND a view container —
   // either alone falls back to the imperative descriptor write so the
   // contract degrades gracefully when consumers wire only one half.
-  const slotEnabled = !!opts.contentTemplate && !!opts.viewContainerRef;
+  // The half-wired-slot misconfiguration check fires once at
+  // construction (captures the initial wiring shape); the per-fire
+  // re-evaluation lives inline in the effect body below so a
+  // lazy-mounted slot template (`*ngIf` / `@defer` /
+  // `*ngTemplateOutlet`) gets picked up the first time it materialises.
+  const isFullyWired = (): boolean =>
+    !!opts.contentTemplate && !!opts.viewContainerRef;
   // Surface the half-wired-slot misconfiguration in dev-mode — the
   // graceful degradation above hides the mistake at runtime, so the
-  // signal has to come from a deliberate diagnostic. Mirrors the
-  // `onMaxRetriesReached` precedent below: optional injectable sink,
-  // default `ngDevMode`-gated `console.warn`.
-  if (!slotEnabled && (opts.contentTemplate || opts.viewContainerRef)) {
+  // signal has to come from a deliberate diagnostic.
+  if (!isFullyWired() && (opts.contentTemplate || opts.viewContainerRef)) {
     const missing: 'contentTemplate' | 'viewContainerRef' =
       opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
     const sink = opts.onHalfWiredSlot ?? defaultHalfWiredSlotWarn;
@@ -564,6 +565,7 @@ export function createMatTabAggregatorDecoration(
     writeDescriptorContent(decoratedEntry, entry.announcement, {
       count: entry.count,
       label: entry.label,
+      announcement: entry.announcement,
     });
     decorated.set(entry.id, decoratedEntry);
   };
@@ -596,6 +598,7 @@ export function createMatTabAggregatorDecoration(
         writeDescriptorContent(existing, entry.announcement, {
           count: entry.count,
           label: entry.label,
+          announcement: entry.announcement,
         });
         continue;
       }
@@ -639,10 +642,15 @@ export function createMatTabAggregatorDecoration(
       // signal here registers it as a primary trigger; the actual
       // re-application logic stays inside `untracked()` so the sync
       // body can freely read other signals without registering them.
+      //
+      // `isFullyWired()` is recomputed per fire so a lazily-mounted
+      // slot template gets picked up the first time both opts appear.
+      // (The directive's case has both opts present at construction;
+      // the per-fire re-eval is defensive against direct factory
+      // callers and forward-compatible with shape changes.)
       const errorTabs = opts.errorTabs();
-      const tplSignal = opts.contentTemplate;
-      if (slotEnabled && tplSignal) {
-        tplSignal();
+      if (isFullyWired() && opts.contentTemplate) {
+        opts.contentTemplate();
       }
       untracked(() => sync(errorTabs));
     });

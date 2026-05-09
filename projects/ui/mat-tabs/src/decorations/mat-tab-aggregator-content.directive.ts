@@ -14,7 +14,9 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *
  * `count` mirrors the bound aggregator's `errorCount()` at the
  * moment the decoration was applied; `label` is the human-readable
- * label of the tab (the Material `MatTab.textLabel`). Both are
+ * label of the tab (the Material `MatTab.textLabel`);
+ * `announcement` is the resolved AT phrase (the same string the
+ * imperative `textContent` fallback would write). All three are
  * snapshotted into the decorated entry — re-emissions of the
  * underlying signals re-fire the projector's effect, which
  * re-applies the decoration with the fresh context.
@@ -26,6 +28,15 @@ export interface CngxMatTabAggregatorContentContext {
   readonly count: number;
   /** Resolved tab label (Material `textLabel`). */
   readonly label: string;
+  /**
+   * Resolved AT announcement phrase the imperative fallback path
+   * would write verbatim — the bound aggregator's `announcement()`
+   * value at the moment the decoration was applied. Use this when
+   * the consumer template wants to render the canonical phrase
+   * alongside its own decoration (counter pill, branded prefix)
+   * without re-injecting the aggregator.
+   */
+  readonly announcement: string;
 }
 
 /**

@@ -8,7 +8,7 @@ import {
 
 import {
   type CngxMatTabHalfWiredSlotSink,
-  CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK,
+  CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
 } from './decorations/half-wired-slot-sink';
 
 /**
@@ -22,12 +22,6 @@ import {
  * (component scope), which wins over `provideMatTabsConfig(...)`
  * (root), which wins over the library defaults captured by
  * {@link CNGX_MAT_TABS_CONFIG_DEFAULTS}.
- *
- * The half-wired-slot diagnostic is also exposed as a standalone
- * {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} token so production
- * telemetry can be wired without taking a config-tier dependency;
- * `injectMatTabsConfig()` resolves the sink in priority order
- * (config → standalone token → default) so both paths compose.
  *
  * @category interactive
  */
@@ -58,13 +52,10 @@ export interface CngxMatTabsConfig {
 
   /**
    * Diagnostic sink invoked when a consumer wires exactly one of
-   * `*cngxMatTabAggregatorContent` or its `ViewContainerRef`. The
-   * directive resolves this in priority order: this field →
-   * {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} root token → default
-   * dev-mode `console.warn`. Override here to keep all mat-tabs
-   * knobs in one place; override the standalone token for
-   * production-telemetry-only consumers who do not configure
-   * other knobs.
+   * `*cngxMatTabAggregatorContent` or its `ViewContainerRef`.
+   * Default is a dev-mode `console.warn`; override via
+   * {@link withHalfWiredSlotSink} to wire production telemetry
+   * (Sentry breadcrumbs, custom logger, CI fail-fast).
    */
   readonly halfWiredSlotSink?: CngxMatTabHalfWiredSlotSink;
 }
@@ -78,7 +69,8 @@ export interface CngxMatTabsConfig {
  */
 export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
   anchorMaxAttempts: 5,
-} as const;
+  halfWiredSlotSink: CNGX_DEFAULT_HALF_WIRED_SLOT_SINK,
+} as const satisfies Required<CngxMatTabsConfig>;
 
 /**
  * DI token holding a partial {@link CngxMatTabsConfig}. Set via
@@ -209,21 +201,16 @@ export function provideMatTabsConfigAt(
  * Resolution order per key:
  * 1. `CNGX_MAT_TABS_CONFIG` value (set via
  *    {@link provideMatTabsConfig} / {@link provideMatTabsConfigAt}).
- * 2. For `halfWiredSlotSink` only:
- *    {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} standalone token —
- *    lets telemetry-only consumers override the sink without
- *    touching the config aggregator.
- * 3. {@link CNGX_MAT_TABS_CONFIG_DEFAULTS} (or, for the sink, the
- *    standalone token's own default factory).
+ * 2. {@link CNGX_MAT_TABS_CONFIG_DEFAULTS} (library default).
  *
  * @category interactive
  */
 export function injectMatTabsConfig(): Required<CngxMatTabsConfig> {
   const user = inject(CNGX_MAT_TABS_CONFIG, { optional: true }) ?? {};
-  const sinkFromToken = inject(CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK);
   return {
     anchorMaxAttempts:
       user.anchorMaxAttempts ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.anchorMaxAttempts,
-    halfWiredSlotSink: user.halfWiredSlotSink ?? sinkFromToken,
+    halfWiredSlotSink:
+      user.halfWiredSlotSink ?? CNGX_MAT_TABS_CONFIG_DEFAULTS.halfWiredSlotSink,
   };
 }
