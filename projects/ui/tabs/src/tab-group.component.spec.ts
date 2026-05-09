@@ -979,6 +979,35 @@ describe('CngxTabGroup organism', () => {
       };
     }
 
+    it('errorBadgeContextFor returns a WeakMap-stable reference for the same tab handle', () => {
+      // Reference-stability fence — *ngTemplateOutlet's input-diff
+      // (via Object.is) short-circuits the embedded-view context-update
+      // path only when the context REFERENCE is unchanged across CD
+      // ticks. Per-CD allocation triggers the rebind path and thus the
+      // perf concern documented at tabs-accepted-debt §9. The WeakMap
+      // cache on errorBadgeContextFor must return the SAME object on
+      // every call for a given tab handle.
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(HostCmp);
+      fixture.detectChanges();
+      const group = fixture.debugElement.query(
+        (el) => el.componentInstance instanceof CngxTabGroup,
+      ).componentInstance as unknown as {
+        tabs: () => readonly { id: string }[];
+        errorBadgeContextFor: (tab: unknown) => unknown;
+      };
+      const handles = group.tabs();
+      const ctx1 = group.errorBadgeContextFor(handles[0]);
+      const ctx2 = group.errorBadgeContextFor(handles[0]);
+      expect(ctx1).toBe(ctx2);
+      // Different tab handle → different cached context (WeakMap key).
+      const ctxOther = group.errorBadgeContextFor(handles[1]);
+      expect(ctxOther).not.toBe(ctx1);
+    });
+
     it('per-instance *cngxTabErrorBadge wins over the built-in default', () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({

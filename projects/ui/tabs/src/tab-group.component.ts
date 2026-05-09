@@ -251,13 +251,34 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
+   * Per-tab cache of the `*cngxTabErrorBadge` slot context. The
+   * context object's only field is `{ tab }` — purely tab-keyed,
+   * never reactive — so caching it via `WeakMap` keeps the context
+   * reference stable across CD ticks. Stable refs let
+   * `*ngTemplateOutlet`'s `Object.is` input-diff short-circuit
+   * the embedded-view context-update path, eliminating per-CD
+   * allocation + rebind cost. Mirrors the select-family
+   * `chipRemoveFor` `WeakMap` precedent.
+   */
+  private readonly errorBadgeContextCache = new WeakMap<
+    CngxTabHandle,
+    CngxTabErrorBadgeContext
+  >();
+
+  /**
    * Context object passed to the `*cngxTabErrorBadge` slot template.
-   * Re-derived on every CD tick — outlets memoise their embedded
-   * views by template + context-by-key, so the rebuild cost is the
-   * `tab` reference comparison only.
+   * Returns the same `WeakMap`-cached object across CD ticks for a
+   * given tab handle — `*ngTemplateOutlet` sees a stable reference
+   * and skips the context-update path entirely. WeakMap auto-clears
+   * with the tab handle's GC.
    */
   protected errorBadgeContextFor(tab: CngxTabHandle): CngxTabErrorBadgeContext {
-    return { tab };
+    let ctx = this.errorBadgeContextCache.get(tab);
+    if (!ctx) {
+      ctx = { tab };
+      this.errorBadgeContextCache.set(tab, ctx);
+    }
+    return ctx;
   }
 
   /**
@@ -266,6 +287,18 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `isTabBusy(tab)` already returned `true` (which requires the
    * presenter's `intendedIndex()` to be defined and to point at the
    * matching handle).
+   *
+   * Allocates fresh per CD tick. Caching via `WeakMap` does NOT work
+   * here: the context carries a reactive `intendedIndex` field that
+   * changes between calls, and Angular's `*ngTemplateOutlet` only
+   * re-evaluates `let-*` bindings when the context REFERENCE changes
+   * (input-diff via `Object.is`); mutating fields on a cached object
+   * leaves consumer let-bindings stale. The fresh-per-CD allocation
+   * is the correct trade-off until either (a) a real performance
+   * signal forces signal-bearing context fields, or (b) Angular
+   * gains property-level context-diffing on outlet inputs. See
+   * `tabs-accepted-debt §9` cross-reference for the broader
+   * decompose discussion.
    */
   protected busySpinnerContextFor(
     tab: CngxTabHandle,
@@ -278,6 +311,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `originLabel` resolves through the same priority chain as
    * `liveAnnouncement` — `originIndexDuringCommit` -> `tabs()[idx].label()`
    * — so the visual decoration phrasing matches the SR announcement.
+   *
+   * Allocates fresh per CD tick — same trade-off as
+   * {@link busySpinnerContextFor}: both `failedIndex` and the resolved
+   * `originLabel` change reactively, so a `WeakMap`-cached object would
+   * leave consumer let-bindings stale. Fresh allocation keeps
+   * `*ngTemplateOutlet` re-evaluating let-bindings on each CD.
    */
   protected rejectionIconContextFor(
     failedIndex: number,
