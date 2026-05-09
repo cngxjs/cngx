@@ -19,7 +19,6 @@ import {
   ViewContainerRef,
   type ComponentRef,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
@@ -426,23 +425,22 @@ export class CngxMatTabs {
       if (this.setupsByTab.has(tab)) {
         continue;
       }
-      const setup = createMatTabHandle(tab, () => nextUid('cngx-mat-tab-'));
-      // Live projection of `MatTab.disabled` / `textLabel` via
-      // `_stateChanges`. The bridge runs in a child `EnvironmentInjector`
-      // so its RxJS subscription tears down via `takeUntilDestroyed`
-      // when the tab unregisters (childInjector.destroy() below) or
-      // when the directive is destroyed (parent injector cascade).
-      // Replaces the prior per-tab `Subscription` registry with the
-      // family DestroyRef-driven cleanup pattern. See `handle.ts`
-      // for the underscore-prefix coupling note (tracked under
-      // `tabs-accepted-debt §5`).
+      // Per-tab child `EnvironmentInjector` owns the lifetime of the
+      // `toSignal(_stateChanges)` bridge created inside
+      // `createMatTabHandle`. Destroying the child injector below
+      // when a tab leaves fires the bridge's `takeUntilDestroyed`
+      // cleanup so the underlying RxJS subscription unsubscribes
+      // deterministically — same per-tab cleanup precision as the
+      // prior `Map<MatTab, Subscription>` shape, with the imperative
+      // pump replaced by `computed`-derived `label` / `disabled` on
+      // the handle. Tracked as `tabs-accepted-debt §5` (Material-
+      // private `_stateChanges` coupling).
       const childInjector = createEnvironmentInjector([], this.envInjector);
-      tab._stateChanges
-        .pipe(takeUntilDestroyed(childInjector.get(DestroyRef)))
-        .subscribe(() => {
-          setup.label.set(tab.textLabel);
-          setup.disabled.set(tab.disabled);
-        });
+      const setup = createMatTabHandle(
+        tab,
+        () => nextUid('cngx-mat-tab-'),
+        childInjector,
+      );
       this.setupsByTab.set(tab, { setup, childInjector });
       this.presenter.register(setup.handle);
     }
