@@ -8,12 +8,17 @@
  * Every leading-underscore field cngx reaches into and every
  * Material-internal CSS selector cngx queries against has its
  * declaration here. A Material-version upgrade audit only needs to
- * grep this file plus the matching tracked-debt entries.
+ * grep this file plus the matching tracked-debt entries — that grep
+ * value is the consumer-facing benefit, so this namespace is part
+ * of the published surface of `@cngx/ui/mat-tabs` (re-exported from
+ * the package barrel) rather than a private implementation detail.
  *
  * Tracked-debt cross-links:
  * - tabs-accepted-debt §5 — `MatTab._stateChanges` plus the three
  *   `.mat-mdc-tab*` selectors used by `[cngxMatTabs]` and the
- *   Material-twin overflow adapter.
+ *   Material-twin overflow adapter. The closing paragraph of §5
+ *   explicitly names this namespace as the family-shared
+ *   upgrade-watch surface.
  * - stepper-accepted-debt §4 — `MatStepper._iconOverrides` reach
  *   from `<cngx-mat-stepper>`.
  * - stepper-accepted-debt §1, handle.ts JSDoc — `CdkStep._completedOverride`
@@ -27,7 +32,6 @@
  * — a flat `export * as` re-export from `public-api.ts` does not
  * resolve nested members through the path-alias.
  *
- * @internal
  * @category material-bridge
  */
 
@@ -46,8 +50,6 @@ export namespace MaterialPrivateSurfaces {
    * changes; cngx bridges it into the Signal graph via
    * `toSignal(matTab._stateChanges)` because Material exposes no
    * public reactive surface for input changes.
-   *
-   * @internal
    */
   export interface StateChangeSource {
     readonly _stateChanges: Subject<void>;
@@ -63,8 +65,6 @@ export namespace MaterialPrivateSurfaces {
    * inside `<mat-stepper>` does not reach
    * `@ContentChildren(MatStepperIcon)` due to content-init
    * lifecycle ordering).
-   *
-   * @internal
    */
   export interface IconOverrideHost {
     _iconOverrides?: Record<string, TemplateRef<MatStepperIconContext>>;
@@ -78,8 +78,6 @@ export namespace MaterialPrivateSurfaces {
    * completion. Documented limitation: `hasError` writes that are
    * not paired with a `completed` change do not retrigger the
    * computed — sharper note lives on `createMatStepHandle`'s JSDoc.
-   *
-   * @internal
    */
   export interface CompletedOverrideSource {
     readonly _completedOverride: WritableSignal<boolean | null>;
@@ -93,8 +91,6 @@ export namespace MaterialPrivateSurfaces {
    * portal — the rendered buttons live inside `MatTabHeader`'s
    * template, not on the `<mat-tab>` declaration site, and Material
    * exposes no public per-tab element accessor.
-   *
-   * @internal
    */
   export const MAT_MDC_TAB_SELECTOR = '.mat-mdc-tab';
 
@@ -105,8 +101,6 @@ export namespace MaterialPrivateSurfaces {
    * anchor for the cngx overflow molecule (so the More button pins
    * inside Material's strip rather than as a sibling of
    * `<mat-tab-group>`).
-   *
-   * @internal
    */
   export const MAT_MDC_TAB_HEADER_SELECTOR = '.mat-mdc-tab-header';
 
@@ -117,8 +111,6 @@ export namespace MaterialPrivateSurfaces {
    * label-container` to attach the molecule's
    * `IntersectionObserver` against the same element Material
    * itself scrolls.
-   *
-   * @internal
    */
   export const MAT_MDC_TAB_LABEL_CONTAINER_SELECTOR =
     '.mat-mdc-tab-label-container';
