@@ -48,17 +48,17 @@ export type CngxTabsCommitAction = (
 /**
  * Tab-group presenter — the brain of every tab flow in cngx. Holds
  * the active-index model, the tab registry, the orientation, the
- * loop policy, and (post-Phase-3) the commit-controller's lifecycle.
- * Provides {@link CNGX_TAB_GROUP_HOST} so atoms register against an
- * opaque contract, and {@link CNGX_STATEFUL} so transition bridges
+ * loop policy, and the commit-controller's lifecycle. Provides
+ * {@link CNGX_TAB_GROUP_HOST} so atoms register against an opaque
+ * contract, and {@link CNGX_STATEFUL} so transition bridges
  * (`<cngx-toast-on />`, `<cngx-banner-on />`) compose without
  * explicit `[state]` wiring.
  *
  * **Layer:** `@cngx/common/tabs` (Level 2). Zero `@Component`,
  * zero `.html` — directive-only surface. Level-4 organisms
- * (`<cngx-tab-group>`) compose this via `hostDirectives`; consumer
- * DOM with `[cngxTabGroup]` applied works equally well (the
- * Phase-1 headless demo proves it).
+ * (`<cngx-tab-group>`) compose this via `hostDirectives`; the
+ * directive also works applied to consumer DOM directly via
+ * `[cngxTabGroup]`.
  *
  * @category interactive
  */
@@ -234,7 +234,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       if (accept) {
         // Window closes on success — origin label no longer needed;
         // clear the rejection flag if the user re-picked the failed
-        // target successfully (axis 4a).
+        // target successfully.
         this.originIndexDuringCommitState.set(undefined);
         if (this.lastFailedIndexState() === target) {
           this.lastFailedIndexState.set(undefined);
