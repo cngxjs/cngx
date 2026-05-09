@@ -3,10 +3,12 @@ import {
   computed,
   contentChild,
   contentChildren,
+  createEnvironmentInjector,
   DestroyRef,
   Directive,
   effect,
   ElementRef,
+  EnvironmentInjector,
   inject,
   Injector,
   isDevMode,
@@ -17,8 +19,8 @@ import {
   ViewContainerRef,
   type ComponentRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import type { Subscription } from 'rxjs';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
@@ -48,6 +50,20 @@ import {
   createMatTabHandle,
   type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
+
+/**
+ * Per-MatTab registry entry. Pairs the cngx setup with a child
+ * `EnvironmentInjector` that scopes the lifetime of the per-tab
+ * `tab._stateChanges` bridge — destroying the child injector fires
+ * its `DestroyRef`, which `takeUntilDestroyed` listens for so the
+ * bridge subscription unsubscribes deterministically.
+ *
+ * @internal
+ */
+interface CngxMatTabEntry {
+  readonly setup: CngxMatTabHandleSetup;
+  readonly childInjector: EnvironmentInjector;
+}
 import { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';
 
 /**
@@ -174,14 +190,23 @@ export class CngxMatTabs {
   private readonly aggregatorContentTemplate: Signal<
     TemplateRef<CngxMatTabAggregatorContentContext> | null
   > = computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
-  // Per-tab registries — strong refs are bounded by the directive's
+  // Per-tab registry — strong refs bounded by the directive's
   // lifetime (every entry is explicitly deleted when the matching
-  // MatTab leaves the children set, AND the maps go away on
+  // MatTab leaves the children set, AND the map goes away on
   // directive destroy). Map (not WeakMap) so the diff loop in
   // `syncHandles` can iterate to find removed tabs without a
   // parallel `Set<MatTab>`.
-  private readonly setupsByTab = new Map<MatTab, CngxMatTabHandleSetup>();
-  private readonly stateChangeSubsByTab = new Map<MatTab, Subscription>();
+  //
+  // Each entry pairs the cngx setup with a child `EnvironmentInjector`
+  // owning the lifetime of the per-tab `toSignal(tab._stateChanges)`
+  // bridge. Destroying the child injector when the tab leaves
+  // triggers `takeUntilDestroyed` inside `toSignal` so the underlying
+  // RxJS subscription unsubscribes deterministically — same cleanup
+  // precision as the prior `Map<MatTab, Subscription>` shape, with
+  // the imperative subscribe/unsubscribe replaced by a Signal
+  // primitive at the public Level-2+ surface.
+  private readonly setupsByTab = new Map<MatTab, CngxMatTabEntry>();
+  private readonly envInjector = inject(EnvironmentInjector);
 
   private readonly i18n = injectTabsI18n();
 
@@ -309,10 +334,10 @@ export class CngxMatTabs {
     });
 
     this.destroyRef.onDestroy(() => {
-      for (const sub of this.stateChangeSubsByTab.values()) {
-        sub.unsubscribe();
+      for (const entry of this.setupsByTab.values()) {
+        // Disposes the per-tab `toSignal(_stateChanges)` bridge.
+        entry.childInjector.destroy();
       }
-      this.stateChangeSubsByTab.clear();
       this.setupsByTab.clear();
     });
 
@@ -402,27 +427,34 @@ export class CngxMatTabs {
         continue;
       }
       const setup = createMatTabHandle(tab, () => nextUid('cngx-mat-tab-'));
-      this.setupsByTab.set(tab, setup);
+      // Live projection of `MatTab.disabled` / `textLabel` via
+      // `_stateChanges`. The bridge runs in a child `EnvironmentInjector`
+      // so its RxJS subscription tears down via `takeUntilDestroyed`
+      // when the tab unregisters (childInjector.destroy() below) or
+      // when the directive is destroyed (parent injector cascade).
+      // Replaces the prior per-tab `Subscription` registry with the
+      // family DestroyRef-driven cleanup pattern. See `handle.ts`
+      // for the underscore-prefix coupling note (tracked under
+      // `tabs-accepted-debt §5`).
+      const childInjector = createEnvironmentInjector([], this.envInjector);
+      tab._stateChanges
+        .pipe(takeUntilDestroyed(childInjector.get(DestroyRef)))
+        .subscribe(() => {
+          setup.label.set(tab.textLabel);
+          setup.disabled.set(tab.disabled);
+        });
+      this.setupsByTab.set(tab, { setup, childInjector });
       this.presenter.register(setup.handle);
-      // Live projection of MatTab.disabled / textLabel via
-      // `_stateChanges`. See `handle.ts` for the underscore-prefix
-      // coupling note (tracked under `tabs-accepted-debt §5`).
-      const sub = tab._stateChanges.subscribe(() => {
-        setup.label.set(tab.textLabel);
-        setup.disabled.set(tab.disabled);
-      });
-      this.stateChangeSubsByTab.set(tab, sub);
     }
     // Remove: snapshot entries before the loop so multi-key deletes
     // inside the body never collide with iterator state.
-    for (const [tab, setup] of Array.from(this.setupsByTab.entries())) {
+    for (const [tab, entry] of Array.from(this.setupsByTab.entries())) {
       if (liveTabs.has(tab)) {
         continue;
       }
-      this.stateChangeSubsByTab.get(tab)?.unsubscribe();
-      this.stateChangeSubsByTab.delete(tab);
+      entry.childInjector.destroy();
       this.setupsByTab.delete(tab);
-      this.presenter.unregister(setup.handle.id);
+      this.presenter.unregister(entry.setup.handle.id);
     }
   }
 
@@ -467,6 +499,6 @@ export class CngxMatTabs {
   getHandleSetup(
     matTab: MatTab,
   ): Pick<CngxMatTabHandleSetup, 'errorAggregator'> | undefined {
-    return this.setupsByTab.get(matTab);
+    return this.setupsByTab.get(matTab)?.setup;
   }
 }

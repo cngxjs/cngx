@@ -638,7 +638,10 @@ describe('CngxMatTabs instrumentation directive', () => {
     const directive = matEl.injector.get(CngxMatTabs);
     const setupsByTab = (
       directive as unknown as {
-        setupsByTab: Map<unknown, { errorAggregator: { set(v: unknown): void } }>;
+        setupsByTab: Map<
+          unknown,
+          { setup: { errorAggregator: { set(v: unknown): void } } }
+        >;
       }
     ).setupsByTab;
 
@@ -655,16 +658,16 @@ describe('CngxMatTabs instrumentation directive', () => {
     // `aggregatedErrorTabs` computed reads `shouldShow()` /
     // `announcement()` whenever any handle's slot is non-undefined,
     // so an opaque marker would crash the downstream effect.
-    const firstSetup = Array.from(setupsByTab.values())[0];
+    const firstEntry = Array.from(setupsByTab.values())[0];
     const stub = makeStubAggregator();
-    firstSetup.errorAggregator.set(stub.contract as unknown);
+    firstEntry.setup.errorAggregator.set(stub.contract as unknown);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBe(stub.contract);
 
     // Resetting back to undefined restores the default — used by the
     // attribute directive's destroyRef cleanup path.
-    firstSetup.errorAggregator.set(undefined);
+    firstEntry.setup.errorAggregator.set(undefined);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
@@ -1204,5 +1207,87 @@ describe('CngxMatTabs instrumentation directive', () => {
     const { injectMatTabsConfig } = await import('./mat-tabs-config');
     const resolved = TestBed.runInInjectionContext(() => injectMatTabsConfig());
     expect(resolved.halfWiredSlotSink).toBe(sink);
+  });
+
+  test('axis 30: rapid _stateChanges emissions land — final write wins on the cngx handle', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture, presenter } = await setupPlumbing();
+    const matTabs = presenter.tabs();
+    const firstHandle = matTabs[0];
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const directive = matEl.injector.get(CngxMatTabs);
+    const setupsByTab = (
+      directive as unknown as {
+        setupsByTab: Map<MatTab, { setup: unknown }>;
+      }
+    ).setupsByTab;
+    const firstMatTab = Array.from(setupsByTab.keys())[0];
+    expect(firstMatTab).toBeDefined();
+
+    // Rapid burst — three Material `_stateChanges` emissions inside
+    // the same microtask. The takeUntilDestroyed-bridged subscriber
+    // writes the cngx setup's `label` signal synchronously on each
+    // emission; the final write wins on the handle's read-only
+    // projection. Equivalent to the prior `Subscription`-based
+    // shape — only the cleanup mechanism has changed.
+    firstMatTab.textLabel = 'A';
+    firstMatTab._stateChanges.next();
+    firstMatTab.textLabel = 'B';
+    firstMatTab._stateChanges.next();
+    firstMatTab.textLabel = 'C';
+    firstMatTab._stateChanges.next();
+    expect(firstHandle.label()).toBe('C');
+  });
+
+  test('axis 31: tab unregister destroys the per-tab child injector — takeUntilDestroyed cleanup', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DynamicHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const directive = matEl.injector.get(CngxMatTabs);
+    const setupsByTab = (
+      directive as unknown as {
+        setupsByTab: Map<
+          MatTab,
+          {
+            childInjector: {
+              destroy: () => void;
+              onDestroy: (cb: () => void) => void;
+            };
+          }
+        >;
+      }
+    ).setupsByTab;
+    expect(setupsByTab.size).toBe(3);
+    const thirdMatTab = Array.from(setupsByTab.keys())[2];
+    const thirdEntry = setupsByTab.get(thirdMatTab);
+    expect(thirdEntry).toBeDefined();
+    let destroyed = false;
+    thirdEntry!.childInjector.onDestroy(() => {
+      destroyed = true;
+    });
+
+    // Drop the third tab; the directive's syncHandles loop must
+    // call childInjector.destroy() on the leaving tab so the
+    // takeUntilDestroyed-bridged `_stateChanges` subscription tears
+    // down deterministically — same cleanup precision as the prior
+    // `Map<MatTab, Subscription>`, with the destroy hook driven
+    // through `DestroyRef` instead of explicit `unsubscribe()`.
+    fixture.componentInstance['setShowThird'](false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(setupsByTab.size).toBe(2);
+    expect(destroyed).toBe(true);
   });
 });
