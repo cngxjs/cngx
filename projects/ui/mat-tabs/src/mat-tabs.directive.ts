@@ -326,17 +326,12 @@ export class CngxMatTabs {
     // edge of the strip. Same hook (`afterNextRender`) the aggregator-
     // decoration projector uses for one-shot post-render DOM writes.
     //
-    // Retry loop symmetrical to `CngxTabOverflow`'s rAF attach budget:
-    // when the consumer wraps `<mat-tab-group>` in a deferred `*ngIf`
-    // / `@defer` block, the header may not have rendered on the first
-    // afterNextRender frame. Re-schedule via the same hook (passing
-    // `injector` because the second invocation is no longer in the
-    // constructor's injection context) up to MAX_ANCHOR_ATTEMPTS. The
-    // ceiling matches the aggregator-decoration retry cap (5) — well
     // Bounded retry via `createDomAnchorRetry` — same counter contract
     // as `CngxTabOverflow`'s rAF attach loop, with `afterNextRender`
     // as the scheduler. afterNextRender is one-shot (no cancellation
-    // closure); the factory accepts a noop.
+    // closure); the factory accepts a noop. The retry covers the
+    // deferred-host case (`<mat-tab-group>` gated behind a `*ngIf` /
+    // `@defer`) where the header is not present on the first frame.
     //
     // Cap is read from `CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS` (default 5).
     // The default was chosen empirically: well above normal Material

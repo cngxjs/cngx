@@ -4,6 +4,7 @@ import {
   effect,
   type EmbeddedViewRef,
   type Injector,
+  isDevMode,
   type Renderer2,
   runInInjectionContext,
   type Signal,
@@ -657,30 +658,32 @@ export function createMatTabAggregatorDecoration(
 function defaultHalfWiredSlotWarn(
   missing: 'contentTemplate' | 'viewContainerRef',
 ): void {
-  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-    console.warn(
-      '[cngxMatTabs] aggregator-content slot half-wired — ' +
-        `\`${missing}\` is missing while the other half is supplied. ` +
-        'The decoration projector will silently fall back to the ' +
-        'imperative `textContent` path, and the consumer-projected ' +
-        '`*cngxMatTabAggregatorContent` template will never render. ' +
-        'Wire both halves on the [cngxMatTabs] directive (or neither).',
-    );
+  if (!isDevMode()) {
+    return;
   }
+  console.warn(
+    '[cngxMatTabs] aggregator-content slot half-wired — ' +
+      `\`${missing}\` is missing while the other half is supplied. ` +
+      'The decoration projector will silently fall back to the ' +
+      'imperative `textContent` path, and the consumer-projected ' +
+      '`*cngxMatTabAggregatorContent` template will never render. ' +
+      'Wire both halves on the [cngxMatTabs] directive (or neither).',
+  );
 }
 
 function defaultRetryCeilingWarn(max: number): () => void {
   return () => {
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      console.warn(
-        '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
+    if (!isDevMode()) {
+      return;
+    }
+    console.warn(
+      '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
         `(${max} attempts) — MatTabHeader did not render ` +
         '`.mat-mdc-tab` buttons within the expected window. Likely ' +
         'cause: Material upgrade broke the `.mat-mdc-tab` selector ' +
         'contract or a consumer-side render stall. ' +
         'Bound aggregators may remain visually undecorated ' +
         'until the next state change.',
-      );
-    }
+    );
   };
 }
