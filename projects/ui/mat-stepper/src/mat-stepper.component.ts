@@ -19,7 +19,6 @@ import {
   MatStepperModule,
   MatStepper,
   MatStepperIcon,
-  type MatStepperIconContext,
 } from '@angular/material/stepper';
 
 import { createMaterialBidirectionalSync } from '@cngx/common/data';
@@ -35,6 +34,7 @@ import {
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
 import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
+import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
 
 /**
  * Material-twin stepper organism. Wraps `<mat-stepper>` while sharing
@@ -307,13 +307,16 @@ export class CngxMatStepper implements CngxStepPanelHost {
       // `_iconOverrides` here, then re-render so the per-header
       // bindings flow. Reaches into Material's underscore-prefixed
       // slot — same accepted-debt class as `tabs-accepted-debt §5`.
+      // The shape of the underscore slot is centralised in
+      // `MaterialPrivateSurfaces.IconOverrideHost` (re-exported from
+      // `@cngx/ui/mat-tabs`) so a Material-version upgrade audit
+      // greps one file for every internal coupling.
       // Dev-mode existence guard: a Material upgrade that renames or
       // removes the `_iconOverrides` slot would otherwise silently
       // no-op the forwarding; the guard surfaces the breakage early
       // with an actionable message.
-      const stepperRef = stepper as unknown as {
-        _iconOverrides?: Record<string, TemplateRef<MatStepperIconContext>>;
-      };
+      const stepperRef =
+        stepper as unknown as MaterialPrivateSurfaces.IconOverrideHost;
       const iconList = this.stepperIcons();
       if (!stepperRef._iconOverrides) {
         if (typeof ngDevMode !== 'undefined' && ngDevMode && iconList.length) {

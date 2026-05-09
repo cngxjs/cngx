@@ -15,6 +15,7 @@ import {
 
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
 import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
+import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
 
 /**
  * Package-private DOM-mutation projectors for `[cngxMatTabs]`.
@@ -213,7 +214,8 @@ export interface CngxMatTabRejectionDecorationOptions {
 export function createMatTabRejectionDecoration(
   opts: CngxMatTabRejectionDecorationOptions,
 ): void {
-  const buttonSelector = opts.buttonSelector ?? '.mat-mdc-tab';
+  const buttonSelector =
+    opts.buttonSelector ?? MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR;
   const className = opts.className ?? 'cngx-mat-tab--error';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
@@ -525,7 +527,8 @@ export interface CngxMatTabAggregatorDecorationOptions {
 export function createMatTabAggregatorDecoration(
   opts: CngxMatTabAggregatorDecorationOptions,
 ): void {
-  const buttonSelector = opts.buttonSelector ?? '.mat-mdc-tab';
+  const buttonSelector =
+    opts.buttonSelector ?? MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR;
   const className = opts.className ?? 'cngx-mat-tab--has-errors';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const maxRetryAttempts = opts.maxRetryAttempts ?? 5;

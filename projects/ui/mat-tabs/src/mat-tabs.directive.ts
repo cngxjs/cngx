@@ -55,6 +55,7 @@ import {
   CNGX_MAT_TAB_HANDLE_FACTORY,
   type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
+import { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
 
 /**
  * Per-MatTab registry entry. Pairs the cngx setup with a child
@@ -401,7 +402,7 @@ export class CngxMatTabs {
     const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
         const headerEl = this.hostEl.querySelector<HTMLElement>(
-          '.mat-mdc-tab-header',
+          MaterialPrivateSurfaces.MAT_MDC_TAB_HEADER_SELECTOR,
         );
         if (!headerEl) {
           return null;
