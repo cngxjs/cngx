@@ -7,6 +7,7 @@ import { DocShellComponent } from '../../../../shared/doc-shell.component';
 import { Observable } from 'rxjs';
 import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxMatStepper } from '@cngx/ui/mat-stepper';
+import { MatStepperModule } from '@angular/material/stepper';
 
 @Component({
   selector: 'app-mat-stepper-demo',
@@ -18,6 +19,7 @@ import { CngxMatStepper } from '@cngx/ui/mat-stepper';
     CngxMatStepper,
     CngxStep,
     CngxStepContent,
+    MatStepperModule,
   ],
   template: `
     <app-doc-shell title="Mat-Stepper — async commitAction"
@@ -71,11 +73,41 @@ import { CngxMatStepper } from '@cngx/ui/mat-stepper';
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>
       </app-example-card>
+      <app-example-card title="Material indicator override via <ng-template matStepperIcon>"
+        [subtitle]="_s1"
+        [sourceHtml]="_srcHtml1"
+        [sourceTs]="_srcTs1">
+        
+  <div role="group" aria-label="Override controls" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="active.set(((active() + 1) % 3))">advance</button>
+  </div>
+  <cngx-mat-stepper [(activeStepIndex)]="active" aria-label="Material wizard with custom icons">
+    <ng-template matStepperIcon="number" let-index="index">
+      <span aria-hidden="true" style="font-weight:600">★{{ index + 1 }}</span>
+    </ng-template>
+    <ng-template matStepperIcon="edit">
+      <span aria-hidden="true">✎</span>
+    </ng-template>
+    <ng-template matStepperIcon="done">
+      <span aria-hidden="true">✔</span>
+    </ng-template>
+    <div cngxStep label="One">
+      <ng-template cngxStepContent><p>Step one body.</p></ng-template>
+    </div>
+    <div cngxStep label="Two">
+      <ng-template cngxStepContent><p>Step two body.</p></ng-template>
+    </div>
+    <div cngxStep label="Three">
+      <ng-template cngxStepContent><p>Step three body.</p></ng-template>
+    </div>
+  </cngx-mat-stepper>
+      </app-example-card>
     </app-doc-shell>
   `,
 })
 export class MatStepperDemoComponent {
   protected readonly _s0 = 'Same brain, Material skin. Pessimistic mode keeps Material on the origin step until the action resolves; optimistic advances immediately and rolls back on rejection.';
+  protected readonly _s1 = 'Project Material\'s native <code>&lt;ng-template matStepperIcon="<state>"&gt;</code> directly inside <code>&lt;cngx-mat-stepper&gt;</code> — the wrapper forwards the templates into <code>MatStepper._iconOverrides</code> so consumers reach the indicator chrome through Material\'s own customisation API. The cngx Phase-3 <code>*cngxStepIndicator</code> slot is intentionally CNGX-skin-only; on the Material variant Material owns the indicator template, and the matStepperIcon path is the proper override surface (closes <code>stepper-accepted-debt §4</code>). Toggle "advance" to walk through "number" → "edit" → "done" states and see the override fire on each.';
   protected readonly _srcHtml0 = `<div role="group" aria-label="Commit mode" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
     <button type="button" class="chip"
             [class.chip--active]="mode() === 'optimistic'"
@@ -121,6 +153,56 @@ export class MatStepperDemoComponent {
   protected readonly _srcTs0 = `import { Observable } from 'rxjs';
 import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
 import { CngxMatStepper } from '@cngx/ui/mat-stepper';
+import { MatStepperModule } from '@angular/material/stepper';
+
+
+  protected readonly active = signal(0);
+  protected readonly mode = signal<'optimistic' | 'pessimistic'>('pessimistic');
+  protected readonly shouldFail = signal(false);
+  protected readonly latencyMs = signal(800);
+
+  protected readonly commitAction: CngxStepperCommitAction = (from, to) => {
+    const ms = this.latencyMs();
+    const fail = this.shouldFail();
+    return new Observable<boolean>((sub) => {
+      const handle = setTimeout(() => {
+        if (fail) {
+          sub.error(new Error('Server refused step ' + from + ' → ' + to));
+        } else {
+          sub.next(true);
+          sub.complete();
+        }
+      }, ms);
+      return () => clearTimeout(handle);
+    });
+  };`;
+  protected readonly _srcHtml1 = `<div role="group" aria-label="Override controls" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="active.set(((active() + 1) % 3))">advance</button>
+  </div>
+  <cngx-mat-stepper [(activeStepIndex)]="active" aria-label="Material wizard with custom icons">
+    <ng-template matStepperIcon="number" let-index="index">
+      <span aria-hidden="true" style="font-weight:600">★{{ index + 1 }}</span>
+    </ng-template>
+    <ng-template matStepperIcon="edit">
+      <span aria-hidden="true">✎</span>
+    </ng-template>
+    <ng-template matStepperIcon="done">
+      <span aria-hidden="true">✔</span>
+    </ng-template>
+    <div cngxStep label="One">
+      <ng-template cngxStepContent><p>Step one body.</p></ng-template>
+    </div>
+    <div cngxStep label="Two">
+      <ng-template cngxStepContent><p>Step two body.</p></ng-template>
+    </div>
+    <div cngxStep label="Three">
+      <ng-template cngxStepContent><p>Step three body.</p></ng-template>
+    </div>
+  </cngx-mat-stepper>`;
+  protected readonly _srcTs1 = `import { Observable } from 'rxjs';
+import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';
+import { CngxMatStepper } from '@cngx/ui/mat-stepper';
+import { MatStepperModule } from '@angular/material/stepper';
 
 
   protected readonly active = signal(0);

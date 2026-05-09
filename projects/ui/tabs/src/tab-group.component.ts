@@ -2,7 +2,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
   contentChildren,
   ElementRef,
@@ -30,11 +29,13 @@ import {
   CngxTabErrorBadge,
   CngxTabGroupPresenter,
   CngxTabRejectionIcon,
+  createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
   type CngxTabErrorBadgeContext,
+  type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
   type CngxTabPanelHost,
@@ -96,10 +97,10 @@ import {
   templateUrl: './tab-group.component.html',
   host: {
     role: 'group',
-    '[attr.aria-roledescription]': 'tabsRoleDescription()',
+    '[attr.aria-roledescription]': 'announcements.tabsRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.aria-label]': 'resolvedAriaLabel()',
+    '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
   },
@@ -145,15 +146,31 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
 
+  /**
+   * AT-announcement + descriptor surfaces extracted into a pure
+   * factory under `@cngx/common/tabs/announcements/`. The bundle
+   * owns `tabsRoleDescription` / `tabPanelRoleDescription` /
+   * `resolvedAriaLabel` / `liveAnnouncement` / `statusPhrase` /
+   * `tabAriaLabel` plus the prior-active-index `linkedSignal` slot
+   * that drives the success-arm direction prefix. Host bindings and
+   * template outlets read through `announcements.<field>()`.
+   */
+  protected readonly announcements: CngxTabGroupAnnouncements =
+    createTabGroupAnnouncements({
+      presenter: this.presenter,
+      i18n: this.i18n,
+      config: this.config,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+    });
+
   constructor() {
     // Self-healing scroll loop — when the active tab changes (via
     // direct click on a visible tab, keyboard nav, or selectById from
     // the overflow molecule), bring the matching button into the
     // strip's visible area. The IntersectionObserver in
     // <cngx-tab-overflow> picks up the new visibility on the next
-    // tick and the More dropdown self-trims. Plan §"Selection Loop".
-    // Extracted to `createOrganismScrollSync` in `@cngx/common/tabs`
-    // so future organisms can share the shape; routed through
+    // tick and the More dropdown self-trims. Routed through
     // `CNGX_ORGANISM_SCROLL_SYNC_FACTORY` so consumers can swap the
     // scroll policy (instant, custom selector, reduced-motion opt-out)
     // without forking the organism.
@@ -163,48 +180,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
       injector: this.injector,
     });
   }
-
-  /**
-   * Tabs landmark `aria-roledescription`. Defaults to the W3C ARIA
-   * tablist convention (`'tab list'`) — deliberately distinct from
-   * `i18n.tabsLabel`, which feeds `aria-label`. Pillar 2: the two
-   * announce different things to AT (the *kind of region* vs *which
-   * region*); collapsing them onto one string makes screen readers
-   * read the same word twice in a row. Consumers who want a localised
-   * role description override via
-   * `withTabsFallbackLabels({ tabRoleDescription: 'Reiterleiste' })`.
-   */
-  protected readonly tabsRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.tabRoleDescription ?? 'tab list',
-  );
-
-  /**
-   * Tab-panel role-description — read by the per-panel
-   * `aria-roledescription` binding. Cascades through
-   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → library default
-   * `'tab panel'`. Mirrors the `tabsRoleDescription` computed so
-   * AT-facing role descriptors flow through one config surface
-   * regardless of which scope (button vs panel) declares them.
-   */
-  protected readonly tabPanelRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.tabPanelRoleDescription ?? 'tab panel',
-  );
-
-  /**
-   * `aria-label` resolves Input → ariaLabels.tabsRegion config →
-   * i18n.tabsLabel. Pillar 2 — the surface declared by config /
-   * i18n must reach the DOM.
-   */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    if (this.ariaLabelledBy()) {
-      return null;
-    }
-    return (
-      this.ariaLabel() ??
-      this.config.ariaLabels?.tabsRegion ??
-      this.i18n.tabsLabel
-    );
-  });
 
   // Pre-build a Map<id, CngxTab> so labelTemplateFor /
   // contentTemplateFor are O(1) per call instead of O(N) linear
@@ -258,51 +233,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
     return this.tabs()[intended]?.id === tab.id;
   }
 
-  /**
-   * SR-friendly text rendered inside the polite live-region span. Drives
-   * the announcer through declarative content updates — never an
-   * imperative announce() call. Empty string between transitions so the
-   * region stays quiet on no-op CD ticks.
-   *
-   * Priority chain on the `error` arm:
-   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
-   *      a `lastFailedIndex` and a resolvable origin label — the rich,
-   *      origin-aware rollback phrase carries the destination so the
-   *      user understands both *what failed* and *where they are*.
-   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
-   *      undefined, label unresolvable, or non-rollback error path.
-   *
-   * Reads `presenter.commitTransition` directly — the presenter
-   * allocates one `linkedSignal`-backed tracker per instance and
-   * exposes it on the host contract for skin reuse. Pillar 1: derive,
-   * never duplicate.
-   */
-  protected readonly liveAnnouncement = computed<string>(() => {
-    const current = this.presenter.commitTransition.current();
-    if (current === 'pending') {
-      return this.i18n.commitInFlight;
-    }
-    if (current === 'error') {
-      // `previous` reads stay reactive but are not gated — synchronous
-      // commit-handler errors collapse pending → error in a single
-      // signal-flush tick, so the tracker captures
-      // `previous = 'idle'` rather than `'pending'`. Loosening the
-      // guard keeps the announcement reachable for sync-rejection
-      // actions (`commitAction = () => false`) while staying silent
-      // on `idle` and `success`.
-      const failedIdx = this.presenter.lastFailedIndex();
-      const originIdx = this.presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = this.presenter.tabs()[originIdx]?.label();
-        if (originLabel) {
-          return this.i18n.commitRolledBackTo(originLabel);
-        }
-      }
-      return this.i18n.commitFailedRetry;
-    }
-    return '';
-  });
-
   protected tabHeaderId(tab: CngxTabHandle): string {
     return `${tab.id}-header`;
   }
@@ -321,13 +251,34 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
+   * Per-tab cache of the `*cngxTabErrorBadge` slot context. The
+   * context object's only field is `{ tab }` — purely tab-keyed,
+   * never reactive — so caching it via `WeakMap` keeps the context
+   * reference stable across CD ticks. Stable refs let
+   * `*ngTemplateOutlet`'s `Object.is` input-diff short-circuit
+   * the embedded-view context-update path, eliminating per-CD
+   * allocation + rebind cost. Mirrors the select-family
+   * `chipRemoveFor` `WeakMap` precedent.
+   */
+  private readonly errorBadgeContextCache = new WeakMap<
+    CngxTabHandle,
+    CngxTabErrorBadgeContext
+  >();
+
+  /**
    * Context object passed to the `*cngxTabErrorBadge` slot template.
-   * Re-derived on every CD tick — outlets memoise their embedded
-   * views by template + context-by-key, so the rebuild cost is the
-   * `tab` reference comparison only.
+   * Returns the same `WeakMap`-cached object across CD ticks for a
+   * given tab handle — `*ngTemplateOutlet` sees a stable reference
+   * and skips the context-update path entirely. WeakMap auto-clears
+   * with the tab handle's GC.
    */
   protected errorBadgeContextFor(tab: CngxTabHandle): CngxTabErrorBadgeContext {
-    return { tab };
+    let ctx = this.errorBadgeContextCache.get(tab);
+    if (!ctx) {
+      ctx = { tab };
+      this.errorBadgeContextCache.set(tab, ctx);
+    }
+    return ctx;
   }
 
   /**
@@ -336,6 +287,18 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `isTabBusy(tab)` already returned `true` (which requires the
    * presenter's `intendedIndex()` to be defined and to point at the
    * matching handle).
+   *
+   * Allocates fresh per CD tick. Caching via `WeakMap` does NOT work
+   * here: the context carries a reactive `intendedIndex` field that
+   * changes between calls, and Angular's `*ngTemplateOutlet` only
+   * re-evaluates `let-*` bindings when the context REFERENCE changes
+   * (input-diff via `Object.is`); mutating fields on a cached object
+   * leaves consumer let-bindings stale. The fresh-per-CD allocation
+   * is the correct trade-off until either (a) a real performance
+   * signal forces signal-bearing context fields, or (b) Angular
+   * gains property-level context-diffing on outlet inputs. See
+   * `tabs-accepted-debt §9` cross-reference for the broader
+   * decompose discussion.
    */
   protected busySpinnerContextFor(
     tab: CngxTabHandle,
@@ -348,6 +311,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * `originLabel` resolves through the same priority chain as
    * `liveAnnouncement` — `originIndexDuringCommit` -> `tabs()[idx].label()`
    * — so the visual decoration phrasing matches the SR announcement.
+   *
+   * Allocates fresh per CD tick — same trade-off as
+   * {@link busySpinnerContextFor}: both `failedIndex` and the resolved
+   * `originLabel` change reactively, so a `WeakMap`-cached object would
+   * leave consumer let-bindings stale. Fresh allocation keeps
+   * `*ngTemplateOutlet` re-evaluating let-bindings on each CD.
    */
   protected rejectionIconContextFor(
     failedIndex: number,
@@ -356,20 +325,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
     const originLabel =
       originIdx !== undefined ? this.presenter.tabs()[originIdx]?.label() : undefined;
     return { failedIndex, originLabel };
-  }
-
-  /**
-   * SR descriptor phrase. Reads the aggregator's `announcement()`
-   * when one is bound and revealed; otherwise empty (the descriptor
-   * span ID stays in the DOM either way per the cngx A11y rule —
-   * IDs always present, content reactive).
-   */
-  protected statusPhrase(tab: CngxTabHandle): string {
-    const aggregator = tab.errorAggregator();
-    if (aggregator?.shouldShow()) {
-      return aggregator.announcement();
-    }
-    return '';
   }
 
   protected handleHeaderClick(tab: CngxTabHandle): void {

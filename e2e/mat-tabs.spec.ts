@@ -9,7 +9,10 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 // User concern that drove this suite: "errors get swallowed, the
 // whole thing feels wackelig". The assertions here pin down:
 //   - the rejection decoration ACTUALLY lands on the failed tab
-//     (`cngx-mat-tab--error` class + `aria-invalid="true"`)
+//     (`cngx-mat-tab--error` class + a hidden SR-descriptor span
+//     referenced through `aria-describedby`; per ARIA 1.2 the
+//     `aria-invalid` attribute is form-field vocabulary and is
+//     deliberately NOT used on a tab button)
 //   - the toast + banner outlets ACTUALLY render the configured
 //     phrases (proves CNGX_STATEFUL bridge composition through
 //     hostDirectives)
@@ -100,7 +103,7 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     }
   });
 
-  test('(b) optimistic + simulate-error: clicking tab 2 lands on tab 2 immediately, then rolls back to tab 0; tab 2 carries cngx-mat-tab--error AND aria-invalid="true"', async ({
+  test('(b) optimistic + simulate-error: clicking tab 2 lands on tab 2 immediately, then rolls back to tab 0; tab 2 carries cngx-mat-tab--error + an SR descriptor span referenced via aria-describedby', async ({
     page,
   }) => {
     await page.goto(ROUTE);
@@ -115,12 +118,25 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/, {
       timeout: 4000,
     });
-    await expect(buttons.nth(2)).toHaveAttribute('aria-invalid', 'true');
+    // Descriptor span landed under the rejected tab + aria-describedby
+    // points at it. aria-invalid is NOT set (form-field vocabulary).
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(1);
+    await expect(buttons.nth(2)).toHaveAttribute(
+      'aria-describedby',
+      /-rejected\b/,
+    );
+    await expect(buttons.nth(2)).not.toHaveAttribute('aria-invalid', /.*/);
     // Untouched tabs stay clean.
     await expect(buttons.nth(0)).not.toHaveClass(/cngx-mat-tab--error/);
     await expect(buttons.nth(1)).not.toHaveClass(/cngx-mat-tab--error/);
-    await expect(buttons.nth(0)).not.toHaveAttribute('aria-invalid', /.*/);
-    await expect(buttons.nth(1)).not.toHaveAttribute('aria-invalid', /.*/);
+    await expect(
+      buttons.nth(0).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(0);
+    await expect(
+      buttons.nth(1).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(0);
   });
 
   test('(c) toast bridge fires on commit error — proves CngxToastOn composes against CNGX_STATEFUL through hostDirectives', async ({
@@ -168,7 +184,13 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     // disappear.
     await page.waitForTimeout(1000);
     await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/);
-    await expect(buttons.nth(2)).toHaveAttribute('aria-invalid', 'true');
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(1);
+    await expect(buttons.nth(2)).toHaveAttribute(
+      'aria-describedby',
+      /-rejected\b/,
+    );
   });
 
   test('(f) successful re-pick of the failed tab clears the decoration', async ({
@@ -183,13 +205,16 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     });
 
     // Disable simulate-error, click tab 2 again — successful commit
-    // clears both the class and aria-invalid.
+    // clears both the class and the descriptor span.
     await disableSimulateError(page);
     await buttons.nth(2).click();
     await expect(buttons.nth(2)).toHaveClass(/mdc-tab--active/, {
       timeout: 4000,
     });
     await expect(buttons.nth(2)).not.toHaveClass(/cngx-mat-tab--error/);
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(0);
     await expect(buttons.nth(2)).not.toHaveAttribute('aria-invalid', /.*/);
   });
 
@@ -217,7 +242,16 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
       timeout: 4000,
     });
     await expect(buttons.nth(1)).not.toHaveClass(/cngx-mat-tab--error/);
-    await expect(buttons.nth(2)).toHaveAttribute('aria-invalid', 'true');
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(1);
+    await expect(buttons.nth(2)).toHaveAttribute(
+      'aria-describedby',
+      /-rejected\b/,
+    );
+    await expect(
+      buttons.nth(1).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(0);
     await expect(buttons.nth(1)).not.toHaveAttribute('aria-invalid', /.*/);
   });
 
@@ -234,6 +268,9 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
 
     await page.getByRole('button', { name: 'Clear last failed' }).click();
     await expect(buttons.nth(2)).not.toHaveClass(/cngx-mat-tab--error/);
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(0);
     await expect(buttons.nth(2)).not.toHaveAttribute('aria-invalid', /.*/);
     // Toast cleanup is consumer-driven; we don't assert the toast
     // disappears here (its lifecycle is independent of
@@ -278,14 +315,21 @@ test.describe('CngxMatTabs sticky-error UX (mat-tabs-instrumentation demo)', () 
     const buttons = matTabButtons(page);
     await buttons.nth(2).click();
     // The cngx contract this directive owns: rejected target is
-    // decorated, aria-invalid is set. Both must hold regardless of
-    // mode and regardless of whether the click came via Material or
+    // decorated and an SR descriptor span lands under it referenced
+    // via aria-describedby. Both must hold regardless of mode and
+    // regardless of whether the click came via Material or
     // programmatic. Test (j2) below covers the related Material-
     // rollback contract that the §6 fix restored.
     await expect(buttons.nth(2)).toHaveClass(/cngx-mat-tab--error/, {
       timeout: 4000,
     });
-    await expect(buttons.nth(2)).toHaveAttribute('aria-invalid', 'true');
+    await expect(
+      buttons.nth(2).locator('span.cngx-sr-only[id$="-rejected"]'),
+    ).toHaveCount(1);
+    await expect(buttons.nth(2)).toHaveAttribute(
+      'aria-describedby',
+      /-rejected\b/,
+    );
   });
 
   test('(j2) pessimistic + Material-side click: Material rolls selectedIndex back to origin during pending AND keeps it after reject (tabs-accepted-debt §6 — CLOSED)', async ({

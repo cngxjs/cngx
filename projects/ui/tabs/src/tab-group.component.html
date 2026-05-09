@@ -13,6 +13,7 @@
       [class.cngx-tab--rejected]="failedIdx === i"
       role="tab"
       [id]="tabHeaderId(tab)"
+      [attr.aria-label]="announcements.tabAriaLabel(tab, i + 1)"
       [attr.aria-selected]="isSelected(tab) ? 'true' : 'false'"
       [attr.aria-controls]="tabPanelId(tab)"
       [attr.aria-disabled]="tab.disabled() ? 'true' : null"
@@ -73,7 +74,7 @@
         }
       }
       <span class="cngx-sr-only" [id]="tabDescriptorId(tab)">{{
-        statusPhrase(tab)
+        announcements.statusPhrase(tab)
       }}</span>
     </button>
   }
@@ -88,7 +89,7 @@
       role="tabpanel"
       [id]="tabPanelId(tab)"
       [attr.aria-labelledby]="tabHeaderId(tab)"
-      [attr.aria-roledescription]="tabPanelRoleDescription()"
+      [attr.aria-roledescription]="announcements.tabPanelRoleDescription()"
       [hidden]="!isSelected(tab)"
     >
       @let contentTpl = contentTemplateFor(tab.id);
@@ -100,7 +101,7 @@
 </div>
 
 <span class="cngx-tabs__live-region cngx-sr-only" cngxLiveRegion>{{
-  liveAnnouncement()
+  announcements.liveAnnouncement()
 }}</span>
 
 <!--

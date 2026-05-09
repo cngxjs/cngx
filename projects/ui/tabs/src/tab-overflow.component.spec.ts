@@ -549,16 +549,22 @@ describe('CngxTabOverflow', () => {
     expect(buttons[2].getAttribute('aria-selected')).toBe('true');
   });
 
-  it('mounts role=listbox on the popover surface, role=presentation on the <ul>, role=combobox on the trigger (ARIA 1.2 combobox pattern)', async () => {
-    // Three roles travel together under ARIA 1.2:
-    //   trigger button → role="combobox" + aria-haspopup="listbox"
-    //   popover surface → role="listbox" (the popup target)
-    //   <ul> → role="presentation" so each <li role="option"> is a
-    //         direct child of the listbox landmark in the AT tree.
-    // Pre-fix nested role=menu on <ul> + no role on the popover wrapper
-    // doubled the landmark depth; the listbox/combobox swap also
-    // closes the round-5 keyboard concern (AD owns ArrowUp/Down/
-    // Home/End/typeahead/Enter on the trigger).
+  it('mounts role=menu on the popover surface, role=presentation on the <ul>, aria-haspopup=menu on the trigger (ARIA menu-button pattern)', async () => {
+    // The hidden-tabs popover is a quick-jump navigation surface, not
+    // a value-selecting listbox. Picking an item triggers selectById
+    // on the panel host — there is no persistent "selected option"
+    // semantics, so menu/menuitem is the spec-correct contract.
+    // listbox/option implies aria-selected state per ARIA 1.2 §5.4
+    // which does not apply to a transient navigation popup.
+    //
+    //   trigger → plain `<button>` (no explicit role; default button
+    //             role applies) + aria-haspopup="menu". The combobox
+    //             role is deliberately NOT used: WAI-ARIA 1.2 forbids
+    //             pairing combobox with aria-haspopup="menu" — the
+    //             role must point at listbox/tree/grid/dialog.
+    //   popover surface → role="menu" (the popup target)
+    //   <ul> → role="presentation" so each <li role="menuitem"> is a
+    //         direct child of the menu landmark in the AT tree.
     installMockIntersectionObserver();
     stubPopoverApi();
     const fixture = TestBed.createComponent(OverflowHost);
@@ -573,10 +579,53 @@ describe('CngxTabOverflow', () => {
     const list = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__list',
     ) as HTMLElement;
-    expect(trigger.getAttribute('role')).toBe('combobox');
-    expect(trigger.getAttribute('aria-haspopup')).toBe('listbox');
-    expect(popoverSurface.getAttribute('role')).toBe('listbox');
+    // Trigger is a plain button — no explicit role attribute (regression
+    // fence: a future re-introduction of role="combobox" would fail
+    // because combobox + aria-haspopup="menu" is invalid per WAI-ARIA 1.2).
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger.hasAttribute('role')).toBe(false);
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    expect(popoverSurface.getAttribute('role')).toBe('menu');
     expect(list.getAttribute('role')).toBe('presentation');
+  });
+
+  it('hidden-tab items use role=menuitem and carry NO aria-selected attribute (menu pattern, not listbox)', async () => {
+    // Pre-fix the items rendered with role="option" + a hard-coded
+    // aria-selected="false". Both are wrong contract for a quick-jump
+    // navigation popup — aria-selected is listbox/option vocabulary
+    // and AT consumers reading it would interpret every hidden tab
+    // as a deselectable value-state. The fix-axis pins the new
+    // contract so a regression cannot silently re-introduce either.
+    const { instances } = installMockIntersectionObserver();
+    stubPopoverApi();
+    const fixture = TestBed.createComponent(OverflowHost);
+    fixture.detectChanges();
+    await flushMicrotasks();
+    const observer = instances[0];
+    const buttons = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'cngx-tab-group button[role="tab"]',
+      ) as NodeListOf<HTMLButtonElement>,
+    );
+    observer.fire([
+      { target: buttons[0], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[1], isIntersecting: true, intersectionRatio: 1 },
+      { target: buttons[2], isIntersecting: false, intersectionRatio: 0 },
+      { target: buttons[3], isIntersecting: false, intersectionRatio: 0 },
+    ]);
+    await flushStabilize();
+    fixture.detectChanges();
+
+    const items = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.cngx-tab-overflow__item',
+      ) as NodeListOf<HTMLElement>,
+    );
+    expect(items.length).toBe(2);
+    for (const item of items) {
+      expect(item.getAttribute('role')).toBe('menuitem');
+      expect(item.hasAttribute('aria-selected')).toBe(false);
+    }
   });
 
   it('hides the More trigger when no tabs are clipped', async () => {
