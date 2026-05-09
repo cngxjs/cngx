@@ -188,7 +188,15 @@ export function createMatTabRejectionDecoration(
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
   let decoratedEl: HTMLElement | null = null;
-  let decoratedSpan: HTMLElement | null = null;
+  // The descriptor span is created lazily on first apply and retained
+  // across the projector's lifetime — detached on clear, reattached on
+  // next apply, never recreated. Reusing the JS element avoids two
+  // `createElement` allocations per A→B→A flip and lets AT readers /
+  // animation observers that hold a reference to the node keep it
+  // pointing at a live DOM object even though the parent button and
+  // the `id` attribute change between flips. The element is GC'd when
+  // the projector's closure dies on directive destroy.
+  let cachedSpan: HTMLElement | null = null;
   let priorAriaDescribedby: string | null = null;
   // Slot tracks the id whose decoration is currently mounted (or
   // `null` when cleared). Used by the apply effect below to
@@ -202,12 +210,13 @@ export function createMatTabRejectionDecoration(
   let lastAppliedId: string | null = null;
 
   const clearDecoration = (): void => {
-    if (!decoratedEl || !decoratedSpan) {
+    if (!decoratedEl || !cachedSpan) {
       return;
     }
-    const ownTokenId = decoratedSpan.id;
+    const ownTokenId = cachedSpan.id;
     opts.renderer.removeClass(decoratedEl, className);
-    opts.renderer.removeChild(decoratedEl, decoratedSpan);
+    opts.renderer.removeChild(decoratedEl, cachedSpan);
+    // `cachedSpan` deliberately retained — reused on the next apply.
     restoreAriaDescribedbyExceptToken(
       decoratedEl,
       ownTokenId,
@@ -215,7 +224,6 @@ export function createMatTabRejectionDecoration(
       priorAriaDescribedby,
     );
     decoratedEl = null;
-    decoratedSpan = null;
     priorAriaDescribedby = null;
   };
 
@@ -229,12 +237,17 @@ export function createMatTabRejectionDecoration(
     opts.renderer.addClass(targetEl, className);
 
     const spanId = `${handleId}-${descriptorIdSuffix}`;
-    const span = opts.renderer.createElement('span') as HTMLElement;
-    opts.renderer.addClass(span, srOnlyClassName);
+    let span = cachedSpan;
+    if (!span) {
+      span = opts.renderer.createElement('span') as HTMLElement;
+      opts.renderer.addClass(span, srOnlyClassName);
+      cachedSpan = span;
+    }
+    // Always rewrite id + textContent — the same element serves every
+    // mount across the projector's lifetime, so prior values are stale
+    // by definition. The live-text effect below picks up subsequent
+    // `descriptorText` changes without recreating the span.
     opts.renderer.setAttribute(span, 'id', spanId);
-    // Initial content read inside `untracked()` (the caller wraps the
-    // whole apply path); the live-text effect below picks up
-    // subsequent changes without recreating the span.
     opts.renderer.setProperty(span, 'textContent', opts.descriptorText());
     opts.renderer.appendChild(targetEl, span);
 
@@ -251,7 +264,6 @@ export function createMatTabRejectionDecoration(
     opts.renderer.setAttribute(targetEl, 'aria-describedby', tokens.join(' '));
 
     decoratedEl = targetEl;
-    decoratedSpan = span;
     priorAriaDescribedby = prior;
   };
 
@@ -278,16 +290,20 @@ export function createMatTabRejectionDecoration(
       });
     });
 
-    // Live-text effect — tracks `descriptorText` only. Decorated
-    // span is a non-signal slot, so its read lives inside
-    // `untracked()` (the read is a check, not a dependency).
+    // Live-text effect — tracks `descriptorText` only. The
+    // attached/detached state is non-signal; both reads live inside
+    // `untracked()` (they are check, not dependency). Updates fire
+    // only when the cached span is currently mounted (`decoratedEl`
+    // non-null) — otherwise the next apply path will write the
+    // current text via `setProperty` before re-attaching, so a
+    // detached-span text update would be redundant.
     effect(() => {
       const text = opts.descriptorText();
       untracked(() => {
-        if (decoratedSpan === null) {
+        if (decoratedEl === null || cachedSpan === null) {
           return;
         }
-        opts.renderer.setProperty(decoratedSpan, 'textContent', text);
+        opts.renderer.setProperty(cachedSpan, 'textContent', text);
       });
     });
   });
