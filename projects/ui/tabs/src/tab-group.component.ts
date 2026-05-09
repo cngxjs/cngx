@@ -46,8 +46,7 @@ import {
  * CNGX-standard tab-group organism. Thin shell composing the
  * {@link CngxTabGroupPresenter} brain with `CngxRovingTabindex` and
  * `CngxFocusRestore` via `hostDirectives`. Material consumers reach
- * for `<cngx-mat-tab-group>` (sibling `@cngx/ui/mat-tabs` entry
- * planned for Phase D3) instead.
+ * for `[cngxMatTabs]` from `@cngx/ui/mat-tabs`.
  *
  * The presenter owns `activeIndex`, `orientation`, `loop`,
  * `commitAction`, `commitMode`; the organism forwards them through
@@ -57,11 +56,10 @@ import {
  * `aria-orientation` is a `computed()` or signal-reading method,
  * never a one-time binding.
  *
- * `CngxLiveRegion` is intentionally NOT composed via
- * `hostDirectives` — its host binding sets `role="status"` which
- * would clobber the wrapper's `role="group"` landmark. Phase 3
- * commit 1 will mount a dedicated `<span cngxLiveRegion>` inside
- * the template for SR announcements.
+ * `CngxLiveRegion` is mounted as a dedicated `<span cngxLiveRegion>`
+ * inside the template rather than composed via `hostDirectives`,
+ * because its `role="status"` would clobber the wrapper's
+ * `role="group"` landmark.
  *
  * @category interactive
  */
@@ -196,13 +194,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * skin slots: `errorBadge`, `rejectionIcon`, `busySpinner`. Each
    * field is a `Signal<TemplateRef | null>` — `null` signals the
    * template should render the built-in default span.
-   *
-   * Mirrors the Phase-3 stepper sibling (`createStepperTemplateBindings`).
-   * Single-consumer note: tracked as `tabs-accepted-debt §9` —
-   * `<cngx-mat-tabs>` does NOT consume this factory because Material
-   * owns the tab-button chrome via its own MDC template. The factory
-   * stays uniform with the family pattern; the staging is
-   * acknowledged debt.
    */
   protected readonly templates: CngxTabGroupTemplateBindings =
     createTabGroupTemplateBindings({
@@ -293,12 +284,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
    * changes between calls, and Angular's `*ngTemplateOutlet` only
    * re-evaluates `let-*` bindings when the context REFERENCE changes
    * (input-diff via `Object.is`); mutating fields on a cached object
-   * leaves consumer let-bindings stale. The fresh-per-CD allocation
-   * is the correct trade-off until either (a) a real performance
-   * signal forces signal-bearing context fields, or (b) Angular
-   * gains property-level context-diffing on outlet inputs. See
-   * `tabs-accepted-debt §9` cross-reference for the broader
-   * decompose discussion.
+   * leaves consumer let-bindings stale. Fresh-per-CD allocation is
+   * the correct trade-off until either a real performance signal
+   * forces signal-bearing context fields, or Angular gains
+   * property-level context-diffing on outlet inputs.
    */
   protected busySpinnerContextFor(
     tab: CngxTabHandle,

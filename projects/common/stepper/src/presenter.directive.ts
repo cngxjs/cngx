@@ -72,14 +72,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
   private readonly config = injectStepperConfig();
 
   readonly activeStepIndex = model<number>(0);
-  // Inputs default to `undefined` so `computed` can fall through to
-  // the {@link CNGX_STEPPER_CONFIG} cascade (per-instance Input >
-  // viewProviders > root > library default). Public types expose
-  // the resolved value as `Signal<...>`.
-  // Public — the alias `linear` is what external consumers bind via
-  // hostDirective forwarding; Angular's template type-checker
-  // resolves the alias to this field at the binding site, so it
-  // must be visible.
+  // Raw *Input slots: default `undefined` so the cascade resolves
+  // through {@link CNGX_STEPPER_CONFIG}. Must stay public — Angular's
+  // template type-checker rejects `protected` / `private` on
+  // hostDirective alias bindings.
   readonly linearInput = input<boolean | undefined>(undefined, {
     alias: 'linear',
   });
@@ -95,18 +91,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
       this.orientationInput() ?? this.config.defaultOrientation ?? 'horizontal',
   );
 
-  /**
-   * @experimental Phase 1 declares the input shape; the
-   * commit-controller wiring (gating `select()` on the action's
-   * resolution, optimistic/pessimistic UX) lands in Phase 3 of the
-   * stepper-wizard plan. Binding `[commitAction]` in Phase 1 is a
-   * no-op.
-   */
   readonly commitAction = input<CngxStepperCommitAction | null>(null);
-  /**
-   * @experimental Companion to `commitAction`; only consulted once
-   * the Phase 3 wiring lands.
-   */
   readonly commitModeInput = input<
     'optimistic' | 'pessimistic' | undefined
   >(undefined, { alias: 'commitMode' });
@@ -146,14 +131,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
     () => this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface (Pillar 2 — Kommunikation als
-  // First-Class Concern). `lastFailedIndex` flags the refused
-  // target until the user re-picks it successfully or explicitly
-  // dismisses via `clearLastFailed()`. `originIndexDuringCommit`
-  // is the safe-harbour captured at commit-window open; the
-  // organism's `liveAnnouncement` computed reads both to resolve
-  // the rich rollback phrase. Both are primitives, so default
-  // `Object.is` equality is correct — no `equal` fn needed.
+  // Persistence-of-error surface — see `CngxStepperHost.lastFailedIndex`
+  // and `originIndexDuringCommit` for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
   private readonly originIndexDuringCommitState = signal<number | undefined>(
     undefined,
@@ -384,11 +363,6 @@ export class CngxStepperPresenter implements CngxStepperHost {
       this.select(idx);
     }
   }
-
-  // markCompleted / markErrored are deliberately NOT on the
-  // presenter until Phase 3 wires the commit lifecycle. The
-  // `CngxStepperHost` contract also omits them — see the comment
-  // on the interface for the rationale.
 
   reset(): void {
     this.activeStepIndex.set(0);

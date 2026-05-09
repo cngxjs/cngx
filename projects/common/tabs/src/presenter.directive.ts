@@ -48,17 +48,17 @@ export type CngxTabsCommitAction = (
 /**
  * Tab-group presenter — the brain of every tab flow in cngx. Holds
  * the active-index model, the tab registry, the orientation, the
- * loop policy, and (post-Phase-3) the commit-controller's lifecycle.
- * Provides {@link CNGX_TAB_GROUP_HOST} so atoms register against an
- * opaque contract, and {@link CNGX_STATEFUL} so transition bridges
+ * loop policy, and the commit-controller's lifecycle. Provides
+ * {@link CNGX_TAB_GROUP_HOST} so atoms register against an opaque
+ * contract, and {@link CNGX_STATEFUL} so transition bridges
  * (`<cngx-toast-on />`, `<cngx-banner-on />`) compose without
  * explicit `[state]` wiring.
  *
  * **Layer:** `@cngx/common/tabs` (Level 2). Zero `@Component`,
  * zero `.html` — directive-only surface. Level-4 organisms
- * (`<cngx-tab-group>`) compose this via `hostDirectives`; consumer
- * DOM with `[cngxTabGroup]` applied works equally well (the
- * Phase-1 headless demo proves it).
+ * (`<cngx-tab-group>`) compose this via `hostDirectives`; the
+ * directive also works applied to consumer DOM directly via
+ * `[cngxTabGroup]`.
  *
  * @category interactive
  */
@@ -128,14 +128,8 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     () => this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface (Pillar 2 — Kommunikation als
-  // First-Class Concern). `lastFailedIndex` flags the refused
-  // target until the user re-picks it successfully or explicitly
-  // dismisses via `clearLastFailed()`. `originIndexDuringCommit`
-  // is the safe-harbour captured at commit-window open; the
-  // organism's `liveAnnouncement` computed reads both to resolve
-  // the rich rollback phrase. Both are primitives, so default
-  // `Object.is` equality is correct — no `equal` fn needed.
+  // Persistence-of-error surface — see `CngxTabGroupHost.lastFailedIndex`
+  // and `originIndexDuringCommit` for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
   private readonly originIndexDuringCommitState = signal<number | undefined>(
     undefined,
@@ -240,7 +234,7 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       if (accept) {
         // Window closes on success — origin label no longer needed;
         // clear the rejection flag if the user re-picked the failed
-        // target successfully (axis 4a).
+        // target successfully.
         this.originIndexDuringCommitState.set(undefined);
         if (this.lastFailedIndexState() === target) {
           this.lastFailedIndexState.set(undefined);

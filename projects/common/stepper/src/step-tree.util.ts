@@ -73,6 +73,11 @@ export function stepTreeEqual(
  * suitable for projections that synthesise `-1` placeholders for
  * those fields — use {@link stepNodesEqual} instead.
  *
+ * @internal Exported from `public-api.ts` so the cngx-stepper and
+ * cngx-mat-stepper Level-4 organisms can read the same memoization
+ * comparator across the secondary-entry boundary (Sheriff forbids
+ * deep-relative imports). Not consumer surface — the `@internal`
+ * tag encodes that intent.
  * @category interactive
  */
 export function flatStepsEqual(

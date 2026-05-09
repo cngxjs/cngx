@@ -33,12 +33,7 @@ export {
   type CngxStepPanelHost,
 } from './src/step-panel-host.token';
 
-export {
-  flattenStepTree,
-  stepTreeEqual,
-  flatStepsEqual,
-  stepNodesEqual,
-} from './src/step-tree.util';
+export { flatStepsEqual } from './src/step-tree.util';
 
 export { CngxStep } from './src/step.directive';
 export { CngxStepGroup } from './src/step-group.directive';
