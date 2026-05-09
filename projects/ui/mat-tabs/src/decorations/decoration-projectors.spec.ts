@@ -286,6 +286,167 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     expect(updatedSpan?.textContent).toBe('Reverted to "Settings".');
   });
 
+  it('skips DOM mutation when the same failedHandleId is re-emitted (short-circuit on identical input)', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+    // `equal: () => false` bypasses signal's default Object.is dedup
+    // so every `set()` re-fires the consuming effect — simulating an
+    // upstream where `tabs()`-driven churn re-evaluates a `computed`
+    // whose memoization the projector cannot rely on (e.g. a future
+    // consumer pushing a custom equality fn). Without the projector's
+    // own short-circuit slot, the second identical emission would
+    // clear+remount the decoration mid-flight.
+    const failedHandleId = signal<string | null>(null, {
+      equal: () => false,
+    });
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted.');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+    const initialSpan = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(initialSpan).not.toBeNull();
+
+    // Re-emit the same id — the slot guard returns early, the
+    // descriptor span identity is preserved, and AT readers
+    // mid-announcement keep their referenced node.
+    failedHandleId.set('cngx-mat-tab-1');
+    TestBed.flushEffects();
+
+    const sameSpan = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(sameSpan).toBe(initialSpan);
+    expect(target.classList.contains('cngx-mat-tab--error')).toBe(true);
+  });
+
+  it('A→null→A re-emissions remount the decoration fresh after clearing', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted.');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+    const firstSpan = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(firstSpan).not.toBeNull();
+
+    // Clear — decoration leaves the DOM, slot returns to null.
+    failedHandleId.set(null);
+    failedIndex.set(undefined);
+    TestBed.flushEffects();
+    expect(
+      target.querySelector('span.cngx-sr-only#cngx-mat-tab-1-rejected'),
+    ).toBeNull();
+    expect(target.classList.contains('cngx-mat-tab--error')).toBe(false);
+
+    // Re-mount the same id — must produce a fresh decoration. The
+    // short-circuit slot was reset to null on the clear, so the
+    // re-application path runs in full.
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+    const remountedSpan = target.querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-1-rejected',
+    );
+    expect(remountedSpan).not.toBeNull();
+    expect(remountedSpan).not.toBe(firstSpan);
+    expect(target.classList.contains('cngx-mat-tab--error')).toBe(true);
+  });
+
+  it('A→B→A re-emissions clear+apply twice — moving the decoration each transition', () => {
+    const { host } = setupHost();
+    const hostEl = buildHostWithButtons();
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted.');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    const buttons = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab');
+
+    // Mount A on tab 0.
+    failedHandleId.set('cngx-mat-tab-A');
+    failedIndex.set(0);
+    TestBed.flushEffects();
+    const spanA1 = buttons[0].querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-A-rejected',
+    );
+    expect(spanA1).not.toBeNull();
+    expect(buttons[0].classList.contains('cngx-mat-tab--error')).toBe(true);
+
+    // Move to B on tab 1 — clears tab 0, applies tab 1.
+    failedHandleId.set('cngx-mat-tab-B');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+    expect(buttons[0].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(
+      buttons[0].querySelector('span.cngx-sr-only#cngx-mat-tab-A-rejected'),
+    ).toBeNull();
+    const spanB = buttons[1].querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-B-rejected',
+    );
+    expect(spanB).not.toBeNull();
+    expect(buttons[1].classList.contains('cngx-mat-tab--error')).toBe(true);
+
+    // Move back to A on tab 0 — clears tab 1, applies tab 0 fresh.
+    failedHandleId.set('cngx-mat-tab-A');
+    failedIndex.set(0);
+    TestBed.flushEffects();
+    expect(buttons[1].classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(
+      buttons[1].querySelector('span.cngx-sr-only#cngx-mat-tab-B-rejected'),
+    ).toBeNull();
+    const spanA2 = buttons[0].querySelector<HTMLSpanElement>(
+      'span.cngx-sr-only#cngx-mat-tab-A-rejected',
+    );
+    expect(spanA2).not.toBeNull();
+    // The mid-cycle clear means the second mount is a fresh element,
+    // not the original span — distinguishes this axis from the
+    // identical-id short-circuit case above.
+    expect(spanA2).not.toBe(spanA1);
+    expect(buttons[0].classList.contains('cngx-mat-tab--error')).toBe(true);
+  });
+
   it('moves the decoration when failedIndex shifts to a different tab', () => {
     const { host } = setupHost();
     const hostEl = buildHostWithButtons();

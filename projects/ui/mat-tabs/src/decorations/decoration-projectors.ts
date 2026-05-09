@@ -142,6 +142,16 @@ export function createMatTabRejectionDecoration(
   let decoratedEl: HTMLElement | null = null;
   let decoratedSpan: HTMLElement | null = null;
   let priorAriaDescribedby: string | null = null;
+  // Slot tracks the id whose decoration is currently mounted (or
+  // `null` when cleared). Used by the apply effect below to
+  // short-circuit on structurally-identical re-emissions of
+  // `failedHandleId` — Pillar 1: every signal-driven side effect
+  // must be a no-op when its observable input has not meaningfully
+  // changed. Without this slot, a `tabs()`-driven re-eval that
+  // returns the same id forces a `clearDecoration` + `applyDecorationAt`
+  // round-trip, mid-flight clobbering AT readers and adding O(n)
+  // DOM work per tab-list churn.
+  let lastAppliedId: string | null = null;
 
   const clearDecoration = (): void => {
     if (!decoratedEl || !decoratedSpan) {
@@ -203,16 +213,22 @@ export function createMatTabRejectionDecoration(
     effect(() => {
       const id = opts.failedHandleId();
       untracked(() => {
+        if (id === lastAppliedId) {
+          return;
+        }
         if (id === null) {
           clearDecoration();
+          lastAppliedId = null;
           return;
         }
         const idx = opts.failedIndex();
         if (idx === undefined) {
           clearDecoration();
+          lastAppliedId = null;
           return;
         }
         applyDecorationAt(idx, id);
+        lastAppliedId = id;
       });
     });
 
