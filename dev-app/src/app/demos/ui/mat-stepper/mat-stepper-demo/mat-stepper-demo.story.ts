@@ -11,6 +11,7 @@ export const STORY: DemoSpec = {
     "import { Observable } from 'rxjs';",
     "import { CngxStep, CngxStepContent, type CngxStepperCommitAction } from '@cngx/common/stepper';",
     "import { CngxMatStepper } from '@cngx/ui/mat-stepper';",
+    "import { MatStepperModule } from '@angular/material/stepper';",
   ],
   setup: `
   protected readonly active = signal(0);
@@ -83,6 +84,41 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top:var(--demo-grid-gap, 12px)">
     <div class="event-row"><span class="event-label">Active step</span><span class="event-value">{{ active() }}</span></div>
   </div>`,
+    },
+    {
+      title: 'Material indicator override via <ng-template matStepperIcon>',
+      subtitle:
+        'Project Material\'s native <code>&lt;ng-template matStepperIcon="<state>"&gt;</code> directly inside <code>&lt;cngx-mat-stepper&gt;</code> — the wrapper forwards the templates into <code>MatStepper._iconOverrides</code> so consumers reach the indicator chrome through Material\'s own customisation API. The cngx Phase-3 <code>*cngxStepIndicator</code> slot is intentionally CNGX-skin-only; on the Material variant Material owns the indicator template, and the matStepperIcon path is the proper override surface (closes <code>stepper-accepted-debt §4</code>). Toggle "advance" to walk through "number" → "edit" → "done" states and see the override fire on each.',
+      imports: [
+        'CngxMatStepper',
+        'CngxStep',
+        'CngxStepContent',
+        'MatStepperModule',
+      ],
+      template: `
+  <div role="group" aria-label="Override controls" class="event-row" style="gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+    <button type="button" class="chip" (click)="active.set(((active() + 1) % 3))">advance</button>
+  </div>
+  <cngx-mat-stepper [(activeStepIndex)]="active" aria-label="Material wizard with custom icons">
+    <ng-template matStepperIcon="number" let-index="index">
+      <span aria-hidden="true" style="font-weight:600">★{{ index + 1 }}</span>
+    </ng-template>
+    <ng-template matStepperIcon="edit">
+      <span aria-hidden="true">✎</span>
+    </ng-template>
+    <ng-template matStepperIcon="done">
+      <span aria-hidden="true">✔</span>
+    </ng-template>
+    <div cngxStep label="One">
+      <ng-template cngxStepContent><p>Step one body.</p></ng-template>
+    </div>
+    <div cngxStep label="Two">
+      <ng-template cngxStepContent><p>Step two body.</p></ng-template>
+    </div>
+    <div cngxStep label="Three">
+      <ng-template cngxStepContent><p>Step three body.</p></ng-template>
+    </div>
+  </cngx-mat-stepper>`,
     },
   ],
 };
