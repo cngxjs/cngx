@@ -24,5 +24,9 @@ export {
   withAnchorRetryAttempts,
   withHalfWiredSlotSink,
 } from './src/mat-tabs-config';
-export { createMatTabHandle } from './src/material-bridge/handle';
+export {
+  CNGX_MAT_TAB_HANDLE_FACTORY,
+  createMatTabHandle,
+  type CngxMatTabHandleFactory,
+} from './src/material-bridge/handle';
 export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';

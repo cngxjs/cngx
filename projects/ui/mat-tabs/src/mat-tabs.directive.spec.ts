@@ -31,6 +31,11 @@ import {
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
+import {
+  CNGX_MAT_TAB_HANDLE_FACTORY,
+  createMatTabHandle,
+  type CngxMatTabHandleFactory,
+} from './material-bridge/handle';
 
 interface StubAggregatorHandle {
   contract: CngxErrorAggregatorContract;
@@ -1381,5 +1386,32 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(liveRegion.textContent).toBe(
       'Could not save changes — reverted to "One".',
     );
+  });
+
+  test('axis 35: CNGX_MAT_TAB_HANDLE_FACTORY swap — viewProviders override is honoured', async () => {
+    const calls: string[] = [];
+    const wrappedFactory: CngxMatTabHandleFactory = (tab, idSeed, injector) => {
+      const setup = createMatTabHandle(tab, idSeed, injector);
+      calls.push(setup.handle.id);
+      return setup;
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_MAT_TAB_HANDLE_FACTORY, useValue: wrappedFactory },
+      ],
+    });
+    const { presenter } = await setupPlumbing();
+    expect(presenter.tabs().length).toBe(3);
+    expect(calls.length).toBe(3);
+    expect(new Set(calls).size).toBe(3);
+  });
+
+  test('axis 36: CNGX_MAT_TAB_HANDLE_FACTORY default — token resolves to createMatTabHandle without override', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const resolved = TestBed.inject(CNGX_MAT_TAB_HANDLE_FACTORY);
+    expect(resolved).toBe(createMatTabHandle);
   });
 });

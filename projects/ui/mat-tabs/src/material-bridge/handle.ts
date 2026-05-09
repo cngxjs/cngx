@@ -1,5 +1,6 @@
 import {
   computed,
+  InjectionToken,
   type Injector,
   signal,
   type Signal,
@@ -136,3 +137,49 @@ export function createMatTabHandle(
     errorAggregator,
   };
 }
+
+/**
+ * Factory signature for {@link createMatTabHandle}. The DI token
+ * {@link CNGX_MAT_TAB_HANDLE_FACTORY} resolves to a function with
+ * this exact shape — overrides match it identically.
+ *
+ * @category material-bridge
+ */
+export type CngxMatTabHandleFactory = typeof createMatTabHandle;
+
+/**
+ * DI token fronting the per-tab handle factory used by the
+ * `[cngxMatTabs]` instrumentation directive. Default is
+ * {@link createMatTabHandle}.
+ *
+ * Symmetric with the stepper sibling
+ * `CNGX_MAT_STEP_HANDLE_FACTORY` and with `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`
+ * — every Material-bridge logic block ships the same swap surface so
+ * consumers can layer telemetry, alternate id strategies, or
+ * test-environment id keying via `providers` / `viewProviders`
+ * without forking the directive.
+ *
+ * Tracked-debt: ships under family-uniformity staging (single
+ * in-package consumer today). See `tabs-accepted-debt §10`.
+ *
+ * @example
+ * ```ts
+ * providers: [
+ *   {
+ *     provide: CNGX_MAT_TAB_HANDLE_FACTORY,
+ *     useValue: ((tab, idSeed, injector) => {
+ *       const setup = createMatTabHandle(tab, idSeed, injector);
+ *       reportTabRegistered(setup.handle.id);
+ *       return setup;
+ *     }) satisfies CngxMatTabHandleFactory,
+ *   },
+ * ]
+ * ```
+ *
+ * @category material-bridge
+ */
+export const CNGX_MAT_TAB_HANDLE_FACTORY =
+  new InjectionToken<CngxMatTabHandleFactory>('CNGX_MAT_TAB_HANDLE_FACTORY', {
+    providedIn: 'root',
+    factory: () => createMatTabHandle,
+  });
