@@ -1291,26 +1291,32 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(destroyed).toBe(true);
   });
 
-  test('axis 32: live-region polite span is mounted as a child of the host with aria-live attributes', async () => {
+  test('axis 32: live-region polite span is mounted under document.body with aria-live attributes', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
-    const { fixture } = await setupPlumbing();
-    const matTabGroupEl = fixture.debugElement.query(
-      (el) => el.componentInstance instanceof MatTabGroup,
-    ).nativeElement as HTMLElement;
-    const liveRegions = matTabGroupEl.querySelectorAll<HTMLElement>(
-      ':scope > span[aria-live]',
+    // Snapshot the body-scope live-region count BEFORE setup so the
+    // assertion handles a non-clean DOM (other test fixtures may
+    // leave their own regions; the per-test count delta is what
+    // matters).
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
+    await setupPlumbing();
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
     );
-    expect(liveRegions.length).toBe(1);
-    const liveRegion = liveRegions[0];
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
     expect(liveRegion.getAttribute('aria-live')).toBe('polite');
     expect(liveRegion.getAttribute('aria-atomic')).toBe('true');
     expect(liveRegion.getAttribute('role')).toBe('status');
     expect(liveRegion.classList.contains('cngx-sr-only')).toBe(true);
     // Empty between transitions — the live-region stays quiet on
     // no-op CD ticks so AT readers don't hear an utterance for every
-    // mat-tab-group instantiation.
+    // mat-tab-group instantiation. Body-scope placement (CDK
+    // LiveAnnouncer convention) keeps the span outside Material's
+    // <mat-tab-group> subtree so MDC tolerance is irrelevant.
     expect(liveRegion.textContent).toBe('');
   });
 
@@ -1318,6 +1324,9 @@ describe('CngxMatTabs instrumentation directive', () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
     const fixture = TestBed.createComponent(CommitHostCmp);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -1325,23 +1334,26 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
-    const matTabGroupEl = matEl.nativeElement as HTMLElement;
-    const liveRegion = matTabGroupEl.querySelector<HTMLElement>(
-      ':scope > span[aria-live]',
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
     );
-    expect(liveRegion).toBeTruthy();
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
 
     presenter.select(2);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.commitState.status()).toBe('pending');
-    expect(liveRegion?.textContent).toBe('Switching tab…');
+    expect(liveRegion.textContent).toBe('Switching tab…');
   });
 
   test('axis 34: live-region announces commitRolledBackTo(originLabel) when an optimistic commit rejects', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
     const fixture = TestBed.createComponent(CommitHostCmp);
     // Synchronous-rejection commit so the error arm fires inside the
     // single CD pass following the click — no need to flush a real
@@ -1354,11 +1366,11 @@ describe('CngxMatTabs instrumentation directive', () => {
       (el) => el.componentInstance instanceof MatTabGroup,
     );
     const presenter = matEl.injector.get(CngxTabGroupPresenter);
-    const matTabGroupEl = matEl.nativeElement as HTMLElement;
-    const liveRegion = matTabGroupEl.querySelector<HTMLElement>(
-      ':scope > span[aria-live]',
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
     );
-    expect(liveRegion).toBeTruthy();
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
 
     presenter.select(2);
     fixture.detectChanges();
@@ -1366,7 +1378,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(presenter.lastFailedIndex()).toBe(2);
     // CommitHostCmp's first tab labels are 'One' / 'Two' / 'Three';
     // the rollback origin is 'One' (active before the failed pick).
-    expect(liveRegion?.textContent).toBe(
+    expect(liveRegion.textContent).toBe(
       'Could not save changes — reverted to "One".',
     );
   });

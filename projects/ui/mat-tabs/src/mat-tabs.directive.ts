@@ -312,12 +312,14 @@ export class CngxMatTabs {
 
     // Mount the polite ARIA live region — pillar-2 parity with the
     // cngx-native `<cngx-tab-group>`'s `<span cngxLiveRegion>`. The
-    // helper replicates the directive's host bindings imperatively
-    // (this directive cannot apply `cngxLiveRegion` declaratively
-    // because it owns no template) and keeps textContent in sync
-    // with the `liveAnnouncement` signal.
+    // helper attaches the span at `document.body` (CDK
+    // `LiveAnnouncer` placement convention) so Material's MDC
+    // tolerance at the `<mat-tab-group>` host root is irrelevant.
+    // Replicates the `CngxLiveRegion` directive's host bindings
+    // imperatively because this attribute directive owns no
+    // template; keeps textContent in sync with the
+    // `liveAnnouncement` signal.
     mountLiveRegionAnnouncer({
-      hostEl: this.hostEl,
       announcement: this.rejectionState.liveAnnouncement,
       renderer: this.renderer,
       injector: this.injector,

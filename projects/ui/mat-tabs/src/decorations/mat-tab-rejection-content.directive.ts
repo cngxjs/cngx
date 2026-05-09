@@ -22,6 +22,18 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * verbatim (typically `commitRolledBackTo(originLabel)` when the
  * origin is resolvable, `commitFailedRetry` otherwise).
  *
+ * **Re-instantiation warning.** The decoration projector destroys
+ * the embedded view and creates a fresh one on every `descriptorText`
+ * re-emission — typical when the rollback origin label resolves
+ * later than the failed-handle id (e.g. `presenter.tabs()` re-emits
+ * mid-rejection and the origin label flows in on the second tick).
+ * The slot template runs to the end of its lifecycle each time;
+ * consumers wiring expensive subtrees (e.g. an embedded chart, a
+ * complex form) should treat this as a destroy + remount cycle and
+ * lift heavy state into a sibling `*ngTemplateOutlet`-friendly
+ * structure outside the slot. Cheap text + simple markup (the
+ * intended use) sees no observable difference.
+ *
  * @category interactive
  */
 export interface CngxMatTabRejectionContentContext {
@@ -61,7 +73,9 @@ export interface CngxMatTabRejectionContentContext {
  *   2. When Phase 2's `CNGX_MAT_TABS_CONFIG` infrastructure
  *      lands on main, the config-tier
  *      `CNGX_MAT_TABS_CONFIG.templates.rejection` slot fills the
- *      middle tier (planned follow-up — gated by Phase 2 merge).
+ *      middle tier (planned follow-up — gated by Phase 2 merge;
+ *      `tabs-accepted-debt §12` binds the staging with
+ *      Re-Eval Triggers).
  *   3. Library default — imperative `Renderer2.createElement('span')`
  *      with `textContent = fallbackText` (the resolved
  *      `commitRolledBackTo(originLabel)` / `commitFailedRetry`

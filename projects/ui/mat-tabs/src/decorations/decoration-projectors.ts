@@ -605,6 +605,9 @@ export function createMatTabAggregatorDecoration(
       const view = vcr.createEmbeddedView(tpl, context, {
         injector: opts.injector,
       });
+      // See the rejection projector's identical call site for the
+      // detached-view CD rationale (rootNodes move out of the
+      // embedded view's logical parent into an SR-only span).
       view.detectChanges();
       for (const node of view.rootNodes) {
         opts.renderer.appendChild(entry.descriptorSpan, node);
