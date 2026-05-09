@@ -12,6 +12,8 @@ import type { MatTab } from '@angular/material/tabs';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import type { CngxTabHandle } from '@cngx/common/tabs';
 
+import type { MaterialPrivateSurfaces } from './private-surfaces';
+
 /**
  * Wiring bundle returned from {@link createMatTabHandle}. The
  * directive holds the writable `errorAggregator` slot so the
@@ -98,7 +100,16 @@ export function createMatTabHandle(
   // Forcing inequality flips every emission into a real signal-write
   // so the computed-derived projection picks up the latest
   // `matTab.textLabel` / `matTab.disabled` synchronously.
-  const stateChangeTrigger = toSignal(matTab._stateChanges, {
+  // Reach `_stateChanges` through the typed view from
+  // `MaterialPrivateSurfaces.StateChangeSource` so a grep for the
+  // namespace member lands on this consumer site, not just the
+  // declaration. Material's public `MatTab` typing already exposes
+  // `_stateChanges` as a `readonly Subject<void>`, so the typed
+  // local is documentation-only at runtime — its load-bearing job
+  // is to anchor the family-shared upgrade-watch surface (see
+  // `private-surfaces.ts` JSDoc + `tabs-accepted-debt §5`).
+  const stateChangeSource: MaterialPrivateSurfaces.StateChangeSource = matTab;
+  const stateChangeTrigger = toSignal(stateChangeSource._stateChanges, {
     injector,
     initialValue: undefined,
     equal: () => false,
