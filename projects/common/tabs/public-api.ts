@@ -107,15 +107,6 @@ export {
   type CngxTabGroupAnnouncements,
   type CngxTabGroupAnnouncementsOptions,
 } from './src/announcements/tab-group-announcements';
-// `CNGX_TABS_GLYPHS` is exported with an `@internal` JSDoc tag —
-// the cngx-tab-group organism in `@cngx/ui/tabs` reads the single
-// source of truth for default glyphs across the cross-package
-// layer boundary (Sheriff forbids deep relative imports). Public-
-// API intent is enforced by the JSDoc tag; consumers customise
-// glyphs via `*cngxTabErrorBadge` / `*cngxTabRejectionIcon` slot
-// directives or the `withTabErrorBadgeTemplate` /
-// `withTabRejectionIconTemplate` config-cascade features. Same
-// shape as Phase-3 `CNGX_STEPPER_GLYPHS`.
 export { CNGX_TABS_GLYPHS } from './src/glyphs';
 export {
   CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY,
@@ -127,12 +118,6 @@ export {
   type CngxTabOverflowTemplateBindingsOptions,
 } from './src/overflow/overflow-template-cascade';
 
-// Organism helpers — extracted from the Level-4 organism shells so
-// the same shape can be reused (`<cngx-tab-group>` today; future
-// `<cngx-stepper>` / `<cngx-mat-stepper>` if they grow scrolling
-// strips). Behaviour-preserving extraction; not a public-consumer API
-// surface, but exported because the schematic decompose target
-// flattens these helpers into the consumer's project.
 export {
   CNGX_ORGANISM_SCROLL_SYNC_FACTORY,
   createOrganismScrollSync,

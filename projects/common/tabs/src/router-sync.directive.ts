@@ -84,9 +84,8 @@ export class CngxTabsFragmentSync {
                 queryParamsHandling: 'merge',
                 replaceUrl: true,
               });
-        // Swallow rejection silently — the (syncError) Output is
-        // introduced in Phase 5 once consumers have a documented
-        // recovery path.
+        // Router rejections (e.g. cancelled navigation) have no
+        // consumer-facing recovery path — swallow.
         navigation.catch?.(() => undefined);
       });
     });

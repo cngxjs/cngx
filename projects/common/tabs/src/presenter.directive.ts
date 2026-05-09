@@ -128,14 +128,8 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
     () => this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface (Pillar 2 — Kommunikation als
-  // First-Class Concern). `lastFailedIndex` flags the refused
-  // target until the user re-picks it successfully or explicitly
-  // dismisses via `clearLastFailed()`. `originIndexDuringCommit`
-  // is the safe-harbour captured at commit-window open; the
-  // organism's `liveAnnouncement` computed reads both to resolve
-  // the rich rollback phrase. Both are primitives, so default
-  // `Object.is` equality is correct — no `equal` fn needed.
+  // Persistence-of-error surface — see `CngxTabGroupHost.lastFailedIndex`
+  // and `originIndexDuringCommit` for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
   private readonly originIndexDuringCommitState = signal<number | undefined>(
     undefined,

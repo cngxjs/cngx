@@ -46,8 +46,7 @@ import {
  * CNGX-standard tab-group organism. Thin shell composing the
  * {@link CngxTabGroupPresenter} brain with `CngxRovingTabindex` and
  * `CngxFocusRestore` via `hostDirectives`. Material consumers reach
- * for `<cngx-mat-tab-group>` (sibling `@cngx/ui/mat-tabs` entry
- * planned for Phase D3) instead.
+ * for `[cngxMatTabs]` from `@cngx/ui/mat-tabs`.
  *
  * The presenter owns `activeIndex`, `orientation`, `loop`,
  * `commitAction`, `commitMode`; the organism forwards them through
@@ -57,11 +56,10 @@ import {
  * `aria-orientation` is a `computed()` or signal-reading method,
  * never a one-time binding.
  *
- * `CngxLiveRegion` is intentionally NOT composed via
- * `hostDirectives` — its host binding sets `role="status"` which
- * would clobber the wrapper's `role="group"` landmark. Phase 3
- * commit 1 will mount a dedicated `<span cngxLiveRegion>` inside
- * the template for SR announcements.
+ * `CngxLiveRegion` is mounted as a dedicated `<span cngxLiveRegion>`
+ * inside the template rather than composed via `hostDirectives`,
+ * because its `role="status"` would clobber the wrapper's
+ * `role="group"` landmark.
  *
  * @category interactive
  */
