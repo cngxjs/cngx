@@ -49,6 +49,7 @@ import {
   CngxMatTabRejectionContent,
   type CngxMatTabRejectionContentContext,
 } from './decorations/mat-tab-rejection-content.directive';
+import { mountLiveRegionAnnouncer } from './decorations/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 import {
   createMatTabHandle,
@@ -240,25 +241,15 @@ export class CngxMatTabs {
     return this.presenter.tabs()[idx]?.id ?? null;
   });
 
-  // SR descriptor phrase + origin label for the rejection decoration.
-  // Both signals share one source-walk (`lastFailedIndex` →
-  // `originIndexDuringCommit` → `tabs[idx].label()`) via the
-  // package-private `createRejectionState` factory — keeps the
-  // organism class body under the level-4 LOC guard while preserving
-  // the pillar-2 phrasing parity with the cngx-native organism's
-  // `liveAnnouncement` priority chain.
+  // Rejection-state bundle — { descriptorText, originLabel,
+  // liveAnnouncement } sharing a single source-walk via the
+  // `createRejectionState` factory. Keeps the organism under the
+  // level-4 LOC guard while preserving pillar-2 phrasing parity
+  // with the cngx-native `liveAnnouncement` priority chain.
   private readonly rejectionState = createRejectionState(
     this.presenter,
     this.i18n,
   );
-  private readonly rejectionDescriptorText: Signal<string> =
-    this.rejectionState.descriptorText;
-  // Reactive label of the rollback origin — feeds the slot context's
-  // `originLabel` field. Sourced from the same factory as
-  // `rejectionDescriptorText` so the underlying source-walk happens
-  // at most once per state change.
-  private readonly rejectionOriginLabel: Signal<string | undefined> =
-    this.rejectionState.originLabel;
 
   // Resolves the current set of tabs whose bound aggregator wants
   // reveal. Reads each handle's `errorAggregator()` signal, then the
@@ -319,6 +310,20 @@ export class CngxMatTabs {
       untracked(() => this.syncHandles(tabs));
     });
 
+    // Mount the polite ARIA live region — pillar-2 parity with the
+    // cngx-native `<cngx-tab-group>`'s `<span cngxLiveRegion>`. The
+    // helper replicates the directive's host bindings imperatively
+    // (this directive cannot apply `cngxLiveRegion` declaratively
+    // because it owns no template) and keeps textContent in sync
+    // with the `liveAnnouncement` signal.
+    mountLiveRegionAnnouncer({
+      hostEl: this.hostEl,
+      announcement: this.rejectionState.liveAnnouncement,
+      renderer: this.renderer,
+      injector: this.injector,
+      destroyRef: this.destroyRef,
+    });
+
     // Decoration projectors — package-private factories own all
     // DOM-mutation state (`decoratedEl`, `decoratedAggregatorEls`,
     // retry counter, etc.) plus the `effect()` registration. The
@@ -327,13 +332,13 @@ export class CngxMatTabs {
       hostEl: this.hostEl,
       failedHandleId: this.failedHandleId,
       failedIndex: this.presenter.lastFailedIndex,
-      descriptorText: this.rejectionDescriptorText,
+      descriptorText: this.rejectionState.descriptorText,
       renderer: this.renderer,
       injector: this.injector,
       destroyRef: this.destroyRef,
       contentTemplate: this.rejectionContentTemplate,
       viewContainerRef: this.viewContainerRef,
-      originLabel: this.rejectionOriginLabel,
+      originLabel: this.rejectionState.originLabel,
     });
 
     createMatTabAggregatorDecoration({

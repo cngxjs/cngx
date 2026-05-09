@@ -30,6 +30,22 @@ export interface CngxMatTabRejectionState {
    * a rejection is pinned).
    */
   readonly descriptorText: Signal<string>;
+  /**
+   * SR-friendly text rendered inside the polite live-region span.
+   * Mirrors `tab-group.component.ts`'s `liveAnnouncement` rejection
+   * arm so AT users on Material `<mat-tab-group>` get the same
+   * commit-transition narrative as cngx-native:
+   *
+   *   1. `'pending'` → `i18n.commitInFlight`
+   *   2. `'error'` → `commitRolledBackTo(originLabel)` when an
+   *      origin label resolves, `commitFailedRetry` otherwise
+   *   3. anything else → empty string (region stays quiet on no-op
+   *      CD ticks; mat-tabs does not announce success transitions
+   *      because Material's own ARIA already narrates the
+   *      activeIndex change — duplicating would make AT readers
+   *      hear two utterances per nav)
+   */
+  readonly liveAnnouncement: Signal<string>;
 }
 
 /**
@@ -66,5 +82,17 @@ export function createRejectionState(
     return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
   });
 
-  return { originLabel, descriptorText };
+  const liveAnnouncement: Signal<string> = computed(() => {
+    const current = presenter.commitTransition.current();
+    if (current === 'pending') {
+      return i18n.commitInFlight;
+    }
+    if (current === 'error') {
+      const label = originLabel();
+      return label ? i18n.commitRolledBackTo(label) : i18n.commitFailedRetry;
+    }
+    return '';
+  });
+
+  return { originLabel, descriptorText, liveAnnouncement };
 }
