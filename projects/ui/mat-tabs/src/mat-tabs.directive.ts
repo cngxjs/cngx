@@ -52,7 +52,7 @@ import {
 import { mountLiveRegionAnnouncer } from './decorations/live-region';
 import { createRejectionState } from './decorations/rejection-state';
 import {
-  createMatTabHandle,
+  CNGX_MAT_TAB_HANDLE_FACTORY,
   type CngxMatTabHandleSetup,
 } from './material-bridge/handle';
 
@@ -226,6 +226,11 @@ export class CngxMatTabs {
   // primitive at the public Level-2+ surface.
   private readonly setupsByTab = new Map<MatTab, CngxMatTabEntry>();
   private readonly envInjector = inject(EnvironmentInjector);
+  // Per-tab handle factory routed through the DI token so consumers
+  // can wrap it via `providers` / `viewProviders` without forking
+  // the directive. Default `createMatTabHandle`. Symmetric with
+  // `CNGX_MAT_STEP_HANDLE_FACTORY` and `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`.
+  private readonly createHandle = inject(CNGX_MAT_TAB_HANDLE_FACTORY);
 
   private readonly i18n = injectTabsI18n();
 
@@ -458,11 +463,8 @@ export class CngxMatTabs {
       // the handle. Tracked as `tabs-accepted-debt §5` (Material-
       // private `_stateChanges` coupling).
       const childInjector = createEnvironmentInjector([], this.envInjector);
-      const setup = createMatTabHandle(
-        tab,
-        () => nextUid('cngx-mat-tab-'),
-        childInjector,
-      );
+      const idSeed = () => nextUid('cngx-mat-tab-');
+      const setup = this.createHandle(tab, idSeed, childInjector);
       this.setupsByTab.set(tab, { setup, childInjector });
       this.presenter.register(setup.handle);
     }

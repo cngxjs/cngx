@@ -9,6 +9,11 @@ import {
 } from '@cngx/common/stepper';
 
 import { CngxMatStepperBridge } from './mat-stepper.directive';
+import {
+  CNGX_MAT_STEP_HANDLE_FACTORY,
+  createMatStepHandle,
+  type CngxMatStepHandleFactory,
+} from './material-bridge/handle';
 
 interface Plumbing {
   fixture: ReturnType<typeof TestBed.createComponent<HostCmp>>;
@@ -296,6 +301,33 @@ describe('CngxMatStepper instrumentation directive', () => {
     const ids = presenter.flatSteps().map((n) => n.id);
     expect(ids.length).toBe(3);
     expect(new Set(ids).size).toBe(3);
+  });
+
+  test('axis 11: CNGX_MAT_STEP_HANDLE_FACTORY swap — viewProviders override is honoured', async () => {
+    const calls: string[] = [];
+    const wrappedFactory: CngxMatStepHandleFactory = (step, idSeed) => {
+      const setup = createMatStepHandle(step, idSeed);
+      calls.push(setup.handle.id);
+      return setup;
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_MAT_STEP_HANDLE_FACTORY, useValue: wrappedFactory },
+      ],
+    });
+    const { presenter } = await setupPlumbing();
+    expect(presenter.flatSteps().length).toBe(3);
+    expect(calls.length).toBe(3);
+    expect(new Set(calls).size).toBe(3);
+  });
+
+  test('axis 12: CNGX_MAT_STEP_HANDLE_FACTORY default — token resolves to createMatStepHandle without override', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const resolved = TestBed.inject(CNGX_MAT_STEP_HANDLE_FACTORY);
+    expect(resolved).toBe(createMatStepHandle);
   });
 
   test('axis 10: live MatStep.completed — toggling Material completion flips presenter state to "success"', async () => {

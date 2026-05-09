@@ -19,7 +19,7 @@ import {
 import { nextUid } from '@cngx/core/utils';
 
 import {
-  createMatStepHandle,
+  CNGX_MAT_STEP_HANDLE_FACTORY,
   type CngxMatStepHandleSetup,
 } from './material-bridge/handle';
 
@@ -78,6 +78,11 @@ export class CngxMatStepperBridge {
   // `syncHandles` can iterate to find removed steps without a
   // parallel `Set<MatStep>`.
   private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
+  // Per-step handle factory routed through the DI token so consumers
+  // can wrap it (telemetry, alternate id strategy, test-env id
+  // keying) via `providers` / `viewProviders` without forking. Default
+  // is `createMatStepHandle`. Symmetric with `CNGX_MAT_TAB_HANDLE_FACTORY`.
+  private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
 
   constructor() {
     effect(() => {
@@ -118,7 +123,7 @@ export class CngxMatStepperBridge {
       if (this.setupsByStep.has(step)) {
         continue;
       }
-      const setup = createMatStepHandle(step, () => nextUid('cngx-mat-step-'));
+      const setup = this.createHandle(step, () => nextUid('cngx-mat-step-'));
       this.setupsByStep.set(step, setup);
       this.presenter.register(setup.handle);
     }

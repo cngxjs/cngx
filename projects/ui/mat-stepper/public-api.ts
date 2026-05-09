@@ -8,4 +8,8 @@
  */
 export { CngxMatStepper } from './src/mat-stepper.component';
 export { CngxMatStepperBridge } from './src/mat-stepper.directive';
-export { createMatStepHandle } from './src/material-bridge/handle';
+export {
+  CNGX_MAT_STEP_HANDLE_FACTORY,
+  createMatStepHandle,
+  type CngxMatStepHandleFactory,
+} from './src/material-bridge/handle';
