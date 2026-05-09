@@ -1,4 +1,4 @@
-import { Component, type TemplateRef } from '@angular/core';
+import { Component, signal, type TemplateRef } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
@@ -351,6 +351,142 @@ describe('CngxMatStepper organism', () => {
     // mount cycle.
     expect(setterWrites).toBe(0);
     expect(lastSetterValue).toBeUndefined();
+  });
+
+  it('stepLabelContextFor returns the same context object reference across re-renders for a stable node.id', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (node: CngxStepNode) => unknown;
+      stepsOnly: () => readonly CngxStepNode[];
+    };
+    const [first] = wrapper.stepsOnly();
+    expect(first).toBeTruthy();
+
+    // Two calls for the same node MUST return identity-equal context
+    // objects. *ngTemplateOutlet's Object.is input-diff short-circuits
+    // the embedded-view rebind on stable refs — the cache is what
+    // restores that identity-stability guarantee.
+    const ctx1 = wrapper.stepLabelContextFor(first);
+    const ctx2 = wrapper.stepLabelContextFor(first);
+    expect(ctx2).toBe(ctx1);
+  });
+
+  it('stepLabelContextFor mutates cached fields in place so reactive state stays fresh on a stable node.id', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (
+        node: CngxStepNode,
+      ) => { active: boolean; node: CngxStepNode };
+      stepsOnly: () => readonly CngxStepNode[];
+    };
+    const presenter = fixture.debugElement
+      .query((el) => el.componentInstance instanceof CngxMatStepper)
+      .injector.get(CngxStepperPresenter);
+    const [first, second] = wrapper.stepsOnly();
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+
+    // Step 0 is initially active.
+    const ctx = wrapper.stepLabelContextFor(first);
+    expect(ctx.active).toBe(true);
+
+    // Move to step 1; reread the SAME cached context object — its
+    // `active` field must reflect the new state via in-place mutation.
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const ctxAfter = wrapper.stepLabelContextFor(first);
+    expect(ctxAfter).toBe(ctx);
+    expect(ctxAfter.active).toBe(false);
+  });
+
+  it('stepLabelContextFor cache evicts stale ids when a step is removed and allocates a fresh entry on re-add', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMatStepper, CngxStep],
+      template: `
+        <cngx-mat-stepper aria-label="Dynamic">
+          <div cngxStep label="A"></div>
+          @if (showB()) {
+            <div cngxStep label="B"></div>
+          }
+        </cngx-mat-stepper>
+      `,
+    })
+    class DynamicHost {
+      protected readonly showB = signal(true);
+      setShowB(v: boolean): void {
+        this.showB.set(v);
+      }
+    }
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DynamicHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (node: CngxStepNode) => unknown;
+      stepsOnly: () => readonly CngxStepNode[];
+      stepLabelContextCache: Map<string, unknown>;
+    };
+
+    const stepsBefore = wrapper.stepsOnly();
+    expect(stepsBefore.length).toBe(2);
+    // Prime the cache with both ids.
+    wrapper.stepLabelContextFor(stepsBefore[0]);
+    wrapper.stepLabelContextFor(stepsBefore[1]);
+    const idA = stepsBefore[0].id;
+    const idB = stepsBefore[1].id;
+    expect(wrapper.stepLabelContextCache.has(idA)).toBe(true);
+    expect(wrapper.stepLabelContextCache.has(idB)).toBe(true);
+    const cachedA = wrapper.stepLabelContextCache.get(idA);
+
+    // Drop step B. The flatSteps effect prunes stale ids; the
+    // cache must release the orphan entry.
+    fixture.componentInstance['setShowB'](false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(wrapper.stepLabelContextCache.has(idA)).toBe(true);
+    expect(wrapper.stepLabelContextCache.has(idB)).toBe(false);
+    // Surviving id keeps its entry — same object reference.
+    expect(wrapper.stepLabelContextCache.get(idA)).toBe(cachedA);
+
+    // Re-add step B; the new step's id may collide with the prior
+    // id (deterministic generator) or differ. Either way, calling
+    // stepLabelContextFor for the new node MUST allocate a fresh
+    // entry (cache was empty for any new id) AND keep step A's
+    // entry referentially stable.
+    fixture.componentInstance['setShowB'](true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const stepsAfter = wrapper.stepsOnly();
+    expect(stepsAfter.length).toBe(2);
+    wrapper.stepLabelContextFor(stepsAfter[1]);
+    expect(wrapper.stepLabelContextCache.has(stepsAfter[1].id)).toBe(true);
+    expect(wrapper.stepLabelContextCache.get(idA)).toBe(cachedA);
   });
 
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {
