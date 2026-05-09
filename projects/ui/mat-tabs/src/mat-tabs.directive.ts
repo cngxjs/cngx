@@ -39,6 +39,7 @@ import {
   createMatTabRejectionDecoration,
   type CngxMatTabAggregatorErrorEntry,
 } from './decorations/decoration-projectors';
+import { CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK } from './decorations/half-wired-slot-sink';
 import {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
@@ -298,6 +299,11 @@ export class CngxMatTabs {
       destroyRef: this.destroyRef,
       contentTemplate: this.aggregatorContentTemplate,
       viewContainerRef: this.viewContainerRef,
+      // Half-wired-slot diagnostic — routes through the DI token so
+      // production telemetry (Sentry, custom logger) can pick it up.
+      // Default token value is a dev-mode `console.warn` for backward
+      // compatibility with the pre-token contract.
+      onHalfWiredSlot: inject(CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK),
     });
 
     this.destroyRef.onDestroy(() => {

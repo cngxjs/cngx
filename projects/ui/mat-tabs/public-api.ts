@@ -9,5 +9,9 @@ export {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
 } from './src/decorations/mat-tab-aggregator-content.directive';
+export {
+  CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK,
+  type CngxMatTabHalfWiredSlotSink,
+} from './src/decorations/half-wired-slot-sink';
 export { createMatTabHandle } from './src/material-bridge/handle';
 export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';

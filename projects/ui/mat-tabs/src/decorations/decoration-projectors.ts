@@ -382,11 +382,19 @@ export interface CngxMatTabAggregatorDecorationOptions {
    */
   readonly viewContainerRef?: ViewContainerRef;
   /**
-   * Optional dev-mode sink invoked when exactly one of
-   * `contentTemplate` / `viewContainerRef` is supplied (the
-   * half-wired-slot misconfiguration). Defaults to a
-   * `console.warn` gated on `ngDevMode`. Override only for testing
-   * — in production the default is what reaches developers.
+   * Diagnostic sink invoked when exactly one of `contentTemplate` /
+   * `viewContainerRef` is supplied (the half-wired-slot
+   * misconfiguration). Fires unconditionally — the projector itself
+   * is mode-agnostic; the production-vs-dev gate lives in whichever
+   * sink the caller passes. The `[cngxMatTabs]` directive resolves
+   * this from the
+   * {@link CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK} token, whose default
+   * keeps the dev-only `console.warn` for backward compatibility but
+   * can be overridden via `providers` / `viewProviders` to wire
+   * Sentry breadcrumbs, a CI fail-fast, or any other production
+   * telemetry path. Direct callers of this factory who skip the
+   * directive may pass any sink they like; omitting falls back to a
+   * dev-mode warn so historical behaviour is preserved.
    */
   readonly onHalfWiredSlot?: (
     missing: 'contentTemplate' | 'viewContainerRef',
