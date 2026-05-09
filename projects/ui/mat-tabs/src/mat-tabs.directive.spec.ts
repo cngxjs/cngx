@@ -1414,4 +1414,52 @@ describe('CngxMatTabs instrumentation directive', () => {
     const resolved = TestBed.inject(CNGX_MAT_TAB_HANDLE_FACTORY);
     expect(resolved).toBe(createMatTabHandle);
   });
+
+  test('axis 37: user-click rejection — clicking a Material tab whose commitAction returns false lands cngx-mat-tab--error on the clicked button', async () => {
+    // Existing rejection axes (11–13) drive `presenter.select(...)`
+    // directly; that path bypasses Material's MDC click handler and
+    // therefore did not catch the user-flow gap where the Material
+    // click + bidirectional-sync round-trip needs to land the cngx
+    // rejection class on the clicked button (the failure mode behind
+    // the *cngxMatTabRejectionContent demo "no outline" report). The
+    // CSS-cascade specificity that Material's `.mdc-tab` requires
+    // lives in `mat-tabs.css` and is not unit-testable here — jsdom
+    // does not run Material's component-scoped <style> injection — so
+    // this axis pins ONLY the JS contract (class lands, presenter rolls
+    // back, Material rolls back). The skin's specificity bump to
+    // `.mat-mdc-tab.cngx-mat-tab--error` is the matching CSS guarantee
+    // and carries an inline JSDoc that names its load-bearing role.
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const buttons = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      '.mat-mdc-tab',
+    );
+    expect(buttons.length).toBe(3);
+    (buttons[1] as HTMLElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      (buttons[1] as HTMLElement).classList.contains('cngx-mat-tab--error'),
+    ).toBe(true);
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    expect(presenter.lastFailedIndex()).toBe(1);
+    expect(presenter.activeIndex()).toBe(0);
+    expect((matEl.componentInstance as MatTabGroup).selectedIndex).toBe(0);
+  });
+
 });
