@@ -557,8 +557,11 @@ describe('CngxTabOverflow', () => {
     // listbox/option implies aria-selected state per ARIA 1.2 §5.4
     // which does not apply to a transient navigation popup.
     //
-    //   trigger → role="combobox" (preserved — AD-on-trigger pattern)
-    //             + aria-haspopup="menu"
+    //   trigger → plain `<button>` (no explicit role; default button
+    //             role applies) + aria-haspopup="menu". The combobox
+    //             role is deliberately NOT used: WAI-ARIA 1.2 forbids
+    //             pairing combobox with aria-haspopup="menu" — the
+    //             role must point at listbox/tree/grid/dialog.
     //   popover surface → role="menu" (the popup target)
     //   <ul> → role="presentation" so each <li role="menuitem"> is a
     //         direct child of the menu landmark in the AT tree.
@@ -576,6 +579,11 @@ describe('CngxTabOverflow', () => {
     const list = fixture.nativeElement.querySelector(
       '.cngx-tab-overflow__list',
     ) as HTMLElement;
+    // Trigger is a plain button — no explicit role attribute (regression
+    // fence: a future re-introduction of role="combobox" would fail
+    // because combobox + aria-haspopup="menu" is invalid per WAI-ARIA 1.2).
+    expect(trigger.tagName).toBe('BUTTON');
+    expect(trigger.hasAttribute('role')).toBe(false);
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     expect(popoverSurface.getAttribute('role')).toBe('menu');
     expect(list.getAttribute('role')).toBe('presentation');

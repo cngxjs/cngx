@@ -210,18 +210,22 @@ export class CngxTabOverflow {
   // identity-different but length-equal value (flicker prevention).
   protected readonly hiddenCount = computed(() => this.hiddenTabs().length);
 
-  // ARIA menu-button pattern — the trigger button keeps focus, the
-  // popover surface carries `role="menu"`, AD steers
-  // `aria-activedescendant` on the trigger as the user navigates with
-  // ArrowUp/Down/Home/End/typeahead. The popover is a quick-jump
-  // navigation surface (selecting a hidden tab triggers selectById
-  // — not a value-commit), so menu/menuitem is the spec-correct
-  // contract; listbox/option implies persistent `aria-selected`
-  // state that does not apply here. Both the AD-items projection
-  // (with its structural-equal guard) and the item-id formatter
-  // live in the shared cascade factory under `@cngx/common/tabs` so
-  // future consumers (e.g. an alternative tab-strip overflow shell)
-  // can reuse the same DOM-id contract.
+  // ARIA menu-button pattern — the trigger is a plain `<button>` (no
+  // explicit role; default button role applies) with
+  // `aria-haspopup="menu"`. The popover surface carries `role="menu"`
+  // and AD steers `aria-activedescendant` on the trigger as the user
+  // navigates with ArrowUp/Down/Home/End/typeahead. The popover is a
+  // quick-jump navigation surface (selecting a hidden tab triggers
+  // selectById — not a value-commit), so menu/menuitem is the
+  // spec-correct contract; listbox/option implies persistent
+  // `aria-selected` state that does not apply here. The combobox role
+  // is deliberately NOT used: WAI-ARIA 1.2 §combobox requires
+  // `aria-haspopup` to be `listbox`/`tree`/`grid`/`dialog`, and
+  // pairing `combobox` + `menu` is invalid. Both the AD-items
+  // projection (with its structural-equal guard) and the item-id
+  // formatter live in the shared cascade factory under
+  // `@cngx/common/tabs` so future consumers (e.g. an alternative
+  // tab-strip overflow shell) can reuse the same DOM-id contract.
   protected readonly adItemId = tabOverflowOptionId;
 
   // Resolved tabs config — read once at construction so downstream
