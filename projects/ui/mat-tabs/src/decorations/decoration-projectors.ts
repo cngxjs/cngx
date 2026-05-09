@@ -60,6 +60,54 @@ import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-co
  */
 
 /**
+ * Diff-restore the `aria-describedby` token list on a button after a
+ * decoration's descriptor span has been detached. The decoration's own
+ * id token is dropped from whatever the attribute currently holds —
+ * any third-party token written between apply and clear (e.g. a
+ * tooltip ref bound after the projector mounted, an `mat-mdc-tab`'s
+ * own runtime additions) is preserved.
+ *
+ * Whole-attribute restore (the pre-this-fix path) clobbered any such
+ * write because it overwrote the attribute with the snapshot taken at
+ * apply time. The diff approach treats the attribute as a token-set —
+ * the cngx ARIA-by-value rule (`aria-describedby` is a space-separated
+ * token list, never a single owner) — so every owner's writes
+ * compose cleanly.
+ *
+ * Restore semantics:
+ * - If the resulting token list is empty AND the attribute was absent
+ *   before the decoration mounted (`priorAriaDescribedby === null`),
+ *   the attribute is removed entirely — the empty-string state would
+ *   leave a dangling `aria-describedby=""` which AT readers may
+ *   interpret as a malformed reference.
+ * - Otherwise, the resulting tokens are written verbatim. This covers
+ *   both the third-party-tokens-only case (own id removed, tokens
+ *   remain) and the no-third-party-writes case (the result equals
+ *   `priorAriaDescribedby` exactly).
+ *
+ * @internal — package-private helper for the two decoration projectors.
+ */
+function restoreAriaDescribedbyExceptToken(
+  el: HTMLElement,
+  tokenToRemove: string,
+  renderer: Renderer2,
+  priorAriaDescribedby: string | null,
+): void {
+  const current = el.getAttribute('aria-describedby');
+  const tokens = current ? current.split(/\s+/).filter(Boolean) : [];
+  const remaining = tokens.filter((t) => t !== tokenToRemove);
+  if (remaining.length === 0) {
+    if (priorAriaDescribedby === null) {
+      renderer.removeAttribute(el, 'aria-describedby');
+    } else {
+      renderer.setAttribute(el, 'aria-describedby', priorAriaDescribedby);
+    }
+    return;
+  }
+  renderer.setAttribute(el, 'aria-describedby', remaining.join(' '));
+}
+
+/**
  * Options for {@link createMatTabRejectionDecoration}.
  */
 export interface CngxMatTabRejectionDecorationOptions {
@@ -157,17 +205,15 @@ export function createMatTabRejectionDecoration(
     if (!decoratedEl || !decoratedSpan) {
       return;
     }
+    const ownTokenId = decoratedSpan.id;
     opts.renderer.removeClass(decoratedEl, className);
     opts.renderer.removeChild(decoratedEl, decoratedSpan);
-    if (priorAriaDescribedby === null) {
-      opts.renderer.removeAttribute(decoratedEl, 'aria-describedby');
-    } else {
-      opts.renderer.setAttribute(
-        decoratedEl,
-        'aria-describedby',
-        priorAriaDescribedby,
-      );
-    }
+    restoreAriaDescribedbyExceptToken(
+      decoratedEl,
+      ownTokenId,
+      opts.renderer,
+      priorAriaDescribedby,
+    );
     decoratedEl = null;
     decoratedSpan = null;
     priorAriaDescribedby = null;
@@ -447,18 +493,16 @@ export function createMatTabAggregatorDecoration(
     if (!entry) {
       return;
     }
+    const ownTokenId = entry.descriptorSpan.id;
     destroyEmbeddedView(entry);
     opts.renderer.removeClass(entry.el, className);
     opts.renderer.removeChild(entry.el, entry.descriptorSpan);
-    if (entry.priorAriaDescribedby === null) {
-      opts.renderer.removeAttribute(entry.el, 'aria-describedby');
-    } else {
-      opts.renderer.setAttribute(
-        entry.el,
-        'aria-describedby',
-        entry.priorAriaDescribedby,
-      );
-    }
+    restoreAriaDescribedbyExceptToken(
+      entry.el,
+      ownTokenId,
+      opts.renderer,
+      entry.priorAriaDescribedby,
+    );
     decorated.delete(id);
   };
 

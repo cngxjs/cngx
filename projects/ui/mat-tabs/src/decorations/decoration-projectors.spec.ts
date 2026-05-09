@@ -248,6 +248,99 @@ describe('createMatTabRejectionDecoration — aria-describedby contract (5.2)', 
     );
   });
 
+  it('preserves third-party aria-describedby tokens written between decoration apply and clear (diff-restore, not whole-attribute restore)', () => {
+    const { host } = setupHost();
+    // Pre-existing consumer token at apply time — captured by the
+    // projector as `priorAriaDescribedby`.
+    const hostEl = buildHostWithButtons([null, 'consumer-tooltip-7', null]);
+    const failedHandleId = signal<string | null>(null);
+    const failedIndex = signal<number | undefined>(undefined);
+    const descriptorText = signal<string>('Reverted.');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+
+    failedHandleId.set('cngx-mat-tab-1');
+    failedIndex.set(1);
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[1];
+    expect(target.getAttribute('aria-describedby')).toBe(
+      'consumer-tooltip-7 cngx-mat-tab-1-rejected',
+    );
+
+    // Third party (e.g. a CDK overlay binding, an external a11y
+    // toolkit, a Material upgrade that itself appends to the tab
+    // button's aria-describedby) appends a token AFTER the projector
+    // mounted. Pre-fix the clear path overwrote the attribute with
+    // its `priorAriaDescribedby` snapshot, dropping this token. The
+    // diff-restore path must keep it.
+    const current =
+      target.getAttribute('aria-describedby') ?? '';
+    target.setAttribute(
+      'aria-describedby',
+      `${current} third-party-cdk-overlay-42`,
+    );
+
+    failedHandleId.set(null);
+    failedIndex.set(undefined);
+    TestBed.flushEffects();
+
+    expect(target.classList.contains('cngx-mat-tab--error')).toBe(false);
+    expect(target.querySelector('span.cngx-sr-only')).toBeNull();
+    const restoredTokens = target
+      .getAttribute('aria-describedby')
+      ?.split(/\s+/)
+      .filter(Boolean);
+    // Decoration's own id is gone; consumer's apply-time token AND
+    // the third-party clear-time token both survive in token order.
+    expect(restoredTokens).toEqual([
+      'consumer-tooltip-7',
+      'third-party-cdk-overlay-42',
+    ]);
+  });
+
+  it('removes aria-describedby entirely when no priorAriaDescribedby and no surviving third-party tokens', () => {
+    const { host } = setupHost();
+    // Tab 0 has no aria-describedby at apply time — priorAriaDescribedby = null.
+    const hostEl = buildHostWithButtons();
+    const failedHandleId = signal<string | null>('cngx-mat-tab-0');
+    const failedIndex = signal<number | undefined>(0);
+    const descriptorText = signal<string>('Reverted.');
+
+    createMatTabRejectionDecoration({
+      hostEl,
+      failedHandleId,
+      failedIndex,
+      descriptorText,
+      renderer: host.renderer,
+      injector: host.injector,
+      destroyRef: host.destroyRef,
+    });
+    TestBed.flushEffects();
+
+    const target = hostEl.querySelectorAll<HTMLElement>('.mat-mdc-tab')[0];
+    expect(target.getAttribute('aria-describedby')).toBe(
+      'cngx-mat-tab-0-rejected',
+    );
+
+    failedHandleId.set(null);
+    failedIndex.set(undefined);
+    TestBed.flushEffects();
+
+    // No prior tokens, no third-party additions — attribute must be
+    // removed entirely. An empty `aria-describedby=""` would leave a
+    // dangling reference some AT readers misinterpret as malformed.
+    expect(target.hasAttribute('aria-describedby')).toBe(false);
+  });
+
   it('updates the descriptor span textContent reactively without recreating the span', () => {
     const { host } = setupHost();
     const hostEl = buildHostWithButtons();
