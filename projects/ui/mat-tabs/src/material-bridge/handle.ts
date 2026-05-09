@@ -159,6 +159,14 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  * test-environment id keying via `providers` / `viewProviders`
  * without forking the directive.
  *
+ * Override capability — the swap surface separates **handle shape**
+ * (factory body) from **id keying** (the supplied `idSeed` closure).
+ * The directive constructs `idSeed` as `() => nextUid('cngx-mat-tab-')`
+ * and hands it to the factory as a default suggestion; an override is
+ * free to call it, ignore it, or replace it with a server-synced /
+ * deterministic-test / consumer-domain id strategy. Both axes are
+ * independently swappable from one DI seam.
+ *
  * Tracked-debt: ships under family-uniformity staging (single
  * in-package consumer today). See `tabs-accepted-debt §10`.
  *
