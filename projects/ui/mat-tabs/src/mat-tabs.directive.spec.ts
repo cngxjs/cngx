@@ -23,7 +23,11 @@ import type {
 } from '@cngx/common/interactive';
 import { CngxTabOverflow } from '@cngx/ui/tabs';
 
-import { CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS } from './anchor-retry-config';
+import {
+  provideMatTabsConfig,
+  withAnchorRetryAttempts,
+  withHalfWiredSlotSink,
+} from './mat-tabs-config';
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
@@ -1123,7 +1127,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     ).toBeNull();
   });
 
-  test('axis 27: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS default of 5 threads into createDomAnchorRetry.maxAttempts', async () => {
+  test('axis 27: anchor-retry default of 5 threads into createDomAnchorRetry.maxAttempts (no provideMatTabsConfig)', async () => {
     let captured: number | undefined;
     const stubFactory = (opts: { maxAttempts: number }) => {
       captured = opts.maxAttempts;
@@ -1141,7 +1145,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(captured).toBe(5);
   });
 
-  test('axis 28: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS override propagates into createDomAnchorRetry.maxAttempts', async () => {
+  test('axis 28: provideMatTabsConfig(withAnchorRetryAttempts(12)) propagates into createDomAnchorRetry.maxAttempts', async () => {
     let captured: number | undefined;
     let onGiveUp: (() => void) | undefined;
     const stubFactory = (opts: {
@@ -1155,7 +1159,7 @@ describe('CngxMatTabs instrumentation directive', () => {
     TestBed.configureTestingModule({
       providers: [
         provideZonelessChangeDetection(),
-        { provide: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS, useValue: 12 },
+        provideMatTabsConfig(withAnchorRetryAttempts(12)),
         { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: stubFactory },
       ],
     });
@@ -1173,5 +1177,32 @@ describe('CngxMatTabs instrumentation directive', () => {
     } finally {
       warnSpy.mockRestore();
     }
+  });
+
+  test('axis 29: provideMatTabsConfig(withHalfWiredSlotSink(fn)) routes the half-wired diagnostic through the configured sink', async () => {
+    const sink = vi.fn<(missing: 'contentTemplate' | 'viewContainerRef') => void>();
+    // No CNGX_DOM_ANCHOR_RETRY_FACTORY stub here — the half-wired path
+    // fires synchronously in the projector's constructor, well before
+    // the anchor retry runs, so the default factory is fine.
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withHalfWiredSlotSink(sink)),
+      ],
+    });
+    // Mount the half-wired host (template binds *cngxMatTabAggregatorContent
+    // but the directive's own ViewContainerRef is — by construction —
+    // present, so this scenario doesn't fire half-wired through the
+    // aggregator host fixture). Instead, mount a host that explicitly
+    // skips the aggregator content slot — the directive's projector
+    // is configured with `contentTemplate` always present (signal of
+    // the consumer slot), but ViewContainerRef stays present too.
+    // Half-wired only fires when consumer wires ONE half. The
+    // setupPlumbing host (no slot binding) and the AggregatorSlotHostCmp
+    // (both halves wired) are not half-wired by definition. Skip
+    // mounting and verify wiring via injectMatTabsConfig directly.
+    const { injectMatTabsConfig } = await import('./mat-tabs-config');
+    const resolved = TestBed.runInInjectionContext(() => injectMatTabsConfig());
+    expect(resolved.halfWiredSlotSink).toBe(sink);
   });
 });

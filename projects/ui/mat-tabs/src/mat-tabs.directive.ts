@@ -39,8 +39,7 @@ import {
   createMatTabRejectionDecoration,
   type CngxMatTabAggregatorErrorEntry,
 } from './decorations/decoration-projectors';
-import { CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS } from './anchor-retry-config';
-import { CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK } from './decorations/half-wired-slot-sink';
+import { injectMatTabsConfig } from './mat-tabs-config';
 import {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
@@ -273,6 +272,13 @@ export class CngxMatTabs {
   );
 
   constructor() {
+    // Resolve all consumer-tunable knobs once at the top — single
+    // canonical surface (`provideMatTabsConfig` / `provideMatTabsConfigAt`)
+    // plus the standalone `CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK` for
+    // telemetry-only consumers; `injectMatTabsConfig` merges with
+    // library defaults so call sites read fully populated values.
+    const matTabsConfig = injectMatTabsConfig();
+
     effect(() => {
       const tabs = this.matTabs();
       untracked(() => this.syncHandles(tabs));
@@ -300,11 +306,7 @@ export class CngxMatTabs {
       destroyRef: this.destroyRef,
       contentTemplate: this.aggregatorContentTemplate,
       viewContainerRef: this.viewContainerRef,
-      // Half-wired-slot diagnostic — routes through the DI token so
-      // production telemetry (Sentry, custom logger) can pick it up.
-      // Default token value is a dev-mode `console.warn` for backward
-      // compatibility with the pre-token contract.
-      onHalfWiredSlot: inject(CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK),
+      onHalfWiredSlot: matTabsConfig.halfWiredSlotSink,
     });
 
     this.destroyRef.onDestroy(() => {
@@ -333,20 +335,19 @@ export class CngxMatTabs {
     // deferred-host case (`<mat-tab-group>` gated behind a `*ngIf` /
     // `@defer`) where the header is not present on the first frame.
     //
-    // Cap is read from `CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS` (default 5).
-    // The default was chosen empirically: well above normal Material
-    // render lag (a single `afterNextRender` is enough on every
-    // supported version), low enough to dev-warn promptly when the
-    // consumer DOM never materialises (e.g. `<mat-tab-group>` gated
-    // behind a never-true `*ngIf` / `@defer`). Override the token to
-    // tune for slower Material versions, deferred hosts, or test
-    // environments. The `onGiveUp` warning interpolates the resolved
-    // cap so the message stays accurate after an override.
+    // Cap is read from `provideMatTabsConfig(withAnchorRetryAttempts(n))`
+    // (default 5). The default was chosen empirically: well above
+    // normal Material render lag (a single `afterNextRender` is enough
+    // on every supported version), low enough to dev-warn promptly
+    // when the consumer DOM never materialises (e.g. `<mat-tab-group>`
+    // gated behind a never-true `*ngIf` / `@defer`). The `onGiveUp`
+    // warning interpolates the resolved cap so the message stays
+    // accurate after an override.
     //
     // The flex-layout skin in `mat-tabs.css` does the rest: the More
     // button sits next to `.mat-mdc-tab-label-container` rather than
     // overlaying it, so no imperative positioning is needed here.
-    const anchorMaxAttempts = inject(CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS);
+    const anchorMaxAttempts = matTabsConfig.anchorMaxAttempts;
     const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
         const headerEl = this.hostEl.querySelector<HTMLElement>(
