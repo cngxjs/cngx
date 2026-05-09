@@ -228,15 +228,37 @@ export class CngxMatStepper implements CngxStepPanelHost {
       // `_iconOverrides` here, then re-render so the per-header
       // bindings flow. Reaches into Material's underscore-prefixed
       // slot — same accepted-debt class as `tabs-accepted-debt §5`.
+      // Dev-mode existence guard: a Material upgrade that renames or
+      // removes the `_iconOverrides` slot would otherwise silently
+      // no-op the forwarding; the guard surfaces the breakage early
+      // with an actionable message.
       const stepperRef = stepper as unknown as {
-        _iconOverrides: Record<string, TemplateRef<MatStepperIconContext>>;
+        _iconOverrides?: Record<string, TemplateRef<MatStepperIconContext>>;
       };
-      for (const icon of this.stepperIcons()) {
+      const iconList = this.stepperIcons();
+      if (!stepperRef._iconOverrides) {
+        if (typeof ngDevMode !== 'undefined' && ngDevMode && iconList.length) {
+          console.warn(
+            '[CngxMatStepper] MatStepper._iconOverrides is missing — ' +
+              'consumer-projected <ng-template matStepperIcon> templates ' +
+              'will not flow through to Material. Likely cause: a ' +
+              'Material upgrade renamed or removed the internal slot. ' +
+              'See stepper-accepted-debt §4 for the closure mechanism.',
+          );
+        }
+        return;
+      }
+      for (const icon of iconList) {
         stepperRef._iconOverrides[icon.name] = icon.templateRef;
       }
       // Material reads `_iconOverrides` into per-header bindings on
-      // the next CD pass; nudge it via the public `selectedIndex`
-      // self-write so the headers re-bind without a wider tick.
+      // the next CD pass; nudge it via a self-write of the current
+      // `selectedIndex` so the headers re-bind without a wider tick.
+      // The write writes back the same value so Material's selectedIndex
+      // setter sees no change and does not emit `selectedIndexChange`
+      // — preventing a spurious echo through `createMaterialBidirectionalSync`
+      // back into `presenter.select(0)`. Spec axis pins this contract
+      // (see mat-stepper.component.spec.ts forwarding-axis nudge guard).
       const idx = stepper.selectedIndex;
       stepper.selectedIndex = idx;
     });

@@ -259,6 +259,60 @@ describe('CngxMatStepper organism', () => {
     );
   });
 
+  it('matStepperIcon forwarding nudge does NOT echo back through bidirectional-sync as a spurious presenter.select(0) call', async () => {
+    // The `_iconOverrides` patch ends with `stepper.selectedIndex = idx`
+    // — a self-write of the current value to nudge Material into
+    // re-binding the icon outlets. The nudge MUST NOT trigger an echo
+    // through `createMaterialBidirectionalSync`'s subscription, which
+    // would call `presenter.select(0)` and cancel any in-flight commit
+    // / disrupt the active-step contract on first mount. This axis
+    // pins the no-echo guarantee — captured presenter.select call
+    // count must stay at zero across the full mount cycle for an
+    // initially-zero activeStepIndex.
+    @Component({
+      standalone: true,
+      imports: [CngxMatStepper, CngxStep, MatStepperModule],
+      template: `
+        <cngx-mat-stepper aria-label="Echo guard">
+          <ng-template matStepperIcon="number">x</ng-template>
+          <div cngxStep label="A"></div>
+          <div cngxStep label="B"></div>
+        </cngx-mat-stepper>
+      `,
+    })
+    class EchoHost {}
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(EchoHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const presenter = fixture.debugElement
+      .query((el) => el.componentInstance instanceof CngxMatStepper)
+      .injector.get(CngxStepperPresenter);
+    let selectCalls = 0;
+    const originalSelect = presenter.select.bind(presenter);
+    (presenter as unknown as { select: (i: number) => void }).select = (
+      i: number,
+    ) => {
+      selectCalls += 1;
+      originalSelect(i);
+    };
+    // Cross the afterNextRender boundary so the icon-forwarding patch
+    // (with its `selectedIndex = idx` nudge) fires.
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    // Self-write of current selectedIndex must not produce an echo —
+    // the bidirectional-sync factory's idempotency guards keep
+    // presenter.select uncalled. Initial activeStepIndex is 0; any
+    // call to select(0) here would prove the echo escapes.
+    expect(selectCalls).toBe(0);
+    expect(presenter.activeStepIndex()).toBe(0);
+  });
+
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
