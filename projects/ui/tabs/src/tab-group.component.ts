@@ -2,14 +2,12 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   contentChild,
   contentChildren,
   ElementRef,
   inject,
   Injector,
   input,
-  linkedSignal,
   type Signal,
   type TemplateRef,
 } from '@angular/core';
@@ -31,11 +29,13 @@ import {
   CngxTabErrorBadge,
   CngxTabGroupPresenter,
   CngxTabRejectionIcon,
+  createTabGroupAnnouncements,
   createTabGroupTemplateBindings,
   injectTabsConfig,
   injectTabsI18n,
   type CngxTabBusySpinnerContext,
   type CngxTabErrorBadgeContext,
+  type CngxTabGroupAnnouncements,
   type CngxTabGroupTemplateBindings,
   type CngxTabHandle,
   type CngxTabPanelHost,
@@ -97,10 +97,10 @@ import {
   templateUrl: './tab-group.component.html',
   host: {
     role: 'group',
-    '[attr.aria-roledescription]': 'tabsRoleDescription()',
+    '[attr.aria-roledescription]': 'announcements.tabsRoleDescription()',
     '[attr.aria-orientation]': 'presenter.orientation()',
     '[attr.data-orientation]': 'presenter.orientation()',
-    '[attr.aria-label]': 'resolvedAriaLabel()',
+    '[attr.aria-label]': 'announcements.resolvedAriaLabel()',
     '[attr.aria-labelledby]': 'ariaLabelledBy()',
     '[class.cngx-tabs]': 'true',
   },
@@ -146,15 +146,31 @@ export class CngxTabGroup implements CngxTabPanelHost {
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
 
+  /**
+   * AT-announcement + descriptor surfaces extracted into a pure
+   * factory under `@cngx/common/tabs/announcements/`. The bundle
+   * owns `tabsRoleDescription` / `tabPanelRoleDescription` /
+   * `resolvedAriaLabel` / `liveAnnouncement` / `statusPhrase` /
+   * `tabAriaLabel` plus the prior-active-index `linkedSignal` slot
+   * that drives the success-arm direction prefix. Host bindings and
+   * template outlets read through `announcements.<field>()`.
+   */
+  protected readonly announcements: CngxTabGroupAnnouncements =
+    createTabGroupAnnouncements({
+      presenter: this.presenter,
+      i18n: this.i18n,
+      config: this.config,
+      ariaLabel: this.ariaLabel,
+      ariaLabelledBy: this.ariaLabelledBy,
+    });
+
   constructor() {
     // Self-healing scroll loop — when the active tab changes (via
     // direct click on a visible tab, keyboard nav, or selectById from
     // the overflow molecule), bring the matching button into the
     // strip's visible area. The IntersectionObserver in
     // <cngx-tab-overflow> picks up the new visibility on the next
-    // tick and the More dropdown self-trims. Plan §"Selection Loop".
-    // Extracted to `createOrganismScrollSync` in `@cngx/common/tabs`
-    // so future organisms can share the shape; routed through
+    // tick and the More dropdown self-trims. Routed through
     // `CNGX_ORGANISM_SCROLL_SYNC_FACTORY` so consumers can swap the
     // scroll policy (instant, custom selector, reduced-motion opt-out)
     // without forking the organism.
@@ -163,58 +179,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
       hostElement: this.hostElement,
       injector: this.injector,
     });
-
-    // Eager seed for {@link priorActiveIndex} — `linkedSignal` is
-    // lazy: without this read its first computation runs only on the
-    // FIRST live-region announcement, which in test/CD scenarios
-    // already coincides with the post-nav activeIndex, leaving
-    // `prev?.source` undefined and the direction prefix unfired.
-    // Reading once at construction captures the pre-nav activeIndex
-    // so the linkedSignal's `prev.source` carries it forward.
-    this.priorActiveIndex();
   }
-
-  /**
-   * Tabs landmark `aria-roledescription`. Defaults to the W3C ARIA
-   * tablist convention (`'tab list'`) — deliberately distinct from
-   * `i18n.tabsLabel`, which feeds `aria-label`. Pillar 2: the two
-   * announce different things to AT (the *kind of region* vs *which
-   * region*); collapsing them onto one string makes screen readers
-   * read the same word twice in a row. Consumers who want a localised
-   * role description override via
-   * `withTabsFallbackLabels({ tabRoleDescription: 'Reiterleiste' })`.
-   */
-  protected readonly tabsRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.tabRoleDescription ?? 'tab list',
-  );
-
-  /**
-   * Tab-panel role-description — read by the per-panel
-   * `aria-roledescription` binding. Cascades through
-   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → library default
-   * `'tab panel'`. Mirrors the `tabsRoleDescription` computed so
-   * AT-facing role descriptors flow through one config surface
-   * regardless of which scope (button vs panel) declares them.
-   */
-  protected readonly tabPanelRoleDescription = computed<string>(
-    () => this.config.fallbackLabels?.tabPanelRoleDescription ?? 'tab panel',
-  );
-
-  /**
-   * `aria-label` resolves Input → ariaLabels.tabsRegion config →
-   * i18n.tabsLabel. Pillar 2 — the surface declared by config /
-   * i18n must reach the DOM.
-   */
-  protected readonly resolvedAriaLabel = computed<string | null>(() => {
-    if (this.ariaLabelledBy()) {
-      return null;
-    }
-    return (
-      this.ariaLabel() ??
-      this.config.ariaLabels?.tabsRegion ??
-      this.i18n.tabsLabel
-    );
-  });
 
   // Pre-build a Map<id, CngxTab> so labelTemplateFor /
   // contentTemplateFor are O(1) per call instead of O(N) linear
@@ -267,95 +232,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
     }
     return this.tabs()[intended]?.id === tab.id;
   }
-
-  /**
-   * Tracks the previous activeIndex value so the live-region's
-   * success-arm announcement can prepend a direction phrase
-   * (`i18n.previousTab` / `i18n.nextTab`) when navigation crosses
-   * tab boundaries. `linkedSignal` with `prev?.source` returns the
-   * SOURCE value at the moment before the most recent change — exactly
-   * the "prior activeIndex" semantic — without duplicating state in an
-   * `effect` (Pillar 1). Initial value coalesces to current so the
-   * first emission compares like-for-like and produces no spurious
-   * direction.
-   */
-  private readonly priorActiveIndex = linkedSignal<number, number>({
-    source: () => this.presenter.activeIndex(),
-    computation: (curr, prev) => prev?.source ?? curr,
-    equal: Object.is,
-  });
-
-  /**
-   * SR-friendly text rendered inside the polite live-region span. Drives
-   * the announcer through declarative content updates — never an
-   * imperative announce() call. Empty string between transitions so the
-   * region stays quiet on no-op CD ticks.
-   *
-   * Priority chain on the `error` arm:
-   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
-   *      a `lastFailedIndex` and a resolvable origin label — the rich,
-   *      origin-aware rollback phrase carries the destination so the
-   *      user understands both *what failed* and *where they are*.
-   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
-   *      undefined, label unresolvable, or non-rollback error path.
-   *
-   * Priority chain on the `success` arm:
-   *   1. `${i18n.previousTab} | ${i18n.selectedTab(label, position, count)}`
-   *      when the navigation moved backward (new index < prior index).
-   *   2. `${i18n.nextTab} | ${i18n.selectedTab(...)}` when forward.
-   *   3. Bare `i18n.selectedTab(...)` when the index did not change
-   *      (initial mount or commit-success that lands the user back on
-   *      the same tab) — keeps the announcement non-empty so AT
-   *      consumers receive feedback that the action settled.
-   *
-   * Reads `presenter.commitTransition` directly — the presenter
-   * allocates one `linkedSignal`-backed tracker per instance and
-   * exposes it on the host contract for skin reuse. Pillar 1: derive,
-   * never duplicate.
-   */
-  protected readonly liveAnnouncement = computed<string>(() => {
-    const current = this.presenter.commitTransition.current();
-    if (current === 'pending') {
-      return this.i18n.commitInFlight;
-    }
-    if (current === 'error') {
-      // `previous` reads stay reactive but are not gated — synchronous
-      // commit-handler errors collapse pending → error in a single
-      // signal-flush tick, so the tracker captures
-      // `previous = 'idle'` rather than `'pending'`. Loosening the
-      // guard keeps the announcement reachable for sync-rejection
-      // actions (`commitAction = () => false`) while staying silent
-      // on `idle` and `success`.
-      const failedIdx = this.presenter.lastFailedIndex();
-      const originIdx = this.presenter.originIndexDuringCommit();
-      if (failedIdx !== undefined && originIdx !== undefined) {
-        const originLabel = this.presenter.tabs()[originIdx]?.label();
-        if (originLabel) {
-          return this.i18n.commitRolledBackTo(originLabel);
-        }
-      }
-      return this.i18n.commitFailedRetry;
-    }
-    if (current === 'success') {
-      const tabs = this.presenter.tabs();
-      const idx = this.presenter.activeIndex();
-      const tab = tabs[idx];
-      if (!tab) {
-        return '';
-      }
-      const label = tab.label() ?? '';
-      const positionPhrase = this.i18n.selectedTab(label, idx + 1, tabs.length);
-      const prevIdx = this.priorActiveIndex();
-      if (idx > prevIdx) {
-        return `${this.i18n.nextTab}: ${positionPhrase}`;
-      }
-      if (idx < prevIdx) {
-        return `${this.i18n.previousTab}: ${positionPhrase}`;
-      }
-      return positionPhrase;
-    }
-    return '';
-  });
 
   protected tabHeaderId(tab: CngxTabHandle): string {
     return `${tab.id}-header`;
@@ -410,45 +286,6 @@ export class CngxTabGroup implements CngxTabPanelHost {
     const originLabel =
       originIdx !== undefined ? this.presenter.tabs()[originIdx]?.label() : undefined;
     return { failedIndex, originLabel };
-  }
-
-  /**
-   * SR descriptor phrase. Reads the aggregator's `announcement()`
-   * when one is bound and revealed; falls back to
-   * `i18n.tabHasErrors(errorCount)` when the aggregator wants reveal
-   * but supplies an empty announcement string — the i18n fallback
-   * surfaces a consistent count phrase instead of leaving the
-   * descriptor span empty (the cngx A11y rule: ids always present,
-   * content reactive). Returns empty string when no aggregator wants
-   * reveal at all (no decoration to describe).
-   */
-  protected statusPhrase(tab: CngxTabHandle): string {
-    const aggregator = tab.errorAggregator();
-    if (!aggregator?.shouldShow()) {
-      return '';
-    }
-    const announcement = aggregator.announcement();
-    if (announcement) {
-      return announcement;
-    }
-    return this.i18n.tabHasErrors(aggregator.errorCount());
-  }
-
-  /**
-   * Verbose accessible name for each tab button. Replaces the bare
-   * label text content with the i18n `selectedTab(label, position, count)`
-   * phrase so AT users hear "Tab 2 of 5: Settings" instead of just
-   * "Settings, tab" — position context is now in-band rather than
-   * inferred from tablist enumeration.
-   *
-   * The visual label span continues to render the bare `label`
-   * (`tab.label()`); `aria-label` takes precedence over text content
-   * for AT, leaving sighted users unaffected. Reactive — re-derives
-   * when the tab's label or count changes.
-   */
-  protected tabAriaLabel(tab: CngxTabHandle, position: number): string {
-    const tabs = this.tabs();
-    return this.i18n.selectedTab(tab.label() ?? '', position, tabs.length);
   }
 
   protected handleHeaderClick(tab: CngxTabHandle): void {
