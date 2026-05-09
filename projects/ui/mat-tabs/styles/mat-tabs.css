@@ -25,7 +25,19 @@
  * stylesheet — Material-ecosystem prebuilt-themes pattern.
  */
 
-.cngx-mat-tab--error {
+/*
+ * Specificity bump to `.mat-mdc-tab.cngx-mat-tab--error` (0,2,0) is
+ * load-bearing — Material 21's `.mdc-tab` rule (0,1,0) sets
+ * `outline: none` to suppress the browser's default focus outline,
+ * and ships those styles inline via the component decorator. Since
+ * the component-scoped CSS is injected into `<head>` AFTER the
+ * `angular.json` global styles when the component first renders,
+ * a same-specificity rule loses the cascade — `outline` would be
+ * stripped and only `color` / `font-weight` would land. Mirrors
+ * the same bump on `.mat-mdc-tab.cngx-mat-tab--has-errors::before`
+ * below.
+ */
+.mat-mdc-tab.cngx-mat-tab--error {
   color: var(--cngx-mat-tab-error-color, var(--mat-sys-error, #c62828));
   outline: var(--cngx-mat-tab-error-outline, 2px solid currentColor);
   outline-offset: var(--cngx-mat-tab-error-outline-offset, 1px);
