@@ -147,9 +147,18 @@ export class CngxMatTabs {
   // host-template's view container parent, NOT this element's
   // injector — and `inject(CNGX_TAB_PANEL_HOST)` inside the molecule
   // would NG0201.
-  private readonly overflowRef: ComponentRef<CngxTabOverflow> = inject(
-    ViewContainerRef,
-  ).createComponent(CngxTabOverflow, { injector: this.injector });
+  // Single `ViewContainerRef` injection shared by both the molecule
+  // mount below (`overflowRef`) and the aggregator-decoration
+  // projector slot path (consumed in the constructor). Field declared
+  // ahead of `overflowRef` because TypeScript class fields execute
+  // in declaration order — the `overflowRef` initializer reads this
+  // field by reference.
+  private readonly viewContainerRef = inject(ViewContainerRef);
+
+  private readonly overflowRef: ComponentRef<CngxTabOverflow> =
+    this.viewContainerRef.createComponent(CngxTabOverflow, {
+      injector: this.injector,
+    });
 
   private readonly matTabs = contentChildren(MatTab, { descendants: true });
   // Optional consumer-projected slot template — when bound, the
@@ -164,7 +173,6 @@ export class CngxMatTabs {
   private readonly aggregatorContentTemplate: Signal<
     TemplateRef<CngxMatTabAggregatorContentContext> | null
   > = computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
-  private readonly viewContainerRef = inject(ViewContainerRef);
   // Per-tab registries — strong refs are bounded by the directive's
   // lifetime (every entry is explicitly deleted when the matching
   // MatTab leaves the children set, AND the maps go away on

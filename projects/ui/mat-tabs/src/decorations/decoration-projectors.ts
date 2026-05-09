@@ -182,6 +182,11 @@ export function createMatTabRejectionDecoration(
     opts.renderer.setProperty(span, 'textContent', opts.descriptorText());
     opts.renderer.appendChild(targetEl, span);
 
+    // Renderer2 exposes `setAttribute`/`removeAttribute` only — there is
+    // no read counterpart, so attribute reads go through the native
+    // element. Browser-only context here (the projector decorates
+    // Material-rendered DOM); SSR adoption would require a platform-
+    // aware adapter on top of this read.
     const prior = targetEl.getAttribute('aria-describedby');
     const tokens = prior ? prior.split(/\s+/).filter(Boolean) : [];
     if (!tokens.includes(spanId)) {
@@ -453,6 +458,9 @@ export function createMatTabAggregatorDecoration(
     opts.renderer.setAttribute(descriptorSpan, 'id', spanId);
     opts.renderer.appendChild(targetEl, descriptorSpan);
 
+    // See the read-via-nativeElement note in `applyDecorationAt` above —
+    // Renderer2 has no `getAttribute` counterpart, so attribute reads
+    // go through the native element directly.
     const priorAriaDescribedby = targetEl.getAttribute('aria-describedby');
     const tokens = priorAriaDescribedby
       ? priorAriaDescribedby.split(/\s+/).filter(Boolean)
