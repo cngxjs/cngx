@@ -9,5 +9,6 @@
     "disableSourceCode": true,
     "disableStyleTab": true,
     "disableRoutesGraph": true,
-    "groupDepth": 3
+    "groupDepth": 3,
+    "multiVersion": false
 }
