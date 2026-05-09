@@ -39,6 +39,7 @@ import {
   createMatTabRejectionDecoration,
   type CngxMatTabAggregatorErrorEntry,
 } from './decorations/decoration-projectors';
+import { CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS } from './anchor-retry-config';
 import { CNGX_MAT_TAB_HALF_WIRED_SLOT_SINK } from './decorations/half-wired-slot-sink';
 import {
   CngxMatTabAggregatorContent,
@@ -332,19 +333,25 @@ export class CngxMatTabs {
     // `injector` because the second invocation is no longer in the
     // constructor's injection context) up to MAX_ANCHOR_ATTEMPTS. The
     // ceiling matches the aggregator-decoration retry cap (5) — well
-    // above any normal Material render lag, low enough to dev-warn
-    // promptly when the consumer DOM never materialises.
     // Bounded retry via `createDomAnchorRetry` — same counter contract
     // as `CngxTabOverflow`'s rAF attach loop, with `afterNextRender`
     // as the scheduler. afterNextRender is one-shot (no cancellation
-    // closure); the factory accepts a noop. Cap at 5 attempts: well
-    // above normal Material render lag, low enough to dev-warn
-    // promptly when consumer DOM never materialises (e.g.
-    // `<mat-tab-group>` gated behind a never-true `*ngIf` / `@defer`).
+    // closure); the factory accepts a noop.
+    //
+    // Cap is read from `CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS` (default 5).
+    // The default was chosen empirically: well above normal Material
+    // render lag (a single `afterNextRender` is enough on every
+    // supported version), low enough to dev-warn promptly when the
+    // consumer DOM never materialises (e.g. `<mat-tab-group>` gated
+    // behind a never-true `*ngIf` / `@defer`). Override the token to
+    // tune for slower Material versions, deferred hosts, or test
+    // environments. The `onGiveUp` warning interpolates the resolved
+    // cap so the message stays accurate after an override.
     //
     // The flex-layout skin in `mat-tabs.css` does the rest: the More
     // button sits next to `.mat-mdc-tab-label-container` rather than
     // overlaying it, so no imperative positioning is needed here.
+    const anchorMaxAttempts = inject(CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS);
     const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
         const headerEl = this.hostEl.querySelector<HTMLElement>(
@@ -359,7 +366,7 @@ export class CngxMatTabs {
         this.renderer.appendChild(headerEl, overflowEl);
         return true;
       },
-      maxAttempts: 5,
+      maxAttempts: anchorMaxAttempts,
       schedule: (cb) => {
         afterNextRender(cb, { injector: this.injector });
         return () => undefined;
@@ -367,7 +374,7 @@ export class CngxMatTabs {
       onGiveUp: () => {
         if (isDevMode()) {
           console.warn(
-            '[CngxMatTabs] Could not anchor <cngx-tab-overflow> after 5 ' +
+            `[CngxMatTabs] Could not anchor <cngx-tab-overflow> after ${anchorMaxAttempts} ` +
               'attempts — .mat-mdc-tab-header was not found inside the ' +
               'host. The More popover will fall back to a sibling-of-' +
               '<mat-tab-group> position; verify Material rendered the ' +

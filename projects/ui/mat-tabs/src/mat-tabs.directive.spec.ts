@@ -7,9 +7,10 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   CngxTabGroupPresenter,
   type CngxTabHandle,
   type CngxTabOverflowDomAdapter,
@@ -22,6 +23,7 @@ import type {
 } from '@cngx/common/interactive';
 import { CngxTabOverflow } from '@cngx/ui/tabs';
 
+import { CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS } from './anchor-retry-config';
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
@@ -1119,5 +1121,57 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(
       descriptorSpan.querySelector('[data-testid="slot-content"]'),
     ).toBeNull();
+  });
+
+  test('axis 27: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS default of 5 threads into createDomAnchorRetry.maxAttempts', async () => {
+    let captured: number | undefined;
+    const stubFactory = (opts: { maxAttempts: number }) => {
+      captured = opts.maxAttempts;
+      return { start: () => undefined, cancel: () => undefined };
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        // Stub the anchor-retry factory so we capture the directive's
+        // wiring without depending on a real DOM anchor sequence.
+        { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: stubFactory },
+      ],
+    });
+    await setupPlumbing();
+    expect(captured).toBe(5);
+  });
+
+  test('axis 28: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS override propagates into createDomAnchorRetry.maxAttempts', async () => {
+    let captured: number | undefined;
+    let onGiveUp: (() => void) | undefined;
+    const stubFactory = (opts: {
+      maxAttempts: number;
+      onGiveUp?: () => void;
+    }) => {
+      captured = opts.maxAttempts;
+      onGiveUp = opts.onGiveUp;
+      return { start: () => undefined, cancel: () => undefined };
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: CNGX_MAT_TABS_ANCHOR_MAX_ATTEMPTS, useValue: 12 },
+        { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: stubFactory },
+      ],
+    });
+    await setupPlumbing();
+    expect(captured).toBe(12);
+    // Sanity check the onGiveUp dev-mode warning interpolates the
+    // resolved cap rather than the legacy hardcoded `5`.
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    try {
+      onGiveUp?.();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(String(warnSpy.mock.calls[0][0])).toContain('12 attempts');
+    } finally {
+      warnSpy.mockRestore();
+    }
   });
 });
