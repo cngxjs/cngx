@@ -4,6 +4,7 @@ import {
   effect,
   type EmbeddedViewRef,
   type Injector,
+  isDevMode,
   type Renderer2,
   runInInjectionContext,
   type Signal,
@@ -13,6 +14,7 @@ import {
 } from '@angular/core';
 
 import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-content.directive';
+import type { CngxMatTabRejectionContentContext } from './mat-tab-rejection-content.directive';
 
 /**
  * Package-private DOM-mutation projectors for `[cngxMatTabs]`.
@@ -58,6 +60,54 @@ import type { CngxMatTabAggregatorContentContext } from './mat-tab-aggregator-co
  * @internal — package-private. Consumers bind `[cngxMatTabError]` on
  * each `<mat-tab>`; the directive owns the projection mechanics.
  */
+
+/**
+ * Diff-restore the `aria-describedby` token list on a button after a
+ * decoration's descriptor span has been detached. The decoration's own
+ * id token is dropped from whatever the attribute currently holds —
+ * any third-party token written between apply and clear (e.g. a
+ * tooltip ref bound after the projector mounted, an `mat-mdc-tab`'s
+ * own runtime additions) is preserved.
+ *
+ * Whole-attribute restore (the pre-this-fix path) clobbered any such
+ * write because it overwrote the attribute with the snapshot taken at
+ * apply time. The diff approach treats the attribute as a token-set —
+ * the cngx ARIA-by-value rule (`aria-describedby` is a space-separated
+ * token list, never a single owner) — so every owner's writes
+ * compose cleanly.
+ *
+ * Restore semantics:
+ * - If the resulting token list is empty AND the attribute was absent
+ *   before the decoration mounted (`priorAriaDescribedby === null`),
+ *   the attribute is removed entirely — the empty-string state would
+ *   leave a dangling `aria-describedby=""` which AT readers may
+ *   interpret as a malformed reference.
+ * - Otherwise, the resulting tokens are written verbatim. This covers
+ *   both the third-party-tokens-only case (own id removed, tokens
+ *   remain) and the no-third-party-writes case (the result equals
+ *   `priorAriaDescribedby` exactly).
+ *
+ * @internal — package-private helper for the two decoration projectors.
+ */
+function restoreAriaDescribedbyExceptToken(
+  el: HTMLElement,
+  tokenToRemove: string,
+  renderer: Renderer2,
+  priorAriaDescribedby: string | null,
+): void {
+  const current = el.getAttribute('aria-describedby');
+  const tokens = current ? current.split(/\s+/).filter(Boolean) : [];
+  const remaining = tokens.filter((t) => t !== tokenToRemove);
+  if (remaining.length === 0) {
+    if (priorAriaDescribedby === null) {
+      renderer.removeAttribute(el, 'aria-describedby');
+    } else {
+      renderer.setAttribute(el, 'aria-describedby', priorAriaDescribedby);
+    }
+    return;
+  }
+  renderer.setAttribute(el, 'aria-describedby', remaining.join(' '));
+}
 
 /**
  * Options for {@link createMatTabRejectionDecoration}.
@@ -112,6 +162,34 @@ export interface CngxMatTabRejectionDecorationOptions {
    * collision.
    */
   readonly descriptorIdSuffix?: string;
+  /**
+   * Optional reactive `*cngxMatTabRejectionContent` slot template.
+   * When the signal returns a non-null `TemplateRef`, the projector
+   * renders an embedded view of it into the SR descriptor span
+   * instead of writing the imperative `textContent` fallback. When
+   * `null`, the projector falls back to the imperative
+   * `setProperty(textContent, descriptorText)` path — same shape
+   * the pre-Phase-4 contract shipped with.
+   */
+  readonly contentTemplate?: Signal<
+    TemplateRef<CngxMatTabRejectionContentContext> | null
+  >;
+  /**
+   * View container ref used to instantiate embedded views from
+   * `contentTemplate`. Required only when `contentTemplate` is
+   * supplied — when omitted, the projector silently falls back to
+   * the imperative descriptor path even if a template is otherwise
+   * available. Mirrors the aggregator projector's same-name opt.
+   */
+  readonly viewContainerRef?: ViewContainerRef;
+  /**
+   * Optional reactive label of the rollback origin — feeds the
+   * slot context's `originLabel` field. Read inside `untracked()`
+   * during the apply path; the `descriptorText` re-fire effect
+   * destroys + remounts the embedded view so the value picked up
+   * from this signal is always the value at fire time.
+   */
+  readonly originLabel?: Signal<string | undefined>;
 }
 
 /**
@@ -139,27 +217,107 @@ export function createMatTabRejectionDecoration(
   const className = opts.className ?? 'cngx-mat-tab--error';
   const srOnlyClassName = opts.srOnlyClassName ?? 'cngx-sr-only';
   const descriptorIdSuffix = opts.descriptorIdSuffix ?? 'rejected';
+  // Slot path requires both a template signal AND a view container —
+  // either alone falls back to the imperative descriptor write so the
+  // contract degrades gracefully when consumers wire only one half.
+  // Mirrors the aggregator projector's slot wiring; the rejection
+  // projector currently has no half-wired diagnostic sink (single
+  // in-package consumer is `[cngxMatTabs]` which always passes both
+  // when projecting `*cngxMatTabRejectionContent`).
+  const slotEnabled = !!opts.contentTemplate && !!opts.viewContainerRef;
   let decoratedEl: HTMLElement | null = null;
-  let decoratedSpan: HTMLElement | null = null;
+  // The descriptor span is created lazily on first apply and retained
+  // across the projector's lifetime — detached on clear, reattached on
+  // next apply, never recreated. Reusing the JS element avoids two
+  // `createElement` allocations per A→B→A flip and lets AT readers /
+  // animation observers that hold a reference to the node keep it
+  // pointing at a live DOM object even though the parent button and
+  // the `id` attribute change between flips. The element is GC'd when
+  // the projector's closure dies on directive destroy.
+  let cachedSpan: HTMLElement | null = null;
   let priorAriaDescribedby: string | null = null;
+  // Slot tracks the id whose decoration is currently mounted (or
+  // `null` when cleared). Used by the apply effect below to
+  // short-circuit on structurally-identical re-emissions of
+  // `failedHandleId` — Pillar 1: every signal-driven side effect
+  // must be a no-op when its observable input has not meaningfully
+  // changed. Without this slot, a `tabs()`-driven re-eval that
+  // returns the same id forces a `clearDecoration` + `applyDecorationAt`
+  // round-trip, mid-flight clobbering AT readers and adding O(n)
+  // DOM work per tab-list churn.
+  let lastAppliedId: string | null = null;
+  let embeddedView:
+    | EmbeddedViewRef<CngxMatTabRejectionContentContext>
+    | undefined;
 
-  const clearDecoration = (): void => {
-    if (!decoratedEl || !decoratedSpan) {
+  const destroyEmbeddedView = (): void => {
+    if (!embeddedView) {
       return;
     }
-    opts.renderer.removeClass(decoratedEl, className);
-    opts.renderer.removeChild(decoratedEl, decoratedSpan);
-    if (priorAriaDescribedby === null) {
-      opts.renderer.removeAttribute(decoratedEl, 'aria-describedby');
-    } else {
-      opts.renderer.setAttribute(
-        decoratedEl,
-        'aria-describedby',
-        priorAriaDescribedby,
-      );
+    embeddedView.destroy();
+    embeddedView = undefined;
+    if (cachedSpan) {
+      while (cachedSpan.firstChild) {
+        opts.renderer.removeChild(cachedSpan, cachedSpan.firstChild);
+      }
     }
+  };
+
+  const writeDescriptorContent = (
+    span: HTMLElement,
+    handleId: string,
+    text: string,
+  ): void => {
+    const tplSignal = opts.contentTemplate;
+    const vcr = opts.viewContainerRef;
+    const tpl = tplSignal && vcr ? tplSignal() : null;
+    if (tpl && vcr) {
+      destroyEmbeddedView();
+      const context: CngxMatTabRejectionContentContext = {
+        failedHandleId: handleId,
+        originLabel: opts.originLabel?.(),
+        fallbackText: text,
+      };
+      const view = vcr.createEmbeddedView(tpl, context, {
+        injector: opts.injector,
+      });
+      // Force CD on the embedded view immediately — the view is
+      // about to be detached from the host's CD tree (we move its
+      // rootNodes under an SR-only span via Renderer2; the span is
+      // not part of the embedded view's logical parent), so the
+      // initial bindings would otherwise wait for the next host CD
+      // pass to evaluate. SR-only content + zoneless / OnPush
+      // scheduling makes the CD wait observable as stale text on
+      // first read.
+      view.detectChanges();
+      for (const node of view.rootNodes) {
+        opts.renderer.appendChild(span, node);
+      }
+      embeddedView = view;
+      return;
+    }
+    // Imperative fallback — also covers the path where a slot was
+    // previously bound and is now removed (destroy any prior view).
+    destroyEmbeddedView();
+    opts.renderer.setProperty(span, 'textContent', text);
+  };
+
+  const clearDecoration = (): void => {
+    if (!decoratedEl || !cachedSpan) {
+      return;
+    }
+    const ownTokenId = cachedSpan.id;
+    destroyEmbeddedView();
+    opts.renderer.removeClass(decoratedEl, className);
+    opts.renderer.removeChild(decoratedEl, cachedSpan);
+    // `cachedSpan` deliberately retained — reused on the next apply.
+    restoreAriaDescribedbyExceptToken(
+      decoratedEl,
+      ownTokenId,
+      opts.renderer,
+      priorAriaDescribedby,
+    );
     decoratedEl = null;
-    decoratedSpan = null;
     priorAriaDescribedby = null;
   };
 
@@ -173,14 +331,24 @@ export function createMatTabRejectionDecoration(
     opts.renderer.addClass(targetEl, className);
 
     const spanId = `${handleId}-${descriptorIdSuffix}`;
-    const span = opts.renderer.createElement('span') as HTMLElement;
-    opts.renderer.addClass(span, srOnlyClassName);
+    let span = cachedSpan;
+    if (!span) {
+      span = opts.renderer.createElement('span') as HTMLElement;
+      opts.renderer.addClass(span, srOnlyClassName);
+      cachedSpan = span;
+    }
+    // Always rewrite id + textContent — the same element serves every
+    // mount across the projector's lifetime, so prior values are stale
+    // by definition. The live-text effect below picks up subsequent
+    // `descriptorText` changes without recreating the span.
     opts.renderer.setAttribute(span, 'id', spanId);
     // Initial content read inside `untracked()` (the caller wraps the
     // whole apply path); the live-text effect below picks up
-    // subsequent changes without recreating the span.
-    opts.renderer.setProperty(span, 'textContent', opts.descriptorText());
+    // subsequent changes. Slot path renders the embedded view; the
+    // imperative path writes textContent — both go through
+    // `writeDescriptorContent`.
     opts.renderer.appendChild(targetEl, span);
+    writeDescriptorContent(span, handleId, opts.descriptorText());
 
     // Renderer2 exposes `setAttribute`/`removeAttribute` only — there is
     // no read counterpart, so attribute reads go through the native
@@ -195,7 +363,6 @@ export function createMatTabRejectionDecoration(
     opts.renderer.setAttribute(targetEl, 'aria-describedby', tokens.join(' '));
 
     decoratedEl = targetEl;
-    decoratedSpan = span;
     priorAriaDescribedby = prior;
   };
 
@@ -203,29 +370,49 @@ export function createMatTabRejectionDecoration(
     effect(() => {
       const id = opts.failedHandleId();
       untracked(() => {
+        if (id === lastAppliedId) {
+          return;
+        }
         if (id === null) {
           clearDecoration();
+          lastAppliedId = null;
           return;
         }
         const idx = opts.failedIndex();
         if (idx === undefined) {
           clearDecoration();
+          lastAppliedId = null;
           return;
         }
         applyDecorationAt(idx, id);
+        lastAppliedId = id;
       });
     });
 
-    // Live-text effect — tracks `descriptorText` only. Decorated
-    // span is a non-signal slot, so its read lives inside
-    // `untracked()` (the read is a check, not a dependency).
+    // Live-text effect — tracks `descriptorText` (and the slot
+    // template when slotEnabled, so a lazy / late mount of the
+    // template re-renders into the existing decorated span). The
+    // attached/detached state is non-signal; both reads live inside
+    // `untracked()` (they are check, not dependency). Updates fire
+    // only when the cached span is currently mounted (`decoratedEl`
+    // non-null) — otherwise the next apply path will write the
+    // current text via `writeDescriptorContent` before re-attaching,
+    // so a detached-span text update would be redundant.
     effect(() => {
       const text = opts.descriptorText();
+      const tplSignal = opts.contentTemplate;
+      if (slotEnabled && tplSignal) {
+        tplSignal();
+      }
       untracked(() => {
-        if (decoratedSpan === null) {
+        if (decoratedEl === null || cachedSpan === null) {
           return;
         }
-        opts.renderer.setProperty(decoratedSpan, 'textContent', text);
+        const id = opts.failedHandleId();
+        if (id === null) {
+          return;
+        }
+        writeDescriptorContent(cachedSpan, id, text);
       });
     });
   });
@@ -304,11 +491,16 @@ export interface CngxMatTabAggregatorDecorationOptions {
    */
   readonly viewContainerRef?: ViewContainerRef;
   /**
-   * Optional dev-mode sink invoked when exactly one of
-   * `contentTemplate` / `viewContainerRef` is supplied (the
-   * half-wired-slot misconfiguration). Defaults to a
-   * `console.warn` gated on `ngDevMode`. Override only for testing
-   * — in production the default is what reaches developers.
+   * Diagnostic sink invoked when exactly one of `contentTemplate` /
+   * `viewContainerRef` is supplied (the half-wired-slot
+   * misconfiguration). Fires unconditionally — the projector itself
+   * is mode-agnostic; the production-vs-dev gate lives in whichever
+   * sink the caller passes. The `[cngxMatTabs]` directive resolves
+   * this from `provideMatTabsConfig(withHalfWiredSlotSink(fn))`;
+   * the library default is a dev-mode `console.warn`. Direct
+   * callers of this factory who skip the directive may pass any
+   * sink they like; omitting falls back to a dev-mode warn so
+   * historical behaviour is preserved.
    */
   readonly onHalfWiredSlot?: (
     missing: 'contentTemplate' | 'viewContainerRef',
@@ -340,13 +532,17 @@ export function createMatTabAggregatorDecoration(
   // Slot path requires both a template signal AND a view container —
   // either alone falls back to the imperative descriptor write so the
   // contract degrades gracefully when consumers wire only one half.
-  const slotEnabled = !!opts.contentTemplate && !!opts.viewContainerRef;
+  // The half-wired-slot misconfiguration check fires once at
+  // construction (captures the initial wiring shape); the per-fire
+  // re-evaluation lives inline in the effect body below so a
+  // lazy-mounted slot template (`*ngIf` / `@defer` /
+  // `*ngTemplateOutlet`) gets picked up the first time it materialises.
+  const isFullyWired = (): boolean =>
+    !!opts.contentTemplate && !!opts.viewContainerRef;
   // Surface the half-wired-slot misconfiguration in dev-mode — the
   // graceful degradation above hides the mistake at runtime, so the
-  // signal has to come from a deliberate diagnostic. Mirrors the
-  // `onMaxRetriesReached` precedent below: optional injectable sink,
-  // default `ngDevMode`-gated `console.warn`.
-  if (!slotEnabled && (opts.contentTemplate || opts.viewContainerRef)) {
+  // signal has to come from a deliberate diagnostic.
+  if (!isFullyWired() && (opts.contentTemplate || opts.viewContainerRef)) {
     const missing: 'contentTemplate' | 'viewContainerRef' =
       opts.contentTemplate ? 'viewContainerRef' : 'contentTemplate';
     const sink = opts.onHalfWiredSlot ?? defaultHalfWiredSlotWarn;
@@ -409,6 +605,9 @@ export function createMatTabAggregatorDecoration(
       const view = vcr.createEmbeddedView(tpl, context, {
         injector: opts.injector,
       });
+      // See the rejection projector's identical call site for the
+      // detached-view CD rationale (rootNodes move out of the
+      // embedded view's logical parent into an SR-only span).
       view.detectChanges();
       for (const node of view.rootNodes) {
         opts.renderer.appendChild(entry.descriptorSpan, node);
@@ -431,18 +630,16 @@ export function createMatTabAggregatorDecoration(
     if (!entry) {
       return;
     }
+    const ownTokenId = entry.descriptorSpan.id;
     destroyEmbeddedView(entry);
     opts.renderer.removeClass(entry.el, className);
     opts.renderer.removeChild(entry.el, entry.descriptorSpan);
-    if (entry.priorAriaDescribedby === null) {
-      opts.renderer.removeAttribute(entry.el, 'aria-describedby');
-    } else {
-      opts.renderer.setAttribute(
-        entry.el,
-        'aria-describedby',
-        entry.priorAriaDescribedby,
-      );
-    }
+    restoreAriaDescribedbyExceptToken(
+      entry.el,
+      ownTokenId,
+      opts.renderer,
+      entry.priorAriaDescribedby,
+    );
     decorated.delete(id);
   };
 
@@ -479,6 +676,7 @@ export function createMatTabAggregatorDecoration(
     writeDescriptorContent(decoratedEntry, entry.announcement, {
       count: entry.count,
       label: entry.label,
+      announcement: entry.announcement,
     });
     decorated.set(entry.id, decoratedEntry);
   };
@@ -511,6 +709,7 @@ export function createMatTabAggregatorDecoration(
         writeDescriptorContent(existing, entry.announcement, {
           count: entry.count,
           label: entry.label,
+          announcement: entry.announcement,
         });
         continue;
       }
@@ -554,10 +753,15 @@ export function createMatTabAggregatorDecoration(
       // signal here registers it as a primary trigger; the actual
       // re-application logic stays inside `untracked()` so the sync
       // body can freely read other signals without registering them.
+      //
+      // `isFullyWired()` is recomputed per fire so a lazily-mounted
+      // slot template gets picked up the first time both opts appear.
+      // (The directive's case has both opts present at construction;
+      // the per-fire re-eval is defensive against direct factory
+      // callers and forward-compatible with shape changes.)
       const errorTabs = opts.errorTabs();
-      const tplSignal = opts.contentTemplate;
-      if (slotEnabled && tplSignal) {
-        tplSignal();
+      if (isFullyWired() && opts.contentTemplate) {
+        opts.contentTemplate();
       }
       untracked(() => sync(errorTabs));
     });
@@ -573,30 +777,32 @@ export function createMatTabAggregatorDecoration(
 function defaultHalfWiredSlotWarn(
   missing: 'contentTemplate' | 'viewContainerRef',
 ): void {
-  if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-    console.warn(
-      '[cngxMatTabs] aggregator-content slot half-wired — ' +
-        `\`${missing}\` is missing while the other half is supplied. ` +
-        'The decoration projector will silently fall back to the ' +
-        'imperative `textContent` path, and the consumer-projected ' +
-        '`*cngxMatTabAggregatorContent` template will never render. ' +
-        'Wire both halves on the [cngxMatTabs] directive (or neither).',
-    );
+  if (!isDevMode()) {
+    return;
   }
+  console.warn(
+    '[cngxMatTabs] aggregator-content slot half-wired — ' +
+      `\`${missing}\` is missing while the other half is supplied. ` +
+      'The decoration projector will silently fall back to the ' +
+      'imperative `textContent` path, and the consumer-projected ' +
+      '`*cngxMatTabAggregatorContent` template will never render. ' +
+      'Wire both halves on the [cngxMatTabs] directive (or neither).',
+  );
 }
 
 function defaultRetryCeilingWarn(max: number): () => void {
   return () => {
-    if (typeof ngDevMode !== 'undefined' && ngDevMode) {
-      console.warn(
-        '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
+    if (!isDevMode()) {
+      return;
+    }
+    console.warn(
+      '[cngxMatTabs] aggregator decoration retry ceiling reached ' +
         `(${max} attempts) — MatTabHeader did not render ` +
         '`.mat-mdc-tab` buttons within the expected window. Likely ' +
         'cause: Material upgrade broke the `.mat-mdc-tab` selector ' +
         'contract or a consumer-side render stall. ' +
         'Bound aggregators may remain visually undecorated ' +
         'until the next state change.',
-      );
-    }
+    );
   };
 }

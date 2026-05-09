@@ -2,14 +2,17 @@ import { CommonModule } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   contentChildren,
   DestroyRef,
+  effect,
   inject,
   Injector,
   type Signal,
   type TemplateRef,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -75,6 +78,18 @@ export class CngxMatStepper implements CngxStepPanelHost {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   protected readonly matStepper = viewChild.required(MatStepper);
+  // Host ChangeDetectorRef. Used after the `_iconOverrides` patch
+  // lands to nudge Angular into re-running the host view's CD pass —
+  // which re-evaluates the `<mat-stepper>` bindings, including the
+  // per-header `[iconOverrides]` propagation that picks up the freshly
+  // patched `_iconOverrides` map. Replaces a prior
+  // `stepper.selectedIndex = stepper.selectedIndex` self-write that
+  // relied on Material's undocumented same-value setter coercion to
+  // avoid emitting `selectedIndexChange` and echoing through
+  // `createMaterialBidirectionalSync` back into `presenter.select(0)`.
+  // `markForCheck` is documented public API; the no-echo contract is
+  // unconditional because Material's setter is never touched.
+  private readonly hostCdr = inject(ChangeDetectorRef);
 
   readonly flatSteps: Signal<readonly CngxStepNode[]> = this.presenter.flatSteps;
   readonly activeStepIndex: Signal<number> = this.presenter.activeStepIndex;
@@ -176,18 +191,60 @@ export class CngxMatStepper implements CngxStepPanelHost {
     return this.stepDirectiveById().get(id)?.contentTemplate()?.templateRef ?? null;
   }
 
+  /**
+   * Per-node-id cache of the `*cngxStepLabel` / `*cngxStepContent`
+   * slot context. Both shape-equal interfaces share one entry per
+   * step id (`stepContentContextFor` delegates here).
+   *
+   * Caching by `node.id` and mutating fields in place preserves the
+   * context object's reference across CD ticks while keeping every
+   * reactive field (`active`, `busy`, `disabled`) fresh on each
+   * `stepLabelContextFor` call. Reference stability lets
+   * `*ngTemplateOutlet`'s `Object.is` input-diff short-circuit the
+   * embedded-view rebind path; the embedded view's `let-` bindings
+   * still re-read the mutated fields on the next CD pass over the
+   * parent's view container, so consumers see live updates without
+   * the per-tick allocation. Mirrors the
+   * `tab-group.component.ts:254-273` `errorBadgeContextCache`
+   * pattern, with a `Map<string, …>` (not `WeakMap<…>`) because
+   * `node.id` is a string. Stale ids are pruned by an effect tied
+   * to `presenter.flatSteps` (constructor below).
+   */
+  private readonly stepLabelContextCache = new Map<string, CngxStepLabelContext>();
+
   /** Build the {@link CngxStepLabelContext} for the projected label template. */
   protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
     const flatStep = node.flatIndex;
-    return {
-      node,
-      index: flatStep + 1,
-      active: node.id === this.presenter.activeStepId(),
-      busy:
-        this.presenter.commitState.status() === 'pending' &&
-        this.presenter.intendedStepIndex() === flatStep,
-      disabled: node.disabled(),
+    const active = node.id === this.presenter.activeStepId();
+    const busy =
+      this.presenter.commitState.status() === 'pending' &&
+      this.presenter.intendedStepIndex() === flatStep;
+    const disabled = node.disabled();
+
+    const existing = this.stepLabelContextCache.get(node.id);
+    if (!existing) {
+      const fresh: CngxStepLabelContext = {
+        node,
+        index: flatStep + 1,
+        active,
+        busy,
+        disabled,
+      };
+      this.stepLabelContextCache.set(node.id, fresh);
+      return fresh;
+    }
+    // Mutate cached fields in place. `readonly` is a TS-only annotation;
+    // the cast removes it for the assignment without affecting the
+    // public consumer surface.
+    const mutable = existing as {
+      -readonly [K in keyof CngxStepLabelContext]: CngxStepLabelContext[K];
     };
+    mutable.node = node;
+    mutable.index = flatStep + 1;
+    mutable.active = active;
+    mutable.busy = busy;
+    mutable.disabled = disabled;
+    return existing;
   }
 
   /** Build the {@link CngxStepContentContext} for the projected content template. */
@@ -196,6 +253,28 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   constructor() {
+    // Prune stale entries from `stepLabelContextCache` whenever the
+    // flat-step set changes shape. The cache returns the same context
+    // object reference per `node.id` so `*ngTemplateOutlet`'s input
+    // diff short-circuits, but a node-id removal would otherwise leak
+    // its entry forever. The effect runs on every `flatSteps` change;
+    // mutation logic stays in `untracked()` so the prune does not
+    // register stale-id deletes as new dependencies.
+    effect(() => {
+      const flat = this.presenter.flatSteps();
+      untracked(() => {
+        const liveIds = new Set<string>();
+        for (const n of flat) {
+          liveIds.add(n.id);
+        }
+        for (const id of Array.from(this.stepLabelContextCache.keys())) {
+          if (!liveIds.has(id)) {
+            this.stepLabelContextCache.delete(id);
+          }
+        }
+      });
+    });
+
     // Bidirectional sync between `presenter.activeStepIndex` and
     // `MatStepper.selectedIndex`. Delegated to the shared
     // `createMaterialBidirectionalSync` factory in `@cngx/common/data`
@@ -252,15 +331,18 @@ export class CngxMatStepper implements CngxStepPanelHost {
         stepperRef._iconOverrides[icon.name] = icon.templateRef;
       }
       // Material reads `_iconOverrides` into per-header bindings on
-      // the next CD pass; nudge it via a self-write of the current
-      // `selectedIndex` so the headers re-bind without a wider tick.
-      // The write writes back the same value so Material's selectedIndex
-      // setter sees no change and does not emit `selectedIndexChange`
-      // — preventing a spurious echo through `createMaterialBidirectionalSync`
-      // back into `presenter.select(0)`. Spec axis pins this contract
-      // (see mat-stepper.component.spec.ts forwarding-axis nudge guard).
-      const idx = stepper.selectedIndex;
-      stepper.selectedIndex = idx;
+      // the next CD pass. Mark the host view dirty so Angular re-runs
+      // CD over `<mat-stepper>` and re-propagates its bindings —
+      // documented public API replacing a prior
+      // `stepper.selectedIndex = stepper.selectedIndex` self-write
+      // nudge that depended on Material's undocumented same-value
+      // setter coercion (no patch-version-stable spec) to avoid
+      // emitting `selectedIndexChange`. With `markForCheck`, Material's
+      // setter is never touched, so no spurious echo can reach
+      // `createMaterialBidirectionalSync`. Spec axis pins this contract
+      // (see mat-stepper.component.spec.ts 'matStepperIcon forwarding
+      // nudge').
+      this.hostCdr.markForCheck();
     });
   }
 }

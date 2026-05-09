@@ -1,4 +1,4 @@
-import { Component, type TemplateRef } from '@angular/core';
+import { Component, signal, type TemplateRef } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
@@ -259,16 +259,24 @@ describe('CngxMatStepper organism', () => {
     );
   });
 
-  it('matStepperIcon forwarding nudge does NOT echo back through bidirectional-sync as a spurious presenter.select(0) call', async () => {
-    // The `_iconOverrides` patch ends with `stepper.selectedIndex = idx`
-    // — a self-write of the current value to nudge Material into
-    // re-binding the icon outlets. The nudge MUST NOT trigger an echo
-    // through `createMaterialBidirectionalSync`'s subscription, which
-    // would call `presenter.select(0)` and cancel any in-flight commit
-    // / disrupt the active-step contract on first mount. This axis
-    // pins the no-echo guarantee — captured presenter.select call
-    // count must stay at zero across the full mount cycle for an
-    // initially-zero activeStepIndex.
+  it('matStepperIcon forwarding nudges Material via markForCheck without writing selectedIndex (no echo, no self-write)', async () => {
+    // The `_iconOverrides` patch nudges Material into re-binding its
+    // per-header icon outlets. Pre-fix the nudge was a self-write
+    // `stepper.selectedIndex = stepper.selectedIndex`, which depends
+    // on Material's undocumented same-value setter coercion to avoid
+    // emitting a `selectedIndexChange` echo through
+    // `createMaterialBidirectionalSync` back into `presenter.select(0)`.
+    // The fix uses `ChangeDetectorRef.markForCheck()` on the MatStepper
+    // view — public API, no setter touch, no echo path possible.
+    //
+    // This axis pins both contracts:
+    //   1. presenter.select is NOT called as a spurious echo during
+    //      the icon-forwarding patch (no-echo guarantee).
+    //   2. MatStepper.selectedIndex setter is NOT touched by the
+    //      wrapper at all — the only writes the spy observes come
+    //      from `createMaterialBidirectionalSync`'s presenter→Material
+    //      mirror, which is equality-guarded against the read side
+    //      and does not write when initial values already match.
     @Component({
       standalone: true,
       imports: [CngxMatStepper, CngxStep, MatStepperModule],
@@ -286,8 +294,33 @@ describe('CngxMatStepper organism', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(EchoHost);
+    let setterWrites = 0;
+    let lastSetterValue: number | undefined;
     fixture.detectChanges();
     await fixture.whenStable();
+    const matStepper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    ).componentInstance as MatStepper;
+    // Wrap MatStepper.selectedIndex setter to count wrapper-driven
+    // writes. Wrapped after the initial mount completes so we observe
+    // only the icon-forwarding patch's behaviour on the next render
+    // boundary — pre-fix the patch self-wrote `idx`, post-fix it does
+    // not touch the setter at all.
+    const proto = Object.getPrototypeOf(matStepper);
+    const original = Object.getOwnPropertyDescriptor(proto, 'selectedIndex');
+    const setter = original?.set;
+    if (setter) {
+      Object.defineProperty(matStepper, 'selectedIndex', {
+        configurable: true,
+        get: original?.get,
+        set(v: number) {
+          setterWrites += 1;
+          lastSetterValue = v;
+          setter.call(matStepper, v);
+        },
+      });
+    }
+
     const presenter = fixture.debugElement
       .query((el) => el.componentInstance instanceof CngxMatStepper)
       .injector.get(CngxStepperPresenter);
@@ -300,17 +333,160 @@ describe('CngxMatStepper organism', () => {
       originalSelect(i);
     };
     // Cross the afterNextRender boundary so the icon-forwarding patch
-    // (with its `selectedIndex = idx` nudge) fires.
+    // fires. Two CD cycles match the convention from the
+    // 'does not loop on initial sync' axis and give Material every
+    // opportunity to emit a spurious selectionChange if it would.
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
     await fixture.whenStable();
-    // Self-write of current selectedIndex must not produce an echo —
-    // the bidirectional-sync factory's idempotency guards keep
-    // presenter.select uncalled. Initial activeStepIndex is 0; any
-    // call to select(0) here would prove the echo escapes.
+
     expect(selectCalls).toBe(0);
     expect(presenter.activeStepIndex()).toBe(0);
+    // The wrapper now uses `markForCheck` instead of a setter
+    // self-write. With the bidirectional-sync mirror equality-guarded
+    // against the read side and the presenter sitting at its initial
+    // value (0), there is no legitimate write path either — so the
+    // setter must not be touched at all by the wrapper across the
+    // mount cycle.
+    expect(setterWrites).toBe(0);
+    expect(lastSetterValue).toBeUndefined();
+  });
+
+  it('stepLabelContextFor returns the same context object reference across re-renders for a stable node.id', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (node: CngxStepNode) => unknown;
+      stepsOnly: () => readonly CngxStepNode[];
+    };
+    const [first] = wrapper.stepsOnly();
+    expect(first).toBeTruthy();
+
+    // Two calls for the same node MUST return identity-equal context
+    // objects. *ngTemplateOutlet's Object.is input-diff short-circuits
+    // the embedded-view rebind on stable refs — the cache is what
+    // restores that identity-stability guarantee.
+    const ctx1 = wrapper.stepLabelContextFor(first);
+    const ctx2 = wrapper.stepLabelContextFor(first);
+    expect(ctx2).toBe(ctx1);
+  });
+
+  it('stepLabelContextFor mutates cached fields in place so reactive state stays fresh on a stable node.id', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(HostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (
+        node: CngxStepNode,
+      ) => { active: boolean; node: CngxStepNode };
+      stepsOnly: () => readonly CngxStepNode[];
+    };
+    const presenter = fixture.debugElement
+      .query((el) => el.componentInstance instanceof CngxMatStepper)
+      .injector.get(CngxStepperPresenter);
+    const [first, second] = wrapper.stepsOnly();
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+
+    // Step 0 is initially active.
+    const ctx = wrapper.stepLabelContextFor(first);
+    expect(ctx.active).toBe(true);
+
+    // Move to step 1; reread the SAME cached context object — its
+    // `active` field must reflect the new state via in-place mutation.
+    presenter.select(1);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const ctxAfter = wrapper.stepLabelContextFor(first);
+    expect(ctxAfter).toBe(ctx);
+    expect(ctxAfter.active).toBe(false);
+  });
+
+  it('stepLabelContextFor cache evicts stale ids when a step is removed and allocates a fresh entry on re-add', async () => {
+    @Component({
+      standalone: true,
+      imports: [CngxMatStepper, CngxStep],
+      template: `
+        <cngx-mat-stepper aria-label="Dynamic">
+          <div cngxStep label="A"></div>
+          @if (showB()) {
+            <div cngxStep label="B"></div>
+          }
+        </cngx-mat-stepper>
+      `,
+    })
+    class DynamicHost {
+      protected readonly showB = signal(true);
+      setShowB(v: boolean): void {
+        this.showB.set(v);
+      }
+    }
+
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DynamicHost);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const wrapper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof CngxMatStepper,
+    ).componentInstance as unknown as {
+      stepLabelContextFor: (node: CngxStepNode) => unknown;
+      stepsOnly: () => readonly CngxStepNode[];
+      stepLabelContextCache: Map<string, unknown>;
+    };
+
+    const stepsBefore = wrapper.stepsOnly();
+    expect(stepsBefore.length).toBe(2);
+    // Prime the cache with both ids.
+    wrapper.stepLabelContextFor(stepsBefore[0]);
+    wrapper.stepLabelContextFor(stepsBefore[1]);
+    const idA = stepsBefore[0].id;
+    const idB = stepsBefore[1].id;
+    expect(wrapper.stepLabelContextCache.has(idA)).toBe(true);
+    expect(wrapper.stepLabelContextCache.has(idB)).toBe(true);
+    const cachedA = wrapper.stepLabelContextCache.get(idA);
+
+    // Drop step B. The flatSteps effect prunes stale ids; the
+    // cache must release the orphan entry.
+    fixture.componentInstance['setShowB'](false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    TestBed.flushEffects();
+    expect(wrapper.stepLabelContextCache.has(idA)).toBe(true);
+    expect(wrapper.stepLabelContextCache.has(idB)).toBe(false);
+    // Surviving id keeps its entry — same object reference.
+    expect(wrapper.stepLabelContextCache.get(idA)).toBe(cachedA);
+
+    // Re-add step B; the new step's id may collide with the prior
+    // id (deterministic generator) or differ. Either way, calling
+    // stepLabelContextFor for the new node MUST allocate a fresh
+    // entry (cache was empty for any new id) AND keep step A's
+    // entry referentially stable.
+    fixture.componentInstance['setShowB'](true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const stepsAfter = wrapper.stepsOnly();
+    expect(stepsAfter.length).toBe(2);
+    wrapper.stepLabelContextFor(stepsAfter[1]);
+    expect(wrapper.stepLabelContextCache.has(stepsAfter[1].id)).toBe(true);
+    expect(wrapper.stepLabelContextCache.get(idA)).toBe(cachedA);
   });
 
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {

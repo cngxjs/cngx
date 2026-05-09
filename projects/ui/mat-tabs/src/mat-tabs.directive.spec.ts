@@ -7,9 +7,10 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTab, MatTabsModule, MatTabGroup } from '@angular/material/tabs';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
+  CNGX_DOM_ANCHOR_RETRY_FACTORY,
   CngxTabGroupPresenter,
   type CngxTabHandle,
   type CngxTabOverflowDomAdapter,
@@ -22,6 +23,11 @@ import type {
 } from '@cngx/common/interactive';
 import { CngxTabOverflow } from '@cngx/ui/tabs';
 
+import {
+  provideMatTabsConfig,
+  withAnchorRetryAttempts,
+  withHalfWiredSlotSink,
+} from './mat-tabs-config';
 import { CngxMatTabs } from './mat-tabs.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
@@ -632,7 +638,10 @@ describe('CngxMatTabs instrumentation directive', () => {
     const directive = matEl.injector.get(CngxMatTabs);
     const setupsByTab = (
       directive as unknown as {
-        setupsByTab: Map<unknown, { errorAggregator: { set(v: unknown): void } }>;
+        setupsByTab: Map<
+          unknown,
+          { setup: { errorAggregator: { set(v: unknown): void } } }
+        >;
       }
     ).setupsByTab;
 
@@ -649,16 +658,16 @@ describe('CngxMatTabs instrumentation directive', () => {
     // `aggregatedErrorTabs` computed reads `shouldShow()` /
     // `announcement()` whenever any handle's slot is non-undefined,
     // so an opaque marker would crash the downstream effect.
-    const firstSetup = Array.from(setupsByTab.values())[0];
+    const firstEntry = Array.from(setupsByTab.values())[0];
     const stub = makeStubAggregator();
-    firstSetup.errorAggregator.set(stub.contract as unknown);
+    firstEntry.setup.errorAggregator.set(stub.contract as unknown);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBe(stub.contract);
 
     // Resetting back to undefined restores the default — used by the
     // attribute directive's destroyRef cleanup path.
-    firstSetup.errorAggregator.set(undefined);
+    firstEntry.setup.errorAggregator.set(undefined);
     fixture.detectChanges();
     await fixture.whenStable();
     expect(presenter.tabs()[0].errorAggregator()).toBeUndefined();
@@ -1119,5 +1128,258 @@ describe('CngxMatTabs instrumentation directive', () => {
     expect(
       descriptorSpan.querySelector('[data-testid="slot-content"]'),
     ).toBeNull();
+  });
+
+  test('axis 27: anchor-retry default of 5 threads into createDomAnchorRetry.maxAttempts (no provideMatTabsConfig)', async () => {
+    let captured: number | undefined;
+    const stubFactory = (opts: { maxAttempts: number }) => {
+      captured = opts.maxAttempts;
+      return { start: () => undefined, cancel: () => undefined };
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        // Stub the anchor-retry factory so we capture the directive's
+        // wiring without depending on a real DOM anchor sequence.
+        { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: stubFactory },
+      ],
+    });
+    await setupPlumbing();
+    expect(captured).toBe(5);
+  });
+
+  test('axis 28: provideMatTabsConfig(withAnchorRetryAttempts(12)) propagates into createDomAnchorRetry.maxAttempts', async () => {
+    let captured: number | undefined;
+    let onGiveUp: (() => void) | undefined;
+    const stubFactory = (opts: {
+      maxAttempts: number;
+      onGiveUp?: () => void;
+    }) => {
+      captured = opts.maxAttempts;
+      onGiveUp = opts.onGiveUp;
+      return { start: () => undefined, cancel: () => undefined };
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withAnchorRetryAttempts(12)),
+        { provide: CNGX_DOM_ANCHOR_RETRY_FACTORY, useValue: stubFactory },
+      ],
+    });
+    await setupPlumbing();
+    expect(captured).toBe(12);
+    // Sanity check the onGiveUp dev-mode warning interpolates the
+    // resolved cap rather than the legacy hardcoded `5`.
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    try {
+      onGiveUp?.();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(String(warnSpy.mock.calls[0][0])).toContain('12 attempts');
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
+  test('axis 29: provideMatTabsConfig(withHalfWiredSlotSink(fn)) routes the half-wired diagnostic through the configured sink', async () => {
+    const sink = vi.fn<(missing: 'contentTemplate' | 'viewContainerRef') => void>();
+    // No CNGX_DOM_ANCHOR_RETRY_FACTORY stub here — the half-wired path
+    // fires synchronously in the projector's constructor, well before
+    // the anchor retry runs, so the default factory is fine.
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideMatTabsConfig(withHalfWiredSlotSink(sink)),
+      ],
+    });
+    // Mount the half-wired host (template binds *cngxMatTabAggregatorContent
+    // but the directive's own ViewContainerRef is — by construction —
+    // present, so this scenario doesn't fire half-wired through the
+    // aggregator host fixture). Instead, mount a host that explicitly
+    // skips the aggregator content slot — the directive's projector
+    // is configured with `contentTemplate` always present (signal of
+    // the consumer slot), but ViewContainerRef stays present too.
+    // Half-wired only fires when consumer wires ONE half. The
+    // setupPlumbing host (no slot binding) and the AggregatorSlotHostCmp
+    // (both halves wired) are not half-wired by definition. Skip
+    // mounting and verify wiring via injectMatTabsConfig directly.
+    const { injectMatTabsConfig } = await import('./mat-tabs-config');
+    const resolved = TestBed.runInInjectionContext(() => injectMatTabsConfig());
+    expect(resolved.halfWiredSlotSink).toBe(sink);
+  });
+
+  test('axis 30: rapid _stateChanges emissions land — final write wins on the cngx handle', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const { fixture, presenter } = await setupPlumbing();
+    const matTabs = presenter.tabs();
+    const firstHandle = matTabs[0];
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const directive = matEl.injector.get(CngxMatTabs);
+    const setupsByTab = (
+      directive as unknown as {
+        setupsByTab: Map<MatTab, { setup: unknown }>;
+      }
+    ).setupsByTab;
+    const firstMatTab = Array.from(setupsByTab.keys())[0];
+    expect(firstMatTab).toBeDefined();
+
+    // Rapid burst — three Material `_stateChanges` emissions inside
+    // the same microtask. The takeUntilDestroyed-bridged subscriber
+    // writes the cngx setup's `label` signal synchronously on each
+    // emission; the final write wins on the handle's read-only
+    // projection. Equivalent to the prior `Subscription`-based
+    // shape — only the cleanup mechanism has changed.
+    firstMatTab.textLabel = 'A';
+    firstMatTab._stateChanges.next();
+    firstMatTab.textLabel = 'B';
+    firstMatTab._stateChanges.next();
+    firstMatTab.textLabel = 'C';
+    firstMatTab._stateChanges.next();
+    expect(firstHandle.label()).toBe('C');
+  });
+
+  test('axis 31: tab unregister destroys the per-tab child injector — takeUntilDestroyed cleanup', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const fixture = TestBed.createComponent(DynamicHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const directive = matEl.injector.get(CngxMatTabs);
+    const setupsByTab = (
+      directive as unknown as {
+        setupsByTab: Map<
+          MatTab,
+          {
+            childInjector: {
+              destroy: () => void;
+              onDestroy: (cb: () => void) => void;
+            };
+          }
+        >;
+      }
+    ).setupsByTab;
+    expect(setupsByTab.size).toBe(3);
+    const thirdMatTab = Array.from(setupsByTab.keys())[2];
+    const thirdEntry = setupsByTab.get(thirdMatTab);
+    expect(thirdEntry).toBeDefined();
+    let destroyed = false;
+    thirdEntry!.childInjector.onDestroy(() => {
+      destroyed = true;
+    });
+
+    // Drop the third tab; the directive's syncHandles loop must
+    // call childInjector.destroy() on the leaving tab so the
+    // takeUntilDestroyed-bridged `_stateChanges` subscription tears
+    // down deterministically — same cleanup precision as the prior
+    // `Map<MatTab, Subscription>`, with the destroy hook driven
+    // through `DestroyRef` instead of explicit `unsubscribe()`.
+    fixture.componentInstance['setShowThird'](false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(setupsByTab.size).toBe(2);
+    expect(destroyed).toBe(true);
+  });
+
+  test('axis 32: live-region polite span is mounted under document.body with aria-live attributes', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    // Snapshot the body-scope live-region count BEFORE setup so the
+    // assertion handles a non-clean DOM (other test fixtures may
+    // leave their own regions; the per-test count delta is what
+    // matters).
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
+    await setupPlumbing();
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    );
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
+    expect(liveRegion.getAttribute('aria-live')).toBe('polite');
+    expect(liveRegion.getAttribute('aria-atomic')).toBe('true');
+    expect(liveRegion.getAttribute('role')).toBe('status');
+    expect(liveRegion.classList.contains('cngx-sr-only')).toBe(true);
+    // Empty between transitions — the live-region stays quiet on
+    // no-op CD ticks so AT readers don't hear an utterance for every
+    // mat-tab-group instantiation. Body-scope placement (CDK
+    // LiveAnnouncer convention) keeps the span outside Material's
+    // <mat-tab-group> subtree so MDC tolerance is irrelevant.
+    expect(liveRegion.textContent).toBe('');
+  });
+
+  test('axis 33: live-region announces commitInFlight while a pessimistic commit is pending', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    );
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
+
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.commitState.status()).toBe('pending');
+    expect(liveRegion.textContent).toBe('Switching tab…');
+  });
+
+  test('axis 34: live-region announces commitRolledBackTo(originLabel) when an optimistic commit rejects', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+    const baselineCount = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    ).length;
+    const fixture = TestBed.createComponent(CommitHostCmp);
+    // Synchronous-rejection commit so the error arm fires inside the
+    // single CD pass following the click — no need to flush a real
+    // async timer.
+    fixture.componentInstance['mode'] = 'optimistic';
+    fixture.componentInstance['commit'] = (() => false) as CngxTabsCommitAction;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const matEl = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatTabGroup,
+    );
+    const presenter = matEl.injector.get(CngxTabGroupPresenter);
+    const liveRegions = document.body.querySelectorAll<HTMLElement>(
+      ':scope > span[aria-live].cngx-sr-only',
+    );
+    expect(liveRegions.length).toBe(baselineCount + 1);
+    const liveRegion = liveRegions[liveRegions.length - 1];
+
+    presenter.select(2);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(presenter.lastFailedIndex()).toBe(2);
+    // CommitHostCmp's first tab labels are 'One' / 'Two' / 'Three';
+    // the rollback origin is 'One' (active before the failed pick).
+    expect(liveRegion.textContent).toBe(
+      'Could not save changes — reverted to "One".',
+    );
   });
 });

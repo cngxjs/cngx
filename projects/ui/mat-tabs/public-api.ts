@@ -9,5 +9,20 @@ export {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
 } from './src/decorations/mat-tab-aggregator-content.directive';
+export {
+  CngxMatTabRejectionContent,
+  type CngxMatTabRejectionContentContext,
+} from './src/decorations/mat-tab-rejection-content.directive';
+export type { CngxMatTabHalfWiredSlotSink } from './src/decorations/half-wired-slot-sink';
+export {
+  CNGX_MAT_TABS_CONFIG,
+  type CngxMatTabsConfig,
+  type CngxMatTabsConfigFeature,
+  injectMatTabsConfig,
+  provideMatTabsConfig,
+  provideMatTabsConfigAt,
+  withAnchorRetryAttempts,
+  withHalfWiredSlotSink,
+} from './src/mat-tabs-config';
 export { createMatTabHandle } from './src/material-bridge/handle';
 export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';

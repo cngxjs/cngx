@@ -10,6 +10,7 @@ export const STORY: DemoSpec = {
     'CngxMatTabs',
     'CngxMatTabError',
     'CngxMatTabAggregatorContent',
+    'CngxMatTabRejectionContent',
     'CngxToastOn',
     'CngxBannerOn',
   ],
@@ -21,7 +22,7 @@ export const STORY: DemoSpec = {
     "import { MatTabsModule } from '@angular/material/tabs';",
     "import { type CngxTabsCommitAction } from '@cngx/common/tabs';",
     "import { injectErrorAggregator } from '@cngx/common/interactive';",
-    "import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent } from '@cngx/ui/mat-tabs';",
+    "import { CngxMatTabs, CngxMatTabError, CngxMatTabAggregatorContent, CngxMatTabRejectionContent } from '@cngx/ui/mat-tabs';",
     "import { CngxBanner, CngxToaster, CngxToastOn, CngxBannerOn } from '@cngx/ui/feedback';",
   ],
   setup: `
@@ -96,6 +97,11 @@ export const STORY: DemoSpec = {
       return () => clearTimeout(handle);
     });
   };
+
+  // Always-rejecting commit-action used by the
+  // *cngxMatTabRejectionContent slot demo. Synchronous rejection so
+  // the SR descriptor span lands immediately after the click.
+  protected readonly rejectingCommit: CngxTabsCommitAction = () => false;
   `,
   sections: [
     {
@@ -245,6 +251,34 @@ export const STORY: DemoSpec = {
   <div class="event-grid" style="margin-top:12px">
     <div class="event-row"><span class="event-label">Active overflow tab</span><span class="event-value">{{ overflowActive() }}</span></div>
   </div>`,
+    },
+    {
+      title: 'Custom rejection descriptor via <code>*cngxMatTabRejectionContent</code>',
+      subtitle:
+        'Override the SR descriptor body that <code>[cngxMatTabs]</code> projects into the <code>cngx-sr-only</code> span when a bound <code>commitAction</code> rejects a tab change. Slot context is <code>{ failedHandleId, originLabel, fallbackText }</code>; the surrounding span (with its <code>cngx-sr-only</code> class, stable id, and <code>aria-describedby</code> wiring on the rejected button) stays library-owned. Click any tab below — the simulated commit always rejects, the rejection lands on the clicked tab, and the SR descriptor (visible via DevTools \u2192 Accessibility tree, or via a screen reader) carries the consumer-authored phrase rather than the default <code>commitRolledBackTo(originLabel)</code> string.',
+      imports: ['MatTabsModule', 'CngxMatTabs', 'CngxMatTabRejectionContent'],
+      template: `
+  <mat-tab-group
+    cngxMatTabs
+    [commitAction]="rejectingCommit"
+    commitMode="optimistic"
+    aria-label="Rejection-content slot demo"
+  >
+    <ng-template
+      cngxMatTabRejectionContent
+      let-failedHandleId="failedHandleId"
+      let-originLabel="originLabel"
+      let-fallbackText="fallbackText"
+    >
+      \u26A0 {{ fallbackText }}
+      @if (originLabel) {
+        \u2014 still showing <strong>{{ originLabel }}</strong>
+      }
+    </ng-template>
+    <mat-tab label="Profile">Profile content</mat-tab>
+    <mat-tab label="Settings">Settings content</mat-tab>
+    <mat-tab label="Privacy">Privacy content</mat-tab>
+  </mat-tab-group>`,
     },
   ],
 };
