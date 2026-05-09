@@ -259,16 +259,24 @@ describe('CngxMatStepper organism', () => {
     );
   });
 
-  it('matStepperIcon forwarding nudge does NOT echo back through bidirectional-sync as a spurious presenter.select(0) call', async () => {
-    // The `_iconOverrides` patch ends with `stepper.selectedIndex = idx`
-    // — a self-write of the current value to nudge Material into
-    // re-binding the icon outlets. The nudge MUST NOT trigger an echo
-    // through `createMaterialBidirectionalSync`'s subscription, which
-    // would call `presenter.select(0)` and cancel any in-flight commit
-    // / disrupt the active-step contract on first mount. This axis
-    // pins the no-echo guarantee — captured presenter.select call
-    // count must stay at zero across the full mount cycle for an
-    // initially-zero activeStepIndex.
+  it('matStepperIcon forwarding nudges Material via markForCheck without writing selectedIndex (no echo, no self-write)', async () => {
+    // The `_iconOverrides` patch nudges Material into re-binding its
+    // per-header icon outlets. Pre-fix the nudge was a self-write
+    // `stepper.selectedIndex = stepper.selectedIndex`, which depends
+    // on Material's undocumented same-value setter coercion to avoid
+    // emitting a `selectedIndexChange` echo through
+    // `createMaterialBidirectionalSync` back into `presenter.select(0)`.
+    // The fix uses `ChangeDetectorRef.markForCheck()` on the MatStepper
+    // view — public API, no setter touch, no echo path possible.
+    //
+    // This axis pins both contracts:
+    //   1. presenter.select is NOT called as a spurious echo during
+    //      the icon-forwarding patch (no-echo guarantee).
+    //   2. MatStepper.selectedIndex setter is NOT touched by the
+    //      wrapper at all — the only writes the spy observes come
+    //      from `createMaterialBidirectionalSync`'s presenter→Material
+    //      mirror, which is equality-guarded against the read side
+    //      and does not write when initial values already match.
     @Component({
       standalone: true,
       imports: [CngxMatStepper, CngxStep, MatStepperModule],
@@ -286,8 +294,33 @@ describe('CngxMatStepper organism', () => {
       providers: [provideZonelessChangeDetection()],
     });
     const fixture = TestBed.createComponent(EchoHost);
+    let setterWrites = 0;
+    let lastSetterValue: number | undefined;
     fixture.detectChanges();
     await fixture.whenStable();
+    const matStepper = fixture.debugElement.query(
+      (el) => el.componentInstance instanceof MatStepper,
+    ).componentInstance as MatStepper;
+    // Wrap MatStepper.selectedIndex setter to count wrapper-driven
+    // writes. Wrapped after the initial mount completes so we observe
+    // only the icon-forwarding patch's behaviour on the next render
+    // boundary — pre-fix the patch self-wrote `idx`, post-fix it does
+    // not touch the setter at all.
+    const proto = Object.getPrototypeOf(matStepper);
+    const original = Object.getOwnPropertyDescriptor(proto, 'selectedIndex');
+    const setter = original?.set;
+    if (setter) {
+      Object.defineProperty(matStepper, 'selectedIndex', {
+        configurable: true,
+        get: original?.get,
+        set(v: number) {
+          setterWrites += 1;
+          lastSetterValue = v;
+          setter.call(matStepper, v);
+        },
+      });
+    }
+
     const presenter = fixture.debugElement
       .query((el) => el.componentInstance instanceof CngxMatStepper)
       .injector.get(CngxStepperPresenter);
@@ -300,17 +333,24 @@ describe('CngxMatStepper organism', () => {
       originalSelect(i);
     };
     // Cross the afterNextRender boundary so the icon-forwarding patch
-    // (with its `selectedIndex = idx` nudge) fires.
+    // fires. Two CD cycles match the convention from the
+    // 'does not loop on initial sync' axis and give Material every
+    // opportunity to emit a spurious selectionChange if it would.
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
     await fixture.whenStable();
-    // Self-write of current selectedIndex must not produce an echo —
-    // the bidirectional-sync factory's idempotency guards keep
-    // presenter.select uncalled. Initial activeStepIndex is 0; any
-    // call to select(0) here would prove the echo escapes.
+
     expect(selectCalls).toBe(0);
     expect(presenter.activeStepIndex()).toBe(0);
+    // The wrapper now uses `markForCheck` instead of a setter
+    // self-write. With the bidirectional-sync mirror equality-guarded
+    // against the read side and the presenter sitting at its initial
+    // value (0), there is no legitimate write path either — so the
+    // setter must not be touched at all by the wrapper across the
+    // mount cycle.
+    expect(setterWrites).toBe(0);
+    expect(lastSetterValue).toBeUndefined();
   });
 
   it('pessimistic commitAction holds Material on origin step until resolution', async () => {
