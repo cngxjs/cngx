@@ -1,4 +1,4 @@
-import { computed, signal, type Signal } from '@angular/core';
+import { computed, InjectionToken, signal, type Signal } from '@angular/core';
 import type { MatStep } from '@angular/material/stepper';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -95,3 +95,49 @@ export function createMatStepHandle(
     },
   };
 }
+
+/**
+ * Factory signature for {@link createMatStepHandle}. The DI token
+ * {@link CNGX_MAT_STEP_HANDLE_FACTORY} resolves to a function with
+ * this exact shape — overrides match it identically.
+ *
+ * @category material-bridge
+ */
+export type CngxMatStepHandleFactory = typeof createMatStepHandle;
+
+/**
+ * DI token fronting the per-step handle factory used by the
+ * `[cngxMatStepper]` instrumentation directive. Default is
+ * {@link createMatStepHandle}.
+ *
+ * Symmetric with the tabs sibling
+ * `CNGX_MAT_TAB_HANDLE_FACTORY` and with `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`
+ * — every Material-bridge logic block ships the same swap surface so
+ * consumers can layer telemetry, alternate id strategies, or
+ * test-environment id keying via `providers` / `viewProviders`
+ * without forking the directive.
+ *
+ * Tracked-debt: ships under family-uniformity staging (single
+ * in-package consumer today). See `stepper-accepted-debt §7`.
+ *
+ * @example
+ * ```ts
+ * providers: [
+ *   {
+ *     provide: CNGX_MAT_STEP_HANDLE_FACTORY,
+ *     useValue: ((step, idSeed) => {
+ *       const setup = createMatStepHandle(step, idSeed);
+ *       reportStepRegistered(setup.handle.id);
+ *       return setup;
+ *     }) satisfies CngxMatStepHandleFactory,
+ *   },
+ * ]
+ * ```
+ *
+ * @category material-bridge
+ */
+export const CNGX_MAT_STEP_HANDLE_FACTORY =
+  new InjectionToken<CngxMatStepHandleFactory>('CNGX_MAT_STEP_HANDLE_FACTORY', {
+    providedIn: 'root',
+    factory: () => createMatStepHandle,
+  });
