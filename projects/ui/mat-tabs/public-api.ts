@@ -29,4 +29,5 @@ export {
   createMatTabHandle,
   type CngxMatTabHandleFactory,
 } from './src/material-bridge/handle';
+export { MaterialPrivateSurfaces } from './src/material-bridge/private-surfaces';
 export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';

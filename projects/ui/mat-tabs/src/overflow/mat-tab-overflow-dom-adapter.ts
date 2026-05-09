@@ -1,5 +1,7 @@
 import type { CngxTabOverflowDomAdapter } from '@cngx/common/tabs';
 
+import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
+
 /**
  * Material variant of {@link CngxTabOverflowDomAdapter}.
  *
@@ -41,15 +43,25 @@ export function createCngxMatTabOverflowDomAdapter(): CngxTabOverflowDomAdapter 
       // button keeps the rAF retry loop polling — it will succeed on
       // a subsequent frame once Material's MatTabHeader template has
       // committed.
-      const header = host.closest<HTMLElement>('.mat-mdc-tab-header');
-      const anyTab = header?.querySelector<HTMLElement>('.mat-mdc-tab');
+      const header = host.closest<HTMLElement>(
+        MaterialPrivateSurfaces.MAT_MDC_TAB_HEADER_SELECTOR,
+      );
+      const anyTab = header?.querySelector<HTMLElement>(
+        MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR,
+      );
       return (
-        anyTab?.closest<HTMLElement>('.mat-mdc-tab-label-container') ?? null
+        anyTab?.closest<HTMLElement>(
+          MaterialPrivateSurfaces.MAT_MDC_TAB_LABEL_CONTAINER_SELECTOR,
+        ) ?? null
       );
     },
     resolveTabButton(_handle, root, idx) {
       return (
-        root.querySelectorAll<HTMLElement>('.mat-mdc-tab').item(idx) ?? null
+        root
+          .querySelectorAll<HTMLElement>(
+            MaterialPrivateSurfaces.MAT_MDC_TAB_SELECTOR,
+          )
+          .item(idx) ?? null
       );
     },
   };

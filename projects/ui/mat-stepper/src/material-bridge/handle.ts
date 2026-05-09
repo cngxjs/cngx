@@ -1,4 +1,10 @@
-import { computed, InjectionToken, signal, type Signal } from '@angular/core';
+import {
+  computed,
+  InjectionToken,
+  signal,
+  type Signal,
+  type TemplateRef,
+} from '@angular/core';
 import type { MatStep } from '@angular/material/stepper';
 
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
@@ -30,6 +36,43 @@ export interface CngxMatStepHandleSetup {
 }
 
 /**
+ * Best-effort static-text extraction from a `<ng-template matStepLabel>`
+ * `TemplateRef`. Used as a label fallback when consumers project a
+ * template label without setting `MatStep.label` or
+ * `MatStep.ariaLabel` — without it the cngx-side label slot would
+ * be empty, leaving aria-label phrases that include the step label
+ * with a measurable gap on the Material variant. Static markup
+ * (`<ng-template matStepLabel>Review</ng-template>`) extracts cleanly
+ * via a detached embedded view; templates with dynamic interpolation
+ * fall through (the detached view's CD has no consumer-context
+ * bindings) and the caller's deterministic id-based fallback wins.
+ *
+ * Idempotent: never mutates the source template; the embedded view is
+ * created and destroyed inside one frame's worth of synchronous work.
+ *
+ * @internal
+ */
+function readMatStepLabelTemplateText(
+  template: TemplateRef<unknown>,
+): string | undefined {
+  try {
+    const view = template.createEmbeddedView({});
+    try {
+      view.detectChanges();
+      const text = view.rootNodes
+        .map((node: Node) => node.textContent ?? '')
+        .join('')
+        .trim();
+      return text || undefined;
+    } finally {
+      view.destroy();
+    }
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Translates a Material `MatStep` into a cngx
  * {@link CngxStepRegistration}.
  *
@@ -40,27 +83,50 @@ export interface CngxMatStepHandleSetup {
  *   project nested `<mat-step>` groups (Material's stepper has no
  *   group-of-steps concept; group-aware semantics belong to the
  *   `<cngx-stepper>` thin-wrapper organism).
- * - `label` — snapshot signal seeded from `MatStep.label` when it
- *   is a plain string. When `MatStep.label` is a projected
- *   `<ng-template matStepLabel>`, the cngx label slot is left as
- *   the empty string — Material renders the template directly and
- *   cngx label is informational only. Phase-2 limitation: runtime
- *   string-label changes do not propagate (CdkStep does not expose
- *   a `_stateChanges` Subject analogous to MatTab; the only
- *   reactive surface is `_completedOverride: WritableSignal<...>`
- *   on the completed flag, exploited by `state` below).
+ * - `label` — snapshot signal resolved through a four-tier fallback at
+ *   registration time so cngx-side phrases (announcements,
+ *   `aria-label` composition, telemetry) never read empty when
+ *   Material consumers project a `<ng-template matStepLabel>`:
+ *   1. `MatStep.label` when it is a plain string — the canonical
+ *      shape and the only one that emits a runtime change Material
+ *      itself observes.
+ *   2. `MatStep.ariaLabel` when the consumer set the input —
+ *      designed exactly as the substitute for template labels.
+ *   3. Static-text read from `MatStep.stepLabel.template` via a
+ *      throwaway detached `EmbeddedViewRef` ({@link readMatStepLabelTemplateText}).
+ *      Captures literal `matStepLabel` markup; dynamic interpolation
+ *      bails through to (4).
+ *   4. `Step <id>` — deterministic, derived from the cngx handle
+ *      id. Always non-empty.
+ *   Phase-2 limitation: runtime label changes do not propagate. CDK's
+ *   `CdkStep` does not expose a `_stateChanges` Subject analogous to
+ *   `MatTab._stateChanges`, so cngx cannot re-trigger the snapshot
+ *   when Material flips the input later. Tracked under
+ *   `stepper-accepted-debt §4` alongside the matStepperIcon
+ *   forwarding limitations — both surface the same Material-internal
+ *   coupling family typed in
+ *   `MaterialPrivateSurfaces.CompletedOverrideSource` (see Phase 6.1).
  * - `disabled` — fixed `false`. Material owns step gating via
  *   `linear` + `editable` + `completed`; surfacing a cngx-side
  *   `disabled` would duplicate Material's own click-time enforcement
  *   and is ignored by `<mat-stepper>` itself.
  * - `state` — `computed()` over `MatStep.hasError` / `MatStep.completed`.
- *   `CdkStep.completed` reads `_completedOverride()` (a Signal); the
- *   computed tracks that signal through the getter and re-fires when
- *   Material flips completion. `hasError` is plain-property; the
- *   computed will pick up changes only when the dependency-tracked
- *   read of `_completedOverride` re-fires the computed (acceptable
- *   in practice — error toggles typically come paired with
- *   completion writes).
+ *   `CdkStep.completed`'s getter reads `_completedOverride()` — a
+ *   `WritableSignal<boolean | null>` typed in
+ *   `MaterialPrivateSurfaces.CompletedOverrideSource`. The cngx
+ *   computed transitively tracks that signal through the getter and
+ *   re-fires whenever Material flips completion. `hasError` is a
+ *   plain property setter on `CdkStep`, NOT a Signal — a `hasError`
+ *   write that is not paired with a `completed` change does not
+ *   re-trigger this computed. In practice Material wizards write the
+ *   two together (`step.hasError = true; step.completed = false` in
+ *   error-handler patterns and inside Material's own error-state
+ *   matchers) so the limitation is benign for the documented usage
+ *   pattern. Tracked under `stepper-accepted-debt §4` as the
+ *   `_completedOverride` re-fire contract; the Re-Eval Trigger fires
+ *   when Material exposes a public `_stateChanges`-equivalent Subject
+ *   on `CdkStep` OR a consumer issue confirms an unpaired-`hasError`
+ *   write reaches production.
  * - `errorAggregator` — points at the shared
  *   {@link NO_ERROR_AGGREGATOR} constant.
  *
@@ -71,8 +137,7 @@ export function createMatStepHandle(
   idSeed: () => string,
 ): CngxMatStepHandleSetup {
   const id = idSeed();
-  const labelInput = matStep.label;
-  const labelText = typeof labelInput === 'string' ? labelInput : '';
+  const labelText = resolveStepLabel(matStep, id);
   const label = signal<string>(labelText).asReadonly();
   const disabled = signal<boolean>(false).asReadonly();
   const state = computed<CngxStepStatus>(() => {
@@ -94,6 +159,31 @@ export function createMatStepHandle(
       errorAggregator: NO_ERROR_AGGREGATOR,
     },
   };
+}
+
+/**
+ * Four-tier label fallback walked once at registration time. See the
+ * {@link createMatStepHandle} JSDoc for the full ladder rationale.
+ *
+ * @internal
+ */
+function resolveStepLabel(matStep: MatStep, id: string): string {
+  const labelInput = matStep.label;
+  if (typeof labelInput === 'string' && labelInput.length > 0) {
+    return labelInput;
+  }
+  const ariaLabel = matStep.ariaLabel;
+  if (typeof ariaLabel === 'string' && ariaLabel.length > 0) {
+    return ariaLabel;
+  }
+  const tpl = matStep.stepLabel?.template;
+  if (tpl) {
+    const text = readMatStepLabelTemplateText(tpl);
+    if (text) {
+      return text;
+    }
+  }
+  return `Step ${id}`;
 }
 
 /**
