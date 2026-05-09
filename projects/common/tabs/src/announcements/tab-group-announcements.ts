@@ -1,3 +1,13 @@
+// Single-consumer cross-package factory — staged under the
+// family-uniformity Honest-Absence framing in
+// `.internal/architektur/tabs-accepted-debt.md §9` (alongside
+// `createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
+// Re-Eval Triggers: ≥1 second consumer (e.g. a future
+// `<cngx-vertical-tab-group>`) OR sibling debt closure OR consumer-
+// confirmed dead-code. Until any trigger fires, the factory's exported
+// presence is intentional debt — keeps the Phase-5 announcements
+// extraction symmetric with the cascade-resolver and overflow-binding
+// factories under `@cngx/common/tabs`.
 import { computed, linkedSignal, type Signal } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
