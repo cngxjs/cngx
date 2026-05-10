@@ -14,64 +14,30 @@ import type { CngxSelectCore } from './select-core';
  */
 export interface ADActivationDispatcherOptions<T, V> {
   /**
-   * The listbox whose `ad.activated` stream drives this dispatcher.
-   * Typically the first `viewChild(CngxListbox)`. Null until the view
-   * initialises; the effect skips subscription setup on null and
-   * re-runs when the ref resolves.
+   * Listbox whose `ad.activated` stream drives this dispatcher. Null until
+   * the viewChild resolves; the effect re-runs when it does.
    */
   readonly listboxRef: Signal<CngxListbox<unknown> | null | undefined>;
-  /** Select-core handle — used only to resolve the activated option. */
+  /** Select-core handle for option resolution. */
   readonly core: CngxSelectCore<T, V>;
-  /**
-   * Popover to hide after a successful non-commit activation. Honoured
-   * only when {@link closeOnSelect} is `true`. Omit for multi-select /
-   * combobox / typeahead flavours that keep the panel open.
-   */
+  /** Popover to hide after a non-commit activation when `closeOnSelect`. */
   readonly popoverRef?: Signal<CngxPopover | null | undefined>;
-  /**
-   * When `true`, the dispatcher hides {@link popoverRef} after the
-   * `onActivate` callback returns. True for single-select; false for
-   * multi-select and combobox.
-   */
+  /** Single-select: `true`. Multi/combobox/typeahead: `false`. */
   readonly closeOnSelect: boolean;
-  /**
-   * Current commit action. Resolved inside the dispatcher's `untracked`
-   * block to decide between the commit path and the straight-activate
-   * path — non-null routes to {@link onCommit}, null routes to
-   * {@link onActivate}.
-   */
+  /** Non-null routes to {@link onCommit}; null to {@link onActivate}. */
   readonly commitAction: Signal<CngxSelectCommitAction<V> | null>;
-  /**
-   * Commit path — invoked when {@link commitAction} is non-null. The
-   * consumer owns rollback-snapshot capture, optimistic vs pessimistic
-   * mode, and the call into its own `beginCommit()`. Runs inside
-   * `untracked()`.
-   */
+  /** Commit path. Consumer owns rollback snapshot + mode. Runs untracked. */
   readonly onCommit: (value: T, option: CngxSelectOptionDef<T>) => void;
-  /**
-   * Non-commit path — invoked when {@link commitAction} is null. The
-   * consumer emits `selectionChange` / updates its model here. Popover
-   * auto-close (when {@link closeOnSelect}) runs after this returns.
-   */
+  /** Non-commit path. Popover close runs after this returns. */
   readonly onActivate: (value: T, option: CngxSelectOptionDef<T>) => void;
 }
 
 /**
- * Wire the listbox's ActiveDescendant `activated` stream into the select
- * variant's commit / non-commit callbacks. Installs a single
- * `effect(onCleanup)` that subscribes when the listbox ref resolves and
- * unsubscribes on teardown or re-run.
- *
- * Factored out of the three select variants (single / multi / combobox)
- * to (a) unify subscription lifecycle management, (b) guarantee the
- * activated payload runs inside `untracked` so callbacks can freely
- * read/write signals without polluting the effect's dep set, and
- * (c) enforce the opt-null guard uniformly — an activation whose value
- * does not resolve to a known option is silently dropped.
- *
- * Rollback-state ownership stays in the consumer: the dispatcher is
- * value-shape agnostic, which is why {@link onCommit} only receives the
- * raw activated value + option and not a pre/post snapshot tuple.
+ * Wires `listbox.ad.activated` into the variant's commit / non-commit
+ * callbacks. Single `effect(onCleanup)` — subscribes on ref resolve,
+ * unsubscribes on teardown. Payload runs inside `untracked`; activations
+ * for unknown values are dropped. Value-shape agnostic — rollback
+ * ownership stays in the consumer.
  *
  * @category interactive
  */

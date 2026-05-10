@@ -30,10 +30,7 @@ import type {
 } from './template-slots';
 
 /**
- * Template contexts the select family exposes for override. Each key
- * corresponds to a `*cngxSelect*` template-slot directive — the types
- * mirror the consumer-facing contexts so global defaults stay in lockstep
- * with what `ng-template let-*` bindings receive per instance.
+ * Override contexts mirroring the per-instance `*cngxSelect*` slots.
  *
  * @category interactive
  */
@@ -48,7 +45,7 @@ export interface CngxSelectTemplateContexts {
   readonly optionLabel?: CngxSelectOptionLabelContext;
   readonly error?: CngxSelectErrorContext;
   readonly retryButton?: CngxSelectRetryButtonContext;
-  /** Glyph rendered inside spinner/bar/dots loading + refreshing indicators (no context). */
+  /** Glyph slot inside spinner/bar/dots loading + refreshing indicators. */
   readonly loadingGlyph?: Record<string, never>;
   readonly refreshing?: CngxSelectRefreshingContext;
   readonly commitError?: CngxSelectCommitErrorContext;
@@ -59,34 +56,18 @@ export interface CngxSelectTemplateContexts {
 }
 
 /**
- * Announcer configuration — live-region politeness + formatter.
+ * Live-region announcer config: politeness + formatter.
  *
  * @category interactive
  */
 export interface CngxSelectAnnouncerConfig {
-  /** Whether selection changes are announced via a global live region. */
   readonly enabled?: boolean;
-  /** ARIA-live politeness level. */
   readonly politeness?: 'polite' | 'assertive';
   /**
-   * Message formatter. Receives selection metadata and returns the
-   * sentence read by assistive tech.
-   *
-   * `action` and `count` are only supplied by multi-select variants
-   * (`multi: true`). Single-select consumers leave them undefined; the
-   * library default ignores them on the single-select path for
-   * back-compat with existing overrides.
-   *
-   * `'reordered'` is emitted by `CngxReorderableMultiSelect` when a
-   * chip changes position without gaining or losing membership. The
-   * optional `fromIndex` / `toIndex` pair describes the move; overrides
-   * that don't care about reorder can leave them unread.
-   *
-   * `'created'` is emitted by `CngxActionSelect` / `CngxActionMultiSelect`
-   * after the bound `quickCreateAction` commit resolves — the just-
-   * created item is both added to the panel and marked as selected.
-   * Consumers who don't care about inline creation can leave the branch
-   * unhandled; the library default handles it.
+   * Live-region message formatter.
+   * - `action`/`count`: multi-select only. Single leaves them undefined.
+   * - `'reordered'` + `fromIndex`/`toIndex`: chip move, no membership change.
+   * - `'created'`: inline quick-create.
    */
   readonly format?: (input: {
     readonly selectedLabel: string | null;
@@ -100,189 +81,109 @@ export interface CngxSelectAnnouncerConfig {
 }
 
 /**
- * Library-wide Select configuration. Populated via `provideSelectConfig()` at
- * app bootstrap, overridable per component via view-providers, per-instance
- * via inputs.
- *
- * @category interactive
- */
-/**
- * Visual for the first-load ("skeleton") async view — picks one of the
- * built-in defaults. Per-instance `*cngxSelectLoading` overrides wins over
- * every variant.
+ * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
  *
  * @category interactive
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
- * Visual for the subsequent-load ("refreshing") indicator that overlays
- * the still-visible options. Per-instance `*cngxSelectRefreshing` overrides
- * wins over every variant. `'none'` suppresses the indicator entirely.
+ * Subsequent-load indicator overlaying visible options. Per-instance
+ * `*cngxSelectRefreshing` wins. `'none'` suppresses.
  *
  * @category interactive
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
- * Where the selection indicator (checkbox / checkmark glyph) sits relative
- * to the option label inside a panel row.
+ * Selection-indicator position relative to the option label.
  *
  * @category interactive
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
 /**
- * Visual form of the per-option selection indicator.
+ * Selection-indicator glyph.
  *
- * - `'auto'` resolves to `'checkbox'` in multi-select / combobox panels and
- *   to `'checkmark'` in single-select panels. Matches what most consumers
- *   expect without having to set it per-component.
- * - `'checkbox'` — always render a bordered boxed checkbox.
- * - `'checkmark'` — always render a bare checkmark glyph.
- * - `'radio'` — render a dot-in-circle radio indicator. Intended primarily
- *   for single-select panels that want a radio-style affordance; multi
- *   panels honour the setting too, but the visual contract (exclusive
- *   selection) reads as misleading there. Choose `'radio'` deliberately.
+ * - `'auto'` — `'checkbox'` for multi/combobox, `'checkmark'` for single.
+ * - `'checkbox'` — bordered checkbox.
+ * - `'checkmark'` — bare checkmark.
+ * - `'radio'` — dot-in-circle. Single-select intent; multi panels render
+ *   it but the exclusive-selection visual is misleading there.
  *
  * @category interactive
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
 /**
- * App-wide overrides for the standard ARIA labels used by the select family.
- *
- * All keys are optional — a missing key falls back to the variant's built-in
- * German default (so omitting `withAriaLabels(...)` is guaranteed to be
- * back-compatible). Per-instance inputs (`[clearButtonAriaLabel]`,
- * `[chipRemoveAriaLabel]`) still win over whatever is configured here.
+ * ARIA-label overrides. Per-instance
+ * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
  *
  * @category interactive
  */
 export interface CngxSelectAriaLabels {
-  /**
-   * ARIA label for the built-in clear button. Applied to all variants
-   * that render the clear affordance (single, multi, combobox, typeahead).
-   *
-   * Variant fallback when unset:
-   * - single-select → `'Clear selection'`
-   * - multi / combobox / typeahead → `'Reset selection'`
-   */
+  /** Single → `'Clear selection'`; multi/combobox/typeahead → `'Reset selection'`. */
   readonly clearButton?: string;
-  /**
-   * ARIA label for the per-chip remove button in multi-select and combobox.
-   * Variant fallback when unset: `'Remove'`.
-   */
+  /** Per-chip remove. Default `'Remove'`. */
   readonly chipRemove?: string;
-  /**
-   * ARIA label for the tree-select twisty button when the node is collapsed.
-   * Default `'Expand node'`.
-   */
+  /** Tree-select twisty (collapsed). Default `'Expand node'`. */
   readonly treeExpand?: string;
-  /**
-   * ARIA label for the tree-select twisty button when the node is expanded.
-   * Default `'Collapse node'`.
-   */
+  /** Tree-select twisty (expanded). Default `'Collapse node'`. */
   readonly treeCollapse?: string;
-  /**
-   * ARIA label on the panel-shell loading status region (first-load
-   * spinner / bar / dots / skeleton wrapper). Read by AT when the panel
-   * opens against a pending state. Default `'Loading options'`.
-   */
+  /** Panel-shell loading status region. Default `'Loading options'`. */
   readonly statusLoading?: string;
-  /**
-   * ARIA label on the panel-shell refreshing-indicator (subsequent-load
-   * progress bar / spinner / dots overlay shown while options stay
-   * visible). Default `'Refreshing options'`.
-   */
+  /** Panel-shell refreshing overlay. Default `'Refreshing options'`. */
   readonly statusRefreshing?: string;
-  /**
-   * Last-resort fallback for the `fieldLabel` substituted into the
-   * announcer's `format()` template when neither `[label]` nor
-   * `[aria-label]` are bound. Default `'Selection'`.
-   */
+  /** Announcer `fieldLabel` last-resort fallback. Default `'Selection'`. */
   readonly fieldLabelFallback?: string;
-  /**
-   * Default error message rendered when a `[commitAction]` rejects and
-   * no inline message is supplied by the thrown error. Default
-   * `'Save failed'`.
-   */
+  /** `[commitAction]` rejection fallback. Default `'Save failed'`. */
   readonly commitFailedMessage?: string;
-  /**
-   * ARIA label on the built-in `<cngx-select-search>` filter input.
-   * Per-instance `[aria-label]` wins; absent that, this configured
-   * value applies; absent both, the input has no `aria-label` and
-   * falls through to the placeholder for AT naming. Default
-   * `'Search options'`.
-   */
+  /** `<cngx-select-search>` input. Default `'Search options'`. */
   readonly searchInput?: string;
 }
 
 /**
- * Tuning parameters for the built-in recycler-backed virtualiser.
- * Every field is optional; omitted keys use the defaults shown below.
- * Consumers who need different knobs (custom scrollElement, per-index
- * estimateSize function, grid layout) bypass this and provide
- * `CNGX_PANEL_RENDERER_FACTORY` directly.
+ * Built-in recycler virtualiser tuning. Provide
+ * `CNGX_PANEL_RENDERER_FACTORY` directly for custom scrollElement,
+ * per-index `estimateSize`, or grid layout.
  *
  * @category interactive
  */
 export interface CngxSelectVirtualizationConfig {
-  /** Estimated item height in px. Default `32`. */
+  /** Item height in px. Default `32`. */
   readonly estimateSize?: number;
-  /** Rows rendered outside the viewport for smoother scroll. Default `5`. */
+  /** Rows outside the viewport. Default `5`. */
   readonly overscan?: number;
-  /**
-   * Minimum option count below which virtualisation is skipped
-   * (identity rendering). Useful when the same config applies to
-   * selects of wildly varying sizes. `0` (default) always
-   * virtualises when the config is present.
-   */
+  /** Skip virtualisation below this count (identity render). Default `0`. */
   readonly threshold?: number;
-  /** Passed verbatim to `injectRecycler.scrollDebounce`. Default `16` ms. */
+  /** Forwarded to `injectRecycler.scrollDebounce`. Default `16` ms. */
   readonly scrollDebounce?: number;
-  /** Passed verbatim to `injectRecycler.skeletonDelay`. Default `0`. */
+  /** Forwarded to `injectRecycler.skeletonDelay`. Default `0`. */
   readonly skeletonDelay?: number;
 }
 
 /**
- * Visible fallback labels the shared `CngxSelectPanelShell` renders
- * when the consumer hasn't projected a custom template for the
- * corresponding view slot (`*cngxSelectLoading`, `*cngxSelectEmpty`,
- * `*cngxSelectError`, `*cngxSelectCommitError`). Every key is optional
- * — a missing key keeps the library default (mixed DE/EN, preserved
- * from day one). Apps that ship an `<cngx-select>` against a non-DE,
- * non-EN locale override the full bundle via
- * `provideSelectConfig(withFallbackLabels({ ... }))` OR per-slot.
- *
- * Per-instance template projection still wins — a slot with a custom
- * `TemplateRef` never reaches the fallback path.
+ * Fallback labels for `CngxSelectPanelShell`'s built-in views.
+ * Per-instance template projection wins.
  *
  * @category interactive
  */
 export interface CngxSelectFallbackLabels {
-  /** Fallback body when `loadingVariant === 'text'`. Default `'Loading…'`. */
+  /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
   readonly loading?: string;
-  /** Fallback body for the `empty` / `none` async views. Default `'No Options'`. */
+  /** `empty`/`none` views. Default `'No Options'`. */
   readonly empty?: string;
-  /** Fallback message for the first-load error case. Default `'Loading failed'`. */
+  /** First-load error. Default `'Loading failed'`. */
   readonly loadFailed?: string;
-  /** Fallback retry-button label for the first-load error. Default `'Retry'`. */
+  /** First-load error retry button. Default `'Retry'`. */
   readonly loadFailedRetry?: string;
-  /**
-   * Fallback message for the inline refresh error (options stale + a
-   * refresh attempt failed). Default `'Refresh failed'`.
-   */
+  /** Inline refresh error. Default `'Refresh failed'`. */
   readonly refreshFailed?: string;
-  /** Fallback retry-button label for the inline refresh error. Default `'Try again'`. */
+  /** Inline refresh error retry button. Default `'Try again'`. */
   readonly refreshFailedRetry?: string;
-  /**
-   * Fallback message for the commit-error banner (fires when a
-   * bound `[commitAction]` rejects with `commitErrorDisplay === 'banner'`).
-   * Default `'Save failed'`.
-   */
+  /** Commit-error banner. Default `'Save failed'`. */
   readonly commitFailed?: string;
-  /** Fallback retry-button label for the commit-error banner. Default `'Try again'`. */
+  /** Commit-error retry button. Default `'Try again'`. */
   readonly commitFailedRetry?: string;
 }
 
@@ -303,36 +204,13 @@ export interface CngxSelectConfig {
   /** Default surface for `commitAction` errors: banner, inline, or none. */
   readonly commitErrorDisplay?: CngxSelectCommitErrorDisplay;
   /**
-   * Default placement of the popover panel relative to the trigger for
-   * every flat select-family variant (`CngxSelect`, `CngxMultiSelect`,
-   * `CngxCombobox`, `CngxTypeahead`, `CngxReorderableMultiSelect`,
-   * `CngxTreeSelect`). Accepts the full `PopoverPlacement` union the
-   * `cngxPopover` directive understands (`'top'`, `'top-start'`,
-   * `'bottom-end'`, `'right'`, …). Per-instance `[popoverPlacement]`
-   * input wins over component-scoped `provideSelectConfigAt`, which
-   * wins over app-wide `provideSelectConfig`. Defaults to `'bottom'`.
-   *
-   * The two action organisms read
-   * {@link /projects/forms/select/src/lib/shared/action-select-config.ts
-   * CngxActionSelectConfig.popoverPlacement} instead — kept separate so
-   * an app can open actions above the trigger while keeping the flat
-   * variants below (or vice versa) without per-instance overrides.
+   * Popover placement for every flat variant. Default `'bottom'`. Action
+   * organisms read `CngxActionSelectConfig.popoverPlacement` instead.
    */
   readonly popoverPlacement?: PopoverPlacement;
   /**
-   * Default `inputmode` attribute for the input-trigger variants
-   * (`CngxCombobox`, `CngxTypeahead`, `CngxActionSelect`,
-   * `CngxActionMultiSelect`). Tells the browser — especially iOS /
-   * Android — which virtual keyboard layout to show. Defaults to
-   * `'search'` because all four variants' inline inputs function as
-   * search-filters over the panel's options. Override to `'text'`
-   * for apps where the input doubles as free-form text entry, or to
-   * `'email'` / `'url'` / `'tel'` / `'numeric'` / `'decimal'` for
-   * typed value lookups.
-   *
-   * Per-instance `[inputMode]` input wins. Button-trigger variants
-   * (`CngxSelect`, `CngxMultiSelect`, `CngxReorderableMultiSelect`,
-   * `CngxTreeSelect`) don't read this key — they have no `<input>`.
+   * `inputmode` for input-trigger variants. Default `'search'`.
+   * Button-trigger variants don't read this.
    */
   readonly inputMode?:
     | 'search'
@@ -344,18 +222,9 @@ export interface CngxSelectConfig {
     | 'decimal'
     | 'none';
   /**
-   * Default `enterkeyhint` attribute for the input-trigger variants.
-   * Tells the browser which action-label to render on the virtual
-   * keyboard's Enter key — `'search'`, `'go'`, `'done'`, etc.
-   *
-   * Library defaults per variant when unset:
-   * - `CngxTypeahead` → `'done'` (Enter commits + closes)
-   * - `CngxCombobox` → `'enter'` (Enter toggles without closing)
-   * - `CngxActionSelect` → `'go'` (Enter fires quick-create)
-   * - `CngxActionMultiSelect` → `'enter'` (Enter appends a chip)
-   *
-   * A non-null value here forces the hint across every variant;
-   * per-instance `[enterKeyHint]` still wins.
+   * `enterkeyhint` forced across input-trigger variants. `null` keeps
+   * each variant's baseline (Typeahead `'done'`, Combobox `'enter'`,
+   * ActionSelect `'go'`, ActionMultiSelect `'enter'`).
    */
   readonly enterKeyHint?:
     | 'enter'
@@ -367,67 +236,23 @@ export interface CngxSelectConfig {
     | 'send'
     | null;
   /**
-   * Layout strategy for the chip strip inside multi-value triggers
-   * (`CngxMultiSelect`, `CngxCombobox`, `CngxReorderableMultiSelect`,
-   * `CngxActionMultiSelect`, `CngxTreeSelect`). Controls what happens
-   * when a consumer's value bag outgrows the trigger's natural width.
-   *
-   * - `'wrap'` (default, historical behaviour): chips wrap to new
-   *   lines, trigger grows unbounded vertically.
-   * - `'scroll-x'`: chips stay on one row, overflow horizontally
-   *   scrollable. Preserves trigger height at any value-count.
-   * - `'truncate'`: render the first `maxVisibleChips` chips then a
-   *   `+N weitere` badge. Keeps the trigger compact; consumer owns
-   *   the full selection via the panel or a `*cngxMultiSelectTriggerLabel`
-   *   override.
-   *
-   * Per-instance `[chipOverflow]` input still wins. Single-value
-   * variants don't read this key.
+   * Chip-strip overflow for multi-value triggers.
+   * - `'wrap'` (default) — chips wrap, trigger grows.
+   * - `'scroll-x'` — single row, horizontal scroll.
+   * - `'truncate'` — first `maxVisibleChips` chips + `+N` badge.
    */
   readonly chipOverflow?: 'wrap' | 'scroll-x' | 'truncate';
   /**
-   * Opt-in virtualisation for every select-family variant in the
-   * config's scope. When present, the variant internally wires a
-   * {@link /projects/common/data/src/recycler/recycler.ts injectRecycler}
-   * against its own popover scroll container — no consumer wrapper
-   * component, no `CNGX_PANEL_RENDERER_FACTORY` override needed for
-   * the common case. Provider-cascaded like every other config key:
-   *
-   * - App-wide: `provideSelectConfig(withVirtualization({ estimateSize: 36 }))`
-   *   — every `<cngx-select>` etc. virtualises.
-   * - Component-scoped: `viewProviders: [...provideSelectConfigAt(withVirtualization())]`
-   *   — only the selects inside this scope virtualise.
-   * - Default (absent / undefined): identity rendering, every option
-   *   in the DOM.
-   *
-   * Consumers who need fully custom virtualisation (CDK viewport,
-   * server-side paging, third-party libs) still provide
-   * `CNGX_PANEL_RENDERER_FACTORY` directly — that token wins over
-   * the config-driven recycler.
+   * Opt-in recycler virtualisation. Custom virtualisation pipelines
+   * provide `CNGX_PANEL_RENDERER_FACTORY` directly — that token wins.
    */
   readonly virtualization?: CngxSelectVirtualizationConfig | null;
-  /**
-   * When `chipOverflow === 'truncate'`, the maximum number of chips
-   * rendered before the `+N weitere` badge appears. Values ≤ 0 are
-   * coerced to `1` (the badge alone never makes sense). Defaults to
-   * `3`. Per-instance `[maxVisibleChips]` input still wins.
-   */
+  /** Truncate threshold. Values ≤ 0 coerced to `1`. Default `3`. */
   readonly maxVisibleChips?: number;
   /**
-   * Default live-region policy used when a scalar-commit fails. Every
-   * scalar variant (`CngxSelect`, `CngxTypeahead`, `CngxActionSelect`)
-   * feeds this through `createCommitErrorAnnouncer` so assistive tech
-   * reads either the full error message ({@link CngxCommitErrorAnnouncePolicy}
-   * `kind: 'verbose'`) or a soft "selection removed" sentence
-   * (`kind: 'soft'`).
-   *
-   * Library default **`null`** — each variant applies its own shipped
-   * baseline (`CngxSelect` → verbose/assertive, `CngxTypeahead` +
-   * `CngxActionSelect` → soft). Setting a concrete policy here forces
-   * every scalar variant to adopt it; per-instance
-   * `[commitErrorAnnouncePolicy]` still wins. Array-commit variants
-   * (multi / combobox / reorderable / action-multi) announce through
-   * their shared "removed" formatter path and don't read this key.
+   * Forces the scalar-commit error announce policy. `null` keeps each
+   * variant's baseline (CngxSelect verbose/assertive, Typeahead +
+   * ActionSelect soft). Array-commit variants don't read this.
    */
   readonly commitErrorAnnouncePolicy?: CngxCommitErrorAnnouncePolicy | null;
   /** Class(es) applied to the panel root for theming. */
@@ -459,30 +284,11 @@ export interface CngxSelectConfig {
   readonly openOn?: 'click' | 'focus' | 'click+focus';
   /** Live-region announcer config. */
   readonly announcer?: CngxSelectAnnouncerConfig;
-  /**
-   * App-wide ARIA label overrides — avoids hardcoded German strings on
-   * every consumer. Partial — omit a key to keep the variant's built-in
-   * default. Per-instance input still wins.
-   */
+  /** ARIA-label overrides. Partial. Per-instance input wins. */
   readonly ariaLabels?: CngxSelectAriaLabels;
-  /**
-   * App-wide visible-label overrides for the shared panel-shell's
-   * async-view fallback UI (loading text, empty body, load/refresh/
-   * commit error messages + retry button labels). See
-   * {@link CngxSelectFallbackLabels} for the key list + library
-   * defaults. Partial — omit a key to keep the default. Per-instance
-   * `*cngxSelectLoading` / `*cngxSelectEmpty` / `*cngxSelectError` /
-   * `*cngxSelectCommitError` template projection still wins.
-   */
+  /** Panel-shell async-view fallback labels. Per-instance template wins. */
   readonly fallbackLabels?: CngxSelectFallbackLabels;
-  /**
-   * Default template overrides (applied when a component instance doesn't
-   * project its own). Each slot carries the same typed context a
-   * per-instance `*cngxSelect*` directive would receive — so the
-   * consumer's `ng-template let-*` bindings are type-checked against
-   * the real shape no matter whether the template is projected per
-   * instance or supplied globally via config.
-   */
+  /** Default template overrides applied when no per-instance slot is projected. */
   readonly templates?: {
     readonly check?: TemplateRef<CngxSelectCheckContext> | null;
     readonly caret?: TemplateRef<CngxSelectCaretContext> | null;
@@ -504,11 +310,7 @@ export interface CngxSelectConfig {
   };
 }
 
-/**
- * Library defaults — merged with anything provided by `provideSelectConfig`.
- *
- * @internal
- */
+/** Library defaults merged with `provideSelectConfig` user values. @internal */
 export const CNGX_SELECT_DEFAULTS: Required<
   Omit<
     CngxSelectConfig,
@@ -531,9 +333,7 @@ export const CNGX_SELECT_DEFAULTS: Required<
   commitErrorAnnouncePolicy: null,
   popoverPlacement: 'bottom',
   inputMode: 'search',
-  // `null` lets each input-trigger variant apply its own enterkeyhint
-  // baseline when the app config is silent. Explicit string forces the
-  // hint across every variant.
+  // null = each variant applies its own enterkeyhint baseline.
   enterKeyHint: null as
     | 'enter'
     | 'done'
@@ -560,12 +360,8 @@ export const CNGX_SELECT_DEFAULTS: Required<
     enabled: true,
     politeness: 'polite',
     format: ({ selectedLabel, fieldLabel, multi, action, count, toIndex }): string => {
-      // `'created'` path (inline quick-create via `CngxActionSelect` /
-      // `CngxActionMultiSelect`) reads identically in single + multi —
-      // the item was just created AND picked in the same commit, so the
-      // standard "selected" / "added" verbs would mis-describe the
-      // delta. Handled before the multi branch so both cardinalities
-      // share the same sentence shape.
+      // `'created'` reads identically in single + multi — both
+      // cardinalities share the sentence shape.
       if (action === 'created') {
         if (selectedLabel == null) {
           return `${fieldLabel}: created`;
@@ -578,10 +374,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
         }
         return `${fieldLabel}: ${selectedLabel} selected`;
       }
-      // Multi-select path: prefer the action + count detail when the
-      // caller supplies them — gives AT users the delta ("added" /
-      // "removed" / "reordered") plus the resulting selection size
-      // or the new position for reorders.
       if (action === 'reordered') {
         if (selectedLabel == null) {
           return `${fieldLabel}: moved`;
@@ -592,7 +384,6 @@ export const CNGX_SELECT_DEFAULTS: Required<
         return `${fieldLabel}: ${selectedLabel} moved`;
       }
       if (selectedLabel == null) {
-        // Clear-all or last option removed.
         return `${fieldLabel}: selection cleared`;
       }
       const verb = action === 'removed' ? 'removed' : 'added';
@@ -643,27 +434,20 @@ export const CNGX_SELECT_DEFAULTS: Required<
 };
 
 /**
- * Injection token that carries the resolved {@link CngxSelectConfig} for the
- * current injector scope. Falls back to {@link CNGX_SELECT_DEFAULTS}.
+ * Resolved {@link CngxSelectConfig} token.
  *
  * @category interactive
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 
 /**
- * Feature returned by a `with*` function — merged by `provideSelectConfig`.
+ * Feature returned by a `with*` helper. Merged by `provideSelectConfig`.
  *
  * @category interactive
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;
-  /**
-   * Discriminator consumed by `provideCngxSelect` to dispatch a feature
-   * to the correct provider. Hidden from the public type surface so
-   * existing consumers and the docs site stay unchanged.
-   *
-   * @internal
-   */
+  /** @internal Discriminator for `provideCngxSelect` dispatch. */
   readonly _target?: 'select';
 }
 
@@ -681,7 +465,7 @@ export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelec
 }
 
 /**
- * Visual for the first-load indicator. Defaults to `'spinner'`.
+ * First-load indicator variant. Default `'spinner'`.
  *
  * @category interactive
  */
@@ -690,8 +474,7 @@ export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelec
 }
 
 /**
- * Number of skeleton rows rendered when `loadingVariant === 'skeleton'`.
- * Defaults to `3`.
+ * Sets `skeletonRowCount`. Default `3`.
  *
  * @category interactive
  */
@@ -700,8 +483,7 @@ export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
 }
 
 /**
- * Visual for the subsequent-load indicator (refreshing, options stay visible).
- * Defaults to `'bar'`. Use `'none'` to suppress the indicator entirely.
+ * Sets the refreshing indicator. Default `'bar'`. `'none'` suppresses.
  *
  * @category interactive
  */
@@ -712,8 +494,7 @@ export function withRefreshingVariant(
 }
 
 /**
- * Default surface for `[commitAction]` errors when no
- * `*cngxSelectCommitError` template is projected. Defaults to `'banner'`.
+ * Default `[commitAction]` error surface. Default `'banner'`.
  *
  * @category interactive
  */
@@ -724,13 +505,8 @@ export function withCommitErrorDisplay(
 }
 
 /**
- * Override the scalar-commit error-announce policy app-wide. Forces
- * `CngxSelect` / `CngxTypeahead` / `CngxActionSelect` to adopt the
- * supplied policy as their baseline. Pass `null` to restore each
- * variant's shipped default (`CngxSelect` verbose/assertive,
- * `CngxTypeahead` + `CngxActionSelect` soft).
- *
- * Per-instance `[commitErrorAnnouncePolicy]` input still wins.
+ * Forces the scalar-commit error-announce policy. `null` restores each
+ * variant's baseline.
  *
  * @category interactive
  */
@@ -741,14 +517,8 @@ export function withCommitErrorAnnouncePolicy(
 }
 
 /**
- * Default popover placement for every flat select-family variant.
- * Accepts any `PopoverPlacement` the `cngxPopover` directive
- * understands. Defaults to `'bottom'`. Per-instance
- * `[popoverPlacement]` input still wins.
- *
- * Action organisms use the sibling `withActionPopoverPlacement` on
- * `provideActionSelectConfig` so an app can open actions above the
- * trigger while keeping flat variants below.
+ * Default popover placement for flat variants. Default `'bottom'`.
+ * Action organisms use `withActionPopoverPlacement`.
  *
  * @category interactive
  */
@@ -759,9 +529,7 @@ export function withPopoverPlacement(
 }
 
 /**
- * Override the default `inputmode` attribute for every input-trigger
- * variant. Library default is `'search'`. See
- * {@link CngxSelectConfig.inputMode} for the full enum.
+ * Sets `inputmode` for input-trigger variants. Default `'search'`.
  *
  * @category interactive
  */
@@ -772,11 +540,8 @@ export function withInputMode(
 }
 
 /**
- * Force the `enterkeyhint` attribute across every input-trigger
- * variant. Pass `null` (default) to restore each variant's
- * enterkeyhint baseline:
- * `CngxTypeahead` → `'done'`, `CngxCombobox` → `'enter'`,
- * `CngxActionSelect` → `'go'`, `CngxActionMultiSelect` → `'enter'`.
+ * Forces `enterkeyhint` across input-trigger variants. `null` restores
+ * each variant's baseline.
  *
  * @category interactive
  */
@@ -787,10 +552,7 @@ export function withEnterKeyHint(
 }
 
 /**
- * Override the chip-strip overflow strategy for every multi-value
- * variant. See {@link CngxSelectConfig.chipOverflow} for the three
- * modes (`'wrap'` | `'scroll-x'` | `'truncate'`). Defaults to
- * `'wrap'`.
+ * Sets the chip-strip overflow mode. Default `'wrap'`.
  *
  * @category interactive
  */
@@ -801,8 +563,7 @@ export function withChipOverflow(
 }
 
 /**
- * Override the `maxVisibleChips` threshold for `chipOverflow: 'truncate'`
- * mode. Values ≤ 0 are coerced to `1`. Defaults to `3`.
+ * Sets `maxVisibleChips` for truncate mode. Coerces ≤ 0 to `1`. Default `3`.
  *
  * @category interactive
  */
@@ -811,16 +572,9 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
 }
 
 /**
- * Opt in to recycler-backed virtualisation for every select-family
- * variant in this config's scope. Pass an object to tune
- * `estimateSize` / `overscan` / `threshold` / `scrollDebounce` /
- * `skeletonDelay`, or pass `{}` / `true` for the defaults. Pass
- * `null` (default) to fall back to identity rendering.
- *
- * Per-component override via `provideSelectConfigAt` in viewProviders.
- * Custom virtualisation pipelines (CDK viewport, third-party, server-
- * side paging) bypass this and provide `CNGX_PANEL_RENDERER_FACTORY`
- * directly.
+ * Opts in to recycler virtualisation. `{}` / `true` uses defaults;
+ * `null` / `false` falls back to identity. Custom pipelines provide
+ * `CNGX_PANEL_RENDERER_FACTORY` directly.
  *
  * @example
  * ```ts
@@ -840,11 +594,8 @@ export function withVirtualization(
 }
 
 /**
- * App-wide overrides for the panel-shell's visible fallback labels
- * (loading text, empty body, load/refresh/commit error messages +
- * retry button labels). Partial — omit a key to keep the library
- * default. Per-instance template projection (e.g. `*cngxSelectError`)
- * still wins over any config entry here.
+ * Sets the panel-shell visible-fallback labels. Partial. Per-instance
+ * template projection wins.
  *
  * @example
  * ```ts
@@ -881,7 +632,7 @@ export function withPanelClass(
 }
 
 /**
- * Typeahead buffer debounce in ms (default `300`).
+ * Typeahead buffer debounce in ms. Default `300`.
  *
  * @category interactive
  */
@@ -890,8 +641,7 @@ export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
 }
 
 /**
- * Whether typing a character commits a value while the panel is closed
- * (native `<select>` parity). Default `true`.
+ * Typeahead-while-closed (native `<select>` parity). Default `true`.
  *
  * @category interactive
  */
@@ -909,8 +659,7 @@ export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeatur
 }
 
 /**
- * Position of the per-option selection indicator inside a panel row.
- * Defaults to `'before'`.
+ * Sets the selection-indicator position. Default `'before'`.
  *
  * @category interactive
  */
@@ -921,11 +670,7 @@ export function withSelectionIndicatorPosition(
 }
 
 /**
- * Visual form of the per-option selection indicator — `'auto'` (default),
- * `'checkbox'`, `'checkmark'`, or `'radio'`. `'auto'` resolves to
- * `'checkbox'` for multi-select / combobox and `'checkmark'` for
- * single-select. `'radio'` opts into the dot-in-circle indicator atom
- * for single-select-style panels.
+ * Sets the selection-indicator glyph. Default `'auto'`.
  *
  * @category interactive
  */
@@ -981,10 +726,7 @@ export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConf
 }
 
 /**
- * App-wide ARIA label overrides — avoids hardcoded German strings on
- * every consumer. Partial: omit a key to keep the variant's built-in
- * fallback. Per-instance `[clearButtonAriaLabel]` / `[chipRemoveAriaLabel]`
- * inputs still win over this configuration.
+ * Sets ARIA-label overrides. Partial. Per-instance inputs win.
  *
  * @example
  * ```ts
@@ -1007,11 +749,8 @@ export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFe
 }
 
 /**
- * App-wide defaults for all Select-family components.
- *
- * Composable via feature functions (`withPanelWidth`, `withTypeaheadDebounce`,
- * `withSelectionIndicator`, …). Component-level overrides win, per-instance
- * inputs win over that.
+ * App-wide defaults for the Select family. `provideSelectConfigAt` and
+ * per-instance inputs win.
  *
  * @category interactive
  */
@@ -1022,9 +761,8 @@ export function provideSelectConfig(
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
   for (const f of features) {
-    // Pull deep-merged keys out before the flat Object.assign so
-    // subsequent features with partial `announcer` / `templates` /
-    // `ariaLabels` don't blow away earlier keys.
+    // Pull deep-merged keys aside before the flat assign so partial
+    // overrides across features don't wipe earlier keys.
     const { announcer, templates, ariaLabels, ...flat } = f.config;
     Object.assign(merged, flat);
     if (announcer) {
@@ -1043,10 +781,8 @@ export function provideSelectConfig(
 }
 
 /**
- * Component-scoped config override. Returned providers go into a component's
- * `providers` or `viewProviders` via spread syntax — the return type is
- * `Provider[]`, NOT `EnvironmentProviders`, because `viewProviders` cannot
- * accept opaque environment providers.
+ * Component-scoped config. Returns `Provider[]` because `viewProviders`
+ * rejects `EnvironmentProviders`.
  *
  * @example
  * ```ts
@@ -1064,9 +800,8 @@ export function provideSelectConfigAt(
     -readonly [K in keyof CngxSelectConfig]?: CngxSelectConfig[K];
   } = {};
   for (const f of features) {
-    // Pull deep-merged keys out before the flat Object.assign so
-    // subsequent features with partial `announcer` / `templates` /
-    // `ariaLabels` don't blow away earlier keys.
+    // Pull deep-merged keys aside before the flat assign so partial
+    // overrides across features don't wipe earlier keys.
     const { announcer, templates, ariaLabels, ...flat } = f.config;
     Object.assign(merged, flat);
     if (announcer) {

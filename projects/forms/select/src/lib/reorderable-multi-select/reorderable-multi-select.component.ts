@@ -108,10 +108,9 @@ import {
 } from '../shared/template-slots';
 
 /**
- * Change event emitted by {@link CngxReorderableMultiSelect.selectionChange}
- * and {@link CngxReorderableMultiSelect.reordered}. The `'reorder'` action
- * branch carries `fromIndex` / `toIndex`; the other branches leave them
- * `undefined`, matching the flat-family change-shape.
+ * Change event emitted by `CngxReorderableMultiSelect.selectionChange`
+ * and `.reordered`. The `'reorder'` branch carries `fromIndex` /
+ * `toIndex`; other branches leave them `undefined`.
  *
  * @category interactive
  */
@@ -128,18 +127,14 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
 }
 
 /**
- * Multi-select variant that lets the user reorder the selected values
- * via pointer drag and keyboard moves (configurable modifier + arrow,
- * Home / End). All non-reorder surface — option model, panel, commit
- * lifecycle, Field↔sync, announcer, trigger ARIA — reuses the shared
- * {@link createSelectCore} factory and the same template slots as
- * {@link CngxMultiSelect} (`*cngxMultiSelectChip`,
- * `*cngxMultiSelectTriggerLabel`, `*cngxSelectClearButton`, …). Reorder
- * commits bypass `createArrayCommitHandler.beginToggle` — the handler's
- * `sameArrayContents` guard would skip the write on same-membership
- * reorders — and talk to the commit controller directly, mirroring
- * {@link /projects/forms/select/src/lib/tree-select/tree-select.component.ts
- * CngxTreeSelect.dispatchValueChange}.
+ * Multi-select with pointer-drag and keyboard reorder of selected
+ * values (modifier + arrow, Home/End). Non-reorder surface reuses
+ * {@link createSelectCore} and {@link CngxMultiSelect}'s template
+ * slots.
+ *
+ * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
+ * `sameArrayContents` guard would skip same-membership reorders) and
+ * drive the commit controller directly.
  *
  * @category interactive
  */
@@ -208,11 +203,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
         (keydown)="handleTriggerKeydown($event)"
       >
         <!--
-          Chip strip. cngxReorder is bound with the read-only view of
-          values() -- its items input wants a Signal reference, not
-          the evaluated array. Roving tabindex is inlined (see
-          handleStripKeydown + activeChipIndex) to avoid a double-fire
-          with CngxReorder's modifier-gated handler on the same host.
+          Chip strip. cngxReorder receives the read-only values()
+          Signal -- directive wants a Signal reference, not the array.
+          Roving tabindex inlined (handleStripKeydown + activeChipIndex)
+          to avoid double-firing with CngxReorder's modifier-gated
+          handler on the same host.
         -->
         <span
           class="cngx-select__chip-list"
@@ -383,8 +378,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private readonly reorderableConfig = resolveReorderableSelectConfig();
   private readonly injector = inject(Injector);
 
-  // ── Inputs (shared with CngxMultiSelect) ───────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -401,16 +394,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   /**
-   * Chip-strip overflow strategy. Reorderable enforces that all
-   * chips remain in the DOM (drag-reorder requires it) — a
-   * `'truncate'` value is silently downgraded to `'scroll-x'` via
-   * {@link effectiveChipOverflow}. `'wrap'` (default) and
-   * `'scroll-x'` pass through unchanged.
+   * Chip-strip overflow. All chips must stay in the DOM for drag-
+   * reorder, so `'truncate'` is silently downgraded to `'scroll-x'`
+   * via `effectiveChipOverflow`. `'wrap'` and `'scroll-x'` pass
+   * through.
    */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
@@ -444,41 +436,32 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   readonly values = model<T[]>([]);
 
-  // ── Inputs (reorder-specific) ──────────────────────────────────────
-
   /**
-   * Modifier key required for keyboard-driven reorder moves. Plain arrow
-   * keys keep their default meaning (roving focus across chips); only
-   * modifier + arrow emits a reorder. Forwarded to the inner
-   * {@link CngxReorder} directive. Default comes from
-   * `provideReorderableSelectConfig(withReorderKeyboardModifier(...))`
-   * — fall-through when neither is set: `'ctrl'`.
+   * Modifier required for keyboard reorder moves. Plain arrow keys
+   * keep roving-focus semantics; only modifier+arrow emits a reorder.
+   * Forwarded to the inner {@link CngxReorder}. Default cascades
+   * through `provideReorderableSelectConfig(withReorderKeyboardModifier(...))`
+   * → `'ctrl'`.
    */
   readonly reorderKeyboardModifier = input<CngxReorderModifier>(
     this.reorderableConfig.keyboardModifier,
   );
 
   /**
-   * ARIA label for the chip-strip region. Announced by screen readers
-   * when the user tabs into the strip so they understand they're
-   * entering a reorderable widget. Default cascades through
-   * `provideReorderableSelectConfig(withReorderAriaLabel(...))`.
+   * ARIA label on the chip-strip region. Announced when the user tabs
+   * in so they understand they've entered a reorderable widget.
    */
   readonly reorderAriaLabel = input<string>(this.reorderableConfig.ariaLabel);
 
   /**
-   * Custom drag-handle glyph. When projected, replaces the default
-   * six-dot grip `⋮⋮` rendered before each chip body. Consumer owns
-   * icon choice and ARIA — the handle span stays `aria-hidden="true"`
-   * because the semantic move is owned by the chip wrapper's keyboard
-   * handler + the directive, not the handle itself. Default cascades
-   * through `provideReorderableSelectConfig(withDefaultDragHandle(...))`.
+   * Custom drag-handle glyph. Replaces the default `⋮⋮` grip before
+   * each chip body. Handle span stays `aria-hidden="true"` — the
+   * semantic move belongs to the chip wrapper's keyboard handler +
+   * the directive.
    */
   readonly chipDragHandle = input<TemplateRef<void> | null>(
     this.reorderableConfig.dragHandle,
   );
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxReorderableMultiSelectChange<T>>();
   readonly optionToggled = output<{
@@ -486,10 +469,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     readonly added: boolean;
   }>();
   /**
-   * Dedicated channel for reorder events. Consumers that only care
-   * about positional changes can bind `(reordered)` without having to
-   * branch on `change.action === 'reorder'`. Always fires *after*
-   * `selectionChange` with the same payload.
+   * Dedicated channel for reorder events. Fires after
+   * `selectionChange` with the same payload so consumers only caring
+   * about positional changes can bind `(reordered)` directly.
    */
   readonly reordered = output<CngxReorderableMultiSelectChange<T>>();
   readonly openedChange = output<boolean>();
@@ -499,8 +481,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -527,8 +507,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   );
   private readonly chipDirective = contentChild<CngxMultiSelectChip<T>>(CngxMultiSelectChip);
   /**
-   * Highest-precedence drag-handle slot — wins over `[chipDragHandle]`
-   * Input and the default glyph fallback. See `CngxMultiSelectChipHandle`.
+   * Highest-precedence drag-handle slot. Wins over `[chipDragHandle]`
+   * and the default glyph.
    */
   private readonly chipHandleDirective =
     contentChild<CngxMultiSelectChipHandle>(CngxMultiSelectChipHandle);
@@ -540,8 +520,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   private readonly optionErrorDirective = contentChild<CngxSelectOptionError<T>>(
     CngxSelectOptionError,
   );
-
-  // ── Resolved template-slot registry ────────────────────────────────
 
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
@@ -572,10 +550,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   );
 
   /**
-   * Resolved drag-handle template — three-stage cascade:
-   *   1. `*cngxMultiSelectChipHandle` directive (highest precedence).
-   *   2. `[chipDragHandle]` Input.
-   *   3. `null` — template renders {@link defaultDragHandleGlyph}.
+   * Drag-handle template cascade:
+   *   1. `*cngxMultiSelectChipHandle` (highest).
+   *   2. `[chipDragHandle]` input.
+   *   3. `null` → renders {@link defaultDragHandleGlyph}.
    *
    * @internal
    */
@@ -583,16 +561,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.chipHandleDirective()?.templateRef ?? this.chipDragHandle(),
   );
 
-  /** @internal — default '⋮⋮' grip rendered when no template is supplied. */
+  /** @internal — default `⋮⋮` grip when no template is supplied. */
   protected readonly defaultDragHandleGlyph = CNGX_SELECT_GLYPHS.dragHandle;
-
-  // ── ViewChildren ───────────────────────────────────────────────────
 
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
-
-  // ── Public derived signals ─────────────────────────────────────────
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
@@ -613,14 +587,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
-
-  // ── Action-slot bridge ──────────────────────────────────────────────
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -629,8 +599,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
-
-  // ── Core (stateless signal graph) ──────────────────────────────────
 
   private readonly core = createSelectCore<T, T[]>(
     {
@@ -669,10 +637,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer — renders in the next panel emission and silently drops
-   * once the server state includes a matching value. Dedup-guarded
-   * by `compareWith`; duplicate patches are no-ops.
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
    *
    * @category interactive
    */
@@ -688,8 +655,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface (delegates to core) ──────────
 
   /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */ protected readonly flatOptions = this.core.flatOptions;
@@ -719,8 +684,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   readonly disabled = this.core.disabled;
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
-  // ── Typeahead-while-closed ─────────────────────────────────────────
-
   private readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
     compareWith: this.compareWith,
@@ -729,13 +692,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   /**
-   * Flat-nav policy — shared with `CngxSelect` / `CngxMultiSelect` via
-   * `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
-   * closed; the variant only dispatches the resulting action.
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down
+   * and typeahead-while-closed; variant only dispatches the action.
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
-
-  // ── Commit state (shared with the flat family) ─────────────────────
 
   readonly commitState = this.core.commitState;
   readonly isCommitting = this.core.isCommitting;
@@ -858,10 +818,9 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   });
 
   /**
-   * Chip-removal handler — same factory as `CngxMultiSelect`/`CngxCombobox`.
-   * Reorder semantics are independent: chip-remove is always a single
-   * deselect (the strip-keyboard handler owns position changes via
-   * `CngxReorder`).
+   * Chip-removal handler. Reorder semantics independent — chip-remove
+   * is always single-deselect (position changes own the strip-keyboard
+   * handler via `CngxReorder`).
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
     inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
@@ -880,31 +839,25 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
         this.finalizeToggle(item, false, previous),
     });
 
-  // ── Reorder-specific state ─────────────────────────────────────────
-
   /**
-   * Read-only signal view of `values()` passed to
-   * {@link CngxReorder.items}. The directive expects a Signal reference
-   * (not the evaluated array) so it can read the freshest order at
-   * drag-start and at keyboard-move time without subscribing to every
-   * model-change tick.
+   * Read-only `values()` view passed to `CngxReorder.items`. Directive
+   * wants the Signal reference so it reads the freshest order at
+   * drag-start and keyboard-move time without subscribing per tick.
    */
   protected readonly valuesSignal: Signal<readonly T[]> = this.values.asReadonly();
 
   /**
-   * Container host for the chip-strip roving controller's element
-   * lookups. Read lazily — the `viewChild()` signal is `undefined`
-   * until the first render completes, which is fine because the
-   * controller only reads it inside `focusAt()` at user-event time.
+   * Chip-strip container. Read lazily — `viewChild()` is `undefined`
+   * until first render, but the controller only reads it inside
+   * `focusAt()` at user-event time.
    */
   private readonly stripContainer = computed<HTMLElement | null>(
     () => this.triggerBtn()?.nativeElement ?? null,
   );
 
   /**
-   * Chip-strip focus controller. Owns the `activeChipIndex` signal, the
-   * plain-arrow keydown handler, and the count-shrink clamp. Swap-able
-   * via `CNGX_CHIP_STRIP_ROVING_FACTORY` without forking the component.
+   * Chip-strip focus controller. Owns `activeChipIndex`, the plain-
+   * arrow keydown handler, and the count-shrink clamp.
    */
   private readonly chipStripRoving = inject(CNGX_CHIP_STRIP_ROVING_FACTORY)({
     count: computed(() => this.selectedOptions().length),
@@ -915,19 +868,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   protected readonly activeChipIndex = this.chipStripRoving.activeIndex;
 
   /**
-   * Pointer / keyboard reorder is suppressed while a commit is in
-   * flight (pessimistic freeze — default) or when the component is
-   * disabled. App-wide `provideReorderableSelectConfig(withReorderStripFreeze(false))`
-   * opts out of the freeze so consecutive reorders supersede any
-   * in-flight commit via the commit-controller's built-in race
-   * handling. Plan §2 locked the freeze default — reorders are
-   * sub-second and a freeze is clearer than mid-gesture visual noise.
-   */
-  /**
-   * Effective overflow mode after safety downgrade —
-   * `'truncate'` is unsafe for drag-reorder (hidden chips break
-   * `cngxReorder`'s DOM-scan) so it always becomes `'scroll-x'`.
-   * Pass `'wrap'` or `'scroll-x'` unchanged.
+   * Effective overflow mode after safety downgrade. `'truncate'` is
+   * unsafe for drag-reorder (hidden chips break `cngxReorder`'s
+   * DOM-scan), so it becomes `'scroll-x'`. `'wrap'` and `'scroll-x'`
+   * pass through unchanged.
    *
    * @internal
    */
@@ -938,6 +882,15 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     return mode === 'truncate' ? 'scroll-x' : mode;
   });
 
+  /**
+   * Pointer/keyboard reorder is suppressed while a commit is in flight
+   * (pessimistic freeze, default) or when disabled. App-wide
+   * `provideReorderableSelectConfig(withReorderStripFreeze(false))`
+   * opts out so consecutive reorders supersede via the commit
+   * controller's race handling. Plan §2 locked freeze as default —
+   * reorders are sub-second and a freeze is clearer than mid-gesture
+   * visual noise.
+   */
   protected readonly reorderDisabled = computed<boolean>(() => {
     if (this.disabled()) {
       return true;
@@ -948,7 +901,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     return false;
   });
 
-  // ── Panel-host surface ─────────────────────────────────────────────
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
@@ -999,7 +951,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       },
     });
 
-    // Open / close lifecycle + focus restore.
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.triggerBtn,
@@ -1009,9 +960,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       closed: this.closed,
     });
 
-    // Activeindex clamp on count shrink is owned by the chip-strip
-    // roving controller (installed via `CNGX_CHIP_STRIP_ROVING_FACTORY`).
-
     createFieldSync<T[]>({
       componentValue: this.values,
       valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
@@ -1020,14 +968,10 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
-
-  // ── Event handlers (shared with CngxMultiSelect) ───────────────────
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -1037,7 +981,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.toggle();
   }
 
-  /** @internal */
   /** @internal — click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
@@ -1145,7 +1088,7 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
       }
     }
 
-    // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
+    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {
@@ -1177,10 +1120,8 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     }
   }
 
-  // ── Chip-strip roving + reorder glue ───────────────────────────────
-
   /**
-   * Chip-wrapper `(focus)` delegate — keeps the roving controller in
+   * Chip-wrapper `(focus)` delegate. Keeps the roving controller in
    * sync when the user Tabs into the strip or clicks a chip directly.
    *
    * @internal
@@ -1190,21 +1131,17 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
   }
 
   /**
-   * Chip-strip keydown delegate. Two responsibilities:
+   * Chip-strip keydown delegate. Two jobs:
    *
-   *  1. Stop propagation for any keydown originating inside a chip
-   *     wrap. The chip strip owns its own keyboard semantics (roving
-   *     + reorder + per-chip interactive children like the ✕ remove
-   *     button). Without the stop, Enter / Space on the focused ✕
-   *     bubbles to the trigger's `CngxListboxTrigger.handleKeyDown`,
-   *     which opens the popover AND swallows the native Enter→click
-   *     synthesis the `<button>` would have done — chip stays, popover
-   *     opens. The trigger's combobox keyboard is meant for when
-   *     focus sits on the trigger itself, not on a chip child.
-   *
-   *  2. Forward to the roving controller, which handles plain arrow /
-   *     Home / End (modifier-pressed events are ignored so the paired
-   *     `CngxReorder` owns that gesture).
+   *   1. `stopPropagation()` for keydowns inside a chip wrap. Without
+   *      it, Enter/Space on the focused ✕ bubbles to
+   *      `CngxListboxTrigger.handleKeyDown`, which opens the popover
+   *      AND swallows the native Enter→click — chip stays, popover
+   *      opens. The trigger keyboard is for the trigger element, not
+   *      chip children.
+   *   2. Forward plain arrow / Home / End to the roving controller.
+   *      Modifier-pressed events are ignored so the paired
+   *      `CngxReorder` owns that gesture.
    *
    * @internal
    */
@@ -1230,19 +1167,17 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     const opt = this.core.findOption(movedValue);
     this.reorderCommit.dispatch([...next], previous, fromIndex, toIndex, opt);
 
-    // Keep focus on the moved chip in its new position. Runs after the
-    // next render so the DOM reflects the updated @for ordering before
-    // the roving controller probes for the [data-reorder-index=toIndex]
-    // wrapper. `setActive` updates the index synchronously (bindings
-    // reflect tabindex='0' on the right chip even before focus moves).
+    // Keep focus on the moved chip. Runs after the next render so the
+    // DOM reflects the updated @for ordering before the roving
+    // controller probes for [data-reorder-index=toIndex]. `setActive`
+    // updates synchronously so tabindex='0' lands on the right chip
+    // before focus moves.
     this.chipStripRoving.setActive(toIndex);
     afterNextRender(
       () => this.chipStripRoving.focusAt(toIndex),
       { injector: this.injector },
     );
   }
-
-  // ── Commit orchestration (toggle) ──────────────────────────────────
 
   private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
     const action = this.commitAction();
@@ -1283,15 +1218,12 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
     this.core.announce(opt, isNowSelected ? 'added' : 'removed', this.values().length, true);
   }
 
-  // ── Commit orchestration (reorder) ─────────────────────────────────
-
   /**
-   * Reorder-commit handler. Bypasses `createArrayCommitHandler.beginToggle`
-   * — its `sameArrayContents` guard would skip the write because reorder
-   * preserves membership — and drives the commit controller directly.
-   * Instantiated via `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so enterprise
-   * consumers can swap in retry-with-backoff, offline queues, or audit
-   * logging without forking the component.
+   * Reorder-commit handler. Bypasses `ArrayCommitHandler.beginToggle`
+   * (its `sameArrayContents` guard would skip same-membership reorders)
+   * and drives the commit controller directly. Resolved via
+   * `CNGX_REORDER_COMMIT_HANDLER_FACTORY` so consumers can swap in
+   * retry-with-backoff, offline queues, audit logging.
    */
   private readonly reorderCommit = inject(CNGX_REORDER_COMMIT_HANDLER_FACTORY)<T>({
     values: this.values,

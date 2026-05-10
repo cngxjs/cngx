@@ -21,35 +21,22 @@ import {
 import { isCngxSelectOptionGroupDef } from '../option.model';
 
 /**
- * Panel body sub-component for the flat (non-tree) select family —
- * renders the grouped/flat option loop inside the shared
- * `<cngx-select-panel-shell>` frame. The shell owns the loading /
- * empty / error / refreshing / commit-error surfaces; this component
- * only contributes the options rendering that's specific to a flat
- * listbox.
- *
- * **Why this is a separate component.**
- * Inlining the whole panel in `CngxSelect`'s template pushed it past
- * 340 lines — beyond "readable in one screen". Moving the body here
- * shrinks the main template to ~80 lines focused on the trigger button
- * and the popover/listbox frame.
+ * Panel body for the flat (non-tree) select family. Renders the
+ * grouped/flat option loop inside `<cngx-select-panel-shell>`; the
+ * shell owns loading / empty / error / refreshing / commit-error.
  *
  * The outer `<div cngxPopover>` and `<div cngxListbox>` stay on
- * `CngxSelect` so the trigger button's `[popover]` / `[cngxListboxTrigger]`
- * template references stay in scope. This sub-component renders ONLY
- * the listbox's children.
+ * `CngxSelect` so the trigger button's `[popover]` /
+ * `[cngxListboxTrigger]` references stay in scope. This sub-component
+ * renders the listbox's children only.
  *
- * **Why the `CNGX_SELECT_PANEL_HOST` token.**
- * A direct `inject(CngxSelect)` would create a cyclic type dependency
- * between this file and `select.component.ts`. The token carries the
- * minimal `CngxSelectPanelHost` interface — refactors on `CngxSelect`
- * show up there first, not in this template.
+ * `CNGX_SELECT_PANEL_HOST` carries the minimal `CngxSelectPanelHost`
+ * surface so a direct `inject(CngxSelect)` cyclic type dependency is
+ * avoided.
  *
- * **Template signals are pre-resolved.** Every `host.xxxTpl()` is a
- * `TemplateRef | null` — the 3-stage cascade (instance content-child →
- * `CNGX_SELECT_CONFIG.templates.xxx` → library default) is evaluated by
- * the select component. The panel just renders whatever the host hands
- * it.
+ * Template signals are pre-resolved: every `host.xxxTpl()` is a
+ * `TemplateRef | null` — the 3-stage cascade runs in the select
+ * component, the panel just renders.
  *
  * @internal
  */
@@ -98,11 +85,9 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
     </cngx-select-panel-shell>
 
     <!--
-      Reusable option-row template — used for both grouped children and
-      flat items. Single source of truth for selection class, pending
-      class, check indicator, rich label template, and commit-status
-      glyph. Keeps the grouped/flat paths from diverging when option-row
-      concerns evolve.
+      Option-row template — shared by grouped and flat items. Single
+      source of truth for selection class, pending class, check
+      indicator, label template, and commit-status glyph.
     -->
     <ng-template #optionRow let-opt let-groupDisabled="groupDisabled" let-virtualIndex="virtualIndex">
       <div
@@ -152,11 +137,9 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
     </ng-template>
 
     <!--
-      Default indicator body — single source of truth for the
-      selection-indicator render path. Used by both the 'before' and
-      'after' position blocks above. Consumer overrides via
-      *cngxSelectCheck still win; this template renders only when no
-      slot directive is projected.
+      Default indicator body — shared by 'before' and 'after' position
+      blocks. *cngxSelectCheck overrides win; this template renders
+      only when no slot directive is projected.
     -->
     <ng-template #defaultIndicator let-opt>
       @switch (host.resolvedSelectionIndicatorVariant()) {
@@ -190,26 +173,22 @@ import { isCngxSelectOptionGroupDef } from '../option.model';
 export class CngxSelectPanel<T = unknown> {
   /**
    * Panel-host contract. Cast to the typed interface so template reads
-   * like `host.activeView()` are properly checked. Angular provides the
-   * concrete `CngxSelect` instance via `{ useExisting: CngxSelect }`,
-   * typed here as `CngxSelectPanelHost<T>` — the minimal surface this
-   * sub-component needs.
+   * like `host.activeView()` typecheck. Angular provides the concrete
+   * variant via `useExisting`; this surface is the minimum the panel
+   * needs.
    */
   protected readonly host = inject(CNGX_SELECT_PANEL_HOST) as CngxSelectPanelHost<T>;
 
   /**
-   * Consumer-swappable renderer that decides which options enter the
-   * DOM. Defaults to identity (every flat option rendered) via
-   * {@link CNGX_PANEL_RENDERER_FACTORY}. Virtualising renderers swap
-   * this token via `providers` / `viewProviders` to return a
-   * contiguous scroll-window slice of `flatOptions`.
+   * Consumer-swappable renderer deciding which options enter the DOM.
+   * Default identity (every flat option rendered) via
+   * {@link CNGX_PANEL_RENDERER_FACTORY}; virtualising renderers swap
+   * the token via `providers` / `viewProviders` for a contiguous
+   * scroll-window slice.
    *
-   * Grouped options (`CngxSelectOptionGroupDef`) currently bypass the
-   * renderer and render in full — windowing across group boundaries
-   * is ambiguous (a half-rendered group header is UX-weird) and the
-   * family's grouped use-cases tend to be small curated lists rather
-   * than 10k+ records. Flat options run through the renderer
-   * transparently.
+   * Grouped options bypass the renderer and render in full — windowing
+   * across group boundaries is ambiguous and grouped lists tend to be
+   * small. Flat options run through the renderer.
    *
    * @internal
    */
@@ -218,11 +197,10 @@ export class CngxSelectPanel<T = unknown> {
     inject(CNGX_PANEL_RENDERER_FACTORY)<T>({ flatOptions: this.host.flatOptions });
 
   /**
-   * Virtualiser metadata the template reads to emit spacer divs +
-   * `data-cngx-recycle-index` attributes on each rendered option.
-   * `null` when the renderer hasn't opted in (identity default) —
-   * the template paths gate on this to keep non-virtualised markup
-   * byte-identical to before the extension point landed.
+   * Virtualiser metadata the template reads to emit spacer divs and
+   * `data-cngx-recycle-index` attributes per rendered option. `null`
+   * when the renderer hasn't opted in (identity default); template
+   * paths gate on this so non-virtualised markup stays byte-identical.
    *
    * @internal
    */
@@ -231,9 +209,9 @@ export class CngxSelectPanel<T = unknown> {
   /**
    * Items iterated by the template. Grouped paths use
    * `effectiveOptions` verbatim (groups stay intact for correct
-   * aria-setsize + aria-posinset per group); flat paths use the
-   * renderer's windowed output so virtualisation kicks in
-   * transparently when the consumer provides a custom renderer.
+   * aria-setsize / aria-posinset per group); flat paths use the
+   * renderer's windowed output so a consumer-provided renderer kicks
+   * in transparently.
    *
    * @internal
    */
@@ -241,8 +219,8 @@ export class CngxSelectPanel<T = unknown> {
     (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[]
   >(() => {
     const effective = this.host.effectiveOptions();
-    // If any item is a group, route through `effectiveOptions` as-is —
-    // virtualising renderers deliberately don't touch grouped lists.
+    // Any group → route through `effectiveOptions` as-is. Virtualising
+    // renderers deliberately don't touch grouped lists.
     const hasGroup = effective.some(isCngxSelectOptionGroupDef);
     if (hasGroup) {
       return [...effective];
@@ -251,20 +229,19 @@ export class CngxSelectPanel<T = unknown> {
   });
 
   /**
-   * All `CngxOption` instances rendered in this panel's view. Exposed
-   * to the parent so it can forward them to its outer `CngxListbox`
-   * via `[explicitOptions]` — content-projection-scoping prevents the
-   * listbox from seeing them as `contentChildren`.
+   * `CngxOption` instances rendered in this panel's view. Forwarded
+   * to the outer `CngxListbox` via `[explicitOptions]` because
+   * content-projection scoping hides them from the listbox's
+   * `contentChildren`.
    */
   readonly options = viewChildren(CngxOption);
 
   /**
-   * ActiveDescendantItem projections of `options()`, ready to bind to
-   * the outer listbox's `[items]` passthrough input (which forwards to
-   * CngxActiveDescendant). AD's own `contentChildren(CNGX_AD_ITEM)`
-   * can't see the options because they live in THIS component's view,
-   * not in the listbox's projected content. Forwarding via `items`
-   * bypasses the scoping boundary cleanly.
+   * ActiveDescendantItem projections of `options()` for the outer
+   * listbox's `[items]` passthrough → CngxActiveDescendant. AD's
+   * `contentChildren(CNGX_AD_ITEM)` can't see options living in this
+   * component's view, not in the listbox's projected content;
+   * forwarding via `items` bypasses the scoping boundary.
    */
   readonly items = computed(() =>
     this.options().map((o) => ({
@@ -276,14 +253,12 @@ export class CngxSelectPanel<T = unknown> {
   );
 
   /**
-   * Whether the option identified by `opt` is the one currently
-   * highlighted via `CngxActiveDescendant`. Derived from the host's
-   * `activeId` plus the locally-rendered `CngxOption` view-children,
-   * so the panel stays independent of the listbox directive itself.
+   * `true` when `opt` is the AD-highlighted row. Derived from the
+   * host's `activeId` and locally-rendered `CngxOption` view-children
+   * — keeps the panel independent of the listbox directive.
    *
-   * Consumed by the `optionLabelTpl` context — consumers who project
-   * `*cngxSelectOptionLabel` can render a highlight-reactive style
-   * (e.g. custom background when keyboard nav lands on a row).
+   * Read by the `optionLabel` context so consumers projecting
+   * `*cngxSelectOptionLabel` can render a highlight-reactive style.
    */
   protected isHighlighted(opt: CngxSelectOptionDef<T>): boolean {
     const activeId = this.host.activeId();
@@ -298,11 +273,9 @@ export class CngxSelectPanel<T = unknown> {
   }
 
   /**
-   * Build the `*cngxSelectCheck` slot context for an option row.
-   * Branches on the resolved indicator variant — radio rows omit
-   * `indeterminate` because radio selection is exclusive (the
-   * "some descendants selected" state is undefined for radios).
-   * Consumers narrow on `variant` to read `indeterminate` safely.
+   * Builds the `*cngxSelectCheck` context for an option row. Radio
+   * rows omit `indeterminate` because radio is exclusive — consumers
+   * narrow on `variant` to read it safely.
    */
   protected checkContextFor(
     opt: CngxSelectOptionDef<T>,

@@ -3,13 +3,12 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { CngxOptionGroup } from '@cngx/common/interactive';
 
 /**
- * Declarative-mode group element — renders a non-focusable header and
- * projects `<cngx-option>` children inside a WAI-ARIA `role="group"`.
+ * Declarative-mode group element. Renders a non-focusable header and
+ * projects `<cngx-option>` children under WAI-ARIA `role="group"`.
  *
- * **Intended usage:** inside a consumer-assembled listbox (the "compose
- * yourself" path) OR as a direct child of `<cngx-select-shell>`. Direct
- * use inside the data-mode `<cngx-select>` is still unsupported — that
- * variant consumes options through `[options]`.
+ * **Usage:** inside a consumer-assembled listbox or as a direct child
+ * of `<cngx-select-shell>`. Not supported inside data-mode
+ * `<cngx-select>` (consumes via `[options]`).
  *
  * @example
  * ```html
@@ -54,6 +53,6 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
   `,
 })
 export class CngxSelectOptgroup {
-  /** Header text. Mirrors the hostDirective input so the template can render it. */
+  /** Header text. Mirrors the hostDirective input for template binding. */
   readonly label = input.required<string>();
 }

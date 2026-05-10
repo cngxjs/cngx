@@ -1,10 +1,7 @@
 /**
- * Data-level option descriptor for the Select family. Pass an array of these
- * to `[options]` for the data-driven composition mode.
- *
- * Element-level composition uses the `<cngx-option>` component (class name
- * `CngxSelectOption`) — the two are independent; consumers pick one per
- * instance.
+ * Data-driven option for the Select family. Pass an array to `[options]`.
+ * Element-driven composition uses `<cngx-option>` (`CngxSelectOption`) —
+ * pick one mode per instance.
  *
  * @category interactive
  */
@@ -12,15 +9,12 @@ export interface CngxSelectOptionDef<T = unknown> {
   readonly value: T;
   readonly label: string;
   readonly disabled?: boolean;
-  /**
-   * Optional arbitrary payload forwarded to option / trigger label templates.
-   * Useful for icons, badges, or category metadata on a per-option basis.
-   */
+  /** Forwarded to label templates — icons, badges, category metadata. */
   readonly meta?: unknown;
 }
 
 /**
- * Data-level optgroup descriptor for the Select family.
+ * Data-driven optgroup descriptor.
  *
  * @category interactive
  */
@@ -31,8 +25,7 @@ export interface CngxSelectOptionGroupDef<T = unknown> {
 }
 
 /**
- * Union of flat options and grouped options. Accepted by every select-family
- * component's `[options]` input in data-driven mode.
+ * Mixed flat-or-grouped options accepted by `[options]` in data-driven mode.
  *
  * @category interactive
  */
@@ -42,7 +35,7 @@ export type CngxSelectOptionsInput<T = unknown> = readonly (
 )[];
 
 /**
- * Type guard discriminating a group from a flat option.
+ * Group / flat-option type guard.
  *
  * @category interactive
  */
@@ -57,8 +50,7 @@ export function isCngxSelectOptionGroupDef<T>(
 }
 
 /**
- * Flatten a mixed `CngxSelectOptionsInput<T>` into a single array of options.
- * Used for keyboard navigation and compare lookups.
+ * Flattens grouped + flat input. Used by keyboard nav and compare lookups.
  *
  * @category interactive
  */
@@ -79,14 +71,9 @@ export function flattenSelectOptions<T>(
 }
 
 /**
- * Filter a `CngxSelectOptionsInput<T>` by a search term using a listbox
- * matcher. Preserves the input's group/flat shape: grouped entries stay
- * grouped; empty groups (no surviving children) are dropped.
- *
- * The synthetic `id: ''` on the matcher payload is deliberate — every
- * in-tree matcher (including {@link ListboxMatchFn}'s default
- * label-substring) ignores the id field. Real options get their DOM id
- * from `CngxOption`, not from this data-level scan.
+ * Filters by `term` using a listbox `match` fn. Preserves group shape;
+ * empty groups dropped. The matcher payload's `id: ''` is synthetic; real
+ * DOM ids come from `CngxOption`, and in-tree matchers ignore the field.
  *
  * @category interactive
  */
@@ -128,24 +115,12 @@ export function filterSelectOptions<T>(
 }
 
 /**
- * Merge a persistent local-items buffer on top of server-provided
- * options, deduped by value via `compareWith`. The input's shape is
- * preserved — grouped entries stay grouped, locals are appended flat
- * after every group. Local items that match any provided option
- * (including group children) are dropped from the local side; the
- * server's version wins the collision.
+ * Folds a local-items buffer onto server-provided options, deduped by
+ * value via `compareWith`. Group shape preserved; locals appended flat
+ * after groups. Server wins on collision — locals matching a provided
+ * value drop silently.
  *
- * **Why this exists.** The action-select organisms (`CngxActionSelect`
- * / `CngxActionMultiSelect`) support an inline quick-create workflow:
- * the consumer presses a button in the panel's action slot, the
- * committed item is inserted locally (optimistic), then stays visible
- * across subsequent server refetches until the server catches up —
- * at which point the dedup drops the local copy silently.
- *
- * **Identity guarantee.** When `localItems` is empty the `provided`
- * array is returned unchanged (reference-stable). Downstream
- * `effectiveOptions` consumers keep their identity-based equality
- * short-circuits intact.
+ * Identity-stable when `localItems` is empty (returns `provided`).
  *
  * @category interactive
  */
@@ -174,24 +149,11 @@ export function mergeLocalItems<T>(
 }
 
 /**
- * Uniform "is this option disabled?" check that handles both option shapes
- * transparently.
+ * Disabled-check across both option shapes:
+ * - `CngxSelectOptionDef.disabled` — plain `boolean` (data-driven)
+ * - `CngxOption.disabled` — `InputSignal<boolean>` (element-driven, callable)
  *
- * **Why this helper exists.**
- * The select family operates on two distinct option types that share the
- * same property name but use different shapes:
- *
- * - `CngxSelectOptionDef.disabled` — plain `boolean` (data-driven mode)
- * - `CngxOption.disabled` — `InputSignal<boolean>`, i.e. a callable function
- *   (element-component mode)
- *
- * In places that iterate over a mixed or unknown-variant array (PageUp/Down
- * navigation, typeahead-while-closed, focus scanning), accessing `.disabled`
- * directly silently evaluates to `true` for the signal variant (functions
- * are truthy), which previously flagged a `TS2774` warning in strict mode
- * and would cause navigation logic to treat every option as disabled at
- * runtime if the compiler didn't catch it. Centralising the branching here
- * prevents every future call-site from having to remember the distinction.
+ * Direct `.disabled` access would treat every signal as truthy (TS2774).
  *
  * @category interactive
  */

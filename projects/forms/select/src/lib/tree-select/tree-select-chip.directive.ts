@@ -2,14 +2,12 @@ import { Directive, TemplateRef, inject } from '@angular/core';
 import { type CngxTreeSelectChipContext } from './tree-select.model';
 
 /**
- * Per-chip override for `CngxTreeSelect`'s trigger. Replaces the default
- * `<cngx-chip>` pill with consumer markup — icons, two-line rows, custom
- * remove affordance — while keeping the commit-aware `remove` callback
- * wired to the surrounding component's single-deselect flow.
+ * Per-chip override for `CngxTreeSelect`'s trigger. Replaces the
+ * default `<cngx-chip>` pill while keeping the commit-aware `remove`
+ * callback wired to the single-deselect flow.
  *
- * Zero-logic slot holder; the surrounding `CngxTreeSelect` injects it
- * via `contentChild` and renders it through `*ngTemplateOutlet` when
- * projected.
+ * Zero-logic slot holder discovered via `contentChild` and rendered
+ * through `*ngTemplateOutlet`.
  *
  * @example
  * ```html

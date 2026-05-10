@@ -30,23 +30,19 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
 /**
  * Tree-body sibling of `CngxSelectPanel`. Wraps the shared
  * `CngxSelectPanelShell` (loading / empty / error / refreshing /
- * commit-error scaffold) and projects a `role="tree"` container into
- * its content slot. The container composes `CngxActiveDescendant` for
- * vertical nav + typeahead + Home/End and `CngxHierarchicalNav` for
- * ArrowLeft/Right expand-collapse-and-traverse.
+ * commit-error scaffold) and projects a `role="tree"` container.
+ * Composes `CngxActiveDescendant` (vertical nav + typeahead + Home/End)
+ * and `CngxHierarchicalNav` (ArrowLeft/Right).
  *
- * Per-node rendering defaults to a twisty + checkbox-indicator + label
- * row; a consumer-projected `*cngxTreeSelectNode` template wins when
- * present. Either path receives the full `CngxTreeSelectNodeContext<T>`
- * — the same closed `toggleExpand` / `handleSelect` callbacks so custom
- * markup participates in cascade / commit / announce without
- * re-plumbing.
+ * Default row: twisty + checkbox-indicator + label. Consumer-projected
+ * `*cngxTreeSelectNode` wins when present; either path receives the
+ * full `CngxTreeSelectNodeContext<T>` so custom markup participates
+ * in cascade / commit / announce.
  *
- * W3C Treeview APG attributes are all in the reactive graph:
- * `aria-expanded` reads `treeController.isExpanded(id)()`,
- * `aria-selected` reads `host.isSelected(value)`, `aria-level` /
- * `-posinset` / `-setsize` come straight from the `FlatTreeNode`
- * projection. Nothing is set once and forgotten.
+ * W3C Treeview APG attributes are reactive: `aria-expanded` from
+ * `treeController.isExpanded(id)()`, `aria-selected` from
+ * `host.isSelected(value)`, `aria-level` / `-posinset` / `-setsize`
+ * from `FlatTreeNode`.
  *
  * @internal
  */
@@ -139,9 +135,9 @@ import type { CngxTreeSelectNodeContext } from './tree-select.model';
               } @else {
                 <span aria-hidden="true" class="cngx-tree-select__twisty-spacer"></span>
               }
-              <!-- Tree-select intentionally hard-codes checkbox-indicator;
-                   'radio' / 'checkmark' variants from selectionIndicatorVariant
-                   are honoured only by the flat panel. See accepted-debt §7. -->
+              <!-- Tree-select hard-codes checkbox-indicator;
+                   'radio' / 'checkmark' from selectionIndicatorVariant
+                   are flat-panel-only. select-family-accepted-debt §7. -->
               <cngx-checkbox-indicator
                 [checked]="host.isSelected(node.value)"
                 [indeterminate]="host.isIndeterminate(node.value)"
@@ -163,10 +159,9 @@ export class CngxTreeSelectPanel<T = unknown> {
   ) as CngxTreeSelectPanelHost<T>;
 
   /**
-   * Narrow view-host slot used only for reading
-   * `actionFocusTrapEnabled` and forwarding it into the shared
-   * panel-shell. Tree-select provides both tokens (`useExisting: self`),
-   * so dual-injecting is free.
+   * Narrow view-host slot for reading `actionFocusTrapEnabled` and
+   * forwarding into the panel-shell. Tree-select provides both
+   * tokens (`useExisting: self`); dual-injecting is free.
    *
    * @internal
    */
@@ -177,12 +172,10 @@ export class CngxTreeSelectPanel<T = unknown> {
   private readonly treeContainer = viewChild<ElementRef<HTMLElement>>('treeContainer');
 
   constructor() {
-    // Focus the tree container when the popover opens. The AD directive
-    // reacts to keyboard events only when its host element has DOM focus;
-    // without this effect the trigger keeps focus and arrow keys don't
-    // reach the tree. Transitions are observed on the host's panelOpen
-    // signal and focus is wrapped in `untracked` so it stays a pure
-    // imperative side effect.
+    // Move DOM focus to the tree container on open. AD only reacts to
+    // keyboard events while its host element has focus; without this
+    // the trigger keeps focus and arrow keys don't reach the tree.
+    // `untracked` keeps the focus call a pure imperative side effect.
     effect(() => {
       const open = this.host.panelOpen();
       if (!open) {
@@ -195,30 +188,24 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   /**
-   * Passthrough of visible-nodes into the AD's item shape. Built via
-   * the decoupled `createTreeAdItems` helper so the controller stays
-   * a11y-agnostic. Re-computed automatically when the controller's
+   * Visible-nodes projected into AD item shape via `createTreeAdItems`
+   * — keeps the controller a11y-agnostic. Recomputed when
    * `visibleNodes` emits.
    */
   protected readonly adItems = createTreeAdItems(this.host.treeController);
 
   /**
-   * Per-node memoization. Two purposes:
+   * Per-node memoization:
    *
-   * - **Closure identity**: `toggleExpand` and `handleSelect` are stable
-   *   across re-derivations so the slot template's outlet sees the same
-   *   function references on every trigger.
-   * - **Context identity**: `nodeContext(node)` returns the SAME
-   *   context object when the node's reactive flags (expanded /
-   *   selected / indeterminate) and the underlying `FlatTreeNode` ref
-   *   haven't changed. `ngTemplateOutlet` compares context by reference
-   *   and rebinds the embedded view whenever the ref changes — caching
-   *   stops the outlet thrashing every change-detection cycle even for
-   *   rows whose state hasn't changed.
+   *   - Closure identity: `toggleExpand` and `handleSelect` are stable
+   *     across re-derivations so the slot's outlet sees the same
+   *     references.
+   *   - Context identity: `nodeContext(node)` returns the SAME object
+   *     when reactive flags and the `FlatTreeNode` ref haven't
+   *     changed. `ngTemplateOutlet` compares by reference and rebinds
+   *     on change — caching prevents outlet thrash every CD cycle.
    *
-   * Entries live for the panel's lifetime; the panel is scoped to a
-   * single popover open → GC picks up the whole closure on popover
-   * close.
+   * Entries live for the panel's lifetime (one popover open).
    */
   private readonly contextCache = new Map<
     string,
@@ -280,9 +267,8 @@ export class CngxTreeSelectPanel<T = unknown> {
   }
 
   private getHandleSelect(node: FlatTreeNode<T>): () => void {
-    // `node.value` may be a primitive — only cache when it's an object
-    // so we honour the WeakMap contract. Primitive-valued callbacks
-    // are recreated per call; cheap and correct.
+    // Cache only when `node.value` is an object — WeakMap contract.
+    // Primitive-valued callbacks are recreated per call; cheap.
     const key = (typeof node.value === 'object' && node.value !== null)
       ? (node.value as unknown as object)
       : null;

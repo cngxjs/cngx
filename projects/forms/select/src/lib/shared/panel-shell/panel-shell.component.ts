@@ -21,75 +21,34 @@ import type {
   CngxSelectRefreshingContext,
 } from '../template-slots';
 
-/**
- * Position(s) in the default-case stack where the `*cngxSelectAction`
- * slot is rendered. `'none'` suppresses the slot entirely — useful
- * when a consumer projects the template for one variant but wants it
- * hidden on another inside the same view.
- *
- * @internal
- */
+/** `*cngxSelectAction` position. `'none'` suppresses. @internal */
 export type CngxSelectPanelActionPosition = 'top' | 'bottom' | 'both' | 'none';
 
-/**
- * No-op callback bundle used when the view-host leaves
- * `actionCallbacks` undefined (every button-trigger variant in
- * Commit 3 — the organisms wire real handlers in Commit 5/6).
- *
- * @internal
- */
+/** No-op fallback when the view-host omits `actionCallbacks`. @internal */
 const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
-  close: () => {
-    /* no-op */
-  },
-  commit: () => {
-    /* no-op */
-  },
+  close: () => {},
+  commit: () => {},
   isPending: false,
-  setDirty: () => {
-    /* no-op */
-  },
-  cancel: () => {
-    /* no-op */
-  },
-  retry: () => {
-    /* no-op */
-  },
+  setDirty: () => {},
+  cancel: () => {},
+  retry: () => {},
 });
 
 /**
- * Panel frame shared by every variant in the select family — owns the
- * `host.activeView()` switch (loading variants, empty/error, refreshing
- * indicator, commit-error banner, inline-error) and projects the
- * variant-specific body (options loop, tree loop, etc.) via
- * `<ng-content />` into the "content" case.
+ * Shared frame for every select-family variant. Owns the
+ * `host.activeView()` switch (loading / empty / error / refreshing /
+ * commit-error / inline-error) and projects the variant body via
+ * `<ng-content />` on the default branch.
  *
- * Extracted from `CngxSelectPanel` so the upcoming `CngxTreeSelectPanel`
- * can render a `role="tree"` body without duplicating ~100 LOC of
- * loading-and-error scaffolding. The shell stays value-shape-agnostic —
- * everything it needs comes from `CngxSelectPanelHost<T>`.
+ * Default-branch order: inline-error → commit-error banner →
+ * refreshing → action-top → body → action-bottom.
  *
- * The default-case ordering is intentional: inline-error → commit-error
- * banner → refreshing indicator → action-top → projected body →
- * action-bottom. Matches the v0.1 panel's visual hierarchy; the action
- * slots are additive and default to `'bottom'` so pre-existing
- * consumers see no layout change.
+ * Action slot renders when `host.tpl.action()` is non-null and
+ * `actionPosition()` ≠ `'none'`; view-host omissions fall back to a
+ * frozen no-op bundle.
  *
- * **Action-slot integration**. When the resolved `host.tpl.action()`
- * is non-null AND `actionPosition()` is not `'none'`, the shell
- * renders the projected template at the configured position(s),
- * passing the {@link CngxSelectActionContext} bundle (live
- * `searchTerm`, `dirty`, `isPending`, plus the `close` / `commit` /
- * `setDirty` callbacks) sourced from the view-host. Variants that
- * don't expose an inline action workflow can leave the view-host
- * slots undefined — the shell substitutes the `NOOP_ACTION_CALLBACKS`
- * bundle and `''` search term.
- *
- * **Focus-trap**. `CngxFocusTrap` rides on the shell as a host
- * directive. Its `enabled` input is re-exposed as
- * `actionFocusTrapEnabled` (default `false`) so the action-select
- * organisms can bind the dirty-cascade signal from the variant side
- * in Commit 4 without every shell consumer having to care.
+ * `CngxFocusTrap` rides as a host directive; `enabled` is re-exposed
+ * as `actionFocusTrapEnabled`.
  *
  * @internal
  */
@@ -298,12 +257,7 @@ const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
 export class CngxSelectPanelShell<T = unknown> {
   protected readonly host = inject(CNGX_SELECT_PANEL_VIEW_HOST) as CngxSelectPanelViewHost<T>;
 
-  /**
-   * Position of the projected `*cngxSelectAction` slot within the
-   * default-case stack. `'top'` renders above the projected body,
-   * `'bottom'` (default) after it, `'both'` at both ends, `'none'`
-   * suppresses the slot even if the consumer projected a template.
-   */
+  /** Default `'bottom'`. */
   readonly actionPosition = input<CngxSelectPanelActionPosition>('bottom');
 
   /** @internal */
@@ -318,17 +272,7 @@ export class CngxSelectPanelShell<T = unknown> {
     return p === 'bottom' || p === 'both';
   });
 
-  /**
-   * Context emitted to the `*cngxSelectAction` template. Re-computes
-   * whenever `actionSearchTerm` / `actionDirty` / `actionCallbacks`
-   * change on the view-host — the `ngTemplateOutlet` detects the
-   * fresh reference and refreshes embedded-view bindings. Variants
-   * that don't supply the fields fall back to `''`, `false`, and the
-   * frozen no-op bundle respectively, so the shell never crashes
-   * when a consumer projects the slot against a non-action variant.
-   *
-   * @internal
-   */
+/** @internal */
   protected readonly actionContext = computed<CngxSelectActionContext>(
     () => {
       const searchTerm = this.host.actionSearchTerm?.() ?? '';
@@ -351,14 +295,9 @@ export class CngxSelectPanelShell<T = unknown> {
       };
     },
     {
-      // Structural equal — match the family's pattern (inputSlotContext,
-      // core.selected, bridge.callbacks all have one). The callback refs
-      // inside the bundle are already stable across re-computes because
-      // `bridge.callbacks` pins its own identity to `isPending`, so
-      // comparing the 5 reactive fields + `searchTerm` + `dirty` covers
-      // every semantic change. Suppresses per-keystroke template-outlet
-      // rebinds when an action-slot template only reads a subset of the
-      // context (e.g. just `isPending`).
+      // Structural equal — `bridge.callbacks` pins identity to
+      // isPending, so 5 reactive fields + searchTerm + dirty cover
+      // every semantic change. Suppresses per-keystroke outlet rebinds.
       equal: (a, b) =>
         a.searchTerm === b.searchTerm &&
         a.dirty === b.dirty &&
@@ -372,13 +311,7 @@ export class CngxSelectPanelShell<T = unknown> {
     },
   );
 
-  /**
-   * Context emitted to the `*cngxSelectEmpty` template. Variants that
-   * don't expose a search term / unfiltered count fall back to safe
-   * defaults so consumer templates never see undefined fields.
-   *
-   * @internal
-   */
+/** @internal */
   protected readonly emptyContext = computed<CngxSelectEmptyContext>(
     () => {
       const searchTerm = this.host.searchTerm?.() ?? '';
@@ -397,14 +330,7 @@ export class CngxSelectPanelShell<T = unknown> {
     },
   );
 
-  /**
-   * Context emitted to the `*cngxSelectLoading` template. `progress`
-   * is reserved for consumer-driven `[state]` extensions; library
-   * defaults always leave it `undefined`. `retry` is the same handler
-   * the panel-shell wires to its own retry button.
-   *
-   * @internal
-   */
+/** @internal */
   protected readonly loadingContext = computed<CngxSelectLoadingContext>(
     () => ({
       progress: undefined,
@@ -413,12 +339,7 @@ export class CngxSelectPanelShell<T = unknown> {
     { equal: (a, b) => a.progress === b.progress && a.retry === b.retry },
   );
 
-  /**
-   * Context emitted to the `*cngxSelectRefreshing` template. Variants
-   * that don't expose a previous-load count fall back to `0`.
-   *
-   * @internal
-   */
+/** @internal */
   protected readonly refreshingContext = computed<CngxSelectRefreshingContext>(
     () => ({
       previousCount: this.host.previousLoadedCount?.() ?? 0,

@@ -9,30 +9,13 @@ import type { CngxSelectCompareFn } from './select-core';
  * @category interactive
  */
 export interface TypeaheadControllerOptions<T> {
-  /**
-   * Flat list of candidate options in listbox order. Typeahead matches
-   * walk this list starting from a caller-supplied `currentIndex`, wrap
-   * around, and skip any option flagged `disabled`.
-   */
+  /** Flat candidate list in listbox order. */
   readonly options: Signal<readonly CngxSelectOptionDef<T>[]>;
-  /**
-   * Caller-supplied comparator. Reserved — the current controller matches
-   * by lowercased `label.startsWith(buffer)` and does not call
-   * `compareWith` internally, but exposing it keeps the options shape
-   * aligned with {@link createSelectCore} and future behaviours
-   * (per-option key-based caching, fuzzy match).
-   */
+  /** Reserved — current matcher uses `label.startsWith` only. */
   readonly compareWith: Signal<CngxSelectCompareFn<T>>;
-  /**
-   * Debounce window (ms) before the accumulated buffer resets. Maps 1:1
-   * to `typeaheadDebounceInterval` on the select variants.
-   */
+  /** Buffer-reset window. Maps to `typeaheadDebounceInterval`. */
   readonly debounceMs: Signal<number>;
-  /**
-   * When `true`, `matchFromIndex` returns `null` unconditionally. Wire
-   * to `computed(() => this.core.disabled())` so typeahead input is
-   * suppressed in disabled selects.
-   */
+  /** `true` short-circuits `matchFromIndex` to `null`. */
   readonly disabled: Signal<boolean>;
 }
 
@@ -43,44 +26,23 @@ export interface TypeaheadControllerOptions<T> {
  */
 export interface TypeaheadController<T> {
   /**
-   * Append a printable character to the internal buffer and return the
-   * first option whose lowercased label starts with the updated buffer,
-   * round-robin. Walk-start semantics:
-   *
-   * - `currentIndex < 0` — "nothing is highlighted". Walk inclusively
-   *   from index 0, so fresh typeahead jumps to the first match.
-   * - `currentIndex ≥ 0` — "this option is currently highlighted".
-   *   Walk exclusively starting at the next index and wrap around so
-   *   repeated taps of the same letter advance past the current row
-   *   (native `<select>` parity).
-   *
-   * Returns `null` when the char is not printable, the controller is
-   * disabled, there are no options, or nothing matches.
-   *
-   * The buffer auto-clears after `debounceMs` since the last push so
-   * rapid typing behaves like native `<select>` (multi-char resolve)
-   * while slow typing degrades to single-char jumps.
+   * Appends `char` to the buffer and returns the first non-disabled
+   * option whose lowercased label starts with it. `currentIndex < 0`
+   * walks inclusively from 0; `currentIndex >= 0` walks exclusively
+   * with round-robin (native `<select>` parity). Returns `null` for
+   * non-printable input, disabled state, empty options, or no match.
+   * Buffer auto-clears after `debounceMs`.
    */
   matchFromIndex(char: string, currentIndex: number): CngxSelectOptionDef<T> | null;
-  /** Clear the buffer + pending debounce timer immediately. Idempotent. */
+  /** Idempotent — clears buffer + pending timer. */
   clearBuffer(): void;
-  /** Current buffer contents. Useful for dev-tools / diagnostics. */
   readonly buffer: Signal<string>;
 }
 
 /**
- * Signal-friendly implementation of the `<select>` keyboard-typeahead
- * contract. Factored out of the three select variants so that the single
- * canonical behaviour — printable-key guard, lower-case match, disabled
- * skip, round-robin walk, debounced buffer reset — is specified in one
- * place with spec-lock tests, and every variant (+ the forthcoming
- * `CngxTypeahead`) shares the same lifecycle.
- *
- * The controller is state-holding (buffer + debounce timer) but keeps no
- * DI refs of its own — callers create it in an injection context and own
- * its lifetime via the enclosing component's `DestroyRef`. Call
- * {@link TypeaheadController.clearBuffer} in a teardown hook when the
- * host component is short-lived.
+ * `<select>` keyboard-typeahead: printable-key guard, lower-case match,
+ * disabled skip, round-robin walk, debounced buffer reset. State-holding
+ * (buffer + timer) but no DI refs; caller owns the lifetime.
  *
  * @category interactive
  */
@@ -127,11 +89,8 @@ export function createTypeaheadController<T>(
     if (count === 0) {
       return null;
     }
-    // `currentIndex < 0` means "no option is currently highlighted" —
-    // walk the list inclusively from index 0. Otherwise start AFTER the
-    // current option so repeated same-letter taps cycle through matches
-    // (native `<select>` parity) and never re-hit the currently
-    // highlighted row first. One loop covers both cases by pre-shifting.
+    // currentIndex < 0: no highlight, walk inclusively from 0.
+    // Otherwise: start after current for native `<select>` parity.
     const effectiveStart = currentIndex < 0 ? 0 : (currentIndex + 1) % count;
     for (let i = 0; i < count; i++) {
       const idx = (effectiveStart + i) % count;
@@ -154,16 +113,8 @@ export function createTypeaheadController<T>(
 }
 
 /**
- * Pure helper for PageUp / PageDown navigation inside a listbox — the
- * disabled-aware, clamped `±step` jump that single- and multi-select
- * share. Returns the target index or `null` when no non-disabled
- * candidate exists within the clamped range.
- *
- * Extracted from the variants' keydown handlers so the family ships one
- * page-jump semantics (first step in direction, then back-probe if
- * disabled, else give up). Consumers pass the listbox's options and a
- * `disabled` predicate — the helper does not care about option shape
- * beyond disabled-ness.
+ * PageUp/PageDown helper. Disabled-aware, clamped `±step` jump with
+ * back-probe fallback. Returns target index or `null`.
  *
  * @category interactive
  */

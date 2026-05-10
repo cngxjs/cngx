@@ -119,8 +119,8 @@ import {
 import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 
 /**
- * Change event emitted by {@link CngxSelectShell.selectionChange} on a
- * user-driven pick.
+ * Change event emitted by {@link CngxSelectShell.selectionChange} on
+ * a user pick.
  *
  * @category interactive
  */
@@ -133,18 +133,17 @@ export interface CngxSelectShellChange<T = unknown> {
 
 /**
  * Native-feeling single-value dropdown with **declarative options** —
- * consumers project user `<cngx-option>` / `<cngx-optgroup>` children and
- * the shell derives a hierarchy-aware option model behind the scenes.
+ * consumers project `<cngx-option>` / `<cngx-optgroup>` children and
+ * the shell derives a hierarchy-aware option model.
  *
- * Bridges the "compose yourself" path (raw `cngxListbox`) and the data
- * path (`<cngx-select [options]="...">`) by giving the same family-level
- * intelligence — reactive trigger ARIA via {@link createSelectCore},
- * panel composition with `cngxListbox` + popover, and the full template-
- * slot cascade — to a content-projected option list.
+ * Bridges the raw-listbox compose-yourself path and the data-mode
+ * `<cngx-select [options]>` path: same family-level intelligence
+ * (reactive trigger ARIA, panel composition, template-slot cascade)
+ * applied to a content-projected option list.
  *
- * Naming note: distinct from the internal `CngxSelectPanelShell` —
- * `Shell` here means *projection-shell*, the outer scaffold that wraps
- * user-authored option markup.
+ * Naming: distinct from the internal `CngxSelectPanelShell` —
+ * `Shell` here is the *projection-shell* that wraps consumer option
+ * markup.
  *
  * @category interactive
  */
@@ -297,8 +296,6 @@ export class CngxSelectShell<T = unknown>
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
-  // ── Inputs ─────────────────────────────────────────────────────────
-
   readonly labelInput = input<string>('', { alias: 'label' });
   readonly placeholder = input<string>('');
   readonly disabledInput = input<boolean>(false, { alias: 'disabled' });
@@ -343,9 +340,8 @@ export class CngxSelectShell<T = unknown>
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
    * Scalar-commit error-announce policy. Per-instance input wins over
-   * {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when neither is
-   * set, the variant default `{ kind: 'verbose', severity: 'assertive' }`
-   * applies. Mirrors the {@link CngxSelect} input contract.
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`. Default
+   * `{ kind: 'verbose', severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
@@ -356,35 +352,27 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Two-way bindable search term. Drives per-option visibility through
-   * the {@link CngxOptionFilterHost} contract on every projected
-   * `<cngx-option>` AND filters the listbox's AD items so keyboard nav
+   * `CngxOptionFilterHost` and filters the listbox AD so keyboard nav
    * skips hidden options. Empty string disables the filter.
    */
   readonly searchTerm = model<string>('');
 
   /**
-   * Per-instance match policy. Receives the option's value, its
-   * resolved plain-text label, and the current search term; returns
-   * `true` when the option should remain visible. Defaults to a case-
-   * insensitive substring check on the label.
+   * Per-instance match policy. Receives `(value, label, term)` and
+   * returns `true` when the option should stay visible. Default:
+   * case-insensitive substring on the label.
    */
   readonly searchMatchFn = input<
     ((value: T, label: string, term: string) => boolean) | null
   >(null);
 
   /**
-   * Debounce window for `searchTermChange` emissions, in milliseconds.
-   * Defaults to {@link CngxSelectConfig.typeaheadDebounceInterval} so
-   * the shell honours the family-shared cascade. Currently surfaced as
-   * a forward-compatible input — the shipped
-   * `CNGX_SEARCH_EFFECTS_FACTORY` default emits immediately on
-   * `searchTerm` change; consumers that override the factory token
-   * (e.g. with a debounce-aware implementation) read this signal to
-   * size their pipeline.
+   * Debounce for `searchTermChange` (ms). Forward-compatible input —
+   * the shipped `CNGX_SEARCH_EFFECTS_FACTORY` emits immediately;
+   * consumers overriding the factory read this signal to size their
+   * pipeline.
    */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxSelectShellChange<T>>();
   readonly openedChange = output<boolean>();
@@ -394,18 +382,15 @@ export class CngxSelectShell<T = unknown>
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
   /**
-   * Live search term emitted via the shared
-   * {@link CNGX_SEARCH_EFFECTS_FACTORY}. The factory's `skipInitial`
-   * gate suppresses the seed `''` emission on mount so server-driven
-   * autocomplete consumers don't fire a hydrate-time blank search.
+   * Live search term emitted via `CNGX_SEARCH_EFFECTS_FACTORY`. The
+   * factory's `skipInitial` gate suppresses the seed `''` emission so
+   * server-driven autocomplete consumers don't fire a blank search.
    */
   readonly searchTermChange = output<string>();
 
-  // ── Hierarchy-aware projected option model ────────────────────────
-
   /**
-   * Direct top-level entries projected by the consumer — `<cngx-option>`
-   * leaves and `<cngx-optgroup>` parents in DOM order.
+   * Direct top-level entries projected by the consumer:
+   * `<cngx-option>` leaves and `<cngx-optgroup>` parents in DOM order.
    *
    * @internal
    */
@@ -414,17 +399,14 @@ export class CngxSelectShell<T = unknown>
   });
 
   /**
-   * Projected option model — derives `derivedOptions` (option-loop
+   * Projected option model. Derives `derivedOptions` (option-loop
    * input), `projectedOptions` (flat directive list for
    * `cngxListbox.[explicitOptions]`), `visibleProjectedOptions`
-   * (after search filter), and `adItems` (AD-shape projection) from
-   * the content-projected `<cngx-option>` / `<cngx-optgroup>`
-   * children.
+   * (filtered), `adItems` (AD-shape) from projected children.
    *
-   * Routed through `CNGX_PROJECTED_OPTION_MODEL_FACTORY` —
-   * DI-overridable for custom value/label/disabled extraction
-   * (e.g. `data-*` attributes, custom group nesting, async-loaded
-   * labels) without forking the shell.
+   * Resolved via `CNGX_PROJECTED_OPTION_MODEL_FACTORY` — override for
+   * custom value/label/disabled extraction (data-* attrs, async
+   * labels) without forking.
    *
    * @internal
    */
@@ -441,8 +423,6 @@ export class CngxSelectShell<T = unknown>
   protected readonly visibleProjectedOptions =
     this.projectedOptionModel.visibleProjectedOptions;
   protected readonly adItems = this.projectedOptionModel.adItems;
-
-  // ── Content-child template-slot directives ─────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -497,17 +477,16 @@ export class CngxSelectShell<T = unknown>
   });
 
   /**
-   * Variant-specific trigger-label slot. The shared registry omits this
-   * because the directive's typed context shape varies per variant.
+   * Variant-specific trigger-label slot. Inline because the directive's
+   * typed context shape varies per variant.
    */
   protected readonly triggerLabelTpl = computed<
     TemplateRef<CngxSelectTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDirective()?.templateRef ?? null);
 
   /**
-   * Trigger-label slot context. Re-runs only when one of the four
-   * reactive fields flips; structural equal suppresses ngTemplateOutlet
-   * rebinds when an unrelated input changes.
+   * Trigger-label slot context. Structural equal suppresses
+   * `ngTemplateOutlet` rebinds when unrelated inputs change.
    *
    * @internal
    */
@@ -533,8 +512,8 @@ export class CngxSelectShell<T = unknown>
   );
 
   /**
-   * Caret slot context. Mirrors `CngxSelectCaretContext` — `open` flips
-   * with the popover, `$implicit` is the same value.
+   * Caret slot context. `open` flips with the popover; `$implicit` is
+   * the same value.
    *
    * @internal
    */
@@ -544,10 +523,9 @@ export class CngxSelectShell<T = unknown>
   );
 
   /**
-   * Clear-button slot context. `$implicit === clear` so consumer
-   * templates can capture either name (`let-clear` or `let-fn`); the
-   * function reference is stable across re-emits because it's the
-   * pre-bound `handleClearAction` closure.
+   * Clear-button slot context. `$implicit === clear` so templates can
+   * capture either name. The closure reference is stable across
+   * re-emits.
    *
    * @internal
    */
@@ -561,10 +539,9 @@ export class CngxSelectShell<T = unknown>
   );
 
   /**
-   * Stable closure invoked from the slot context's `clear()` /
-   * `$implicit()` callbacks. Same code path as the default clear button
-   * (`handleClearClick`), minus the event payload — projected templates
-   * own their own pointer-event semantics.
+   * Stable clear closure for the slot context. Same path as
+   * `handleClearClick` minus the event payload — projected templates
+   * own their pointer-event semantics.
    *
    * @internal
    */
@@ -583,24 +560,18 @@ export class CngxSelectShell<T = unknown>
     this.core.announce(null, 'removed', 0, false);
   };
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
-  /** @internal — exposed to satisfy {@link CngxSelectShellSearchHost} so the
-   *  declaratively-projected `<cngx-select-search>` can forward keyboard
-   *  navigation into the listbox AD without ancestor injection. */
+  /** @internal — exposed to satisfy `CngxSelectShellSearchHost` so the
+   *  projected `<cngx-select-search>` can forward keyboard nav into the
+   *  listbox AD without ancestor injection. */
   readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
-
-  // ── Public derived signals ─────────────────────────────────────────
 
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -616,21 +587,15 @@ export class CngxSelectShell<T = unknown>
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Local-items buffer (kept for panel-host parity; unused at the
-  //    shell level — the projected DOM is the source of truth). ──────
-
+  // Local-items buffer kept for panel-host parity; unused at shell level
+  // — the projected DOM is the source of truth.
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
 
-  // ── Core (stateless signal graph) ──────────────────────────────────
-
   /**
-   * Family-shared signal graph — ARIA projection, panel view,
-   * commit-controller surface, announcer. `commitAction` is wired
-   * here so {@link externalActivation} flips automatically when the
-   * consumer binds an action; the actual scalar-handler routing
-   * lands in Phase 7.
+   * Family-shared signal graph. `commitAction` is wired so
+   * `externalActivation` flips automatically when a consumer binds it.
    */
   private readonly core = createSelectCore<T, T>(
     {
@@ -667,8 +632,6 @@ export class CngxSelectShell<T = unknown>
     },
   );
 
-  // ── Template-facing protected surface (delegates to core) ──────────
-
   protected readonly effectiveOptions = this.core.effectiveOptions;
   protected readonly flatOptions = this.core.flatOptions;
   protected readonly activeView = this.core.activeView;
@@ -695,13 +658,11 @@ export class CngxSelectShell<T = unknown>
   protected readonly showCommitError = this.core.showCommitError;
 
   /**
-   * Shared virtualisation wire-up — same factory `CngxSelect` and
-   * `CngxCombobox` consume. Routes through `CNGX_PANEL_RENDERER_FACTORY`
-   * (DI-overridable for recycler / custom virtualising renderers); the
-   * default identity renderer reads `core.flatOptions` verbatim and
-   * leaves `virtualItemCount()` as `undefined` so AD's setsize falls
-   * back to projected-options length. AD ↔ recycler scroll bridge wired
-   * inside the helper.
+   * Virtualisation wire-up. Routes through `CNGX_PANEL_RENDERER_FACTORY`
+   * (override for recycler / custom virtualising renderers); the
+   * default identity renderer reads `core.flatOptions` and leaves
+   * `virtualItemCount()` `undefined` so AD's setsize falls back to
+   * projected-options length. AD↔recycler scroll bridge wired inside.
    */
   private readonly virtualSetup = setupVirtualization<T, T>({
     core: this.core,
@@ -721,12 +682,8 @@ export class CngxSelectShell<T = unknown>
 
   protected readonly errorContext = this.core.makeErrorContext(() => this.handleRetry());
 
-  // ── Commit state (delegated) ───────────────────────────────────────
-
   /**
-   * Routes a failed commit through the family-shared announcer policy
-   * (verbose / soft, assertive / polite). Keeps the variant body free
-   * of error-message formatting and live-region routing.
+   * Routes a failed commit through the family-shared announcer policy.
    *
    * @internal
    */
@@ -741,11 +698,10 @@ export class CngxSelectShell<T = unknown>
   });
 
   /**
-   * Shared scalar commit handler — same factory `CngxSelect` consumes.
-   * `onStateChange('pending')` eager-closes the popover in optimistic
-   * mode; `onCommitFinalize` emits selectionChange + announces 'added';
-   * `onCommitError` delegates to the announcer; `onError` emits the
-   * variant's `commitError` output.
+   * Scalar commit handler. Mirrors `CngxSelect` callbacks:
+   *   - `onStateChange('pending')` → eager-close popover (optimistic).
+   *   - `onCommitFinalize` → emit `selectionChange`, announce `'added'`.
+   *   - `onCommitError` → delegate to announcer.
    *
    * @internal
    */
@@ -765,10 +721,9 @@ export class CngxSelectShell<T = unknown>
         option,
       });
       this.core.announce(option, 'added', option ? 1 : 0, false);
-      // Pessimistic mode kept the popover open while pending; close it
-      // on success now that the write committed. AD dispatcher already
-      // handled the optimistic / non-commit close — calling hide()
-      // again is a no-op there.
+      // Pessimistic: close popover on success (held open while
+      // pending). AD dispatcher already closed the optimistic /
+      // non-commit path; hide() is idempotent.
       if (this.commitMode() === 'pessimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
@@ -794,10 +749,8 @@ export class CngxSelectShell<T = unknown>
   );
 
   /**
-   * Keyboard typeahead controller — same one CngxSelect uses. Drives
-   * typeahead-while-closed and PageUp/PageDown jump-N via the shared
-   * {@link CNGX_FLAT_NAV_STRATEGY}. The strategy needs the controller's
-   * char-buffer + match-from-index state to advance through repeats.
+   * Keyboard typeahead controller. Drives typeahead-while-closed and
+   * PageUp/PageDown jump via `CNGX_FLAT_NAV_STRATEGY`.
    *
    * @internal
    */
@@ -809,9 +762,8 @@ export class CngxSelectShell<T = unknown>
   });
 
   /**
-   * Flat-nav policy. Owns the algorithm; the variant just dispatches
-   * the resulting {@link CngxFlatNavAction}. Same factory + token
-   * CngxSelect / CngxMultiSelect / CngxReorderableMultiSelect consume.
+   * Flat-nav policy. Variant only dispatches the resulting
+   * `CngxFlatNavAction`.
    *
    * @internal
    */
@@ -819,9 +771,7 @@ export class CngxSelectShell<T = unknown>
 
   /**
    * Tracks whether the seed `searchTermChange` emission has fired.
-   * Read + flipped inside `CNGX_SEARCH_EFFECTS_FACTORY`; combined with
-   * a `skipInitial: signal(true)` gate so the hydrate-time `''`
-   * emission is suppressed.
+   * Combined with `skipInitial` to suppress the hydrate-time `''`.
    *
    * @internal
    */
@@ -846,8 +796,6 @@ export class CngxSelectShell<T = unknown>
   /** Human-readable label displayed on the trigger. */
   readonly triggerValue = computed<string>(() => this.triggerText());
 
-  // ── Single-selection state ─────────────────────────────────────────
-
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
     const v = this.value();
@@ -868,8 +816,6 @@ export class CngxSelectShell<T = unknown>
     return this.selectedOption()?.label ?? fallback;
   });
 
-  // ── Panel-host adapter delegation ──────────────────────────────────
-
   /** @internal */
   protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */
@@ -881,13 +827,10 @@ export class CngxSelectShell<T = unknown>
   protected readonly isCommittingOption =
     this.core.panelHostAdapter.isCommittingOption;
 
-  // ── Panel-host interface completeness ──────────────────────────────
-  //
-  // Phase 5 satisfies the full {@link CngxSelectPanelHost} contract so
-  // CNGX_SELECT_PANEL_HOST resolves correctly; the panel-shell overlay
-  // itself is deferred to Phase 10 (locked decision in plan), so these
-  // fields exist for the contract but nothing in the current template
-  // renders against them.
+  // Panel-host interface fields below satisfy the
+  // `CngxSelectPanelHost` contract for `CNGX_SELECT_PANEL_HOST`
+  // resolution; the panel-shell overlay is deferred (plan Phase 10),
+  // so nothing in the current template renders against them.
 
   protected readonly unfilteredCount = computed(
     () => this.core.unfilteredFlatOptions().length,
@@ -903,11 +846,9 @@ export class CngxSelectShell<T = unknown>
     this.localItemsBuffer.clear();
   }
 
-  // ── CngxOptionFilterHost — drives per-option visibility from a term ──
-  //
-  // Default policy is case-insensitive substring on the resolved label.
-  // Per-instance `[searchMatchFn]` swaps in custom matching (fuzzy,
-  // server-driven hint, etc.) without changing the host contract.
+  // CngxOptionFilterHost: per-option visibility from `searchTerm`.
+  // Default is case-insensitive substring; `[searchMatchFn]` swaps in
+  // fuzzy / server-hint matching without changing the host contract.
 
   /** @internal */
   matches<TVal>(value: TVal, label: string, term: string): boolean {
@@ -918,21 +859,16 @@ export class CngxSelectShell<T = unknown>
     return label.toLowerCase().includes(term.toLowerCase());
   }
 
-  // ── CngxOptionStatusHost — drives per-option commit pending/error ──
-  //
-  // Routes commit-pending and commit-error glyphs into each
-  // `CngxOption`'s reserved internal status slot (Phase 2 contract),
-  // never alongside user content. The option directive injects
-  // `CNGX_OPTION_STATUS_HOST` and renders the resolved `tpl` inside its
-  // own `.cngx-option__status` span.
+  // CngxOptionStatusHost: per-option commit pending/error glyphs route
+  // into each `CngxOption`'s internal status slot, never alongside
+  // user content. Option directive injects `CNGX_OPTION_STATUS_HOST`
+  // and renders the resolved `tpl` in its own `.cngx-option__status`.
 
   /**
    * Per-value cache for {@link statusFor}. The option directive
-   * subscribes to the returned `Signal` once at construction; without
-   * memoisation each call from the option's outer computed allocated a
-   * fresh inner signal per CD pass (review-#4 carry-over concern). The
-   * cache lives for the shell's lifetime and is cleared in
-   * `DestroyRef.onDestroy`.
+   * subscribes once at construction; without memoisation each call
+   * from the option's outer computed allocated a fresh inner signal
+   * per CD pass. Cleared on `DestroyRef.onDestroy`.
    *
    * @internal
    */
@@ -973,23 +909,18 @@ export class CngxSelectShell<T = unknown>
   }
 
   constructor() {
-    // Release the per-value status-signal cache on destroy. Bounded
-    // by the shell's lifetime; mirrors `SelectionController.destroy`
-    // shape (`projects/core/utils/src/selection-controller.ts`).
+    // Release per-value status-signal cache on destroy.
     inject(DestroyRef).onDestroy(() => this.statusCache.clear());
 
-    // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
       }
     });
 
-    // Bridge AD activations into popover-close, selectionChange output,
-    // and (when [commitAction] is bound) the commit flow. Lifecycle and
-    // routing live in `createADActivationDispatcher`; value-shape work
-    // (previous-value snapshot, finalize emission) stays here. Pattern
-    // mirrors `CngxSelect` verbatim.
+    // AD activations → popover-close + selectionChange + commit flow.
+    // Lifecycle and routing in `createADActivationDispatcher`;
+    // value-shape work (snapshot, finalize) stays here.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -999,20 +930,15 @@ export class CngxSelectShell<T = unknown>
       onCommit: (intended, opt) =>
         this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
-        // Snapshot previous value before the listbox's own activation
-        // subscriber writes the new value through [(value)]. RxJS
-        // Subject subscribers fire in registration order; the listbox
-        // (subscribed during its own constructor) runs before this
-        // callback. Reading `untracked(value)` returns whatever has
-        // already propagated.
+        // Snapshot previous before the listbox's activation subscriber
+        // writes through [(value)]. RxJS Subject fires subscribers in
+        // registration order; the listbox runs first, so
+        // `untracked(value)` may already be the new value.
         const previous = untracked(() => this.value());
         this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
-    // Panel open/close lifecycle events. Restores focus to the trigger
-    // on close (queued via microtask inside the emitter so popover-close
-    // DOM mutation settles first).
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.triggerBtn,
@@ -1022,12 +948,6 @@ export class CngxSelectShell<T = unknown>
       closed: this.closed,
     });
 
-    // Bidirectional sync with the bound form field (if any). Reads
-    // CngxFormFieldPresenter via the family-shared factory; the two
-    // installed effects each guard with `valueEquals` so a write in
-    // either direction does not bounce back. Standalone use (no field
-    // bound) is a no-op — the factory returns early when no presenter
-    // is in scope.
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) =>
@@ -1035,11 +955,8 @@ export class CngxSelectShell<T = unknown>
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Search-effects: emit `searchTermChange` whenever the model
-    // changes, with the seed `''` emission suppressed via the
-    // factory's `skipInitial` gate. Same factory `CngxCombobox` and
-    // `CngxTypeahead` consume — DI-overridable for telemetry,
-    // debounce-pipeline customisation, or race-condition guards.
+    // Emit `searchTermChange` on model changes; skip the seed `''`
+    // emission via the factory's `skipInitial` gate.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -1078,11 +995,9 @@ export class CngxSelectShell<T = unknown>
 
 
   /**
-   * Trigger-level keyboard handling — typeahead-while-closed (native
-   * `<select>` parity) and PageUp/PageDown jump-N. Both delegate to
-   * {@link flatNavStrategy} so policy stays factored. Mirrors the
-   * `CngxSelect` keydown path verbatim — only the value-shape glue
-   * differs.
+   * Trigger keyboard. Typeahead-while-closed (native `<select>` parity)
+   * and PageUp/PageDown jump-N — both delegate to
+   * {@link flatNavStrategy}.
    *
    * @internal
    */
@@ -1159,16 +1074,11 @@ export class CngxSelectShell<T = unknown>
     }
   }
 
-  // ── CngxOptionInteractionHost implementation ──────────────────────
-  //
-  // Content-projected `<cngx-option>` elements inject
-  // `CngxActiveDescendant, { optional: true }` at construction time —
-  // when their authoring view has no AD in scope. They fall back to
-  // this host via `CNGX_OPTION_INTERACTION_HOST` and read `activeId`
-  // (declared above; same Signal serves both panel-host and
-  // interaction-host contracts), plus call `activate()`/`highlight()`
-  // from their own click + pointerenter handlers. Pillar-1 derivation
-  // restored — no DOM walking, no shell-level event delegation.
+  // CngxOptionInteractionHost: projected `<cngx-option>` elements
+  // inject AD `{ optional: true }`; when missing they fall back to
+  // this host via `CNGX_OPTION_INTERACTION_HOST` and call
+  // `activate()` / `highlight()` from their click + pointerenter
+  // handlers. Pillar 1 derivation — no DOM walking, no event delegation.
 
   /** @internal */
   activate(value: unknown): void {

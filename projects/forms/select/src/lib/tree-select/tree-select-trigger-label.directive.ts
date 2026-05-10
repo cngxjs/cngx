@@ -2,14 +2,12 @@ import { Directive, TemplateRef, inject } from '@angular/core';
 import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
 
 /**
- * Override the entire chip strip with a plain-text / custom summary.
- * Mutually exclusive with `*cngxTreeSelectChip` — project one or the
- * other. The context exposes the resolved selected items, raw values,
- * and count, so consumer templates can render `"{{ count }} selected"`
- * variants or rich summaries without touching the component body.
+ * Override the entire chip strip with a custom summary. Mutually
+ * exclusive with `*cngxTreeSelectChip` — project one or the other.
+ * Context carries resolved selected items, raw values, and count.
  *
- * Mirrors `CngxMultiSelectTriggerLabel` so the same template snippet
- * works across variants when consumers share a summary widget.
+ * Mirrors `CngxMultiSelectTriggerLabel` so the same snippet works
+ * across variants.
  *
  * @example
  * ```html

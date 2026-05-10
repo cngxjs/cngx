@@ -11,17 +11,10 @@ import type {
 } from './template-slots';
 
 /**
- * Callback bundle passed to the `*cngxSelectAction` slot via the
- * shared panel-shell context. Lifecycle methods live here (`close`,
- * `commit`, `setDirty`); `isPending` is the live commit-controller
- * state inside the bundle so the context stays a single reference
- * per emission — the shell's action-context computed re-allocates
- * whenever `isPending` flips, triggering a template-outlet context
- * refresh.
- *
- * Per cngx pillar: derived values (dirty, searchTerm) live as signals
- * directly on the view-host; this bundle carries only the imperative
- * surface the slot template invokes from event handlers.
+ * Imperative bundle for the `*cngxSelectAction` slot. `isPending` lives
+ * inside so the bundle ref churns when commit state flips (forces an
+ * outlet context refresh). Derived values (dirty, searchTerm) live on
+ * the view-host directly.
  *
  * @internal
  */
@@ -30,23 +23,9 @@ export interface CngxSelectActionCallbacks {
   readonly commit: (draft?: { label: string }) => void;
   readonly isPending: boolean;
   readonly setDirty: (value: boolean) => void;
-  /**
-   * Called by the shared panel shell when the user presses Escape
-   * while `actionDirty()` is `true`. Distinct from `close`: `cancel`
-   * lets the action-owner run variant-specific abandon logic (reset
-   * form state, roll back optimistic writes, …) before the slot's
-   * dirty flag flips back to `false`. The default bridge
-   * implementation resets the dirty signal; the action-select
-   * organisms in Commit 5/6 override with real rollback.
-   */
+  /** Distinct from `close` — runs variant abandon logic before dirty flips. */
   readonly cancel: () => void;
-  /**
-   * Re-dispatch the most recent commit (quick-create or otherwise)
-   * with the variant's last-captured payload. Routed through the
-   * same commit controller so supersede semantics apply unchanged.
-   * The default bridge implementation is a no-op — the action-select
-   * organisms override with `createHandler.retryLast()`.
-   */
+  /** Re-dispatches the last commit through the same controller. */
   readonly retry: () => void;
 }
 import type {
@@ -68,10 +47,8 @@ import type { CngxSelectTemplateRegistry } from './template-registry';
 import type { AsyncView } from '@cngx/common/data';
 
 /**
- * The five template slots the shared `CngxSelectPanelShell` renders.
- * Everything else on `CngxSelectTemplateRegistry` is option-loop-specific
- * and stays off this narrow shape so value-shape-agnostic consumers
- * (notably `CngxTreeSelect`) never have to stub missing slots.
+ * Narrow template surface rendered by `CngxSelectPanelShell`. Excludes
+ * option-loop slots so `CngxTreeSelect` doesn't have to stub them.
  *
  * @internal
  */
@@ -81,40 +58,19 @@ export interface CngxSelectPanelShellTemplates<T = unknown> {
   readonly error: Signal<TemplateRef<CngxSelectErrorContext> | null>;
   readonly refreshing: Signal<TemplateRef<CngxSelectRefreshingContext> | null>;
   readonly commitError: Signal<TemplateRef<CngxSelectCommitErrorContext<T>> | null>;
-  /**
-   * Retry-button override projected via `*cngxSelectRetryButton`. Drives
-   * the retry affordance at all three error surfaces (load, refresh,
-   * commit) — when null the shell renders its default `<button>`.
-   */
+  /** Drives all three error-surface retries. Null → default button. */
   readonly retryButton: Signal<TemplateRef<CngxSelectRetryButtonContext> | null>;
-  /**
-   * Glyph override projected via `*cngxSelectLoadingGlyph`. Drives the
-   * inner animated body of the spinner / bar / dots loading and
-   * refreshing indicators (skeleton stays HTML-layout-driven). When
-   * `null` the shell renders its built-in CSS-driven glyphs.
-   */
+  /** Inner body of spinner/bar/dots indicators. Skeleton stays HTML-driven. */
   readonly loadingGlyph: Signal<TemplateRef<void> | null>;
-  /**
-   * Inline action-slot template projected via `*cngxSelectAction`.
-   * Cross-variant: the flat panels, tree panels, and the action-select
-   * organisms all rely on the same shell frame to render it, so the
-   * slot lives on this narrow contract rather than on the option-loop
-   * specific `CngxSelectPanelHost.tpl`.
-   */
+  /** `*cngxSelectAction` slot. Cross-variant — flat, tree, and action panels all read it. */
   readonly action: Signal<TemplateRef<CngxSelectActionContext> | null>;
 }
 
 /**
- * Minimal contract consumed by `CngxSelectPanelShell` — the async-view
- * switch, the five shell-rendered template slots, and the error / retry
- * callbacks. Split out from the option-loop-specific surface so
- * value-shape-agnostic consumers (tree-select, any future grid / card
- * variant) can stay free of the stub-field boilerplate that the flat
- * `CngxSelectPanelHost` demands.
- *
- * All five shipped select-family components provide this token alongside
- * the full {@link CngxSelectPanelHost} token; `CngxTreeSelect` provides
- * ONLY this narrower surface (plus `CNGX_TREE_SELECT_PANEL_HOST`).
+ * Narrow contract consumed by `CngxSelectPanelShell` — async view,
+ * shell-rendered slots, retry callback. `CngxTreeSelect` provides only
+ * this surface; flat variants provide this plus the full
+ * {@link CngxSelectPanelHost}.
  *
  * @internal
  */
@@ -130,122 +86,46 @@ export interface CngxSelectPanelViewHost<T = unknown> {
   readonly refreshingVariant: Signal<CngxSelectRefreshingVariant>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly tpl: CngxSelectPanelShellTemplates<T>;
-  /**
-   * Resolved panel-shell fallback labels — every key non-optional,
-   * library defaults applied where the consumer's config is silent.
-   * The shell renders `host.fallbackLabels.loading` / `.empty` /
-   * `.loadFailed` / `.loadFailedRetry` / `.refreshFailed` /
-   * `.refreshFailedRetry` / `.commitFailed` / `.commitFailedRetry`
-   * when no custom template is projected for the corresponding slot.
-   */
+  /** All keys non-optional; library defaults applied. */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
-  /**
-   * Live search term for empty / refreshing contexts (combobox /
-   * typeahead / action-* variants). Button-trigger variants leave
-   * this undefined and the shell substitutes `''`.
-   */
+  /** Search-input variants forward this; button triggers omit (shell → `''`). */
   readonly searchTerm?: Signal<string>;
-  /**
-   * Unfiltered total option count for the empty context's
-   * `totalCount` field. Variants forward their core's
-   * `unfilteredFlatOptions().length` (or local equivalent for tree).
-   * Optional — when undefined the shell substitutes `0`.
-   */
+  /** `unfilteredFlatOptions().length`. Shell → `0` when omitted. */
   readonly unfilteredCount?: Signal<number>;
-  /**
-   * Last-loaded option count surfaced on the refreshing context.
-   * Variants forward `flatOptions().length` (which freezes during
-   * the refresh tick because the upstream `state` keeps the previous
-   * data while `refreshing`). Optional — when undefined the shell
-   * substitutes `0`.
-   */
+  /** Frozen `flatOptions().length` during refresh. Shell → `0` when omitted. */
   readonly previousLoadedCount?: Signal<number>;
-  /**
-   * Resolved ARIA-label bundle. Every variant forwards its
-   * `core.ariaLabels` (which mirrors `CNGX_SELECT_CONFIG.ariaLabels`)
-   * so the shell can read `host.ariaLabels.statusLoading` /
-   * `.statusRefreshing` etc. without re-injecting the config token.
-   *
-   * Keys remain optional — variants that supply per-instance overrides
-   * still apply them outside this bundle (e.g. `[clearButtonAriaLabel]`
-   * input on each chip-carrier). Library DE defaults populate the
-   * status / tree / fallback keys; per-variant cascade applies for the
-   * `clearButton` / `chipRemove` keys.
-   */
+  /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Per-instance inputs apply outside. */
   readonly ariaLabels: CngxSelectAriaLabels;
   handleRetry(): void;
 
-  /**
-   * Optional — live search term piped into the `*cngxSelectAction`
-   * slot's `$implicit` + `searchTerm` context fields. Variants that
-   * host an inline search input (combobox, typeahead, action-select
-   * organisms) forward their own `searchTerm` signal. Button-trigger
-   * variants (select, multi, reorderable) leave this undefined and
-   * the shell falls back to `''`.
-   */
+  /** Action slot's live search term. Shell → `''` when omitted. */
   readonly actionSearchTerm?: Signal<string>;
   /**
-   * Optional — dirty flag for the in-flight action workflow. Drives
-   * the dismiss-guard protocol (wired up in Commit 4): Escape and
-   * click-outside are intercepted while `actionDirty()` is `true`.
-   * Variants default-undefined; the shell reads `false`.
+   * Drives the dismiss-guard: Escape and click-outside are intercepted
+   * while `true`. Shell → `false` when omitted.
    */
   readonly actionDirty?: Signal<boolean>;
-  /**
-   * Optional — imperative callbacks exposed to the action slot
-   * (`close`, `commit`, `setDirty`, `cancel`) plus the live
-   * `isPending` flag from the variant's commit controller. Bundled
-   * into a single signal so the shell's context re-emits as one
-   * unit when any element changes.
-   */
+  /** Bundled action-slot callbacks. */
   readonly actionCallbacks?: Signal<CngxSelectActionCallbacks>;
   /**
-   * Optional — resolved focus-trap policy signal piped from the
-   * variant's `ActionHostBridge` through to `CngxFocusTrap.enabled`.
-   * Combines `CNGX_ACTION_SELECT_CONFIG.focusTrapBehavior` with the
-   * live dirty flag. Inner panels (`CngxSelectPanel`, `CngxTreeSelectPanel`)
-   * forward this into the shell's `actionFocusTrapEnabled` input;
-   * variants that don't host an action workflow leave this undefined
-   * and the shell defaults the hostDirective input to `false`.
+   * `CngxFocusTrap.enabled` resolved from `ActionHostBridge`. Shell →
+   * `false` when omitted.
    */
   readonly actionFocusTrapEnabled?: Signal<boolean>;
-  /**
-   * Optional — where the `*cngxSelectAction` slot renders inside the
-   * shared panel frame. Inner panels forward this into the shell's
-   * `actionPosition` input. Variants that don't host an action
-   * workflow leave this undefined; the shell's default `'bottom'`
-   * applies. Action-select organisms expose an `actionPosition` input
-   * on their own public API and project the resolved signal here.
-   */
+  /** `*cngxSelectAction` position in the panel frame. Shell → `'bottom'`. */
   readonly actionPosition?: Signal<'top' | 'bottom' | 'both' | 'none'>;
   /**
-   * Optional — live commit-error for the action workflow. Surfaced
-   * into the `*cngxSelectAction` slot's `error` + `hasError` context
-   * fields so consumer templates can render a custom inline error
-   * next to the slot's retry affordance. Variants without a
-   * dedicated action-commit controller leave this undefined and the
-   * shell substitutes `null`. Distinct from `commitErrorContext`
-   * (which drives the shell's own error banner for toggle/clear
-   * commits) — the two surfaces can co-exist without interfering.
+   * Action-workflow commit-error. Distinct from `commitErrorContext`
+   * (toggle/clear commits) — both surfaces co-exist.
    */
   readonly actionError?: Signal<unknown>;
-  /**
-   * Optional — the variant's current primary value, type-erased.
-   * Action-select organisms forward their single `value()`;
-   * action-multi-select forwards the `values()` array. Button-trigger
-   * variants leave this undefined (consumer uses `view-child` access
-   * instead) and the shell falls back to `null`. Never triggers any
-   * panel-shell derivation; it's forwarded into the action context
-   * verbatim so consumer templates can read the live selection.
-   */
+  /** Current primary value, type-erased. Forwarded into action context. */
   readonly actionValue?: Signal<unknown>;
 }
 
 /**
- * Injection token for the shell's narrow contract. Provided by every
- * select-family variant via `useExisting`. `CngxSelectPanelShell` injects
- * this token — never the full {@link CngxSelectPanelHost} — so tree /
- * future non-option-loop variants stay clean.
+ * Token for the shell's narrow contract. Injected by
+ * `CngxSelectPanelShell`; never the full {@link CngxSelectPanelHost}.
  *
  * @internal
  */
@@ -254,26 +134,18 @@ export const CNGX_SELECT_PANEL_VIEW_HOST = new InjectionToken<CngxSelectPanelVie
 );
 
 /**
- * Full panel-host contract for the option-loop panel (`CngxSelectPanel`).
- * Extends {@link CngxSelectPanelViewHost} with every field the option
- * row-rendering path reads: options input, selection state, indicator
- * resolution, listbox comparator, AD active id, commit-error value for
- * the per-row inline glyph, outer-panel class/width.
- *
- * `CngxTreeSelect` does NOT implement this — it uses `CngxTreeSelectPanel`
- * which renders treeitem rows instead of option rows.
+ * Full option-loop contract for `CngxSelectPanel`. Extends
+ * {@link CngxSelectPanelViewHost} with options, selection, indicator
+ * resolution, listbox comparator, AD active id. `CngxTreeSelect`
+ * does NOT implement this.
  *
  * @internal
  */
 export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHost<T> {
   /**
-   * Optional pre-built renderer. When provided, `CngxSelectPanel`
-   * reuses it instead of re-invoking `CNGX_PANEL_RENDERER_FACTORY` —
-   * avoiding duplicate renderer state and letting the host wire
-   * consumer-level hooks (AD bridge for virtualisation, telemetry, …)
-   * against the same instance the panel renders from. Optional for
-   * back-compat: hosts that don't need to inspect the renderer
-   * leave this undefined and the panel creates its own.
+   * Pre-built renderer reused by the panel — avoids duplicate state
+   * and lets the host wire AD-virtualisation hooks against the same
+   * instance.
    *
    * @internal
    */
@@ -289,7 +161,7 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly listboxCompareWith: Signal<(a: unknown, b: unknown) => boolean>;
   readonly externalActivation: Signal<boolean>;
-  /** Override parent `tpl` with the full 13-slot registry. */
+  /** Overrides parent `tpl` with the full 13-slot registry. */
   readonly tpl: CngxSelectTemplateRegistry<T>;
   readonly commitErrorValue: Signal<unknown>;
   readonly activeId: Signal<string | null>;
@@ -299,32 +171,17 @@ export interface CngxSelectPanelHost<T = unknown> extends CngxSelectPanelViewHos
   isIndeterminate(opt: CngxSelectOptionDef<T>): boolean;
   isCommittingOption(opt: CngxSelectOptionDef<T>): boolean;
   /**
-   * Append an option to the host's persistent local-items buffer.
-   * Folded onto server-provided options inside
-   * `createSelectCore.effectiveOptions` via `mergeLocalItems`, so the
-   * newly patched item renders in the panel even when no server
-   * refetch has happened yet. The insertion is dedup-guarded: a
-   * second patch with a value already in the buffer (or already
-   * present on the server side) is silently dropped.
-   *
-   * Used by the action-select organisms' quick-create flow from
-   * inside the action-slot template — consumers don't call this
-   * directly on the 5 flat variants today.
+   * Appends to the local-items buffer, folded into `effectiveOptions`
+   * via `mergeLocalItems`. Dedup-guarded.
    */
   patchData(item: CngxSelectOptionDef<T>): void;
-  /**
-   * Reset the local-items buffer to empty. Idempotent — no emit when
-   * already empty.
-   */
+  /** Idempotent. */
   clearLocalItems(): void;
 }
 
 /**
- * Injection token for the full option-loop panel-host contract. Provided
- * by `CngxSelect` / `CngxMultiSelect` / `CngxCombobox` / `CngxTypeahead`
- * via `useExisting`. `CngxSelectPanel` injects this token.
- * `CngxTreeSelect` does NOT provide it (it uses the narrower view-host
- * + its own tree-specific token).
+ * Token for the full option-loop contract. Injected by
+ * `CngxSelectPanel`; `CngxTreeSelect` does not provide it.
  *
  * @internal
  */

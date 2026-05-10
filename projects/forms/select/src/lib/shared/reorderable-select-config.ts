@@ -10,57 +10,30 @@ import {
 import type { CngxReorderModifier } from '@cngx/common/interactive';
 
 /**
- * App-wide configuration for reorder-aware select variants
- * (`CngxReorderableMultiSelect` today; future tag-input-with-reorder,
- * chip-strip toolbars). Mirrors the cascade rules of
- * `CngxSelectConfig` — per-instance input wins over component-scoped
- * `provideReorderableSelectConfigAt`, which wins over app-wide
- * `provideReorderableSelectConfig`, which falls back to the library
- * defaults below.
+ * App-wide config for reorder-aware select variants. Cascade:
+ * per-instance input > `provideReorderableSelectConfigAt` >
+ * `provideReorderableSelectConfig` > library default.
  *
  * @category interactive
  */
 export interface CngxReorderableSelectConfig {
-  /**
-   * Default modifier key required for keyboard-driven reorder moves.
-   * Forwarded to the inner `CngxReorder` directive. Defaults to
-   * `'ctrl'`.
-   */
+  /** Forwarded to inner `CngxReorder`. Default `'ctrl'`. */
   readonly keyboardModifier?: CngxReorderModifier;
-  /**
-   * Default ARIA label for the chip-strip `role="group"` region.
-   * Announced when the user tabs into the strip so they understand
-   * they're entering a reorderable widget. Defaults to the German
-   * sentence `'Reihenfolge ändern mit Strg+Pfeiltasten'` — override
-   * per-app for localisation.
-   */
+  /** ARIA label on the chip-strip `role="group"`. Localisation hook. */
   readonly ariaLabel?: string;
   /**
-   * Default drag-handle glyph. `null` keeps the built-in six-dot grip;
-   * a projected `TemplateRef<void>` replaces it app-wide without
-   * touching any consumer template. Per-instance `[chipDragHandle]`
-   * still wins.
+   * Drag-handle glyph. `null` keeps the six-dot grip. Per-instance
+   * `[chipDragHandle]` wins.
    */
   readonly dragHandle?: TemplateRef<void> | null;
   /**
-   * Whether the whole chip strip is disabled while a commit is in
-   * flight (`reorderDisabled = disabled || isCommitting`). `true`
-   * (default) matches plan §2 locked decision — reorders are
-   * sub-second and freeze is clearer than mid-gesture per-chip
-   * spinners. Set `false` to allow consecutive reorders to supersede
-   * an in-flight commit via the commit-controller's built-in race
-   * handling.
+   * Freezes the chip strip during an in-flight commit. Default `true` —
+   * reorders are sub-second, freeze is clearer than per-chip spinners.
    */
   readonly freezeStripOnCommit?: boolean;
 }
 
-/**
- * Library defaults for {@link CngxReorderableSelectConfig}. Kept as a
- * `Required<>` shape so `resolveReorderableSelectConfig` can
- * short-circuit the `??` chain in one place.
- *
- * @internal
- */
+/** Library defaults. Required-shape so resolution stays `??`-friendly. @internal */
 export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
   Omit<CngxReorderableSelectConfig, 'dragHandle'>
 > & { readonly dragHandle: TemplateRef<void> | null } = {
@@ -71,9 +44,7 @@ export const CNGX_REORDERABLE_SELECT_DEFAULTS: Required<
 };
 
 /**
- * Injection token carrying the resolved
- * {@link CngxReorderableSelectConfig} for the current injector scope.
- * Falls back to {@link CNGX_REORDERABLE_SELECT_DEFAULTS}.
+ * Token carrying the resolved {@link CngxReorderableSelectConfig}.
  *
  * @category interactive
  */
@@ -88,7 +59,7 @@ export const CNGX_REORDERABLE_SELECT_CONFIG =
  */
 export interface CngxReorderableSelectConfigFeature {
   readonly config: Partial<CngxReorderableSelectConfig>;
-  /** @internal — discriminator for `provideCngxSelect` dispatch. */
+  /** @internal Discriminator for `provideCngxSelect` dispatch. */
   readonly _target?: 'reorderable';
 }
 
@@ -99,10 +70,7 @@ function feature(
 }
 
 /**
- * Override the default keyboard modifier used to gate reorder moves.
- * Use `'alt'` when the app already uses `Ctrl` for browser
- * shortcuts / accessibility keys, or `'meta'` on macOS-first apps
- * where the Cmd key is the natural reorder modifier.
+ * Sets the keyboard modifier gating reorder moves.
  *
  * @category interactive
  */
@@ -113,7 +81,7 @@ export function withReorderKeyboardModifier(
 }
 
 /**
- * Override the default chip-strip ARIA label (localisation hook).
+ * Sets the chip-strip ARIA label.
  *
  * @category interactive
  */
@@ -124,10 +92,7 @@ export function withReorderAriaLabel(
 }
 
 /**
- * Override the default drag-handle glyph app-wide. Pass a
- * `TemplateRef<void>` from a bootstrap component holding an
- * `<ng-template #grip>…</ng-template>` to swap the built-in six-dot
- * grip without touching any consumer template.
+ * Sets the default drag-handle glyph app-wide via `TemplateRef<void>`.
  *
  * @category interactive
  */
@@ -138,10 +103,8 @@ export function withDefaultDragHandle(
 }
 
 /**
- * Toggle the strip-freeze-on-commit behaviour. `true` (default) freezes
- * the whole chip strip while a commit is in flight. `false` keeps the
- * strip live — consecutive reorders supersede any in-flight commit via
- * the commit-controller's built-in race handling.
+ * Sets strip-freeze-on-commit. `false` lets reorders supersede in-flight
+ * commits via the commit-controller's supersede semantics.
  *
  * @category interactive
  */
@@ -152,10 +115,8 @@ export function withReorderStripFreeze(
 }
 
 /**
- * App-wide defaults for all reorder-aware select variants. Composable
- * via the `with*` helpers. Component-scoped overrides
- * (`provideReorderableSelectConfigAt`) win; per-instance inputs win
- * over that.
+ * App-wide defaults for reorder-aware select variants.
+ * `provideReorderableSelectConfigAt` and per-instance inputs win.
  *
  * @example
  * ```ts
@@ -187,10 +148,8 @@ export function provideReorderableSelectConfig(
 }
 
 /**
- * Component-scoped override for the reorderable-select config. Goes
- * into `providers` / `viewProviders` via spread syntax; the return
- * type is `Provider[]` (not `EnvironmentProviders`) because
- * `viewProviders` rejects environment providers.
+ * Component-scoped reorderable-select config. Returns `Provider[]`
+ * because `viewProviders` rejects `EnvironmentProviders`.
  *
  * @category interactive
  */
@@ -207,8 +166,7 @@ export function provideReorderableSelectConfigAt(
 }
 
 /**
- * Resolve the effective config for the current injector. Must run in
- * an injection context.
+ * Effective config for the current injector. Injection context required.
  *
  * @internal
  */

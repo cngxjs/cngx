@@ -1,15 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 /**
- * Visual separator between groups / options inside a consumer-assembled
- * listbox. Native `<select>` allows `<hr>` as a child for the same purpose —
- * we ship a dedicated element so CSS ownership stays clean and ATs ignore
- * it (role="presentation", aria-hidden).
+ * Visual separator between groups / options. Native `<select>` allows
+ * `<hr>`; we ship a dedicated element for clean CSS ownership and AT
+ * ignores it via `role="presentation"` + `aria-hidden`.
  *
- * **Intended usage:** inside a consumer-assembled listbox (the "compose
- * yourself" path) OR as a direct child of `<cngx-select-shell>`. Direct
- * use inside the data-mode `<cngx-select>` is still unsupported — that
- * variant consumes options through `[options]`.
+ * **Usage:** inside a consumer-assembled listbox (compose-yourself
+ * path) or as a direct child of `<cngx-select-shell>`. Not supported
+ * inside data-mode `<cngx-select>` (consumes via `[options]`).
  *
  * @example
  * ```html

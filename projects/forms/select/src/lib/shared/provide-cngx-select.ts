@@ -17,19 +17,9 @@ import {
 } from './reorderable-select-config';
 
 /**
- * Discriminated union covering every feature accepted by
- * {@link provideCngxSelect} / {@link provideCngxSelectAt}. The hidden
- * `_target` field on each `with*` return value lets the aggregator
- * dispatch to the correct underlying provider:
- *
- *   - `'select'`   → `provideSelectConfig`
- *   - `'action'`   → `provideActionSelectConfig`
- *   - `'reorderable'` → `provideReorderableSelectConfig`
- *
- * Consumers never see `_target` — every existing `with*` function
- * returns a typed feature whose discriminator is set by its central
- * `feature()` helper. New features are auto-tagged by virtue of using
- * the same helper inside their respective config modules.
+ * Feature union for {@link provideCngxSelect} / {@link provideCngxSelectAt}.
+ * The hidden `_target` discriminator routes each feature to its
+ * underlying provider (`select`/`action`/`reorderable`).
  *
  * @category interactive
  */
@@ -62,10 +52,8 @@ function bucket(
         reorderable.push(feature);
         break;
       default:
-        // Backwards-compat for callers using a custom feature shape
-        // (e.g. tests constructing `{ config: {...} }` directly without
-        // going through the `with*` helpers). Default to the most
-        // common surface — `provideSelectConfig`.
+        // Back-compat for `{ config: {...} }` features built without a
+        // `with*` helper — route to `provideSelectConfig`.
         select.push(feature as CngxSelectConfigFeature);
     }
   }
@@ -73,17 +61,11 @@ function bucket(
 }
 
 /**
- * Unified app-wide entry point for every Select-family configuration
- * surface. Accepts a mix of features from `provideSelectConfig`,
- * `provideActionSelectConfig`, and `provideReorderableSelectConfig`
- * — internally dispatches each feature to the correct underlying
- * provider via the hidden `_target` discriminator on the feature.
- *
- * Existing app-wide setup (`provideSelectConfig(...)` etc.) keeps
- * working — the three providers stay exported and behaviourally
- * identical. The aggregator is purely additive: it lets apps that
- * configure two or more surfaces collapse their `bootstrapApplication`
- * providers into a single call.
+ * App-wide entry point for the Select-family configuration surfaces.
+ * Routes mixed features from `provideSelectConfig`,
+ * `provideActionSelectConfig`, and `provideReorderableSelectConfig` to
+ * the correct underlying provider. The three individual providers stay
+ * exported.
  *
  * @example
  * ```ts
@@ -127,14 +109,8 @@ export function provideCngxSelect(
 }
 
 /**
- * Component-scoped twin of {@link provideCngxSelect}. Drop into a
- * component's `viewProviders` to override every Select-family surface
- * for that component subtree without touching the app-wide
- * configuration.
- *
- * Returns the flat `Provider[]` shape required by `viewProviders` /
- * `providers` (Angular 21's `EnvironmentProviders` is not accepted in
- * those slots).
+ * Component-scoped twin of {@link provideCngxSelect}. Returns
+ * `Provider[]` because `viewProviders` rejects `EnvironmentProviders`.
  *
  * @example
  * ```ts

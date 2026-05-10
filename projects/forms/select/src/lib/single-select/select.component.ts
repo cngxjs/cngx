@@ -96,8 +96,7 @@ import {
 } from '../shared/template-slots';
 
 /**
- * Change event emitted by {@link CngxSelect.selectionChange} when the
- * user (not programmatic writes) picks a value.
+ * Change event emitted by {@link CngxSelect.selectionChange} on user picks.
  *
  * @category interactive
  */
@@ -105,23 +104,19 @@ export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
   readonly value: T | undefined;
   /**
-   * Value before the change was committed. `undefined` both when the
-   * previous state was empty and (for back-compat) on the narrow paths
-   * where no snapshot was captured. Consumers implementing
-   * undo/redo, audit logging, or commit-error recovery UIs can rely on
-   * this being populated for every emission from the commit-flow
-   * (success + error paths) and from the direct activation / clear
-   * paths.
+   * Value before the change committed. Populated on every commit-flow
+   * emission (success + error) and on direct activation / clear paths;
+   * `undefined` only when the previous state was empty.
    */
   readonly previousValue?: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
 /**
- * Native-feeling single-select dropdown. Behaves like `<select>`, exceeds
- * `mat-select` on a11y, uses the shared {@link createSelectCore} factory
- * for the stateless signal graph (ARIA projection, panel view, option
- * model, commit-controller surface).
+ * Native-feeling single-select dropdown. Behaves like `<select>`,
+ * exceeds `mat-select` on a11y. Stateless signal graph (ARIA, panel
+ * view, option model, commit-controller surface) lives in
+ * {@link createSelectCore}.
  *
  * @category interactive
  */
@@ -163,11 +158,9 @@ export interface CngxSelectChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
     <!--
-      role="combobox" with a focusable <div> — NOT a <button>. The
-      trigger hosts an interactive child (clearable ✕ or a
-      consumer-authored *cngxSelectClearButton template) which would
-      be an invalid nested button inside a <button>. WAI-ARIA 1.2
-      combobox pattern.
+      role="combobox" on a <div>, not <button>: the trigger hosts
+      interactive children (clear ✕, *cngxSelectClearButton) which
+      would be invalid nested buttons. WAI-ARIA 1.2 combobox pattern.
     -->
     @let aria = triggerAria();
     <div
@@ -302,8 +295,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly config = resolveSelectConfig();
 
-  // ── Inputs ─────────────────────────────────────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -321,8 +312,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
    * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement} (app-wide
-   * default `'bottom'`).
+   * wins over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
@@ -333,14 +323,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Replaces the built-in `✕` glyph inside the default clear button
-   * while keeping the button frame, ARIA wiring, and click handler
-   * intact. When `*cngxSelectClearButton` is projected, the projected
-   * template takes full precedence and this input is ignored.
+   * while keeping the button frame, ARIA, and click handler. Ignored
+   * when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
-   * projected, it takes full precedence and this input is ignored.
+   * Replaces the built-in `▾` caret glyph. Ignored when
+   * `*cngxSelectCaret` is projected.
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
@@ -361,19 +350,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
-   * Scalar-commit error-announce policy. Controls whether a failing
-   * commit reads the verbatim error message (`'verbose'`) or a soft
-   * "selection removed" sentence (`'soft'`). Per-instance input wins
-   * over {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when
-   * neither is set, the variant's shipped default of
-   * `{ kind: 'verbose', severity: 'assertive' }` applies.
+   * Scalar-commit error-announce policy. `'verbose'` reads the error
+   * message; `'soft'` reads "selection removed". Per-instance input wins
+   * over `CngxSelectConfig.commitErrorAnnouncePolicy`; default
+   * `{ kind: 'verbose', severity: 'assertive' }`.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'verbose', severity: 'assertive' },
   );
   readonly value = model<T | undefined>(undefined);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxSelectChange<T>>();
   readonly openedChange = output<boolean>();
@@ -383,8 +368,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -418,8 +401,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template-slot registry ────────────────────────────────
-
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
@@ -438,9 +419,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     optionError: this.optionErrorDirective,
   });
   /**
-   * Variant-specific trigger label override. Stays inline because
-   * `CngxSelectTriggerLabel` has a `CngxSelectOptionDef<T>` context that
-   * multi/combobox variants replace with array-shaped contexts.
+   * Variant-specific trigger label override. Inline because
+   * `CngxSelectTriggerLabel`'s `CngxSelectOptionDef<T>` context is
+   * replaced with array-shaped contexts in multi/combobox.
    *
    * @internal
    */
@@ -450,11 +431,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Context bound to the `*cngxSelectTriggerLabel` outlet. Carries the
-   * selected option plus live `disabled` / `panelOpen` / `focused`
-   * flags so consumer templates can render state-aware trigger
-   * content (greyed text on disabled, expand-icon flip on open, etc.)
-   * without redundant signal subscriptions.
+   * Context bound to the `*cngxSelectTriggerLabel` outlet. Selected
+   * option plus live `disabled` / `panelOpen` / `focused` flags so
+   * consumer templates render state-aware content without re-subscribing.
    *
    * @internal
    */
@@ -478,13 +457,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
-
-  // ── Public derived signals ─────────────────────────────────────────
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
@@ -493,8 +468,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -508,13 +481,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /**
-   * Shared append-only buffer for inline-created items. Consumed by
-   * `createSelectCore.effectiveOptions` via `mergeLocalItems` so a
-   * patched option stays visible across server refetches until the
-   * backend catches up. Public mutation methods route through here.
+   * Append-only buffer for inline-created items. Merged into
+   * `effectiveOptions` so patched options survive server refetches.
    *
    * @internal
    */
@@ -522,15 +491,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.compareWith,
   );
 
-  // ── Action-slot bridge (dirty-guard + focus-trap policy) ──────────
-
   /**
-   * Shared action-slot bridge: owns `actionDirty`, the callbacks
-   * bundle the panel shell feeds to `*cngxSelectAction`, and the
-   * config-driven focus-trap policy. Exposed to the shell through
-   * the `CngxSelectPanelViewHost` slots `actionDirty` /
-   * `actionCallbacks` / `actionFocusTrapEnabled` below, and consumed
-   * by the variant's own dismiss-handler guards.
+   * Action-slot bridge: `actionDirty`, the panel-shell callback bundle,
+   * config-driven focus-trap policy. Surfaced to the shell via the
+   * `CngxSelectPanelViewHost` slots below; consumed by the dismiss-handler.
    *
    * @internal
    */
@@ -541,12 +505,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
-  // ── Core (stateless signal graph) ──────────────────────────────────
-
   /**
-   * Signal-graph factory shared with {@link CngxMultiSelect} and
-   * {@link CngxCombobox}. Owns every derivation that's identical
-   * across the family.
+   * Family-shared signal graph. Owns every derivation identical across
+   * `CngxMultiSelect` / `CngxCombobox`.
    *
    * @internal
    */
@@ -586,12 +547,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer. The new option renders in the next panel emission even if
-   * the backing state hasn't refetched; once the server catches up and
-   * includes a matching value, `mergeLocalItems` drops the local copy
-   * silently. Idempotent — duplicate values under the current
-   * `compareWith` are no-ops.
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
    *
    * @category interactive
    */
@@ -600,16 +558,13 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * Reset the local buffer to empty. Idempotent — no-op when the
-   * buffer already held nothing.
+   * Reset the local buffer. Idempotent.
    *
    * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface (delegates to core) ──────────
 
   /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */ protected readonly flatOptions = this.core.flatOptions;
@@ -652,10 +607,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /**
-   * Keyboard typeahead engine. Shared with the rest of the select family
-   * via `@cngx/forms/select/shared/typeahead-controller`. Handles
-   * printable-key matching, multi-char buffering, debounce-reset and
-   * disabled-skip in one place.
+   * Keyboard typeahead engine. Family-shared via
+   * `shared/typeahead-controller`. Printable-key matching, multi-char
+   * buffer, debounce-reset, disabled-skip.
    */
   private readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
@@ -665,9 +619,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Flat-nav policy — shared with the multi-value family via
-   * `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
-   * closed; the variant only dispatches the resulting action.
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down
+   * and typeahead-while-closed; variant only dispatches the action.
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
 
@@ -685,14 +638,11 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     this.scalarHandler.retryLast(),
   );
 
-  /** Currently selected option, resolved against `options`. */
   /**
-   * Currently selected option, resolved against `options`. Structurally
-   * compared — two OptionDefs with the same `.value` under `compareWith`
-   * are considered equal, so downstream `@let selected = selected()` or
-   * `[selected]=selected()` bindings don't cascade re-renders when the
-   * upstream options array is re-emitted with a fresh OptionDef
-   * reference for the same value (common with server-driven options).
+   * Currently selected option, resolved against `options`. Structural
+   * equal on `.value` under `compareWith` — fresh OptionDef references
+   * for the same value don't cascade downstream re-renders (server
+   * refetch pattern).
    */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => this.selectedOption(),
@@ -711,8 +661,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Human-readable label displayed on the trigger. */
   readonly triggerValue = computed<string>(() => this.triggerText());
-
-  // ── Single-selection state ─────────────────────────────────────────
 
   /** @internal */
   protected readonly selectedOption = computed<CngxSelectOptionDef<T> | null>(() => {
@@ -734,8 +682,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     return this.selectedOption()?.label ?? fallback;
   });
 
-  // ── Commit state (delegated) ───────────────────────────────────────
-
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
       announcer: this.announcer,
@@ -747,16 +693,12 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Shared scalar commit handler. Owns the beginCommit/finalizeSelection/
-   * retryLast triad that this component previously carried inline. The
-   * per-variant wrinkles (popover close timing, selectionChange +
-   * optionSelected emission, announcer hook) ride the options callbacks:
+   * Scalar commit handler. Variant wrinkles ride the callbacks:
    *
-   *   - `onStateChange('pending')` → eager-close popover in optimistic mode
-   *   - `onCommitFinalize(opt, value, previous)` → emit selectionChange +
-   *     optionSelected, announce 'added', and close popover in pessimistic
-   *     mode (idempotent when the AD dispatcher already closed it)
-   *   - `onCommitError` → delegate to scalar-commit-error-announcer
+   *   - `onStateChange('pending')` → eager-close popover in optimistic mode.
+   *   - `onCommitFinalize` → emit selectionChange + optionSelected,
+   *     announce 'added', close popover in pessimistic mode.
+   *   - `onCommitError` → delegate to commit-error-announcer.
    *
    * @internal
    */
@@ -777,11 +719,9 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       });
       this.optionSelected.emit(option);
       this.core.announce(option, 'added', option ? 1 : 0, false);
-      // Pessimistic commit → the popover stayed open while pending, so
-      // close it now that the write has committed. The AD dispatcher's
-      // `closeOnSelect: true` already handled the non-commit path, and
-      // calling hide() again is a no-op, so this only fires
-      // meaningfully on commit-success.
+      // Pessimistic: close popover on success (was held open while
+      // pending). AD dispatcher already closed the non-commit path;
+      // hide() is idempotent.
       if (this.commitMode() === 'pessimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
@@ -792,9 +732,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     onCommitError: (err) => this.announceCommitError(err),
     onStateChange: (status) => {
       this.stateChange.emit(status);
-      // Optimistic commit → close the popover eagerly (matches the
-      // historical beginCommit behaviour prior to scalar-handler
-      // extraction — user sees an instant close + rollback on error).
+      // Optimistic: close popover eagerly so user sees instant close,
+      // rollback on error.
       if (status === 'pending' && this.commitMode() === 'optimistic') {
         const pop = this.popoverRef();
         if (pop?.isVisible()) {
@@ -805,9 +744,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     onError: (err) => this.commitError.emit(err),
   });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
-  //
-  // Adapter bundle off the core replaces four identical 2-line delegations.
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
@@ -819,18 +755,15 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   constructor() {
-    // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
       }
     });
 
-    // AD ↔ recycler scroll bridge is wired inside `setupVirtualization`.
-
-    // Bridge AD activations into popover-close, selectionChange output,
-    // and (when bound) the commit flow. Lifecycle + routing live in
-    // `createADActivationDispatcher`; value-shape work stays here.
+    // AD activations → popover-close + selectionChange + commit flow.
+    // Lifecycle and routing in `createADActivationDispatcher`;
+    // value-shape work stays inline.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -840,22 +773,17 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       onCommit: (intended, opt) =>
         this.scalarHandler.dispatchFromActivation(intended, opt),
       onActivate: (intended, opt) => {
-        // Capture previous BEFORE the listbox's internal activation
-        // subscriber mutates our value via the [(value)] binding.
-        // We're running inside the dispatcher's untracked() block, and
-        // RxJS Subject subscribers fire in registration order — the
-        // listbox (subscribed during its own constructor) runs before
-        // us, so by the time we're here the value MAY already be the
-        // new one. Reading untracked(value) snapshots whatever has
-        // propagated. If the snapshot equals intended, consumers see
-        // `previousValue === value` — semantically "no change
-        // detected" which is a valid honest report.
+        // Snapshot previous before the listbox's activation subscriber
+        // writes through [(value)]. RxJS Subject fires subscribers in
+        // registration order; the listbox (subscribed in its own
+        // constructor) runs first, so `untracked(value)` may already
+        // be the new value. When snapshot === intended, consumers see
+        // `previousValue === value` — honest "no change detected".
         const previous = untracked(() => this.value());
         this.scalarHandler.finalizeSelection(intended, opt, previous);
       },
     });
 
-    // Panel open/close lifecycle events.
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.triggerBtn,
@@ -865,7 +793,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
     });
 
-    // Bidirectional sync with the bound form field (if any).
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) =>
@@ -874,14 +801,10 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Public API (mat-select parity) ─────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -949,9 +872,8 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
     const lb = this.listboxRef();
     const pop = this.popoverRef();
 
-    // Typeahead-while-closed — native <select> parity. Single-select
-    // uses round-robin from the currently-selected option so repeat-
-    // taps advance through matching options.
+    // Typeahead-while-closed — native <select> parity. Round-robin
+    // from the current selection so repeat-taps advance through matches.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
@@ -991,7 +913,7 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
 
-    // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
+    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {

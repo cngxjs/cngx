@@ -5,21 +5,10 @@ import { isOptionDisabled } from './option.model';
 import { resolvePageJumpTarget } from './typeahead-controller';
 
 /**
- * Shared PageUp / PageDown keydown handler for every select-family
- * variant that renders a flat listbox panel. Semantics:
- *
- *   - PageUp / PageDown → `event.preventDefault()`
- *   - If the popover is closed → open it
- *   - Jump ±10 options from the current AD-highlighted index,
- *     clamping at the ends + skipping disabled via
- *     {@link resolvePageJumpTarget}
- *   - Disabled-aware target resolution reuses the family's shared
- *     `isOptionDisabled` helper (which handles both plain-boolean
- *     and InputSignal-disabled shapes)
- *
- * Non-PageUp/Down keys are ignored (return `false`), so consumers
- * can chain this before their own keydown logic without guard
- * duplication.
+ * PageUp/PageDown handler for flat-panel select variants. Opens the
+ * popover when closed, jumps ±10 from the AD-highlighted index via
+ * {@link resolvePageJumpTarget}, returns `true` when handled. Other keys
+ * return `false`.
  *
  * @category interactive
  */

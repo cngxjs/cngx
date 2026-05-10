@@ -5,18 +5,15 @@ import { CNGX_AD_ITEM } from '@cngx/common/a11y';
 import { CngxOption } from '@cngx/common/interactive';
 
 /**
- * Declarative-mode option element — wraps the `[cngxOption]` atom with a
- * native-feeling `<cngx-option>` tag.
+ * Declarative-mode option element. Wraps the `[cngxOption]` atom in a
+ * native-feeling `<cngx-option>` tag with the same `[value]` /
+ * `[disabled]` / `[label]` inputs.
  *
- * **Intended usage:** inside a consumer-assembled listbox (the "compose
- * yourself" path) OR as a direct child of `<cngx-select-shell>` — the
- * ninth select-family variant builds an explicit option list from the
+ * **Usage:** inside a consumer-assembled listbox or as a direct child
+ * of `<cngx-select-shell>` — the shell builds the option list from
  * projected DOM via `CNGX_OPTION_CONTAINER`, sidestepping the
- * content-projection scoping issue that prevents direct use inside the
- * data-mode `<cngx-select>` (which still requires `[options]`).
- *
- * Supports the same `[value]`, `[disabled]`, and `[label]` inputs as the
- * underlying atom.
+ * content-projection scoping issue that prevents direct use inside
+ * data-mode `<cngx-select>` (which requires `[options]`).
  *
  * @example
  * ```html
@@ -43,8 +40,8 @@ import { CngxOption } from '@cngx/common/interactive';
       inputs: ['value', 'disabled', 'label'],
     },
   ],
-  // hostDirective providers don't propagate — re-expose CNGX_AD_ITEM so the
-  // enclosing listbox / active-descendant can discover it.
+  // hostDirective providers don't propagate — re-expose CNGX_AD_ITEM
+  // so the enclosing listbox / AD discovers it.
   providers: [{ provide: CNGX_AD_ITEM, useExisting: CngxOption }],
   imports: [NgTemplateOutlet],
   template: `

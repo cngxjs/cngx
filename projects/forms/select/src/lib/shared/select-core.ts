@@ -49,27 +49,22 @@ import type {
 } from './template-slots';
 
 /**
- * Equality function used across the select family for value-to-option
- * matching. `Object.is` is the default; consumers may supply their own
- * via `[compareWith]`.
+ * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.
  *
  * @category interactive
  */
 export type CngxSelectCompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 
 /**
- * Default identity-based comparator — `Object.is`. Exported so components
- * can reference it without redeclaring the helper.
+ * Identity comparator — `Object.is`.
  *
  * @category interactive
  */
 export const cngxSelectDefaultCompare: CngxSelectCompareFn<unknown> = (a, b) => Object.is(a, b);
 
 /**
- * Bundled ARIA projection for a select-family trigger element. Every
- * field is `computed` from the signal graph; consumers pipe the bundle
- * into `[attr.aria-*]` bindings. A structural `equal` on the enclosing
- * `triggerAria` signal prevents redundant template re-renders.
+ * ARIA projection for the trigger. Bundle is structural-equal to keep
+ * `[attr.aria-*]` bindings stable.
  *
  * @category interactive
  */
@@ -86,9 +81,8 @@ export interface CngxSelectTriggerAria {
 }
 
 /**
- * Signal-shaped inputs required by {@link createSelectCore}. The core
- * reads only signals — never component instance fields — so the factory
- * stays pure and cross-component reusable.
+ * Signal inputs for {@link createSelectCore}. Core reads signals only —
+ * never component instance fields.
  *
  * @category interactive
  */
@@ -112,66 +106,40 @@ export interface CngxSelectCoreDeps<T, TCommit> {
   readonly hideCaret: Signal<boolean>;
   readonly commitErrorDisplay: Signal<CngxSelectCommitErrorDisplay>;
   readonly commitAction: Signal<CngxSelectCommitAction<TCommit> | null>;
-  /** From the component — `popoverRef()?.isVisible() ?? false`. */
+  /** `popoverRef()?.isVisible() ?? false`. */
   readonly panelOpen: Signal<boolean>;
-  /** Form-field error state. Usually `presenter?.showError() ?? false`. */
+  /** `presenter?.showError() ?? false`. */
   readonly errorState: Signal<boolean>;
-  /**
-   * Optional filter overlay for `effectiveOptions` — the combobox uses
-   * this to apply the inline search term. Single/Multi pass `undefined`
-   * and get unfiltered options.
-   */
+  /** Combobox uses this for inline search filtering. */
   readonly filter?: Signal<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
   >;
 
   /**
-   * Optional persistent local-items buffer merged on top of the
-   * server-provided options **before** the filter overlay runs — the
-   * action-select organisms use this to insert optimistic quick-create
-   * items that survive state refetches and drop out silently once the
-   * server has caught up (via `mergeLocalItems`'s compareWith-based
-   * dedup).
-   *
-   * Variants that don't host inline workflows leave this `undefined`
-   * and the merge is skipped — `effectiveOptions` stays identity-stable
-   * just like it was pre-action-select.
+   * Local-items buffer folded onto server options before `filter`.
+   * Action organisms feed it for optimistic quick-create; entries drop
+   * out via `mergeLocalItems` dedup once the backend catches up.
    */
   readonly localItems?: Signal<readonly CngxSelectOptionDef<T>[]>;
 
-  /**
-   * `true` when the component stores a list of selected values (multi,
-   * combobox); `false` for single-select. Drives the cascade that
-   * resolves `'auto'` for {@link CngxSelectCoreDeps.selectionIndicatorVariant}
-   * and routes {@link CngxSelectCore.isSelected} to the selection
-   * controller vs. a scalar compareWith check.
-   */
+  /** `true` for multi/combobox/tree; routes selection through the controller. */
   readonly multi: Signal<boolean>;
 
-  /**
-   * Current selection snapshot. Single: `T | undefined`. Multi/Combobox:
-   * `readonly T[]`. The core discriminates by `multi()` before reading —
-   * the runtime shape always matches.
-   */
+  /** Single: `T | undefined`. Multi/combobox: `readonly T[]`. */
   readonly currentSelection: Signal<T | undefined | readonly T[]>;
 
-  /**
-   * Writable selection array — only read in multi-mode. Used to
-   * instantiate the shared {@link SelectionController}. Single-select
-   * components pass `undefined`.
-   */
+  /** Multi-mode only. Used to seed the {@link SelectionController}. */
   readonly multiValues?: WritableSignal<T[]>;
 
-  /** Per-instance override for `selectionIndicatorPosition`. `null` → inherit config. */
+  /** `null` → inherit config. */
   readonly selectionIndicatorPosition: Signal<'before' | 'after' | null>;
 
-  /** Per-instance override for `selectionIndicatorVariant`. `null` → inherit config. */
+  /** `null` → inherit config. */
   readonly selectionIndicatorVariant: Signal<'auto' | 'checkbox' | 'checkmark' | 'radio' | null>;
 }
 
 /**
- * Per-instance config for the announcer helper. Mirrors the inputs
- * Single/Multi/Combobox expose publicly.
+ * Per-instance announcer inputs.
  *
  * @category interactive
  */
@@ -181,62 +149,34 @@ export interface CngxSelectAnnouncerInputs {
 }
 
 /**
- * Shape returned by {@link createSelectCore}. All the pure-derivation
- * signals a select-family component needs to drive its trigger +
- * panel — bundled so the component's own body stays focused on
- * value-shape specifics (single vs multi, keyboard, commit routing).
+ * Output of {@link createSelectCore} — pure-derivation signals shared by
+ * every select-family component.
  *
  * @category interactive
  */
 export interface CngxSelectCore<T, TCommit> {
-  // ── Option model ────────────────────────────────────────────────────
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
   readonly flatOptions: Signal<CngxSelectOptionDef<T>[]>;
   readonly valueToOptionMap: Signal<Map<unknown, CngxSelectOptionDef<T>> | null>;
   /**
-   * Flat view of the merged-but-unfiltered options (server options +
-   * `localItems` buffer). Unlike {@link flatOptions}, this is NOT
-   * affected by the consumer's inline search-term filter — used by the
-   * combobox-family chip strip (and `CngxActionMultiSelect`) so chips
-   * for selected values stay visible even when the panel's search
-   * filter temporarily hides the matching option from the listbox.
-   *
-   * For single-value variants without a filter, this aliases
-   * `flatOptions`. Always fold-safe — `selectedOptions` computeds can
-   * use it uniformly.
+   * Merged-but-unfiltered flat view (server + `localItems`). Used by
+   * chip strips so selected chips stay visible while a search term
+   * hides the matching option. Aliases `flatOptions` when no filter is
+   * set.
    */
   readonly unfilteredFlatOptions: Signal<CngxSelectOptionDef<T>[]>;
 
-  // ── Panel view ─────────────────────────────────────────────────────
   readonly activeView: Signal<AsyncView>;
   readonly showRefreshIndicator: Signal<boolean>;
   readonly showInlineError: Signal<boolean>;
   readonly skeletonIndices: Signal<number[]>;
   readonly panelClassList: Signal<string | readonly string[] | null>;
   readonly panelWidthCss: Signal<string | null>;
-  /**
-   * Resolved panel-shell fallback labels — library defaults merged
-   * with the app's `CngxSelectConfig.fallbackLabels`. The shell reads
-   * these when no custom template is projected for the corresponding
-   * async view. Plain object (not a signal) because the underlying
-   * config is resolved per-injector at component construction and
-   * never mutates — same lifecycle contract as `panelClass`.
-   */
+  /** Plain object — config is resolved per-injector and immutable. */
   readonly fallbackLabels: Required<CngxSelectFallbackLabels>;
-  /**
-   * Resolved ARIA-label bundle (cascaded through `CNGX_SELECT_CONFIG`).
-   * Forwarded by every variant onto its `CngxSelectPanelViewHost` so the
-   * shared panel-shell can read `host.ariaLabels.statusLoading` /
-   * `.statusRefreshing` without reaching back into the config token.
-   * Tree-select also reads `.treeExpand` / `.treeCollapse` for its
-   * twisty button defaults; select-core reads `.fieldLabelFallback` /
-   * `.commitFailedMessage` for the announcer + commit-error fallbacks.
-   * Keys are optional — partial overrides via `withAriaLabels(...)`
-   * leave non-supplied keys at their library DE defaults.
-   */
+  /** Mirrors `CNGX_SELECT_CONFIG.ariaLabels`. Forwarded onto the panel host. */
   readonly ariaLabels: CngxSelectAriaLabels;
 
-  // ── ARIA / identity ────────────────────────────────────────────────
   readonly resolvedId: Signal<string>;
   readonly resolvedAriaLabel: Signal<string | null>;
   readonly resolvedAriaLabelledBy: Signal<string | null>;
@@ -245,16 +185,11 @@ export interface CngxSelectCore<T, TCommit> {
   readonly resolvedShowSelectionIndicator: Signal<boolean>;
   readonly resolvedShowCaret: Signal<boolean>;
   /**
-   * Resolved concrete variant after the `instance > config > 'auto'`
-   * cascade. `'auto'` resolves to `'checkbox'` in multi-mode, `'checkmark'`
-   * in single-mode. Panel consumers branch on this:
-   * `'checkbox'`/`'checkmark'` → `<cngx-checkbox-indicator [variant]="…">`,
-   * `'radio'` → `<cngx-radio-indicator>`.
+   * `instance > config > 'auto'` cascade. `'auto'` → `'checkbox'` in
+   * multi, `'checkmark'` in single.
    */
   readonly resolvedSelectionIndicatorVariant: Signal<'checkbox' | 'checkmark' | 'radio'>;
-  /**
-   * Resolved position after the `instance > config > 'before'` cascade.
-   */
+  /** `instance > config > 'before'` cascade. */
   readonly resolvedSelectionIndicatorPosition: Signal<'before' | 'after'>;
   readonly describedBy: Signal<string | null>;
   readonly ariaInvalid: Signal<boolean | null>;
@@ -264,36 +199,23 @@ export interface CngxSelectCore<T, TCommit> {
   readonly effectiveTabIndex: Signal<number | null>;
   readonly triggerAria: Signal<CngxSelectTriggerAria>;
 
-  // ── Derived disabled / empty ───────────────────────────────────────
   readonly disabled: Signal<boolean>;
 
-  // ── Selection ──────────────────────────────────────────────────────
   /**
-   * Mode-agnostic membership test. The panel always calls this — it
-   * never branches on `multi()`. Single mode reads `currentSelection`
-   * via `compareWith`; multi mode delegates to the
-   * {@link SelectionController} fast path (identity) with a
-   * `compareWith` fallback for non-default comparators.
+   * Mode-agnostic membership test. Multi delegates to
+   * {@link SelectionController}'s identity fast path; falls back to
+   * `compareWith` scan for custom comparators.
    */
   isSelected(value: T): boolean;
-  /**
-   * Partial-selection test. `true` when the value represents a group
-   * whose descendants are partially selected. Delegates to
-   * {@link SelectionController.isIndeterminate} — for multi / combobox
-   * without a `childrenFn` it is always `false`. Future tree-select
-   * consumers supply `childrenFn` and this propagates automatically.
-   */
+  /** Always `false` without `childrenFn`. Tree-select propagates. */
   isIndeterminate(value: T): boolean;
   /**
-   * Shared selection controller — `null` for single-select. Exposed as
-   * an escape hatch for consumers building custom panels or advanced
-   * behaviours (e.g. row-level Select-All in a future grid). The
-   * controller's membership check is identity-based — consumers with a
-   * custom `compareWith` should prefer {@link isSelected}.
+   * Shared selection controller. `null` for single-select. Membership
+   * is identity-based — consumers with custom `compareWith` should
+   * prefer {@link isSelected}.
    */
   readonly selection: Signal<SelectionController<T> | null>;
 
-  // ── Commit infrastructure ──────────────────────────────────────────
   readonly commitController: CngxCommitController<TCommit>;
   readonly commitState: CngxAsyncState<TCommit | undefined>;
   readonly isCommitting: Signal<boolean>;
@@ -303,22 +225,14 @@ export interface CngxSelectCore<T, TCommit> {
   readonly commitErrorValue: Signal<unknown>;
 
   /**
-   * Produce a `commitErrorContext` signal wired to the caller's
-   * `retryCommit` method. Call once in the component constructor and
-   * cache the returned signal — the template context shape requires a
-   * retry callback which is component-specific (each variant composes
-   * its own commit arguments), so the core can't predefine it.
+   * Builds a `commitErrorContext` signal bound to the caller's retry.
+   * Cache the result per variant-specific retry signature.
    */
   bindCommitRetry(retry: () => void): Signal<CngxSelectCommitErrorContext<T>>;
 
-  /**
-   * Produce an `errorContext` signal wired to the caller's `handleRetry`
-   * method (for panel-level `[state]` errors, NOT commit-action
-   * errors). Same rationale as `bindCommitRetry`.
-   */
+  /** Panel-level `[state]` errors. Cache like `bindCommitRetry`. */
   makeErrorContext(retry: () => void): Signal<CngxSelectErrorContext>;
 
-  // ── Helpers ────────────────────────────────────────────────────────
   isGroup(
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T>;
@@ -326,31 +240,16 @@ export interface CngxSelectCore<T, TCommit> {
   findOption(value: T): CngxSelectOptionDef<T> | null;
   commitErrorMessage(err: unknown): string;
   /**
-   * Pre-bundled pass-through helpers the four shipped panel-hosting
-   * variants expose on their `CngxSelectPanelHost` contract
-   * (`isGroup`, `isSelected`, `isIndeterminate`, `isCommittingOption`).
-   * Every variant used to redeclare four identical 2-line protected
-   * methods delegating to the core — the bundle lets them spread these
-   * into the class as a single field. Mirrors the factory style of
-   * `SelectionController` / `TypeaheadController` — method identities
-   * stay stable for the lifetime of the core instance, safe to pass
-   * through `@Input` or bind into `ngTemplateOutlet` context without
-   * churning embedded views.
+   * Bound `isGroup`/`isSelected`/`isIndeterminate`/`isCommittingOption`
+   * for spreading into a variant's `CngxSelectPanelHost`. Stable
+   * identities for the core's lifetime.
    */
   readonly panelHostAdapter: CngxSelectPanelHostAdapter<T>;
 
   /**
-   * Announce a selection change via the global live-region. The core
-   * owns the cascade (per-instance input > config > library default);
-   * the component only has to pass option / action / count / multi.
-   *
-   * `'reordered'` carries optional `fromIndex` / `toIndex` so a
-   * consumer's `announceTemplate` can speak the positional delta.
-   * `'created'` is emitted by the action-select organisms after a
-   * successful inline `quickCreateAction` commit — the default
-   * formatter reads it as "created and selected". Existing
-   * `'added' | 'removed'` callers keep their four-argument signature
-   * untouched — the extra parameters are optional.
+   * Announce a selection change via the live-region. Cascade:
+   * per-instance > config > default. `'reordered'` accepts
+   * `fromIndex`/`toIndex`; `'created'` is fired by action organisms.
    */
   announce(
     option: CngxSelectOptionDef<T> | null,
@@ -363,10 +262,7 @@ export interface CngxSelectCore<T, TCommit> {
 }
 
 /**
- * Bound method bundle exposed on {@link CngxSelectCore.panelHostAdapter}
- * for pass-through into each variant's `CngxSelectPanelHost` contract.
- * Methods are bound at factory-call time and stable thereafter — safe
- * to spread into a class via `= this.core.panelHostAdapter.xxx`.
+ * Pre-bound bundle for {@link CngxSelectCore.panelHostAdapter}.
  *
  * @category interactive
  */
@@ -380,21 +276,11 @@ export interface CngxSelectPanelHostAdapter<T> {
 }
 
 /**
- * Factory producing the stateless signal graph shared by every
- * select-family component.
+ * Stateless signal graph shared by every select-family component.
  *
- * **Why a factory (not a hostDirective).**
- * A hostDirective would force every computed into an `input/output`
- * decorator metadata slot, and the generics would collapse to
- * `unknown`. Factories preserve full typing (`<T, TCommit>`) and
- * return exactly the shape we need. Callers live in an injection
- * context (component constructor / field init), which is all the
- * factory needs — `inject(CngxFormFieldPresenter)` /
- * `inject(CngxSelectAnnouncer)` / `inject(CNGX_SELECT_CONFIG)` resolve
- * just like inside a `@Component`. The rest of cngx's `create*`
- * helpers (`createCommitController`, `createManualState`,
- * `createAsyncState`, `createTransitionTracker`) follow the same
- * convention — see `reference_api_prefix_convention.md`.
+ * Factory rather than hostDirective: hostDirective collapses generics
+ * to `unknown` through the input/output decorator metadata slot, so a
+ * typed factory wins. Injection context required.
  *
  * @category interactive
  */
@@ -406,20 +292,12 @@ export function createSelectCore<T, TCommit>(
   const announcer = inject(CngxSelectAnnouncer);
   const config = resolveSelectConfig();
 
-  // ── Disabled ────────────────────────────────────────────────────────
   const disabled = computed<boolean>(
     () => deps.disabledInput() || (presenter?.disabled() ?? false),
   );
 
-  // ── Option model ────────────────────────────────────────────────────
-
-  /**
-   * Pre-filter merge of server options + `localItems` buffer. Exposed
-   * through the core as `unfilteredFlatOptions` (via flatten) so
-   * chip-strip consumers (combobox, action-multi-select) can look up
-   * selected options without the inline search-filter hiding chips
-   * for values that don't match the current term.
-   */
+  // Pre-filter merge of server options + `localItems`. Flattened into
+  // `unfilteredFlatOptions` so chip strips bypass the search filter.
   const mergedOptions = computed<CngxSelectOptionsInput<T>>(() => {
     const s = deps.state();
     const all = s?.data() ?? deps.options();
@@ -476,15 +354,8 @@ export function createSelectCore<T, TCommit>(
       return map;
     },
     {
-      // Structural equality — two maps are "equal" iff they have the
-      // same size, same key order, and each (key, value) pair matches
-      // by `Object.is`. Prevents downstream computeds (e.g. the
-      // `findOption` lookup inside `isSelected` / `CngxSelectPanel`
-      // highlight tracking) from invalidating on every server
-      // refetch that returns identical options with fresh `OptionDef`
-      // references — the upstream `flatOptions` already uses an
-      // identity-equal on entries, so here we only need the map
-      // structure to stay reference-stable.
+      // Structural equal — same size + Object.is per (key, value).
+      // Keeps the map ref stable across server refetches.
       equal: (a, b) => {
         if (a === b) {
           return true;
@@ -506,7 +377,6 @@ export function createSelectCore<T, TCommit>(
     },
   );
 
-  // ── Panel view ─────────────────────────────────────────────────────
   const activeView = computed<AsyncView>(() => {
     const s = deps.state();
     if (s) {
@@ -597,7 +467,6 @@ export function createSelectCore<T, TCommit>(
     return `${w}px`;
   });
 
-  // ── ARIA / identity ────────────────────────────────────────────────
   const resolvedId = computed<string>(() => {
     const override = deps.idInput();
     if (override) {
@@ -659,25 +528,16 @@ export function createSelectCore<T, TCommit>(
     return resolved;
   });
 
-  // ── Selection ──────────────────────────────────────────────────────
-  // Controller is instantiated once, eagerly, when multiValues is supplied
-  // (i.e. the component is a multi-select or combobox). Single-select
-  // passes no multiValues → controller stays null. The `selection` signal
-  // is a constant readonly view — no computed needed, no closure-mutation
-  // side effect inside a computed.
-  //
-  // Factory resolved via CNGX_SELECTION_CONTROLLER_FACTORY (DI token,
-  // `providedIn: 'root'`) so consumers can swap the engine app-wide —
-  // same override surface as CNGX_SELECT_COMMIT_CONTROLLER_FACTORY.
+  // Controller eager-built when multiValues is supplied; single-select
+  // leaves it null. Factory resolved through CNGX_SELECTION_CONTROLLER_FACTORY
+  // for app-wide swap parity with the commit-controller token.
   const selectionFactory = inject(CNGX_SELECTION_CONTROLLER_FACTORY);
   const controllerInstance: SelectionController<T> | null = deps.multiValues
     ? selectionFactory<T>(deps.multiValues)
     : null;
   const selection = signal<SelectionController<T> | null>(controllerInstance).asReadonly();
-  // Release the controller's per-value signal caches when the host
-  // component tears down. Post-destroy reads flip to a shared
-  // `Signal<false>` no-op (see selection-controller.ts), so late bindings
-  // on lingering references stay safe.
+  // Release per-value signal caches on teardown; post-destroy reads
+  // flip to shared Signal<false> so late bindings stay safe.
   if (controllerInstance) {
     inject(DestroyRef).onDestroy(() => controllerInstance.destroy());
   }
@@ -685,9 +545,8 @@ export function createSelectCore<T, TCommit>(
   function isSelected(value: T): boolean {
     const eq = deps.compareWith();
     if (deps.multi()) {
-      // Multi / Combobox. Controller fast path only valid for identity-
-      // based compareWith — fall back to an O(n) scan for custom eqs so
-      // `(a, b) => a.id === b.id` keeps working exactly like before.
+      // Controller fast path is identity-only; custom compareWith
+      // falls back to an O(n) scan.
       if (controllerInstance && (eq as unknown) === cngxSelectDefaultCompare) {
         return controllerInstance.isSelected(value)();
       }
@@ -702,8 +561,7 @@ export function createSelectCore<T, TCommit>(
   }
 
   function isIndeterminate(value: T): boolean {
-    // Flat selection (no childrenFn wired through) → controller always
-    // returns the shared Signal<false> constant. Reading () here is cheap.
+    // Flat selection (no childrenFn) → shared Signal<false>.
     return controllerInstance?.isIndeterminate(value)() ?? false;
   }
 
@@ -718,7 +576,7 @@ export function createSelectCore<T, TCommit>(
     deps.errorState() ? (presenter?.errorId() ?? null) : null,
   );
 
-  // Commit controller (needed early so ariaBusy can read commitState).
+  // Built early so ariaBusy below can read commitState.
   const commitController: CngxCommitController<TCommit> =
     inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY)<TCommit>();
 
@@ -766,7 +624,6 @@ export function createSelectCore<T, TCommit>(
     },
   );
 
-  // ── Commit infrastructure ──────────────────────────────────────────
   const togglingOption = signal<CngxSelectOptionDef<T> | null>(null);
   const commitState = commitController.state;
   const isCommitting = commitController.isCommitting;
@@ -804,7 +661,6 @@ export function createSelectCore<T, TCommit>(
     );
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────
   function isGroup(
     item: CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>,
   ): item is CngxSelectOptionGroupDef<T> {
@@ -844,12 +700,8 @@ export function createSelectCore<T, TCommit>(
       : `${labelText}: ${failedMessage}`;
   }
 
-  // Pass-through bundle — methods bound once to the core's own
-  // isSelected / isIndeterminate (both of which take `value: T`, so
-  // the adapter unwraps `opt.value`) and the existing isGroup /
-  // isCommittingOption (already opt-shaped). Stable identities for
-  // the lifetime of the core — safe to destructure into a class
-  // field.
+  // Stable identities for the core's lifetime. Adapter unwraps
+  // opt.value for isSelected/isIndeterminate.
   const panelHostAdapter: CngxSelectPanelHostAdapter<T> = {
     isGroup,
     isSelected: (opt) => isSelected(opt.value),
@@ -944,18 +796,14 @@ export function createSelectCore<T, TCommit>(
 }
 
 /**
- * Shape that every select-family component exposes to form-field
- * integration. Core derivations feed directly into the contract —
- * components expose them via the `CngxFormFieldControl` interface with
- * minimal pass-through.
+ * Form-field integration shape exposed by every select-family component.
  *
  * @category interactive
  */
 export type CngxSelectFormFieldControl = CngxFormFieldControl;
 
 /**
- * Union alias — every lifecycle output in the select family emits one
- * of these. Re-exported for consumer convenience.
+ * Lifecycle status union for select-family outputs.
  *
  * @category interactive
  */

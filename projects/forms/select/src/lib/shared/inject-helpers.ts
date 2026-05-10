@@ -4,13 +4,8 @@ import { CngxSelectAnnouncer } from './announcer';
 import { resolveSelectConfig } from './resolve-config';
 
 /**
- * Resolve the effective Select config for the current injector, merged with
- * library defaults. Equivalent to
- * `inject(CNGX_SELECT_CONFIG, { optional: true })` but returns a fully
- * populated object — never `null`, no partials.
- *
- * Must be called in an injection context (constructor, field initializer,
- * or `runInInjectionContext`).
+ * Effective select config for the current injector, merged with library
+ * defaults. Always fully populated — never `null`. Injection context required.
  *
  * @example
  * ```ts
@@ -29,11 +24,8 @@ export function injectSelectConfig(): ReturnType<typeof resolveSelectConfig> {
 }
 
 /**
- * Obtain the root-scoped {@link CngxSelectAnnouncer} used by every select
- * family component to announce selection changes to assistive tech.
- *
- * Useful if you're building a select-like composite and want to announce
- * custom events through the same live region.
+ * Root-scoped {@link CngxSelectAnnouncer} for custom composites that want to
+ * share the family live-region.
  *
  * @example
  * ```ts

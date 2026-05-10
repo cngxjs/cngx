@@ -8,10 +8,9 @@ import {
 } from './typeahead-controller';
 
 /**
- * Minimal shape the flat-nav strategy reads from each listbox item.
- * Both `ActiveDescendantItem` (`disabled?: boolean`) and `CngxOption`
- * (`disabled` as either a plain bool or a callable signal-getter)
- * satisfy this constraint via {@link isOptionDisabled}.
+ * Minimum disabled-shape the flat-nav strategy reads. Both
+ * `ActiveDescendantItem` and `CngxOption` satisfy this via
+ * {@link isOptionDisabled}.
  *
  * @category interactive
  */
@@ -20,118 +19,67 @@ export interface CngxFlatNavListboxItem {
 }
 
 /**
- * Context passed to every {@link CngxFlatNavStrategy} method. Bundles the
- * pure inputs a keyboard-nav policy needs to decide what to do next
- * without binding the policy to any particular component's internals.
- *
- * Consumer responsibility: build this context at the call-site (inside
- * the trigger keydown handler), invoke the strategy, then dispatch the
- * returned {@link CngxFlatNavAction} in a variant-appropriate way
- * (single-select → `value.set(...)`; multi-select → `toggleOptionByUser`;
- * both → `panel.open(); ad.highlightByIndex(...)` for the highlight path).
+ * Context passed to every {@link CngxFlatNavStrategy} method. Variant
+ * builds it inside the keydown handler and dispatches the returned
+ * {@link CngxFlatNavAction}.
  *
  * @category interactive
  */
 export interface CngxFlatNavContext<T> {
-  /**
-   * Flat option list in listbox order — used by typeahead round-robin.
-   * Always the variant's `flatOptions` from `CngxSelectCore`.
-   */
+  /** Flat option list in listbox order. Variant's `flatOptions`. */
   readonly options: readonly CngxSelectOptionDef<T>[];
 
   /**
-   * Listbox items as seen by the AD directive — the PageUp/PageDown
-   * target indices refer to THIS array because the listbox may omit
-   * items that `flatOptions` contains (e.g. during filtered combobox
-   * navigation).
-   *
-   * Pass `lb.options()` from the variant's `CngxListbox` viewchild.
-   * Accepts both `ActiveDescendantItem` (typed `disabled?: boolean`)
-   * and `CngxOption` (where `disabled` may be a callable signal) via
-   * the {@link CngxFlatNavListboxItem} shape.
+   * Items as seen by the AD directive — page-jump indices refer to THIS
+   * array, which may omit entries `options` contains (filtered combobox).
    */
   readonly listboxItems: readonly CngxFlatNavListboxItem[];
 
-  /**
-   * Current index inside {@link options} — used for typeahead round-robin
-   * ("from here, find the next matching option"). `-1` = no current.
-   */
+  /** Index inside {@link options} for typeahead round-robin. `-1` = none. */
   readonly currentFlatIndex: number;
 
-  /**
-   * Current index inside {@link listboxItems} — used for page-jump
-   * clamping + disabled-aware back-probe. `-1` = no current highlight.
-   */
+  /** Index inside {@link listboxItems} for page-jump clamping. `-1` = none. */
   readonly currentListboxIndex: number;
 
-  /** Element-wise equality from the variant's `compareWith` input. */
   readonly compareWith: CngxSelectCompareFn<T>;
 
-  /** When `true`, the strategy short-circuits every callback to `noop`. */
+  /** Short-circuits every callback to `noop` when `true`. */
   readonly disabled: boolean;
 
-  /**
-   * Typeahead controller owned by the variant (via
-   * {@link createTypeaheadController}). The strategy invokes
-   * `matchFromIndex` on it — keeps the controller's buffer + debounce
-   * lifecycle with the variant.
-   */
+  /** Variant-owned controller; strategy only calls `matchFromIndex`. */
   readonly typeaheadController: TypeaheadController<T>;
 }
 
 /**
- * Discriminated result the variant dispatches after calling the strategy.
- * The strategy is **pure policy** — it never touches component state,
- * the popover, or the listbox. Returning `'noop'` means the variant does
- * nothing (the key was handled without effect).
+ * Strategy result. Pure policy — variant dispatches.
  *
  * @category interactive
  */
 export type CngxFlatNavAction<T> =
-  /** Typeahead hit. Variant dispatches variant-specific pick semantics
-   *  (single → set value + emit; multi → toggleOptionByUser). */
+  /** Typeahead hit; variant runs its pick semantics. */
   | { readonly kind: 'select'; readonly option: CngxSelectOptionDef<T> }
-  /** Page-jump target. Variant opens the panel if closed and calls
-   *  `ad.highlightByIndex(index)`. */
+  /** Page-jump target; variant opens panel + `ad.highlightByIndex(index)`. */
   | { readonly kind: 'highlight'; readonly index: number }
-  /** No action. Variant should not `preventDefault` the original event. */
+  /** No action; do not `preventDefault`. */
   | { readonly kind: 'noop' };
 
 /**
- * Keyboard-nav policy shared by the flat select variants (single,
- * multi, reorderable-multi). Deliberately scoped to the two cases where
- * the variants previously carried near-identical boilerplate:
- *
- *   - **PageUp / PageDown** — open + jump ±N clamped with disabled
- *     back-probe (via {@link resolvePageJumpTarget}).
- *   - **Typeahead-while-closed** — panel is closed, user taps a
- *     printable char; match first non-disabled option via the
- *     variant's {@link TypeaheadController}.
- *
- * Combobox / typeahead / action-variants are NOT intended consumers —
- * those variants already delegate to `CngxListboxSearch` for keyboard
- * input and have no need for this token. The strategy is DI-overridable
- * so enterprise apps can inject a fuzzy typeahead, a custom page-step,
- * or a group-aware page-jump without forking the flat variants.
+ * Keyboard-nav policy for the flat select variants (single, multi,
+ * reorderable-multi): PageUp/PageDown via {@link resolvePageJumpTarget}
+ * and typeahead-while-closed via {@link TypeaheadController.matchFromIndex}.
+ * Combobox / typeahead / action variants delegate to `CngxListboxSearch`
+ * and don't consume this.
  *
  * @category interactive
  */
 export interface CngxFlatNavStrategy {
-  /**
-   * Handle `PageUp` / `PageDown` inside the trigger. Returns a
-   * `'highlight'` action with the clamped target index, or `'noop'`
-   * when no valid (non-disabled) target exists.
-   */
+  /** PageUp/PageDown. Returns `highlight` with target or `noop`. */
   onPageJump<T>(
     ctx: CngxFlatNavContext<T>,
     direction: 1 | -1,
   ): CngxFlatNavAction<T>;
 
-  /**
-   * Handle a printable keystroke while the panel is closed. Returns a
-   * `'select'` action with the matched option, or `'noop'` for
-   * non-printable chars, disabled states, or no match.
-   */
+  /** Printable key while panel is closed. Returns `select` or `noop`. */
   onTypeaheadWhileClosed<T>(
     ctx: CngxFlatNavContext<T>,
     char: string,
@@ -139,20 +87,9 @@ export interface CngxFlatNavStrategy {
 }
 
 /**
- * Default strategy implementing the canonical W3C listbox behaviour
- * that the three flat variants previously inlined:
- *
- *   - PageUp/Down jump step = 10, clamped to list bounds, skips
- *     disabled entries with a back-probe fallback.
- *   - Typeahead-while-closed defers entirely to
- *     {@link TypeaheadController.matchFromIndex} — the controller's
- *     printable-char guard, lower-case match, debounced buffer reset,
- *     and disabled-skip logic are unchanged.
- *
- * Consumers override the {@link CNGX_FLAT_NAV_STRATEGY} DI token to
- * swap out the policy wholesale — the strategy is opaque so enterprise
- * overrides can introduce fuzzy match or group-boundary navigation
- * without touching any variant.
+ * Canonical W3C listbox flat-nav: PageUp/Down step 10 with disabled
+ * back-probe; typeahead delegates to the variant's
+ * {@link TypeaheadController}.
  *
  * @category interactive
  */
@@ -202,16 +139,9 @@ export function createDefaultFlatNavStrategy(
 }
 
 /**
- * DI token resolving the policy used by the flat select variants for
- * PageUp/Down and typeahead-while-closed. Defaults to
- * {@link createDefaultFlatNavStrategy}; override app-wide via
- * `providers: [{ provide: CNGX_FLAT_NAV_STRATEGY, useValue: customStrategy }]`
- * or per-component via `viewProviders` to inject fuzzy typeahead,
- * custom page-step, group-aware jumps, or telemetry hooks — without
- * forking any variant.
- *
- * Symmetrical to `CNGX_CHIP_REMOVAL_HANDLER_FACTORY` — the two tokens
- * are the Phase-1 primitives that the Phase-2 refactor consumes.
+ * Flat-variant keyboard-nav strategy token. Default
+ * {@link createDefaultFlatNavStrategy}. Override for fuzzy typeahead,
+ * custom page-step, or group-aware jumps.
  *
  * @category interactive
  */
