@@ -14,23 +14,16 @@ import { filter } from 'rxjs/operators';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
- * URL deep-linking for tab groups. Bidirectional sync between the
- * presenter's `activeId` and a URL fragment / query-param. Opt-in
- * via `[cngxTabsFragmentSync]` on the same element that carries the
- * tab-group presenter.
+ * URL deep-linking for tab groups. Bidirectional sync between
+ * `activeId` and a URL fragment or query-param. Opt-in via
+ * `[cngxTabsFragmentSync]` on the presenter element.
  *
- * - `mode = 'fragment'` (default) → `#tab=settings` style.
- * - `mode = 'queryParam'` with `paramName = 'tab'` (default) →
- *   `?tab=settings` style.
+ * - `mode = 'fragment'` (default) → `#tab=settings`
+ * - `mode = 'queryParam'` with `paramName = 'tab'` → `?tab=settings`
  *
- * Optional `Router` injection: when `@angular/router` is not
- * available, the directive logs a dev warning via
- * {@link afterNextRender} and becomes a complete no-op. Consumers
- * without router escape gracefully.
- *
- * Effect-safety: every `router.navigate` and `host.selectById` call
- * inside the reactive `effect`s is wrapped in `untracked()` per
- * `reference_signal_architecture` rule 2.
+ * `Router` is optional — without it the directive logs a dev warning
+ * via `afterNextRender` and becomes a no-op. Every `router.navigate`
+ * and `host.selectById` inside the effects sits in `untracked()`.
  *
  * @category interactive/tabs
  */
@@ -84,8 +77,7 @@ export class CngxTabsFragmentSync {
                 queryParamsHandling: 'merge',
                 replaceUrl: true,
               });
-        // Router rejections (e.g. cancelled navigation) have no
-        // consumer-facing recovery path — swallow.
+        // Router rejection (e.g. cancelled navigation) has no recovery path.
         navigation.catch?.(() => undefined);
       });
     });

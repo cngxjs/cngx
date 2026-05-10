@@ -1,21 +1,14 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
 /**
- * Structural slot directive marking the empty-state placeholder
- * template for `<cngx-stepper>`. Rendered when the presenter's
- * `flatSteps()` projection is empty — async-loading consumer flows
- * (router-driven step lists, server-supplied wizard configs)
- * benefit from a clear "no steps yet" landmark rather than a
- * collapsed strip.
+ * Slot directive for the empty-state placeholder on `<cngx-stepper>`.
+ * Rendered when `flatSteps()` is empty — async-loading or
+ * server-driven step lists get a "no steps yet" landmark rather than
+ * a collapsed strip.
  *
- * Discovered via `contentChild` on the organism; cascades through
+ * Discovered via `contentChild`; cascades through
  * `CNGX_STEPPER_CONFIG.templates.empty` before falling back to no
- * markup at all (the organism renders nothing when no slot is
- * supplied — Honest-Absence default).
- *
- * Pure marker — zero logic. The directive carries no context
- * (empty state has nothing to derive from); consumers render
- * static markup or read injected services directly.
+ * markup (Honest-Absence default).
  *
  * @example
  * ```html

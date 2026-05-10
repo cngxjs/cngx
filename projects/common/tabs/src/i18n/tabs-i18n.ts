@@ -1,12 +1,9 @@
 import { inject, InjectionToken, type Provider } from '@angular/core';
 
 /**
- * Tabs i18n surface. Library defaults are English (per
- * `feedback_en_default_locale`); German / other locales come from
- * consumer overrides via {@link provideTabsI18n}.
- *
- * Mirrors `CNGX_STEPPER_I18N` and `CNGX_CHART_I18N` — the same
- * provider+token+inject helper triple every cngx feature ships.
+ * Tabs i18n surface. Library defaults are English; consumers
+ * override via {@link provideTabsI18n}. Sibling to
+ * `CNGX_STEPPER_I18N` and `CNGX_CHART_I18N`.
  *
  * @category interactive
  */
@@ -18,28 +15,19 @@ export interface CngxTabsI18n {
   readonly previousTab: string;
   readonly nextTab: string;
   /**
-   * @deprecated for tabs commit rollback — superseded by
-   * {@link commitRolledBackTo}. Retained as the **defensive
-   * fallback** in the organism's `liveAnnouncement` priority
-   * chain when the origin label is unresolvable. Reachability
-   * note: under the current `select()` flow the
-   * `originIndexDuringCommit` slot is always written before the
-   * commit window opens (`presenter.directive.ts:234`), so the
-   * fallback path fires only when `tabs()[originIdx]?.label()`
-   * resolves to falsy (unlabeled tab) OR a future producer feeds
-   * `commitState` outside `select()` (programmatic state
-   * mutation on the host contract). See `tabs-accepted-debt §4`
-   * for the rationale on retaining-vs-removing this key.
+   * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
+   * the defensive fallback in `liveAnnouncement` when the origin
+   * label is unresolvable — fires for unlabeled tabs or programmatic
+   * `commitState` writes that bypass `select()`. See
+   * `tabs-accepted-debt §4`.
    */
   readonly commitFailedRetry: string;
   readonly commitInFlight: string;
   /**
-   * Origin-aware rollback announcement. Receives the label of the
-   * tab the user was returned to (the "safe-harbour" tab) and
-   * yields a phrase like `Could not save changes — reverted to
-   * "Profile".`. Read by the organism's `liveAnnouncement`
-   * computed on the `pending → error` transition when both
-   * `lastFailedIndex` and `originIndexDuringCommit` are set.
+   * Origin-aware rollback announcement. Receives the safe-harbour
+   * tab label and yields the rollback phrase. Read on the
+   * `pending → error` transition when both `lastFailedIndex` and
+   * `originIndexDuringCommit` are set.
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
 }
@@ -59,8 +47,8 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
 };
 
 /**
- * DI token for the resolved tabs i18n bundle. `providedIn: 'root'`
- * with the English defaults.
+ * DI token for the tabs i18n bundle. `providedIn: 'root'` with
+ * English defaults.
  *
  * @category interactive
  */
@@ -70,12 +58,10 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
 );
 
 /**
- * Single feature-flag function consumed by {@link provideTabsI18n} and the
- * family aggregator {@link provideCngxTabs}. Carries a hidden `_target`
- * discriminator so the aggregator can dispatch i18n features to
- * {@link provideTabsI18n} while config features go to
- * {@link provideTabsConfig}. Mirrors `CngxMenuConfigFeature` from the menu
- * family's A+ closure.
+ * Branded feature-fn for {@link provideTabsI18n} and
+ * {@link provideCngxTabs}. The hidden `_target` discriminator routes
+ * i18n features to `provideTabsI18n` and config features to
+ * `provideTabsConfig` from the unified aggregator.
  *
  * @category interactive
  */
@@ -86,8 +72,7 @@ export type CngxTabsI18nFeature = ((
 };
 
 /**
- * Internal helper that brands an i18n-mutator function with the `_target`
- * discriminator. Every `with*` i18n feature returns one of these.
+ * Brands an i18n-mutator with the `_target` discriminator.
  *
  * @internal
  */
@@ -98,11 +83,10 @@ function defineTabsI18nFeature(
 }
 
 /**
- * Override one or more i18n labels on the tabs surface. Pass a partial
- * override — unset keys keep their English default. Mirrors the
- * `withTabsAriaLabels` / `withTabsFallbackLabels` shape on the
- * config surface so `provideCngxTabs` can compose features uniformly
- * across both `CNGX_TABS_CONFIG` and `CNGX_TABS_I18N`.
+ * Override i18n labels via a partial bundle — unset keys keep the
+ * English default. Same shape as `withTabsAriaLabels` /
+ * `withTabsFallbackLabels` so `provideCngxTabs` composes both
+ * surfaces uniformly.
  *
  * @category interactive
  */
@@ -123,8 +107,8 @@ function resolveI18nFeatures(
 
 /**
  * Provider for the tabs i18n bundle. Compose `withTabsI18nLabels(...)`
- * features (and any future i18n `with*` features) — unset keys fall
- * back to the English default.
+ * (and future i18n `with*` features); unset keys fall back to the
+ * English default.
  *
  * @example
  * ```ts
@@ -149,7 +133,7 @@ export function provideTabsI18n(
 }
 
 /**
- * Inject the resolved tabs i18n bundle in an injection context.
+ * Inject the resolved tabs i18n bundle.
  *
  * @category interactive
  */

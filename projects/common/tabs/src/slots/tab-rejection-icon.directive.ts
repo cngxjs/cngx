@@ -1,23 +1,12 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
 /**
- * Context passed to the `*cngxTabRejectionIcon` template. Drives the
- * rejection-decoration rendered on the tab that the most recent
- * commit was rolled back FROM — sibling to the stepper
- * `*cngxStepRejection` slot (Phase 3). Consumers swap the built-in
- * `'!'` glyph for a branded rollback indicator, a richer tooltip
- * target, or a custom phrase while the visibility gate stays
- * library-owned (the slot only renders when the tab's index matches
- * `presenter.lastFailedIndex()`).
- *
- * `originLabel` is the safe-harbour tab the user was returned to —
- * derived by the organism from `presenter.originIndexDuringCommit()`.
- * May be `undefined` when the origin index is out of range
- * (synchronous-rejection edge case already handled in
- * `liveAnnouncement`); consumers gate richer UI on its presence.
- *
- * Mirrors the family-standard `CngxStepRejectionContext` shape so
- * consumer-authored templates port across families.
+ * Context for the `*cngxTabRejectionIcon` template. Renders only on
+ * the tab matching `presenter.lastFailedIndex()`; the visibility
+ * gate stays library-owned. `originLabel` is the safe-harbour tab,
+ * derived from `presenter.originIndexDuringCommit()` — `undefined`
+ * for the synchronous-rejection edge case. Sibling shape to
+ * `CngxStepRejectionContext`.
  *
  * @category interactive
  */
@@ -29,18 +18,10 @@ export interface CngxTabRejectionIconContext {
 }
 
 /**
- * Structural slot directive marking the rejection-decoration
- * template for `<cngx-tab-group>`. Discovered via `contentChild` on
- * the organism; cascades through
- * `CNGX_TABS_CONFIG.templates.rejectionIcon` before falling back to
- * the built-in `CNGX_TABS_GLYPHS.rejectionIcon` span.
- *
- * Closes the rejection-decoration parity gap with the stepper
- * sibling — every visible region in the strip now exposes a
- * `*cngxFooBar` override path (Phase 4 of `tabs-stepper-cleanup-plan`).
- *
- * Pure marker — zero logic. Holds only a typed
- * {@link TemplateRef} reference.
+ * Structural slot for the rejection-decoration template. 3-stage
+ * cascade: per-instance directive >
+ * `CNGX_TABS_CONFIG.templates.rejectionIcon` >
+ * `CNGX_TABS_GLYPHS.rejectionIcon`.
  *
  * @example
  * ```html

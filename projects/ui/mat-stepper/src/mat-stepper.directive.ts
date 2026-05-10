@@ -24,27 +24,21 @@ import {
 } from './material-bridge/handle';
 
 /**
- * Material instrumentation directive — attaches to an existing
- * `<mat-stepper>` and bridges it against a cngx
- * {@link CngxStepperPresenter} so consumers gain commit-action
- * lifecycle, `CNGX_STATEFUL` provision (and therefore
- * `<cngx-toast-on />` / `<cngx-banner-on />` composition), and the
- * cngx step-handle registry — without rewriting their template.
- * One attribute upgrade.
+ * Attaches to an existing `<mat-stepper>` and bridges it to a
+ * {@link CngxStepperPresenter} — consumers gain the commit-action
+ * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` /
+ * `<cngx-banner-on />` compose as children), and the step-handle
+ * registry from one attribute.
  *
- * Sibling-additive to the existing `<cngx-mat-stepper>` thin-wrapper
- * organism (`@cngx/ui/mat-stepper`'s `mat-stepper.component.ts`):
- * the wrapper authors fresh code with cngx atoms, the instrumentation
- * directive upgrades existing Material markup. `exportAs` differs
- * (`cngxMatStepperDirective`) to avoid the template-ref collision
- * with the wrapper component (which already uses `cngxMatStepper`).
+ * Sibling-additive to `<cngx-mat-stepper>` (the thin-wrapper
+ * organism in `@cngx/ui/mat-stepper`): the wrapper authors fresh
+ * markup, this directive upgrades existing Material markup.
+ * `exportAs` differs (`cngxMatStepperDirective`) to avoid colliding
+ * with the wrapper's `cngxMatStepper`.
  *
  * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
- * the instrumentation layer. `inject(MatStepper, { self: true })`
- * resolves directly off the consumer's element. No content
- * projection, no DI ordering issue —
- * `stepper-accepted-debt §1`'s structural blocker on the
- * **adoption** direction does not apply here.
+ * the instrumentation layer. `stepper-accepted-debt §1`'s blocker
+ * applies to adoption, not this direction.
  *
  * @category interactive
  */
@@ -78,10 +72,6 @@ export class CngxMatStepperBridge {
   // `syncHandles` can iterate to find removed steps without a
   // parallel `Set<MatStep>`.
   private readonly setupsByStep = new Map<MatStep, CngxMatStepHandleSetup>();
-  // Per-step handle factory routed through the DI token so consumers
-  // can wrap it (telemetry, alternate id strategy, test-env id
-  // keying) via `providers` / `viewProviders` without forking. Default
-  // is `createMatStepHandle`. Symmetric with `CNGX_MAT_TAB_HANDLE_FACTORY`.
   private readonly createHandle = inject(CNGX_MAT_STEP_HANDLE_FACTORY);
 
   constructor() {
@@ -119,9 +109,7 @@ export class CngxMatStepperBridge {
       this.presenter.register(setup.handle);
     }
 
-    // Remove: any MatStep in our registry that's no longer in the
-    // children-set is gone — unregister. Snapshot entries before
-    // mutating to defend against future-edit regressions that
+    // Snapshot before iterating — defends against future edits that
     // introduce non-current-key deletes inside the body.
     for (const [step, setup] of Array.from(this.setupsByStep.entries())) {
       if (liveSteps.has(step)) {

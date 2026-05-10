@@ -21,15 +21,13 @@ import {
 } from './stepper-host.token';
 
 /**
- * Step-group atom. Wraps multiple `CngxStep` children and registers
- * itself with the root presenter as a `kind: 'group'` node. Provides
- * {@link CNGX_STEP_GROUP_HOST} via `useExisting` so nested
- * `CngxStep` atoms register with the group rather than the root.
+ * Step-group atom. Registers with the root presenter as a `kind: 'group'`
+ * node and provides {@link CNGX_STEP_GROUP_HOST} so nested `CngxStep`
+ * atoms register with the group, not the root.
  *
- * The group's `aggregatedStatus` rolls up child statuses — `error`
- * if any child is errored, `success` if all children are success,
- * `pending` if any is pending, otherwise `idle`. Used by Level-4
- * organisms to render group-level badges.
+ * `aggregatedStatus` rolls up child states: `error` if any errored,
+ * `success` if all are success, `pending` if any is pending or busy,
+ * otherwise `idle`.
  *
  * @category interactive/stepper
  */
@@ -44,9 +42,8 @@ export class CngxStepGroup implements CngxStepGroupHost {
   readonly disabled = input<boolean>(false);
   readonly label = input<string>('');
 
-  // Internal child registry — drives `aggregatedStatus`. The
-  // presenter owns the canonical tree; this signal exists only to
-  // observe child status changes for the roll-up computed below.
+  // Local child registry — only feeds `aggregatedStatus` below.
+  // The presenter owns the canonical tree.
   private readonly childRegistry = signal<readonly CngxStepRegistration[]>([]);
 
   readonly aggregatedStatus: Signal<CngxStepStatus> = computed(() => {
@@ -89,8 +86,7 @@ export class CngxStepGroup implements CngxStepGroupHost {
 
   register(handle: CngxStepRegistration): void {
     this.childRegistry.update((cur) => [...cur, handle]);
-    // Forward registration up to the root presenter with this
-    // group's id as parent so the tree shape is correct.
+    // Forward to the root with this group as parent so the tree shape is correct.
     this.stepperHost!.register(handle, this.id());
   }
 

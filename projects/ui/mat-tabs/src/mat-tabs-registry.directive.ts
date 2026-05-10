@@ -20,11 +20,10 @@ import {
 } from './material-bridge/handle';
 
 /**
- * Per-MatTab registry entry. Pairs the cngx setup with a child
- * `EnvironmentInjector` that scopes the lifetime of the per-tab
- * `tab._stateChanges` bridge — destroying the child injector fires
- * its `DestroyRef`, which `takeUntilDestroyed` listens for so the
- * bridge subscription unsubscribes deterministically.
+ * Per-MatTab registry entry. The child `EnvironmentInjector` scopes
+ * the per-tab `_stateChanges` bridge — destroying it fires
+ * `takeUntilDestroyed` so the subscription unsubscribes
+ * deterministically.
  *
  * @internal
  */
@@ -34,33 +33,26 @@ interface CngxMatTabsRegistryEntry {
 }
 
 /**
- * Read-mostly contract for the per-tab handle-setup registry. The
- * shape `[cngxMatTabError]` and any future `[cngxMatTab*]` per-tab
- * decoration directive injects to walk back to the per-handle
- * `errorAggregator` writable slot. Sibling per-tab directives reach
- * the registry through this token (`inject(CNGX_MAT_TABS_REGISTRY_HOST,
- * { host: true })`) instead of injecting the concrete
- * {@link CngxMatTabs} class — closes the `tabs-accepted-debt §7`
- * concrete-sibling-injection coupling that the previous registry-
- * inside-`[cngxMatTabs]` shape tolerated.
+ * Read-mostly contract for the per-tab handle-setup registry.
+ * `[cngxMatTabError]` and any future `[cngxMatTab*]` decoration
+ * directive injects this with `{ host: true }` to reach the
+ * per-handle `errorAggregator` slot — closes the
+ * `tabs-accepted-debt §7` concrete-sibling-injection coupling.
  *
- * Return type is narrowed to `Pick<CngxMatTabHandleSetup,
- * 'errorAggregator'>` so the access path leaks only the per-handle
- * aggregator slot; the rest of the setup (handle, label, disabled
- * writables) stays internal bookkeeping the registry owns.
+ * Return type narrows to `Pick<..., 'errorAggregator'>` so the
+ * access path exposes only the per-handle aggregator slot; the
+ * rest of the setup stays internal bookkeeping.
  *
  * @category interactive
  */
 export interface CngxMatTabsRegistryHost {
   /**
-   * Look up the per-handle `errorAggregator` writable slot for a
-   * given `MatTab`. Returns `undefined` when the tab has not been
-   * registered yet — the registry's `contentChildren(MatTab)` query
-   * lands during Angular's content-init pass, so a same-microtask
-   * injection from a per-tab attribute directive can race the
-   * registration. Race-recovery happens by tracking
-   * `presenter.tabs()` in the consumer's effect so a later sync tick
-   * re-attempts the lookup.
+   * Returns the per-handle `errorAggregator` slot, or `undefined`
+   * before the tab is registered. The `contentChildren(MatTab)`
+   * query lands during content-init, so a same-microtask injection
+   * from an attribute directive can race; consumers recover by
+   * tracking `presenter.tabs()` and re-attempting on the next sync
+   * tick.
    */
   getHandleSetup(
     matTab: MatTab,
@@ -69,10 +61,9 @@ export interface CngxMatTabsRegistryHost {
 
 /**
  * DI token the {@link CngxMatTabsRegistry} directive provides via
- * `useExisting`. Sibling per-tab directives ({@link CngxMatTabError}
- * and any future `[cngxMatTab*]`-shaped slot directive) inject this
- * with `{ host: true }` to reach the per-handle writable slots
- * without walking the concrete registry class.
+ * `useExisting`. Sibling per-tab directives inject this with
+ * `{ host: true }` to reach per-handle slots without walking the
+ * concrete registry class.
  *
  * @category interactive
  */
@@ -81,40 +72,20 @@ export const CNGX_MAT_TABS_REGISTRY_HOST =
 
 /**
  * Sibling host-directive that owns the per-MatTab handle registry
- * for the `[cngxMatTabs]` instrumentation surface. Extracted from
- * `[cngxMatTabs]` (Phase 7.1 of `mat-stepper-mat-tabs-hardening-plan`)
- * so the parent directive's class body stays under the level-4
- * organism LOC guard and so per-tab decoration directives inject the
- * registry surface via a typed token instead of the parent class.
+ * for `[cngxMatTabs]`. Extracted in Phase 7.1 so the parent stays
+ * under the level-4 organism LOC guard and per-tab decoration
+ * directives reach the registry through a typed token.
  *
- * Owns:
- * - `contentChildren(MatTab, { descendants: true })` query against
- *   the host element's projected `<mat-tab>` siblings.
- * - `setupsByTab` map keyed by `MatTab` instance, value pairs the
- *   cngx handle setup with a per-tab child `EnvironmentInjector`
- *   that scopes the lifetime of the `toSignal(_stateChanges)` bridge
- *   created inside `createMatTabHandle`.
- * - An `effect()` that diffs the live MatTab list against the map
- *   and registers / unregisters handles with the cngx
- *   `CNGX_TAB_GROUP_HOST` presenter on every content-children change.
- * - A `DestroyRef.onDestroy()` cleanup that destroys every child
- *   injector so the per-tab `_stateChanges` Subject bridges
- *   unsubscribe deterministically.
+ * Owns: `contentChildren(MatTab)` query, the `setupsByTab` map
+ * (per-tab cngx setup paired with a child `EnvironmentInjector`
+ * scoping the `_stateChanges` bridge), an `effect()` that diffs the
+ * MatTab list and (un)registers handles with `CNGX_TAB_GROUP_HOST`,
+ * and a `DestroyRef` cleanup that destroys every child injector.
  *
- * Composition with `[cngxMatTabs]`: the parent directive declares
- * this in its `hostDirectives: [...]` list. Both directives share
- * the same `CNGX_TAB_GROUP_HOST` presenter (provided by the parent's
- * own `CngxTabGroupPresenter` host-directive composition) and the
- * same content-children scope (the wrapping `<mat-tab-group>` host
- * element).
- *
- * Standalone use: also exported from `public-api.ts` so a consumer
- * can place `[cngxMatTabsRegistry]` separately on the same
- * `<mat-tab-group>` if they want to share the registry across
- * multiple decoration directives without binding `[cngxMatTabs]`.
- * Today only `[cngxMatTabs]` ships against the directive — the
- * standalone export is staged surface; see `tabs-accepted-debt §11`
- * for the decompose-pressure framing.
+ * Composition: `[cngxMatTabs]` declares this in `hostDirectives`;
+ * both share the parent's `CngxTabGroupPresenter` and the same
+ * `<mat-tab-group>` content-children scope. Standalone use is
+ * exported but staged — see `tabs-accepted-debt §11`.
  *
  * @category interactive
  */
@@ -169,16 +140,9 @@ export class CngxMatTabsRegistry implements CngxMatTabsRegistryHost {
       if (this.setupsByTab.has(tab)) {
         continue;
       }
-      // Per-tab child `EnvironmentInjector` owns the lifetime of the
-      // `toSignal(_stateChanges)` bridge created inside
-      // `createMatTabHandle`. Destroying the child injector below
-      // when a tab leaves fires the bridge's `takeUntilDestroyed`
-      // cleanup so the underlying RxJS subscription unsubscribes
-      // deterministically — same per-tab cleanup precision as the
-      // prior `Map<MatTab, Subscription>` shape, with the imperative
-      // pump replaced by `computed`-derived `label` / `disabled` on
-      // the handle. Tracked as `tabs-accepted-debt §5` (Material-
-      // private `_stateChanges` coupling).
+      // Per-tab child injector scopes the `toSignal(_stateChanges)`
+      // bridge inside createMatTabHandle — destroying it on tab
+      // removal fires `takeUntilDestroyed`. tabs-accepted-debt §5.
       const childInjector = createEnvironmentInjector([], this.envInjector);
       const idSeed = () => nextUid('cngx-mat-tab-');
       const setup = this.createHandle(tab, idSeed, childInjector);

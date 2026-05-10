@@ -9,24 +9,18 @@ import {
 import type { CngxTabsCommitAction } from './presenter.directive';
 
 /**
- * Outcome bridge between the lifted commit-controller and the
- * tabs-specific action shape. The presenter delegates to
- * {@link beginTransition} whenever the user triggers a tab change
- * while `commitAction` is non-null.
+ * Adapts the shared commit-controller to the tabs action shape. The
+ * presenter delegates to {@link beginTransition} when `commitAction`
+ * is bound.
  *
  * @category interactive/tabs
  */
 export interface CngxTabsCommitHandler {
   /**
-   * Start a tab-transition commit. Returns synchronously; the
-   * controller's `state` signal reports the in-flight status.
-   *
-   * @param fromIndex origin tab index (the tab the user is leaving)
-   * @param toIndex   target tab index
-   * @param action    the consumer-supplied action to invoke
-   * @param onResolve callback fired on success (`accept = true`)
-   *                  or rejection (`accept = false`); skipped on
-   *                  supersede.
+   * Start a tab-transition commit. Returns synchronously — read the
+   * controller's `state` signal for in-flight status. `onResolve`
+   * fires once with `accept = true` on success or `false` on
+   * rejection; skipped on supersede.
    */
   beginTransition(
     fromIndex: number,
@@ -52,11 +46,9 @@ export interface CngxTabsCommitHandlerOptions {
 }
 
 /**
- * Build a tabs commit handler over an existing
- * {@link CngxCommitController}. Wraps the controller's runner-
- * callback `begin` with the action-shape adapter that resolves
- * `Observable<boolean>` / `Promise<boolean>` / `boolean` returns
- * into a unified `accept: boolean` outcome.
+ * Wraps a {@link CngxCommitController} with the action-shape adapter
+ * that collapses `Observable<boolean>` / `Promise<boolean>` /
+ * `boolean` returns into a single `accept: boolean` outcome.
  *
  * @category interactive
  */
@@ -127,9 +119,8 @@ function runTabsAction(
   }
 
   if (isObservable(result)) {
-    // Synchronous Observables (`of(true)`) emit inside `.subscribe`
-    // before the assignment binds — `sub` is in TDZ if we close
-    // over it directly. Hold the handle on `let` declared first.
+    // Synchronous Observables (`of(true)`) emit inside `.subscribe` before
+    // the assignment binds — close over a pre-declared `let` to avoid TDZ.
     let sub: Subscription | null = null;
     sub = result.subscribe({
       next: (accept) => {
@@ -157,10 +148,9 @@ function runTabsAction(
 }
 
 /**
- * Factory signature for producing {@link CngxTabsCommitHandler}
- * instances. Consumers override the DI token
- * {@link CNGX_TABS_COMMIT_HANDLER_FACTORY} to wrap the default
- * with retry-with-backoff, telemetry, or offline queues.
+ * Factory signature for {@link CNGX_TABS_COMMIT_HANDLER_FACTORY}.
+ * Override to wrap the default with retry-with-backoff, telemetry,
+ * or offline queues.
  *
  * @category interactive
  */
@@ -169,10 +159,9 @@ export type CngxTabsCommitHandlerFactory = (
 ) => CngxTabsCommitHandler;
 
 /**
- * DI token carrying the factory the presenter uses to allocate its
- * commit handler. Default `providedIn: 'root'` factory returns
- * {@link createTabsCommitHandler}. Symmetrical to the select
- * family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` and the stepper's
+ * DI token for the commit-handler factory. Defaults to
+ * {@link createTabsCommitHandler}. Sibling to
+ * `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` (select) and
  * `CNGX_STEPPER_COMMIT_HANDLER_FACTORY`.
  *
  * @category interactive

@@ -3,22 +3,11 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxTabHandle } from '../tab-group-host.token';
 
 /**
- * Context passed to the `*cngxTabBusySpinner` template. Drives the
- * commit-pending spinner overlay rendered inside the tab button
- * that is the in-flight commit target. Consumers swap the built-in
- * `<span class="cngx-tabs__busy-spinner">` for a branded spinner, a
- * CSS animation, or a `<cngx-skeleton>` while the visibility gate
- * stays library-owned (the slot only renders when the tab matches
- * `presenter.intendedIndex()` with
- * `commitState.status() === 'pending'`).
- *
- * `intendedIndex` mirrors the value consumed by `isTabBusy(tab)` —
- * exposed on the context so consumer templates that need to vary the
- * spinner per-position (progress bars, step counters) read the same
- * source of truth without re-querying the presenter.
- *
- * Mirrors the family-standard `CngxStepBusySpinnerContext` shape
- * (extended with `intendedIndex` for tab-specific positional cues).
+ * Context for the `*cngxTabBusySpinner` template. Renders only on
+ * the in-flight commit target (matches `presenter.intendedIndex()`
+ * with `commitState.status() === 'pending'`); the visibility gate
+ * stays library-owned. `intendedIndex` is exposed so positional
+ * variants (progress bars, step counters) read the same source.
  *
  * @category interactive
  */
@@ -30,14 +19,9 @@ export interface CngxTabBusySpinnerContext {
 }
 
 /**
- * Structural slot directive marking the busy-spinner template for
- * `<cngx-tab-group>`. Discovered via `contentChild` on the organism;
- * cascades through `CNGX_TABS_CONFIG.templates.busySpinner` before
- * falling back to the built-in pulse-animation span.
- *
- * Pure marker — zero logic. Holds only a typed
- * {@link TemplateRef} reference. Mirrors the family-standard slot
- * pattern.
+ * Structural slot for the busy-spinner template. 3-stage cascade:
+ * per-instance directive >
+ * `CNGX_TABS_CONFIG.templates.busySpinner` > built-in pulse span.
  *
  * @example
  * ```html

@@ -1,12 +1,9 @@
 import { inject, InjectionToken, type Provider } from '@angular/core';
 
 /**
- * Stepper i18n surface. Library defaults are English (per
- * `feedback_en_default_locale`); German / other locales come from
- * consumer overrides via {@link provideStepperI18n}.
- *
- * Mirrors `CNGX_TABS_I18N` and `CNGX_CHART_I18N` — the same
- * provider+token+inject helper triple every cngx feature ships.
+ * Stepper i18n surface. Library defaults are English; locales come from
+ * consumer overrides via {@link provideStepperI18n}. Sibling of
+ * `CNGX_TABS_I18N` / `CNGX_CHART_I18N`.
  *
  * @category interactive
  */
@@ -19,43 +16,27 @@ export interface CngxStepperI18n {
   readonly previousStep: string;
   readonly nextStep: string;
   /**
-   * @deprecated for stepper commit rollback — superseded by
-   * {@link commitRolledBackTo}. Retained as the **defensive fallback**
-   * in the organism's `liveAnnouncement` priority chain when the
-   * origin label is unresolvable. Reachability mirrors the tabs
-   * family: under the current `select()` flow the
-   * `originIndexDuringCommit` slot is always written before the
-   * commit window opens, so the fallback path fires only when the
-   * origin label resolves to falsy (unlabeled step) OR a future
-   * producer feeds `commitState` outside `select()` (programmatic
-   * state mutation on the host contract).
+   * @deprecated Superseded by {@link commitRolledBackTo}. Retained as
+   * defensive fallback in `liveAnnouncement` when the origin label is
+   * unresolvable (unlabeled step, or `commitState` driven outside `select()`).
    */
   readonly commitFailedRetry: string;
   /**
-   * Polite SR announcement while a commit is in flight. Read by the
-   * organism's `liveAnnouncement` computed on the `idle → pending`
-   * arm. Pillar 2: every state change reaches AT.
+   * Polite SR announcement on `idle → pending`. Pillar 2.
    */
   readonly commitInFlight: string;
   /**
-   * Origin-aware rollback announcement. Receives the label of the
-   * step the user was returned to (the "safe-harbour" step) and
-   * yields a phrase like `Reverted to step "Customer".`. Read by the
-   * organism's `liveAnnouncement` computed on the `pending → error`
-   * transition when both `lastFailedIndex` and
-   * `originIndexDuringCommit` are set.
+   * Origin-aware rollback phrase. Read on `pending → error` when both
+   * `lastFailedIndex` and `originIndexDuringCommit` resolve. Receives
+   * the safe-harbour label, yields e.g. `Reverted to step "Customer".`.
    */
   readonly commitRolledBackTo: (originLabel: string) => string;
   /**
-   * Persistent suffix appended to the per-step `aria-describedby`
-   * descriptor when the step's flat-index matches
-   * `presenter.lastFailedIndex()`. Distinct from
-   * {@link commitRolledBackTo} (the polite live-region phrase that
-   * announces the *transition* once and fades) — this suffix lives
-   * in the per-step descriptor so AT users navigating BACK to the
-   * rejected step after the announcement subsides still hear the
-   * rollback context. Pillar 2: every state change communicates,
-   * even after the moment of change has passed.
+   * Persistent suffix on the per-step `aria-describedby` while
+   * `presenter.lastFailedIndex()` matches the step. Distinct from
+   * {@link commitRolledBackTo} (transient live-region phrase) — this
+   * suffix is reachable when AT users navigate back to the rejected
+   * step after the announcement has faded. Pillar 2.
    */
   readonly stepRolledBackSuffix: string;
 }
@@ -77,7 +58,7 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
 
 /**
  * DI token for the resolved stepper i18n bundle. `providedIn: 'root'`
- * with the English defaults.
+ * with English defaults.
  *
  * @category interactive
  */
@@ -87,12 +68,9 @@ export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
 );
 
 /**
- * Single feature-flag function consumed by {@link provideStepperI18n} and the
- * family aggregator {@link provideCngxStepper}. Carries a hidden `_target`
- * discriminator so the aggregator can dispatch i18n features to
- * {@link provideStepperI18n} while config features go to
- * {@link provideStepperConfig}. Mirrors `CngxTabsI18nFeature` from the tabs
- * family.
+ * Feature shape consumed by {@link provideStepperI18n} and {@link provideCngxStepper}.
+ * Hidden `_target: 'i18n'` discriminator routes through the family aggregator.
+ * Sibling of `CngxTabsI18nFeature`.
  *
  * @category interactive
  */
@@ -103,8 +81,8 @@ export type CngxStepperI18nFeature = ((
 };
 
 /**
- * Internal helper that brands an i18n-mutator function with the `_target`
- * discriminator. Every `with*` i18n feature returns one of these.
+ * Brands an i18n mutator with `_target: 'i18n'`. Every `with*` i18n
+ * feature returns one of these.
  *
  * @internal
  */
@@ -115,11 +93,9 @@ function defineStepperI18nFeature(
 }
 
 /**
- * Override one or more i18n labels on the stepper surface. Pass a partial
- * override — unset keys keep their English default. Mirrors the
- * `withStepperAriaLabels` / `withStepperFallbackLabels` shape on the
- * config surface so `provideCngxStepper` can compose features uniformly
- * across both `CNGX_STEPPER_CONFIG` and `CNGX_STEPPER_I18N`.
+ * Override stepper i18n labels. Partial override — unset keys keep
+ * the English default. Sibling of `withStepperAriaLabels` /
+ * `withStepperFallbackLabels`.
  *
  * @category interactive
  */
@@ -140,8 +116,7 @@ function resolveI18nFeatures(
 
 /**
  * Provider for the stepper i18n bundle. Compose `withStepperI18nLabels(...)`
- * features (and any future i18n `with*` features) — unset keys fall
- * back to the English default.
+ * (plus any future i18n `with*`) — unset keys fall back to English.
  *
  * @example
  * ```ts

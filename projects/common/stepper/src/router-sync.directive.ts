@@ -17,18 +17,15 @@ import { injectStepperConfig } from './stepper-config';
 import { CNGX_STEPPER_HOST } from './stepper-host.token';
 
 /**
- * URL deep-linking for the stepper. Bidirectional sync between the
- * presenter's `activeStepId` and a URL fragment / query-param. Opt-in
- * via `[cngxStepperRouterSync]` on the same element that carries the
- * stepper presenter.
+ * URL deep-linking for the stepper. Bidirectional sync between
+ * `activeStepId` and a URL fragment / query-param. Opt-in via
+ * `[cngxStepperRouterSync]` on the presenter element.
  *
- * - `mode = 'fragment'` (default) → `#step=customer` style.
- * - `mode = 'queryParam'` with `paramName = 'step'` (default) →
- *   `?step=customer` style.
+ * - `mode = 'fragment'` (default) → `#step=customer`
+ * - `mode = 'queryParam'` with `paramName = 'step'` → `?step=customer`
  *
- * Optional `Router` injection: if `@angular/router` is not available,
- * the directive logs a dev warning via `afterNextRender` and becomes
- * a no-op. Consumers without router escape gracefully.
+ * `Router` is optional — without `@angular/router` the directive
+ * dev-warns once and becomes a no-op.
  *
  * @category interactive/stepper
  */
@@ -38,9 +35,7 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
   standalone: true,
 })
 export class CngxStepperRouterSync {
-  // Inputs default to undefined so the cascade resolves through
-  // {@link CNGX_STEPPER_CONFIG} when unset (per-instance Input >
-  // viewProviders > root > library default).
+  // Default undefined so the cascade resolves through CNGX_STEPPER_CONFIG.
   readonly modeInput = input<
     'fragment' | 'queryParam' | undefined
   >(undefined, { alias: 'mode' });

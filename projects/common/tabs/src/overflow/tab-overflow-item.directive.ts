@@ -3,12 +3,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxTabHandle } from '../tab-group-host.token';
 
 /**
- * Context passed to the `*cngxTabOverflowItem` template. Drives the
- * per-row body inside the More popover; consumers replace the default
- * `tab.label() ?? tab.id` text with arbitrary markup (icon + label
- * + secondary metadata, kbd hint, etc.) while the surrounding
- * `<li role="menuitem">` shell — including `aria-disabled`, click
- * handler, `data-tab-id` — stays library-owned.
+ * Context for the `*cngxTabOverflowItem` template. Replaces the
+ * default `tab.label() ?? tab.id` text inside the More popover; the
+ * surrounding `<li role="menuitem">` shell (`aria-disabled`, click
+ * handler, `data-tab-id`) stays library-owned.
  *
  * @category interactive
  */
@@ -18,9 +16,8 @@ export interface CngxTabOverflowItemContext {
   /** The hidden tab the row represents. */
   readonly tab: CngxTabHandle;
   /**
-   * Commit-aware select callback — invoking it routes through
-   * `panelHost.selectById(tab.id)` and dismisses the popover. No-op
-   * when the tab is disabled. Equivalent to clicking the default row.
+   * Commit-aware select. Routes through `panelHost.selectById(tab.id)`
+   * and dismisses the popover; no-op when `disabled`.
    */
   readonly pick: () => void;
   /** Mirrors `tab.disabled()` — pre-resolved for consumer convenience. */
@@ -30,13 +27,9 @@ export interface CngxTabOverflowItemContext {
 }
 
 /**
- * Structural slot directive marking the per-row body template for
- * each hidden tab inside `<cngx-tab-overflow>`'s popover. Discovered
- * via `contentChild` on the molecule; cascades through
- * `CNGX_TABS_CONFIG.templates.overflowItem` before falling back to
- * the built-in label text.
- *
- * Pure marker — zero logic. Holds only a typed {@link TemplateRef}.
+ * Structural slot for the per-row body inside the More popover.
+ * 3-stage cascade: per-instance directive >
+ * `CNGX_TABS_CONFIG.templates.overflowItem` > built-in label text.
  *
  * @example
  * ```html

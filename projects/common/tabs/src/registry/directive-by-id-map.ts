@@ -1,15 +1,10 @@
 import { computed, InjectionToken, type Signal } from '@angular/core';
 
 /**
- * Structural equality for a `Map<string, T>` where `T` is matched by
- * reference (`Object.is`). Two maps are equal when they share size,
- * the same key set, and the same value reference per key. Drop-in
- * replacement for the per-organism `tabDirectiveMapEqual` /
- * `stepDirectiveMapEqual` helpers extracted at Phase 4 of the
- * global-material-bridge plan.
+ * Structural equal for `Map<string, T>` (size + same value reference
+ * per key, via `Object.is`).
  *
- * @internal — exported only because the factory below uses it; not a
- * documented public API.
+ * @internal
  */
 function directiveMapEqual<T>(a: Map<string, T>, b: Map<string, T>): boolean {
   if (a === b) {
@@ -32,25 +27,15 @@ function directiveMapEqual<T>(a: Map<string, T>, b: Map<string, T>): boolean {
  * @category interactive
  */
 export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
-  /**
-   * Reactive source — typically the result of `contentChildren(...)`.
-   * The factory's `computed()` reads this signal and rebuilds the
-   * Map on every emission.
-   */
+  /** Reactive source — typically `contentChildren(...)`. */
   readonly source: Signal<readonly T[]>;
 }
 
 /**
  * Build a `Signal<Map<string, T>>` from a `Signal<readonly T[]>` of
- * directive instances each carrying an `id: () => string` getter.
- * The returned computed carries a structural-equal so downstream
- * consumers don't cascade when `contentChildren` re-emits with an
- * unchanged child set.
- *
- * Replaces the duplicated `tabDirectiveById` / `stepDirectiveById` /
- * `stepDirectiveById` patterns previously inlined in the three
- * Level-4 organisms (`<cngx-tab-group>`, `<cngx-stepper>`,
- * `<cngx-mat-stepper>`). Behaviour-preserving extraction.
+ * directives keyed by `id()`. Structural equal prevents cascade when
+ * `contentChildren` re-emits an unchanged child set. Shared by
+ * `<cngx-tab-group>`, `<cngx-stepper>`, and `<cngx-mat-stepper>`.
  *
  * @category interactive
  */
@@ -71,8 +56,6 @@ export function createDirectiveByIdMap<T extends { id: () => string }>(
 
 /**
  * Factory signature for {@link CNGX_DIRECTIVE_BY_ID_MAP_FACTORY}.
- * Matches {@link createDirectiveByIdMap} exactly so override
- * implementations can be drop-in.
  *
  * @category interactive
  */
@@ -82,14 +65,9 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
 
 /**
  * DI token for the per-id directive-resolution policy. Defaults to
- * {@link createDirectiveByIdMap} (structural-equal Map).
- *
- * Override at app `providers` (root) or component `viewProviders`
- * (scoped) to install a different policy — e.g. WeakMap-based
- * resolution, telemetry, custom equality. Consumed by
- * `<cngx-tab-group>`, `<cngx-stepper>`, and `<cngx-mat-stepper>`.
- *
- * Symmetric to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
+ * {@link createDirectiveByIdMap}. Override for WeakMap resolution,
+ * telemetry, or custom equality. Sibling to
+ * `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
  *
  * @category interactive

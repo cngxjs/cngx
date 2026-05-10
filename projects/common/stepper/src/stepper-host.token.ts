@@ -5,9 +5,8 @@ import type { CngxAsyncState, StatusTransition } from '@cngx/core/utils';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 /**
- * Status enum for a single step. Driven by the presenter's
- * commit-controller lifecycle plus optional `errorAggregator`
- * composition.
+ * Status enum for a single step. Driven by the presenter's commit-controller
+ * lifecycle plus the optional `errorAggregator`.
  *
  * @category interactive
  */
@@ -20,9 +19,8 @@ export type CngxStepStatus =
   | 'busy';
 
 /**
- * Step-tree node. Either a `step` (terminal, has its own panel) or
- * a `group` (carries nested children). Both share id / label /
- * disabled / state metadata; the discriminator is `kind`.
+ * Step-tree node. Either a terminal `step` (has its own panel) or a
+ * `group` carrying nested children. Discriminated by `kind`.
  *
  * @category interactive
  */
@@ -46,8 +44,7 @@ export interface CngxStepNode {
 }
 
 /**
- * Registration handle a `CngxStep` / `CngxStepGroup` passes to its
- * host (`CngxStepperPresenter` or a parent group). The host owns
+ * Handle a `CngxStep` / `CngxStepGroup` passes to its host. The host owns
  * the registry; the atom owns its own state slot.
  *
  * @internal
@@ -62,9 +59,8 @@ export interface CngxStepRegistration {
 }
 
 /**
- * Public contract atoms see when they inject the presenter via
- * {@link CNGX_STEPPER_HOST}. Mirrors the directive's surface 1:1 so
- * the atoms never reach into the concrete class.
+ * Contract atoms see via {@link CNGX_STEPPER_HOST}. Mirrors the
+ * directive's surface 1:1 — atoms never reach the concrete class.
  *
  * @category interactive
  */
@@ -80,35 +76,27 @@ export interface CngxStepperHost {
 
   /**
    * Reactive current/previous pair for the commit-state status. The
-   * organism's `<span cngxLiveRegion>` reads this tracker to derive
-   * the SR announcement on every `pending → success / error`
-   * transition. Allocated once per presenter instance — consumers
-   * MUST read this rather than calling `createTransitionTracker`
-   * locally so the underlying `linkedSignal` is shared.
-   *
-   * Mirrors `CngxTabGroupHost.commitTransition` (see
-   * `projects/common/tabs/src/presenter.directive.ts:127-129`).
+   * organism's `<span cngxLiveRegion>` reads this tracker on every
+   * `pending → success / error` transition. Allocated once per
+   * presenter — consumers MUST read this rather than calling
+   * `createTransitionTracker` locally so the `linkedSignal` is shared.
    */
   readonly commitTransition: StatusTransition;
 
   /**
    * Index of the most recently refused commit target, or `undefined`
    * when no rejection is pending. Set by the rejection arm of
-   * `select()` and cleared either by a successful re-pick of the
-   * same target or an explicit {@link clearLastFailed} call.
-   * Drives persistence-of-error decoration on the strip and the
-   * `commitRolledBackTo` priority chain in the organism's
-   * `liveAnnouncement` computed.
+   * `select()`; cleared by a successful re-pick of the same target
+   * or via {@link clearLastFailed}. Drives strip rejection decoration
+   * and the `commitRolledBackTo` chain in `liveAnnouncement`.
    */
   readonly lastFailedIndex: Signal<number | undefined>;
 
   /**
-   * Origin index captured at commit-window open — the safe-harbour
-   * the user is returned to on optimistic rollback. Read by the
-   * organism's `liveAnnouncement` computed to resolve the rich
-   * `commitRolledBackTo(originLabel)` phrase. Cleared on successful
-   * commit; retained on rejection so the rich announcement remains
-   * derivable for the duration of the persistence window.
+   * Origin captured at commit-window open — the safe-harbour the user
+   * is returned to on optimistic rollback. Resolves the origin label
+   * for the `commitRolledBackTo(originLabel)` phrase. Cleared on
+   * success; retained on rejection through the persistence window.
    */
   readonly originIndexDuringCommit: Signal<number | undefined>;
 
@@ -119,27 +107,19 @@ export interface CngxStepperHost {
   reset(): void;
 
   /**
-   * Drop the persisted {@link lastFailedIndex} flag. Idempotent
-   * no-op when no rejection is pending; safe to wire to a Dismiss
-   * button or to fire on aggregator-cleared.
+   * Drop the persisted {@link lastFailedIndex} flag. Idempotent;
+   * safe to wire to a Dismiss button or aggregator-cleared.
    */
   clearLastFailed(): void;
-
-  // markCompleted / markErrored are intentionally NOT on the host
-  // contract until Phase 3 wires the commit lifecycle. Surfacing
-  // them as no-op placeholders would make consumer code silently
-  // do nothing — re-introduce only with a working implementation.
 
   register(handle: CngxStepRegistration, parentId?: string | null): void;
   unregister(id: string): void;
 }
 
 /**
- * DI token providing the stepper presenter's contract to atoms +
- * organism shells. The presenter provides this via `useExisting`;
- * atoms `inject(CNGX_STEPPER_HOST, { optional: true })` and either
- * register with the root presenter or fall back through
- * {@link CNGX_STEP_GROUP_HOST} when nested inside a group.
+ * DI token carrying the presenter's contract to atoms + organism shells.
+ * Atoms inject `optional: true` and either register here or fall through
+ * {@link CNGX_STEP_GROUP_HOST} when nested in a group.
  *
  * @category interactive
  */

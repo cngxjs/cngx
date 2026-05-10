@@ -24,11 +24,10 @@ import type {
 import type { CngxStepperEmpty } from './stepper-empty.directive';
 
 /**
- * Inputs to {@link createStepperTemplateBindings}. The organism
- * keeps the `contentChild()` queries (must run in component
- * injection context per Angular's AOT NG8110 rule) and the
- * resolved {@link CngxStepperConfig}; the factory absorbs the
- * 3-stage cascade resolution per slot key.
+ * Inputs to {@link createStepperTemplateBindings}. The organism owns
+ * the `contentChild()` queries (NG8110 — must run in component
+ * injection context) and the resolved {@link CngxStepperConfig}; this
+ * factory absorbs the 3-stage cascade per slot key.
  *
  * @category interactive
  */
@@ -44,10 +43,8 @@ export interface CngxStepperTemplateBindingsOptions {
 
 /**
  * Output of {@link createStepperTemplateBindings}. One resolved
- * `Signal<TemplateRef | null>` per slot — `null` when neither a
- * per-instance directive nor the config templates field supplies a
- * template, signalling the organism should render its built-in
- * default.
+ * `Signal<TemplateRef | null>` per slot — `null` falls through to the
+ * organism's built-in default markup.
  *
  * @category interactive
  */
@@ -61,22 +58,16 @@ export interface CngxStepperTemplateBindings {
 }
 
 /**
- * Wires the family-standard 3-stage template cascade for the six
- * `<cngx-stepper>` skin slots:
- *   per-instance directive (e.g. `*cngxStepIndicator`) >
- *   `CNGX_STEPPER_CONFIG.templates.<key>` >
- *   `null` (organism falls back to built-in default markup).
+ * Wires the 3-stage template cascade for the six `<cngx-stepper>`
+ * skin slots: per-instance directive > `CNGX_STEPPER_CONFIG.templates.<key>`
+ * > `null` (built-in default).
  *
- * Pure function — no DI, no side effects, no destroy hooks. Safe to
- * call from a component's field-init block. Mirrors
- * `createTabOverflowTemplateBindings` (the molecule-scoped tabs
- * sibling) and the family-wide `createTemplateRegistry` pattern.
+ * Pure — no DI, no side effects. Safe to call from a field-init
+ * block. Sibling of `createTabOverflowTemplateBindings` and the
+ * family-wide `createTemplateRegistry`.
  *
- * Sibling-family asymmetry note: `<cngx-tab-group>` does not yet
- * ship the parallel slot surface (no `withTabIndicatorTemplate` /
- * `withTabErrorBadgeTemplate` / `withTabRejectionIconTemplate` /
- * `withTabBusySpinnerTemplate`); see `stepper-accepted-debt.md` §3
- * for the planned Phase-4 closure trigger.
+ * Tabs has no parallel slot surface yet — see
+ * `stepper-accepted-debt §3` for the planned Phase-4 closure.
  *
  * @category interactive
  */

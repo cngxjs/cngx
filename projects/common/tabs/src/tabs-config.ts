@@ -15,14 +15,12 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
 
 /**
  * Aria-label overrides for the tab-group landmark region. Library
- * defaults are English (per `feedback_en_default_locale`); German /
- * other locales come from consumer overrides via
+ * defaults are English; consumers override via
  * {@link withTabsAriaLabels}.
  *
- * Per-tab navigation labels (`previousTab`, `nextTab`) live in
- * {@link CngxTabsI18n} — they're SR phrasing, not landmark naming,
- * and belong with the rest of the i18n surface to avoid a dual-
- * override path for the same string.
+ * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
+ * {@link CngxTabsI18n}, not here — landmark naming and SR phrasing
+ * stay on separate override paths.
  *
  * @category interactive
  */
@@ -44,20 +42,11 @@ export interface CngxTabsFallbackLabels {
 
 /**
  * App-wide template overrides for `<cngx-tab-group>` and
- * `<cngx-tab-overflow>` skin regions. Sit in the middle tier of the
- * family-standard 3-stage cascade: per-instance directive (e.g.
- * `*cngxTabErrorBadge`, `*cngxTabOverflowTrigger`) > this
- * `templates` field (root / viewProviders) > the organism /
- * molecule's built-in markup (default). Apply via the matching
- * `with*Template` feature builders ({@link withTabErrorBadgeTemplate},
- * {@link withTabRejectionIconTemplate},
- * {@link withTabBusySpinnerTemplate},
- * {@link withTabOverflowTriggerTemplate},
- * {@link withTabOverflowItemTemplate}).
- *
- * Mirrors the family-standard `CngxStepperTemplates` shape (Phase 3
- * stepper sibling) so consumer-authored templates port across
- * families without re-keying.
+ * `<cngx-tab-overflow>` skin regions. Middle tier of the 3-stage
+ * cascade — per-instance directive > this field > built-in markup.
+ * Apply via the matching `with*Template` builders. Shape mirrors
+ * `CngxStepperTemplates` so consumer templates port across
+ * families.
  *
  * @category interactive
  */
@@ -72,8 +61,7 @@ export interface CngxTabsTemplates {
 /**
  * Tab-group config surface. Resolution priority: per-instance Input
  * → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
- * (root) → library default. Mirrors the canonical config shape used
- * by every cngx feature family.
+ * (root) → library default.
  *
  * @category interactive
  */
@@ -86,32 +74,18 @@ export interface CngxTabsConfig {
   readonly ariaLabels?: CngxTabsAriaLabels;
   readonly fallbackLabels?: CngxTabsFallbackLabels;
   /**
-   * Quiescence window (ms) for `<cngx-tab-overflow>`'s
-   * IntersectionObserver-driven visibility map. Burst emissions
-   * during strip animations (Material tab transitions, cngx
-   * active-bar slide, pagination scroll) collapse to one signal
-   * write — the More button's counter only re-renders once IO has
-   * been quiet for this many ms. Library default is 100ms; raise
-   * to ~250ms for slower strip animations or content-driven reflow.
-   * The molecule's max-defer cap ({@link overflowMaxDeferMs}) caps
-   * how long a sustained burst can delay the commit regardless of
-   * this value.
+   * Quiescence window (ms) for the overflow IO debounce. Burst
+   * emissions during strip animations collapse to one write; the
+   * More counter re-renders once IO has been quiet this long.
+   * Default 100ms. Capped by {@link overflowMaxDeferMs}.
    */
   readonly overflowStabilizeMs?: number;
   /**
-   * Hard ceiling (ms) on how long `<cngx-tab-overflow>` may defer
-   * the visibility-map commit while IntersectionObserver bursts keep
-   * arriving. Without this cap, a sustained churn pattern (momentum
-   * scrolling, continuous resize, an animation that keeps Material's
-   * tab-list reflowing every frame) would keep clearing the
-   * stabilize timer indefinitely — the More button's counter would
-   * freeze on a stale value, breaking Pillar 2 (state-change
-   * communication must hold under sustained input). Library default
-   * is 250ms; raise to bound looser staleness, lower if strip
-   * animations are short and a stricter freshness contract is
-   * required. Sibling knob to {@link overflowStabilizeMs} — that
-   * value is the *quiescence* window, this is the *worst-case
-   * staleness* cap.
+   * Hard ceiling (ms) on commit deferral while IO bursts keep
+   * arriving — without it, sustained churn (momentum scroll,
+   * continuous resize) would clear the stabilize timer forever and
+   * the More counter would freeze on a stale value, breaking
+   * Pillar 2. Default 250ms.
    */
   readonly overflowMaxDeferMs?: number;
   /**
@@ -138,11 +112,9 @@ const TABS_CONFIG_DEFAULTS: Required<
     tabsRegion: 'Tabs',
   },
   fallbackLabels: {
-    // 'tab list' (W3C ARIA tablist convention) — deliberately distinct
-    // from `i18n.tabsLabel` so `aria-roledescription` and `aria-label`
-    // never collapse onto the same string. AT reads them
-    // back-to-back; identical strings make the announcement
-    // ungrammatical ("Bereiche, Bereiche, A selected").
+    // W3C ARIA tablist convention — kept distinct from
+    // `i18n.tabsLabel` so AT doesn't read the same string twice
+    // back-to-back across `aria-roledescription` and `aria-label`.
     tabRoleDescription: 'tab list',
     tabPanelRoleDescription: 'tab panel',
   },
@@ -164,12 +136,10 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
 );
 
 /**
- * Feature signature — each `with*` builder returns a partial config
- * the aggregator merges into the final value. Carries a hidden
- * `_target` discriminator so the family aggregator
- * {@link provideCngxTabs} can dispatch config features to
- * {@link provideTabsConfig} alongside i18n features routed to
- * {@link provideTabsI18n}.
+ * Feature signature for `with*` config builders. The hidden
+ * `_target` discriminator lets {@link provideCngxTabs} dispatch
+ * config features to {@link provideTabsConfig} while i18n features
+ * route to {@link provideTabsI18n}.
  *
  * @category interactive
  */
@@ -193,9 +163,8 @@ function defineTabsConfigFeature(
 }
 
 /**
- * Override the default orientation for `<cngx-tab-group>` /
- * `[cngxMatTabs]` consumers. Per-instance `[orientation]` Input still
- * wins; this feature only changes the cascade default.
+ * Override the default orientation. Per-instance `[orientation]`
+ * still wins; this changes the cascade default only.
  *
  * @category interactive
  */
@@ -261,9 +230,8 @@ export function withTabsFallbackLabels(
 }
 
 /**
- * Override `<cngx-tab-overflow>`'s IntersectionObserver-debounce
- * window (ms). See {@link CngxTabsConfig.overflowStabilizeMs} for the
- * full semantics. Library default is 100ms.
+ * Override the IO-debounce window (ms). See
+ * {@link CngxTabsConfig.overflowStabilizeMs}.
  *
  * @category interactive
  */
@@ -275,11 +243,8 @@ export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
 }
 
 /**
- * Override `<cngx-tab-overflow>`'s max-defer cap (ms) — the worst-
- * case staleness ceiling on the visibility-map commit. See
- * {@link CngxTabsConfig.overflowMaxDeferMs} for the full semantics.
- * Library default is 250ms. Sibling knob to
- * {@link withTabOverflowStabilizeMs}.
+ * Override the worst-case staleness ceiling on the visibility-map
+ * commit. See {@link CngxTabsConfig.overflowMaxDeferMs}.
  *
  * @category interactive
  */
@@ -291,10 +256,8 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
 }
 
 /**
- * App-wide template override for the `<cngx-tab-overflow>` More-button
- * label. Middle tier of the 3-stage cascade — projected as the
- * default when no per-instance `*cngxTabOverflowTrigger` directive is
- * present. Per-instance still wins.
+ * App-wide override for the More-button label. Middle tier;
+ * per-instance `*cngxTabOverflowTrigger` still wins.
  *
  * @example
  * ```ts
@@ -316,10 +279,8 @@ export function withTabOverflowTriggerTemplate(
 }
 
 /**
- * App-wide template override for each row inside the
- * `<cngx-tab-overflow>` popover. Middle tier of the 3-stage cascade —
- * projected as the default when no per-instance
- * `*cngxTabOverflowItem` directive is present. Per-instance still wins.
+ * App-wide override for each row inside the overflow popover.
+ * Middle tier; per-instance `*cngxTabOverflowItem` still wins.
  *
  * @category interactive
  */
@@ -333,13 +294,9 @@ export function withTabOverflowItemTemplate(
 }
 
 /**
- * App-wide template override for the error-badge decoration on a
- * `<cngx-tab-group>` tab. Middle tier of the 3-stage cascade —
- * projected as the default when no per-instance `*cngxTabErrorBadge`
- * directive is present. Per-instance still wins.
- *
- * Closes the family-asymmetry gap with the Phase-3 stepper sibling
- * `withStepBadgeTemplate` (see `stepper-accepted-debt §3`).
+ * App-wide override for the error-badge decoration. Middle tier;
+ * per-instance `*cngxTabErrorBadge` still wins. Sibling of the
+ * stepper family's `withStepBadgeTemplate`.
  *
  * @category interactive
  */
@@ -353,12 +310,9 @@ export function withTabErrorBadgeTemplate(
 }
 
 /**
- * App-wide template override for the rejection-icon decoration on
- * a `<cngx-tab-group>` tab. Middle tier of the 3-stage cascade —
- * projected as the default when no per-instance
- * `*cngxTabRejectionIcon` directive is present. Per-instance still wins.
- *
- * Sibling of {@link withStepRejectionTemplate} from the stepper family.
+ * App-wide override for the rejection-icon decoration. Middle
+ * tier; per-instance `*cngxTabRejectionIcon` still wins. Sibling
+ * of {@link withStepRejectionTemplate}.
  *
  * @category interactive
  */
@@ -372,12 +326,9 @@ export function withTabRejectionIconTemplate(
 }
 
 /**
- * App-wide template override for the commit-pending busy-spinner
- * overlay on a `<cngx-tab-group>` tab. Middle tier of the 3-stage
- * cascade — projected as the default when no per-instance
- * `*cngxTabBusySpinner` directive is present. Per-instance still wins.
- *
- * Sibling of {@link withStepBusySpinnerTemplate} from the stepper family.
+ * App-wide override for the commit-pending busy-spinner overlay.
+ * Middle tier; per-instance `*cngxTabBusySpinner` still wins.
+ * Sibling of {@link withStepBusySpinnerTemplate}.
  *
  * @category interactive
  */
@@ -400,13 +351,9 @@ function resolveFeatures(
 }
 
 /**
- * Root-level provider for the tabs config. Apply once in the
- * application providers array (`bootstrapApplication` /
- * `appConfig.providers`).
- *
- * Returns {@link EnvironmentProviders} per the canonical cngx
- * config-cascade signature — matches `provideSelectConfig` /
- * `provideRecyclerI18n` and the architecture-summary contract.
+ * Root-level provider. Apply once in `bootstrapApplication` /
+ * `appConfig.providers`. Returns {@link EnvironmentProviders} per
+ * the canonical cngx config-cascade signature.
  *
  * @category interactive
  */
@@ -419,15 +366,10 @@ export function provideTabsConfig(
 }
 
 /**
- * Component-scoped config override. The returned `Provider[]` goes
- * into a component's `providers` or `viewProviders` via spread —
- * `viewProviders` cannot accept opaque {@link EnvironmentProviders},
- * so this twin keeps the same merge semantics with a list shape
- * (matches `provideSelectConfigAt`).
- *
- * Resolution priority across both helpers:
- *   per-instance Input > viewProviders (`At`) > root provider >
- *   library default.
+ * Component-scoped override. Returns `Provider[]` (not
+ * {@link EnvironmentProviders}) because `viewProviders` rejects
+ * opaque environment providers. Resolution priority: per-instance
+ * Input > viewProviders (`At`) > root > default.
  *
  * @example
  * ```ts

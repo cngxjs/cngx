@@ -43,22 +43,13 @@ import {
 } from '@cngx/common/tabs';
 
 /**
- * CNGX-standard tab-group organism. Thin shell composing the
- * {@link CngxTabGroupPresenter} brain with `CngxRovingTabindex` and
- * `CngxFocusRestore` via `hostDirectives`. Material consumers reach
- * for `[cngxMatTabs]` from `@cngx/ui/mat-tabs`.
+ * CNGX tab-group organism. Thin shell over {@link CngxTabGroupPresenter}
+ * + `CngxRovingTabindex` + `CngxFocusRestore` via `hostDirectives`.
+ * Material variant lives at `[cngxMatTabs]` in `@cngx/ui/mat-tabs`.
  *
- * The presenter owns `activeIndex`, `orientation`, `loop`,
- * `commitAction`, `commitMode`; the organism forwards them through
- * `hostDirectives.inputs`. Renders the strip + panels via two
- * `@for` loops over `presenter.tabs()`. Reactive ARIA — every
- * `aria-selected`, `aria-controls`, `aria-labelledby`, `aria-busy`,
- * `aria-orientation` is a `computed()` or signal-reading method,
- * never a one-time binding.
- *
- * `CngxLiveRegion` is mounted as a dedicated `<span cngxLiveRegion>`
- * inside the template rather than composed via `hostDirectives`,
- * because its `role="status"` would clobber the wrapper's
+ * All ARIA attrs are signal-driven — never one-shot bindings.
+ * `CngxLiveRegion` is mounted as a child `<span>` rather than a
+ * host directive: its `role="status"` would clobber the wrapper's
  * `role="group"` landmark.
  *
  * @category interactive
@@ -114,13 +105,7 @@ export class CngxTabGroup implements CngxTabPanelHost {
   protected readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly config = injectTabsConfig();
-  /**
-   * Internal default-glyph table read inside the template's
-   * built-in fallback spans (`{{ glyphs.errorBadge }}` /
-   * `{{ glyphs.rejectionIcon }}`). Exposed as a protected field so
-   * the host markup stays declarative — Pillar 1 (no inline literals
-   * driving Pillar-2 visual surfaces).
-   */
+  /** Default-glyph table for the template's fallback spans. Pillar 1. */
   protected readonly glyphs = CNGX_TABS_GLYPHS;
   private readonly hostElement: HTMLElement = inject<ElementRef<HTMLElement>>(
     ElementRef,
@@ -131,27 +116,20 @@ export class CngxTabGroup implements CngxTabPanelHost {
   });
 
   /**
-   * Per-instance skin slots. Resolved through the 3-stage cascade in
-   * {@link templates}: per-instance `*cngxTab*` directive >
-   * `CNGX_TABS_CONFIG.templates.<key>` > organism's built-in default.
-   *
-   * AOT requires `contentChild()` calls to be direct field
-   * initialisers on the variant component (NG8110 rejects them from
-   * helper functions); the resolved cascade signals live in
-   * {@link templates} via `createTabGroupTemplateBindings`.
+   * Per-instance skin slots. Resolved via 3-stage cascade in {@link templates}:
+   * `*cngxTab*` directive > `CNGX_TABS_CONFIG.templates.<key>` > built-in.
+   * AOT (NG8110) requires `contentChild()` to be a direct field initialiser
+   * on the variant — cascade resolution is delegated to the factory.
    */
   private readonly errorBadgeSlot = contentChild(CngxTabErrorBadge);
   private readonly rejectionIconSlot = contentChild(CngxTabRejectionIcon);
   private readonly busySpinnerSlot = contentChild(CngxTabBusySpinner);
 
   /**
-   * AT-announcement + descriptor surfaces extracted into a pure
-   * factory under `@cngx/common/tabs/announcements/`. The bundle
-   * owns `tabsRoleDescription` / `tabPanelRoleDescription` /
-   * `resolvedAriaLabel` / `liveAnnouncement` / `statusPhrase` /
-   * `tabAriaLabel` plus the prior-active-index `linkedSignal` slot
-   * that drives the success-arm direction prefix. Host bindings and
-   * template outlets read through `announcements.<field>()`.
+   * AT-announcement bundle from `@cngx/common/tabs/announcements/`.
+   * Owns role descriptions, resolved aria-label, live-region phrasing,
+   * and the prior-active-index `linkedSignal` driving the success-arm
+   * direction prefix.
    */
   protected readonly announcements: CngxTabGroupAnnouncements =
     createTabGroupAnnouncements({
@@ -163,15 +141,9 @@ export class CngxTabGroup implements CngxTabPanelHost {
     });
 
   constructor() {
-    // Self-healing scroll loop — when the active tab changes (via
-    // direct click on a visible tab, keyboard nav, or selectById from
-    // the overflow molecule), bring the matching button into the
-    // strip's visible area. The IntersectionObserver in
-    // <cngx-tab-overflow> picks up the new visibility on the next
-    // tick and the More dropdown self-trims. Routed through
-    // `CNGX_ORGANISM_SCROLL_SYNC_FACTORY` so consumers can swap the
-    // scroll policy (instant, custom selector, reduced-motion opt-out)
-    // without forking the organism.
+    // Self-healing scroll loop: activeId change -> scrollIntoView ->
+    // overflow IO sees new visibility -> More dropdown self-trims.
+    // Policy is swappable via CNGX_ORGANISM_SCROLL_SYNC_FACTORY.
     inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
       activeId: this.presenter.activeId,
       hostElement: this.hostElement,
@@ -179,21 +151,16 @@ export class CngxTabGroup implements CngxTabPanelHost {
     });
   }
 
-  // Pre-build a Map<id, CngxTab> so labelTemplateFor /
-  // contentTemplateFor are O(1) per call instead of O(N) linear
-  // scans on every panel render. Structural `equal` keyed on the
-  // id-set + per-id directive identity prevents the Map from
-  // cascading downstream every time `contentChildren` re-emits with
-  // an unchanged child set.
+  // Map<id, CngxTab> for O(1) labelTemplateFor / contentTemplateFor.
+  // Structural equal on id-set + directive identity prevents cascade
+  // on shape-stable contentChildren re-emissions.
   private readonly tabDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.tabDirectives,
   });
 
   /**
-   * Resolved 3-stage template cascade for the three visible-region
-   * skin slots: `errorBadge`, `rejectionIcon`, `busySpinner`. Each
-   * field is a `Signal<TemplateRef | null>` — `null` signals the
-   * template should render the built-in default span.
+   * Resolved 3-stage cascade for `errorBadge`, `rejectionIcon`, `busySpinner`.
+   * `null` -> render built-in default span.
    */
   protected readonly templates: CngxTabGroupTemplateBindings =
     createTabGroupTemplateBindings({
@@ -242,27 +209,17 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
-   * Per-tab cache of the `*cngxTabErrorBadge` slot context. The
-   * context object's only field is `{ tab }` — purely tab-keyed,
-   * never reactive — so caching it via `WeakMap` keeps the context
-   * reference stable across CD ticks. Stable refs let
-   * `*ngTemplateOutlet`'s `Object.is` input-diff short-circuit
-   * the embedded-view context-update path, eliminating per-CD
-   * allocation + rebind cost. Mirrors the select-family
-   * `chipRemoveFor` `WeakMap` precedent.
+   * Stable per-tab `*cngxTabErrorBadge` context cache. Context is
+   * `{ tab }` only (no reactive fields), so a `WeakMap` keeps the
+   * reference stable and lets `*ngTemplateOutlet`'s `Object.is`
+   * input-diff short-circuit the embedded-view rebind.
    */
   private readonly errorBadgeContextCache = new WeakMap<
     CngxTabHandle,
     CngxTabErrorBadgeContext
   >();
 
-  /**
-   * Context object passed to the `*cngxTabErrorBadge` slot template.
-   * Returns the same `WeakMap`-cached object across CD ticks for a
-   * given tab handle — `*ngTemplateOutlet` sees a stable reference
-   * and skips the context-update path entirely. WeakMap auto-clears
-   * with the tab handle's GC.
-   */
+  /** `WeakMap`-cached context for `*cngxTabErrorBadge`. Stable ref per tab. */
   protected errorBadgeContextFor(tab: CngxTabHandle): CngxTabErrorBadgeContext {
     let ctx = this.errorBadgeContextCache.get(tab);
     if (!ctx) {
@@ -273,21 +230,12 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
-   * Context object passed to the `*cngxTabBusySpinner` slot template.
-   * `intendedIndex` is asserted non-undefined because the gate
-   * `isTabBusy(tab)` already returned `true` (which requires the
-   * presenter's `intendedIndex()` to be defined and to point at the
-   * matching handle).
-   *
-   * Allocates fresh per CD tick. Caching via `WeakMap` does NOT work
-   * here: the context carries a reactive `intendedIndex` field that
-   * changes between calls, and Angular's `*ngTemplateOutlet` only
-   * re-evaluates `let-*` bindings when the context REFERENCE changes
-   * (input-diff via `Object.is`); mutating fields on a cached object
-   * leaves consumer let-bindings stale. Fresh-per-CD allocation is
-   * the correct trade-off until either a real performance signal
-   * forces signal-bearing context fields, or Angular gains
-   * property-level context-diffing on outlet inputs.
+   * Context for `*cngxTabBusySpinner`. Allocates fresh per CD —
+   * `intendedIndex` is reactive, and `*ngTemplateOutlet` only
+   * re-evaluates `let-*` bindings when the context reference changes
+   * (`Object.is` input-diff); a cached mutated object would leave
+   * consumer bindings stale. `intendedIndex` is non-undefined by gate
+   * — `isTabBusy(tab)` returning `true` requires it.
    */
   protected busySpinnerContextFor(
     tab: CngxTabHandle,
@@ -296,16 +244,10 @@ export class CngxTabGroup implements CngxTabPanelHost {
   }
 
   /**
-   * Context object passed to the `*cngxTabRejectionIcon` slot template.
-   * `originLabel` resolves through the same priority chain as
-   * `liveAnnouncement` — `originIndexDuringCommit` -> `tabs()[idx].label()`
-   * — so the visual decoration phrasing matches the SR announcement.
-   *
-   * Allocates fresh per CD tick — same trade-off as
-   * {@link busySpinnerContextFor}: both `failedIndex` and the resolved
-   * `originLabel` change reactively, so a `WeakMap`-cached object would
-   * leave consumer let-bindings stale. Fresh allocation keeps
-   * `*ngTemplateOutlet` re-evaluating let-bindings on each CD.
+   * Context for `*cngxTabRejectionIcon`. `originLabel` matches the
+   * `liveAnnouncement` priority chain so visual + SR phrasing align.
+   * Allocates fresh per CD for the same reason as
+   * {@link busySpinnerContextFor}.
    */
   protected rejectionIconContextFor(
     failedIndex: number,
@@ -326,19 +268,16 @@ export class CngxTabGroup implements CngxTabPanelHost {
     }
   }
 
-  // CngxTabPanelHost contract — selectById delegates to the
-  // presenter, which owns clamping / disabled-skip / commit-action
-  // gating policy.
+  // CngxTabPanelHost contract — presenter owns clamping, disabled-skip,
+  // commit-action gating.
   selectById(id: string): void {
     this.presenter.selectById(id);
   }
 
   /**
-   * Clear the persisted `lastFailedIndex` rejection flag on the
-   * presenter — public delegator mirroring the {@link selectById}
-   * pass-through pattern so consumers using a template ref
-   * (`#tg="cngxTabGroup"`) can dismiss the rejection decoration
-   * programmatically without injecting the host token.
+   * Clear the presenter's `lastFailedIndex` rejection flag — exposed
+   * so template-ref consumers (`#tg="cngxTabGroup"`) can dismiss the
+   * decoration without injecting the host token.
    */
   clearLastFailed(): void {
     this.presenter.clearLastFailed();

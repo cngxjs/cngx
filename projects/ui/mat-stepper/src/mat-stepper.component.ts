@@ -38,23 +38,20 @@ import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
 import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
 
 /**
- * Material-twin stepper organism. Wraps `<mat-stepper>` while sharing
- * the same `CngxStepperPresenter` brain as `<cngx-stepper>`. Material
- * consumers gain commit-action lifecycle, router sync, and error
- * aggregation for free.
+ * Material-twin stepper organism. Wraps `<mat-stepper>` and shares
+ * the `CngxStepperPresenter` brain with `<cngx-stepper>` — Material
+ * consumers gain the commit-action lifecycle, router sync, and error
+ * aggregation.
  *
- * The presenter owns `activeStepIndex`, `linear`, `orientation`,
- * `commitAction`, `commitMode`; the organism forwards them through
- * `hostDirectives.inputs`. Bidirectional sync between the presenter
- * and Material's own `selectedIndex` runs in a single `effect()` whose
- * writes to `MatStepper.selectedIndex` are wrapped in `untracked()` so
- * neither direction tracks the other's signals — no reactivity loop.
+ * Bidirectional sync between presenter and `MatStepper.selectedIndex`
+ * runs in a single `effect()` with `untracked()` writes so neither
+ * direction tracks the other.
  *
- * Material owns its own keyboard nav (`MatStepperHeader` ARIA) and
- * focus management, so this organism deliberately does NOT compose
- * `CngxRovingTabindex` / `CngxFocusRestore`. Group nodes flatten —
- * `<mat-stepper>` does not support nested steppers — with the depth
- * preserved as a `data-step-depth` hint on the rendered label.
+ * Material owns keyboard nav and focus on `MatStepperHeader`, so the
+ * organism does NOT compose `CngxRovingTabindex` /
+ * `CngxFocusRestore`. Group nodes flatten — `<mat-stepper>` does not
+ * support nesting — with the depth preserved as a `data-step-depth`
+ * hint on the rendered label.
  *
  * @category interactive
  */
@@ -91,43 +88,33 @@ export class CngxMatStepper implements CngxStepPanelHost {
   private readonly stepDirectives = contentChildren(CngxStep, { descendants: true });
 
   /**
-   * Consumer-projected `<ng-template matStepperIcon="<state>">`
-   * directives — captured here as content children of
-   * `<cngx-mat-stepper>` and forwarded into `<mat-stepper>`'s own
-   * `_iconOverrides` slot via the `afterNextRender` patch in the
-   * constructor. Direct `<ng-content>` projection of these templates
-   * does NOT reach Material's `@ContentChildren(MatStepperIcon)`
-   * query because Angular's content-init lifecycle resolves the inner
-   * component's queries before the wrapper's projection lands; the
-   * programmatic forward sidesteps that ordering. Tracked-debt entry
-   * folds into `tabs-accepted-debt §5` (Material-internal slot
-   * coupling — `_iconOverrides` is underscore-prefixed and thus
-   * stability-unguaranteed across Material upgrades).
+   * Consumer-projected `<ng-template matStepperIcon>` templates,
+   * forwarded into `MatStepper._iconOverrides` from the
+   * `afterNextRender` patch below. `<ng-content>` projection cannot
+   * reach Material's `@ContentChildren(MatStepperIcon)` — content-init
+   * resolves the inner query before the wrapper's projection lands.
+   * `_iconOverrides` is a Material-internal slot;
+   * `tabs-accepted-debt §5`.
    */
   private readonly stepperIcons = contentChildren(MatStepperIcon);
 
   /**
-   * Pre-built `Map<id, CngxStep>` so `labelTemplateFor` /
-   * `contentTemplateFor` are O(1) per call. Structural `equal`
-   * keyed on the id-set + per-id directive identity prevents the
-   * map from cascading downstream when `contentChildren` re-emits
-   * with an unchanged child set.
+   * `Map<id, CngxStep>` so `labelTemplateFor` / `contentTemplateFor`
+   * are O(1). Structural `equal` on the id-set + per-id directive
+   * identity stops the map from cascading on shape-stable
+   * `contentChildren` re-emits.
    */
   private readonly stepDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.stepDirectives,
   });
 
   /**
-   * Step-only flat projection. Material's `<mat-step>` does not
-   * support nesting, so groups flatten into the same level — the
-   * presenter's `flatIndex` already gives the linear position.
-   * Memoised behind `flatStepsEqual` so downstream consumers
-   * (`stepLabel`, panel `@for`, `stepLabelContextFor`) don't
-   * re-walk the array on shape-stable re-emits of `flatSteps()`.
-   * Sibling-symmetric with `CngxStepper.stepsOnly`
-   * (`projects/ui/stepper/src/stepper.component.ts:210-213`) and
-   * the presenter's private twin
-   * (`projects/common/stepper/src/presenter.directive.ts:186-188`).
+   * Step-only flat projection — `<mat-step>` does not nest, so
+   * groups collapse into the same level. Memoised via
+   * `flatStepsEqual` so consumers (`stepLabel`, panel `@for`,
+   * `stepLabelContextFor`) don't re-walk on shape-stable
+   * `flatSteps()` re-emits. Sibling-symmetric with
+   * `CngxStepper.stepsOnly`.
    */
   protected readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.presenter.flatSteps().filter((n) => n.kind === 'step'),
@@ -165,18 +152,10 @@ export class CngxMatStepper implements CngxStepPanelHost {
     return node.depth;
   }
 
-  // CngxStepPanelHost contract — O(1) via the pre-built map.
-  // Note: only the *cngxStepLabel and *cngxStepContent slots are
-  // honoured on this Material twin. The six Phase-3 slot directives
-  // (`*cngxStepIndicator` / `*cngxStepBadge` / `*cngxStepBusySpinner`
-  // / `*cngxStepRejection` / `*cngxStepGroupHeader` /
-  // `*cngxStepperEmpty`) are silently dropped here — Material owns
-  // the indicator/badge/busy chrome via `<mat-stepper>`'s own
-  // template, and the proper override path on this variant is
-  // Material's `<ng-template matStepperIcon>` projected directly
-  // into `<cngx-mat-stepper>` (the template forwards them through
-  // an `<ng-content select="ng-template[matStepperIcon]">` outlet
-  // inside `<mat-stepper>`). Closes `stepper-accepted-debt §4`.
+  // Material twin honours only `*cngxStepLabel` / `*cngxStepContent`
+  // — the six other cngx slot directives are silently dropped because
+  // Material owns the indicator/badge/busy chrome. The override path
+  // is `<ng-template matStepperIcon>`. stepper-accepted-debt §4.
   labelTemplateFor(id: string): TemplateRef<CngxStepLabelContext> | null {
     return this.stepDirectiveById().get(id)?.labelTemplate()?.templateRef ?? null;
   }
@@ -186,23 +165,13 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Per-node-id cache of the `*cngxStepLabel` / `*cngxStepContent`
-   * slot context. Both shape-equal interfaces share one entry per
-   * step id (`stepContentContextFor` delegates here).
-   *
-   * Caching by `node.id` and mutating fields in place preserves the
-   * context object's reference across CD ticks while keeping every
-   * reactive field (`active`, `busy`, `disabled`) fresh on each
-   * `stepLabelContextFor` call. Reference stability lets
-   * `*ngTemplateOutlet`'s `Object.is` input-diff short-circuit the
-   * embedded-view rebind path; the embedded view's `let-` bindings
-   * still re-read the mutated fields on the next CD pass over the
-   * parent's view container, so consumers see live updates without
-   * the per-tick allocation. Mirrors the
-   * `tab-group.component.ts:254-273` `errorBadgeContextCache`
-   * pattern, with a `Map<string, …>` (not `WeakMap<…>`) because
-   * `node.id` is a string. Stale ids are pruned by an effect tied
-   * to `presenter.flatSteps` (constructor below).
+   * Per-node-id slot-context cache for `*cngxStepLabel` /
+   * `*cngxStepContent`. Mutating fields in place preserves the
+   * object reference, so `*ngTemplateOutlet`'s `Object.is` diff
+   * short-circuits the embedded-view rebind; the embedded view's
+   * `let-` bindings re-read the mutated fields on the next CD pass.
+   * Stale ids are pruned by the constructor effect tied to
+   * `presenter.flatSteps`.
    */
   private readonly stepLabelContextCache = new Map<string, CngxStepLabelContext>();
 
@@ -247,13 +216,9 @@ export class CngxMatStepper implements CngxStepPanelHost {
   }
 
   constructor() {
-    // Prune stale entries from `stepLabelContextCache` whenever the
-    // flat-step set changes shape. The cache returns the same context
-    // object reference per `node.id` so `*ngTemplateOutlet`'s input
-    // diff short-circuits, but a node-id removal would otherwise leak
-    // its entry forever. The effect runs on every `flatSteps` change;
-    // mutation logic stays in `untracked()` so the prune does not
-    // register stale-id deletes as new dependencies.
+    // Prune stale `stepLabelContextCache` entries when the flat-step
+    // set changes shape — without this, removed node-ids leak their
+    // entries forever.
     effect(() => {
       const flat = this.presenter.flatSteps();
       untracked(() => {
@@ -269,14 +234,8 @@ export class CngxMatStepper implements CngxStepPanelHost {
       });
     });
 
-    // Bidirectional sync between `presenter.activeStepIndex` and
-    // `MatStepper.selectedIndex`. Delegated to the shared
-    // `createMatStepperBidirectionalSync` helper that both this
-    // wrapper and `[cngxMatStepper]` consume — single point for the
-    // option-mapping over the generic
-    // `createMaterialBidirectionalSync` factory in `@cngx/common/data`.
-    // `afterNextRender` is required because the `MatStepper`
-    // viewChild isn't resolved until the view commits.
+    // `afterNextRender` — `viewChild.required(MatStepper)` isn't
+    // resolved until the view commits.
     afterNextRender(() => {
       const stepper = this.matStepper();
       createMatStepperBidirectionalSync({
@@ -286,23 +245,13 @@ export class CngxMatStepper implements CngxStepPanelHost {
         destroyRef: this.destroyRef,
       });
 
-      // Forward consumer-projected matStepperIcon templates into
-      // Material's MatStepper. Direct `<ng-content>` projection
-      // does not reach Material's `@ContentChildren(MatStepperIcon)`
-      // query because the inner component's content-init resolves
-      // before the wrapper's projection lands. We capture the
-      // directives via our own `contentChildren` query and patch
-      // `_iconOverrides` here, then re-render so the per-header
-      // bindings flow. Reaches into Material's underscore-prefixed
-      // slot — same accepted-debt class as `tabs-accepted-debt §5`.
-      // The shape of the underscore slot is centralised in
-      // `MaterialPrivateSurfaces.IconOverrideHost` (re-exported from
-      // `@cngx/ui/mat-tabs`) so a Material-version upgrade audit
-      // greps one file for every internal coupling.
-      // Dev-mode existence guard: a Material upgrade that renames or
-      // removes the `_iconOverrides` slot would otherwise silently
-      // no-op the forwarding; the guard surfaces the breakage early
-      // with an actionable message.
+      // Forward consumer-projected `<ng-template matStepperIcon>` into
+      // `MatStepper._iconOverrides`. Direct `<ng-content>` projection
+      // never reaches Material's `@ContentChildren(MatStepperIcon)` —
+      // content-init resolves the inner queries before the wrapper's
+      // projection lands. Underscore reach typed via
+      // `MaterialPrivateSurfaces.IconOverrideHost`; tabs-accepted-debt §5.
+      // Dev-mode guard surfaces a Material rename/removal early.
       const stepperRef =
         stepper as unknown as MaterialPrivateSurfaces.IconOverrideHost;
       const iconList = this.stepperIcons();

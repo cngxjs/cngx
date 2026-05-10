@@ -15,14 +15,11 @@ import type {
 } from './tab-rejection-icon.directive';
 
 /**
- * Inputs to {@link createTabGroupTemplateBindings}. The organism
- * keeps the `contentChild()` queries (must run in component
- * injection context per Angular's AOT NG8110 rule) and the
- * resolved {@link CngxTabsConfig}; the factory absorbs the
- * 3-stage cascade resolution per slot key.
- *
- * Sibling shape to {@link createStepperTemplateBindings} from
- * `@cngx/common/stepper`.
+ * Inputs to {@link createTabGroupTemplateBindings}. The organism owns
+ * the `contentChild()` queries (NG8110 — must run in component
+ * injection context) and the resolved {@link CngxTabsConfig}; the
+ * factory runs the 3-stage cascade per slot key. Sibling shape to
+ * `createStepperTemplateBindings`.
  *
  * @category interactive
  */
@@ -35,10 +32,8 @@ export interface CngxTabGroupTemplateBindingsOptions {
 
 /**
  * Output of {@link createTabGroupTemplateBindings}. One resolved
- * `Signal<TemplateRef | null>` per slot — `null` when neither a
- * per-instance directive nor the config templates field supplies a
- * template, signalling the organism should render its built-in
- * default.
+ * `Signal<TemplateRef | null>` per slot; `null` means the organism
+ * renders its built-in default.
  *
  * @category interactive
  */
@@ -51,26 +46,18 @@ export interface CngxTabGroupTemplateBindings {
 }
 
 /**
- * Wires the family-standard 3-stage template cascade for the three
- * `<cngx-tab-group>` skin slots:
- *   per-instance directive (e.g. `*cngxTabErrorBadge`) >
+ * Wires the 3-stage template cascade for the three `<cngx-tab-group>`
+ * skin slots:
+ *   per-instance directive >
  *   `CNGX_TABS_CONFIG.templates.<key>` >
- *   `null` (organism falls back to built-in default markup).
+ *   `null` (built-in default).
  *
- * Pure function — no DI, no side effects, no destroy hooks. Safe to
- * call from a component's field-init block. Mirrors
- * `createStepperTemplateBindings` (the Phase-3 stepper sibling) and
- * `createTabOverflowTemplateBindings` (the molecule-scoped tabs
- * sibling for the More popover) so consumers of any of the three
- * factories see the same shape.
+ * Pure — no DI, no side effects. Safe in field-init. Sibling to
+ * `createStepperTemplateBindings` and `createTabOverflowTemplateBindings`.
  *
- * Single-consumer note: only `<cngx-tab-group>` consumes this
- * factory today. The Material-twin `[cngxMatTabs]` does NOT — Material
- * owns the rendered tab-button chrome via its own MDC template, so
- * cngx slot directives have no DOM seam there. Tracked as
- * `tabs-accepted-debt §9` (analogous to `stepper-accepted-debt §4`
- * for the stepper sibling). The cascade pattern is uniform; the
- * single-consumer staging is the architectural debt.
+ * Single-consumer today: `[cngxMatTabs]` does not consume this —
+ * Material owns the rendered tab-button chrome via its own MDC
+ * template, leaving no DOM seam. See `tabs-accepted-debt §9`.
  *
  * @category interactive
  */

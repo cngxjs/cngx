@@ -15,13 +15,11 @@ import type { CngxStepRejectionContext } from './slots/step-rejection.directive'
 
 /**
  * Aria-label overrides for the stepper landmark region. Library
- * defaults are English (per `feedback_en_default_locale`); German /
- * other locales come from consumer overrides.
+ * defaults are English; locales come from consumer overrides.
  *
  * Per-step navigation labels (`previousStep`, `nextStep`) live in
- * {@link CngxStepperI18n} — they're SR phrasing, not landmark
- * naming, and belong with the rest of the i18n surface to avoid a
- * dual-override path for the same string.
+ * {@link CngxStepperI18n} — SR phrasing, not landmark naming.
+ * Splitting the surfaces avoids a dual-override path for the same string.
  *
  * @category interactive
  */
@@ -31,8 +29,7 @@ export interface CngxStepperAriaLabels {
 
 /**
  * Fallback labels for derived strings (group descriptors, badge SR
- * announcements). Library defaults are English; consumers override
- * per locale.
+ * announcements). English defaults; consumer overrides per locale.
  *
  * @category interactive
  */
@@ -42,11 +39,9 @@ export interface CngxStepperFallbackLabels {
 }
 
 /**
- * Per-slot template overrides for `<cngx-stepper>`. The middle tier
- * of the 3-stage cascade — per-instance directive (e.g.
- * `*cngxStepIndicator`) wins over this `templates` field, which in
- * turn wins over the organism's built-in markup. Apply via the
- * `with*Template` feature builders below.
+ * Per-slot template overrides for `<cngx-stepper>`. Middle tier of
+ * the 3-stage cascade: per-instance directive > this field > built-in
+ * markup. Apply via the `with*Template` feature builders below.
  *
  * @category interactive
  */
@@ -61,9 +56,8 @@ export interface CngxStepperTemplates {
 
 /**
  * Stepper config surface. Resolution priority: per-instance Input
- * → `provideStepperConfigAt` (viewProviders) → `provideStepperConfig`
- * (root) → library default. Mirrors the canonical config shape used
- * by every cngx feature family.
+ * > `provideStepperConfigAt` (viewProviders) > `provideStepperConfig`
+ * (root) > library default. Canonical cngx config shape.
  *
  * @category interactive
  */
@@ -101,9 +95,9 @@ const STEPPER_CONFIG_DEFAULTS: Required<
 };
 
 /**
- * DI token for the resolved stepper config. `providedIn: 'root'`
- * with the library defaults; override via {@link provideStepperConfig}
- * (root) or {@link provideStepperConfigAt} (component scope).
+ * DI token for the resolved stepper config. `providedIn: 'root'` with
+ * library defaults; override via {@link provideStepperConfig} (root)
+ * or {@link provideStepperConfigAt} (component scope).
  *
  * @category interactive
  */
@@ -113,12 +107,9 @@ export const CNGX_STEPPER_CONFIG = new InjectionToken<CngxStepperConfig>(
 );
 
 /**
- * Feature signature — each `with*` builder returns a partial config
- * the aggregator merges into the final value. Carries a hidden
- * `_target` discriminator so the family aggregator
- * {@link provideCngxStepper} can dispatch config features to
- * {@link provideStepperConfig} alongside i18n features routed to
- * {@link provideStepperI18n}.
+ * Feature signature — each `with*` builder reduces over the config.
+ * Hidden `_target: 'config'` discriminator routes through the family
+ * aggregator {@link provideCngxStepper}.
  *
  * @category interactive
  */
@@ -129,9 +120,8 @@ export type CngxStepperConfigFeature = ((
 };
 
 /**
- * Internal helper that brands a config-mutator function with the
- * `_target` discriminator. Every `with*` config feature returns one
- * of these.
+ * Brands a config mutator with `_target: 'config'`. Every `with*`
+ * config feature returns one of these.
  *
  * @internal
  */
@@ -142,9 +132,8 @@ function defineStepperConfigFeature(
 }
 
 /**
- * Override the default orientation for `<cngx-stepper>` /
- * `<cngx-mat-stepper>` consumers. Per-instance `[orientation]` Input
- * still wins; this feature only changes the cascade default.
+ * Override the default orientation. Per-instance `[orientation]`
+ * Input still wins; this only moves the cascade default.
  *
  * @category interactive
  */
@@ -201,8 +190,8 @@ export function withStepperFallbackLabels(
 
 /**
  * Override the default `*cngxStepIndicator` template app-wide.
- * Per-instance `*cngxStepIndicator` directive still wins; this
- * feature only changes the cascade middle tier.
+ * Per-instance directive still wins; this only moves the cascade
+ * middle tier.
  *
  * @category interactive
  */
@@ -245,8 +234,7 @@ export function withStepBusySpinnerTemplate(
 
 /**
  * Override the default `*cngxStepRejection` template app-wide.
- * Closes the rejection-decoration parity with tabs's
- * `cngxTabRejectionIcon` (Phase 4).
+ * Symmetric with the upcoming tabs `cngxTabRejectionIcon` (Phase 4).
  *
  * @category interactive
  */
@@ -295,12 +283,8 @@ function resolveFeatures(
 
 /**
  * Root-level provider for the stepper config. Apply once in the
- * application providers array (`bootstrapApplication` /
- * `appConfig.providers`).
- *
- * Returns {@link EnvironmentProviders} per the canonical cngx
- * config-cascade signature — matches `provideTabsConfig` /
- * `provideSelectConfig` and the architecture-summary contract.
+ * application providers array. Sibling of `provideTabsConfig` /
+ * `provideSelectConfig`.
  *
  * @category interactive
  */
@@ -313,15 +297,13 @@ export function provideStepperConfig(
 }
 
 /**
- * Component-scoped config override. The returned `Provider[]` goes
- * into a component's `providers` or `viewProviders` via spread —
- * `viewProviders` cannot accept opaque {@link EnvironmentProviders},
- * so this twin keeps the same merge semantics with a list shape
- * (matches `provideTabsConfigAt`).
+ * Component-scoped config override. Spread the returned `Provider[]`
+ * into `providers` or `viewProviders` — `viewProviders` cannot accept
+ * opaque {@link EnvironmentProviders}, so the twin returns a list.
+ * Sibling of `provideTabsConfigAt`.
  *
- * Resolution priority across both helpers:
- *   per-instance Input > viewProviders (`At`) > root provider >
- *   library default.
+ * Resolution priority: per-instance Input > viewProviders (`At`) >
+ * root provider > library default.
  *
  * @example
  * ```ts

@@ -16,11 +16,9 @@ import {
 } from './tabs-config';
 
 /**
- * Union of every feature kind the tabs family aggregator accepts.
- * Today: config (`CNGX_TABS_CONFIG`) and i18n (`CNGX_TABS_I18N`).
- * Future surfaces (announcer cadence, scroll strategy, etc.) widen
- * this union and {@link provideCngxTabs} dispatches via each
- * feature's hidden `_target` discriminator.
+ * Union of feature kinds the tabs aggregator accepts. Today: config
+ * + i18n; future surfaces widen the union and dispatch via the
+ * hidden `_target` discriminator.
  *
  * @category interactive
  */
@@ -45,9 +43,9 @@ function partitionFeatures(
       config.push(feat);
       continue;
     }
-    // Unbranded feature — runtime escape from the required `_target`
-    // type. Drop and dev-warn so an i18n-shaped override can never
-    // land silently in `CNGX_TABS_CONFIG` (Pillar 3 / honest-failure).
+    // Unbranded feature — runtime escape from the `_target` type.
+    // Drop with dev-warn so an i18n-shaped override never lands
+    // silently in `CNGX_TABS_CONFIG`.
     if (isDevMode()) {
       console.warn(
         '[provideCngxTabs] Dropped feature without a `_target` ' +
@@ -61,19 +59,12 @@ function partitionFeatures(
 }
 
 /**
- * Unified aggregator for the tabs family's configuration. Filters
- * features by `_target` and forwards to the matching `provide*` —
- * config features dispatch to {@link provideTabsConfig}, i18n features
- * to {@link provideTabsI18n}.
- *
- * Mirrors `provideCngxMenu` and `provideCngxSelect`. Apply once in the
- * application providers array.
- *
- * Returns {@link EnvironmentProviders} for app-root use; the
- * component-scoped twin {@link provideCngxTabsAt} returns
- * `Provider[]` because `viewProviders` cannot accept opaque
- * {@link EnvironmentProviders}. The shape divergence is intentional —
- * spread the `*At` result into `viewProviders`.
+ * Unified aggregator for tabs configuration. Routes features by
+ * `_target` to {@link provideTabsConfig} and {@link provideTabsI18n}.
+ * Sibling to `provideCngxMenu` and `provideCngxSelect`; apply once in
+ * the app providers array. Returns {@link EnvironmentProviders}; for
+ * `viewProviders` use {@link provideCngxTabsAt} — opaque
+ * `EnvironmentProviders` cannot live there.
  *
  * @example
  * ```ts
@@ -95,8 +86,6 @@ export function provideCngxTabs(
   ...features: readonly CngxTabsFeature[]
 ): EnvironmentProviders {
   const { config, i18n } = partitionFeatures(features);
-  // `provideTabsConfig` returns EnvironmentProviders, `provideTabsI18n`
-  // returns Provider — `makeEnvironmentProviders` accepts both.
   return makeEnvironmentProviders([
     provideTabsConfig(...config),
     ...(i18n.length > 0 ? [provideTabsI18n(...i18n)] : []),
@@ -104,14 +93,9 @@ export function provideCngxTabs(
 }
 
 /**
- * Component-scoped twin of {@link provideCngxTabs}. Use in a component's
- * `viewProviders` (or `providers`) array — the returned `Provider[]` keeps
- * the `viewProviders`-compatible list shape since
- * {@link EnvironmentProviders} cannot live there.
- *
- * Both surfaces dispatch identically: the i18n feature merges shallow
- * over the resolved bundle, the config feature reduces over the
- * defaults — the only difference is provider scope.
+ * Component-scoped twin of {@link provideCngxTabs}. Returns
+ * `Provider[]` for `viewProviders`/`providers`; same dispatch
+ * semantics, different scope.
  *
  * @example
  * ```ts

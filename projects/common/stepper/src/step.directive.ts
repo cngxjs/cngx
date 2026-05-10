@@ -21,14 +21,12 @@ import {
 } from './stepper-host.token';
 
 /**
- * Single-step atom. Registers with the nearest enclosing host —
- * either a `CngxStepGroup` (via {@link CNGX_STEP_GROUP_HOST}) or
- * the root `CngxStepperPresenter` (via {@link CNGX_STEPPER_HOST}).
+ * Single-step atom. Registers with the nearest host — either a
+ * `CngxStepGroup` ({@link CNGX_STEP_GROUP_HOST}) or the root
+ * `CngxStepperPresenter` ({@link CNGX_STEPPER_HOST}).
  *
- * Inputs are pure data; reactive state derivation lives in the
- * `state` linkedSignal which combines `[disabled]`, `[completed]`,
- * the optional `[errorAggregator]`'s `hasError()`, and the
- * presenter's per-step pending flag.
+ * `state` is a `linkedSignal` over `[disabled]`, `[completed]`, and
+ * the optional `[errorAggregator]`'s `hasError()`.
  *
  * @category interactive
  */
@@ -53,10 +51,8 @@ export class CngxStep {
   readonly contentTemplate = this.contentSlot;
 
   /**
-   * Per-step status derived from inputs + aggregator + presenter
-   * commit lifecycle. Uses `linkedSignal` per
-   * `reference_signal_architecture` Equality Rule — never write
-   * via an `effect`.
+   * Per-step status derived from inputs + aggregator. `linkedSignal`
+   * with structural equal — never written via `effect`.
    */
   readonly state: Signal<CngxStepStatus> = linkedSignal({
     source: () => ({
@@ -84,10 +80,7 @@ export class CngxStep {
     const stepperHost = inject(CNGX_STEPPER_HOST, { optional: true });
     const host = groupHost ?? stepperHost;
     if (!host) {
-      // Dev-only error: a stepper atom outside any host can't
-      // contribute to the registry. The Level-2 contract requires
-      // the consumer to compose the presenter directive on an
-      // ancestor — surface this loudly.
+      // No enclosing presenter or group — atom can't register. Fail loud.
       throw new Error(
         'CngxStep: no enclosing CngxStepperPresenter or CngxStepGroup found. ' +
           'Wrap the step inside an element carrying [cngxStepper] or [cngxStepGroup].',

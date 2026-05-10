@@ -9,26 +9,19 @@ import {
 import type { CngxStepperCommitAction } from './presenter.directive';
 
 /**
- * Outcome bridge between the lifted commit-controller and the
- * stepper-specific action shape. Consumers configure the handler
- * via the `commitAction` Input on the presenter; the presenter
- * delegates to `beginTransition` whenever the user attempts a
- * step change.
+ * Adapter between the lifted commit-controller and the stepper's
+ * action shape. The presenter delegates to `beginTransition` on
+ * every step change driven by `commitAction`.
  *
  * @category interactive/stepper
  */
 export interface CngxStepperCommitHandler {
   /**
-   * Start a transition commit. Returns synchronously; the
-   * controller's `state` signal reports the in-flight status.
+   * Start a transition commit. Returns synchronously; the controller's
+   * `state` signal reports the in-flight status.
    *
-   * @param fromIndex origin step index (the step the user is
-   *                  leaving)
-   * @param toIndex   target step index
-   * @param action    the consumer-supplied action to invoke
-   * @param onResolve callback fired on success (`accept = true`)
-   *                  or rejection (`accept = false`); skipped on
-   *                  supersede.
+   * @param onResolve fires `true` on accept, `false` on rejection;
+   *                  skipped on supersede.
    */
   beginTransition(
     fromIndex: number,
@@ -54,11 +47,9 @@ export interface CngxStepperCommitHandlerOptions {
 }
 
 /**
- * Build a stepper commit handler over an existing
- * {@link CngxCommitController}. Wraps the controller's runner-
- * callback `begin` with the action-shape adapter that resolves
- * `Observable<boolean>` / `Promise<boolean>` / `boolean` returns
- * into a unified `accept: boolean` outcome.
+ * Build a stepper commit handler over an existing {@link CngxCommitController}.
+ * Resolves `Observable<boolean>` / `Promise<boolean>` / `boolean` returns into
+ * a unified `accept: boolean` outcome.
  *
  * @category interactive
  */
@@ -126,8 +117,8 @@ function runStepperAction(
 
   if (isObservable(result)) {
     // Synchronous Observables (`of(true)`) emit inside `.subscribe`
-    // before the assignment binds — `sub` is in TDZ if we close
-    // over it directly. Hold the handle on `let` declared first.
+    // before the assignment binds — `sub` would be in TDZ. Declare
+    // the handle on a `let` first.
     let sub: Subscription | null = null;
     sub = result.subscribe({
       next: (accept) => {
@@ -152,10 +143,9 @@ function runStepperAction(
 }
 
 /**
- * Factory signature for producing {@link CngxStepperCommitHandler}
- * instances. Consumers override the DI token
- * {@link CNGX_STEPPER_COMMIT_HANDLER_FACTORY} to wrap the default
- * with retry-with-backoff, telemetry, or offline queues.
+ * Factory signature for {@link CngxStepperCommitHandler}. Override
+ * {@link CNGX_STEPPER_COMMIT_HANDLER_FACTORY} for retry-with-backoff,
+ * telemetry, or offline queues.
  *
  * @category interactive
  */
@@ -164,10 +154,8 @@ export type CngxStepperCommitHandlerFactory = (
 ) => CngxStepperCommitHandler;
 
 /**
- * DI token carrying the factory the presenter uses to allocate its
- * commit handler. Default `providedIn: 'root'` factory returns
- * {@link createStepperCommitHandler}. Symmetrical to the select
- * family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
+ * DI token carrying the factory the presenter uses to allocate its commit
+ * handler. Symmetric to the select family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
  *
  * @category interactive
  */

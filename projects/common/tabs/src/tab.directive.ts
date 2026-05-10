@@ -17,19 +17,12 @@ import { CngxTabLabel } from './tab-label.directive';
 import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
 
 /**
- * Single-tab atom. Registers with the enclosing
- * {@link CngxTabGroupPresenter} via {@link CNGX_TAB_GROUP_HOST} on
- * construction, deregisters via {@link DestroyRef} on teardown.
- *
- * Inputs are pure data — `id`, `disabled`, `label`, `errorAggregator`.
- * The atom owns its own field signals; the presenter holds them by
- * reference so subsequent input changes propagate without
- * re-registration.
- *
- * Slot discovery (`labelTemplate` / `contentTemplate`) lets the
- * Level-4 organism project consumer-supplied label and panel-body
- * templates into its tab strip + panel container without the atom
- * carrying any rendering logic itself.
+ * Single-tab atom. Registers with the enclosing presenter via
+ * {@link CNGX_TAB_GROUP_HOST} on construction; deregisters via
+ * {@link DestroyRef} on teardown. The presenter holds the atom's
+ * input signals by reference, so input changes propagate without
+ * re-registration. `labelTemplate` / `contentTemplate` are projected
+ * by the organism — the atom carries no rendering logic.
  *
  * @category interactive
  */
@@ -51,11 +44,7 @@ export class CngxTab {
 
   private readonly host = inject(CNGX_TAB_GROUP_HOST, { optional: true });
 
-  /**
-   * `true` when this tab is the presenter's currently active tab.
-   * Driven entirely by the presenter — atoms never compute selection
-   * locally.
-   */
+  /** `true` when the presenter's `activeId` equals this tab's id. */
   readonly selected: Signal<boolean> = computed(
     () => this.host?.activeId() === this.id(),
     { equal: Object.is },

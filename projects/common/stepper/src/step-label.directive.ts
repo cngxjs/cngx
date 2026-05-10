@@ -3,15 +3,12 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxStepLabelContext } from './step-panel-host.token';
 
 /**
- * Pure marker directive carrying the consumer-supplied label
- * template for a `CngxStep`. Discovered by the parent step via
- * `contentChild(CngxStepLabel)`.
+ * Marker directive carrying a `CngxStep`'s label template.
+ * Discovered via `contentChild(CngxStepLabel)`. Typed with
+ * {@link CngxStepLabelContext} for typed `let-node="node"` /
+ * `let-active="active"` access.
  *
- * The template is typed with {@link CngxStepLabelContext} so
- * consumer markup gets typed access to live step state via
- * `let-node="node" let-active="active"` etc.
- *
- * Usage:
+ * @example
  * ```html
  * <ng-template cngxStepLabel let-node="node">
  *   {{ node.label() }}
