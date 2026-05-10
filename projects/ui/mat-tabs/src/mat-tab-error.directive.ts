@@ -11,7 +11,7 @@ import { MatTab } from '@angular/material/tabs';
 import { CNGX_TAB_GROUP_HOST } from '@cngx/common/tabs';
 import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
-import { CngxMatTabs } from './mat-tabs.directive';
+import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
 
 /**
  * Per-tab error-aggregator binding for the `[cngxMatTabs]`
@@ -48,12 +48,13 @@ import { CngxMatTabs } from './mat-tabs.directive';
  * type the attribute name without the brackets, so the
  * defensive transform earns its place here only.
  *
- * Locates its target via {@link CngxMatTabs.getHandleSetup} —
- * `setupsByTab` registry keyed by `MatTab` instance, populated by
- * the parent directive's `contentChildren(MatTab)` query. The
- * directive tracks `presenter.tabs()` in its effect so a same-
- * microtask race (directive injected before parent's sync runs)
- * recovers automatically on the next presenter emission.
+ * Locates its target via {@link CNGX_MAT_TABS_REGISTRY_HOST} —
+ * the registry directive provides the token via `useExisting`, so
+ * sibling per-tab directives reach the per-handle slots through a
+ * typed contract instead of injecting the concrete `[cngxMatTabs]`
+ * class. The directive tracks `presenter.tabs()` in its effect so
+ * a same-microtask race (directive injected before the registry's
+ * sync runs) recovers automatically on the next presenter emission.
  *
  * `destroyRef.onDestroy` resets the slot to `undefined` so a tab
  * whose `[cngxMatTabError]` is removed (e.g. `*ngIf` toggle on the
@@ -69,7 +70,9 @@ import { CngxMatTabs } from './mat-tabs.directive';
 })
 export class CngxMatTabError {
   private readonly matTab = inject(MatTab, { self: true });
-  private readonly matTabs = inject(CngxMatTabs);
+  private readonly registry = inject(CNGX_MAT_TABS_REGISTRY_HOST, {
+    host: true,
+  });
   private readonly presenter = inject(CNGX_TAB_GROUP_HOST);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -103,13 +106,13 @@ export class CngxMatTabError {
       this.presenter.tabs();
 
       untracked(() => {
-        const setup = this.matTabs.getHandleSetup(this.matTab);
+        const setup = this.registry.getHandleSetup(this.matTab);
         setup?.errorAggregator.set(aggregator);
       });
     });
 
     this.destroyRef.onDestroy(() => {
-      const setup = this.matTabs.getHandleSetup(this.matTab);
+      const setup = this.registry.getHandleSetup(this.matTab);
       setup?.errorAggregator.set(undefined);
     });
   }
