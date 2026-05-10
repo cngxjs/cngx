@@ -11,13 +11,13 @@ import {
 } from '@angular/core';
 import { MatStep, MatStepper } from '@angular/material/stepper';
 
-import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_STEPPER_HOST,
   CngxStepperPresenter,
 } from '@cngx/common/stepper';
 import { nextUid } from '@cngx/core/utils';
 
+import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import {
   CNGX_MAT_STEP_HANDLE_FACTORY,
   type CngxMatStepHandleSetup,
@@ -97,18 +97,9 @@ export class CngxMatStepperBridge {
       this.setupsByStep.clear();
     });
 
-    createMaterialBidirectionalSync({
-      presenterIndex: this.presenter.activeStepIndex,
-      readSelectedIndex: () => this.matStepper.selectedIndex,
-      writeSelectedIndex: (i) => {
-        this.matStepper.selectedIndex = i;
-      },
-      // `MatStepper.selectedIndexChange` already emits a plain index,
-      // so no `.pipe(map(e => e.selectedIndex))` adapter is needed —
-      // mirrors the `MatTabGroup.selectedIndexChange` shape used by
-      // the tabs directive.
-      selectionChange$: this.matStepper.selectedIndexChange.asObservable(),
-      onMaterialSelection: (i) => this.presenter.select(i),
+    createMatStepperBidirectionalSync({
+      matStepper: this.matStepper,
+      presenter: this.presenter,
       injector: this.injector,
       destroyRef: this.destroyRef,
     });
