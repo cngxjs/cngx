@@ -6,6 +6,11 @@
 export { CngxMatTabs } from './src/mat-tabs.directive';
 export { CngxMatTabError } from './src/mat-tab-error.directive';
 export {
+  CNGX_MAT_TABS_REGISTRY_HOST,
+  CngxMatTabsRegistry,
+  type CngxMatTabsRegistryHost,
+} from './src/mat-tabs-registry.directive';
+export {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
 } from './src/decorations/mat-tab-aggregator-content.directive';

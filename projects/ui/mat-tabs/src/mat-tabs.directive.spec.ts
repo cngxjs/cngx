@@ -29,6 +29,7 @@ import {
   withHalfWiredSlotSink,
 } from './mat-tabs-config';
 import { CngxMatTabs } from './mat-tabs.directive';
+import { CngxMatTabsRegistry } from './mat-tabs-registry.directive';
 import { CngxMatTabError } from './mat-tab-error.directive';
 import { CngxMatTabAggregatorContent } from './decorations/mat-tab-aggregator-content.directive';
 import {
@@ -640,9 +641,13 @@ describe('CngxMatTabs instrumentation directive', () => {
     const matEl = fixture.debugElement.query(
       (el) => el.componentInstance instanceof MatTabGroup,
     );
-    const directive = matEl.injector.get(CngxMatTabs);
+    // The per-tab handle registry lives on the [cngxMatTabsRegistry]
+    // host-directive (Phase 7.1 extraction); the parent [cngxMatTabs]
+    // composes it via `hostDirectives`. Reach the registry through
+    // the host element's injector — same instance both directives see.
+    const registry = matEl.injector.get(CngxMatTabsRegistry);
     const setupsByTab = (
-      directive as unknown as {
+      registry as unknown as {
         setupsByTab: Map<
           unknown,
           { setup: { errorAggregator: { set(v: unknown): void } } }
@@ -1224,9 +1229,9 @@ describe('CngxMatTabs instrumentation directive', () => {
     const matEl = fixture.debugElement.query(
       (el) => el.componentInstance instanceof MatTabGroup,
     );
-    const directive = matEl.injector.get(CngxMatTabs);
+    const registry = matEl.injector.get(CngxMatTabsRegistry);
     const setupsByTab = (
-      directive as unknown as {
+      registry as unknown as {
         setupsByTab: Map<MatTab, { setup: unknown }>;
       }
     ).setupsByTab;
@@ -1260,9 +1265,9 @@ describe('CngxMatTabs instrumentation directive', () => {
     const matEl = fixture.debugElement.query(
       (el) => el.componentInstance instanceof MatTabGroup,
     );
-    const directive = matEl.injector.get(CngxMatTabs);
+    const registry = matEl.injector.get(CngxMatTabsRegistry);
     const setupsByTab = (
-      directive as unknown as {
+      registry as unknown as {
         setupsByTab: Map<
           MatTab,
           {
