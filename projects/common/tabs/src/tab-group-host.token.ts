@@ -6,14 +6,10 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 
 /**
  * Registration handle a `CngxTab` atom passes to its presenter via
- * {@link CngxTabGroupHost.register}. The handle exposes the atom's
- * reactive fields by reference; the presenter never copies them, so
- * subsequent input changes propagate without re-registration.
- *
- * `errorAggregator` is intentionally a `Signal<...>` slot rather than
- * a static handle — consumer-supplied aggregators may be created
- * per-instance via `viewChild` queries that resolve after the first
- * registration.
+ * {@link CngxTabGroupHost.register}. Fields are exposed by reference
+ * so subsequent input changes propagate without re-registration.
+ * `errorAggregator` is a `Signal<...>` slot so consumer aggregators
+ * resolved via `viewChild` after first registration still bind.
  *
  * @category interactive
  */
@@ -25,10 +21,9 @@ export interface CngxTabHandle {
 }
 
 /**
- * Public contract atoms see when they inject the presenter via
- * {@link CNGX_TAB_GROUP_HOST}. Mirrors the directive's surface 1:1
- * so atoms never reach into the concrete class — keeps the layer
- * cycle-free and the decompose schematic happy.
+ * Contract atoms see when they inject the presenter via
+ * {@link CNGX_TAB_GROUP_HOST}. Atoms never reach into the concrete
+ * class — keeps layering cycle-free and the decompose schematic clean.
  *
  * @category interactive
  */
@@ -41,47 +36,35 @@ export interface CngxTabGroupHost {
   readonly commitState: CngxAsyncState<number | undefined>;
   readonly intendedIndex: Signal<number | undefined>;
   /**
-   * Reactive current/previous pair for the commit-state status —
-   * lets organisms and skin sub-components derive declarative
-   * transition-driven announcements (`pending` → `success`,
-   * `pending` → `error`, sync `idle` → `error`) without
-   * re-instantiating the tracker per consumer.
+   * Reactive current/previous pair for the commit-state status. Lets
+   * organisms and skin sub-components derive transition-driven
+   * announcements (`pending` → `success`, `pending` → `error`, sync
+   * `idle` → `error`) from a single tracker.
    */
   readonly commitTransition: StatusTransition;
 
   /**
-   * The tab index whose last commit attempt was refused. Set by
-   * the presenter on commit reject (both optimistic and pessimistic
-   * modes). Cleared on the next successful re-pick of that same
-   * index, or on explicit consumer dismissal via
-   * {@link clearLastFailed}. Drives the persistent rejection-icon
-   * decoration in Level-4 organism shells.
+   * Tab index of the last refused commit (both optimistic and
+   * pessimistic modes). Cleared on next successful re-pick of the
+   * same index or via {@link clearLastFailed}. Drives the persistent
+   * rejection-icon decoration.
    *
    * @remarks
-   * Visual emphasis on the `pending → error` transition is a
-   * one-shot CSS keyframe (`cngx-tab-pulse-error`) bound to the
-   * `.cngx-tab--rejected` class; the keyframe does NOT retrigger
-   * on rapid supersede sequences (CSS animations only fire on
-   * fresh class application, not re-application). Tracked as
-   * `tabs-accepted-debt §3`. The persistent rejection icon plus
-   * the static red outline carry the durable visual signal in
-   * every state, including the supersede no-pulse case.
+   * The `pending → error` pulse keyframe (`cngx-tab-pulse-error`)
+   * does not retrigger on rapid supersede sequences — CSS animations
+   * only fire on fresh class application. See `tabs-accepted-debt §3`;
+   * the persistent icon plus static red outline carry the durable
+   * signal in the no-pulse case.
    */
   readonly lastFailedIndex: Signal<number | undefined>;
 
   /**
-   * The "safe-harbour" index captured at the start of an active
-   * commit window — written when a `commitAction` is bound and
-   * `select()` opens a transition; retained when the commit
-   * settles to `error` so the live-region announcement can
-   * resolve the origin tab's label for the rich rollback phrase;
-   * cleared when the commit settles to `success`. The producer
-   * does not gate the value — outside the commit window the slot
-   * may carry a stale-but-undefined value (initial state) or a
-   * stale-from-prior-error value (after a rejected commit until
-   * the next successful one). Consumers (the organism's
-   * `liveAnnouncement` computed and any sibling SR pipeline)
-   * gate reads by joining with `lastFailedIndex` — origin is
+   * Safe-harbour origin index captured at the start of an active
+   * commit window. Written when `select()` opens a transition under
+   * `commitAction`; retained on `error` so the live-region phrase
+   * can resolve the origin label; cleared on `success`. Outside the
+   * commit window the slot may carry a stale value — consumers must
+   * gate reads by joining with `lastFailedIndex`. The origin is
    * meaningful only when `lastFailedIndex !== undefined`.
    */
   readonly originIndexDuringCommit: Signal<number | undefined>;
@@ -95,21 +78,18 @@ export interface CngxTabGroupHost {
   selectById(id: string): void;
 
   /**
-   * Clear the persisted {@link lastFailedIndex} flag without
-   * unwinding {@link originIndexDuringCommit} (which remains
-   * gated by `lastFailedIndex` in any consumer that reads it).
-   * Consumers call this when their bound data source changes and
-   * the rollback marker is no longer meaningful.
+   * Clear {@link lastFailedIndex} without unwinding
+   * {@link originIndexDuringCommit} (consumers gate reads on
+   * `lastFailedIndex` anyway). Call when the bound data source
+   * changes and the rollback marker is no longer meaningful.
    */
   clearLastFailed(): void;
 }
 
 /**
- * DI token providing the tab presenter's contract to atoms +
- * organism shells + the overflow molecule. The presenter provides
- * this via `useExisting`; `CngxTab` injects it to register; the
- * Level-4 organism injects it to forward keyboard nav from
- * `CngxRovingTabindex`.
+ * DI token for the tab presenter's contract. Presenter provides via
+ * `useExisting`; `CngxTab` injects to register; the organism injects
+ * to forward keyboard nav from `CngxRovingTabindex`.
  *
  * @category interactive
  */

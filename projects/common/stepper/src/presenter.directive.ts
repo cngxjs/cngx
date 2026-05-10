@@ -29,12 +29,10 @@ import { CNGX_STEPPER_HOST, type CngxStepperHost, type CngxStepNode, type CngxSt
 import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util';
 
 /**
- * Async-commit action shape for stepper transitions. Receives the
- * origin index (the step the user is leaving) and the intended
- * target index (the step they clicked / arrowed to). Resolves with
- * `true` to advance, `false` to refuse the transition. The
- * `Observable | Promise | sync` union mirrors every other cngx
- * commit-action signature in the repo.
+ * Async-commit action for stepper transitions. Receives the origin
+ * and target indices; resolves `true` to advance, `false` to refuse.
+ * The `Observable | Promise | sync` union matches every cngx
+ * commit-action signature.
  *
  * @category interactive/stepper
  */
@@ -44,18 +42,15 @@ export type CngxStepperCommitAction = (
 ) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
- * Stepper presenter — the brain of every stepper / wizard flow in
- * cngx. Holds the active-step model, the step registry, the linear-
- * mode policy, the orientation, and the commit-controller's
- * lifecycle. Provides {@link CNGX_STEPPER_HOST} so atoms register
- * against an opaque contract, and {@link CNGX_STATEFUL} so
- * transition bridges (`<cngx-toast-on />`, `<cngx-banner-on />`)
- * compose without explicit `[state]` wiring.
+ * Stepper presenter — the brain of every stepper / wizard flow.
+ * Holds the active-step model, registry, linear policy, orientation,
+ * and commit-controller lifecycle. Provides {@link CNGX_STEPPER_HOST}
+ * for atom registration and {@link CNGX_STATEFUL} so transition
+ * bridges (`<cngx-toast-on />`, `<cngx-banner-on />`) compose without
+ * explicit `[state]` wiring.
  *
- * **Layer:** `@cngx/common/stepper` (Level 2). Zero `@Component`,
- * zero `.html`, zero `.css` — the directive is the entire surface.
- * Level-4 organisms (`<cngx-stepper>`, `<cngx-mat-stepper>`)
- * compose this via `hostDirectives`.
+ * Sheriff: common Level 2. Pure directive — zero template, zero CSS.
+ * Level-4 organisms compose this via `hostDirectives`.
  *
  * @category interactive
  */
@@ -72,10 +67,9 @@ export class CngxStepperPresenter implements CngxStepperHost {
   private readonly config = injectStepperConfig();
 
   readonly activeStepIndex = model<number>(0);
-  // Raw *Input slots: default `undefined` so the cascade resolves
-  // through {@link CNGX_STEPPER_CONFIG}. Must stay public — Angular's
-  // template type-checker rejects `protected` / `private` on
-  // hostDirective alias bindings.
+  // Raw *Input slots default undefined so the cascade resolves through
+  // CNGX_STEPPER_CONFIG. Must stay public — the template type-checker
+  // rejects protected/private on hostDirective alias bindings.
   readonly linearInput = input<boolean | undefined>(undefined, {
     alias: 'linear',
   });
@@ -111,28 +105,25 @@ export class CngxStepperPresenter implements CngxStepperHost {
   readonly state: CngxAsyncState<number | undefined> = this.commitController.state;
 
   /**
-   * The step index the user is currently trying to commit to —
-   * tracked separately from `state.data()` because the AsyncState
-   * data slot only updates on success. Drives per-step
-   * `aria-busy` rendering in the organism.
+   * Step index the user is committing to. Tracked separately from
+   * `state.data()` because the AsyncState data slot only updates on
+   * success. Drives per-step `aria-busy` in the organism.
    */
   readonly intendedStepIndex: Signal<number | undefined> =
     this.commitController.intendedValue;
 
   /**
-   * Reactive current/previous pair for the commit-state status.
-   * Skin sub-components mount a `<span cngxLiveRegion>` whose
-   * content reads from this tracker — declarative SR announcements
-   * driven by the same source of truth as `commitState`. Shared
-   * across consumers so the tracker's `linkedSignal` is allocated
-   * once per presenter instance, never per consumer.
+   * Reactive current/previous pair for the commit-state status. Skin
+   * sub-components mount a `<span cngxLiveRegion>` reading this
+   * tracker. Allocated once per presenter — the underlying
+   * `linkedSignal` is shared across all consumers.
    */
   readonly commitTransition: StatusTransition = createTransitionTracker(
     () => this.commitController.state.status(),
   );
 
-  // Persistence-of-error surface — see `CngxStepperHost.lastFailedIndex`
-  // and `originIndexDuringCommit` for the contract.
+  // Persistence-of-error surface — see CngxStepperHost.lastFailedIndex
+  // / originIndexDuringCommit for the contract.
   private readonly lastFailedIndexState = signal<number | undefined>(undefined);
   private readonly originIndexDuringCommitState = signal<number | undefined>(
     undefined,
@@ -155,12 +146,11 @@ export class CngxStepperPresenter implements CngxStepperHost {
   );
 
   /**
-   * Step-only flat projection — terminal nodes only, in DFS order.
-   * Memoised behind a structural-equal `flatStepsEqual` so downstream
-   * computeds don't cascade on shape-stable re-emits. Single source
-   * for every `select*` / `clamp` / `activeStepId` lookup; consumers
-   * inside the presenter MUST read this rather than re-filtering
-   * `flatSteps()` themselves.
+   * Step-only flat projection — terminal nodes in DFS order.
+   * Structural-equal via `flatStepsEqual` so downstream computeds
+   * don't cascade on shape-stable re-emits. Single source for every
+   * `select*` / `clamp` / `activeStepId` lookup — never re-filter
+   * `flatSteps()`.
    */
   private readonly stepsOnly: Signal<readonly CngxStepNode[]> = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
@@ -183,8 +173,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   readonly commitState = this.commitController.state;
 
-  // Internal registry — flat lookup table by id; rebuilt into a
-  // hierarchical tree on every register/unregister.
+  // Flat id lookup; rebuilt into the hierarchical tree on each
+  // register/unregister.
   private readonly registry = new Map<
     string,
     { reg: CngxStepRegistration; parentId: string | null; childIds: string[] }
@@ -193,8 +183,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
   register(handle: CngxStepRegistration, parentId: string | null = null): void {
     if (this.registry.has(handle.id)) {
-      // Idempotent re-register; replace the handle but keep the
-      // ordering slot.
+      // Idempotent re-register — replace the handle, keep the ordering slot.
       const entry = this.registry.get(handle.id)!;
       entry.reg = handle;
       entry.parentId = parentId;
@@ -265,7 +254,7 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
     const target = Math.max(0, Math.min(index, stepsOnly.length - 1));
     if (this.linear() && target > this.activeStepIndex()) {
-      // Linear mode: refuse jumps that skip over an incomplete step.
+      // Linear: refuse jumps that skip an incomplete step.
       const blocking = stepsOnly
         .slice(this.activeStepIndex(), target)
         .find((n) => n.state() !== 'success' && !n.disabled());
@@ -283,10 +272,9 @@ export class CngxStepperPresenter implements CngxStepperHost {
 
     const action = this.commitAction();
     if (!action) {
-      // No-action fast path — activeStepIndex moves synchronously, no
-      // commit window opens, so `originIndexDuringCommit` stays
-      // untouched. If the user is re-picking a previously-failed
-      // target, clear the rejection flag.
+      // No-action fast path — sync move, no commit window opens, so
+      // `originIndexDuringCommit` stays untouched. Clear the rejection
+      // flag if the user re-picked a previously-failed target.
       this.activeStepIndex.set(target);
       if (this.lastFailedIndexState() === target) {
         this.lastFailedIndexState.set(undefined);
@@ -294,16 +282,14 @@ export class CngxStepperPresenter implements CngxStepperHost {
       return;
     }
 
-    // Commit-action gated transition. Pessimistic mode keeps the
-    // index at `previous` until the action resolves; optimistic
-    // advances now and rolls back on rejection. Supersede semantics
-    // come from the lifted commit-controller — a rapid second
-    // select() cancels the in-flight runner.
+    // Commit-gated transition. Pessimistic holds at `previous` until
+    // the action resolves; optimistic advances now and rolls back on
+    // rejection. Supersede comes from the lifted commit-controller —
+    // a rapid second select() cancels the in-flight runner.
     //
-    // Open the commit window: capture the safe-harbour origin
-    // exactly once. Written ONLY here (not on the no-action fast
-    // path) so a stale origin never lingers into a non-commit
-    // navigation.
+    // Capture the safe-harbour origin exactly once on commit-window
+    // open. Written ONLY on this path so a stale origin never lingers
+    // into a non-commit navigation.
     this.originIndexDuringCommitState.set(previous);
     const mode = this.commitMode();
     if (mode === 'optimistic') {
@@ -311,9 +297,8 @@ export class CngxStepperPresenter implements CngxStepperHost {
     }
     this.commitHandler.beginTransition(previous, target, action, (accept) => {
       if (accept) {
-        // Window closes on success — origin no longer needed; clear
-        // the rejection flag if the user re-picked the failed target
-        // successfully.
+        // Success — origin no longer needed; clear the rejection
+        // flag if the user re-picked the failed target.
         this.originIndexDuringCommitState.set(undefined);
         if (this.lastFailedIndexState() === target) {
           this.lastFailedIndexState.set(undefined);
@@ -322,10 +307,10 @@ export class CngxStepperPresenter implements CngxStepperHost {
           this.activeStepIndex.set(target);
         }
       } else {
-        // Reject — flag the refused target; RETAIN the origin so
-        // the organism's `liveAnnouncement` computed can resolve
-        // the origin label for the rich rollback phrase. Optimistic
-        // rolls back; pessimistic never moved.
+        // Reject — flag the target; RETAIN the origin so
+        // `liveAnnouncement` can resolve the origin label for the
+        // rich rollback phrase. Optimistic rolls back; pessimistic
+        // never moved.
         this.lastFailedIndexState.set(target);
         if (mode === 'optimistic') {
           this.activeStepIndex.set(previous);

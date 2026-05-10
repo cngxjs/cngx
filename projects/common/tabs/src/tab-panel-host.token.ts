@@ -3,21 +3,15 @@ import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
 import type { CngxTabHandle } from './tab-group-host.token';
 
 /**
- * Read-mostly organism contract — what the overflow molecule, the
- * skin sub-component, and any future panel-level helper see when
- * they inject {@link CNGX_TAB_PANEL_HOST}. Deliberately narrower than
- * {@link CngxTabGroupHost}: register / unregister live on the brain,
- * not the panel surface.
+ * Read-mostly panel-surface contract for the overflow molecule, skin
+ * sub-components, and future panel-level helpers. Narrower than
+ * {@link CngxTabGroupHost} — register / unregister stay on the brain.
  *
- * The single write method is `selectById` — the molecule's "the user
- * picked a hidden tab" path delegates back here, which lets the
- * presenter run its full `select(...)` policy (clamping, disabled
- * skip, commit-action gating).
- *
- * Template resolution methods (`labelTemplateFor` /
- * `contentTemplateFor`) let consumer-authored skin sub-components
- * project the `*cngxTabLabel` / `*cngxTabContent` slots without
- * injecting the concrete `CngxTabGroup` class.
+ * The single write path is `selectById`; routing back through the
+ * presenter preserves clamping, disabled-skip, and commit-action
+ * gating. Template resolvers let skin sub-components project the
+ * `*cngxTabLabel` / `*cngxTabContent` slots without depending on the
+ * concrete `CngxTabGroup` class.
  *
  * @category interactive
  */
@@ -35,10 +29,9 @@ export interface CngxTabPanelHost {
 }
 
 /**
- * DI token the Level-4 organism provides via `useExisting`. The
- * overflow molecule and any consumer-authored skin sub-component
- * inject this to read tab state + delegate selection — never the
- * concrete component class.
+ * DI token the organism provides via `useExisting`. The overflow
+ * molecule and consumer-authored skin sub-components inject this
+ * instead of the concrete component class.
  *
  * @category interactive
  */

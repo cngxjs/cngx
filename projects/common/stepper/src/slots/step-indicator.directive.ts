@@ -4,17 +4,13 @@ import type { CngxStepNode, CngxStepStatus } from '../stepper-host.token';
 
 /**
  * Context passed to the `*cngxStepIndicator` template. Drives the
- * numbered / checkmark / error glyph rendered inside each step button
- * — the visible badge that signals "step N", "completed", "in progress",
- * or "failed". Consumers swap the built-in numeric span for any
- * markup (icon set, custom checkmark, branded glyph) while the
- * surrounding `<button>` shell — including `aria-current`,
- * `aria-controls`, click handler — stays library-owned.
+ * numbered / checkmark / error glyph inside each step button. The
+ * `<button>` shell — `aria-current`, `aria-controls`, click handler —
+ * stays library-owned.
  *
- * Status comes from `node.state()` (a {@link CngxStepStatus}); `busy`
- * is the presenter-derived "this step is the in-flight commit target"
- * flag that drives a spinner overlay independent of `status === 'pending'`
- * (the latter is the aggregate landmark state).
+ * `status` mirrors `node.state()`. `busy` is the presenter-derived
+ * "this step is the in-flight commit target" flag — independent of
+ * `status === 'pending'` (which is the aggregate landmark state).
  *
  * @category interactive
  */
@@ -34,14 +30,10 @@ export interface CngxStepIndicatorContext {
 }
 
 /**
- * Structural slot directive marking the indicator-glyph template
- * for `<cngx-stepper>`. Discovered via `contentChild` on the organism;
- * cascades through `CNGX_STEPPER_CONFIG.templates.indicator` before
- * falling back to the built-in numeric span (`{{ position }}`).
- *
- * Pure marker — zero logic. The directive holds only a typed
- * {@link TemplateRef} reference. Mirrors `CngxTabOverflowTrigger`'s
- * shape and the family-standard slot pattern.
+ * Slot directive for the indicator-glyph template on `<cngx-stepper>`.
+ * Discovered via `contentChild`; cascades through
+ * `CNGX_STEPPER_CONFIG.templates.indicator` before falling back to
+ * the built-in numeric span (`{{ position }}`).
  *
  * @example
  * ```html

@@ -34,11 +34,7 @@ import {
   type CngxTabPanelHost,
 } from '@cngx/common/tabs';
 
-/**
- * Structural equality for `hiddenTabs` — identical when the same tab
- * ids appear in the same order. Prevents the popover-list from
- * re-rendering on shape-stable visibility re-emissions.
- */
+/** Structural equal for `hiddenTabs` — same ids in same order. */
 function tabIdListEqual(
   a: readonly CngxTabHandle[],
   b: readonly CngxTabHandle[],
@@ -61,13 +57,10 @@ function tabIdListEqual(
 const NAV_OPEN_KEYS = new Set(['ArrowDown', 'ArrowUp', 'Home', 'End']);
 
 /**
- * Structural equality for the `visibilityState` map: identical when
- * both maps carry the same key-set with the same boolean visibility
- * per key. Without this, `handleIntersections`'s `update((prev) =>
- * new Map(prev))` cycle produces a fresh Map reference on every
- * IntersectionObserver fire — `hiddenTabs` would re-derive on every
- * scroll even when no tab actually flipped visibility, cascading
- * into the popover-list outlet.
+ * Structural equal for `visibilityState`. Without this, the
+ * `update((prev) => new Map(prev))` cycle in `handleIntersections`
+ * cascades into `hiddenTabs` on every IO fire even when no tab
+ * actually flipped visibility.
  */
 function mapBoolEqual(
   a: ReadonlyMap<string, boolean>,
@@ -89,28 +82,17 @@ function mapBoolEqual(
 
 
 /**
- * Opt-in overflow indicator for `<cngx-tab-group>`. Detects tab
- * buttons that have scrolled out of the strip viewport (or never
- * fit) and surfaces them through a "More" `CngxPopover` dropdown.
+ * Opt-in overflow indicator for `<cngx-tab-group>`. Surfaces clipped
+ * tab buttons through a "More" `CngxPopover` dropdown. Talks to the
+ * organism only via {@link CNGX_TAB_PANEL_HOST}.
  *
- * Designed to live as a sibling of `<cngx-tab-group>`'s tablist —
- * consumers project it inside the organism explicitly (Pillar 3,
- * opt-in composition). The molecule talks to the organism only
- * through {@link CNGX_TAB_PANEL_HOST}; never the concrete
- * `CngxTabGroup` class.
- *
- * Visibility is tracked via a native `IntersectionObserver` rooted
- * on the parent's `.cngx-tabs__strip` scroll container — the
- * directive `CngxIntersectionObserver` is intentionally NOT used
- * here because it attaches to a single element, while this
- * molecule needs to observe N tab buttons that live in a sibling
- * component's view (`viewChildren` would never reach them). The
- * observer runs at `threshold: 0` so any visible pixel of a tab
- * counts as "in the strip" — only fully-clipped entries land in
- * the More dropdown. Combined with the organism's
- * `scrollIntoView` effect on `activeId` change, this forms the
- * self-healing loop: pick a hidden tab → strip scrolls it in →
- * IO fires `isIntersecting=true` → `hiddenTabs` self-trims.
+ * Visibility is tracked through a native `IntersectionObserver`
+ * rooted on the parent strip — `CngxIntersectionObserver` doesn't
+ * fit (single-element scope, can't reach sibling `viewChildren`).
+ * `threshold: 0` — only fully-clipped tabs surface. Combined with
+ * the organism's `scrollIntoView` effect this forms the self-healing
+ * loop: pick hidden tab -> strip scrolls -> IO fires -> `hiddenTabs`
+ * self-trims.
  *
  * @category interactive
  */
@@ -133,10 +115,8 @@ function mapBoolEqual(
   },
 })
 export class CngxTabOverflow {
-  // The molecule is rendered via the organism's `<ng-content>` slot,
-  // so projected DI lookup walks up to `<cngx-tab-group>`'s injector
-  // without `{ host: true }` (which would scope to the molecule's
-  // own host element and miss the parent provider).
+  // Projected via <ng-content>, so DI walks up to the parent's injector.
+  // `{ host: true }` would scope to the molecule and miss the provider.
   protected readonly panelHost: CngxTabPanelHost = inject(CNGX_TAB_PANEL_HOST);
   protected readonly i18n = injectTabsI18n();
   protected readonly popover = viewChild.required(CngxPopover);
@@ -147,27 +127,17 @@ export class CngxTabOverflow {
   ).nativeElement;
   private readonly destroyRef = inject(DestroyRef);
 
-  // DOM-resolution strategy. The default factory mirrors the
-  // cngx-native `<cngx-tab-group>` selector contract (walks up to
-  // `.cngx-tabs__strip-wrapper`, looks up `[id="${handle.id}-header"]`);
-  // overrides via the directive's `providers` swap in Material or
-  // custom-skin variants without forking the molecule.
+  // DOM-resolution strategy. Default factory targets the cngx-native
+  // strip selectors; Material/custom variants swap via providers.
   private readonly adapter = inject(
     CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
   )();
 
-  // Maps tab id -> visibility. `undefined` = not yet observed (treat
-  // as visible until proven otherwise so the More button never flashes
-  // on first render). `linkedSignal` derives stale-id pruning from
-  // the panel-host tabs list — when a tab is removed, its
-  // visibility entry drops automatically; user writes via the IO
-  // callback persist until the next tabs-list change. Splits the
-  // two responsibilities (derived pruning vs imperative observer
-  // rewire) cleanly: stale-id removal lives here, observer
-  // re-attachment lives in the effect below.
-  // Structural-equal `mapBoolEqual` prevents identity-only
-  // re-emissions (the IO callback allocates a fresh Map every fire)
-  // from cascading into `hiddenTabs`.
+  // tab id -> visibility. `undefined` = not yet observed (treat as
+  // visible — prevents More-button flash on first render).
+  // `linkedSignal` prunes stale ids when the tabs list changes;
+  // observer re-attach lives in the effect below. `mapBoolEqual`
+  // suppresses identity-only re-emissions from the IO callback.
   private readonly visibilityState = linkedSignal<
     readonly CngxTabHandle[],
     ReadonlyMap<string, boolean>
@@ -202,44 +172,23 @@ export class CngxTabOverflow {
     { equal: Object.is },
   );
 
-  // Stable counter signal — the More button's label and aria-label
-  // both project this value. The default `Object.is` equality on a
-  // primitive number is the correct distinct-until-changed gate;
-  // making the signal explicit ensures the trigger button never
-  // re-renders the counter text when `hiddenTabs` has emitted an
-  // identity-different but length-equal value (flicker prevention).
+  // Counter projected into trigger label + aria-label. Explicit
+  // computed isolates `Object.is` distinct-gate from `hiddenTabs`
+  // identity churn — prevents flicker on length-equal re-emissions.
   protected readonly hiddenCount = computed(() => this.hiddenTabs().length);
 
-  // ARIA menu-button pattern — the trigger is a plain `<button>` (no
-  // explicit role; default button role applies) with
-  // `aria-haspopup="menu"`. The popover surface carries `role="menu"`
-  // and AD steers `aria-activedescendant` on the trigger as the user
-  // navigates with ArrowUp/Down/Home/End/typeahead. The popover is a
-  // quick-jump navigation surface (selecting a hidden tab triggers
-  // selectById — not a value-commit), so menu/menuitem is the
-  // spec-correct contract; listbox/option implies persistent
-  // `aria-selected` state that does not apply here. The combobox role
-  // is deliberately NOT used: WAI-ARIA 1.2 §combobox requires
-  // `aria-haspopup` to be `listbox`/`tree`/`grid`/`dialog`, and
-  // pairing `combobox` + `menu` is invalid. Both the AD-items
-  // projection (with its structural-equal guard) and the item-id
-  // formatter live in the shared cascade factory under
-  // `@cngx/common/tabs` so future consumers (e.g. an alternative
-  // tab-strip overflow shell) can reuse the same DOM-id contract.
+  // ARIA menu-button pattern: <button aria-haspopup="menu"> + popover
+  // role="menu". Quick-jump navigation (selectById is not a value
+  // commit), so menu/menuitem is correct — listbox/option implies
+  // persistent aria-selected. WAI-ARIA 1.2 §combobox forbids
+  // aria-haspopup="menu", so combobox is deliberately not used.
   protected readonly adItemId = tabOverflowOptionId;
 
-  // Resolved tabs config — read once at construction so downstream
-  // field-init reads (`stabilizeMs`, `maxDeferMs`, `templates`) all
-  // see the same snapshot. Declared here ahead of those fields
-  // because TypeScript class fields execute in declaration order.
+  // Read first — TS field-init order; downstream fields snapshot off this.
   private readonly tabsConfig = injectTabsConfig();
 
-  // Family-standard 3-stage template cascade — per-instance
-  // directive > config.templates.overflow* > built-in markup. The
-  // `contentChild` queries must be field-direct initializers per
-  // Angular's compile-time contract; the factory absorbs the
-  // resolution + context-builder logic so the organism stays under
-  // the 180-LOC class-body guard.
+  // 3-stage cascade: directive > config.templates.overflow* > built-in.
+  // `contentChild` must be a field-direct initializer (Angular AOT).
   private readonly triggerSlot = contentChild(CngxTabOverflowTrigger);
   private readonly itemSlot = contentChild(CngxTabOverflowItem);
   protected readonly templates = createTabOverflowTemplateBindings({
@@ -252,29 +201,23 @@ export class CngxTabOverflow {
   });
 
   private observer: IntersectionObserver | null = null;
-  // Decouples the molecule from any specific DOM-id convention —
-  // cngx-native uses `${handle.id}-header`; Material renders
-  // `mat-tab-group-N-label-M`. WeakMap auto-clears with detached nodes.
+  // Variant-agnostic target -> id lookup. cngx-native uses
+  // `${id}-header`, Material `mat-tab-group-N-label-M`.
   private readonly targetToHandleId = new WeakMap<HTMLElement, string>();
 
-  // IO-debounce knobs — semantics + library defaults documented on
-  // `CngxTabsConfig.overflowStabilizeMs` / `.overflowMaxDeferMs`.
-  // Field-init reads — config is captured once at construction;
-  // IntersectionObserver attach is one-shot.
+  // IO-debounce knobs — see `CngxTabsConfig.overflowStabilizeMs` /
+  // `.overflowMaxDeferMs` for semantics. Captured once at construction.
   private readonly stabilizeMs = this.tabsConfig.overflowStabilizeMs ?? 100;
   private readonly maxDeferMs = this.tabsConfig.overflowMaxDeferMs ?? 250;
   private stabilizeHandle: ReturnType<typeof setTimeout> | null = null;
   private pendingEntries: IntersectionObserverEntry[] = [];
-  // Timestamp (performance.now()) of the FIRST entry pushed since
-  // the last commit. `null` between commits. Drives the max-defer
-  // cap above.
+  // performance.now() of the first entry since the last commit; null
+  // between commits. Drives the max-defer cap.
   private firstPendingAt: number | null = null;
 
   // rAF-scheduled IO attach retry. `display: none` toggles do NOT
-  // recover; an unmount/remount cycle is required to re-arm. Routed
-  // through `CNGX_DOM_ANCHOR_RETRY_FACTORY` so consumers can swap the
-  // retry-loop policy (e.g. backoff, telemetry) without forking the
-  // molecule.
+  // recover — unmount/remount is required to re-arm. Policy swap
+  // via CNGX_DOM_ANCHOR_RETRY_FACTORY.
   private readonly attachRetry: CngxDomAnchorRetryHandle =
     inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
@@ -282,13 +225,8 @@ export class CngxTabOverflow {
         if (!root) {
           return null;
         }
-        // threshold: 0 — any pixel of the tab inside the strip
-        // counts as "visible". Combined with the organism's
-        // `scrollIntoView` effect, this means once a hidden tab is
-        // selected the strip scrolls it in, the IO fires
-        // `isIntersecting=true`, the visibility map updates, and the
-        // entry self-removes from `hiddenTabs`. The plan's
-        // "self-healing" loop.
+        // threshold: 0 — any visible pixel = "in the strip". Drives
+        // the self-healing loop with the organism's scrollIntoView.
         this.observer = new IntersectionObserver(
           (entries) => this.handleIntersections(entries),
           { root, threshold: 0 },
@@ -316,8 +254,8 @@ export class CngxTabOverflow {
   constructor() {
     afterNextRender(() => this.attachRetry.start());
 
-    // Re-observe whenever the tab list changes. Stale-id pruning is
-    // derived through `visibilityState`'s `linkedSignal` source.
+    // Re-observe on tab-list change. Stale-id pruning is derived in
+    // `visibilityState`'s linkedSignal source.
     effect(() => {
       this.panelHost.tabs();
       untracked(() => {
@@ -361,13 +299,9 @@ export class CngxTabOverflow {
   }
 
   /**
-   * Trigger-button keydown — opens the popover on a navigation key
-   * when it's still collapsed so the highlighted option is visible
-   * before the user presses Enter. AD's own keydown handler runs
-   * first (directive-host listeners fire before template bindings),
-   * so by the time this runs `activeIndex` already points at the
-   * intended option. No-op while the popover is open — AD owns
-   * navigation entirely.
+   * Auto-opens popover on nav-key when collapsed. AD's host listener
+   * fires first, so `activeIndex` is already set when this runs.
+   * No-op while open — AD owns navigation.
    */
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     if (this.popover().isVisible() || !this.hasHiddenTabs()) {
@@ -397,10 +331,8 @@ export class CngxTabOverflow {
   }
 
   private handleIntersections(entries: IntersectionObserverEntry[]): void {
-    // Buffer entries; the actual signal write happens in
-    // `commitPendingVisibility` once IO emissions go quiet for
-    // STABILIZE_MS — capped by MAX_DEFER_MS. See the comment blocks
-    // above for why.
+    // Buffer entries; signal write deferred to commitPendingVisibility
+    // once IO settles for stabilizeMs (capped by maxDeferMs).
     for (const entry of entries) {
       this.pendingEntries.push(entry);
     }
@@ -409,10 +341,8 @@ export class CngxTabOverflow {
     if (this.stabilizeHandle !== null) {
       clearTimeout(this.stabilizeHandle);
     }
-    // Wait the smaller of (STABILIZE_MS, remaining max-defer window).
-    // Once the max-defer window is exhausted, fire on the very next
-    // tick (`Math.max(0, …)` guards a negative remaining when the
-    // event loop returned from a long task).
+    // Wait min(stabilizeMs, remaining max-defer). Math.max(0, …)
+    // guards a negative remaining after a long task.
     const elapsed = now - this.firstPendingAt;
     const maxDeferRemaining = this.maxDeferMs - elapsed;
     const wait = Math.max(
@@ -439,15 +369,12 @@ export class CngxTabOverflow {
         const target = entry.target as HTMLElement;
         const tabId = this.targetToHandleId.get(target);
         if (tabId === undefined) {
-          // Unknown target — possible during a tabs-list churn between
-          // observer.disconnect() and the next observeCurrentTabs(),
-          // or for a target observed by a stale registration. Skip
-          // rather than mis-key the visibility map.
+          // Stale registration during disconnect/observeCurrentTabs
+          // churn — skip rather than mis-key.
           continue;
         }
-        // threshold: 0 — any visible pixel = "in the strip". A
-        // partially-clipped tab stays out of the dropdown; only
-        // fully-clipped entries surface as "hidden".
+        // threshold: 0 — partially-clipped stays visible; only
+        // fully-clipped surfaces as hidden.
         next.set(tabId, entry.isIntersecting);
       }
       return next;
@@ -455,14 +382,8 @@ export class CngxTabOverflow {
   }
 
   /**
-   * Delegates IntersectionObserver-root resolution to the injected
-   * adapter. The default adapter mirrors the cngx-native organism's
-   * `.cngx-tabs__strip-wrapper` → `.cngx-tabs__strip` walk; the
-   * Material adapter shipped from `@cngx/ui/mat-tabs` walks
-   * `.mat-mdc-tab-header` → `.mat-mdc-tab-label-container` instead.
-   * Either path returns `null` when the molecule's host has not yet
-   * been anchored inside the variant's scroll container — the rAF
-   * retry loop polls again on the next frame.
+   * IO-root resolution via the injected adapter. Returns `null`
+   * before the molecule is anchored — the rAF retry loop re-polls.
    */
   private resolveStrip(): HTMLElement | null {
     return this.adapter.resolveStripRoot(this.panelHost, this.hostElement);

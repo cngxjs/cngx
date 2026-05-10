@@ -3,21 +3,15 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxStepNode } from '../stepper-host.token';
 
 /**
- * Context passed to the `*cngxStepRejection` template. Drives the
- * rejection-decoration rendered on the strip step that the most
- * recent commit was rolled back FROM — sibling to the tabs
- * `cngxTabRejectionIcon` slot (Phase 4). Consumers swap the
- * built-in `'!'` glyph for a branded rollback indicator, a richer
- * tooltip target, or a custom phrase while the visibility gate
- * stays library-owned (the slot only renders when the step's
- * flat-index matches `presenter.lastFailedIndex()`).
+ * Context passed to the `*cngxStepRejection` template. Renders on the
+ * strip step the most recent commit was rolled back FROM — sibling of
+ * the tabs `cngxTabRejectionIcon` slot. Renders only when
+ * `presenter.lastFailedIndex()` matches the step's flat-index.
  *
- * `originLabel` is the safe-harbour step the user was returned to
- * — derived by the organism from `presenter.originIndexDuringCommit()`
- * via the step-only flat projection. May be `undefined` when the
- * origin index is out of range (synchronous-rejection edge case
- * already handled in `liveAnnouncement`); consumers gate richer UI
- * on its presence.
+ * `originLabel` is the safe-harbour step's label, derived from
+ * `presenter.originIndexDuringCommit()`. May be `undefined` when the
+ * origin index is out of range (synchronous-rejection edge case);
+ * gate richer UI on its presence.
  *
  * @category interactive
  */
@@ -31,22 +25,13 @@ export interface CngxStepRejectionContext {
 }
 
 /**
- * Structural slot directive marking the rejection-decoration
- * template for `<cngx-stepper>`. Discovered via `contentChild` on
- * the organism; cascades through
+ * Slot directive for the rejection-decoration template on
+ * `<cngx-stepper>`. Discovered via `contentChild`; cascades through
  * `CNGX_STEPPER_CONFIG.templates.rejection` before falling back to
- * the built-in `CNGX_STEPPER_GLYPHS.rejectionIcon` span.
+ * `CNGX_STEPPER_GLYPHS.rejectionIcon`.
  *
- * Closes the rejection-decoration parity gap with tabs's
- * `<span class="cngx-tabs__rejection-icon">` (see
- * `projects/ui/tabs/src/tab-group.component.html:35-37`). The
- * tabs sibling will land its own `cngxTabRejectionIcon` slot in
- * Phase 4 of `tabs-stepper-cleanup-plan`; this directive carries
- * the symmetric context shape so consumer-authored templates
- * port directly.
- *
- * Pure marker — zero logic. Holds only a typed
- * {@link TemplateRef} reference.
+ * Symmetric context shape with the upcoming tabs `cngxTabRejectionIcon`
+ * slot so consumer templates port directly between the two families.
  *
  * @example
  * ```html

@@ -51,18 +51,11 @@ import {
 } from '@cngx/common/tabs';
 
 /**
- * CNGX-standard stepper organism. Thin shell composing the
- * `CngxStepperPresenter` brain with `CngxRovingTabindex`,
- * `CngxFocusRestore`, and `CngxLiveRegion` via `hostDirectives`.
- * Material consumers reach for `<cngx-mat-stepper>` (sibling
- * `@cngx/ui/mat-stepper` entry) instead.
- *
- * The presenter owns `activeStepIndex`, `linear`, `orientation`,
- * `commitAction`, `commitMode`; the organism forwards them through
- * `hostDirectives.inputs`. Renders the strip + panels via two
- * `@for` loops over `presenter.flatSteps()`. Reactive ARIA — every
- * `aria-current`, `aria-controls`, `aria-describedby`, `aria-busy`
- * is `computed()`, never a one-time binding.
+ * Stepper organism. Composes `CngxStepperPresenter` with
+ * `CngxRovingTabindex` and `CngxFocusRestore` via `hostDirectives`;
+ * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
+ * `commitMode` to the presenter. Material twin lives in
+ * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
  *
  * @category interactive
  */
@@ -84,11 +77,9 @@ import {
       inputs: ['orientation'],
     },
     { directive: CngxFocusRestore },
-    // CngxLiveRegion is intentionally NOT composed here — its host
-    // binding sets role="status", which would clobber the wrapper's
-    // role="group" landmark. A dedicated `<span cngxLiveRegion>` is
-    // mounted inside the template (driven by `liveAnnouncement`) for
-    // SR announcements on commit transitions.
+    // CngxLiveRegion not composed: its role="status" would clobber the
+    // host's role="group". Template mounts a dedicated <span cngxLiveRegion>
+    // bound to liveAnnouncement instead.
   ],
   providers: [{ provide: CNGX_STEP_PANEL_HOST, useExisting: CngxStepper }],
   templateUrl: './stepper.component.html',
@@ -127,12 +118,9 @@ export class CngxStepper implements CngxStepPanelHost {
   protected readonly glyphs = CNGX_STEPPER_GLYPHS;
 
   /**
-   * Resolved 6-slot template cascade for the indicator / badge /
-   * busy-spinner / rejection / group-header / empty regions.
-   * Three-stage cascade: per-instance slot directive >
-   * `CNGX_STEPPER_CONFIG.templates.<key>` > `null` (organism falls
-   * back to its built-in default template). Mirrors the
-   * `createTabOverflowTemplateBindings` pattern in `@cngx/common/tabs`.
+   * 6-slot template cascade (indicator/badge/busySpinner/rejection/
+   * groupHeader/empty). Resolution: per-instance slot directive →
+   * `CNGX_STEPPER_CONFIG.templates.<key>` → `null` (built-in default).
    */
   protected readonly templates = createStepperTemplateBindings({
     indicatorSlot: this.indicatorSlot,
@@ -145,14 +133,9 @@ export class CngxStepper implements CngxStepPanelHost {
   });
 
   constructor() {
-    // Self-healing scroll loop — when the active step changes (via
-    // direct click on a visible step, keyboard nav, or selectById from
-    // a future overflow molecule), bring the matching button into the
-    // strip's visible area. Vertical layouts benefit equally — the
-    // factory's default `scrollIntoView` block:'nearest' keeps both
-    // axes covered. Routed through `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`
-    // so consumers can swap the scroll policy (instant, custom
-    // selector, reduced-motion opt-out) without forking the organism.
+    // Scroll active step into view on activeStepId change. Routed through
+    // CNGX_ORGANISM_SCROLL_SYNC_FACTORY so consumers can swap policy
+    // (instant, reduced-motion opt-out) without forking.
     inject(CNGX_ORGANISM_SCROLL_SYNC_FACTORY)({
       activeId: this.presenter.activeStepId,
       hostElement: this.hostElement,
@@ -174,9 +157,8 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
-   * `aria-label` resolves Input → ariaLabels.stepperRegion config →
-   * i18n.stepperLabel. Pillar 2 — the surface declared by config /
-   * i18n must reach the DOM.
+   * `aria-label` cascade: input → `ariaLabels.stepperRegion` → `i18n.stepperLabel`.
+   * Pillar 2.
    */
   protected readonly resolvedAriaLabel = computed<string | null>(() => {
     if (this.ariaLabelledBy()) {
@@ -189,12 +171,8 @@ export class CngxStepper implements CngxStepPanelHost {
     );
   });
 
-  // Pre-build a Map<id, CngxStep> so labelTemplateFor /
-  // contentTemplateFor are O(1) per call instead of O(N) linear
-  // scans on every panel render. Structural `equal` keyed on the
-  // id-set + per-id directive identity prevents the Map from
-  // cascading downstream every time `contentChildren` re-emits with
-  // an unchanged child set.
+  // O(1) labelTemplateFor/contentTemplateFor lookup. Structural equal on
+  // id-set + directive identity stops cascade on shape-stable re-emits.
   private readonly stepDirectiveById = inject(CNGX_DIRECTIVE_BY_ID_MAP_FACTORY)({
     source: this.stepDirectives,
   });
@@ -204,12 +182,9 @@ export class CngxStepper implements CngxStepPanelHost {
   readonly activeStepId: Signal<string | null> = this.presenter.activeStepId;
 
   /**
-   * Step-only flat projection (excludes group nodes). Memoised behind
-   * `flatStepsEqual` so downstream consumers (`statusPhrase`,
-   * `liveAnnouncement` origin lookup, group/step `@for` iteration)
-   * don't re-walk the array on every shape-stable re-emit of
-   * `flatSteps()`. Mirrors the presenter's private twin at
-   * `presenter.directive.ts:186-189`.
+   * Step-only flat projection (group nodes filtered out). Structural equal
+   * via `flatStepsEqual` — downstream consumers don't re-walk on shape-stable
+   * `flatSteps()` re-emits.
    */
   protected readonly stepsOnly = computed(
     () => this.flatSteps().filter((n) => n.kind === 'step'),
@@ -217,10 +192,8 @@ export class CngxStepper implements CngxStepPanelHost {
   );
 
   /**
-   * Step's position in the flat step-only projection. Reads
-   * `flatIndex` directly — set by `flattenStepTree` at O(1) in the
-   * presenter. Group nodes carry `-1` here, so callers that resolve
-   * a UI position must guard `node.kind === 'step'` first.
+   * Position in the step-only flat projection. Group nodes carry `-1`;
+   * callers must guard on `kind === 'step'`.
    */
   protected stepIndexOf(node: CngxStepNode): number {
     return node.flatIndex;
@@ -238,12 +211,7 @@ export class CngxStepper implements CngxStepPanelHost {
     );
   }
 
-  /**
-   * `true` while the presenter has a commit in flight. Drives the
-   * landmark `aria-busy` host binding so AT consumers know the
-   * stepper region is mid-transition (Pillar 2 — every state change
-   * communicates).
-   */
+  /** Commit-in-flight flag — drives the host `aria-busy` binding. Pillar 2. */
   protected readonly isCommitting = computed<boolean>(
     () => this.presenter.commitState.status() === 'pending',
   );
@@ -261,23 +229,11 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * SR-friendly text rendered inside the polite live-region span. Drives
-   * the announcer through declarative content updates — never an
-   * imperative announce() call. Empty string between transitions so the
-   * region stays quiet on no-op CD ticks.
-   *
-   * Priority chain on the `error` arm:
-   *   1. `commitRolledBackTo(originLabel)` when the presenter has both
-   *      a `lastFailedIndex` and a resolvable origin label — the rich,
-   *      origin-aware rollback phrase carries the destination so the
-   *      user understands both *what failed* and *where they are*.
-   *   2. `commitFailedRetry` (generic fallback) otherwise — origin
-   *      undefined, label unresolvable, or non-rollback error path.
-   *
-   * Reads `presenter.commitTransition` directly — the presenter
-   * allocates one `linkedSignal`-backed tracker per instance and
-   * exposes it on the host contract for skin reuse. Pillar 1: derive,
-   * never duplicate.
+   * Live-region content. Empty string between transitions keeps the region
+   * quiet on no-op CD ticks. Error-arm priority:
+   * 1. `commitRolledBackTo(originLabel)` when both `lastFailedIndex` and a
+   *    resolvable origin label exist.
+   * 2. `commitFailedRetry` otherwise.
    */
   protected readonly liveAnnouncement = computed<string>(() => {
     const current = this.presenter.commitTransition.current();
@@ -285,12 +241,9 @@ export class CngxStepper implements CngxStepPanelHost {
       return this.i18n.commitInFlight;
     }
     if (current === 'error') {
-      // Synchronous commit-handler errors collapse pending → error in a
-      // single signal-flush tick, so the tracker captures
-      // `previous = 'idle'` rather than `'pending'`. Loosening the
-      // guard keeps the announcement reachable for sync-rejection
-      // actions (`commitAction = () => false`) while staying silent on
-      // `idle` and `success`.
+      // Sync commit-handler errors collapse pending → error in one signal
+      // flush; tracker sees `previous === 'idle'`. Guard stays loose so
+      // sync-rejection (`commitAction = () => false`) still announces.
       const failedIdx = this.presenter.lastFailedIndex();
       const originIdx = this.presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {
@@ -340,11 +293,8 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Whether to render the rejection-decoration on a strip step.
-   * Mirrors the tabs sibling at `tab-group.component.html:13` —
-   * `presenter.lastFailedIndex()` matches this step's flat-index.
-   * Closes stepper-accepted-debt §2 (Phase 3 absorption of the
-   * deferred visual parity).
+   * Render the rejection decoration when this step's flat-index matches
+   * `presenter.lastFailedIndex()`. Closes stepper-accepted-debt §2.
    */
   protected showRejection(node: CngxStepNode): boolean {
     return (
@@ -380,10 +330,8 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Build the slot context for `*cngxStepRejection`. Resolves the
-   * safe-harbour origin label from `presenter.originIndexDuringCommit()`
-   * via the step-only flat projection — same lookup the
-   * `liveAnnouncement` computed performs for the SR rollback phrase.
+   * Build the slot context for `*cngxStepRejection`. Resolves origin label
+   * from `presenter.originIndexDuringCommit()` via `stepsOnly()`.
    */
   protected rejectionContextFor(node: CngxStepNode): CngxStepRejectionContext {
     const failedIndex = node.flatIndex;
@@ -409,11 +357,8 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Clear the persisted `lastFailedIndex` rejection flag on the
-   * presenter — public delegator mirroring the
-   * {@link CngxTabGroup.clearLastFailed} pass-through pattern so
-   * consumers using a template ref (`#s="cngxStepper"`) can dismiss
-   * the rejection decoration programmatically without injecting
+   * Clear the presenter's `lastFailedIndex`. Lets template-ref consumers
+   * (`#s="cngxStepper"`) dismiss the rejection decoration without injecting
    * {@link CNGX_STEPPER_HOST}.
    */
   clearLastFailed(): void {
@@ -430,12 +375,9 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Build the {@link CngxStepLabelContext} delivered to consumer
-   * `*cngxStepLabel` templates. The flat-step index is 1-based to
-   * match the indicator-position convention; group nodes carry
-   * `flatIndex === -1` so the calculation correctly returns 0 for
-   * groups (callers only invoke this for `kind === 'step'` nodes
-   * via the template loop).
+   * Build the {@link CngxStepLabelContext} for `*cngxStepLabel`.
+   * `index` is 1-based (mirrors indicator position); group nodes
+   * (`flatIndex === -1`) yield `0` and are never iterated here.
    */
   protected stepLabelContextFor(node: CngxStepNode): CngxStepLabelContext {
     return {
@@ -448,10 +390,9 @@ export class CngxStepper implements CngxStepPanelHost {
   }
 
   /**
-   * Build the {@link CngxStepContentContext} delivered to consumer
-   * `*cngxStepContent` templates. Mirrors the label-context shape
-   * 1:1 — content templates frequently need the same derivations
-   * (gate inner controls on `disabled` / `busy`).
+   * Build the {@link CngxStepContentContext} for `*cngxStepContent`.
+   * Same shape as the label context — content templates need the same
+   * `disabled`/`busy` derivations.
    */
   protected stepContentContextFor(node: CngxStepNode): CngxStepContentContext {
     return this.stepLabelContextFor(node);

@@ -3,16 +3,12 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { CngxStepContentContext } from './step-panel-host.token';
 
 /**
- * Pure marker directive carrying the consumer-supplied content
- * template for a `CngxStep`. Discovered by the parent step via
- * `contentChild(CngxStepContent)`.
+ * Marker directive carrying a `CngxStep`'s content template.
+ * Discovered via `contentChild(CngxStepContent)`. Typed with
+ * {@link CngxStepContentContext} so `let-busy="busy"` etc. gives
+ * typed access to live step state.
  *
- * The template is typed with {@link CngxStepContentContext} so
- * consumer markup gets typed access to live step state via
- * `let-node="node" let-busy="busy"` etc. — useful for gating inner
- * controls on `disabled` / `busy` without re-reading the host.
- *
- * Usage:
+ * @example
  * ```html
  * <ng-template cngxStepContent let-busy="busy">
  *   <input [disabled]="busy">
