@@ -112,9 +112,8 @@ import {
 
 /**
  * Change event emitted by {@link CngxActionSelect.selectionChange}.
- * The `action` discriminant carries the cause of the change: `'select'`
- * is a normal pick, `'clear'` a reset, `'create'` a successful inline
- * quick-create via the `*cngxSelectAction` slot.
+ * `action`: `'select'` user pick, `'clear'` reset, `'create'`
+ * successful inline quick-create via `*cngxSelectAction`.
  *
  * @category interactive
  */
@@ -127,37 +126,21 @@ export interface CngxActionSelectChange<T = unknown> {
 }
 
 /**
- * Single-value autocomplete with inline quick-create. Seventh sibling
- * of the select family after `CngxSelect` (single),
- * `CngxMultiSelect` (multi), `CngxCombobox` (multi-chip),
- * `CngxTypeahead` (single async), `CngxTreeSelect` (tree-multi), and
- * `CngxReorderableMultiSelect` (multi + reorder).
- *
- * Mirrors {@link /projects/forms/select/src/lib/typeahead/typeahead.component.ts
- * CngxTypeahead}'s input surface (inline `<input role="combobox">` with
- * `aria-autocomplete="list"`, `displayWith`, `clearOnBlur`, the
- * `*cngxSelectAction` slot integrates through the shared action-host
- * bridge: the consumer projects a template into the panel, and when
- * the user fires its `commit()` callback the bound
+ * Single-value autocomplete with inline quick-create. Mirrors
+ * {@link CngxTypeahead}'s input surface; adds the `*cngxSelectAction`
+ * slot — when the consumer fires its `commit()` callback the bound
  * {@link CngxSelectCreateAction} materialises a new `T` through the
- * commit controller. On success the handler patches the persistent
- * local buffer with `{ value, label }` — the item stays visible across
- * state refetches until the server has picked it up — writes `value`,
- * announces `'created'`, and optionally closes the panel.
+ * commit controller. On success: patches the local buffer, writes
+ * `value`, announces `'created'`, optionally closes.
  *
- * Commit semantics are pessimistic: the panel stays open while the
- * handler runs, `isPending` flips in the slot context so a
- * consumer-authored button can render a spinner, and on error the
- * default commit-error banner surfaces above the options. True
- * optimistic UX (insert-before-commit with temp-value) requires a
- * consumer-supplied `tempValueFactory` — deferred to a follow-up per
- * `.internal/architektur/action-select-master-plan.md` §3 Commit 5.
+ * Pessimistic commit only: panel stays open while pending, `isPending`
+ * flips on the slot context, error surfaces in the commit-error
+ * banner. True optimistic create requires a consumer-supplied
+ * `tempValueFactory` — see `action-select-master-plan.md` §3 Commit 5.
  *
- * Dismiss-guard protocol — Escape and click-outside are intercepted
- * while `actionDirty()` is `true`. A consumer-authored slot flips the
- * flag via the context's `setDirty(true)` callback; the shell-level
- * Escape handler fires `cancel()` (which resets dirty) so the panel
- * does not dismiss mid-workflow.
+ * Dismiss-guard: Escape and click-outside are intercepted while
+ * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
+ * Escape fires `cancel()` to reset.
  *
  * @category interactive
  */
@@ -336,11 +319,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly clearOnBlur = input<boolean>(true);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   /**
-   * Debounce for the inline search. Defaults to `0` for the action-
-   * select organisms — quick-create UX benefits from instant feedback
-   * so the slot template's `let-term` reflects every keystroke. Raise
-   * via the input for large option lists where filtering every
-   * keystroke is measurably slow.
+   * Debounce for the inline search (ms). Default `0` so the slot's
+   * `let-term` reflects every keystroke; raise for large option lists.
    */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
@@ -366,14 +346,10 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     this.config.commitErrorDisplay,
   );
   /**
-   * Scalar-commit error-announce policy. Controls whether a failing
-   * commit reads the verbatim error message (`'verbose'`) or a soft
-   * "selection removed" sentence (`'soft'`). Defaults from
-   * {@link CngxSelectConfig.commitErrorAnnouncePolicy} — app-wide
-   * default is verbose/assertive; this variant historically announced
-   * `'soft'` so its per-instance default stays `'soft'` to preserve
-   * back-compat. Override per instance when destructive create flows
-   * warrant the louder read.
+   * Scalar-commit error-announce policy. Default `{ kind: 'soft' }`
+   * for action-select (matches typeahead's free-text flow). Override
+   * to `'verbose'` per-instance when destructive create warrants
+   * a louder read.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
@@ -381,61 +357,45 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
-  // ── Action-select specific inputs ──────────────────────────────────
-
   /**
-   * Quick-create handler fired by the slot template's `commit()`
-   * callback. Receives the live `searchTerm` plus the drafted
-   * `{ label }` and resolves to a newly-materialised `T`. `null`
-   * (default) disables the create path — the slot template may still
-   * render (as a branding cue, static CTA, etc.), and clicking its
-   * commit callback becomes a silent no-op.
+   * Quick-create handler fired by the slot's `commit()` callback.
+   * Receives the live `searchTerm` and `{ label }`, resolves to a new
+   * `T`. `null` disables the create path — slot still renders, but
+   * `commit()` becomes a silent no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
   /**
-   * Whether a successful create closes the panel. Defaults to `true` —
-   * single-value pick-and-create semantics mirror ordinary selection
-   * UX. Set `false` for long flows where the consumer wants to keep
-   * the panel open for confirmation, multi-step wizards, etc.
+   * Whether a successful create closes the panel. Default `true`.
+   * Set `false` for confirmation / multi-step wizard flows.
    */
   readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? true);
   /**
-   * Whether the organism falls back to the raw `<input>` value when
-   * the debounced `searchTerm` hasn't caught up yet. Default derived
-   * from {@link CngxActionSelectConfig.liveInputFallback} (app-wide
-   * default `true`). Disable when the app owns its own search
-   * pipeline and wants create payloads to derive strictly from the
-   * bound term.
+   * Fall back to the raw `<input>` value when the debounced
+   * `searchTerm` hasn't caught up. Disable when the consumer owns
+   * its own search pipeline.
    */
   readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
   /**
-   * Position of the `*cngxSelectAction` slot within the panel frame.
-   * Forwarded through the shared view-host contract into
-   * `CngxSelectPanelShell.actionPosition`. Defaults to `'bottom'`.
+   * Position of the `*cngxSelectAction` slot in the panel.
+   * Default `'bottom'`.
    */
   readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
     this.actionConfig.actionPosition,
   );
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxActionSelectConfig.popoverPlacement} — app
-   * default `'bottom'` if neither is set. Accepts any `PopoverPlacement`
-   * the `cngxPopover` directive understands.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxActionSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(
     this.actionConfig.popoverPlacement,
   );
-  /**
-   * Mobile `inputmode` attribute. Defaults from
-   * {@link CngxSelectConfig.inputMode} (`'search'`).
-   */
+  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
     this.config.inputMode,
   );
   /**
-   * Mobile `enterkeyhint` attribute. Defaults to `'go'` (ActionSelect
-   * Enter routes to quick-create when no AD item is active). App-wide
-   * config wins when non-null.
+   * Mobile `enterkeyhint`. Default `'go'` — Enter routes to
+   * quick-create when no AD item is active.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'go',
@@ -443,8 +403,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxActionSelectChange<T>>();
   readonly openedChange = output<boolean>();
@@ -456,14 +414,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly stateChange = output<AsyncStatus>();
   readonly searchTermChange = output<string>();
   /**
-   * Dedicated channel for successful quick-creates. Fires after
-   * `selectionChange` with the same option payload so consumers that
-   * only care about create events can bind `(created)` without
+   * Dedicated channel for successful creates. Fires after
+   * `selectionChange` so consumers can bind `(created)` without
    * branching on `action === 'create'`.
    */
   readonly created = output<CngxSelectOptionDef<T>>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -522,8 +477,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-  // ── CngxFormFieldControl ───────────────────────────────────────────
-
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal */ readonly focused = this.focusState.focused;
@@ -541,7 +494,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       }),
   );
 
-  /** Filter overlay applied by `createSelectCore` when the search term is non-empty. */
+  /** Filter overlay applied by `createSelectCore` on non-empty search term. */
   private readonly filter = computed<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
   >(() => {
@@ -553,30 +506,23 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
 
-  // ── Action-slot bridge (routes the commit callback to create) ──────
-
   /**
-   * The bridge's `isPending` tracks the commit controller so the slot
-   * template's `isPending` context flag reflects the live create
-   * state. Ties the UX feedback (button spinner, disabled state) to
-   * the same state-machine that drives the commit-error banner.
+   * Action-slot bridge. `isPending` mirrors the commit controller so
+   * the slot's `isPending` context flag drives button spinner / disabled
+   * state from the same machine as the commit-error banner.
+   *
+   * `commit` and `retry` close over `this` and resolve `createHandler`
+   * at call time — the handler is declared lower in field-init order.
    *
    * @internal
    */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
     close: () => this.close(),
-    // `commit` + `retry` both route through methods that resolve
-    // `createHandler` lazily. The handler is declared further down in
-    // field-init order, so the closures capture `this` here and hit
-    // the real handler at call time — well after construction
-    // completes.
     commit: (draft) => this.handleActionCommit(draft),
     retry: () => this.createHandler.retryLast(),
     isPending: computed(() => this.core.isCommitting()),
@@ -588,38 +534,30 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */
   readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
   /**
-   * View-host signal the shared panel shell reads when building the
-   * `*cngxSelectAction` context's `$implicit` + `searchTerm` fields.
-   * Exposes the component's live search term so the slot template's
-   * `let-term` binding reflects what the user is typing in real time.
+   * Live search term forwarded to `*cngxSelectAction`'s `$implicit` +
+   * `searchTerm` slot fields so `let-term` reflects user typing.
    *
    * @internal
    */
   readonly actionSearchTerm = this.searchTerm;
   /**
-   * View-host signal feeding the action context's `error` + `hasError`
-   * fields. Single-select shares one commit controller across both
-   * the optional `[commitAction]` path and the inline quick-create
-   * path, so `core.commitErrorValue` covers both surfaces — the
-   * template's `error` context reflects whichever error was latched
-   * last.
+   * Action context's `error` + `hasError` source. Single-select shares
+   * one commit controller across `[commitAction]` and quick-create, so
+   * `core.commitErrorValue` covers both — the slot's `error` reflects
+   * whichever was latched last.
    *
    * @internal
    */
   readonly actionError = computed<unknown>(() => this.core.commitErrorValue());
   /**
-   * View-host signal feeding the action context's `value` field —
-   * forwards the component's live scalar selection so in-panel
-   * mini-forms can read the current pick without re-injecting.
+   * Action context's `value` source. Forwards the live scalar selection
+   * so in-panel mini-forms can read it without re-injecting.
    *
    * @internal
    */
   readonly actionValue = computed<unknown>(() => this.value());
-  // The `actionPosition` input signal itself satisfies
-  // `CngxSelectPanelViewHost.actionPosition?: Signal<...>` — no computed
-  // wrapper needed, `InputSignal<T>` is a `Signal<T>`.
-
-  // ── Core (stateless signal graph) ──────────────────────────────────
+  // `actionPosition` input signal already satisfies
+  // `CngxSelectPanelViewHost.actionPosition?: Signal<...>`.
 
   private readonly core = createSelectCore<T, T>(
     {
@@ -658,10 +596,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer. Used internally by the create-commit handler; exposed
-   * publicly so consumers can pre-seed the buffer with recently-used
-   * items, "add to history" workflows, etc.
+   * Append a pre-built option to the local buffer. Used internally by
+   * the create-commit handler; exposed for consumer pre-seed (recent-
+   * items, history workflows).
    *
    * @category interactive
    */
@@ -677,8 +614,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface ──────────────────────────────
 
   /** @internal */
   protected readonly effectiveOptions = this.core.effectiveOptions;
@@ -795,8 +730,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Single-selection state (commit + rollback) ─────────────────────
-
   private readonly commitController = this.core.commitController;
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
@@ -806,9 +739,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       softAnnounce: (opt, action, count, multi) =>
         this.core.announce(opt as CngxSelectOptionDef<T> | null, action, count, multi),
     },
-    // The input's default mirrors this variant's historical `'soft'`
-    // baseline; the announcer reads the live input signal, so app-wide
-    // config + per-instance override both flow through identically.
     policy: this.commitErrorAnnouncePolicy,
   });
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
@@ -822,8 +752,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     onUserSearchTerm: (term) => this.searchTermChange.emit(term),
   });
 
-  // ── Create-commit handler ──────────────────────────────────────────
-
   private readonly createHandler: CreateCommitHandler<T, T | undefined> = inject(
     CNGX_CREATE_COMMIT_HANDLER_FACTORY,
   )<T, T | undefined>({
@@ -832,8 +760,8 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValue) => {
-      // Handler is value-shape-agnostic — single-value semantic lives
-      // here: write `value`, mirror into display, emit 'create'.
+      // Single-value semantic: write `value`, mirror into display,
+      // emit 'create'.
       this.value.set(option.value);
       this.display.writeFromValue(option.value);
       this.selectionChange.emit({
@@ -854,7 +782,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     onResetDirty: () => this.actionBridge.reset(),
   });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */
   protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */
@@ -904,9 +831,9 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Search-term effects: auto-open on typing. Same gating as
-    // CngxTypeahead — the display-binding emits searchTermChange via
-    // `onUserSearchTerm`, so the emit path is left undefined here.
+    // Auto-open on typing. Same gating as CngxTypeahead — display-
+    // binding emits searchTermChange via `onUserSearchTerm`, so emit
+    // path is left undefined here.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -916,30 +843,16 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
 
-  // ── Action-slot commit routing ─────────────────────────────────────
-
   /**
-   * Entry point invoked by the action-slot template's `commit()`
-   * callback. Resolves an effective draft (falling back to the live
-   * `searchTerm` when the consumer omits one) and dispatches through
-   * the shared create-commit handler.
-   *
-   * @internal
-   */
-  /**
-   * Enter on the trigger input. When the listbox has no active item
-   * AND a quickCreateAction is bound AND the user has typed something,
-   * Enter fires the create flow — natural "type a new value, press
-   * Enter to add it" keyboard UX. If there IS an active item,
-   * CngxListboxTrigger's own Enter handler already activated it and
-   * this path is a no-op.
+   * Enter on the trigger input. With no active AD item, a bound
+   * `quickCreateAction`, and a non-empty term, fires the create flow
+   * (type-and-Enter UX). If an AD item is active, `CngxListboxTrigger`
+   * already activated it; this is a no-op.
    *
    * @internal
    */
@@ -978,14 +891,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * Live search-term accessor for the create flow. When
-   * `liveInputFallback` is enabled (default) the getter falls back to
-   * the raw `<input>.value` if the debounced `searchTerm` signal
-   * hasn't caught up — prevents a fast typist pressing the Create
-   * button inside the debounce window from triggering a silent
-   * no-op. When disabled the getter returns the bound `searchTerm`
-   * verbatim so consumers owning their own debouncing see fully
-   * predictable create payloads.
+   * Live search-term accessor for the create flow. With
+   * `liveInputFallback` (default), reads the raw `<input>.value` when
+   * the debounced `searchTerm` hasn't caught up — prevents fast-typist
+   * Create-button taps from no-op'ing in the debounce window. Disable
+   * for predictable consumer-debounced payloads.
    *
    * @internal
    */
@@ -996,8 +906,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     }
     return this.inputEl()?.nativeElement.value ?? '';
   }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   protected handleWrapperClick(): void {
     if (this.disabled()) {
@@ -1056,13 +964,11 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     if (!this.clearOnBlur()) {
       return;
     }
-    // Skip the clear-on-blur write when focus is moving INSIDE the
-    // component (e.g. clicking an action-slot button or the clear
-    // button). Otherwise the input wipe races the click handler: the
-    // blur fires first, writes `displayWith(value)` (or empty if no
-    // value yet), and by the time the click handler runs the raw
-    // input is already gone — `commit()` silently drops because the
-    // draft label is empty.
+    // Skip clear-on-blur when focus moves INSIDE the component (action-
+    // slot button, clear button). Otherwise blur races the click: blur
+    // fires first, writes `displayWith(value)` (or empty), and by the
+    // time the click runs the raw input is gone — `commit()` silently
+    // drops because the draft label is empty.
     const related = event?.relatedTarget as HTMLElement | null;
     if (related && this.isWithinComponent(related)) {
       return;
@@ -1071,15 +977,13 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
   }
 
   /**
-   * True when the given element is a descendant of the component's
-   * host element (includes the popover panel + its action-slot
-   * template, because `<div cngxPopover>` lives inside the host
-   * template even when rendered in the browser's top-layer — `contains`
-   * follows the DOM tree, not the rendering tree).
+   * Whether `el` is a descendant of the host. Includes the popover
+   * panel + action-slot — `<div cngxPopover>` lives in the host
+   * template even when rendered in the top-layer, and `contains`
+   * follows the DOM tree, not the rendering tree.
    *
-   * Uses the injected host `ElementRef` rather than a `closest()`
-   * query against a hardcoded CSS class so re-skinning the wrapper
-   * doesn't silently break the blur-guard behaviour.
+   * Uses the injected `ElementRef` rather than `closest()` against a
+   * hardcoded class so re-skinning doesn't break the blur-guard.
    *
    * @internal
    */
@@ -1087,19 +991,14 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
     return this.hostEl.nativeElement.contains(el);
   }
 
-  // ── Commit / selection finalize ────────────────────────────────────
-
   /**
-   * Shared scalar-commit factory. Owns the full `beginCommit` /
-   * `finalizeSelection` / `retryLast` triad the component previously
-   * carried inline. Wired with variant-specific callbacks:
+   * Scalar commit handler. Variant callbacks:
    *
    *   - `onCommitFinalize` emits `selectionChange({ action: 'select' })`
-   *     and routes through `core.announce(..., 'added', 1, false)`.
-   *   - `onCommitError` delegates to the scalar commit-error announcer
-   *     (`soft` policy for this component — matches `CngxTypeahead`).
-   *   - `onValueWrite` mirrors the committed value into the input-text
-   *     display so the trigger `<input>` stays in sync with `value()`.
+   *     and announces `'added'`.
+   *   - `onCommitError` delegates to the announcer (soft policy).
+   *   - `onValueWrite` mirrors the committed value into the input via
+   *     the display binding.
    *
    * @internal
    */

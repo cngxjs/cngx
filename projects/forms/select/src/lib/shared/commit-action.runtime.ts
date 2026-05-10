@@ -3,9 +3,8 @@ import { isObservable, type Observable } from 'rxjs';
 import type { CngxSelectCommitAction } from './commit-action.types';
 
 /**
- * Handle returned by {@link runCommitAction}. Call `cancel()` to mark the
- * commit as superseded — subsequent success/error callbacks become no-ops.
- * For Observable-backed actions the underlying subscription is torn down.
+ * Cancel marks the commit superseded. Observable subscriptions tear down;
+ * sync/Promise resolutions become no-ops.
  *
  * @internal
  */
@@ -14,9 +13,8 @@ export interface CngxCommitHandle {
 }
 
 /**
- * Invokes a {@link CngxSelectCommitAction} and routes its outcome to
- * `onSuccess` / `onError`. Uniform adapter for sync values, Promises,
- * and Observables with explicit cancellation semantics.
+ * Invokes a {@link CngxSelectCommitAction} and routes the outcome to
+ * `onSuccess`/`onError`. Handles sync, Promise, and Observable shapes.
  *
  * @internal
  */
@@ -54,9 +52,8 @@ export function runCommitAction<T>(
 
   if (isObservable(result)) {
     const sub = result.subscribe({
-      // Only the first emission is a commit result. Subsequent emissions
-      // are treated as noise — tear down after success so a hot source
-      // cannot double-write the value signal.
+      // First emission only — tear down so a hot source can't
+      // double-write the value signal.
       next: (value: T | undefined) => {
         safeSuccess(value);
         sub.unsubscribe();

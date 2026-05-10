@@ -2,13 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 
 /**
- * Global live-region announcer for the Select family. Maintains exactly one
- * `aria-live` container per document and announces selection-change messages
- * with a configurable politeness.
- *
- * Scoped `providedIn: 'root'` so the same region is reused across every
- * select component in the app. Individual select instances decide (via config)
- * whether to push messages through it.
+ * Select-family live-region announcer. One container per politeness per
+ * document.
  *
  * @category interactive
  */
@@ -19,11 +14,7 @@ export class CngxSelectAnnouncer {
   private assertiveElement: HTMLElement | null = null;
   private clearTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /**
-   * Announce `message` via the live region with the given politeness. The
-   * region is emptied ~150ms before being updated so screen readers treat
-   * each message as a fresh event even when content is identical.
-   */
+  /** Clears the region one frame before writing so AT re-announces identical messages. */
   announce(message: string, politeness: 'polite' | 'assertive' = 'polite'): void {
     const element = this.ensureRegion(politeness);
     if (!element) {
@@ -55,7 +46,6 @@ export class CngxSelectAnnouncer {
     element.setAttribute('role', 'status');
     element.setAttribute('aria-atomic', 'true');
     element.className = `cngx-select-announcer cngx-select-announcer--${politeness}`;
-    // Visually hidden — off-screen but still read by AT.
     element.style.cssText = [
       'position:absolute',
       'inline-size:1px',

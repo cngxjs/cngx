@@ -83,16 +83,13 @@ export class CngxLabel {
 
   /** @internal — whether to show the auto-marker. */
   protected readonly markerVisible = computed(() => {
-    // No global config → no auto-marker
     if (!this.config.requiredMarker) {
       return false;
     }
-    // Per-label opt-out
     const override = this.showRequired();
     if (override === false) {
       return false;
     }
-    // Show when field is required
     return this.presenter.required();
   });
 }

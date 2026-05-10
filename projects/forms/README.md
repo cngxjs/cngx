@@ -1,8 +1,9 @@
 # @cngx/forms
 
-Reactive form utilities for Angular 21+. Provides typed controls, validators,
-a Signal Forms-native form field system with built-in ARIA coordination, and
-smart input directives with autocomplete/spellcheck inference.
+Signal Forms-native form utilities for Angular 21+ — typed controls,
+validators, ARIA-coordinated form field, and input directives.
+Opinionated about ARIA, agnostic about styling. Reactive Forms supported
+via a one-shot `adaptFormControl` adapter.
 
 ## Entry Points
 
@@ -26,7 +27,7 @@ Invisible A11y coordination layer. Strong opinions about ARIA, zero opinions abo
 - No floating labels, no appearance variants, no visual chrome
 - All ARIA attributes projected automatically and deterministically
 - Error messages gated behind `touched && invalid`
-- CSS state classes on container, label, and input for easy styling
+- CSS state classes on container, label, and input
 - i18n-ready constraint hints and error messages
 
 ### Quick Start
@@ -213,7 +214,8 @@ provideFormField(
 
 ## `@cngx/forms/input` -- Input Directives
 
-Smart input directives that project ARIA attributes and provide UX enhancements.
+Input directives that project ARIA attributes and infer
+`autocomplete` / `spellcheck` from field name.
 
 ### CngxInput (`input[cngxInput]`, `textarea[cngxInput]`, `select[cngxInput]`)
 
@@ -227,7 +229,7 @@ ARIA projection machine. Works with or without `cngx-form-field`.
 **Signals:** `focused`, `empty`, `errorState`, `disabled`
 **Inputs:** `autocomplete` (explicit override), `spellcheck` (explicit override)
 
-Smart autocomplete inference from field name:
+Autocomplete inference from field name:
 
 | Field name | autocomplete |
 |-|-|

@@ -12,14 +12,8 @@ import type { CngxSelectOptionDef } from './option.model';
 import type { CngxSelectCompareFn } from './select-core';
 
 /**
- * Minimal shape the chip-removal factory cares about on the carried
- * "item". Every chip-strip (multi-select, combobox, reorderable,
- * action-multi-select, tree-select) passes items with a `.value` — the
- * label / disabled / etc. live on the concrete `CngxSelectOptionDef<T>`
- * or `CngxTreeSelectedItem<T>` and aren't touched by the factory body.
- *
- * Exposed as a type alias rather than an inline constraint so the DI
- * factory signature can reference it without copying the shape.
+ * Minimum shape the chip-removal factory needs — just `.value`. Concrete
+ * chip types layer label, disabled, etc. on top.
  *
  * @category interactive
  */
@@ -28,19 +22,12 @@ export interface CngxChipRemovableItem<T> {
 }
 
 /**
- * Configuration for {@link createChipRemovalHandler}.
+ * Config for {@link createChipRemovalHandler}.
  *
- * The factory absorbs the bit-identical "remove one chip" body shared
- * by every multi-value select variant:
- *
- *   1. disabled-guard (early return),
- *   2. `[...values()]` snapshot,
- *   3. `compareWith`-filtered "next" array,
- *   4. branch: commit-action present → optimistic write + delegate to
- *      `beginCommit`; otherwise → synchronous write + `onSyncFinalize`,
- *   5. per-item `WeakMap` closure cache so `remove: handler.removeFor(item)`
- *      returns stable identity across CD cycles (no `ngTemplateOutlet`
- *      thrash on the chip slot).
+ * Standard-body flow: disabled-guard → snapshot → `compareWith` filter →
+ * commit branch (optimistic write + `beginCommit`) or sync branch
+ * (`values.set(next)` + `onSyncFinalize`). Closures cached per-item via
+ * `WeakMap` for stable identity.
  *
  * @category interactive
  */
@@ -48,43 +35,26 @@ export interface CngxChipRemovalHandlerOptions<
   T,
   Item extends CngxChipRemovableItem<T> = CngxSelectOptionDef<T>,
 > {
-  /** When `true`, every `removeByValue(...)` call is a no-op. */
+  /** When `true`, `removeByValue` is a no-op. */
   readonly disabled: Signal<boolean>;
 
   /**
-   * Optional escape hatch that replaces the entire body after the
-   * disabled-guard. The factory still owns the WeakMap closure cache
-   * (so `removeFor(item)` stays reference-stable across CD cycles)
-   * but skips its own snapshot, filter, and commit/sync branch
-   * dispatch.
-   *
-   * Use when the variant's "remove one value" semantics are
-   * non-trivial — e.g. `CngxTreeSelect`'s chip-remove must always be a
-   * single deselect (never a cascade) regardless of `cascadeChildren`,
-   * AND it has a stale-value fallback path that bypasses the tree
-   * controller. The override absorbs both concerns and keeps the
-   * handler decoupled from tree concepts.
-   *
-   * When set, the standard-body fields (`values`, `compareWith`,
-   * `commitAction`, `commitMode`, `beginCommit`, `onBeforeCommit`,
-   * `onSyncFinalize`) are **ignored** and may be omitted.
+   * Replaces the entire post-disabled-guard body. WeakMap closure cache
+   * still applied. Use for variants whose remove semantics diverge from
+   * the standard filter+commit body — e.g. `CngxTreeSelect` always
+   * single-deselects regardless of `cascadeChildren`. When set, the
+   * standard-body fields are ignored.
    */
   readonly removeOverride?: (item: Item) => void;
 
-  // ── Standard-body fields (required unless `removeOverride` is set) ──
-
-  /** Primary value signal — the array from which the chip's value is removed. */
+  /** Required unless `removeOverride` is set. */
   readonly values?: WritableSignal<T[]>;
-  /** Element-wise equality used to filter the current `values()` array. */
+  /** Element-wise equality for filtering. */
   readonly compareWith?: Signal<CngxSelectCompareFn<T>>;
-  /** Current commit action. `null` → synchronous path only. */
+  /** `null` → sync path only. */
   readonly commitAction?: Signal<CngxSelectCommitAction<T[]> | null>;
-  /** Optimistic vs pessimistic commit UX. Only consulted on the commit branch. */
   readonly commitMode?: Signal<CngxSelectCommitMode>;
-  /**
-   * Variant-specific commit dispatch. Typically wired to
-   * `ArrayCommitHandler.beginToggle`.
-   */
+  /** Typically wired to `ArrayCommitHandler.beginToggle`. */
   readonly beginCommit?: (
     next: T[],
     previous: T[],
@@ -92,17 +62,13 @@ export interface CngxChipRemovalHandlerOptions<
     action: CngxSelectCommitAction<T[]>,
   ) => void;
   /**
-   * Called **before** `beginCommit`. Use to stash the rollback snapshot
-   * (`lastCommittedValues = previous`) and mark the toggling option
-   * (`togglingOption.set(item)`) — both are variant-scoped side effects
-   * that shouldn't leak into the shared factory body.
+   * Runs before `beginCommit`. Stash rollback snapshot + mark the toggling
+   * option here.
    */
   readonly onBeforeCommit?: (previous: T[], item: Item) => void;
   /**
-   * Called on the non-commit branch **after** the synchronous
-   * `values.set(next)` write. Consumer emits its variant-specific
-   * change event (`selectionChange`, `optionToggled`, `cleared`) and
-   * announces the removal to AT.
+   * Runs on the sync branch after `values.set(next)`. Consumer emits the
+   * change event and announces.
    */
   readonly onSyncFinalize?: (item: Item, previous: T[]) => void;
 }
@@ -115,45 +81,20 @@ export interface CngxChipRemovalHandlerOptions<
 export interface CngxChipRemovalHandler<
   Item extends CngxChipRemovableItem<unknown>,
 > {
-  /**
-   * Apply the removal body (disabled-guard + snapshot + filter + branch).
-   * Call directly from `(remove)` bindings on the default chip pill or
-   * from keyboard handlers (e.g. Backspace-on-empty).
-   */
+  /** Apply the removal body. Bind directly to `(remove)` or Backspace. */
   removeByValue(item: Item): void;
   /**
-   * Stable-identity wrapper around {@link removeByValue}. The returned
-   * closure is cached per-item via a `WeakMap` so repeated calls with
-   * the same item reference yield the same function identity — safe to
-   * pass into `*cngxMultiSelectChip` / `*cngxTreeSelectChip` context
-   * without triggering embedded-view thrash on every CD cycle.
+   * Stable closure wrapping {@link removeByValue}, cached per-item via
+   * WeakMap. Safe to pass into chip-slot context without view thrash.
    */
   removeFor(item: Item): () => void;
 }
 
 /**
- * Factory producing a {@link CngxChipRemovalHandler}. Eliminates the
- * ~60 LOC of near-identical `removeOption` + `chipRemoveFor` boilerplate
- * that every chip-carrying select variant previously duplicated.
- *
- * **Why a factory (not a service).** Signal-first libraries favour
- * plain functions returning objects over class hierarchies. The handler
- * has no inheritance concerns, no lifecycle hooks, and no DI-visible
- * identity — a factory matches the rest of the repo
- * (`createCommitController`, `createArrayCommitHandler`,
- * `createTypeaheadController`). See `reference_api_prefix_convention.md`.
- *
- * **Responsibility split.** The handler owns:
- *   - disabled-guard + snapshot + filter,
- *   - commit / non-commit branch dispatch,
- *   - WeakMap closure stability.
- *
- * The consumer owns:
- *   - the concrete commit dispatch (`beginCommit`) — so tree-select's
- *     non-array-committed flow and the array variants' shared
- *     `ArrayCommitHandler.beginToggle` both fit,
- *   - variant-scoped rollback snapshotting (`onBeforeCommit`),
- *   - change-event emission + announcer call (`onSyncFinalize`).
+ * Builds a {@link CngxChipRemovalHandler}. Owns disabled-guard, snapshot,
+ * filter, branch dispatch, WeakMap closure stability. Consumer owns the
+ * commit dispatch (`beginCommit`), rollback snapshotting
+ * (`onBeforeCommit`), and change-event emission (`onSyncFinalize`).
  *
  * @category interactive
  */
@@ -165,10 +106,8 @@ export function createChipRemovalHandler<
 ): CngxChipRemovalHandler<Item> {
   const cache = new WeakMap<object, () => void>();
 
-  // Dev-mode validation — when `removeOverride` is absent, the standard
-  // body fields are required. Throwing here is friendlier than the
-  // `Cannot read properties of undefined` we'd otherwise hit at the
-  // first chip-remove click.
+  // Standard-body fields required without removeOverride. Throw at
+  // construction instead of at first chip-remove click.
   if (!opts.removeOverride) {
     const missing: string[] = [];
     if (!opts.values) {
@@ -206,9 +145,7 @@ export function createChipRemovalHandler<
       opts.removeOverride(item);
       return;
     }
-    // Standard-body fields are guaranteed present by the constructor-
-    // time validation above; the non-null assertions reflect the
-    // discriminated contract on `removeOverride`.
+    // Non-null assertions guarded by the construction-time validation above.
     const values = opts.values!;
     const compareWith = opts.compareWith!;
     const commitAction = opts.commitAction!;
@@ -249,8 +186,7 @@ export function createChipRemovalHandler<
 }
 
 /**
- * Factory-signature type — mirrors {@link createChipRemovalHandler} so
- * DI overrides match the exact shape of the default.
+ * Factory signature for {@link CNGX_CHIP_REMOVAL_HANDLER_FACTORY}.
  *
  * @category interactive
  */
@@ -262,17 +198,9 @@ export type CngxChipRemovalHandlerFactory = <
 ) => CngxChipRemovalHandler<Item>;
 
 /**
- * DI token resolving the factory used to instantiate a
- * {@link CngxChipRemovalHandler}. Defaults to
- * {@link createChipRemovalHandler}; override app-wide via
- * `providers: [{ provide: CNGX_CHIP_REMOVAL_HANDLER_FACTORY, useValue: customFactory }]`
- * or per-component via `viewProviders` to wrap the default with
- * telemetry, audit-logging, confirm-dialog-before-remove, or offline-
- * queue semantics — without forking any chip-carrying select variant.
- *
- * Symmetrical to `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` and
- * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` — the three tokens compose a
- * full enterprise swap surface for the remove-one-chip lifecycle.
+ * Factory token for {@link CngxChipRemovalHandler}. Default
+ * {@link createChipRemovalHandler}. Override to wrap with telemetry,
+ * confirm-before-remove, or offline-queue semantics.
  *
  * @category interactive
  */

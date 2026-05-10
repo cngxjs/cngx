@@ -84,7 +84,7 @@ export class CngxCopyValue {
         this.resetTimer = null;
       }, this.resetDelay());
     } catch {
-      // Clipboard write failed (e.g. permission denied) — silently ignore
+      // Clipboard write failed (permission denied, etc.) — drop silently.
     }
   }
 

@@ -13,25 +13,12 @@ import { createRecyclerPanelRendererFactory } from './recycler-panel-renderer';
 import type { CngxSelectVirtualizationConfig } from './config';
 
 /**
- * Build the variant's effective {@link PanelRenderer} based on the
- * resolved `CngxSelectConfig.virtualization` entry. Wraps the four
- * concerns each select-family variant used to handle ad-hoc:
+ * Resolves the variant's {@link PanelRenderer} from the
+ * `CngxSelectConfig.virtualization` entry: identity renderer when null,
+ * recycler renderer otherwise, with optional threshold-gated fallback to
+ * identity for small lists.
  *
- *   1. Identity rendering when virtualization is absent.
- *   2. Recycler construction with sensible defaults + tuning merge.
- *   3. Lazy `scrollElement` resolution via the variant's
- *      `popoverRef` viewChild (null-safe — scroll-observer retries
- *      `afterNextRender`).
- *   4. Threshold skip: when `totalCount` is below
- *      `virtualization.threshold`, renderer short-circuits to
- *      identity to avoid spacer-div overhead on naturally-small
- *      lists (follow-up potential — today threshold is purely
- *      documentation; the recycler handles small lists fine).
- *
- * **Must run in an injection context.** Calls `injectRecycler`
- * internally when virtualization is enabled; the recycler's
- * `DestroyRef` / `DOCUMENT` injections follow the calling variant's
- * lifecycle.
+ * Injection context required — calls `injectRecycler` internally.
  *
  * @category interactive
  */
@@ -44,9 +31,8 @@ export function createAutoPanelRenderer<T>(opts: {
     return createIdentityPanelRenderer<T>({ flatOptions: opts.flatOptions });
   }
 
-  // Lazy-getter ElementRef — the popover viewChild resolves during
-  // first CD; scroll-observer retries via `afterNextRender` so
-  // `nativeElement === null` at first call is safe.
+  // Popover viewChild resolves on first CD; scroll-observer retries via
+  // afterNextRender, so a null nativeElement on first call is fine.
   const scrollElement: ElementRef<HTMLElement> = {
     get nativeElement(): HTMLElement {
       const el = opts.popoverRef()?.elementRef.nativeElement;
@@ -72,12 +58,8 @@ export function createAutoPanelRenderer<T>(opts: {
     return recyclerRenderer;
   }
 
-  // Threshold-gated renderer — below the threshold, fall back to
-  // identity rendering (no spacers, no windowing). Above, full
-  // recycler. `renderOptions` / `totalCount` switch reactively; the
-  // `virtualizer` bundle stays attached so the panel template keeps
-  // a single wiring — its internal signals (offsetBefore etc.) just
-  // return zero while identity mode is active.
+  // Below threshold: identity render. Above: full recycler. virtualizer
+  // stays attached either way; identity-mode signals emit zero.
   return {
     renderOptions: computed<readonly CngxSelectOptionDef<T>[]>(
       () =>
@@ -85,10 +67,8 @@ export function createAutoPanelRenderer<T>(opts: {
           ? opts.flatOptions()
           : recyclerRenderer.renderOptions(),
       {
-        // Structural equality on length + per-entry identity. Matches
-        // the recycler-renderer's equality so the threshold-gated
-        // wrapper doesn't cascade re-renders when the inner signal
-        // returned an identical slice.
+        // Structural equal — length + per-entry identity. Matches the
+        // recycler renderer's equal so the wrapper doesn't cascade.
         equal: (a, b) => {
           if (a === b) {
             return true;

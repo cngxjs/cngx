@@ -115,11 +115,9 @@ import {
 
 /**
  * Change event emitted by {@link CngxActionMultiSelect.selectionChange}.
- * The `action` discriminant mirrors the flat multi-select family plus
- * the new `'create'` branch — when fired, `added` carries exactly the
- * one freshly-created value and `removed` is empty, so a consumer
- * aggregating deltas across commits treats a create identically to a
- * toggle-add.
+ * `action` mirrors the flat multi family plus `'create'` — `added`
+ * carries exactly the one new value and `removed` is empty, so delta-
+ * aggregating consumers treat create identically to toggle-add.
  *
  * @category interactive
  */
@@ -134,24 +132,19 @@ export interface CngxActionMultiSelectChange<T = unknown> {
 }
 
 /**
- * Multi-value combobox with inline quick-create. Eighth sibling of the
- * select family — parallels {@link CngxCombobox}'s chip-strip + inline
- * search surface but extends the action-slot protocol established by
- * CngxActionSelect (Commit 5): the `*cngxSelectAction` template's
- * `commit()` callback routes through the shared
+ * Multi-value combobox with inline quick-create. Parallels
+ * {@link CngxCombobox} and adds the action-slot protocol from
+ * `CngxActionSelect`: `*cngxSelectAction.commit()` routes through the
  * {@link CreateCommitHandler} to materialise a new `T`, patches the
- * persistent local buffer, appends the new value to the current
- * `values` array, and emits `selectionChange` with
- * `action: 'create'` + `added: [newValue]`.
+ * local buffer, appends to `values`, emits
+ * `selectionChange({ action: 'create', added: [newValue] })`.
  *
- * `closeOnCreate` defaults to `false` — multi-pick UX keeps the panel
- * open after each create so consumers can continue adding. The
- * commit-controller's supersede guard still applies: rapid consecutive
- * creates tear down the previous subscription cleanly.
+ * `closeOnCreate` default `false` — multi-pick UX keeps the panel open
+ * after each create. Commit-controller supersede guard tears down
+ * previous subscriptions on rapid consecutive creates.
  *
- * Dismiss-guard protocol (from Commit 4) applies identically: Escape
- * and click-outside are intercepted while `actionDirty()` is `true`,
- * shell-level Escape fires `cancel()` through the bridge.
+ * Dismiss-guard: Escape and click-outside intercepted while
+ * `actionDirty()` is `true`; Escape fires `cancel()`.
  *
  * @category interactive
  */
@@ -195,9 +188,9 @@ export interface CngxActionMultiSelectChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <!--
-        WAI-ARIA 1.2 combobox pattern — focusable element is the inner
-        <input role="combobox">. Wrapper carries role="group" so AT
-        reads chip-strip + input + action workflow as one widget.
+        WAI-ARIA 1.2 combobox pattern. Focusable element is the inner
+        <input role="combobox">; wrapper is role="group" so AT reads
+        chip-strip + input + action workflow as one widget.
       -->
       @let aria = triggerAria();
       <div
@@ -392,7 +385,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
-  /** Debounce for the inline search. Defaults to `0` — instant feedback in the action slot. */
+  /** Debounce for the inline search (ms). Default `0` for action-slot feedback. */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
   readonly skipInitial = input<boolean>(false);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
@@ -423,61 +416,48 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
   /**
-   * Quick-create handler. `null` (default) disables the create path —
-   * consumer templates can still render the slot as branding / static
-   * CTA, and clicking `commit()` becomes a silent no-op.
+   * Quick-create handler. `null` disables the create path — slot still
+   * renders, `commit()` becomes a silent no-op.
    */
   readonly quickCreateAction = input<CngxSelectCreateAction<T> | null>(null);
   /**
-   * Whether a successful create closes the panel. Defaults to `false`
-   * — multi-pick UX keeps the panel open so consumers can continue
-   * adding without re-opening. Set `true` for confirm-to-create
-   * workflows where each create is a discrete transaction.
+   * Whether a successful create closes the panel. Default `false` —
+   * multi-pick UX keeps the panel open. Set `true` for confirm-to-
+   * create workflows.
    */
   readonly closeOnCreate = input<boolean>(this.actionConfig.closeOnCreate ?? false);
   /**
-   * Whether the organism falls back to the raw `<input>` value when
-   * the debounced `searchTerm` hasn't caught up yet. Default derived
-   * from {@link CngxActionSelectConfig.liveInputFallback} (app-wide
-   * default `true`).
+   * Fall back to raw `<input>.value` when debounced `searchTerm`
+   * hasn't caught up.
    */
   readonly liveInputFallback = input<boolean>(this.actionConfig.liveInputFallback);
-  /**
-   * Position of the `*cngxSelectAction` slot within the panel frame.
-   * Forwarded through the shared view-host contract into
-   * `CngxSelectPanelShell.actionPosition`. Defaults to `'bottom'`.
-   */
+  /** Position of `*cngxSelectAction` in the panel. */
   readonly actionPosition = input<'top' | 'bottom' | 'both' | 'none'>(
     this.actionConfig.actionPosition,
   );
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxActionSelectConfig.popoverPlacement} — app
-   * default `'bottom'` if neither is set.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxActionSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(
     this.actionConfig.popoverPlacement,
   );
-  /**
-   * Mobile `inputmode` attribute. Defaults from
-   * {@link CngxSelectConfig.inputMode} (`'search'`).
-   */
+  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
     this.config.inputMode,
   );
   /**
-   * Mobile `enterkeyhint` attribute. Defaults to `'enter'` (ActionMulti
-   * Enter appends a chip without closing the panel). App-wide config
-   * wins when non-null.
+   * Mobile `enterkeyhint`. Default `'enter'` — Enter appends a chip
+   * without closing the panel.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'enter',
   );
-  /** Chip-strip overflow strategy. See {@link CngxSelectConfig.chipOverflow}. */
+  /** Chip-strip overflow strategy. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /** Max chips in `'truncate'` mode. Default from config. */
+  /** Max chips in `'truncate'` mode. */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
   /** Two-way multi-value binding. */
@@ -496,13 +476,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
   readonly searchTermChange = output<string>();
-  /**
-   * Dedicated channel for successful quick-creates. Fires after
-   * `selectionChange` with the same option payload.
-   */
+  /** Dedicated channel for successful creates. Fires after `selectionChange`. */
   readonly created = output<CngxSelectOptionDef<T>>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -573,8 +548,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
 
-  // ── CngxFormFieldControl ───────────────────────────────────────────
-
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
   /** @internal */ readonly focused = this.focusState.focused;
@@ -603,24 +576,18 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
-  // ── Local-items buffer ─────────────────────────────────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
 
-  // ── Action-slot bridge (commit routes through create handler) ──────
-
   /**
-   * Dedicated commit controller for the quick-create flow. The
-   * component's toggle/clear path runs through `core.commitController`
-   * (typed `CngxCommitController<T[]>` because array-commit-handler
-   * reconciles the full values array). A create materialises a
-   * single `T`, so it needs a controller parameterised on `T`, not
-   * `T[]`. Keeping the two controllers separate also preserves each
-   * path's supersede semantics — a create in flight doesn't cancel
-   * a pending toggle and vice versa.
+   * Dedicated commit controller for quick-create. The toggle/clear
+   * path runs through `core.commitController` (typed `T[]` because
+   * `ArrayCommitHandler` reconciles the full array); create
+   * materialises a single `T`, so needs a `T`-typed controller.
+   * Splitting them also preserves independent supersede semantics
+   * — create-in-flight doesn't cancel a pending toggle and vice versa.
    *
    * @internal
    */
@@ -637,19 +604,16 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
   /**
-   * View-host signal the shared panel shell reads when building the
-   * `*cngxSelectAction` context's `$implicit` + `searchTerm` fields.
+   * Live search term for `*cngxSelectAction`'s `$implicit` +
+   * `searchTerm` slot fields.
    *
    * @internal
    */
   readonly actionSearchTerm = this.searchTerm;
   /**
-   * View-host signal feeding the action context's `error` + `hasError`
-   * fields. Multi-select uses a dedicated `createCommitController<T>`
-   * for the quick-create lifecycle (independent of the array-typed
-   * toggle/clear controller on `core.commitController`), so the
-   * action-slot error surface reflects create failures only — toggle
-   * errors still flow through the shell's own commit-error banner.
+   * Action context's `error` + `hasError` source. Reflects create
+   * failures only — toggle errors flow through the shell's
+   * commit-error banner via the array-typed `core.commitController`.
    *
    * @internal
    */
@@ -657,15 +621,11 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.createCommitController.state.error(),
   );
   /**
-   * View-host signal feeding the action context's `value` field —
-   * forwards the component's live values array so in-panel mini-forms
-   * can read the current selection without re-injecting.
+   * Action context's `value` source. Forwards the live values array.
    *
    * @internal
    */
   readonly actionValue = computed<unknown>(() => this.values());
-
-  // ── Core (stateless signal graph) ──────────────────────────────────
 
   private readonly core = createSelectCore<T, T[]>(
     {
@@ -713,8 +673,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface ──────────────────────────────
 
   /** @internal */
   protected readonly effectiveOptions = this.core.effectiveOptions;
@@ -778,9 +736,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
 
   readonly commitState = this.core.commitState;
   /**
-   * `true` while EITHER the toggle/clear commit or the quick-create
-   * commit is pending. The two run on separate controllers (toggle
-   * reconciles `T[]`; create materialises a single `T`) but a consumer
+   * `true` while either the toggle/clear or quick-create commit is
+   * pending. The two run on separate controllers but a consumer
    * observing "is any write in flight?" gets a single truthy signal.
    */
   readonly isCommitting = computed<boolean>(
@@ -839,8 +796,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Multi-selection state ──────────────────────────────────────────
-
   /** @internal — chip subset + overflow badge count (see CngxMultiSelect). */
   protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
     const all = this.selectedOptions();
@@ -866,10 +821,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       if (vals.length === 0) {
         return [];
       }
-      // Chip strip must look up selected values against the UNFILTERED
-      // option merge — if the user has typed a filter term that hides
-      // previously-picked values from the panel listbox, the chips
-      // should still render.
+      // Chip strip resolves against the UNFILTERED option merge so
+      // chips for previously-picked values stay visible when the
+      // search term hides the matching option from the listbox.
       const eq = this.compareWith();
       const out: CngxSelectOptionDef<T>[] = [];
       const flat = this.core.unfilteredFlatOptions();
@@ -898,8 +852,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       },
     },
   );
-
-  // ── Commit handlers (toggle/clear + create) ────────────────────────
 
   private readonly togglingOption = this.core.togglingOption;
   private lastCommittedValues: T[] = [];
@@ -931,10 +883,8 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   });
 
   /**
-   * Shared create-commit handler. Routes every quick-create through
-   * the same lifecycle primitive `CngxActionSelect` uses; the
-   * `onCreated` callback is where multi-value semantic lives —
-   * append-to-values rather than replace.
+   * Create-commit handler. Same primitive `CngxActionSelect` uses;
+   * `onCreated` carries the multi-value semantic (append, not replace).
    *
    * @internal
    */
@@ -946,16 +896,13 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     localItemsBuffer: this.localItemsBuffer,
     closeOnSuccess: this.closeOnCreate,
     onCreated: (option, previousValues) => {
-      // Multi-value: append the new value to the array. No dedup —
-      // quickCreateAction is intentional and should never collide
-      // with an existing selection (the created item is, by
-      // definition, freshly materialised).
+      // Append the new value. No dedup — `quickCreateAction` is
+      // intentional and the created item is by definition fresh.
       const next = [...previousValues, option.value];
       this.values.set(next);
-      // Clear the inline search so the user can immediately type the
-      // next term. Mirrors tag-input UX — every successful "add" wipes
-      // the input. For single-value (`CngxActionSelect`), the input
-      // instead shows `displayWith(value)` to reflect the selection.
+      // Wipe the search so the user can type the next term. Tag-input
+      // UX. Single-value `CngxActionSelect` instead writes
+      // `displayWith(value)` to reflect the new selection.
       this.searchInputRef()?.clear();
       this.optionToggled.emit({ option, added: true });
       this.selectionChange.emit({
@@ -978,7 +925,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     onResetDirty: () => this.actionBridge.reset(),
   });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */
   protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */
@@ -993,10 +939,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }
 
   /**
-   * Chip-removal handler — same factory as the rest of the multi-value
-   * family. The action-host is independent of chip-remove (the action
-   * dispatches happen via the action panel, not the chip strip), so
-   * wiring is identical to `CngxMultiSelect`.
+   * Chip-removal handler. Action-host is independent of chip-remove
+   * (action dispatches happen via the panel, not the chips), so wiring
+   * is identical to `CngxMultiSelect`.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
     inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
@@ -1077,7 +1022,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       toFieldValue: (v) => [...v],
     });
 
-    // Search-term effects: skipInitial-gated emit + auto-open on typing.
+    // Search-term effects: skipInitial-gated emit + auto-open on type.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -1096,21 +1041,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
 
-  // ── Action-slot commit routing ─────────────────────────────────────
-
   /**
-   * Entry point invoked by the action-slot template's `commit()`
-   * callback. Resolves an effective draft (falling back to the live
-   * `searchTerm` when omitted) and dispatches through the create
-   * handler with the current values as previous-snapshot.
-   *
-   * @internal
-   */
-  /**
-   * Enter on the trigger input fires the quick-create flow when the
-   * listbox has no active option AND a quickCreateAction is bound AND
-   * the user has typed something. Natural tag-input keyboard UX —
-   * type the new tag name, press Enter, a chip appears.
+   * Enter on the trigger input fires quick-create when no AD item is
+   * active, `quickCreateAction` is bound, and the term is non-empty.
+   * Tag-input keyboard UX: type, Enter, chip appears.
    *
    * @internal
    */
@@ -1149,10 +1083,9 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
   }
 
   /**
-   * Live search-term accessor for the create flow. See
-   * {@link CngxActionSelect} for the contract — identical behaviour
-   * carried over so both organisms honour the same
-   * `liveInputFallback` config switch.
+   * Live search-term accessor. Same contract as
+   * {@link CngxActionSelect}; both organisms honour the
+   * `liveInputFallback` switch identically.
    *
    * @internal
    */
@@ -1163,8 +1096,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     }
     return this.inputEl()?.nativeElement.value ?? '';
   }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
@@ -1250,8 +1181,6 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
   }
-
-  // ── Commit orchestration ───────────────────────────────────────────
 
   private finalizeToggle(
     opt: CngxSelectOptionDef<T>,

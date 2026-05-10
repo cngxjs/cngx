@@ -11,13 +11,11 @@ import {
 import { CNGX_SELECT_COMMIT_CONTROLLER_FACTORY } from '../commit-controller.token';
 
 /**
- * Shared smoke spec for the Phase 0 commit-controller lift. Asserts
- * that every select variant resolves the select-side factory token
- * to a working controller AND that an override on the lifted generic
- * `CNGX_COMMIT_CONTROLLER_FACTORY` cascades transparently into the
- * select-side wrapper. Each variant's `*.spec.ts` calls this helper
- * inside its own describe block to lock the lift's invariants on a
- * per-variant basis.
+ * Shared smoke spec for the commit-controller lift. Asserts every
+ * select variant resolves the select-side factory token to a working
+ * controller AND that overriding the generic
+ * `CNGX_COMMIT_CONTROLLER_FACTORY` cascades into the wrapper. Each
+ * variant's spec calls this in its own `describe` block.
  *
  * @internal
  */
@@ -53,10 +51,10 @@ export function describeCommitControllerCascade(variantName: string): void {
       });
       const factory = TestBed.inject(CNGX_SELECT_COMMIT_CONTROLLER_FACTORY);
       const ctrl = factory<unknown>();
-      // The select-side wrapper unwraps the generic and re-wires its
-      // signal accessors. Verify the wrapper still produces a usable
-      // controller — the override surface is invisible at the select
-      // call-sites, by design.
+      // The wrapper unwraps the generic and re-wires its signal
+      // accessors. Verify the wrapper still produces a usable
+      // controller — the override is invisible at select call-sites
+      // by design.
       expect(typeof ctrl.begin).toBe('function');
       expect(ctrl.state.status()).toBe('idle');
     });

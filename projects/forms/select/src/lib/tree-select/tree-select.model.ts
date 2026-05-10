@@ -1,35 +1,31 @@
 import { type CngxTreeNode, type FlatTreeNode } from '@cngx/utils';
 
 /**
- * Re-export of `@cngx/utils`'s `CngxTreeNode<T>` so consumers working
- * with `CngxTreeSelect` can import everything they need from a single
- * secondary-entry (`@cngx/forms/select`). The shape is unchanged —
- * `value` / `label?` / `disabled?` / `children?` — and there is only
- * one canonical definition of it across the monorepo.
+ * Re-export of `@cngx/utils`'s `CngxTreeNode<T>` so `CngxTreeSelect`
+ * consumers import everything from a single secondary-entry. Shape
+ * unchanged: `value` / `label?` / `disabled?` / `children?`.
  *
  * @category interactive
  */
 export type { CngxTreeNode, FlatTreeNode };
 
 /**
- * Action reported on `CngxTreeSelectChange.action`. Split out so
- * consumers can narrow inside `switch`-style handlers without
- * importing the whole change interface.
+ * Action reported on `CngxTreeSelectChange.action`. Split out for
+ * `switch`-style narrowing without importing the change interface.
  *
- * - `'toggle'` — a single node's selection was flipped.
- * - `'cascade-toggle'` — a parent toggle propagated to all descendants
- *   atomically (only possible with `[cascadeChildren]="true"`).
- * - `'clear'` — the full selection was cleared.
+ *   - `'toggle'` — single node flipped.
+ *   - `'cascade-toggle'` — parent toggle propagated to all descendants
+ *     atomically (requires `[cascadeChildren]="true"`).
+ *   - `'clear'` — full selection cleared.
  *
  * @category interactive
  */
 export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
 
 /**
- * Resolved selection entry surfaced to the trigger's chip strip + to
- * consumer-authored chip / trigger-label slots. Carries a display
- * label alongside the raw domain value so custom markup never has to
- * call back into `labelFn`.
+ * Resolved selection entry surfaced to the chip strip and the chip /
+ * trigger-label slots. Carries a display label alongside the raw value
+ * so custom markup never has to call `labelFn`.
  *
  * @category interactive
  */
@@ -39,9 +35,8 @@ export interface CngxTreeSelectedItem<T = unknown> {
 }
 
 /**
- * Context for `*cngxTreeSelectChip` — per-chip override for the default
- * `<cngx-chip>` pill. Mirrors `CngxMultiSelectChipContext` shape-wise so
- * consumer snippets can share across the two variants.
+ * Context for `*cngxTreeSelectChip`. Mirrors `CngxMultiSelectChipContext`
+ * shape so consumer snippets share across variants.
  *
  * @category interactive
  */
@@ -49,17 +44,15 @@ export interface CngxTreeSelectChipContext<T = unknown> {
   readonly $implicit: CngxTreeSelectedItem<T>;
   readonly option: CngxTreeSelectedItem<T>;
   /**
-   * Commit-aware removal callback. Routes through the component's
-   * single-toggle flow (no cascade, even when `[cascadeChildren]` is
-   * on — chip × represents exactly one explicit value).
+   * Commit-aware removal. Always single-deselect, even with
+   * `[cascadeChildren]="true"` — chip × represents one explicit value.
    */
   readonly remove: () => void;
 }
 
 /**
- * Context for `*cngxTreeSelectTriggerLabel` — replaces the entire chip
- * strip with consumer markup. Mirrors the flat-family trigger-label
- * context so `"3 selected"` style summaries can share templates.
+ * Context for `*cngxTreeSelectTriggerLabel`. Mirrors the flat-family
+ * trigger-label context so `"3 selected"` summaries share templates.
  *
  * @category interactive
  */
@@ -71,15 +64,14 @@ export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
 }
 
 /**
- * Context surfaced to consumer-authored `*cngxTreeSelectNode`
- * templates. Receives the flat-projected node plus the reactive
- * derivations the panel uses internally (selected, indeterminate,
- * expanded), so consumer markup can mirror the built-in row without
- * re-querying the controller/selection APIs.
+ * Context for `*cngxTreeSelectNode`. Carries the flat-projected node
+ * plus the reactive derivations the panel uses (selected,
+ * indeterminate, expanded), so custom markup mirrors the built-in row
+ * without re-querying.
  *
- * `toggleExpand` and `handleSelect` are closed callbacks bound to the
- * surrounding `CngxTreeSelect` instance — safe to wire into (click)
- * handlers on a custom twisty button or a custom row body.
+ * `toggleExpand` / `handleSelect` are closed callbacks bound to the
+ * surrounding component — wire into `(click)` on a custom twisty
+ * button or row body.
  *
  * @category interactive
  */

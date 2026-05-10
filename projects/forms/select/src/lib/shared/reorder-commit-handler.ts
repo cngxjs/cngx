@@ -23,23 +23,22 @@ export interface ReorderCommitHandlerOptions<T> {
   readonly commitAction: Signal<CngxSelectCommitAction<T[]> | null>;
   /**
    * Shared low-level commit controller. Reorder commits bypass
-   * `createArrayCommitHandler` — `sameArrayContents` would skip the
-   * write on same-membership reorders — and drive this controller
-   * directly.
+   * `createArrayCommitHandler` (whose `sameArrayContents` would skip
+   * same-membership writes) and drive this controller directly.
    */
   readonly commitController: CngxCommitController<T[]>;
   /** Read the last successfully committed snapshot (rollback target). */
   readonly getLastCommitted: () => T[];
   /**
-   * Update the last successfully committed snapshot. Called on
-   * optimistic-mode begin (stash the pre-reorder state) and on commit
-   * success (store the canonicalized server value).
+   * Update the rollback snapshot. Called on optimistic-mode begin
+   * (stash pre-reorder state) and on success (store canonicalised
+   * server value).
    */
   readonly setLastCommitted: (values: T[]) => void;
   /**
-   * Emit the semantic `selectionChange` + `reordered` payload.
-   * Consumer controls the change-event shape (signature mirrors the
-   * optimistic / pessimistic / no-commit branches the handler drives).
+   * Emit `selectionChange` + `reordered` payload. Consumer controls the
+   * shape; signature covers optimistic / pessimistic / no-commit
+   * branches.
    */
   readonly onReorder: (
     values: readonly T[],
@@ -49,10 +48,8 @@ export interface ReorderCommitHandlerOptions<T> {
     toIndex: number,
   ) => void;
   /**
-   * Announce the reorder through the select-family live region.
-   * Pulled out as a callback so the handler stays value-shape-agnostic
-   * beyond `T[]` — consumers can route to a custom announcer without
-   * forking the handler.
+   * Announce the reorder. Pulled out so consumers can route to a
+   * custom announcer without forking.
    */
   readonly onAnnounce: (
     option: CngxSelectOptionDef<T> | null,
@@ -60,9 +57,9 @@ export interface ReorderCommitHandlerOptions<T> {
     toIndex: number,
     count: number,
   ) => void;
-  /** State-transition hook for the consumer's `stateChange` output. */
+  /** Hook for the consumer's `stateChange` output. */
   readonly onStateChange: (status: AsyncStatus) => void;
-  /** Error-forward hook for the consumer's `commitError` output. */
+  /** Hook for the consumer's `commitError` output. */
   readonly onError: (err: unknown) => void;
 }
 
@@ -73,17 +70,15 @@ export interface ReorderCommitHandlerOptions<T> {
  */
 export interface ReorderCommitHandler<T> {
   /**
-   * Run a reorder through the commit flow. No-commit path writes
-   * `values` immediately and fires `onReorder` + `onAnnounce`.
-   * Optimistic path writes immediately, emits the intent, then begins
-   * the commit — success reconciles with the server's canonicalized
-   * value, error rolls back. Pessimistic path holds `values`, emits
-   * `'pending'`, begins the commit — success writes + emits, error
-   * leaves `values` untouched and emits `onError`.
+   * Run a reorder through the commit flow.
+   * - No commit: write `values`, fire `onReorder` + `onAnnounce`.
+   * - Optimistic: write, emit, begin commit. Success reconciles with
+   *   the server's canonicalised value; error rolls back.
+   * - Pessimistic: hold `values`, emit `'pending'`, begin commit.
+   *   Success writes + emits; error leaves `values` untouched.
    *
-   * Always writes on success regardless of same-membership semantics —
-   * the point of this factory is to bypass the `sameArrayContents`
-   * short-circuit that {@link createArrayCommitHandler} uses.
+   * Always writes on success regardless of same-membership — the point
+   * of this factory is to bypass `sameArrayContents`.
    */
   dispatch(
     next: T[],
@@ -95,24 +90,19 @@ export interface ReorderCommitHandler<T> {
 }
 
 /**
- * Plain factory for the reorder-commit flow. Extracted from
- * `CngxReorderableMultiSelect` so enterprise consumers can swap in
- * retry-with-backoff, offline-queue, or telemetry wrappers without
- * forking the component. Mirrors the shape of
- * {@link createArrayCommitHandler} but operates on ordered arrays with
+ * Plain factory for the reorder-commit flow used by
+ * `CngxReorderableMultiSelect`. Operates on ordered arrays with
  * same-membership semantics.
  *
- * **Why a separate factory** (not a flag on `createArrayCommitHandler`):
+ * Why a separate factory (not a flag on `createArrayCommitHandler`):
  * the array handler's `reconcileValues` uses `sameArrayContents` to
  * short-circuit writes when the target matches current state — a pure
- * reorder (same values, new order) would be silently skipped. Carrying
- * a `bypassReconcile` flag through the array handler would complicate
- * every other call-site. A dedicated factory with its own contract is
- * clearer and keeps the array handler's hot path small.
+ * reorder would silently skip. A `bypassReconcile` flag would
+ * complicate every other call-site; a dedicated factory keeps the
+ * array handler's hot path small.
  *
- * **Tree-select parity**: `CngxTreeSelect.dispatchValueChange` follows
- * the same pattern inline — a future refactor could lift that path
- * into this factory too.
+ * `CngxTreeSelect.dispatchValueChange` follows the same pattern
+ * inline; a future refactor could lift it here.
  *
  * @category interactive
  */
@@ -146,8 +136,8 @@ export function createReorderCommitHandler<T>(
       onSuccess: (committed) => {
         opts.onStateChange('success');
         const final = committed ?? next;
-        // Always write — server canonicalisation may have reordered
-        // differently from the optimistic `next` value.
+        // Always write — server canonicalisation may differ from the
+        // optimistic `next`.
         opts.values.set([...final]);
         opts.setLastCommitted([...final]);
         if (opts.commitMode() === 'pessimistic') {
@@ -178,15 +168,10 @@ export type CngxReorderCommitHandlerFactory = <T>(
 ) => ReorderCommitHandler<T>;
 
 /**
- * DI token resolving the factory used to instantiate a
- * {@link ReorderCommitHandler}. Defaults to
- * {@link createReorderCommitHandler}; override via `providers` /
- * `viewProviders` to attach retry-with-backoff, offline queues, audit
- * logging, or telemetry without forking any reorder-aware component.
- *
- * Symmetrical to `CNGX_ARRAY_COMMIT_HANDLER_FACTORY` — same layering
- * level, complementary contract (same-membership reorders instead of
- * add/remove).
+ * DI token for {@link ReorderCommitHandler}. Default
+ * {@link createReorderCommitHandler}. Override via `providers` /
+ * `viewProviders` for retry-with-backoff, offline queues, audit
+ * logging, or telemetry.
  *
  * @category interactive
  */

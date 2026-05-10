@@ -12,31 +12,10 @@ import {
 import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
- * Shared virtualisation wire-up for every select-family variant that
- * renders options via `CngxSelectPanel`. Consolidates the four
- * concerns each variant used to re-implement:
- *
- *   1. **Panel renderer cascade.** Consumer-supplied
- *      `CNGX_PANEL_RENDERER_FACTORY` wins when it returns a
- *      virtualising renderer; otherwise the config-driven
- *      `createAutoPanelRenderer` kicks in when
- *      `CngxSelectConfig.virtualization` is set; otherwise identity.
- *   2. **Virtual item count.** Exposed as a signal the variant
- *      templates bind to `[virtualCount]` on their inner
- *      `CngxListbox`. `undefined` in the identity path so
- *      `CngxActiveDescendant` falls back to `resolvedItems.length`.
- *   3. **AD → recycler scroll bridge.** When the renderer has a
- *      virtualiser AND the listbox resolves, keyboard navigation
- *      past the rendered window calls `virtualizer.scrollToIndex`
- *      to bring the active option into view. Equivalent to
- *      {@link /projects/common/data/src/recycler/connect-recycler-active-descendant.ts
- *      connectRecyclerToActiveDescendant} but works off the
- *      variant-level renderer bundle (no raw recycler reference
- *      needed).
- *   4. **Injection context.** The helper calls `inject` /
- *      `injectRecycler` on behalf of the variant — the variant
- *      invokes it in a field initializer exactly like any other
- *      `inject(...)` call.
+ * Virtualisation wire-up for variants rendering through `CngxSelectPanel`.
+ * Resolves the renderer cascade (consumer-supplied → config-driven →
+ * identity), surfaces `virtualItemCount`, and installs the AD→recycler
+ * `scrollToIndex` bridge. Injection context required.
  *
  * @category interactive
  */
@@ -68,11 +47,8 @@ export function setupVirtualization<T, TCommit>(opts: {
     return panelRenderer.virtualizer !== undefined ? total : undefined;
   });
 
-  // AD ↔ recycler scroll bridge — only fires when the renderer
-  // carries a virtualiser AND the listbox (hence its AD
-  // hostDirective) has resolved via viewChild. AD auto-clears its
-  // `pendingHighlightState` once the target enters the rendered
-  // range, so no explicit clear is needed here.
+  // AD ↔ recycler scroll bridge. AD auto-clears pendingHighlight once
+  // the target enters the rendered range — no explicit clear here.
   effect(() => {
     const v = panelRenderer.virtualizer;
     if (!v) {
@@ -92,6 +68,4 @@ export function setupVirtualization<T, TCommit>(opts: {
   return { panelRenderer, virtualItemCount };
 }
 
-// Re-export the compareWith type alias so variants that import this
-// helper don't need a second shared-imports line for a tiny type.
 export type { CngxSelectCompareFn };

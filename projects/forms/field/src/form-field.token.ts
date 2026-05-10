@@ -8,13 +8,10 @@ import {
 import type { ErrorMessageMap } from './models';
 
 /**
- * Re-exports — the form-field control + host contracts now live at
- * `@cngx/core/tokens` so Level-2 atoms in `@cngx/common/*` can provide
- * and inject them without crossing the Sheriff-enforced layer boundary
- * (`lib:common` is forbidden from importing `lib:forms`). Public-API
- * consumers keep their existing
- * `import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field'` import
- * paths unchanged.
+ * Re-exports — control + host contracts live in `@cngx/core/tokens` so
+ * Level-2 atoms in `@cngx/common/*` can provide them without violating
+ * Sheriff (`lib:common` cannot import `lib:forms`). Public import path
+ * `@cngx/forms/field` stays unchanged for consumers.
  */
 export {
   CNGX_FORM_FIELD_CONTROL,
@@ -24,16 +21,10 @@ export {
 } from '@cngx/core/tokens';
 
 /**
- * Contract every reveal-trigger source fulfils.
- *
- * The Forms-side abstraction over "is the user-driven error reveal active
- * right now?". `CngxErrorScope` from `@cngx/common/interactive` is the
- * default producer (wired via `CngxErrorScopeFieldBridge`); custom
- * router-driven, interceptor-driven, or test-harness-driven triggers can
- * provide their own implementation without depending on `CngxErrorScope`.
- *
- * Decouples `CngxFormFieldPresenter` from the concrete scope contract —
- * the presenter only knows about this Forms-local interface.
+ * Forms-side abstraction over "is the user-driven error reveal active?".
+ * `CngxErrorScope` (via `CngxErrorScopeFieldBridge`) is the default producer;
+ * router-driven, interceptor-driven, or test-harness triggers may provide
+ * their own. Decouples the presenter from the scope contract.
  *
  * @category interfaces
  */
@@ -104,10 +95,9 @@ export interface FormFieldConfig {
    */
   requiredMarker?: string | false;
   /**
-   * When set, fully overrides the default error visibility gate
-   * (`touched OR errorScope.showErrors`). The presenter calls the strategy
-   * inside `untracked()` so strategy-internal signal reads do not widen
-   * `showError`'s dependency graph.
+   * Fully overrides the default error gate (`touched OR errorScope.showErrors`).
+   * The presenter invokes this inside `untracked()` so strategy-internal
+   * signal reads cannot widen `showError`'s dependency graph.
    */
   errorStrategy?: ErrorStrategyFn;
 }

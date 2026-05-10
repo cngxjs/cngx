@@ -62,8 +62,6 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   );
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
 
-  // ── CngxFormFieldControl ───────────────────────────────────────────
-
   readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
 
   private readonly focusedState = signal(false);
@@ -74,8 +72,6 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   readonly disabled = computed<boolean>(() => this.presenter?.disabled() ?? false);
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
-
-  // ── Host ARIA bindings ─────────────────────────────────────────────
 
   /** @internal */
   protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
@@ -94,12 +90,8 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
   /** @internal */
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
 
-  // ── Value sync ─────────────────────────────────────────────────────
-
   constructor() {
-    // Field → Listbox: whenever the bound field value changes, push into the
-    // listbox's model signal. Guarded with an equality check so that a write
-    // triggered by the inverse sync doesn't bounce back.
+    // Field → Listbox. Equality-guarded so the inverse sync's write does not bounce.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -121,11 +113,8 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
       }
     });
 
-    // Listbox → Field: when the user clicks / keyboard-selects, push into the
-    // bound field's writable value signal. Both the mock and the real Signal
-    // Forms field expose `value` as a `WritableSignal` at runtime; the type in
-    // `CngxFieldRef` hides writability for API stability, so we downcast via a
-    // narrow helper.
+    // Listbox → Field. `value` is a `WritableSignal` at runtime on both real and
+    // mock fields; `CngxFieldRef` hides writability for API stability — narrow via writeFieldValue.
     effect(() => {
       const presenter = this.presenter;
       if (!presenter) {
@@ -150,8 +139,6 @@ export class CngxListboxFieldBridge implements CngxFormFieldControl {
       writeFieldValue(fieldRef, listboxValue);
     });
   }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleFocus(): void {
@@ -179,10 +166,7 @@ function arrayEq(a: readonly unknown[], b: readonly unknown[]): boolean {
 
 /**
  * Writes `value` into `fieldRef.value` when it exposes a `WritableSignal`.
- * Both the mock-field helper (tests) and the real Signal Forms `FieldState`
- * satisfy this at runtime; `CngxFieldRef` hides the writability for API
- * stability, so we branch by capability check instead of type-system
- * contortions.
+ * Capability-checked branch instead of widening the public type.
  */
 function writeFieldValue(fieldRef: CngxFieldRef, value: unknown): void {
   const signal = fieldRef.value as unknown;

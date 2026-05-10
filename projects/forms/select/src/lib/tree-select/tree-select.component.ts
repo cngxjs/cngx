@@ -107,13 +107,11 @@ import type {
 } from './tree-select.model';
 
 /**
- * Change event emitted by `CngxTreeSelect.selectionChange`. Shape lines
- * up with `CngxMultiSelectChange` / `CngxComboboxChange` so tree + flat
- * consumers can share `(selectionChange)` handlers; the `option` field
- * carries the `FlatTreeNode<T>` that triggered the event (rather than
- * the `CngxSelectOptionDef` from the flat world). `'cascade-toggle'`
- * is the tree-only action, fired once per parent-toggle that propagated
- * to descendants.
+ * Change event emitted by `CngxTreeSelect.selectionChange`. Shape
+ * matches `CngxMultiSelectChange` / `CngxComboboxChange` for shared
+ * `(selectionChange)` handlers; `option` carries a `FlatTreeNode<T>`
+ * (not a `CngxSelectOptionDef`). `'cascade-toggle'` fires once per
+ * parent-toggle that propagated to descendants.
  *
  * @category interactive
  */
@@ -128,24 +126,20 @@ export interface CngxTreeSelectChange<T = unknown> {
 }
 
 /**
- * Tree-structured multi-select. Fifth member of the select family; shares
- * the popover + shell + commit-action + focus + announce plumbing with
- * `CngxSelect` / `CngxMultiSelect` / `CngxCombobox` / `CngxTypeahead`,
- * and adds a `CngxTreeController` + selection-with-cascade-children on
- * top. The visible body is a W3C APG treeview rendered by
- * `CngxTreeSelectPanel`; ArrowLeft/Right navigation is wired through
- * `CngxHierarchicalNav`, ArrowUp/Down + Home/End + typeahead through
- * `CngxActiveDescendant`.
+ * Tree-structured multi-select. Shares popover + commit + focus +
+ * announce plumbing with the flat family; adds `CngxTreeController` +
+ * cascade selection. Body is a W3C APG treeview in
+ * `CngxTreeSelectPanel`; ArrowLeft/Right via `CngxHierarchicalNav`,
+ * ArrowUp/Down + Home/End + typeahead via `CngxActiveDescendant`.
  *
- * Selection semantics:
- * - **Default (`[cascadeChildren]="false"`)**: toggles operate on the
- *   single activated value; indeterminate parents are still reported
- *   through `SelectionController.isIndeterminate` because the
- *   controller was seeded with `childrenFn`.
- * - **Cascade (`[cascadeChildren]="true"`)**: a parent toggle selects or
- *   deselects every descendant atomically. A single `selectionChange`
- *   event with `action: 'cascade-toggle'` carries the aggregated
- *   `added` / `removed` lists.
+ * Selection:
+ * - `[cascadeChildren]="false"` (default): single-value toggle;
+ *   indeterminate parents reported via
+ *   `SelectionController.isIndeterminate` (controller seeded with
+ *   `childrenFn`).
+ * - `[cascadeChildren]="true"`: parent toggle selects/deselects every
+ *   descendant atomically. Single `selectionChange` with
+ *   `action: 'cascade-toggle'` carries aggregated `added`/`removed`.
  *
  * @category interactive
  */
@@ -186,10 +180,9 @@ export interface CngxTreeSelectChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <!--
-        role="combobox" as <div> (not <button>) — trigger carries
-        interactive chips + clear-button children, which would be
-        invalid nested interactives inside a <button>. WAI-ARIA 1.2
-        multi-value pattern, identical to CngxMultiSelect.
+        role="combobox" on a <div>, not <button>: chips and clear
+        button would be invalid nested interactives. WAI-ARIA 1.2
+        multi-value pattern, same as CngxMultiSelect.
       -->
       @let aria = triggerAria();
       <div
@@ -327,35 +320,30 @@ export class CngxTreeSelect<T = unknown>
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
-  // Tree virtualisation is intentionally not wired via
-  // `CngxSelectConfig.virtualization` yet. Tree semantics — dynamic
-  // expand/collapse changes visible count mid-scroll, `aria-setsize`
-  // is per-level (not flat), and `scrollToIndex(42)` on a collapsed
-  // ancestor needs to expand the path first — don't map cleanly onto
-  // the flat-list recycler integration the rest of the family uses.
-  // A proper tree-recycler design is tracked as follow-up work; until
-  // then, `<cngx-tree-select>` renders every node regardless of the
-  // app-wide config entry.
+  // Tree virtualisation is not wired through
+  // `CngxSelectConfig.virtualization`. Tree semantics — expand/collapse
+  // changes visible count mid-scroll, `aria-setsize` is per-level,
+  // `scrollToIndex(42)` on a collapsed ancestor needs path-expand
+  // first — don't map onto the flat-list recycler integration. Tree-
+  // recycler design tracked as follow-up; until then every node
+  // renders regardless of the app-wide config entry.
   private readonly autoId = nextUid('cngx-tree-select');
-
-  // ── Inputs ─────────────────────────────────────────────────────────
 
   /** Source tree. Flatten/visibility derive automatically. */
   readonly nodes = input<readonly CngxTreeNode<T>[]>([]);
   /** Multi-value model — the selected subset of T. */
   readonly values = model<T[]>([]);
-  /** Stable id per node. Required — see `CngxTreeControllerOptions.nodeIdFn`. */
+  /** Stable id per node. See `CngxTreeControllerOptions.nodeIdFn`. */
   readonly nodeIdFn = input.required<(value: T, path: readonly number[]) => string>();
   /** Display label per node. Falls back to `node.label ?? String(value)`. */
   readonly labelFn = input<((value: T) => string) | undefined>(undefined);
-  /** Membership key for selection. Defaults to identity. */
+  /** Membership key for selection. Default identity. */
   readonly keyFn = input<((value: T) => unknown) | undefined>(undefined);
   /** Initial expansion seed (one-shot at construction). */
   readonly initiallyExpanded = input<'all' | 'none' | readonly string[] | undefined>(undefined);
   /**
-   * When true, toggling a parent selects/deselects every descendant
-   * atomically. A single `selectionChange` event with
-   * `action: 'cascade-toggle'` is emitted.
+   * When `true`, parent toggle selects/deselects every descendant
+   * atomically; single `selectionChange` with `action: 'cascade-toggle'`.
    */
   readonly cascadeChildren = input<boolean>(false);
 
@@ -374,39 +362,37 @@ export class CngxTreeSelect<T = unknown>
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
   readonly hideCaret = input<boolean>(!this.config.showCaret);
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the default `▸` twisty glyph in the panel's default node
-   * row. Applied to both collapsed and expanded states unless
-   * `twistyOpenGlyph` is also set. Ignored when `*cngxTreeSelectNode`
-   * is projected — custom row owns its own glyph.
+   * Replaces the default `▸` twisty glyph in the default node row.
+   * Applied to both states unless `twistyOpenGlyph` is set. Ignored
+   * when `*cngxTreeSelectNode` is projected.
    */
   readonly twistyGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Optional override for the expanded-state twisty glyph. Falls back
-   * to `twistyGlyph` when unset, then to the built-in `▸` (rotated via
-   * CSS). Use this when the expand/collapse glyphs are semantically
-   * different shapes rather than a rotated single shape.
+   * Override for the expanded-state twisty glyph. Falls back to
+   * `twistyGlyph` then to `▸` (rotated via CSS). Use when expand and
+   * collapse glyphs are semantically different shapes.
    */
   readonly twistyOpenGlyph = input<TemplateRef<void> | null>(null);
   /**
    * Forwarded to `<cngx-checkbox-indicator [checkGlyph]>` on the
-   * default node row. Custom node templates can read the slot context's
-   * `selected` flag and render their own checkmark.
+   * default row. Custom node templates read `selected` and render
+   * their own.
    */
   readonly checkGlyph = input<TemplateRef<void> | null>(null);
   /** Forwarded to `<cngx-checkbox-indicator [dashGlyph]>`. */
   readonly dashGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Localised aria-labels for the twisty expand/collapse button in the
-   * default node row. Falls back to English defaults. Ignored when
-   * `*cngxTreeSelectNode` is projected.
+   * Localised aria-labels for the twisty button in the default row.
+   * Falls back to English. Ignored when `*cngxTreeSelectNode` is
+   * projected.
    */
   readonly twistyExpandLabel = input<string>(
     this.config.ariaLabels?.treeExpand ?? 'Expand node',
@@ -437,8 +423,6 @@ export class CngxTreeSelect<T = unknown>
   readonly announceChanges = input<boolean | null>(null);
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
-  // ── Outputs ────────────────────────────────────────────────────────
-
   readonly selectionChange = output<CngxTreeSelectChange<T>>();
   readonly openedChange = output<boolean>();
   readonly opened = output<void>();
@@ -447,8 +431,6 @@ export class CngxTreeSelect<T = unknown>
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
-
-  // ── Content-child slot queries (shared family) ────────────────────
 
   private readonly checkDir = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly placeholderDir = contentChild<CngxSelectPlaceholder>(CngxSelectPlaceholder);
@@ -474,25 +456,18 @@ export class CngxTreeSelect<T = unknown>
     CngxSelectOptionError,
   );
 
-  // ── Tree-specific slot queries ────────────────────────────────────
-
   private readonly nodeDir = contentChild<CngxTreeSelectNode<T>>(CngxTreeSelectNode);
   private readonly chipDir = contentChild<CngxTreeSelectChip<T>>(CngxTreeSelectChip);
   private readonly triggerLabelDir = contentChild<CngxTreeSelectTriggerLabel<T>>(
     CngxTreeSelectTriggerLabel,
   );
 
-  // ── Resolved template-slot registry ───────────────────────────────
-
   /**
-   * Shared 13-slot template registry — same factory the flat-family
-   * variants use. Drives the entire `*cngxSelect*` cascade
-   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null)
-   * with one DI-overridable factory call. The option-loop slots
-   * (check, optgroup, optionLabel, optionPending, optionError) are
-   * declared for parity with the flat panels even though tree-select
-   * doesn't render them — projecting them into a `<cngx-tree-select>`
-   * is silently ignored.
+   * 13-slot template registry. Drives the `*cngxSelect*` cascade
+   * (instance contentChild → `CNGX_SELECT_CONFIG.templates.*` → null).
+   * Option-loop slots (check, optgroup, optionLabel, optionPending,
+   * optionError) are declared for contract parity but tree-select
+   * doesn't render them; projecting one is silently ignored.
    *
    * @internal
    */
@@ -512,8 +487,6 @@ export class CngxTreeSelect<T = unknown>
     optionPending: this.optionPendingDir,
     optionError: this.optionErrorDir,
   });
-
-  // ── Resolved template-ref aliases (template-binding ergonomics) ──
 
   /** @internal */
   readonly placeholderTpl = this.tplRegistry.placeholder;
@@ -540,20 +513,13 @@ export class CngxTreeSelect<T = unknown>
     TemplateRef<CngxTreeSelectTriggerLabelContext<T>> | null
   >(() => this.triggerLabelDir()?.templateRef ?? null);
 
-  // ── View children ─────────────────────────────────────────────────
-
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
-  // ── Controllers ───────────────────────────────────────────────────
-
   /**
-   * Signal-native tree controller. Exposed for the tree panel host.
-   *
-   * Lambdas are wrapped so the controller captures the *current* signal
-   * value on every call — not the field-init value. Required inputs
-   * (`nodeIdFn`) are not resolved at factory time; the lambda wrapper
-   * defers the read to first use.
+   * Tree controller. Lambdas wrap each input read so the controller
+   * sees the *current* signal value on every call — required inputs
+   * like `nodeIdFn` aren't resolved at factory time.
    */
   readonly treeController: CngxTreeController<T> = inject(CNGX_TREE_CONTROLLER_FACTORY)<T>({
     nodes: this.nodes,
@@ -563,9 +529,9 @@ export class CngxTreeSelect<T = unknown>
   });
 
   /**
-   * Selection engine with `childrenFn` wired to the tree controller so
-   * `isIndeterminate(value)` is free. Used for cascade-toggle and all
-   * panel ARIA `aria-selected` / `aria-indeterminate` bindings.
+   * Selection engine seeded with `childrenFn` so
+   * `isIndeterminate(value)` is free. Drives cascade-toggle and panel
+   * `aria-selected` / `aria-indeterminate`.
    */
   private readonly selection: SelectionController<T> = inject(
     CNGX_SELECTION_CONTROLLER_FACTORY,
@@ -581,14 +547,13 @@ export class CngxTreeSelect<T = unknown>
     CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   )<T[]>();
 
-  /** Shared live-region announcer. Same instance as the flat family. */
+  /** Shared live-region announcer. */
   private readonly announcer = inject(CngxSelectAnnouncer);
 
   /**
    * Emit an action-aware message through the root live region. Gated
-   * by the per-instance `[announceChanges]` input → config fallback →
-   * library default (`true`). The message is produced by
-   * `[announceTemplate]` or the global config's format function.
+   * by `[announceChanges]` → config → default `true`. Message comes
+   * from `[announceTemplate]` or the config's format function.
    */
   private announce(
     item: CngxTreeSelectedItem<T> | null,
@@ -622,20 +587,18 @@ export class CngxTreeSelect<T = unknown>
 
   /**
    * Minimal `CngxSelectCore`-shaped surface for
-   * `createArrayCommitHandler` (only reads `commitController`,
-   * `togglingOption`, `announce`). Tree-select drives toggle + cascade
-   * through `dispatchValueChange` directly; the shared handler is only
-   * reused for the clear-all path. `togglingOption` typed honestly —
-   * the clear-flow calls `.set(null)` on success, that null write is
-   * the slot's only runtime use. `announce` now delegates to the real
-   * live-region announcer above.
+   * `createArrayCommitHandler` — handler only reads `commitController`,
+   * `togglingOption`, `announce`. Tree-select drives toggle + cascade
+   * via `dispatchValueChange` directly; the handler is reused only
+   * for clear-all. `togglingOption` is typed honestly — the clear
+   * path's `.set(null)` is its only runtime use.
    */
   private readonly commitCore: Parameters<typeof createArrayCommitHandler<T>>[0]['core'] = {
     commitController: this.commitControllerInstance,
     togglingOption: signal(null),
     announce: (_opt: unknown, action: 'added' | 'removed', count: number): void => {
-      // beginClear passes `null` as option + 'removed'. Translate to the
-      // tree-shaped announce helper.
+      // `beginClear` calls with `null` option + 'removed'. Forward to
+      // the tree-shaped announce helper.
       this.announce(null, action, count);
     },
   } as unknown as Parameters<typeof createArrayCommitHandler<T>>[0]['core'];
@@ -649,10 +612,10 @@ export class CngxTreeSelect<T = unknown>
     commitAction: this.commitAction,
     getLastCommitted: () => this.lastCommittedValues,
     onToggleFinalize: () => {
-      // Tree commit success path uses dedicated `finalizeTreeChange`
-      // logic below (cascade-aware). The array-commit-handler's
-      // per-option finalize is bypassed by passing `null` for the
-      // option — which ArrayCommitHandler treats as the clear path.
+      // Tree commit success uses cascade-aware
+      // `dispatchValueChange` directly. The handler's per-option
+      // finalize is bypassed because the clear path passes
+      // `null` option (treated as clear by ArrayCommitHandler).
     },
     onClearFinalize: (previous, finalValues) => {
       this.cleared.emit();
@@ -668,8 +631,6 @@ export class CngxTreeSelect<T = unknown>
     onStateChange: (status) => this.stateChange.emit(status),
     onError: (err) => this.commitError.emit(err),
   });
-
-  // ── Derived view state ────────────────────────────────────────────
 
   /** @internal */
   readonly activeView: Signal<AsyncView> = computed(() => {
@@ -723,17 +684,15 @@ export class CngxTreeSelect<T = unknown>
   );
 
   /**
-   * DI-resolved focus state. Using the factory token keeps tree-select
-   * on the same override surface as the rest of the family (app-wide
-   * focus telemetry / controlled-from-outside focus / test doubles
-   * all apply uniformly).
+   * DI-resolved focus state. Same override surface as the rest of the
+   * family (telemetry / controlled-from-outside / test doubles).
    */
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
 
   /**
    * Aggregated ARIA projection for the trigger. Structural-equal on
-   * every field so `@let aria = triggerAria()` bindings don't churn
-   * when an unrelated state changes elsewhere.
+   * every field so `@let aria = triggerAria()` doesn't churn on
+   * unrelated state changes.
    */
   protected readonly triggerAria = computed(
     () => {
@@ -769,8 +728,6 @@ export class CngxTreeSelect<T = unknown>
     this.disabled() ? -1 : this.tabIndex(),
   );
 
-  // ── CngxFormFieldControl implementation ───────────────────────────
-
   readonly id = computed<string>(() => this.resolvedId());
   readonly focused: Signal<boolean> = this.focusState.focused;
   readonly empty = computed<boolean>(() => this.isEmpty());
@@ -783,12 +740,9 @@ export class CngxTreeSelect<T = unknown>
   readonly fallbackLabels = this.config.fallbackLabels;
   readonly ariaLabels = this.config.ariaLabels;
 
-  // ── CngxSelectPanelViewHost surface (for the shell) ───────────────
-
   /**
-   * Stable retry closure — bound once so the memoised `errorContext`
-   * computed below stays reference-stable; only `error` / `$implicit`
-   * carry real CD variance.
+   * Stable retry closure bound once so the `errorContext` computed
+   * stays reference-stable; only `error` / `$implicit` vary.
    */
   private readonly errorRetryBound: () => void = () => this.handleRetry();
 
@@ -800,8 +754,8 @@ export class CngxTreeSelect<T = unknown>
     },
     {
       // Structural-equal on `error` + identity-check the stable retry
-      // closure — identical error reads stop thrashing the outlet that
-      // renders the retry banner. Parallel pattern to `commitErrorContext`.
+      // closure — identical error reads stop thrashing the retry banner
+      // outlet. Parallel pattern to `commitErrorContext`.
       equal: (a, b) =>
         a === b ||
         (Object.is(a.error, b.error) &&
@@ -810,10 +764,8 @@ export class CngxTreeSelect<T = unknown>
     },
   );
 
-  // Stable retry closure — re-creating it per CD cycle churns any
-  // `*ngTemplateOutlet` that consumes the commit-error context. Bound
-  // once here so the memoised computed below stays reference-stable
-  // while only the `error` field carries real CD variance.
+  // Stable retry closure — recreating per CD cycle churns
+  // `*ngTemplateOutlet` consumers of the commit-error context.
   private readonly commitRetryBound: () => void = () => this.commitHandler.retryLast();
 
   /** @internal */
@@ -835,10 +787,8 @@ export class CngxTreeSelect<T = unknown>
   );
 
   /**
-   * Narrow 5-slot bundle the shell reads. Tree-select has no flat
-   * option-loop, so no `check` / `optgroup` / `optionLabel` etc. —
-   * the `CngxSelectPanelShellTemplates` interface is a strict
-   * superset of the shell's needs.
+   * 5-slot bundle the shell reads. Tree-select has no flat option-
+   * loop, so no `check` / `optgroup` / `optionLabel`.
    *
    * @internal
    */
@@ -850,11 +800,10 @@ export class CngxTreeSelect<T = unknown>
     loadingGlyph: this.tplRegistry.loadingGlyph,
     refreshing: this.tplRegistry.refreshing,
     commitError: this.tplRegistry.commitError,
-    // Tree-select doesn't host an inline action slot today (see
-    // master-plan §9 — CngxActionTreeSelect is a separate follow-up).
-    // The shell falls back to "no template" when the computed is null,
-    // so the slot is silently suppressed even if a consumer projects
-    // a stray `*cngxSelectAction` at the cngx-tree-select level.
+    // No inline action slot today (master-plan §9 —
+    // `CngxActionTreeSelect` is a follow-up). Shell falls back when
+    // null, so a stray `*cngxSelectAction` projection at this level is
+    // silently suppressed.
     action: signal<null>(null),
   };
 
@@ -875,14 +824,10 @@ export class CngxTreeSelect<T = unknown>
     this.retry.emit();
   }
 
-  // ── CngxTreeSelectPanelHost extras ────────────────────────────────
-
-  /** Exposes `keyFn` via an internal-use signal for template `track`. */
+  /** `keyFn` exposed for template `track`. */
   protected readonly keyFnInternal = computed<(value: T) => unknown>(
     () => this.keyFn() ?? ((v: T) => v as unknown),
   );
-
-  // ── Public API ────────────────────────────────────────────────────
 
   /** `true` when a commit is in flight. */
   readonly isCommitting = this.commitControllerInstance.isCommitting;
@@ -890,13 +835,10 @@ export class CngxTreeSelect<T = unknown>
   readonly commitState = this.commitControllerInstance.state;
 
   /**
-   * Resolved option-like defs of the current selection — each entry has
-   * `value` + `label` so chip rendering and consumer read-back both
-   * work with a stable shape. Uses a structural equal-fn (length +
-   * pairwise `compareWith` on value + label-string equality) so chip-
-   * strip `@for` bindings and consumer `selected()` reads don't
-   * cascade-rerender when `values()` emits the same logical set with
-   * fresh references (e.g. after a server refetch).
+   * Resolved option-like defs of the current selection. Structural
+   * equal (length + pairwise `compareWith` on value + label string)
+   * so chip-strip `@for` and consumer `selected()` reads don't
+   * cascade-rerender on server refetch.
    */
   readonly selected = computed<readonly CngxTreeSelectedItem<T>[]>(
     () => {
@@ -949,9 +891,8 @@ export class CngxTreeSelect<T = unknown>
         this.focus();
       }
       // Apply `initiallyExpanded` after inputs resolve. The controller
-      // factory sees `undefined` at field-init because signal inputs
-      // aren't bound yet; applying here keeps the one-shot semantic
-      // aligned with the controller's contract.
+      // sees `undefined` at field-init because signal inputs aren't
+      // bound yet; applying here keeps one-shot semantics.
       const init = this.initiallyExpanded();
       if (init === 'all') {
         this.treeController.expandAll();
@@ -979,12 +920,10 @@ export class CngxTreeSelect<T = unknown>
     });
   }
 
-  // ── Selection / cascade flow ──────────────────────────────────────
-
   /**
-   * Dispatch the select path for a tree node. Consumer of the
-   * `CngxTreeSelectPanelHost` contract; also bound to the slot context
-   * so custom `*cngxTreeSelectNode` markup routes through the same
+   * Select path for a tree node. Used both by the
+   * `CngxTreeSelectPanelHost` contract and by the slot context, so
+   * custom `*cngxTreeSelectNode` markup routes through the same
    * cascade + commit plumbing.
    */
   handleSelect(node: FlatTreeNode<T>): void {
@@ -999,12 +938,11 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * Unified semantic-equality helper. Uses `keyFn` when provided so
-   * object-valued trees match by domain id (e.g. two distinct `{ id: 'a' }`
-   * references compare equal). Falls back to `compareWith` otherwise.
-   * Every selection-boundary check — singleToggle, cascadeToggle,
-   * chip-remove — routes through here to stay consistent with the
-   * SelectionController's keyFn membership.
+   * Semantic equality. Uses `keyFn` when provided so object-valued
+   * trees match by domain id (two `{ id: 'a' }` instances compare
+   * equal); falls back to `compareWith`. Every selection-boundary
+   * check routes through here to stay consistent with the
+   * `SelectionController`'s keyFn membership.
    */
   private readonly membersEqual = (a: T, b: T): boolean => {
     const keyFn = this.keyFn();
@@ -1056,13 +994,10 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * Unified commit dispatch for toggle + cascade-toggle paths. Bypasses
-   * `ArrayCommitHandler.beginToggle` (which requires a
-   * `CngxSelectOptionDef<T>` — a shape the tree world doesn't carry)
-   * and talks to the low-level commit-controller directly. The
-   * reconciliation / rollback semantics are identical to the
-   * handler's internal `begin`; we just do not need per-option
-   * finalize callbacks.
+   * Commit dispatch for toggle + cascade-toggle. Bypasses
+   * `ArrayCommitHandler.beginToggle` (its `CngxSelectOptionDef<T>`
+   * shape doesn't fit the tree world) and drives the commit-controller
+   * directly; reconciliation and rollback semantics match.
    */
   private dispatchValueChange(
     next: T[],
@@ -1075,10 +1010,9 @@ export class CngxTreeSelect<T = unknown>
     },
   ): void {
     const action = this.commitAction();
-    // Announce selector: single-toggle reports the node's label +
-    // direction; cascade-toggle has many added/removed, so we announce
-    // null-label with the actions's count (the format function's
-    // `selectedLabel: null` path is designed for this).
+    // Announce: single-toggle reports the node's label + direction;
+    // cascade-toggle has many added/removed, so announce a null-label
+    // with the count (format function's `selectedLabel: null` path).
     const announceLabel = meta.action === 'toggle' ? meta.node.label : null;
     const announceAction: 'added' | 'removed' =
       meta.added.length > 0 ? 'added' : 'removed';
@@ -1103,9 +1037,8 @@ export class CngxTreeSelect<T = unknown>
     this.lastCommittedValues = previous;
     if (this.commitMode() === 'optimistic') {
       this.values.set(next);
-      // Emit the optimistic intent immediately so a consumer bound to
-      // (selectionChange) sees the change; rollback on commit error
-      // reverts `values` below.
+      // Emit the intent immediately so `(selectionChange)` consumers
+      // see the change; rollback on commit error reverts `values`.
       this.emitChange({
         values: next,
         previousValues: previous,
@@ -1155,8 +1088,6 @@ export class CngxTreeSelect<T = unknown>
     });
   }
 
-  // ── Trigger / chip events ─────────────────────────────────────────
-
   /** @internal */
   protected handleTriggerClick(): void {
     if (this.disabled()) {
@@ -1166,10 +1097,9 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * Combobox-style keyboard on the trigger. ArrowDown / ArrowUp / Enter
-   * / Space open the panel when closed (the panel's own AD takes over
-   * once focus transfers). Escape closes the panel when open. Matches
-   * WAI-ARIA 1.2 combobox trigger behaviour.
+   * Combobox-style trigger keyboard. ArrowDown/Up/Enter/Space open the
+   * panel when closed (panel AD takes over once focus transfers);
+   * Escape closes when open. WAI-ARIA 1.2 combobox.
    *
    * @internal
    */
@@ -1191,7 +1121,6 @@ export class CngxTreeSelect<T = unknown>
     }
   }
 
-  /** @internal */
   /** @internal — click-outside dismissal (no action bridge on tree-select). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
@@ -1208,19 +1137,18 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * Chip-removal handler — uses the `removeOverride` escape hatch so the
-   * factory absorbs the disabled-guard + WeakMap closure cache (so
-   * `selected()` chip-context outlets don't thrash on closure identity)
-   * while the override keeps tree-select's tree-aware mutation path:
+   * Chip-removal handler. Uses `removeOverride` so the factory absorbs
+   * the disabled-guard + WeakMap closure cache while the override
+   * keeps the tree-aware mutation path:
    *
    *   - in-tree value → `singleToggle(node)` (always single-deselect,
-   *     never cascades, even with `[cascadeChildren]="true"`),
-   *   - stale value (not in tree) → direct values strip + emit + announce.
+   *     never cascades, even with `[cascadeChildren]="true"`).
+   *   - stale value (not in tree) → strip from `values` + emit +
+   *     announce.
    *
-   * The handler's standard sync/commit branches are bypassed because
-   * `dispatchValueChange` (called by `singleToggle`) already owns the
-   * commit-action read, optimistic write, and rollback logic for the
-   * tree world.
+   * Standard sync/commit branches are bypassed because
+   * `dispatchValueChange` (via `singleToggle`) owns commit-action,
+   * optimistic write, and rollback for the tree world.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxTreeSelectedItem<T>> =
     inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T, CngxTreeSelectedItem<T>>({
@@ -1234,14 +1162,12 @@ export class CngxTreeSelect<T = unknown>
   }
 
   /**
-   * Shared removal path for chip × (default pill) + the `remove`
-   * callback passed into `*cngxTreeSelectChip`. Non-cascade single-
-   * deselect regardless of `cascadeChildren` — the consumer explicitly
-   * removed ONE chip representing ONE value. Cascade would surprise-
-   * remove invisible descendants the user never picked as chips.
+   * Shared removal path for chip × and the `remove` callback in
+   * `*cngxTreeSelectChip`. Always single-deselect regardless of
+   * `cascadeChildren` — the consumer removed ONE chip for ONE value;
+   * cascade would surprise-remove invisible descendants.
    *
-   * Disabled-guard lives in the handler; this method assumes it's safe
-   * to mutate.
+   * Disabled-guard lives in the handler; this method assumes safe.
    */
   private removeSelectedItem(opt: CngxTreeSelectedItem<T>): void {
     const node = this.flatNodeForValue(opt.value);
@@ -1249,8 +1175,8 @@ export class CngxTreeSelect<T = unknown>
       this.singleToggle(node);
       return;
     }
-    // Fallback: value not present in the tree (stale selection). Strip
-    // it from `values` without routing through the tree.
+    // Stale selection (value not in tree). Strip from `values`
+    // without routing through the tree.
     const previous = untracked(() => [...this.values()]);
     const next = previous.filter((v) => !this.membersEqual(v, opt.value));
     this.values.set(next);
@@ -1313,8 +1239,6 @@ export class CngxTreeSelect<T = unknown>
     this.presenter?.fieldState().markAsTouched();
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────
-
   protected isEmpty(): boolean {
     return this.values().length === 0;
   }
@@ -1324,9 +1248,7 @@ export class CngxTreeSelect<T = unknown>
     if (fn) {
       return fn(value);
     }
-    // O(1) lookup via the tree-controller's value index. Eliminates the
-    // former N·M linear scan inside `selected()` that quadratic'd on
-    // wide selections over deep trees.
+    // O(1) via the tree-controller's value index.
     return this.treeController.findByValue(value)?.label ?? String(value);
   }
 

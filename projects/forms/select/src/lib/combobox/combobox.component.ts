@@ -114,11 +114,9 @@ export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
   readonly values: readonly T[];
   /**
-   * Values before the change was committed. Populated on the
-   * commit-success path, the direct-pick/removal/clear paths, and the
-   * Backspace-on-empty chip-remove path. Plural name matches
-   * `CngxMultiSelectChange.previousValues` so consumer templates can
-   * share change-event shapes.
+   * Values before the change committed. Populated on commit-success,
+   * direct-pick / removal / clear, and Backspace-on-empty paths.
+   * Plural matches `CngxMultiSelectChange.previousValues`.
    */
   readonly previousValues?: readonly T[];
   readonly added: readonly T[];
@@ -128,17 +126,13 @@ export interface CngxComboboxChange<T = unknown> {
 }
 
 /**
- * Tag-input style multi-value combobox. Third sibling of the select
- * family after {@link CngxSelect} (single) and {@link CngxMultiSelect}
- * (multi). Inline `<input role="combobox">` next to a chip strip;
- * typing filters the panel live and Backspace-on-empty removes the
- * trailing chip.
+ * Tag-input style multi-value combobox. Inline `<input role="combobox">`
+ * next to a chip strip; typing filters the panel live, Backspace-on-empty
+ * removes the trailing chip.
  *
- * Stateless derivations (ARIA projection, option model, panel view,
- * commit-controller surface) live in `shared/select-core.ts` — this
- * component is a thin adapter binding its own trigger template to the
- * core's signals plus a handful of value-shape-specific write-paths
- * (AD-activated dispatch, Field↔sync, search filter overlay).
+ * Stateless graph in {@link createSelectCore}; this component is a
+ * thin adapter binding the trigger template to the core's signals plus
+ * value-shape write-paths (AD dispatch, Field↔sync, search filter).
  *
  * @category interactive
  */
@@ -182,10 +176,10 @@ export interface CngxComboboxChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <!--
-        WAI-ARIA 1.2 combobox pattern.
-        Focusable element is the inner <input role="combobox">. Wrapper
-        carries role="group" so AT reads the chip-strip + input as one
-        widget. Chip × buttons are valid siblings of the input.
+        WAI-ARIA 1.2 combobox pattern. Focusable element is the inner
+        <input role="combobox">; wrapper is role="group" so AT reads the
+        chip-strip + input as one widget. Chip × buttons are valid
+        siblings of the input.
       -->
       @let aria = triggerAria();
       <div
@@ -367,8 +361,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
-  // ── Inputs (primary API — unchanged) ───────────────────────────────
-
   /** Accessible label for the listbox region and fallback trigger name. */
   readonly label = input<string>('');
 
@@ -410,69 +402,63 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Panel width strategy. */
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /**
-   * Mobile `inputmode` attribute. Defaults from
-   * {@link CngxSelectConfig.inputMode} (`'search'`).
-   */
+  /** Mobile `inputmode` attribute. Defaults from `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
     this.config.inputMode,
   );
   /**
-   * Mobile `enterkeyhint` attribute. Defaults to `'enter'` (Combobox
-   * commits Enter without closing the panel). App-wide config wins
-   * when non-null.
+   * Mobile `enterkeyhint`. Default `'enter'` — Combobox commits Enter
+   * without closing the panel.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'enter',
   );
-  /** Chip-strip overflow strategy. See {@link CngxSelectConfig.chipOverflow}. */
+  /** Chip-strip overflow strategy. See `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /** Max chips in `'truncate'` mode. Default from config. */
+  /** Max chips in `'truncate'` mode. */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
 
   /**
-   * Whether activating an option closes the panel. Defaults to `false`
-   * (tag-input UX — keep typing after each pick).
+   * Whether activating an option closes the panel. Default `false`
+   * (tag-input UX).
    */
   readonly closeOnSelect = input<boolean>(false);
 
-  /** Custom matcher used by the inline `CngxListboxSearch`. */
+  /** Custom matcher for the inline `CngxListboxSearch`. */
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
 
-  /** Debounce for search term updates, in milliseconds. Defaults to `typeaheadDebounceInterval` from the resolved select config (300ms). */
+  /** Debounce for search term updates (ms). */
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
 
   /** Suppress the first `searchTermChange` emission (hydrate-time `''`). */
   readonly skipInitial = input<boolean>(false);
 
-  /** Hide the default in-panel checkmark on this instance. */
+  /** Hide the default in-panel checkmark. */
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
 
-  /** Per-instance override for the indicator position. `null` → inherit config (`'before'`). */
+  /** Indicator position. `null` → inherit config. */
   readonly selectionIndicatorPosition = input<'before' | 'after' | null>(null);
 
-  /** Per-instance override for the indicator variant. `null` → inherit config (`'auto'`). */
+  /** Indicator variant. `null` → inherit config. */
   readonly selectionIndicatorVariant = input<CngxSelectSelectionIndicatorVariant | null>(null);
 
-  /** Hide the default dropdown caret glyph. */
+  /** Hide the default dropdown caret. */
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear-all button
-   * without forking the button frame or ARIA wiring. When
-   * `*cngxSelectClearButton` is projected, the projected template takes
-   * full precedence and this input is ignored.
+   * Replaces the built-in `✕` glyph inside the default clear-all button.
+   * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
-   * projected, it takes full precedence and this input is ignored.
+   * Replaces the built-in `▾` caret glyph. Ignored when
+   * `*cngxSelectCaret` is projected.
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
 
@@ -489,13 +475,13 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     this.config.ariaLabels?.chipRemove ?? 'Remove',
   );
 
-  /** Display a loading state inside the panel. */
+  /** Loading state inside the panel. */
   readonly loading = input<boolean>(false);
 
   /** First-load indicator variant. */
   readonly loadingVariant = input<CngxSelectLoadingVariant>(this.config.loadingVariant);
 
-  /** Number of skeleton rows when `loadingVariant === 'skeleton'`. */
+  /** Skeleton-row count when `loadingVariant === 'skeleton'`. */
   readonly skeletonRowCount = input<number>(this.config.skeletonRowCount);
 
   /** Subsequent-load ("refreshing") indicator variant. */
@@ -504,7 +490,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Async-state source for options. */
   readonly state = input<CngxAsyncState<CngxSelectOptionsInput<T>> | null>(null);
 
-  /** Callback invoked when the user clicks the default retry-button. */
+  /** Callback invoked when the user clicks the default retry button. */
   readonly retryFn = input<(() => void) | null>(null);
 
   /** Async write handler invoked per toggle. */
@@ -521,13 +507,11 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** Per-instance announcer override. */
   readonly announceChanges = input<boolean | null>(null);
 
-  /** Per-instance formatter override for the announcer message. */
+  /** Per-instance formatter override. */
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
 
   /** Two-way multi-value binding. */
   readonly values = model<T[]>([]);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxComboboxChange<T>>();
   readonly optionToggled = output<{
@@ -542,8 +526,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
   readonly searchTermChange = output<string>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -580,8 +562,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly inputPrefixDirective = contentChild<CngxSelectInputPrefix>(CngxSelectInputPrefix);
   private readonly inputSuffixDirective = contentChild<CngxSelectInputSuffix>(CngxSelectInputSuffix);
 
-  // ── Resolved template-slot registry ────────────────────────────────
-
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
@@ -616,29 +596,23 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.inputSuffixDirective()?.templateRef ?? null,
   );
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
 
-  // ── Public derived signals (trigger-specific) ──────────────────────
-
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
 
-  /** Active-descendant id, forwarded to the input's aria-activedescendant. */
+  /** Active-descendant id forwarded to the input's `aria-activedescendant`. */
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
 
-  /** Debounced search term — signal-first primary API. */
+  /** Debounced search term. */
   readonly searchTerm: Signal<string> = computed(
     () => this.searchInputRef()?.term() ?? '',
   );
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -660,10 +634,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Filter overlay bound to the inline search term. `null` when term is
-   * empty — the core short-circuits and returns `effectiveOptions`
-   * unchanged. `null` also when the search directive hasn't resolved
-   * yet (first render before `viewChild` populates).
+   * Filter overlay bound to the inline search term. `null` on empty
+   * term (core short-circuits to unfiltered) and on first render
+   * before `viewChild` resolves.
    *
    * @internal
    */
@@ -678,14 +651,10 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
-
-  // ── Action-slot bridge ──────────────────────────────────────────────
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -695,15 +664,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
-  // ── Core (stateless signal graph) ──────────────────────────────────
-
   /**
-   * Signal-graph factory shared with {@link CngxSelect} and {@link CngxMultiSelect}.
-   * Owns every derivation that's identical across the family: ARIA
-   * projection, panel view, option model, commit-controller surface,
-   * announcer helper. The component keeps value-shape specifics
-   * (AD-activated dispatch, Field↔sync, trigger keyboard) and this
-   * thin adapter surface for template bindings.
+   * Family-shared signal graph. Owns ARIA, panel view, option model,
+   * commit-controller surface, announcer.
    *
    * @internal
    */
@@ -745,10 +708,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer — renders in the next panel emission and silently drops
-   * once the server state includes a matching value. Dedup-guarded
-   * by `compareWith`; duplicate patches are no-ops.
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
    *
    * @category interactive
    */
@@ -764,8 +726,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface (delegates to core) ──────────
 
   /** @internal */
   protected readonly effectiveOptions = this.core.effectiveOptions;
@@ -852,9 +812,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   /**
-   * Currently selected options (public). Structurally compared by
-   * `.value` under `compareWith` so fresh OptionDef references carrying
-   * the same values do not cascade re-renders on consumer bindings.
+   * Currently selected options. Structural equal on `.value` under
+   * `compareWith` — fresh OptionDef references for the same values
+   * don't cascade downstream re-renders.
    */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -890,13 +850,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Multi-selection state (value-shape-specific) ───────────────────
-
-  /**
-   * Options currently selected, resolved from `values()`. Uses the
-   * O(1) map fast-path from the core when the compareWith is the
-   * default; falls back to O(n) scan otherwise.
-   */
   /** @internal — chip subset + overflow badge count (see CngxMultiSelect). */
   protected readonly visibleSelected = computed<CngxSelectOptionDef<T>[]>(() => {
     const all = this.selectedOptions();
@@ -922,10 +875,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       if (vals.length === 0) {
         return [];
       }
-      // Look up selected values against the UNFILTERED option merge so
+      // Resolve selected values against the UNFILTERED option merge so
       // chips for previously-picked values remain visible when the
-      // inline search term temporarily hides the matching option from
-      // the listbox.
+      // search term hides the matching option from the listbox.
       const eq = this.compareWith();
       const out: CngxSelectOptionDef<T>[] = [];
       const flat = this.core.unfilteredFlatOptions();
@@ -955,8 +907,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  // ── Commit state (delegated helpers) ───────────────────────────────
-
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
@@ -966,9 +916,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   private readonly hasEmittedInitial = signal(false);
 
   /**
-   * Commit-flow handler — owns commit-controller lifecycle, value
-   * reconciliation, rollback-on-error, and live-region announcements.
-   * Shared with `CngxMultiSelect` via `shared/array-commit-handler.ts`.
+   * Commit-flow handler. Owns commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, live-region announce. Shared
+   * with `CngxMultiSelect`.
    */
   private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
     values: this.values,
@@ -996,9 +946,9 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Chip-removal handler — disabled-guard + snapshot + filter + commit/
-   * sync branch + WeakMap closure cache. Replaces the inline removeOption
-   * + chipRemoveFor + chipRemoveCache trio. Same factory as `CngxMultiSelect`.
+   * Chip-removal handler. Disabled-guard + snapshot + filter +
+   * commit/sync branch + WeakMap closure cache. Same factory as
+   * `CngxMultiSelect`.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
     inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
@@ -1017,7 +967,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         this.finalizeToggle(item, false, previous),
     });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
@@ -1035,16 +984,15 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
   constructor() {
     this.lastCommittedValues = untracked(() => [...this.values()]);
 
-    // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
       }
     });
 
-    // Bridge AD-activations into user-selection outputs and commit flow.
-    // Lifecycle + routing live in `createADActivationDispatcher`;
-    // array-shape toggle logic stays here.
+    // AD activations → user-selection outputs + commit flow.
+    // Lifecycle and routing in `createADActivationDispatcher`;
+    // array-shape toggle stays inline.
     createADActivationDispatcher<T, T[]>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -1067,8 +1015,8 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
-        // Listbox has already mutated values — reconstruct the pre-
-        // toggle snapshot by inverting the change.
+        // Listbox already mutated values; invert the change to
+        // reconstruct the pre-toggle snapshot.
         const currentSelected = this.isSelected(opt);
         const current = this.values();
         const eq = this.compareWith();
@@ -1079,7 +1027,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       },
     });
 
-    // Panel open/close lifecycle events.
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.inputEl,
@@ -1089,7 +1036,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
     });
 
-    // Bidirectional sync with the bound form field (if any).
     createFieldSync<T[]>({
       componentValue: this.values,
       valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
@@ -1097,7 +1043,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       toFieldValue: (v) => [...v],
     });
 
-    // Search-term effects: skipInitial-gated emit + auto-open on typing.
+    // Search-term effects: skipInitial-gated emit + auto-open on type.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -1111,16 +1057,12 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
 
-  // ── Event handlers ─────────────────────────────────────────────────
-
-  /** @internal — click on the wrapper routes focus into the input + opens. */
+  /** @internal — wrapper click routes focus into the input and opens. */
   protected handleWrapperClick(event: MouseEvent): void {
     if (this.disabled()) {
       return;
@@ -1135,7 +1077,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
     }
   }
 
-  /** @internal */
   /** @internal — click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
@@ -1160,7 +1101,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * @internal — invoked by `CngxListboxTrigger`'s `(backspaceOnEmpty)`.
-   * Removes the trailing chip via the same commit-aware path the ✕ uses.
+   * Routes through the same commit-aware path as chip ✕.
    */
   protected removeLastChip(): void {
     const selected = this.selectedOptions();
@@ -1224,8 +1165,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       popover: this.popoverRef(),
     });
   }
-
-  // ── Commit orchestration ───────────────────────────────────────────
 
   private finalizeToggle(
     opt: CngxSelectOptionDef<T>,

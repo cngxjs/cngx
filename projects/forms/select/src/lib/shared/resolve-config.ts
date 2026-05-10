@@ -7,9 +7,8 @@ import {
 } from './config';
 
 /**
- * Resolve the effective {@link CngxSelectConfig} for the current injector,
- * merging user-provided values with the library defaults. Always returns a
- * fully populated object.
+ * Effective {@link CngxSelectConfig} for the current injector, merged
+ * with library defaults. Always fully populated.
  *
  * @internal
  */

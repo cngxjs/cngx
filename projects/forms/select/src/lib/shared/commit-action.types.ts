@@ -1,11 +1,10 @@
 import type { Observable } from 'rxjs';
 
 /**
- * Async write handler invoked when a user picks a value with
- * `[commitAction]` bound. Called with the newly-intended value (or
- * `undefined` for a clear). Returns a `Promise`, `Observable`, or sync
- * value resolving to the committed value — typically equal to the
- * intended value, or a server-normalised variant.
+ * Async write handler invoked on a pick when `[commitAction]` is bound.
+ * Receives the intended value (`undefined` on clear). Resolves to the
+ * committed value — typically the intended value, or a server-normalised
+ * variant.
  *
  * @category interactive
  */
@@ -16,28 +15,23 @@ export type CngxSelectCommitAction<T> = (intended: T | undefined) =>
   | undefined;
 
 /**
- * Commit mode controls the panel UX around the in-flight write.
+ * Panel UX during an in-flight commit. Consecutive picks supersede.
  *
- * - `'optimistic'` (default): panel closes immediately, trigger shows
- *   the intended value. On error, value rolls back to the previous
- *   committed value.
- * - `'pessimistic'`: panel stays open, selected option shows a spinner
- *   indicator, trigger is disabled while pending. On success, panel
- *   closes. On error, panel stays open and surfaces the error inline.
- *
- * In both modes, consecutive picks supersede any in-flight commit.
+ * - `'optimistic'` (default) — panel closes, trigger shows intended value,
+ *   rolls back on error.
+ * - `'pessimistic'` — panel stays open, option-row spinner, trigger
+ *   disabled. Closes on success; stays open on error with inline UI.
  *
  * @category interactive
  */
 export type CngxSelectCommitMode = 'optimistic' | 'pessimistic';
 
 /**
- * Where a `commitAction` error is rendered when no `*cngxSelectCommitError`
- * template is projected.
+ * Default error UI when no `*cngxSelectCommitError` slot is projected.
  *
- * - `'banner'` (default): a top-of-panel banner above the options.
- * - `'inline'`: small error indicator next to the offending option row.
- * - `'none'`: no built-in UI; consumers typically bridge via `CngxToastOn` et al.
+ * - `'banner'` (default) — top-of-panel banner.
+ * - `'inline'` — indicator next to the offending option row.
+ * - `'none'` — no built-in UI; bridge via `CngxToastOn` etc.
  *
  * @category interactive
  */

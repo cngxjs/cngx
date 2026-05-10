@@ -15,51 +15,21 @@ import {
 } from './option.model';
 
 /**
- * Factory input for {@link createProjectedOptionModel}. Drives the
- * shell's hierarchy-aware option model from a content-projected
- * `CNGX_OPTION_CONTAINER` query (leaves + groups).
+ * Input for {@link createProjectedOptionModel}.
  *
  * @category interactive
  */
 export interface ProjectedOptionModelInput<T> {
-  /**
-   * Live list of `CNGX_OPTION_CONTAINER` directives discovered via
-   * `contentChildren(CNGX_OPTION_CONTAINER, { descendants: false })`
-   * on the projection-shell host.
-   */
   readonly containers: Signal<readonly CngxOptionContainer[]>;
-  /**
-   * Active search term — drives `visibleProjectedOptions` filtering.
-   * Empty string short-circuits to the unfiltered list (same reference
-   * preserved so downstream listbox `[explicitOptions]` doesn't
-   * cascade).
-   */
+  /** Empty string short-circuits to the unfiltered reference. */
   readonly searchTerm: Signal<string>;
-  /**
-   * Match policy invoked for each option when the search term is
-   * non-empty. Receives the option's value, resolved plain-text label,
-   * and the term; returns `true` when the option should remain
-   * visible. The shell forwards its `searchMatchFn` input default
-   * (case-insensitive substring) here; consumers can swap in fuzzy /
-   * locale-aware matchers via per-instance input or via the
-   * {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY} override.
-   */
+  /** Per-option match policy when `searchTerm` is non-empty. */
   readonly matches: (value: T, label: string, term: string) => boolean;
 }
 
 /**
- * Output bundle of {@link createProjectedOptionModel}. The four signals
- * are reference-stable across unrelated input flips:
- *
- * - `derivedOptions` uses a deep structural equal (length + per-entry
- *   value/label/disabled compare for leaves, label + child-recursion
- *   for groups).
- * - `projectedOptions` / `visibleProjectedOptions` use length +
- *   per-entry identity equal (CngxOption directive instances are
- *   identity-stable while mounted).
- * - `adItems` uses length + per-entry id/value/label/disabled equal
- *   so the listbox's `[items]` binding doesn't cascade through AD's
- *   keyboard-nav memoisation on every CD pass.
+ * Output of {@link createProjectedOptionModel}. Each signal carries a
+ * structural `equal` so unrelated CD passes don't cascade.
  *
  * @category interactive
  */
@@ -71,14 +41,9 @@ export interface ProjectedOptionModel<T> {
 }
 
 /**
- * Default factory: hierarchy-preserving option model derived from
- * projected DOM. Leaves stay leaves, groups stay groups —
- * `createSelectCore` reflattens for AD lookup and reuses the structure
- * for the panel-shell renderer.
- *
- * Plain-text labels — `option.label()` is the shared `Signal<string>`
- * projection; closed-trigger rendering reads it via `{{ ... }}` text
- * interpolation only, never `[innerHTML]`.
+ * Hierarchy-preserving option model derived from projected DOM. Leaves
+ * stay leaves, groups stay groups; `createSelectCore` reflattens for AD
+ * lookup. Labels are plain-text via `{{ }}` interpolation.
  *
  * @category interactive
  */
@@ -90,9 +55,8 @@ export function createProjectedOptionModel<T>(
       const items: (CngxSelectOptionDef<T> | CngxSelectOptionGroupDef<T>)[] = [];
       for (const c of input.containers()) {
         if (c.kind === 'option') {
-          // CNGX_OPTION_CONTAINER is provided via `useExisting: CngxOption` —
-          // the runtime instance carries the full directive surface even
-          // though the structural token type is intentionally narrow.
+          // CNGX_OPTION_CONTAINER is `useExisting: CngxOption` — the
+          // runtime instance is the directive.
           const opt = c as CngxOption;
           items.push({
             value: opt.value() as T,
@@ -245,8 +209,7 @@ export function createProjectedOptionModel<T>(
 }
 
 /**
- * Factory-signature type — mirrors {@link createProjectedOptionModel}
- * so DI overrides match the exact shape of the default.
+ * Factory signature for {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
  *
  * @category interactive
  */
@@ -255,19 +218,9 @@ export type CngxProjectedOptionModelFactory = <T>(
 ) => ProjectedOptionModel<T>;
 
 /**
- * DI token resolving the factory the projection-shell uses to derive
- * its option model from content-projected `CNGX_OPTION_CONTAINER`
- * children. Defaults to {@link createProjectedOptionModel}; override
- * app-wide via
- * `providers: [{ provide: CNGX_PROJECTED_OPTION_MODEL_FACTORY, useValue: customFactory }]`
- * or per-component via `viewProviders` to plug custom value extraction
- * (read from `data-*` attributes on `<cngx-option>`, fold custom
- * group sub-types, async-loaded labels) without forking the shell.
- *
- * Symmetrical to `CNGX_PANEL_RENDERER_FACTORY` /
- * `CNGX_SEARCH_EFFECTS_FACTORY` — every Level-3 composite that turns
- * projected DOM into a derived signal graph routes through a factory
- * token so consumers can swap implementations.
+ * Factory token. Default {@link createProjectedOptionModel}. Override
+ * for custom value extraction, async labels, or fold-in of custom
+ * group sub-types.
  *
  * @category interactive
  */

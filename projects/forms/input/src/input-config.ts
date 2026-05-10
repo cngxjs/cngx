@@ -1,8 +1,6 @@
 import { InjectionToken, type Provider } from '@angular/core';
 import type { MaskTokenMap } from './input-mask.directive';
 
-// ── Config interface ────────────────────────────────────────────────────
-
 /**
  * Global configuration for `@cngx/forms/input` directives.
  *
@@ -35,7 +33,7 @@ export interface InputConfig {
   readonly fileMaxSize?: number;
 }
 
-/** Default config — all undefined, directives use their own defaults. */
+/** Empty default — every directive falls back to its own default. */
 const DEFAULT_INPUT_CONFIG: InputConfig = {};
 
 /**
@@ -48,12 +46,8 @@ export const CNGX_INPUT_CONFIG = new InjectionToken<InputConfig>('CNGX_INPUT_CON
   factory: () => DEFAULT_INPUT_CONFIG,
 });
 
-// ── Feature type ────────────────────────────────────────────────────────
-
 /** A feature function that contributes to the input config. */
 export type InputConfigFeature = (config: InputConfig) => InputConfig;
-
-// ── Provider factory ────────────────────────────────────────────────────
 
 /**
  * Provides global configuration for `@cngx/forms/input` directives.
@@ -80,8 +74,6 @@ export function provideInputConfig(...features: InputConfigFeature[]): Provider 
   }
   return { provide: CNGX_INPUT_CONFIG, useValue: config };
 }
-
-// ── Feature functions ───────────────────────────────────────────────────
 
 /** Add or override phone mask patterns by region code. */
 export function withPhonePatterns(patterns: Record<string, string>): InputConfigFeature {

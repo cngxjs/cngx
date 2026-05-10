@@ -107,11 +107,9 @@ export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
   readonly values: readonly T[];
   /**
-   * Values before the change was committed. Populated from the pre-
-   * toggle snapshot in the AD-activation callback, from the commit-
-   * controller's rollback target on success, and from the pre-clear
-   * array in the clear path. Plural name to disambiguate from the
-   * scalar `previousValue` on `CngxSelectChange` / `CngxTypeaheadChange`.
+   * Values before the change committed. Populated from the pre-toggle
+   * snapshot, the commit-controller rollback target on success, and the
+   * pre-clear array. Plural disambiguates from scalar `previousValue`.
    */
   readonly previousValues?: readonly T[];
   readonly added: readonly T[];
@@ -121,11 +119,9 @@ export interface CngxMultiSelectChange<T = unknown> {
 }
 
 /**
- * Multi-select sibling of {@link CngxSelect}. Uses the shared
- * {@link createSelectCore} factory for all stateless signal-graph
- * derivations — this component keeps only the multi-specific
- * trigger template, chip strip rendering, AD-activated dispatch,
- * typeahead-while-closed + PageUp/Down keyboard, and Field↔sync.
+ * Multi-select sibling of {@link CngxSelect}. Stateless graph in
+ * {@link createSelectCore}; keeps the multi-specific trigger template,
+ * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
  *
  * @category interactive
  */
@@ -168,10 +164,9 @@ export interface CngxMultiSelectChange<T = unknown> {
       (clickOutside)="handleClickOutside()"
     >
       <!--
-        role="combobox" with a focusable <div> — NOT a <button>. The
-        trigger carries interactive children (chip × buttons, clear-all,
-        custom chip-close slots) which would be invalid nested buttons
-        inside a <button>. WAI-ARIA 1.2 pattern for multi-value comboboxes.
+        role="combobox" on a <div>, not <button>: chip × buttons,
+        clear-all, and chip-close slots would be invalid nested buttons.
+        WAI-ARIA 1.2 multi-value combobox pattern.
       -->
       @let aria = triggerAria();
       <div
@@ -331,8 +326,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
-  // ── Inputs ─────────────────────────────────────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -349,21 +342,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /**
-   * Chip-strip overflow strategy. See {@link CngxSelectConfig.chipOverflow}.
-   * Per-instance input wins over app-wide config (default `'wrap'`).
-   */
+  /** Chip-strip overflow strategy. See `CngxSelectConfig.chipOverflow`. */
   readonly chipOverflow = input<NonNullable<CngxSelectConfig['chipOverflow']>>(
     this.config.chipOverflow,
   );
-  /**
-   * Max chips rendered in `'truncate'` mode before the `+N weitere`
-   * badge. Defaults to `CngxSelectConfig.maxVisibleChips` (app default `3`).
-   */
+  /** Max chips in `'truncate'` mode before the `+N` badge. */
   readonly maxVisibleChips = input<number>(this.config.maxVisibleChips);
   readonly typeaheadDebounceInterval = input<number>(this.config.typeaheadDebounceInterval);
   readonly hideSelectionIndicator = input<boolean>(!this.config.showSelectionIndicator);
@@ -372,15 +359,13 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly hideCaret = input<boolean>(!this.config.showCaret);
 
   /**
-   * Replaces the built-in `✕` glyph inside the default clear-all button
-   * without forking the button frame or ARIA wiring. When
-   * `*cngxSelectClearButton` is projected, the projected template takes
-   * full precedence and this input is ignored.
+   * Replaces the built-in `✕` glyph inside the default clear-all button.
+   * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the built-in `▾` caret glyph. When `*cngxSelectCaret` is
-   * projected, it takes full precedence and this input is ignored.
+   * Replaces the built-in `▾` caret glyph. Ignored when
+   * `*cngxSelectCaret` is projected.
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly clearable = input<boolean>(false);
@@ -405,8 +390,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   readonly values = model<T[]>([]);
 
-  // ── Outputs ────────────────────────────────────────────────────────
-
   readonly selectionChange = output<CngxMultiSelectChange<T>>();
   readonly optionToggled = output<{
     readonly option: CngxSelectOptionDef<T>;
@@ -419,8 +402,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly retry = output<void>();
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -455,8 +436,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     CngxSelectOptionError,
   );
 
-  // ── Resolved template-slot registry ────────────────────────────────
-
   /** @internal */
   protected readonly tpl = inject(CNGX_TEMPLATE_REGISTRY_FACTORY)<T>({
     check: this.checkDirective,
@@ -483,13 +462,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     () => this.chipDirective()?.templateRef ?? null,
   );
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly triggerBtn = viewChild<ElementRef<HTMLElement>>('triggerBtn');
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
   private readonly popoverRef = viewChild<CngxPopover>(CngxPopover);
-
-  // ── Public derived signals ─────────────────────────────────────────
 
   /** Whether the panel is currently open. */
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
@@ -498,8 +473,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly activeId = computed<string | null>(
     () => this.listboxRef()?.ad.activeId() ?? null,
   );
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
 
@@ -513,14 +486,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
-
-  // ── Action-slot bridge ──────────────────────────────────────────────
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -530,12 +499,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
 
-  // ── Core (stateless signal graph) ──────────────────────────────────
-
   /**
-   * Signal-graph factory shared with {@link CngxSelect} and
-   * {@link CngxCombobox}. Owns every derivation that's identical
-   * across the family.
+   * Family-shared signal graph. Owns every derivation identical across
+   * `CngxSelect` / `CngxCombobox`.
    *
    * @internal
    */
@@ -576,10 +542,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer — renders in the next panel emission and silently drops
-   * once the server state includes a matching value. Dedup-guarded
-   * by `compareWith`; duplicate patches are no-ops.
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
    *
    * @category interactive
    */
@@ -595,8 +560,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }
-
-  // ── Template-facing protected surface (delegates to core) ──────────
 
   /** @internal */ protected readonly effectiveOptions = this.core.effectiveOptions;
   /** @internal */ protected readonly flatOptions = this.core.flatOptions;
@@ -627,10 +590,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   readonly id = computed<string>(() => this.core.resolvedId() ?? '');
 
   /**
-   * Keyboard typeahead engine — shared with the rest of the select
-   * family via `@cngx/forms/select/shared/typeahead-controller`.
-   * Buffered multi-char resolve + disabled-skip are identical to single
-   * select; the match-to-action wiring below is multi-specific (toggle).
+   * Keyboard typeahead engine, family-shared via
+   * `shared/typeahead-controller`. Match-to-action wiring below is
+   * multi-specific (toggle).
    */
   private readonly typeaheadController = createTypeaheadController<T>({
     options: this.flatOptions,
@@ -640,9 +602,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Flat-nav policy — shared with `CngxSelect` / `CngxReorderableMultiSelect`
-   * via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down + typeahead-while-
-   * closed; the variant only dispatches the resulting action.
+   * Flat-nav policy via `CNGX_FLAT_NAV_STRATEGY`. Drives PageUp/Down
+   * and typeahead-while-closed; variant only dispatches the action.
    */
   private readonly flatNavStrategy = inject(CNGX_FLAT_NAV_STRATEGY);
 
@@ -671,9 +632,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   /**
-   * Currently selected options. Structurally compared by `.value`
-   * under `compareWith` so a fresh OptionDef reference carrying the
-   * same values does not cascade re-renders on consumer bindings.
+   * Currently selected options. Structural equal on `.value` under
+   * `compareWith` — fresh OptionDef references for the same values
+   * don't cascade downstream re-renders.
    */
   readonly selected: Signal<readonly CngxSelectOptionDef<T>[]> = computed(
     () => this.selectedOptions(),
@@ -696,19 +657,12 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  // ── Multi-selection state ──────────────────────────────────────────
-
-  /**
-   * Options currently selected, resolved from `values()` against
-   * `flatOptions()`. Uses the core's O(1) map fast-path when
-   * compareWith is the default.
-   */
   /**
    * Chip subset rendered into the trigger strip. In `'wrap'` /
-   * `'scroll-x'` modes identical to {@link selectedOptions} — layout
-   * divergence happens purely in CSS via `data-overflow`. In
-   * `'truncate'` mode, the first `maxVisibleChips()` entries; the
-   * remainder feeds {@link overflowBadgeCount}.
+   * `'scroll-x'` identical to `selectedOptions`; layout divergence is
+   * pure CSS via `data-overflow`. In `'truncate'` the first
+   * `maxVisibleChips()` entries — remainder feeds
+   * {@link overflowBadgeCount}.
    *
    * @internal
    */
@@ -722,9 +676,9 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Count of selected options hidden by `'truncate'` mode. Zero in
-   * `'wrap'` / `'scroll-x'` — keeps the badge binding a single
-   * numeric expression with no mode-switch branch in the template.
+   * Count of selected options hidden by `'truncate'`. Zero in
+   * `'wrap'` / `'scroll-x'` so the badge binding stays a single
+   * numeric expression.
    *
    * @internal
    */
@@ -783,19 +737,16 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     },
   );
 
-  // ── Commit state (delegated) ───────────────────────────────────────
-
   private readonly togglingOption = this.core.togglingOption;
 
   /** Rollback target for a commit in flight. */
   private lastCommittedValues: T[] = [];
 
   /**
-   * Commit-flow handler — owns the commit-controller lifecycle, value
-   * reconciliation, rollback-on-error, and live-region announcements.
-   * Shared with `CngxCombobox` via `shared/array-commit-handler.ts`.
-   * Consumer retains emission of selection-change payloads via the
-   * finalize callbacks (value-shape-specific).
+   * Commit-flow handler. Owns commit-controller lifecycle, value
+   * reconciliation, rollback-on-error, live-region announce. Shared
+   * with `CngxCombobox`. Consumer emits change payloads via the
+   * finalize callbacks.
    */
   private readonly commitHandler: ArrayCommitHandler<T> = createArrayCommitHandler<T>({
     values: this.values,
@@ -823,10 +774,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Chip-removal handler — owns the disabled-guard + snapshot + filter
-   * + commit/sync branch dispatch + WeakMap closure cache. Replaces the
-   * inline `removeOption` / `chipRemoveFor` boilerplate that every
-   * chip-carrying variant previously duplicated.
+   * Chip-removal handler. Disabled-guard + snapshot + filter +
+   * commit/sync branch dispatch + WeakMap closure cache.
    */
   private readonly chipRemovalHandler: CngxChipRemovalHandler<CngxSelectOptionDef<T>> =
     inject(CNGX_CHIP_REMOVAL_HANDLER_FACTORY)<T>({
@@ -845,7 +794,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         this.finalizeToggle(item, false, previous),
     });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */ protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */ protected readonly isSelected = this.core.panelHostAdapter.isSelected;
   /** @internal */ protected readonly isIndeterminate = this.core.panelHostAdapter.isIndeterminate;
@@ -858,16 +806,15 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   constructor() {
     this.lastCommittedValues = untracked(() => [...this.values()]);
 
-    // Honor [autofocus] on first render.
     afterNextRender(() => {
       if (this.autofocus()) {
         this.focus();
       }
     });
 
-    // Bridge AD-activations into user-selection outputs and commit flow.
-    // Lifecycle + routing live in `createADActivationDispatcher`;
-    // array-shape toggle logic stays here.
+    // AD activations → user-selection outputs + commit flow.
+    // Lifecycle and routing in `createADActivationDispatcher`;
+    // array-shape toggle stays inline.
     createADActivationDispatcher<T, T[]>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -890,8 +837,8 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         }
       },
       onActivate: (_value, opt) => {
-        // Values have already been mutated by the listbox. Reconstruct
-        // the pre-toggle snapshot by inverting the change:
+        // Listbox already mutated values; invert the change to
+        // reconstruct the pre-toggle snapshot.
         //   currentSelected=true  → opt was added    → previous = current \ {opt}
         //   currentSelected=false → opt was removed  → previous = current ∪ {opt}
         const currentSelected = this.isSelected(opt);
@@ -904,7 +851,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       },
     });
 
-    // Panel open/close lifecycle events.
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.triggerBtn,
@@ -914,7 +860,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
     });
 
-    // Bidirectional sync with the bound form field (if any).
     createFieldSync<T[]>({
       componentValue: this.values,
       valueEquals: (a, b) => sameArrayContents(a, b, this.compareWith()),
@@ -923,14 +868,10 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.triggerBtn()?.nativeElement.focus(options); }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleTriggerClick(): void {
@@ -940,7 +881,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
     this.toggle();
   }
 
-  /** @internal */
   /** @internal — click-outside dismissal (action-dirty-guarded). */
   protected readonly handleClickOutside = inject(CNGX_DISMISS_HANDLER_FACTORY)({
     popoverRef: this.popoverRef,
@@ -1022,7 +962,7 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
   protected handleTriggerKeydown(event: KeyboardEvent): void {
     const lb = this.listboxRef();
     const pop = this.popoverRef();
-    // Typeahead-while-closed — multi-select toggles first matching option.
+    // Typeahead-while-closed — toggles first matching option.
     if (!this.panelOpen() && this.config.typeaheadWhileClosed) {
       const key = event.key;
       if (key.length === 1 && /\S/.exec(key)) {
@@ -1041,18 +981,17 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
         if (action.kind === 'select') {
           event.preventDefault();
           this.toggleOptionByUser(action.option);
-          // Multi-select toggle semantics: every keystroke should map to
-          // an independent toggle. Reset the buffer so a repeated key
-          // toggles the same option back off instead of accumulating
-          // ('rr' would match nothing). Single-select keeps buffering
-          // because its advance-on-repeat is the desired jump behaviour.
+          // Multi-toggle semantics: each keystroke is an independent
+          // toggle. Reset the buffer so a repeat-key toggles the same
+          // option off instead of accumulating ('rr' would match
+          // nothing). Single-select keeps buffering for advance-on-repeat.
           this.typeaheadController.clearBuffer();
           return;
         }
       }
     }
 
-    // PageUp / PageDown — open + jump ±10 with disabled-aware clamping.
+    // PageUp / PageDown — open + jump ±10, disabled-aware clamp.
     if (event.key === 'PageDown' || event.key === 'PageUp') {
       event.preventDefault();
       if (!pop || !lb) {
@@ -1083,8 +1022,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
       }
     }
   }
-
-  // ── Commit orchestration ───────────────────────────────────────────
 
   private toggleOptionByUser(opt: CngxSelectOptionDef<T>): void {
     const action = this.commitAction();

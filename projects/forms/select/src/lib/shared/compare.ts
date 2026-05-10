@@ -1,13 +1,8 @@
 import type { CngxSelectCompareFn } from './select-core';
 
 /**
- * Element-wise equality for two readonly arrays under a caller-supplied
- * comparator. Short-circuits on reference equality and on length mismatch;
- * otherwise walks both arrays once.
- *
- * Used by the select family's `Field ↔ component` sync and commit-flow
- * guards to suppress redundant writes when the new array holds the same
- * items as the current one under `compareWith`.
+ * Element-wise array equality under a caller comparator. Short-circuits on
+ * reference equality and length mismatch.
  *
  * @category interactive
  */

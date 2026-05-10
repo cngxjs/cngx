@@ -11,20 +11,16 @@ import { resolveSelectConfig } from '../shared/resolve-config';
 import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
 
 /**
- * Declarative-mode search element — projects an `<input type="search">`
- * into a parent `<cngx-select-shell>`'s panel as the first item, above
- * the listbox.
+ * Declarative-mode search element. Projects an `<input type="search">`
+ * into the parent shell's panel above the listbox.
  *
- * Two-way binds the parent shell's `searchTerm` model via
- * {@link CNGX_SELECT_SHELL_SEARCH_HOST}, and forwards keyboard
- * navigation (`ArrowUp` / `ArrowDown` / `Home` / `End` / `Enter` /
- * `Escape`) into the listbox AD so the user can filter and pick
- * without leaving the input.
+ * Two-way binds the shell's `searchTerm` via
+ * `CNGX_SELECT_SHELL_SEARCH_HOST` and forwards
+ * `ArrowUp/Down`/`Home`/`End`/`Enter`/`Escape` into the listbox AD so
+ * the user can filter and pick without leaving the input.
  *
- * **Intended usage:** as a direct child of `<cngx-select-shell>`,
- * authored alongside the projected options. The shell projects this
- * element into a dedicated `<ng-content select="cngx-select-search" />`
- * slot above the listbox.
+ * **Usage:** direct child of `<cngx-select-shell>`. The shell projects
+ * via `<ng-content select="cngx-select-search" />`.
  *
  * @example
  * ```html
@@ -90,10 +86,9 @@ export class CngxSelectSearch {
   readonly placeholder = input<string>('Search…');
 
   /**
-   * Optional ARIA label override. Three-stage cascade:
-   * per-instance `[aria-label]` → injected
-   * `CNGX_SELECT_CONFIG.ariaLabels.searchInput` → `null` (the input
-   * falls through to its placeholder for AT naming).
+   * ARIA label override. Cascade: per-instance `[aria-label]` →
+   * `CNGX_SELECT_CONFIG.ariaLabels.searchInput` → `null` (input
+   * falls back to placeholder for AT naming).
    */
   readonly ariaLabel = input<string | null>(null, { alias: 'aria-label' });
 
@@ -102,10 +97,9 @@ export class CngxSelectSearch {
   private readonly config = resolveSelectConfig();
 
   /**
-   * Resolved ARIA label per the cascade documented on {@link ariaLabel}.
-   * Returns `null` when no instance input is bound and the config
-   * leaves `searchInput` unset — the input then exposes only the
-   * `placeholder` to AT, matching the native `<input>` default.
+   * Resolved ARIA label per the cascade above. `null` when neither
+   * input nor config sets it — input then exposes only `placeholder`
+   * to AT (native `<input>` default).
    *
    * @internal
    */
@@ -120,11 +114,10 @@ export class CngxSelectSearch {
   }
 
   /**
-   * Forward navigation keys into the listbox AD while the user keeps
-   * focus in the search input. Mirrors the shared trigger keyboard
-   * contract: ArrowUp/Down move highlight, Home/End jump to ends,
-   * Enter activates the current item, Escape closes the panel and
-   * returns focus to the trigger.
+   * Forward navigation keys into the listbox AD while focus stays in
+   * the search input. ArrowUp/Down move highlight, Home/End jump to
+   * ends, Enter activates the current item, Escape closes and
+   * restores focus.
    *
    * @internal
    */

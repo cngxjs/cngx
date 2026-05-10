@@ -112,29 +112,22 @@ export interface CngxTypeaheadChange<T = unknown> {
   readonly source: CngxTypeahead<T>;
   readonly value: T | undefined;
   /**
-   * Value before the change was committed. Populated from the pre-pick
-   * snapshot captured in the AD-activation callback, from the
-   * commit-controller's rollback target on success/error, and from the
-   * pre-clear value in the clear path. `undefined` back-compat default
-   * for callers on older change-event shapes.
+   * Value before the change committed. Populated from the AD-activation
+   * snapshot, the commit-controller rollback target, and the pre-clear
+   * value.
    */
   readonly previousValue?: T | undefined;
   readonly option: CngxSelectOptionDef<T> | null;
 }
 
 /**
- * Single-value async autocomplete. Fourth sibling of the select family
- * after {@link CngxSelect} (single), {@link CngxMultiSelect} (multi) and
- * {@link CngxCombobox} (multi-chip). Inline `<input role="combobox">`
- * with `aria-autocomplete="list"` — typing filters the panel live and
- * picking commits a single value; the input text is driven by
- * {@link CngxTypeahead.displayWith} so the formatted selection survives
- * blur/refocus. `clearOnBlur` restores the last-committed display on
- * stray keystrokes that never resolved to a pick.
+ * Single-value async autocomplete. Inline `<input role="combobox">`
+ * with `aria-autocomplete="list"`. Input text is driven by
+ * {@link CngxTypeahead.displayWith}; `clearOnBlur` restores the last
+ * committed display on stray keystrokes.
  *
- * Stateless derivations (ARIA projection, option model, panel view,
- * commit-controller surface) live in `shared/select-core.ts` — this
- * component is a thin scalar-value adapter on top.
+ * Stateless graph in {@link createSelectCore}; this component is a
+ * thin scalar-value adapter.
  *
  * @category interactive
  */
@@ -291,8 +284,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   private readonly presenter = inject(CngxFormFieldPresenter, { optional: true });
   private readonly config = resolveSelectConfig();
 
-  // ── Inputs ─────────────────────────────────────────────────────────
-
   readonly label = input<string>('');
   readonly options = input<CngxSelectOptionsInput<T>>([] as CngxSelectOptionsInput<T>);
   readonly placeholder = input<string>('');
@@ -309,28 +300,24 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly panelClass = input<string | readonly string[] | null>(null);
   readonly panelWidth = input<'trigger' | number | null>(this.config.panelWidth);
   /**
-   * Popover placement relative to the trigger. Per-instance input
-   * wins over {@link CngxSelectConfig.popoverPlacement}.
+   * Popover placement relative to the trigger. Per-instance input wins
+   * over `CngxSelectConfig.popoverPlacement`.
    */
   readonly popoverPlacement = input<PopoverPlacement>(this.config.popoverPlacement);
-  /**
-   * Mobile `inputmode` attribute. Defaults from
-   * {@link CngxSelectConfig.inputMode} (`'search'`).
-   */
+  /** Mobile `inputmode`. Defaults from `CngxSelectConfig.inputMode`. */
   readonly inputMode = input<NonNullable<CngxSelectConfig['inputMode']>>(
     this.config.inputMode,
   );
   /**
-   * Mobile `enterkeyhint` attribute. Defaults to `'done'` (Typeahead
-   * commits Enter + closes the panel). App-wide config wins when
-   * non-null.
+   * Mobile `enterkeyhint`. Default `'done'` — Typeahead commits Enter
+   * and closes the panel.
    */
   readonly enterKeyHint = input<NonNullable<CngxSelectConfig['enterKeyHint']>>(
     this.config.enterKeyHint ?? 'done',
   );
-  /** Formatter from value to input text. Defaults to `String(v)`. */
+  /** Formatter from value to input text. */
   readonly displayWith = input<(value: T) => string>((v) => String(v));
-  /** When `true` (default), blur without a valid pick resets the input text to `displayWith(value())`. */
+  /** When `true` (default), blur without a pick resets to `displayWith(value())`. */
   readonly clearOnBlur = input<boolean>(true);
   readonly searchMatchFn = input<ListboxMatchFn | null>(null);
   readonly searchDebounceMs = input<number>(this.config.typeaheadDebounceInterval);
@@ -344,16 +331,13 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     this.config.ariaLabels?.clearButton ?? 'Reset selection',
   );
   /**
-   * Replaces the built-in `✕` glyph inside the default clear button
-   * while keeping the button frame, ARIA wiring, and click handler
-   * intact. When `*cngxSelectClearButton` is also projected, the
-   * projected template takes full precedence and this input is ignored.
+   * Replaces the built-in `✕` glyph inside the default clear button.
+   * Ignored when `*cngxSelectClearButton` is projected.
    */
   readonly clearGlyph = input<TemplateRef<void> | null>(null);
   /**
-   * Replaces the built-in `▾` caret glyph while keeping the wrapping
-   * span semantics (aria-hidden, class). When `*cngxSelectCaret` is
-   * projected, it takes full precedence and this input is ignored.
+   * Replaces the built-in `▾` caret glyph. Ignored when
+   * `*cngxSelectCaret` is projected.
    */
   readonly caretGlyph = input<TemplateRef<void> | null>(null);
   readonly loading = input<boolean>(false);
@@ -371,10 +355,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly announceTemplate = input<CngxSelectAnnouncerConfig['format'] | null>(null);
   /**
    * Scalar-commit error-announce policy. Per-instance input wins over
-   * {@link CngxSelectConfig.commitErrorAnnouncePolicy}; when neither
-   * is set, the variant's shipped default of `{ kind: 'soft' }`
-   * applies (typeahead UX shouldn't interrupt the user's free-text
-   * flow with assertive reads on commit rollback).
+   * `CngxSelectConfig.commitErrorAnnouncePolicy`. Default
+   * `{ kind: 'soft' }` — typeahead UX shouldn't interrupt the
+   * free-text flow with assertive reads on commit rollback.
    */
   readonly commitErrorAnnouncePolicy = input<CngxCommitErrorAnnouncePolicy>(
     this.config.commitErrorAnnouncePolicy ?? { kind: 'soft' },
@@ -382,8 +365,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /** Two-way single-value binding. */
   readonly value = model<T | undefined>(undefined);
-
-  // ── Outputs ────────────────────────────────────────────────────────
 
   readonly selectionChange = output<CngxTypeaheadChange<T>>();
   readonly openedChange = output<boolean>();
@@ -394,8 +375,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly commitError = output<unknown>();
   readonly stateChange = output<AsyncStatus>();
   readonly searchTermChange = output<string>();
-
-  // ── Content-child directive queries ────────────────────────────────
 
   private readonly checkDirective = contentChild<CngxSelectCheck<T>>(CngxSelectCheck);
   private readonly caretDirective = contentChild<CngxSelectCaret>(CngxSelectCaret);
@@ -439,8 +418,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     () => this.inputSuffixDirective()?.templateRef ?? null,
   );
 
-  // ── ViewChildren ───────────────────────────────────────────────────
-
   private readonly inputEl = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   private readonly searchInputRef = viewChild(CngxListboxSearch);
   private readonly listboxRef = viewChild<CngxListbox>(CngxListbox);
@@ -449,8 +426,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   readonly panelOpen = computed<boolean>(() => this.popoverRef()?.isVisible() ?? false);
   readonly activeId = computed<string | null>(() => this.listboxRef()?.ad.activeId() ?? null);
   readonly searchTerm: Signal<string> = computed(() => this.searchInputRef()?.term() ?? '');
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly errorState = computed<boolean>(() => this.presenter?.showError() ?? false);
   private readonly focusState = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
@@ -469,7 +444,7 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       }),
   );
 
-  /** Filter overlay applied by `createSelectCore` when the search term is non-empty. */
+  /** Filter overlay applied by `createSelectCore` on non-empty search term. */
   private readonly filter = computed<
     ((input: CngxSelectOptionsInput<T>) => CngxSelectOptionsInput<T>) | null
   >(() => {
@@ -481,14 +456,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     return (all) => filterSelectOptions(all, term, matcher);
   });
 
-  // ── Local-items buffer (quick-create persistence) ──────────────────
-
   /** @internal */
   private readonly localItemsBuffer = inject(CNGX_LOCAL_ITEMS_BUFFER_FACTORY)<T>(
     this.compareWith,
   );
-
-  // ── Action-slot bridge ──────────────────────────────────────────────
 
   /** @internal */
   private readonly actionBridge = inject(CNGX_ACTION_HOST_BRIDGE_FACTORY)({
@@ -497,8 +468,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   /** @internal */ readonly actionDirty = this.actionBridge.dirty;
   /** @internal */ readonly actionCallbacks = this.actionBridge.callbacks;
   /** @internal */ readonly actionFocusTrapEnabled = this.actionBridge.shouldTrapFocus;
-
-  // ── Core (stateless signal graph) ──────────────────────────────────
 
   private readonly core = createSelectCore<T, T>(
     {
@@ -537,10 +506,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   );
 
   /**
-   * Append a pre-built option to the component's persistent local
-   * buffer — renders in the next panel emission and silently drops
-   * once the server state includes a matching value. Dedup-guarded
-   * by `compareWith`; duplicate patches are no-ops.
+   * Append a pre-built option to the local buffer. Renders in the next
+   * panel emission and silently drops once the server includes a
+   * matching value. Idempotent under `compareWith`.
    *
    * @category interactive
    */
@@ -637,11 +605,9 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected readonly virtualItemCount = this.virtualSetup.virtualItemCount;
 
   /**
-   * Currently selected option, resolved against `options`. Structurally
-   * compared — a fresh OptionDef reference carrying the same `.value`
-   * under `compareWith` is treated as equal, so downstream consumer
-   * bindings don't re-render when the options array is re-emitted for
-   * an unchanged selection (server-driven refetch).
+   * Currently selected option, resolved against `options`. Structural
+   * equal on `.value` under `compareWith` — fresh OptionDef references
+   * for the same value don't cascade re-renders (server refetch).
    */
   readonly selected = computed<CngxSelectOptionDef<T> | null>(
     () => {
@@ -674,8 +640,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     () => this.compareWith() as unknown as (a: unknown, b: unknown) => boolean,
   );
 
-  // ── Single-selection state (commit + rollback) ─────────────────────
-
   private readonly announcer = inject(CngxSelectAnnouncer);
   private readonly announceCommitError = inject(CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY)({
     deps: {
@@ -687,13 +651,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     policy: this.commitErrorAnnouncePolicy,
   });
   /**
-   * Display binding — owns the value ↔ input-text reconciliation cycle
-   * (including `writingFromValue` flag, skipInitial-aware
-   * `searchTermChange` forwarding, and the imperative
-   * `writeFromValue` seed). Resolved via `CNGX_DISPLAY_BINDING_FACTORY`
-   * so consumers can wrap the default with telemetry / audit logging /
-   * alternative search-term reset policies without forking the
-   * component.
+   * Value ↔ input-text reconciliation. Owns `writingFromValue`,
+   * skipInitial-aware `searchTermChange` forwarding, imperative
+   * `writeFromValue` seed. Resolved via `CNGX_DISPLAY_BINDING_FACTORY`
+   * for telemetry / audit / custom reset-policy override.
    */
   private readonly display: DisplayBinding<T> = inject(CNGX_DISPLAY_BINDING_FACTORY)<T>({
     value: this.value,
@@ -707,13 +668,12 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   });
 
   /**
-   * Shared scalar commit handler. Typeahead-specific wrinkles ride the
-   * callbacks: `onValueWrite` mirrors the committed/rollback value into
-   * the `<input>` via the display binding; `onCommitFinalize` emits
-   * `selectionChange` only when the option resolved (preserves the
-   * pre-extraction behaviour where unknown-value commits silently
-   * dropped the change event — typeahead can't reasonably describe the
-   * pick to AT when the option isn't in the loaded set).
+   * Scalar commit handler. Typeahead wrinkles:
+   *   - `onValueWrite` mirrors the value into the `<input>` via the
+   *     display binding.
+   *   - `onCommitFinalize` emits only when the option resolved; an
+   *     unresolved value can't be described to AT, so the change event
+   *     is dropped.
    *
    * @internal
    */
@@ -743,7 +703,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     onValueWrite: (v) => this.display.writeFromValue(v),
   });
 
-  // ── Panel-host surface forwarding ──────────────────────────────────
   /** @internal */
   protected readonly isGroup = this.core.panelHostAdapter.isGroup;
   /** @internal */
@@ -766,8 +725,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       this.display.writeFromValue(this.value());
     });
 
-    // Bridge AD activations into selectionChange + commit flow. closeOnSelect
-    // is true — picking a suggestion hides the panel and seeds the input.
+    // AD activations → selectionChange + commit flow. closeOnSelect:
+    // picking hides the panel and seeds the input.
     createADActivationDispatcher<T, T>({
       listboxRef: this.listboxRef,
       core: this.core,
@@ -782,7 +741,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       },
     });
 
-    // Panel open/close lifecycle.
     inject(CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY)({
       panelOpen: this.panelOpen,
       restoreFocusTarget: this.inputEl,
@@ -792,19 +750,17 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       closed: this.closed,
     });
 
-    // Field↔Component bidirectional sync.
     createFieldSync<T | undefined>({
       componentValue: this.value,
       valueEquals: (a, b) => (this.compareWith() as CngxSelectCompareFn<unknown>)(a, b),
       coerceFromField: (x) => x as T | undefined,
     });
 
-    // Search-term effects: auto-open on typing. `autoOpenGate` blocks
-    // the open during library-authored writes (display-binding seed,
-    // commit reconciliation, blur restore) so those internal writes
-    // don't re-open a panel the user just closed. The emit path is
-    // owned by the display binding's `onUserSearchTerm` callback, so
-    // `emit` is deliberately left undefined here.
+    // Auto-open on typing. `autoOpenGate` blocks during library-authored
+    // writes (display-binding seed, commit reconciliation, blur restore)
+    // so internal writes don't re-open a panel the user just closed.
+    // Emit path is owned by `onUserSearchTerm` on the display binding —
+    // `emit` left undefined here.
     inject(CNGX_SEARCH_EFFECTS_FACTORY)({
       searchTerm: this.searchTerm,
       panelOpen: this.panelOpen,
@@ -814,14 +770,10 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────
-
   open(): void { this.popoverRef()?.show(); }
   close(): void { this.popoverRef()?.hide(); }
   toggle(): void { this.popoverRef()?.toggle(); }
   focus(options?: FocusOptions): void { this.inputEl()?.nativeElement.focus(options); }
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   protected handleWrapperClick(): void {
     if (this.disabled()) {
@@ -876,8 +828,8 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
   protected handleBlur(): void {
     this.focusState.markBlurred();
     this.presenter?.fieldState().markAsTouched();
-    // clearOnBlur: if the current input text doesn't match `displayWith(value)`,
-    // snap back. Disable by setting `[clearOnBlur]="false"`.
+    // Snap input back to `displayWith(value)` when text drifted from
+    // the committed value. Disable via `[clearOnBlur]="false"`.
     if (this.clearOnBlur()) {
       this.display.writeFromValue(this.value());
     }
@@ -890,9 +842,4 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
       popover: this.popoverRef(),
     });
   }
-
-  // ── Commit / selection finalize ────────────────────────────────────
-  //
-  // beginCommit / finalizeSelection / retryCommit were extracted into
-  // `createScalarCommitHandler` (shared/scalar-commit-handler.ts).
 }
