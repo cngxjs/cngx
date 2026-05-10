@@ -21,7 +21,6 @@ import {
   MatStepperIcon,
 } from '@angular/material/stepper';
 
-import { createMaterialBidirectionalSync } from '@cngx/common/data';
 import {
   CNGX_STEP_PANEL_HOST,
   CngxStep,
@@ -33,6 +32,8 @@ import {
   type CngxStepNode,
   type CngxStepPanelHost,
 } from '@cngx/common/stepper';
+
+import { createMatStepperBidirectionalSync } from './material-bridge/bidirectional-sync';
 import { CNGX_DIRECTIVE_BY_ID_MAP_FACTORY } from '@cngx/common/tabs';
 import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
 
@@ -270,23 +271,17 @@ export class CngxMatStepper implements CngxStepPanelHost {
 
     // Bidirectional sync between `presenter.activeStepIndex` and
     // `MatStepper.selectedIndex`. Delegated to the shared
-    // `createMaterialBidirectionalSync` factory in `@cngx/common/data`
-    // — same primitive that drives `[cngxMatStepper]` and
-    // `[cngxMatTabs]` instrumentation directives. `afterNextRender`
-    // is required because the `MatStepper` viewChild isn't resolved
-    // until the view commits; the factory installs its `effect()`
-    // inside `runInInjectionContext` so the sub-call runs in this
-    // organism's injector.
+    // `createMatStepperBidirectionalSync` helper that both this
+    // wrapper and `[cngxMatStepper]` consume — single point for the
+    // option-mapping over the generic
+    // `createMaterialBidirectionalSync` factory in `@cngx/common/data`.
+    // `afterNextRender` is required because the `MatStepper`
+    // viewChild isn't resolved until the view commits.
     afterNextRender(() => {
       const stepper = this.matStepper();
-      createMaterialBidirectionalSync({
-        presenterIndex: this.presenter.activeStepIndex,
-        readSelectedIndex: () => stepper.selectedIndex,
-        writeSelectedIndex: (i) => {
-          stepper.selectedIndex = i;
-        },
-        selectionChange$: stepper.selectedIndexChange.asObservable(),
-        onMaterialSelection: (i) => this.presenter.select(i),
+      createMatStepperBidirectionalSync({
+        matStepper: stepper,
+        presenter: this.presenter,
         injector: this.injector,
         destroyRef: this.destroyRef,
       });
