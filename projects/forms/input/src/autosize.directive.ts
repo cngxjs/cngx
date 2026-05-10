@@ -39,15 +39,11 @@ export class CngxAutosize {
   private readonly el = inject<ElementRef<HTMLTextAreaElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
-  // ── Inputs ──────────────────────────────────────────────────────────
-
   /** Minimum number of rows. */
   readonly minRows = input<number>(1);
 
   /** Maximum number of rows. `undefined` = unlimited. */
   readonly maxRows = input<number | undefined>(undefined);
-
-  // ── Internal state ──────────────────────────────────────────────────
 
   private readonly heightState = signal(0);
   private lineHeight = 0;
@@ -55,8 +51,6 @@ export class CngxAutosize {
   private paddingBottom = 0;
   private borderTop = 0;
   private borderBottom = 0;
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** Current computed height in px. */
   readonly height: Signal<number> = this.heightState.asReadonly();
@@ -79,15 +73,13 @@ export class CngxAutosize {
     });
   }
 
-  // ── Public methods ──────────────────────────────────────────────────
-
   /** Force recalculation of the textarea height. */
   resize(): void {
     const el = this.el.nativeElement;
     const minH = this.computeMinHeight(this.minRows());
     const maxH = this.maxRows() != null ? this.computeMaxHeight(this.maxRows()!) : Infinity;
 
-    // Measure scrollHeight by temporarily collapsing
+    // Collapse to read scrollHeight, then restore.
     const prevHeight = el.style.height;
     el.style.height = '0px';
     const scrollH = el.scrollHeight;
@@ -97,8 +89,6 @@ export class CngxAutosize {
     el.style.height = `${targetH}px`;
     this.heightState.set(targetH);
   }
-
-  // ── Private ─────────────────────────────────────────────────────────
 
   private measureMetrics(): void {
     const style = getComputedStyle(this.el.nativeElement);

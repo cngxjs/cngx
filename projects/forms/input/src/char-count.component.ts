@@ -111,7 +111,6 @@ export class CngxCharCount {
 
   constructor() {
     afterNextRender(() => {
-      // Find the input/textarea sibling in the same cngx-form-field
       const host = this.el.nativeElement as HTMLElement;
       const formField = host.closest('cngx-form-field') ?? host.parentElement;
       const inputEl = formField?.querySelector('input, textarea, select') as
@@ -123,10 +122,8 @@ export class CngxCharCount {
         return;
       }
 
-      // Sync initial value
       this.lengthState.set(inputEl.value.length);
 
-      // Listen for input events
       const handler = () => this.lengthState.set(inputEl.value.length);
       inputEl.addEventListener('input', handler);
       this.destroyRef.onDestroy(() => inputEl.removeEventListener('input', handler));

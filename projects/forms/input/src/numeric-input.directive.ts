@@ -14,8 +14,6 @@ import {
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_INPUT_CONFIG } from './input-config';
 
-// ── Locale number parsing ───────────────────────────────────────────────
-
 /** Detect decimal and group separators from Intl. */
 function detectSeparators(locale: string): { decimal: string; group: string } {
   const parts = new Intl.NumberFormat(locale).formatToParts(1234.5);
@@ -31,7 +29,6 @@ function parseLocaleNumber(value: string, locale: string): number | null {
   }
   const { decimal, group } = detectSeparators(locale);
 
-  // Remove group separators, replace decimal with '.'
   let normalized = value;
   if (group) {
     normalized = normalized.replaceAll(group, '');
@@ -119,8 +116,6 @@ export class CngxNumericInput implements ControlValueAccessor {
   private readonly localeId = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
 
-  // ── Inputs ──────────────────────────────────────────────────────────
-
   /** Locale for number formatting. Falls back to global config, then `LOCALE_ID`. */
   readonly locale = input<string | undefined>(undefined);
 
@@ -142,7 +137,7 @@ export class CngxNumericInput implements ControlValueAccessor {
   /** Allow negative values. */
   readonly allowNegative = input<boolean>(true);
 
-  // ── Resolved config (input > global config > default) ────────────────
+  // Resolved config: input > global config > default.
 
   private readonly resolvedLocale = computed(
     () => this.locale() ?? this.config.numericLocale ?? this.localeId,
@@ -152,14 +147,10 @@ export class CngxNumericInput implements ControlValueAccessor {
   );
   private readonly resolvedStep = computed(() => this.step() ?? this.config.numericStep ?? 1);
 
-  // ── Internal state ──────────────────────────────────────────────────
-
   private readonly valueState = signal<number | null>(null);
   private readonly focusedState = signal(false);
 
   private readonly separators = computed(() => detectSeparators(this.resolvedLocale()));
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** The numeric value. `null` when empty or invalid. */
   readonly numericValue: Signal<number | null> = this.valueState.asReadonly();
@@ -168,8 +159,8 @@ export class CngxNumericInput implements ControlValueAccessor {
   readonly isValid = computed(() => {
     const v = this.valueState();
     if (v == null) {
-      return true;
-    } // empty is valid (not required by default)
+      return true; // empty is valid; required handled by validators
+    }
     const minVal = this.min();
     const maxVal = this.max();
     if (minVal != null && v < minVal) {
@@ -185,7 +176,7 @@ export class CngxNumericInput implements ControlValueAccessor {
   readonly valueChange = output<number | null>();
 
   constructor() {
-    // Sync formatted value to DOM and notify co-located directives (CngxInput, matInput)
+    // Sync formatted value to DOM; the input event notifies co-located CngxInput / matInput.
     effect(() => {
       const focused = this.focusedState();
       const value = this.valueState();
@@ -217,8 +208,6 @@ export class CngxNumericInput implements ControlValueAccessor {
     });
   }
 
-  // ── ControlValueAccessor ─────────────────────────────────────────────
-
   private onChange = (_value: number | null): void => {
     /* noop until registerOnChange */
   };
@@ -238,8 +227,6 @@ export class CngxNumericInput implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  // ── Public methods ──────────────────────────────────────────────────
-
   /** Programmatically set the numeric value. */
   setValue(value: number | null): void {
     if (value != null) {
@@ -255,8 +242,6 @@ export class CngxNumericInput implements ControlValueAccessor {
   clear(): void {
     this.updateValue(null);
   }
-
-  // ── Event handlers ──────────────────────────────────────────────────
 
   /** @internal */
   protected handleBeforeInput(event: InputEvent): void {
@@ -276,7 +261,7 @@ export class CngxNumericInput implements ControlValueAccessor {
         return;
       }
 
-      // Check decimals limit
+      // Enforce decimals limit.
       const dec = this.resolvedDecimals();
       if (dec != null && event.data !== '-') {
         const decIdx = el.value.indexOf(decimal);
@@ -288,23 +273,11 @@ export class CngxNumericInput implements ControlValueAccessor {
             return;
           }
         }
-        // Block decimal separator if decimals === 0
         if (dec === 0 && event.data === decimal) {
           event.preventDefault();
           return;
         }
       }
-    }
-
-    // Block non-standard mutations
-    if (
-      event.inputType !== 'insertText' &&
-      event.inputType !== 'deleteContentBackward' &&
-      event.inputType !== 'deleteContentForward' &&
-      event.inputType !== 'deleteByCut' &&
-      event.inputType !== 'insertFromPaste'
-    ) {
-      // Allow default for delete and standard inputs
     }
   }
 
@@ -327,7 +300,6 @@ export class CngxNumericInput implements ControlValueAccessor {
   /** @internal */
   protected handleFocus(): void {
     this.focusedState.set(true);
-    // Select all on focus for easy replacement
     queueMicrotask(() => {
       this.el.nativeElement.select();
     });
@@ -337,7 +309,6 @@ export class CngxNumericInput implements ControlValueAccessor {
   protected handleBlur(): void {
     this.focusedState.set(false);
     this.onTouched();
-    // Parse current input value
     const raw = this.el.nativeElement.value;
     const parsed = parseLocaleNumber(raw, this.resolvedLocale());
 
@@ -348,7 +319,7 @@ export class CngxNumericInput implements ControlValueAccessor {
     } else if (!raw.trim()) {
       this.updateValue(null);
     }
-    // If invalid text, keep previous value — effect will restore the display
+    // Invalid text path: keep previous value; the display effect restores it.
   }
 
   /** @internal */
@@ -364,14 +335,11 @@ export class CngxNumericInput implements ControlValueAccessor {
       const rounded = this.roundToDecimals(parsed);
       const clamped = this.clamp(rounded);
       this.updateValue(clamped);
-      // Update display
       const { decimal } = this.separators();
       const raw = decimal === '.' ? String(clamped) : String(clamped).replace('.', decimal);
       this.el.nativeElement.value = raw;
     }
   }
-
-  // ── Helpers ─────────────────────────────────────────────────────────
 
   private adjustValue(direction: 1 | -1, multiplier: number): void {
     const current = this.valueState() ?? 0;

@@ -67,8 +67,6 @@ export class CngxInputFormat implements ControlValueAccessor {
   /** The display (formatted) value. */
   readonly displayValue: Signal<string> = this.displayState.asReadonly();
 
-  // ── ControlValueAccessor ─────────────────────────────────────────────
-
   private onChange = (_value: string): void => {
     /* noop until registerOnChange */
   };
@@ -80,7 +78,7 @@ export class CngxInputFormat implements ControlValueAccessor {
     const raw = value ?? '';
     this.rawState.set(raw);
     const el = this.el.nativeElement;
-    // Show formatted on write (we're typically not focused)
+    // External writes typically arrive while unfocused; render formatted.
     const formatted = this.format()(raw);
     this.displayState.set(formatted);
     el.value = formatted;
@@ -93,8 +91,6 @@ export class CngxInputFormat implements ControlValueAccessor {
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
-
-  // ── Event handlers ──────────────────────────────────────────────────
 
   /** @internal */
   protected handleFocus(): void {

@@ -1,10 +1,7 @@
 /**
- * Public surface of the field testing helpers. Consumed by
- * `@cngx/forms/field/testing` path alias — sibling libraries drop raw
- * relative imports like `'../../../../field/src/testing/mock-field'`
- * in favour of `import { createMockField } from '@cngx/forms/field/testing'`.
- *
- * Not published (testing code). Path alias only.
+ * Public surface of `@cngx/forms/field/testing`. Path alias only —
+ * not published. Consumers import from this entry instead of relative
+ * paths into `field/src/testing/`.
  */
 export {
   createMockField,

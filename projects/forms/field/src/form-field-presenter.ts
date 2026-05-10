@@ -10,17 +10,9 @@ import {
   type ConstraintMetadata,
 } from './form-field.token';
 
-// ── Constraint hint helper ─────────────────────────────────────────
-
 /**
- * Builds a human-readable hint string from optional min/max bounds.
- *
- * @param min  Lower bound (`undefined` = not constrained).
- * @param max  Upper bound (`undefined` = not constrained).
- * @param both Formatter when both bounds exist.
- * @param low  Formatter when only the lower bound exists.
- * @param high Formatter when only the upper bound exists.
- * @returns The formatted string, or `undefined` when neither bound is set.
+ * Picks the matching formatter for a min/max pair and returns its output, or
+ * `undefined` when neither bound is set.
  */
 function buildHint(
   min: number | undefined,
@@ -40,8 +32,6 @@ function buildHint(
   }
   return undefined;
 }
-
-// ── Presenter ──────────────────────────────────────────────────────
 
 /**
  * Core coordination directive for `cngx-form-field`.
@@ -80,12 +70,8 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    */
   readonly field = input.required<CngxFieldAccessor>({ alias: 'field' });
 
-  // ── FieldState access ──────────────────────────────────────────────
-
   /** Resolved field state from the accessor. */
   readonly fieldState: Signal<CngxFieldRef> = computed(() => this.field()());
-
-  // ── ID Registry (deterministic from field name) ────────────────────
 
   /** The field's name from Signal Forms (e.g. `'email'`, `'password'`). */
   readonly name = computed(() => this.fieldState().name());
@@ -103,8 +89,6 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * `aria-hidden` on the respective containers controls what the screen reader actually reads.
    */
   readonly describedBy = computed(() => `${this.hintId()} ${this.errorId()}`);
-
-  // ── State derivations from FieldState ──────────────────────────────
 
   /** Whether the field has a `required` validator. */
   readonly required = computed(() => this.fieldState().required());
@@ -134,34 +118,22 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * Reasons why the field is disabled.
    * Each entry may include a human-readable `message`.
    */
-  readonly disabledReasons = computed(() => this.fieldState().disabledReasons());
-
-  // ── Error gate ─────────────────────────────────────────────────────
-
   /**
    * `true` when errors should be visible.
    *
-   * Default gate: invalid AND (touched OR ambient reveal-trigger). The
+   * Default gate: `invalid AND (touched OR fieldReveal.showErrors)`. The
    * reveal-trigger is supplied via {@link CNGX_FORM_FIELD_REVEAL} —
-   * `CngxErrorScopeFieldBridge` defaults it to the nearest `CngxErrorScope`,
-   * but consumers may provide a router-driven, interceptor-driven, or
-   * custom trigger without depending on the scope contract.
+   * `CngxErrorScopeFieldBridge` defaults it to the nearest `CngxErrorScope`;
+   * router-driven, interceptor-driven, or test-harness triggers can provide
+   * their own without depending on the scope contract.
    *
-   * **Tracked dependencies (intentional):** `invalid`, plus — only when a
-   * strategy is configured — the snapshot fields `touched`, `dirty`, and
-   * `fieldReveal.showErrors`. Each of these is a primary driver of the
-   * gate; they cascade `showError` re-evaluation by design.
-   *
-   * **Why the `untracked()` wrap on the strategy call:** the `strategy`
-   * callback is a consumer-authored function whose body may read ambient
-   * signals (locale flags, tenant-scoped settings, time-of-day predicates,
-   * test-harness mocks). Those reads are *secondary* — they must not
-   * widen the presenter's dependency graph beyond the four declared
-   * inputs. The wrap protects the flat-graph invariant from
-   * `reference_signal_architecture` §3 against any consumer-side impurity.
-   * Verified by the cascade-witness spec at
-   * `form-field-presenter.spec.ts` ("untracked() wrap on strategy callback").
-   * Strategies that *are* pure (the common case) pay no overhead.
+   * Tracked dependencies are `invalid`, and — when a strategy is configured
+   * — `touched`, `dirty`, and `fieldReveal.showErrors`. The strategy
+   * callback runs inside `untracked()` so any ambient signal reads in
+   * consumer code (locale flags, tenant settings, test mocks) cannot
+   * widen the presenter's dependency graph beyond the declared four.
+   * Flat-graph invariant per `reference_signal_architecture` §3; verified
+   * by the cascade-witness spec in `form-field-presenter.spec.ts`.
    */
   readonly showError = computed(() => {
     if (!this.invalid()) {
@@ -180,8 +152,6 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
 
     return this.touched() || this.fieldReveal?.showErrors() === true;
   });
-
-  // ── Constraint metadata ────────────────────────────────────────────
 
   /** Minimum string length from `minLength()` validator, or `undefined`. */
   readonly minLength = computed(() => this.fieldState().minLength?.());
@@ -224,14 +194,10 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
     ].filter((h): h is string => h !== undefined && h !== '');
   });
 
-  // ── CngxFormFieldHostContract ──────────────────────────────────────
-
   /**
-   * Forwards `markAsTouched` into the bound field's state. Atoms that
-   * inject `CNGX_FORM_FIELD_HOST` call this from their focus-out path
-   * so the surrounding field's `touched` state advances without
-   * importing this concrete presenter class — same shape as
-   * `CngxBindField` / `CngxListboxFieldBridge` already use.
+   * Forwards `markAsTouched` into the bound field's state. Atoms inject
+   * `CNGX_FORM_FIELD_HOST` and call this from their focus-out path without
+   * importing the concrete presenter class.
    */
   markAsTouched(): void {
     this.fieldState().markAsTouched();

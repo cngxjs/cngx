@@ -55,7 +55,6 @@ export class CngxOtpSlot {
     const el = this.el.nativeElement;
     const value = el.value;
 
-    // Only keep one char
     if (value.length > 1) {
       el.value = value[0];
     }
@@ -166,12 +165,10 @@ export class CngxOtpInput {
     this.valuesState.set(vals);
     this.valueChange.emit(vals.join(''));
 
-    // Auto-advance
     if (char && index < len - 1) {
       this.focusAt(index + 1);
     }
 
-    // Check completion
     if (vals.length === len && vals.every((v) => v.length > 0)) {
       this.completed.emit(vals.join(''));
     }
@@ -181,7 +178,7 @@ export class CngxOtpInput {
   pasteFrom(startIndex: number, text: string): void {
     const len = this.length();
     const prev = this.valuesState();
-    // Build slot index map once — O(n) instead of O(n^2) find per iteration
+    // Index map once — avoid O(n²) find inside the loop.
     const allSlots = this.slots();
     const slotByIndex = new Map(allSlots.map((s) => [s.index(), s]));
 
@@ -201,7 +198,7 @@ export class CngxOtpInput {
     this.valuesState.set(vals);
     this.valueChange.emit(vals.join(''));
 
-    // Focus the next empty slot or the last filled one
+    // Focus the next empty slot, or the last filled one if none empty after startIndex.
     const nextEmpty = vals.findIndex((v, i) => i >= startIndex && !v);
     this.focusAt(nextEmpty >= 0 ? nextEmpty : Math.min(startIndex + text.length, len - 1));
 

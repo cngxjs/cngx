@@ -70,11 +70,8 @@ export class CngxBindField implements CngxFormFieldControl {
   private readonly el = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    // Material directives (matInput, and others) bind `[id]` to their own
-    // default ID on the same host element. Our `[id]` binding collides with
-    // theirs and the last-writer wins — which in practice is the Material
-    // directive for matInput. Force-sync the native element's id from the
-    // presenter so the `<label for="…">` link stays intact.
+    // matInput binds `[id]` to its own default on the same host; last-writer-wins
+    // beats our binding. Force-sync from the presenter so `<label for="…">` survives.
     afterRenderEffect(() => {
       const next = this.id();
       if (next && this.el.nativeElement.id !== next) {
@@ -82,8 +79,6 @@ export class CngxBindField implements CngxFormFieldControl {
       }
     });
   }
-
-  // ── CngxFormFieldControl ───────────────────────────────────────────
 
   readonly id = computed<string>(() => this.presenter?.inputId() ?? '');
 
@@ -122,8 +117,6 @@ export class CngxBindField implements CngxFormFieldControl {
     return false;
   });
 
-  // ── Host ARIA bindings ─────────────────────────────────────────────
-
   /** @internal */
   protected readonly describedBy = computed(() => this.presenter?.describedBy() ?? null);
   /** @internal */
@@ -140,8 +133,6 @@ export class CngxBindField implements CngxFormFieldControl {
   );
   /** @internal */
   protected readonly ariaReadonly = computed(() => (this.presenter?.readonly() ? true : null));
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleFocusIn(): void {

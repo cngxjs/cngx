@@ -88,7 +88,7 @@ export function createMockField<T = string>(
     markAsTouched: () => ref.touched.set(true),
     markAsDirty: () => ref.dirty.set(true),
     focusBoundControl: () => {
-      /* noop mock */
+      /* noop */
     },
     reset: () => {
       ref.touched.set(false);

@@ -52,7 +52,7 @@ export class CngxInput implements CngxFormFieldControl {
   private readonly el =
     inject<ElementRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>>(ElementRef);
 
-  // ── CngxFormFieldControl implementation ────────────────────────────
+  // CngxFormFieldControl implementation.
 
   readonly id = computed(() => this.presenter?.inputId() ?? (this.el.nativeElement.id || ''));
   private readonly focusedState = signal(false);
@@ -62,7 +62,7 @@ export class CngxInput implements CngxFormFieldControl {
   readonly disabled = computed(() => this.presenter?.disabled() ?? false);
   readonly errorState = computed(() => this.presenter?.showError() ?? false);
 
-  // ── Host binding computeds (null-safe without presenter) ───────────
+  // Host binding computeds — null-safe when no presenter.
 
   /** @internal */
   protected readonly inputId = this.id;
@@ -84,8 +84,6 @@ export class CngxInput implements CngxFormFieldControl {
   );
   /** @internal */
   protected readonly isDisabled = computed(() => (this.presenter?.disabled() ? true : null));
-
-  // ── Smart attribute inference ────────────────────────────────────────
 
   /**
    * Explicit autocomplete value. When not set, inferred from the field name
@@ -129,8 +127,6 @@ export class CngxInput implements CngxFormFieldControl {
     const noSpell = this.config.noSpellcheckFields ?? DEFAULT_NO_SPELLCHECK_FIELDS;
     return name && noSpell.has(name) ? 'false' : null;
   });
-
-  // ── Event handlers ─────────────────────────────────────────────────
 
   /** @internal */
   protected handleFocus(): void {

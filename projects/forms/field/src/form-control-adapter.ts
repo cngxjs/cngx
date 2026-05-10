@@ -66,9 +66,8 @@ export function adaptFormControl(
     errorsSignal.set(adaptErrors(control.errors));
   };
 
-  // control.events (Angular 14+) carries TouchedChangeEvent + PristineChangeEvent;
-  // statusChanges/valueChanges do not, so without this externally-driven
-  // markAsTouched()/markAsDirty() never reach the adapter.
+  // control.events carries Touched/PristineChangeEvent; statusChanges/valueChanges
+  // do not — without this branch externally-driven markAsTouched()/markAsDirty() never propagate.
   const handleEvent = (event: ControlEvent) => {
     if (event instanceof TouchedChangeEvent || event instanceof PristineChangeEvent) {
       syncState();
@@ -78,11 +77,8 @@ export function adaptFormControl(
   control.valueChanges.pipe(takeUntilDestroyed(destroyRef)).subscribe(syncState);
   control.events.pipe(takeUntilDestroyed(destroyRef)).subscribe(handleEvent);
 
-  // Writable value proxy: allows bridges (e.g. `CngxListboxFieldBridge`) to
-  // push the control's value via `fieldRef.value.set(x)`. We don't just hand
-  // out the raw `valueSignal` because the standard RxJS subscription above
-  // already mirrors RF state into it — calling `.set()` here must also push
-  // into the `FormControl`, not only the internal signal.
+  // Writable value proxy. `set()` must push into both the internal signal and the
+  // `FormControl` itself — the RxJS subscription above only mirrors RF → signal.
   const writableValue = Object.assign(
     () => valueSignal(),
     {

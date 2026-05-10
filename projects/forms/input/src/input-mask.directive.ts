@@ -14,8 +14,6 @@ import {
 import { type ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { CNGX_INPUT_CONFIG, type InputConfig } from './input-config';
 
-// ── Mask token definitions ──────────────────────────────────────────────
-
 interface MaskToken {
   readonly kind: 'slot' | 'literal';
   /** For 'slot': regex the char must match. For 'literal': the literal char. */
@@ -57,15 +55,12 @@ function parseMask(pattern: string, customTokens?: MaskTokenMap): MaskToken[] {
   return tokens;
 }
 
-// ── Multi-pattern support ───────────────────────────────────────────────
-
 function selectPattern(patterns: string[], rawLength: number, customTokens?: MaskTokenMap): string {
   if (patterns.length === 1) {
     return patterns[0];
   }
 
-  // Pick the shortest pattern whose slot count can still accommodate rawLength,
-  // or the longest pattern if rawLength exceeds all.
+  // Shortest pattern whose slot count fits rawLength; longest pattern when rawLength exceeds all.
   let best = patterns[0];
   let bestSlots = slotCount(best, customTokens);
 
@@ -85,8 +80,6 @@ function selectPattern(patterns: string[], rawLength: number, customTokens?: Mas
 function slotCount(pattern: string, customTokens?: MaskTokenMap): number {
   return parseMask(pattern, customTokens).filter((t) => t.kind === 'slot').length;
 }
-
-// ── Mask engine (pure functions) ────────────────────────────────────────
 
 function applyMask(
   raw: string,
@@ -119,7 +112,6 @@ function applyMask(
     }
   }
 
-  // Count required vs filled
   let requiredCount = 0;
   let filledCount = 0;
   let ri = 0;
@@ -168,15 +160,6 @@ function firstEmptySlot(tokens: MaskToken[], masked: string, placeholder: string
   return tokens.length;
 }
 
-// ── Locale-aware preset resolution ──────────────────────────────────────
-
-/**
- * Built-in mask presets. Pass a preset name as the mask value instead of a
- * raw pattern string (e.g. `cngxInputMask="date"` or `cngxInputMask="phone:US"`).
- *
- * Presets that accept a locale/region suffix use `:<code>` syntax.
- * When no suffix is given, the directive's injected `LOCALE_ID` is used.
- */
 /** Date format order per locale prefix. */
 const DATE_FORMATS: Record<string, string> = {
   // DD/MM/YYYY locales
@@ -249,7 +232,6 @@ function resolvePreset(
   const lang = locale.split('-')[0].toLowerCase();
   const region = regionHint ?? localeToRegion(locale);
 
-  // Merge built-in maps with config overrides
   const phones = { ...PHONE_PATTERNS, ...config?.phonePatterns };
   const ibans = { ...IBAN_PATTERNS, ...config?.ibanPatterns };
   const zips = { ...ZIP_PATTERNS, ...config?.zipPatterns };
@@ -297,12 +279,11 @@ function resolveZip(region: string, zips: Record<string, string>): { patterns: s
 }
 
 function localeToRegion(locale: string): string {
-  // Extract region from locale like 'de-CH', 'en-US', 'fr-FR'
   const parts = locale.split('-');
   if (parts.length >= 2) {
     return parts[1].toUpperCase();
   }
-  // Fallback: map language to most common region
+  // Map language to most common region.
   const fallback: Record<string, string> = {
     en: 'US',
     de: 'DE',
@@ -318,8 +299,6 @@ function localeToRegion(locale: string): string {
   };
   return fallback[parts[0].toLowerCase()] ?? 'US';
 }
-
-// ── Public types ────────────────────────────────────────────────────────
 
 /**
  * Custom mask token definition. Use with the `customTokens` input to
@@ -433,8 +412,6 @@ export class CngxInputMask implements ControlValueAccessor {
   private readonly locale = inject(LOCALE_ID);
   private readonly config = inject(CNGX_INPUT_CONFIG);
 
-  // ── Inputs ──────────────────────────────────────────────────────────
-
   /** Mask pattern, preset name, or `|`-separated patterns. */
   readonly mask = input.required<string>({ alias: 'cngxInputMask' });
 
@@ -462,7 +439,7 @@ export class CngxInputMask implements ControlValueAccessor {
   /** Whether to clear the input when focus is lost and the mask is incomplete. */
   readonly clearOnBlur = input<boolean>(false);
 
-  // ── Resolved config (input > global config > default) ────────────────
+  // Resolved config: input > global config > default.
 
   private readonly resolvedPlaceholder = computed(
     () => this.placeholder() ?? this.config.maskPlaceholder ?? '_',
@@ -478,8 +455,6 @@ export class CngxInputMask implements ControlValueAccessor {
     }
     return fromInput ?? fromConfig;
   });
-
-  // ── Internal state ──────────────────────────────────────────────────
 
   /** Resolved patterns (handles presets, config overrides, and `|` splitting). */
   private readonly resolvedPatterns = computed(() => {
@@ -501,8 +476,6 @@ export class CngxInputMask implements ControlValueAccessor {
   );
 
   private readonly rawState = signal('');
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** Raw unmasked value (digits/letters only, no literals unless `includeLiterals`). */
   readonly rawValue: Signal<string> = this.rawState.asReadonly();
@@ -555,7 +528,7 @@ export class CngxInputMask implements ControlValueAccessor {
   private prevMask: string | undefined;
 
   constructor() {
-    // Sync masked value to DOM and notify co-located directives (CngxInput, matInput)
+    // Sync masked value to DOM; the input event notifies co-located CngxInput / matInput.
     effect(() => {
       const masked = this.maskedValue();
       const el = this.el.nativeElement;
@@ -565,7 +538,7 @@ export class CngxInputMask implements ControlValueAccessor {
       }
     });
 
-    // Reset raw state when mask input changes
+    // Reset raw state when the mask input changes.
     effect(() => {
       const currentMask = this.mask();
       if (this.prevMask != null && currentMask !== this.prevMask) {
@@ -575,8 +548,6 @@ export class CngxInputMask implements ControlValueAccessor {
       this.prevMask = currentMask;
     });
   }
-
-  // ── ControlValueAccessor ─────────────────────────────────────────────
 
   private onChange = (_value: string): void => {
     /* noop until registerOnChange */
@@ -605,8 +576,6 @@ export class CngxInputMask implements ControlValueAccessor {
     }
   }
 
-  // ── Public methods ──────────────────────────────────────────────────
-
   /** Programmatically set the raw value. Invalid chars are filtered out. */
   setValue(raw: string): void {
     this.updateRaw(raw);
@@ -617,8 +586,6 @@ export class CngxInputMask implements ControlValueAccessor {
     this.rawState.set('');
     this.valueChange.emit('');
   }
-
-  // ── Event handlers ──────────────────────────────────────────────────
 
   /** @internal */
   protected handleBeforeInput(event: InputEvent): void {
@@ -651,11 +618,11 @@ export class CngxInputMask implements ControlValueAccessor {
     }
 
     if (event.inputType === 'insertFromPaste') {
-      // Handled by paste event
+      // handlePaste owns this branch.
       return;
     }
 
-    // Block other mutations
+    // Block other mutations.
     if (event.inputType.startsWith('insert') || event.inputType.startsWith('delete')) {
       event.preventDefault();
     }
@@ -708,7 +675,6 @@ export class CngxInputMask implements ControlValueAccessor {
       return;
     }
 
-    // Home: go to first slot
     if (event.key === 'Home') {
       event.preventDefault();
       const first = nextSlotIndex(tokens, 0);
@@ -716,7 +682,6 @@ export class CngxInputMask implements ControlValueAccessor {
       return;
     }
 
-    // End: go after last filled slot
     if (event.key === 'End') {
       event.preventDefault();
       const masked = this.maskedValueCore();
@@ -733,7 +698,7 @@ export class CngxInputMask implements ControlValueAccessor {
     if (!this.resolvedGuide()) {
       return;
     }
-    // If focus came from a click, let handleMouseUp position the cursor instead
+    // Click focus is handled by handleMouseUp.
     if (this.focusedViaClick) {
       return;
     }
@@ -757,12 +722,11 @@ export class CngxInputMask implements ControlValueAccessor {
     const placeholder = this.resolvedPlaceholder();
     const clickPos = Math.max(0, (el.selectionStart ?? 0) - prefixLen);
 
-    // Find the first empty slot at or after the click position.
-    // If the click is past all filled slots, snap to the first empty slot.
+    // Snap to the first empty slot at or after the click; past all filled slots → snap to first empty.
     const firstEmpty = firstEmptySlot(tokens, masked, placeholder);
     const snapped = Math.min(clickPos, firstEmpty);
 
-    // Skip over literal positions — snap to the nearest input slot
+    // Skip literal positions to land on the nearest input slot.
     let pos = snapped;
     while (pos < tokens.length && tokens[pos].kind === 'literal') {
       pos++;
@@ -773,8 +737,6 @@ export class CngxInputMask implements ControlValueAccessor {
 
     el.setSelectionRange(pos + prefixLen, pos + prefixLen);
   }
-
-  // ── Mask manipulation ───────────────────────────────────────────────
 
   private insertChars(chars: string, selStart: number, selEnd: number, tokens: MaskToken[]): void {
     const el = this.el.nativeElement;
@@ -790,8 +752,8 @@ export class CngxInputMask implements ControlValueAccessor {
       raw = raw.slice(0, rawBefore) + raw.slice(rawEnd);
     }
 
-    // For multi-pattern: use the longest pattern's tokens for filtering
-    // so chars beyond the current pattern's capacity aren't rejected.
+    // Multi-pattern: filter against the longest pattern's tokens so chars beyond
+    // the current pattern's capacity aren't dropped before pattern switching.
     const patterns = this.resolvedPatterns();
     const filterTokens =
       patterns.length > 1
@@ -833,8 +795,8 @@ export class CngxInputMask implements ControlValueAccessor {
 
     const newRaw = raw.slice(0, rawBefore) + filtered + raw.slice(rawBefore);
 
-    // For multi-pattern: find the max slot count across all resolved patterns
-    // so we don't truncate prematurely when a longer pattern is available.
+    // Truncate against the largest slot count across patterns so a longer pattern
+    // can still absorb the input.
     const allPatterns = this.resolvedPatterns();
     const maxSlots =
       allPatterns.length > 1
@@ -844,11 +806,10 @@ export class CngxInputMask implements ControlValueAccessor {
 
     this.updateRaw(truncated);
 
-    // Sync DOM value immediately so the effect becomes a no-op
+    // Sync DOM eagerly so the maskedValue effect is a no-op.
     const newMasked = this.maskedValue();
     el.value = newMasked;
 
-    // Position cursor at the next empty slot
     const newCursorRawIdx = rawBefore + filtered.length;
     const newTokens = this.tokens();
     const cursorPos = this.cursorFromRawIndex(newCursorRawIdx, newTokens);
@@ -930,8 +891,6 @@ export class CngxInputMask implements ControlValueAccessor {
     return Math.max(0, pos);
   }
 
-  // ── Cursor ↔ raw index conversion ──────────────────────────────────
-
   private rawIndexFromCursor(cursorPos: number, tokens: MaskToken[]): number {
     let rawIdx = 0;
     for (let i = 0; i < cursorPos && i < tokens.length; i++) {
@@ -955,17 +914,15 @@ export class CngxInputMask implements ControlValueAccessor {
     return tokens.length;
   }
 
-  /** Sync DOM value immediately so the effect becomes a no-op. */
+  /** Sync DOM eagerly so the maskedValue effect is a no-op. */
   private syncDom(el: HTMLInputElement): void {
     const newMasked = this.maskedValue();
     el.value = newMasked;
   }
 
-  // ── State update ────────────────────────────────────────────────────
-
   private updateRaw(newRaw: string): void {
     const prev = this.rawState();
-    // Resolve tokens for the *target* raw length (handles multi-pattern switching)
+    // Resolve tokens for the target raw length so multi-pattern switching is honoured.
     const targetPattern = selectPattern(
       this.resolvedPatterns(),
       newRaw.length,

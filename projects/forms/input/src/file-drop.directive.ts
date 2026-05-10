@@ -88,15 +88,11 @@ export class CngxFileDrop {
   /** Upload error, or `undefined`. */
   readonly uploadError = computed(() => this.state()?.error());
 
-  // ── Internal state ──────────────────────────────────────────────────
-
   private readonly draggingState = signal(false);
   private readonly filesState = signal<File[]>([]);
   private readonly rejectedState = signal<FileRejection[]>([]);
   private dragCounter = 0;
   private fileInput: HTMLInputElement | null = null;
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** Whether the element is currently being dragged over. */
   readonly dragging: Signal<boolean> = this.draggingState.asReadonly();
@@ -122,8 +118,6 @@ export class CngxFileDrop {
     });
   }
 
-  // ── Public methods ──────────────────────────────────────────────────
-
   /** Opens the native file picker programmatically. No-op while uploading. */
   browse(): void {
     if (this.uploading()) {
@@ -141,8 +135,6 @@ export class CngxFileDrop {
       this.fileInput.value = '';
     }
   }
-
-  // ── Drag event handlers ─────────────────────────────────────────────
 
   /** @internal */
   protected handleDragEnter(event: DragEvent): void {
@@ -185,8 +177,6 @@ export class CngxFileDrop {
       this.processFiles(Array.from(droppedFiles));
     }
   }
-
-  // ── File processing ─────────────────────────────────────────────────
 
   private processFiles(incoming: File[]): void {
     const filesToProcess = this.multiple() ? incoming : incoming.slice(0, 1);
