@@ -1,11 +1,4 @@
-import {
-  DestroyRef,
-  Directive,
-  effect,
-  inject,
-  input,
-  untracked,
-} from '@angular/core';
+import { DestroyRef, Directive, effect, inject, input, untracked } from '@angular/core';
 import { MatTab } from '@angular/material/tabs';
 
 import { CNGX_TAB_GROUP_HOST } from '@cngx/common/tabs';
@@ -14,52 +7,26 @@ import type { CngxErrorAggregatorContract } from '@cngx/common/interactive';
 import { CNGX_MAT_TABS_REGISTRY_HOST } from './mat-tabs-registry.directive';
 
 /**
- * Per-tab error-aggregator binding for the `[cngxMatTabs]`
- * instrumentation surface. Attach to a `<mat-tab>` and the bound
- * aggregator's `shouldShow()` state projects onto the matching
- * Material tab button (badge + descriptor span) via the second
- * Renderer2 effect inside {@link CngxMatTabs}.
+ * Per-tab error-aggregator binding for `[cngxMatTabs]`. Attach to a
+ * `<mat-tab>`; the bound aggregator's `shouldShow()` projects onto
+ * the matching Material tab button (badge + descriptor span) via
+ * the Renderer2 effect inside {@link CngxMatTabs}.
  *
- * Mirrors the cngx-native `[cngxTab] [errorAggregator]` shape
- * one-for-one — same plain `CngxErrorAggregatorContract | undefined`
- * input type (the contract carries its own reactive surface via
- * `shouldShow` / `announcement` Signals; consumers do not wrap their
- * aggregator in another Signal). The only difference is binding
- * co-location: cngx-native uses a dedicated `[cngxTab]` directive
- * whose `errorAggregator` is a plain Input; the Material variant
- * cannot host a child directive on `<mat-tab>` (Material owns the
- * tab declaration), so a sibling attribute directive carries the
- * binding instead.
- *
- * Empty-string transform: a bare `cngxMatTabError` attribute
- * (without `[]` brackets) binds the empty string per Angular's
- * attribute-binding semantics. The transform coerces strings to
- * `undefined` so the slot stays clean — pattern reference per
- * `feedback_bridge_input_not_required` (no required-input on
- * attribute-shaped bridges; empty-string normalisation is the
- * defensive default). Divergence-by-design vs the cngx-native
- * `[cngxTab] [errorAggregator]` sibling at
- * `projects/common/tabs/src/tab.directive.ts:45` — that input
- * lives on a property-binding-only directive (`[cngxTab]`
- * declares structural surface; `[errorAggregator]` is its data
- * input), so a bare attribute is not a reachable misuse. The
- * Material variant attaches `[cngxMatTabError]` directly to a
- * Material-owned `<mat-tab>` element where any developer can
- * type the attribute name without the brackets, so the
- * defensive transform earns its place here only.
+ * Material owns `<mat-tab>` declarations — `[cngxTab]` cannot host
+ * here — so a sibling attribute directive carries the input.
+ * Empty-string transform handles the bare-attribute case per
+ * `feedback_bridge_input_not_required` (a developer typing
+ * `cngxMatTabError` without `[]` brackets must not poison the
+ * slot).
  *
  * Locates its target via {@link CNGX_MAT_TABS_REGISTRY_HOST} —
- * the registry directive provides the token via `useExisting`, so
- * sibling per-tab directives reach the per-handle slots through a
- * typed contract instead of injecting the concrete `[cngxMatTabs]`
- * class. The directive tracks `presenter.tabs()` in its effect so
- * a same-microtask race (directive injected before the registry's
- * sync runs) recovers automatically on the next presenter emission.
- *
- * `destroyRef.onDestroy` resets the slot to `undefined` so a tab
- * whose `[cngxMatTabError]` is removed (e.g. `*ngIf` toggle on the
- * directive) returns to the no-aggregator default — the badge
- * effect drops the visual state on the next tick.
+ * the registry provides the token with `useExisting`, so sibling
+ * directives reach per-handle slots through a typed contract
+ * instead of the concrete class. Tracks `presenter.tabs()` to
+ * recover from a same-microtask race where the directive injects
+ * before the registry's sync runs. `destroyRef.onDestroy` clears
+ * the slot so an `*ngIf`-toggled binding returns to the
+ * no-aggregator default.
  *
  * @category interactive
  */
@@ -86,18 +53,12 @@ export class CngxMatTabError {
 
   constructor() {
     effect(() => {
-      // Track BOTH the bound aggregator AND the presenter tabs
-      // signal. The first run after the directive's construction may
-      // hit a race window where `setupsByTab` does not yet contain
-      // our `MatTab` (parent's `contentChildren(MatTab)` lands in the
-      // same microtask as our injection). The presenter emission re-
-      // fires this effect on the next sync tick, retrying the lookup
-      // until the handle exists. The signal write below runs inside
-      // `untracked()` for correctness — pre-empts a future regression
-      // where `getHandleSetup` reads a signal (e.g. a switch from the
-      // current Map lookup to a `computed()` projection); without the
-      // wrap, that change would silently introduce a same-effect
-      // re-fire on every aggregator pump.
+      // Race window - registry's `contentChildren(MatTab)` query and
+      // our injection land in the same microtask, so the first lookup
+      // can miss our handle. Tracking `presenter.tabs()` re-fires the
+      // effect on the next sync tick. `untracked` around the write
+      // pre-empts a future regression where `getHandleSetup` reads a
+      // signal and self-triggers the aggregator pump.
       const aggregator = this.aggregator();
       // Race-recovery dependency — tracks `setupsByTab` population so
       // the effect re-fires once our `MatTab` is registered. The bare

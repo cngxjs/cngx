@@ -1,13 +1,7 @@
-// Single-consumer cross-package factory — staged under the
-// family-uniformity Honest-Absence framing in
-// `.internal/architektur/tabs-accepted-debt.md §9` (alongside
-// `createTabGroupTemplateBindings` and `CngxMatTabAggregatorContent`).
-// Re-Eval Triggers: ≥1 second consumer (e.g. a future
-// `<cngx-vertical-tab-group>`) OR sibling debt closure OR consumer-
-// confirmed dead-code. Until any trigger fires, the factory's exported
-// presence is intentional debt — keeps the Phase-5 announcements
-// extraction symmetric with the cascade-resolver and overflow-binding
-// factories under `@cngx/common/tabs`.
+// Single-consumer factory — staged under family-uniformity
+// (tabs-accepted-debt §9, alongside `createTabGroupTemplateBindings`
+// and `CngxMatTabAggregatorContent`). Re-Eval: second consumer OR
+// sibling debt closure.
 import { computed, linkedSignal, type Signal } from '@angular/core';
 
 import type { CngxTabsConfig } from '../tabs-config';
@@ -16,12 +10,9 @@ import type { CngxTabGroupHost, CngxTabHandle } from '../tab-group-host.token';
 
 /**
  * Inputs the announcements bundle reads from the host organism.
- *
- * The organism owns the `aria-label` / `aria-labelledby` Inputs;
- * presenter + i18n + config come from DI. Passing these in (instead
- * of re-injecting inside the factory) keeps the factory pure: a
- * single function call returns the whole bundle, no constructor
- * context required, easy to test in isolation.
+ * Passing presenter / i18n / config in (instead of re-injecting)
+ * keeps the factory pure — one call returns the bundle, no
+ * injection context required.
  *
  * @category interactive
  */
@@ -37,104 +28,72 @@ export interface CngxTabGroupAnnouncementsOptions {
 
 /**
  * Resolved bundle returned by {@link createTabGroupAnnouncements}.
- *
- * Every field is consumer-ready — host bindings and template outlets
- * read these directly without further wiring. The bundle owns one
- * `linkedSignal` slot internally (the prior-active-index tracker
- * that drives the success-arm direction prefix) and exposes pure
- * `computed` / function surfaces; consumers never touch the slot.
+ * Host bindings and template outlets read these directly. Owns one
+ * internal `linkedSignal` slot (prior-active-index tracker driving
+ * the success-arm direction prefix); consumers never touch it.
  *
  * @category interactive
  */
 export interface CngxTabGroupAnnouncements {
   /**
-   * Tabs landmark `aria-roledescription`. Cascades through
-   * `CngxTabsFallbackLabels.tabRoleDescription` → library default
-   * `'tab list'`. Pillar 2: deliberately distinct from
-   * `i18n.tabsLabel`, which feeds `aria-label`; collapsing both
-   * onto one string makes screen readers read the same word twice.
+   * Tablist `aria-roledescription`. Cascades through
+   * `CngxTabsFallbackLabels.tabRoleDescription` → `'tab list'`.
+   * Distinct from `i18n.tabsLabel` (which feeds `aria-label`) so
+   * AT does not read the same word twice.
    */
   readonly tabsRoleDescription: Signal<string>;
 
   /**
    * Tab-panel `aria-roledescription`. Cascades through
-   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → library
-   * default `'tab panel'`. Mirrors {@link tabsRoleDescription} so
-   * AT-facing role descriptors flow through one config surface
-   * regardless of which scope (button vs panel) declares them.
+   * `CngxTabsFallbackLabels.tabPanelRoleDescription` → `'tab panel'`.
    */
   readonly tabPanelRoleDescription: Signal<string>;
 
   /**
-   * Resolves the wrapper's `aria-label`. Resolution order:
-   * per-instance Input → `ariaLabels.tabsRegion` config → `i18n.tabsLabel`.
-   * Returns `null` when `aria-labelledby` is bound (the two attributes
-   * are mutually exclusive per WAI-ARIA).
+   * Wrapper `aria-label`. Resolution: per-instance Input →
+   * `ariaLabels.tabsRegion` → `i18n.tabsLabel`. Returns `null` when
+   * `aria-labelledby` is bound (mutually exclusive per WAI-ARIA).
    */
   readonly resolvedAriaLabel: Signal<string | null>;
 
   /**
-   * SR-friendly text rendered inside the polite live-region span.
-   * Drives the announcer through declarative content updates —
-   * never an imperative `announce()` call. Empty string between
-   * transitions so the region stays quiet on no-op CD ticks.
+   * Polite live-region content — declarative, never an imperative
+   * `announce()`. Empty between transitions so the region stays
+   * quiet on no-op ticks.
    *
-   * Priority chain on the `error` arm:
-   *   1. `commitRolledBackTo(originLabel)` when the presenter has
-   *      both a `lastFailedIndex` and a resolvable origin label.
-   *   2. `commitFailedRetry` (generic fallback).
+   * Error arm: `commitRolledBackTo(originLabel)` when origin
+   * resolves; otherwise `commitFailedRetry`.
    *
-   * Priority chain on the `success` arm:
-   *   1. `${i18n.previousTab}: ${i18n.selectedTab(label, position, count)}`
-   *      when the navigation moved backward (new index < prior index).
-   *   2. `${i18n.nextTab}: ${i18n.selectedTab(...)}` when forward.
-   *   3. Bare `i18n.selectedTab(...)` when the index did not change
-   *      (initial mount or commit-success that lands the user back
-   *      on the same tab).
+   * Success arm: `${previousTab|nextTab}: selectedTab(...)` when
+   * the index moved; bare `selectedTab(...)` when it didn't (initial
+   * mount, or commit-success that lands on the same tab).
    */
   readonly liveAnnouncement: Signal<string>;
 
   /**
-   * SR descriptor phrase for a tab's `cngx-sr-only` span. Reads the
-   * aggregator's `announcement()` when one is bound and revealed;
-   * falls back to `i18n.tabHasErrors(errorCount)` when the aggregator
-   * wants reveal but supplies an empty announcement string. Returns
-   * empty string when no aggregator wants reveal at all (no
-   * decoration to describe).
-   *
-   * Cngx A11y rule: ids always present, content reactive — this
-   * function returns the content; the descriptor span itself is
-   * always rendered by the organism's template.
+   * SR descriptor phrase for a tab's `cngx-sr-only` span.
+   * `aggregator.announcement()` when bound + revealed; falls back
+   * to `i18n.tabHasErrors(errorCount)` on empty; empty string when
+   * nothing wants reveal. The span itself is always rendered (cngx
+   * ARIA-by-value rule); this returns its content.
    */
   statusPhrase(tab: CngxTabHandle): string;
 
   /**
-   * Verbose accessible name for each tab button. Replaces the bare
-   * label text content with the i18n
-   * `selectedTab(label, position, count)` phrase so AT users hear
-   * "Tab 2 of 5: Settings" instead of just "Settings, tab" — position
-   * context is in-band rather than inferred from tablist enumeration.
-   *
-   * The visual label span continues to render the bare `label`;
-   * `aria-label` takes precedence over text content for AT, leaving
-   * sighted users unaffected.
+   * Verbose tab-button `aria-label` — `selectedTab(label, position,
+   * count)` so AT hears "Tab 2 of 5: Settings" instead of inferring
+   * position from tablist enumeration. The visual span keeps the
+   * bare label.
    */
   tabAriaLabel(tab: CngxTabHandle, position: number): string;
 }
 
 /**
  * Pure factory bundling the `<cngx-tab-group>` AT-announcement +
- * descriptor surfaces — extracted from the organism class body for
- * decompose readiness and unit-test isolation. Mirrors the
- * `createTabOverflowTemplateBindings` shape: one factory call,
- * one consumer-ready bundle.
- *
- * Owns one internal `linkedSignal` slot ({@link priorActiveIndex})
- * driving the success-arm direction prefix. The slot is lazy by
- * `linkedSignal` semantics; consumers that depend on the
- * direction-prefix path on the very first announcement should read
- * `liveAnnouncement` once at construction to seed the tracker (the
- * `<cngx-tab-group>` constructor does this).
+ * descriptor surfaces. Owns one internal `linkedSignal`
+ * (prior-active-index, drives the success-arm direction prefix) —
+ * lazy by `linkedSignal` semantics, so the organism reads
+ * `liveAnnouncement` once at construction to seed it.
  *
  * @category interactive
  */
@@ -158,11 +117,9 @@ export function createTabGroupAnnouncements(
     return ariaLabel() ?? config.ariaLabels?.tabsRegion ?? i18n.tabsLabel;
   });
 
-  // `linkedSignal` with `prev?.source` returns the SOURCE value at
-  // the moment before the most recent change — exactly the "prior
-  // activeIndex" semantic — without duplicating state in an `effect`
-  // (Pillar 1). Initial value coalesces to current so the first
-  // emission compares like-for-like and produces no spurious direction.
+  // `prev?.source` gives the source value before the most recent
+  // change — prior activeIndex without an `effect`-driven slot
+  // (Pillar 1). Coalesce to current on first emission.
   const priorActiveIndex = linkedSignal<number, number>({
     source: () => presenter.activeIndex(),
     computation: (curr, prev) => prev?.source ?? curr,
@@ -175,12 +132,10 @@ export function createTabGroupAnnouncements(
       return i18n.commitInFlight;
     }
     if (current === 'error') {
-      // `previous` reads stay reactive but are not gated — synchronous
-      // commit-handler errors collapse pending → error in a single
-      // signal-flush tick, so the tracker captures
-      // `previous = 'idle'` rather than `'pending'`. Loosening the
-      // guard keeps the announcement reachable for sync-rejection
-      // actions (`commitAction = () => false`).
+      // No `previous === 'pending'` guard — sync rejections collapse
+      // pending → error in one flush, so the tracker captures
+      // `previous = 'idle'` and an unguarded read keeps the
+      // announcement reachable for `commitAction = () => false`.
       const failedIdx = presenter.lastFailedIndex();
       const originIdx = presenter.originIndexDuringCommit();
       if (failedIdx !== undefined && originIdx !== undefined) {
@@ -229,17 +184,10 @@ export function createTabGroupAnnouncements(
     return i18n.selectedTab(tab.label() ?? '', position, tabs.length);
   }
 
-  // Eager seed for the prior-active-index tracker. `linkedSignal` is
-  // lazy: without this read its first computation runs only on the
-  // first `liveAnnouncement` resolution that hits the success arm,
-  // which in test/CD scenarios already coincides with the post-nav
-  // activeIndex — leaving `prev?.source` undefined and the direction
-  // prefix unfired. Reading once at factory-construction time captures
-  // the initial activeIndex so the linkedSignal's `prev.source`
-  // carries it forward across the first nav. Reading
-  // `liveAnnouncement` is NOT sufficient here: at construction the
-  // commitTransition is `idle`, the success arm is skipped, and
-  // `priorActiveIndex` never gets touched.
+  // Eager seed — `linkedSignal` is lazy and the success arm doesn't
+  // touch the tracker at construction (commitTransition is `idle`),
+  // so without this read `prev?.source` is undefined on the first
+  // nav and the direction prefix is silently lost.
   priorActiveIndex();
 
   return {

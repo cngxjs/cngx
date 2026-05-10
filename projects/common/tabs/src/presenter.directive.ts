@@ -31,12 +31,10 @@ import {
 } from './tab-group-host.token';
 
 /**
- * Async-commit action shape for tab transitions. Receives the origin
- * index (the tab the user is leaving) and the intended target index
- * (the tab they clicked / arrowed to). Resolves with `true` to commit
- * the transition, `false` to refuse. The
- * `Observable | Promise | sync` union mirrors every other cngx
- * commit-action signature in the repo (select family, stepper).
+ * Async-commit action shape for tab transitions. Receives origin
+ * and target indices; resolves `true` to commit, `false` to refuse.
+ * `Observable | Promise | sync` union mirrors the rest of the cngx
+ * commit-action family.
  *
  * @category interactive/tabs
  */
@@ -46,19 +44,16 @@ export type CngxTabsCommitAction = (
 ) => boolean | Promise<boolean> | Observable<boolean>;
 
 /**
- * Tab-group presenter — the brain of every tab flow in cngx. Holds
- * the active-index model, the tab registry, the orientation, the
- * loop policy, and the commit-controller's lifecycle. Provides
- * {@link CNGX_TAB_GROUP_HOST} so atoms register against an opaque
- * contract, and {@link CNGX_STATEFUL} so transition bridges
- * (`<cngx-toast-on />`, `<cngx-banner-on />`) compose without
- * explicit `[state]` wiring.
+ * Tab-group presenter — brain of every cngx tab flow. Owns the
+ * active-index model, the tab registry, orientation, loop policy,
+ * and the commit-controller lifecycle. Provides
+ * {@link CNGX_TAB_GROUP_HOST} for atoms and {@link CNGX_STATEFUL}
+ * so `<cngx-toast-on />` / `<cngx-banner-on />` compose without
+ * `[state]` wiring.
  *
- * **Layer:** `@cngx/common/tabs` (Level 2). Zero `@Component`,
- * zero `.html` — directive-only surface. Level-4 organisms
- * (`<cngx-tab-group>`) compose this via `hostDirectives`; the
- * directive also works applied to consumer DOM directly via
- * `[cngxTabGroup]`.
+ * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only —
+ * organisms compose via `hostDirectives`, consumers attach
+ * `[cngxTabGroup]` directly.
  *
  * @category interactive
  */
@@ -77,21 +72,17 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly loop = input<boolean>(true);
 
   /**
-   * Async-commit action gating the tab transition. When non-null,
-   * `select(...)` routes through {@link CngxTabsCommitHandler} so
-   * the action's resolution decides whether the change lands.
-   * Optimistic mode (the default) writes immediately and rolls back
-   * on rejection; pessimistic mode keeps the origin index until the
-   * action resolves. Supersede semantics come from the lifted
-   * commit-controller — a rapid second `select(...)` cancels the
-   * in-flight runner.
+   * Async-commit action gating the transition. When non-null,
+   * `select(...)` routes through {@link CngxTabsCommitHandler}; the
+   * action's resolution decides whether the change lands. Supersede
+   * semantics come from the commit-controller — a rapid second
+   * `select(...)` cancels the in-flight runner.
    */
   readonly commitAction = input<CngxTabsCommitAction | null>(null);
   /**
-   * Companion to {@link commitAction}. Default `'optimistic'` —
-   * tab change is a navigation, not a save; eager visual feedback
-   * matches the user's mental model. Switch to `'pessimistic'` for
-   * save-style transitions where the new tab must wait for the
+   * Default `'optimistic'` — tab change is navigation, not a save,
+   * so eager visual feedback matches the user's mental model.
+   * Switch to `'pessimistic'` when the new tab must wait for the
    * action to confirm.
    */
   readonly commitMode = input<'optimistic' | 'pessimistic'>('optimistic');
@@ -108,21 +99,18 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
   readonly commitState: CngxAsyncState<number | undefined> =
     this.commitController.state;
   /**
-   * The tab index the user is currently trying to commit to —
-   * tracked separately from `state.data()` because the AsyncState
-   * data slot only updates on success. Drives per-tab `aria-busy`
-   * rendering.
+   * Index the user is currently trying to commit to. Tracked
+   * separately from `state.data()` (which only updates on success)
+   * to drive per-tab `aria-busy`.
    */
   readonly intendedIndex: Signal<number | undefined> =
     this.commitController.intendedValue;
 
   /**
-   * Reactive current/previous pair for the commit-state status.
-   * Skin sub-components mount a `<span cngxLiveRegion>` whose
-   * content reads from this tracker — declarative SR announcements
-   * driven by the same source of truth as `commitState`. Shared
-   * across consumers so the tracker's `linkedSignal` is allocated
-   * once per presenter instance, never per consumer.
+   * Current/previous pair for `commitState.status()`. Skin
+   * sub-components feed `<span cngxLiveRegion>` from this tracker
+   * for declarative SR announcements. Shared across consumers so
+   * the tracker's `linkedSignal` is allocated once per presenter.
    */
   readonly commitTransition: StatusTransition = createTransitionTracker(
     () => this.commitController.state.status(),
@@ -200,12 +188,9 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 
     const action = this.commitAction();
     if (!action) {
-      // No-action fast path — activeIndex moves synchronously, no
-      // commit window opens, so `originIndexDuringCommit` stays
-      // untouched (the live-region computed gates origin reads on
-      // `lastFailedIndex`, so a stale origin can never leak into
-      // the announcement). If the user is re-picking a previously-
-      // failed target, clear the rejection flag.
+      // No-action fast path — `originIndexDuringCommit` stays
+      // untouched, so a stale origin can never leak into the
+      // live-region announcement.
       this.activeIndex.set(target);
       if (this.lastFailedIndexState() === target) {
         this.lastFailedIndexState.set(undefined);
@@ -213,18 +198,8 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
       return;
     }
 
-    // Commit-action gated transition. Optimistic mode (default —
-    // tab change is a navigation, not a save; eager visual feedback
-    // matches the user's mental model) writes immediately and rolls
-    // back on rejection. Pessimistic mode keeps `activeIndex` at
-    // `previous` until the action resolves. Supersede semantics
-    // come from the lifted commit-controller — a rapid second
-    // select() cancels the in-flight runner.
-    //
-    // Open the commit window: capture the safe-harbour origin
-    // exactly once. Written ONLY here (not on the no-action fast
-    // path) so a stale origin never lingers into a non-commit
-    // navigation.
+    // Open the commit window — origin is captured ONLY here so a
+    // stale value never lingers into a non-commit navigation.
     this.originIndexDuringCommitState.set(previous);
     const mode = this.commitMode();
     if (mode === 'optimistic') {
@@ -313,17 +288,17 @@ export class CngxTabGroupPresenter implements CngxTabGroupHost {
 }
 
 /**
- * Structural equality for the tab registry signal. Compares length
- * + per-entry `id`, current `disabled()`, and current `label()`.
+ * Structural equality for the tab registry. Compares length and
+ * per-entry `id`, `disabled()`, and `label()`.
  *
- * `errorAggregator` is intentionally NOT compared — the aggregator
- * handle is a stable per-tab reference injected once; comparing it
- * would force consumers to memoise the handle, defeating the
- * structural-equal contract.
+ * `errorAggregator` is left out on purpose. The handle is a stable
+ * per-tab reference injected once, so comparing it would push the
+ * memoisation burden onto consumers and break the structural-equal
+ * contract.
  *
- * Reading the `disabled` / `label` signals here is safe: the
- * comparator runs synchronously inside `signal.set()` outside any
- * tracking context, so the reads do not subscribe.
+ * Reading `disabled()` and `label()` here doesn't subscribe — the
+ * comparator runs synchronously inside `signal.set()`, outside any
+ * tracking context.
  *
  * @internal
  */

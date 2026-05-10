@@ -52,24 +52,16 @@ import { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
 import { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';
 
 /**
- * Panel-host adapter for the programmatically mounted overflow
- * molecule. Implements the read-mostly {@link CngxTabPanelHost}
- * surface by delegating tabs / activeId / orientation / selectById
- * straight to the directive's `CNGX_TAB_GROUP_HOST` presenter, and
- * stubs the template-projection slots
- * (`labelTemplateFor` / `contentTemplateFor`) to `null` because
- * Material owns label rendering through its own
- * `<mat-tab>.textLabel` input + projected `<mat-tab-content>` —
- * the cngx `*cngxTabLabel` template surface is intentionally absent
- * on the Material variant.
+ * Implements {@link CngxTabPanelHost} for the programmatically
+ * mounted overflow popover. Delegates to the directive's
+ * `CNGX_TAB_GROUP_HOST` presenter; both template lookups return
+ * `null` because Material renders labels through `<mat-tab>` and
+ * projected `<mat-tab-content>`.
  *
- * Class-shape (not literal-object via `useFactory`) so each stub's
- * body lives at a grep-able call-site and a future telemetry /
- * branded variant can override individual methods via subclass +
- * `useClass` without rewriting the provider tuple. The directive
- * provides this class plus a `useExisting` token binding so
- * downstream injections of `CNGX_TAB_PANEL_HOST` resolve to the
- * single instance Angular instantiates per `[cngxMatTabs]` host.
+ * Class instead of factory-returned literal so a telemetry or
+ * branded variant can subclass + swap via `useClass`. The directive
+ * registers it once and binds `CNGX_TAB_PANEL_HOST` with
+ * `useExisting`.
  *
  * @internal
  */
@@ -95,26 +87,21 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
 }
 
 /**
- * Material instrumentation directive — attaches to an existing
- * `<mat-tab-group>` and bridges it against a cngx
- * {@link CngxTabGroupPresenter} so consumers gain commit-action
- * lifecycle, `CNGX_STATEFUL` provision (and therefore `<cngx-toast-on />`
- * / `<cngx-banner-on />` composition), and the cngx tab-handle
- * registry — without rewriting their template. One attribute upgrade.
+ * Attaches to an existing `<mat-tab-group>` and wires it to a
+ * {@link CngxTabGroupPresenter} — consumers get the commit-action
+ * lifecycle, `CNGX_STATEFUL` (so `<cngx-toast-on />` and
+ * `<cngx-banner-on />` compose as children), and the tab-handle
+ * registry from one attribute.
  *
- * Topology is the inverse of the `<cngx-mat-stepper>` thin-wrapper:
- * Material is the host, cngx is the instrumentation layer.
- * `inject(MatTabGroup, { self: true })` resolves directly off the
- * consumer's element. No content projection, no DI ordering issue —
- * `stepper-accepted-debt §1`'s structural blocker on the **adoption**
- * direction does not apply here.
+ * Topology inverts `<cngx-mat-stepper>`: Material is the host, cngx
+ * is the instrumentation layer. `inject(MatTabGroup, { self: true })`
+ * resolves on the consumer's own element — no content projection
+ * blocker (`stepper-accepted-debt §1` does not apply here).
  *
- * Decoration mechanics for the rejection (`--error`) and per-tab
- * aggregator (`--has-errors`) visuals delegate to the
- * package-private projector factories at `./decorations/`. The
- * directive retains only the registry sync (`syncHandles`), the
- * derived computeds the projectors consume, and the public
- * delegators the consumer-template surface needs.
+ * Rejection (`--error`) and aggregator (`--has-errors`) visuals
+ * live in the package-private projector factories under
+ * `./decorations/`; this directive supplies their reactive triggers
+ * and the delegators consumer templates call.
  *
  * @category interactive
  */
@@ -128,34 +115,25 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
       inputs: ['activeIndex', 'orientation', 'loop', 'commitAction', 'commitMode'],
       outputs: ['activeIndexChange'],
     },
-    // Per-tab handle registry — extracted in Phase 7.1 of
-    // `mat-stepper-mat-tabs-hardening-plan` to relieve decompose
-    // pressure on this directive's class body. Provides
-    // `CNGX_MAT_TABS_REGISTRY_HOST` so per-tab decoration directives
-    // (`[cngxMatTabError]` and any future `[cngxMatTab*]`-shaped
-    // sibling) reach the registry through a typed token instead of
-    // injecting this concrete class.
+    // Provides `CNGX_MAT_TABS_REGISTRY_HOST` so per-tab decoration
+    // directives reach the registry through a typed token rather
+    // than injecting this concrete class.
     CngxMatTabsRegistry,
   ],
   providers: [
     // Material variant of the overflow molecule's DOM-resolution
     // strategy. Swaps `.cngx-tabs__strip-wrapper` walks for the Material
     // `.mat-mdc-tab-header` → `.mat-mdc-tab-label-container` walk and
-    // index-based `.mat-mdc-tab` resolution. Tracked-debt §5.
+    // index-based `.mat-mdc-tab` resolution.
     {
       provide: CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY,
       useValue: createCngxMatTabOverflowDomAdapter,
     },
     // Panel-host adapter for the programmatically mounted overflow
-    // molecule. The class lives at the top of this file with the
-    // stubs visible at a grep-able call-site; the directive provides
-    // it once and binds `CNGX_TAB_PANEL_HOST` via `useExisting` so
-    // every downstream injection resolves to the single per-host
-    // instance. The cngx-native organism's own
-    // `useExisting: CngxTabGroup` provider continues to win for the
-    // `<cngx-tab-group>` path because it sits one layer closer in
-    // the injector chain (organism @Component vs directive providers
-    // here).
+    // molecule. `useExisting` binding below ensures every injection
+    // resolves to the single per-host instance. The cngx-native
+    // `<cngx-tab-group>` path keeps its own `useExisting:
+    // CngxTabGroup` provider — sits one injector layer closer.
     CngxMatTabsPanelHostAdapter,
     {
       provide: CNGX_TAB_PANEL_HOST,
@@ -169,80 +147,41 @@ export class CngxMatTabs {
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly renderer = inject(Renderer2);
-  private readonly hostEl =
-    inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly hostEl = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
-  // Programmatic mount of the cngx overflow molecule. The directive's
-  // `providers` swap in the Material DOM adapter so the molecule's
-  // IntersectionObserver attaches against `.mat-mdc-tab-label-container`
-  // (Material's IO-friendly scroll viewport) rather than the cngx-native
-  // `.cngx-tabs__strip` selector. The component lands as a sibling of
-  // `<mat-tab-group>` in the parent's view here; the constructor's
-  // `afterNextRender` block below physically moves the rendered element
-  // into `.mat-mdc-tab-header` so the More button pins to the trailing
-  // edge of Material's strip.
-  //
-  // Passing `injector: this.injector` makes the molecule's parent
-  // injector chain inherit from THIS directive's element injector —
-  // which carries both the `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY`
-  // override and the `CNGX_TAB_PANEL_HOST` wrapper declared on the
-  // `@Directive` providers above. Without this, the default
-  // `vcr.createComponent` parent-injector resolution would walk the
-  // host-template's view container parent, NOT this element's
-  // injector — and `inject(CNGX_TAB_PANEL_HOST)` inside the molecule
-  // would NG0201.
-  // Single `ViewContainerRef` injection shared by both the molecule
-  // mount below (`overflowRef`) and the aggregator-decoration
-  // projector slot path (consumed in the constructor). Field declared
-  // ahead of `overflowRef` because TypeScript class fields execute
-  // in declaration order — the `overflowRef` initializer reads this
-  // field by reference.
+  // Field order matters — `overflowRef` reads `viewContainerRef` at
+  // class-init time. The VCR also feeds the aggregator-decoration
+  // slot path further down.
   private readonly viewContainerRef = inject(ViewContainerRef);
 
+  // Programmatic mount of the cngx overflow molecule.
+  // `injector: this.injector` is load-bearing — without it,
+  // `vcr.createComponent` walks the host-template's parent VCR for
+  // DI resolution, missing this directive's `CNGX_TAB_PANEL_HOST`
+  // and `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` providers, and the
+  // molecule NG0201s on `inject(CNGX_TAB_PANEL_HOST)`. The molecule
+  // initially lands as a sibling of `<mat-tab-group>`; the
+  // `afterNextRender` block below moves it into
+  // `.mat-mdc-tab-header`.
   private readonly overflowRef: ComponentRef<CngxTabOverflow> =
     this.viewContainerRef.createComponent(CngxTabOverflow, {
       injector: this.injector,
     });
 
-  // Optional consumer-projected slot template — when bound, the
-  // aggregator-decoration projector renders an embedded view of it
-  // into the SR descriptor span instead of writing the
-  // `aggregator.announcement()` string verbatim. See
-  // `mat-tab-aggregator-content.directive.ts` JSDoc for the slot's
-  // typed context shape and the `tabs-accepted-debt §9` note.
-  private readonly aggregatorContentSlot = contentChild(
-    CngxMatTabAggregatorContent,
-  );
-  private readonly aggregatorContentTemplate: Signal<
-    TemplateRef<CngxMatTabAggregatorContentContext> | null
-  > = computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
-  // Optional consumer-projected `*cngxMatTabRejectionContent` slot.
-  // When bound, the rejection-decoration projector renders an
-  // embedded view of it into the SR descriptor span instead of
-  // writing the i18n-resolved fallback string verbatim. Three-stage
-  // slot cascade with `CNGX_MAT_TABS_CONFIG.templates.rejection`
-  // is the canonical shape; Phase 4 ships the instance + library-
-  // default tiers, the middle config tier lands as a follow-up
-  // wiring once consumer demand materialises.
-  private readonly rejectionContentSlot = contentChild(
-    CngxMatTabRejectionContent,
-  );
-  private readonly rejectionContentTemplate: Signal<
-    TemplateRef<CngxMatTabRejectionContentContext> | null
-  > = computed(() => this.rejectionContentSlot()?.templateRef ?? null);
+  private readonly aggregatorContentSlot = contentChild(CngxMatTabAggregatorContent);
+  private readonly aggregatorContentTemplate: Signal<TemplateRef<CngxMatTabAggregatorContentContext> | null> =
+    computed(() => this.aggregatorContentSlot()?.templateRef ?? null);
+  private readonly rejectionContentSlot = contentChild(CngxMatTabRejectionContent);
+  private readonly rejectionContentTemplate: Signal<TemplateRef<CngxMatTabRejectionContentContext> | null> =
+    computed(() => this.rejectionContentSlot()?.templateRef ?? null);
   // Per-tab registry lives on the `[cngxMatTabsRegistry]` host-
-  // directive (Phase 7.1 of `mat-stepper-mat-tabs-hardening-plan`).
-  // The registry owns `setupsByTab`, the per-tab child injectors, the
-  // sync `effect()`, and the destroy cleanup; sibling per-tab
-  // directives reach the per-handle slots via
-  // `CNGX_MAT_TABS_REGISTRY_HOST` rather than injecting this class.
+  // directive — sibling per-tab directives reach the per-handle
+  // slots via `CNGX_MAT_TABS_REGISTRY_HOST`.
 
   private readonly i18n = injectTabsI18n();
 
-  // Resolves the failed handle's stable id (or `null` when no
-  // failure). Collapses spurious effect re-fires when `tabs()`
-  // re-emits without a meaningful target change. Default `Object.is`
-  // on `string | null` is the correct equality predicate.
+  // Identity equal on `string | null` — collapses `tabs()` re-emits
+  // that don't change the failed-target id.
   private readonly failedHandleId = computed<string | null>(() => {
     const idx = this.presenter.lastFailedIndex();
     if (idx === undefined) {
@@ -251,24 +190,14 @@ export class CngxMatTabs {
     return this.presenter.tabs()[idx]?.id ?? null;
   });
 
-  // Rejection-state bundle — { descriptorText, originLabel,
-  // liveAnnouncement } sharing a single source-walk via the
-  // `createRejectionState` factory. Keeps the organism under the
-  // level-4 LOC guard while preserving pillar-2 phrasing parity
-  // with the cngx-native `liveAnnouncement` priority chain.
-  private readonly rejectionState = createRejectionState(
-    this.presenter,
-    this.i18n,
-  );
+  // Bundle shares one source-walk across descriptorText / originLabel
+  // / liveAnnouncement — pillar-2 phrasing parity with cngx-native.
+  private readonly rejectionState = createRejectionState(this.presenter, this.i18n);
 
-  // Resolves the current set of tabs whose bound aggregator wants
-  // reveal. Reads each handle's `errorAggregator()` signal, then the
-  // aggregator's `shouldShow()` and `announcement()` — every tracked
-  // dependency feeds the projector. Structural `equal` drops re-runs
-  // whose returned shape is identical to the previous one.
-  private readonly aggregatedErrorTabs = computed<
-    readonly CngxMatTabAggregatorErrorEntry[]
-  >(
+  // Structural equal — drops re-runs whose entry list is shape-
+  // identical so the projector doesn't churn on no-op aggregator
+  // re-emissions.
+  private readonly aggregatedErrorTabs = computed<readonly CngxMatTabAggregatorErrorEntry[]>(
     () => {
       const tabs = this.presenter.tabs();
       const acc: CngxMatTabAggregatorErrorEntry[] = [];
@@ -309,21 +238,12 @@ export class CngxMatTabs {
   );
 
   constructor() {
-    // Resolve all consumer-tunable knobs once at the top — single
-    // canonical surface via `provideMatTabsConfig` /
-    // `provideMatTabsConfigAt`. `injectMatTabsConfig` merges with
-    // library defaults so call sites read fully populated values.
     const matTabsConfig = injectMatTabsConfig();
 
-    // Mount the polite ARIA live region — pillar-2 parity with the
-    // cngx-native `<cngx-tab-group>`'s `<span cngxLiveRegion>`. The
-    // helper attaches the span at `document.body` (CDK
-    // `LiveAnnouncer` placement convention) so Material's MDC
-    // tolerance at the `<mat-tab-group>` host root is irrelevant.
-    // Replicates the `CngxLiveRegion` directive's host bindings
-    // imperatively because this attribute directive owns no
-    // template; keeps textContent in sync with the
-    // `liveAnnouncement` signal.
+    // Polite live region — attribute directive owns no template, so
+    // the helper attaches the span at document.body (CDK
+    // LiveAnnouncer convention) and mirrors `CngxLiveRegion`'s host
+    // bindings imperatively.
     mountLiveRegionAnnouncer({
       announcement: this.rejectionState.liveAnnouncement,
       renderer: this.renderer,
@@ -331,10 +251,8 @@ export class CngxMatTabs {
       destroyRef: this.destroyRef,
     });
 
-    // Decoration projectors — package-private factories own all
-    // DOM-mutation state (`decoratedEl`, `decoratedAggregatorEls`,
-    // retry counter, etc.) plus the `effect()` registration. The
-    // directive only supplies the reactive triggers it owns.
+    // Decoration projectors own DOM-mutation state plus `effect()`
+    // registration; the directive only supplies reactive triggers.
     createMatTabRejectionDecoration({
       hostEl: this.hostEl,
       failedHandleId: this.failedHandleId,
@@ -359,36 +277,15 @@ export class CngxMatTabs {
       onHalfWiredSlot: matTabsConfig.halfWiredSlotSink,
     });
 
-    // Tear down the dynamically created overflow molecule alongside the
-    // directive. ComponentRef.destroy() runs the molecule's own
-    // DestroyRef callbacks (IntersectionObserver disconnect, rAF
-    // cancellation) and removes its rendered element from the DOM.
     this.destroyRef.onDestroy(() => this.overflowRef.destroy());
 
-    // Anchor the molecule's rendered element inside Material's
-    // `.mat-mdc-tab-header` so the More button pins to the trailing
-    // edge of the strip. Same hook (`afterNextRender`) the aggregator-
-    // decoration projector uses for one-shot post-render DOM writes.
-    //
-    // Bounded retry via `createDomAnchorRetry` — same counter contract
-    // as `CngxTabOverflow`'s rAF attach loop, with `afterNextRender`
-    // as the scheduler. afterNextRender is one-shot (no cancellation
-    // closure); the factory accepts a noop. The retry covers the
-    // deferred-host case (`<mat-tab-group>` gated behind a `*ngIf` /
-    // `@defer`) where the header is not present on the first frame.
-    //
-    // Cap is read from `provideMatTabsConfig(withAnchorRetryAttempts(n))`
-    // (default 5). The default was chosen empirically: well above
-    // normal Material render lag (a single `afterNextRender` is enough
-    // on every supported version), low enough to dev-warn promptly
-    // when the consumer DOM never materialises (e.g. `<mat-tab-group>`
-    // gated behind a never-true `*ngIf` / `@defer`). The `onGiveUp`
-    // warning interpolates the resolved cap so the message stays
-    // accurate after an override.
-    //
-    // The flex-layout skin in `mat-tabs.css` does the rest: the More
-    // button sits next to `.mat-mdc-tab-label-container` rather than
-    // overlaying it, so no imperative positioning is needed here.
+    // Anchor the overflow molecule inside `.mat-mdc-tab-header` so
+    // the More button pins to the strip's trailing edge. Bounded
+    // `createDomAnchorRetry` covers the deferred-host case
+    // (`<mat-tab-group>` gated behind `*ngIf` / `@defer`); the cap
+    // dev-warns when consumer DOM never materialises. The
+    // flex-layout skin in `mat-tabs.css` handles positioning — no
+    // imperative layout work needed.
     const anchorMaxAttempts = matTabsConfig.anchorMaxAttempts;
     const anchorRetry = inject(CNGX_DOM_ANCHOR_RETRY_FACTORY)({
       attempt: () => {
@@ -398,8 +295,7 @@ export class CngxMatTabs {
         if (!headerEl) {
           return null;
         }
-        const overflowEl = this.overflowRef.location
-          .nativeElement as HTMLElement;
+        const overflowEl = this.overflowRef.location.nativeElement as HTMLElement;
         this.renderer.addClass(overflowEl, 'cngx-mat-tabs-more');
         this.renderer.appendChild(headerEl, overflowEl);
         return true;
@@ -439,12 +335,10 @@ export class CngxMatTabs {
   }
 
   /**
-   * Clear the persisted `lastFailedIndex` rejection flag on the
-   * presenter — public delegator mirroring the
-   * {@link https://cngx.dev/api/CngxTabGroup#clearLastFailed
-   * `CngxTabGroup.clearLastFailed()`} pattern so consumers using a
-   * template ref (`#mt="cngxMatTabs"`) can dismiss the rejection
-   * decoration programmatically without injecting the host token.
+   * Clears `presenter.lastFailedIndex`, dismissing the rejection
+   * decoration. Mirrors `CngxTabGroup.clearLastFailed()` so a
+   * template ref (`#mt="cngxMatTabs"`) is enough — no host-token
+   * injection needed.
    */
   clearLastFailed(): void {
     this.presenter.clearLastFailed();
