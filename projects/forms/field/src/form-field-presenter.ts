@@ -118,6 +118,8 @@ export class CngxFormFieldPresenter implements CngxFormFieldHostContract {
    * Reasons why the field is disabled.
    * Each entry may include a human-readable `message`.
    */
+  readonly disabledReasons = computed(() => this.fieldState().disabledReasons());
+
   /**
    * `true` when errors should be visible.
    *
