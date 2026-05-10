@@ -26,12 +26,12 @@ export type CngxSelectPanelActionPosition = 'top' | 'bottom' | 'both' | 'none';
 
 /** No-op fallback when the view-host omits `actionCallbacks`. @internal */
 const NOOP_ACTION_CALLBACKS: CngxSelectActionCallbacks = Object.freeze({
-  close: () => {},
-  commit: () => {},
+  close: () => {/* noop */},
+  commit: () => {/* noop */},
   isPending: false,
-  setDirty: () => {},
-  cancel: () => {},
-  retry: () => {},
+  setDirty: () => {/* noop */},
+  cancel: () => {/* noop */},
+  retry: () => {/* noop */},
 });
 
 /**
