@@ -96,6 +96,10 @@ export class CngxMatTabError {
       // wrap, that change would silently introduce a same-effect
       // re-fire on every aggregator pump.
       const aggregator = this.aggregator();
+      // Race-recovery dependency — tracks `setupsByTab` population so
+      // the effect re-fires once our `MatTab` is registered. The bare
+      // read is intentional; full rationale lives in the effect's
+      // opening comment above. Do NOT tag as dead code.
       this.presenter.tabs();
 
       untracked(() => {

@@ -9,6 +9,7 @@ import {
   effect,
   ElementRef,
   EnvironmentInjector,
+  Injectable,
   inject,
   Injector,
   isDevMode,
@@ -73,6 +74,49 @@ interface CngxMatTabEntry {
 import { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';
 
 /**
+ * Panel-host adapter for the programmatically mounted overflow
+ * molecule. Implements the read-mostly {@link CngxTabPanelHost}
+ * surface by delegating tabs / activeId / orientation / selectById
+ * straight to the directive's `CNGX_TAB_GROUP_HOST` presenter, and
+ * stubs the template-projection slots
+ * (`labelTemplateFor` / `contentTemplateFor`) to `null` because
+ * Material owns label rendering through its own
+ * `<mat-tab>.textLabel` input + projected `<mat-tab-content>` —
+ * the cngx `*cngxTabLabel` template surface is intentionally absent
+ * on the Material variant.
+ *
+ * Class-shape (not literal-object via `useFactory`) so each stub's
+ * body lives at a grep-able call-site and a future telemetry /
+ * branded variant can override individual methods via subclass +
+ * `useClass` without rewriting the provider tuple. The directive
+ * provides this class plus a `useExisting` token binding so
+ * downstream injections of `CNGX_TAB_PANEL_HOST` resolve to the
+ * single instance Angular instantiates per `[cngxMatTabs]` host.
+ *
+ * @internal
+ */
+@Injectable()
+export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
+  private readonly presenter = inject<CngxTabGroupHost>(CNGX_TAB_GROUP_HOST);
+
+  readonly tabs = this.presenter.tabs;
+  readonly activeId = this.presenter.activeId;
+  readonly orientation = this.presenter.orientation;
+
+  selectById(id: string): void {
+    this.presenter.selectById(id);
+  }
+
+  labelTemplateFor(_id: string): TemplateRef<unknown> | null {
+    return null;
+  }
+
+  contentTemplateFor(_id: string): TemplateRef<unknown> | null {
+    return null;
+  }
+}
+
+/**
  * Material instrumentation directive — attaches to an existing
  * `<mat-tab-group>` and bridges it against a cngx
  * {@link CngxTabGroupPresenter} so consumers gain commit-action
@@ -117,28 +161,19 @@ import { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-
       useValue: createCngxMatTabOverflowDomAdapter,
     },
     // Panel-host adapter for the programmatically mounted overflow
-    // molecule. The presenter satisfies the read-mostly tabs / activeId
-    // / orientation / selectById surface; the template-projection
-    // methods (`labelTemplateFor`/`contentTemplateFor`) stub to `null`
-    // because Material owns label rendering through its own
-    // `<mat-tab>.textLabel` input + projected mat-tab-content — the
-    // cngx `*cngxTabLabel` template surface is intentionally absent in
-    // the Material variant. The cngx-native organism's own
+    // molecule. The class lives at the top of this file with the
+    // stubs visible at a grep-able call-site; the directive provides
+    // it once and binds `CNGX_TAB_PANEL_HOST` via `useExisting` so
+    // every downstream injection resolves to the single per-host
+    // instance. The cngx-native organism's own
     // `useExisting: CngxTabGroup` provider continues to win for the
-    // `<cngx-tab-group>` path because it sits one layer closer in the
-    // injector chain (organism @Component vs directive providers
+    // `<cngx-tab-group>` path because it sits one layer closer in
+    // the injector chain (organism @Component vs directive providers
     // here).
+    CngxMatTabsPanelHostAdapter,
     {
       provide: CNGX_TAB_PANEL_HOST,
-      useFactory: (presenter: CngxTabGroupHost): CngxTabPanelHost => ({
-        tabs: presenter.tabs,
-        activeId: presenter.activeId,
-        orientation: presenter.orientation,
-        selectById: (id) => presenter.selectById(id),
-        labelTemplateFor: () => null,
-        contentTemplateFor: () => null,
-      }),
-      deps: [CNGX_TAB_GROUP_HOST],
+      useExisting: CngxMatTabsPanelHostAdapter,
     },
   ],
 })
