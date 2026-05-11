@@ -11,7 +11,7 @@
 export {
   CngxStepperPresenter,
   type CngxStepperCommitAction,
-} from './src/presenter.directive';
+} from './presenter.directive';
 
 export {
   CNGX_STEPPER_HOST,
@@ -19,63 +19,63 @@ export {
   type CngxStepNode,
   type CngxStepRegistration,
   type CngxStepStatus,
-} from './src/stepper-host.token';
+} from './stepper-host.token';
 
 export {
   CNGX_STEP_GROUP_HOST,
   type CngxStepGroupHost,
-} from './src/step-group-host.token';
+} from './step-group-host.token';
 
 export {
   CNGX_STEP_PANEL_HOST,
   type CngxStepContentContext,
   type CngxStepLabelContext,
   type CngxStepPanelHost,
-} from './src/step-panel-host.token';
+} from './step-panel-host.token';
 
-export { flatStepsEqual } from './src/step-tree.util';
+export { flatStepsEqual } from './step-tree.util';
 
-export { CngxStep } from './src/step.directive';
-export { CngxStepGroup } from './src/step-group.directive';
-export { CngxStepLabel } from './src/step-label.directive';
-export { CngxStepContent } from './src/step-content.directive';
+export { CngxStep } from './step.directive';
+export { CngxStepGroup } from './step-group.directive';
+export { CngxStepLabel } from './step-label.directive';
+export { CngxStepContent } from './step-content.directive';
 
 export {
   CngxStepIndicator,
   type CngxStepIndicatorContext,
-} from './src/slots/step-indicator.directive';
+} from './slots/step-indicator.directive';
 
 export {
   CngxStepBadge,
   type CngxStepBadgeContext,
-} from './src/slots/step-badge.directive';
+} from './slots/step-badge.directive';
 
 export {
   CngxStepBusySpinner,
   type CngxStepBusySpinnerContext,
-} from './src/slots/step-busy-spinner.directive';
+} from './slots/step-busy-spinner.directive';
 
 export {
   CngxStepRejection,
   type CngxStepRejectionContext,
-} from './src/slots/step-rejection.directive';
+} from './slots/step-rejection.directive';
 
 export {
   CngxStepGroupHeader,
   type CngxStepGroupHeaderContext,
-} from './src/slots/step-group-header.directive';
+} from './slots/step-group-header.directive';
 
-export { CngxStepperEmpty } from './src/slots/stepper-empty.directive';
+export { CngxStepperEmpty } from './slots/stepper-empty.directive';
 
 export {
   createStepperTemplateBindings,
   type CngxStepperTemplateBindings,
   type CngxStepperTemplateBindingsOptions,
-} from './src/slots/stepper-template-cascade';
+} from './slots/stepper-template-cascade';
 
-export { CNGX_STEPPER_GLYPHS } from './src/glyphs';
+export { CNGX_STEPPER_GLYPHS } from './glyphs';
 
-export { CngxStepperRouterSync } from './src/router-sync.directive';
+export { CngxStepperRouterSync } from './router-sync.directive';
 
 export {
   CNGX_STEPPER_CONFIG,
@@ -99,7 +99,7 @@ export {
   withStepRejectionTemplate,
   withStepGroupHeaderTemplate,
   withStepperEmptyTemplate,
-} from './src/stepper-config';
+} from './stepper-config';
 
 export {
   CNGX_STEPPER_I18N,
@@ -108,7 +108,7 @@ export {
   injectStepperI18n,
   provideStepperI18n,
   withStepperI18nLabels,
-} from './src/i18n/stepper-i18n';
+} from './i18n/stepper-i18n';
 
 export {
   CNGX_STEPPER_COMMIT_HANDLER_FACTORY,
@@ -116,10 +116,10 @@ export {
   type CngxStepperCommitHandlerFactory,
   type CngxStepperCommitHandlerOptions,
   createStepperCommitHandler,
-} from './src/commit-handler';
+} from './commit-handler';
 
 export {
   provideCngxStepper,
   provideCngxStepperAt,
   type CngxStepperFeature,
-} from './src/provide-cngx-stepper';
+} from './provide-cngx-stepper';

@@ -83,8 +83,8 @@ module.exports = tseslint.config(
     // `<cngx-sparkline>` (still elements) continue to be enforced.
     {
         files: [
-            'projects/common/chart/src/axis/**/*.ts',
-            'projects/common/chart/src/layers/**/*.ts',
+            'projects/common/chart/axis/**/*.ts',
+            'projects/common/chart/layers/**/*.ts',
         ],
         rules: {
             '@angular-eslint/component-selector': [

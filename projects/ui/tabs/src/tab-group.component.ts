@@ -61,7 +61,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgTemplateOutlet, CngxLiveRegion, CngxRovingItem],
   styleUrls: [
-    '../../../common/tabs/src/styles/tabs-base.css',
+    '../../../common/tabs/styles/tabs-base.css',
     './tab-group.component.css',
   ],
   hostDirectives: [
