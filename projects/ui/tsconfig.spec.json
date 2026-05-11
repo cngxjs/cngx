@@ -7,8 +7,12 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts",
+    "*.d.ts",
+    "*.spec.ts",
+    "action-button/**/*.spec.ts",
+    "sidenav/**/*.spec.ts",
+    "skeleton/**/*.spec.ts",
+    "speak/**/*.spec.ts",
     "layout/src/**/*.spec.ts",
     "overlay/src/**/*.spec.ts",
     "empty-state/src/**/*.spec.ts",
