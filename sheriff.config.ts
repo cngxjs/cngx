@@ -87,6 +87,7 @@ export const config: SheriffConfig = {
       'scope:lib',
       'grant:material',
     ],
+    'projects/data-display': ['lib:data-display', 'level:3', 'entry:primary', 'scope:lib'],
     'projects/data-display/<entry>': ({ entry }) => [
       'lib:data-display',
       'level:3',

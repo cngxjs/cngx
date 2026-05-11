@@ -137,7 +137,7 @@ module.exports = tseslint.config(
         files: [
             'projects/common/**/*.ts',
             'projects/data-display/treetable/**/*.ts',
-            'projects/data-display/src/**/*.ts',
+            'projects/data-display/*.ts',
         ],
         rules: {
             'no-restricted-imports': [

@@ -53,7 +53,7 @@
       "@cngx/ui/tabs": ["projects/ui/tabs/public-api.ts"],
       "@cngx/utils": ["projects/utils/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
-      "@cngx/data-display": ["projects/data-display/src/public-api.ts"],
+      "@cngx/data-display": ["projects/data-display/public-api.ts"],
       "@cngx/data-display/treetable": ["projects/data-display/treetable/public-api.ts"],
       "@cngx/data-display/mat-treetable": ["projects/data-display/mat-treetable/public-api.ts"],
       "@cngx/testing": ["projects/testing/src/index.ts"]
