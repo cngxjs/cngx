@@ -10,5 +10,6 @@
     "disableStyleTab": true,
     "disableRoutesGraph": true,
     "groupDepth": 3,
-    "multiVersion": false
+    "multiVersion": false,
+    "includes": "core-concepts"
 }
