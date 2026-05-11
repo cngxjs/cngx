@@ -3,4 +3,4 @@
  * @module @cngx/forms
  */
 
-export * from './lib/forms';
+export * from './forms';
