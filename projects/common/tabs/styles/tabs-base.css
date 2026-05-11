@@ -102,7 +102,7 @@
    * the same element so the `!` glyph stays legible; if this fallback
    * resolved to `currentColor`, both background and text would
    * collapse to white and the badge would render invisible. Mirrors
-   * the stepper precedent at `projects/ui/stepper/src/styles/stepper-base.css`.
+   * the stepper precedent at `projects/ui/stepper/styles/stepper-base.css`.
    */
   background: var(--cngx-tab-error-badge-color, #c62828);
   margin-inline-start: var(--cngx-tab-gap, 0.5rem);

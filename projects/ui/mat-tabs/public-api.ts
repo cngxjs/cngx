@@ -3,22 +3,22 @@
  *
  * Material instrumentation directive for `<mat-tab-group>`.
  */
-export { CngxMatTabs } from './src/mat-tabs.directive';
-export { CngxMatTabError } from './src/mat-tab-error.directive';
+export { CngxMatTabs } from './mat-tabs.directive';
+export { CngxMatTabError } from './mat-tab-error.directive';
 export {
   CNGX_MAT_TABS_REGISTRY_HOST,
   CngxMatTabsRegistry,
   type CngxMatTabsRegistryHost,
-} from './src/mat-tabs-registry.directive';
+} from './mat-tabs-registry.directive';
 export {
   CngxMatTabAggregatorContent,
   type CngxMatTabAggregatorContentContext,
-} from './src/decorations/mat-tab-aggregator-content.directive';
+} from './decorations/mat-tab-aggregator-content.directive';
 export {
   CngxMatTabRejectionContent,
   type CngxMatTabRejectionContentContext,
-} from './src/decorations/mat-tab-rejection-content.directive';
-export type { CngxMatTabHalfWiredSlotSink } from './src/decorations/half-wired-slot-sink';
+} from './decorations/mat-tab-rejection-content.directive';
+export type { CngxMatTabHalfWiredSlotSink } from './decorations/half-wired-slot-sink';
 export {
   CNGX_MAT_TABS_CONFIG,
   type CngxMatTabsConfig,
@@ -28,11 +28,11 @@ export {
   provideMatTabsConfigAt,
   withAnchorRetryAttempts,
   withHalfWiredSlotSink,
-} from './src/mat-tabs-config';
+} from './mat-tabs-config';
 export {
   CNGX_MAT_TAB_HANDLE_FACTORY,
   createMatTabHandle,
   type CngxMatTabHandleFactory,
-} from './src/material-bridge/handle';
-export { MaterialPrivateSurfaces } from './src/material-bridge/private-surfaces';
-export { createCngxMatTabOverflowDomAdapter } from './src/overflow/mat-tab-overflow-dom-adapter';
+} from './material-bridge/handle';
+export { MaterialPrivateSurfaces } from './material-bridge/private-surfaces';
+export { createCngxMatTabOverflowDomAdapter } from './overflow/mat-tab-overflow-dom-adapter';

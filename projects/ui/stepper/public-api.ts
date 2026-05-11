@@ -8,4 +8,4 @@
  * `@cngx/ui/mat-stepper` instead.
  */
 
-export { CngxStepper } from './src/stepper.component';
+export { CngxStepper } from './stepper.component';

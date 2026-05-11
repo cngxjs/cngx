@@ -18,8 +18,8 @@
 @use '../../projects/common/data/display/trend' as cngx-trend;
 @use '../../projects/common/card/card-timestamp' as cngx-card-timestamp;
 @use '../../projects/common/card/card-skeleton' as cngx-card-skeleton;
-@use '../../projects/ui/empty-state/src/empty-state-theme' as empty-state;
-@use '../../projects/ui/empty-state/src/empty-state' as cngx-empty-state;
+@use '../../projects/ui/empty-state/empty-state-theme' as empty-state;
+@use '../../projects/ui/empty-state/empty-state' as cngx-empty-state;
 @use '../../projects/forms/input/file-drop' as cngx-file-drop;
 @use '../../projects/forms/input/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';

@@ -237,14 +237,14 @@ module.exports = tseslint.config(
   // in the five organism libs.
   {
     files: [
-      'projects/ui/tabs/src/**/*.component.ts',
-      'projects/ui/tabs/src/**/*.directive.ts',
-      'projects/ui/stepper/src/**/*.component.ts',
-      'projects/ui/stepper/src/**/*.directive.ts',
-      'projects/ui/mat-stepper/src/**/*.component.ts',
-      'projects/ui/mat-stepper/src/**/*.directive.ts',
-      'projects/ui/mat-tabs/src/**/*.component.ts',
-      'projects/ui/mat-tabs/src/**/*.directive.ts',
+      'projects/ui/tabs/**/*.component.ts',
+      'projects/ui/tabs/**/*.directive.ts',
+      'projects/ui/stepper/**/*.component.ts',
+      'projects/ui/stepper/**/*.directive.ts',
+      'projects/ui/mat-stepper/**/*.component.ts',
+      'projects/ui/mat-stepper/**/*.directive.ts',
+      'projects/ui/mat-tabs/**/*.component.ts',
+      'projects/ui/mat-tabs/**/*.directive.ts',
     ],
     plugins: { local: localRules },
     rules: {

@@ -6,10 +6,10 @@
  * via `hostDirectives`, so commit-action lifecycle, router sync, and
  * error aggregation all work identically against `<mat-stepper>`.
  */
-export { CngxMatStepper } from './src/mat-stepper.component';
-export { CngxMatStepperBridge } from './src/mat-stepper.directive';
+export { CngxMatStepper } from './mat-stepper.component';
+export { CngxMatStepperBridge } from './mat-stepper.directive';
 export {
   CNGX_MAT_STEP_HANDLE_FACTORY,
   createMatStepHandle,
   type CngxMatStepHandleFactory,
-} from './src/material-bridge/handle';
+} from './material-bridge/handle';
