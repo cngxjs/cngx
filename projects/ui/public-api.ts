@@ -4,7 +4,7 @@
  */
 
 export * from './ui';
-export { CngxSpeakButton } from './speak/speak-button';
+export * from '@cngx/ui/speak';
 export { CngxSidenavLayout } from './sidenav/sidenav-layout';
 export { CngxSidenav, type SidenavPosition, type SidenavMode } from './sidenav/sidenav';
 export { CngxSidenavContent } from './sidenav/sidenav-content';
