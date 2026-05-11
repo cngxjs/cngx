@@ -56,7 +56,7 @@
       "@cngx/data-display": ["projects/data-display/public-api.ts"],
       "@cngx/data-display/treetable": ["projects/data-display/treetable/public-api.ts"],
       "@cngx/data-display/mat-treetable": ["projects/data-display/mat-treetable/public-api.ts"],
-      "@cngx/testing": ["projects/testing/src/index.ts"]
+      "@cngx/testing": ["projects/testing/index.ts"]
     }
   },
   "angularCompilerOptions": {
