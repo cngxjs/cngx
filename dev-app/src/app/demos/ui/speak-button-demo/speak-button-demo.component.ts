@@ -172,7 +172,7 @@ cngx-speak-button.dark {{ '{' }}
         from your Material theme.
       </p>
       <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use '@angular/material' as mat;
-@use '@cngx/ui/src/speak/speak-button-theme' as speak;
+@use '@cngx/ui/speak/speak-button-theme' as speak;
 
 $theme: mat.define-theme((
   color: ( theme-type: light, primary: mat.$azure-palette ),
@@ -416,7 +416,7 @@ import { MatIcon } from '@angular/material/icon';
         from your Material theme.
       </p>
       <pre class="code-block" style="font-size: 0.75rem; margin: 0 0 12px;"><code>@use '@angular/material' as mat;
-@use '@cngx/ui/src/speak/speak-button-theme' as speak;
+@use '@cngx/ui/speak/speak-button-theme' as speak;
 
 $theme: mat.define-theme((
   color: ( theme-type: light, primary: mat.$azure-palette ),

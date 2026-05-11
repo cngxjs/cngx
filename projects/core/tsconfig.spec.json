@@ -7,9 +7,9 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts",
-    "utils/src/**/*.spec.ts",
-    "tokens/src/**/*.spec.ts"
+    "*.d.ts",
+    "*.spec.ts",
+    "utils/**/*.spec.ts",
+    "tokens/**/*.spec.ts"
   ]
 }

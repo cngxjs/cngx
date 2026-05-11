@@ -7,12 +7,12 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts",
-    "validators/src/**/*.spec.ts",
-    "controls/src/**/*.spec.ts",
-    "field/src/**/*.spec.ts",
-    "input/src/**/*.spec.ts",
-    "select/src/**/*.spec.ts"
+    "*.d.ts",
+    "*.spec.ts",
+    "validators/**/*.spec.ts",
+    "controls/**/*.spec.ts",
+    "field/**/*.spec.ts",
+    "input/**/*.spec.ts",
+    "select/**/*.spec.ts"
   ]
 }

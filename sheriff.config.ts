@@ -39,18 +39,24 @@ export const config: SheriffConfig = {
   excludeRoot: true,
 
   modules: {
+    // Specific-before-generic — the primary root rule catches files at
+    // `projects/utils/<file>.ts` after the src/ wrapper drop; the
+    // `<entry>` rule still picks up secondaries like rxjs-interop/.
+    'projects/utils': ['lib:utils', 'level:0', 'entry:primary', 'scope:lib'],
     'projects/utils/<entry>': ({ entry }) => [
       'lib:utils',
       'level:0',
       `entry:${entry}`,
       'scope:lib',
     ],
+    'projects/core': ['lib:core', 'level:1', 'entry:primary', 'scope:lib'],
     'projects/core/<entry>': ({ entry }) => [
       'lib:core',
       'level:1',
       `entry:${entry}`,
       'scope:lib',
     ],
+    'projects/common': ['lib:common', 'level:2', 'entry:primary', 'scope:lib'],
     'projects/common/<entry>': ({ entry }) => [
       'lib:common',
       'level:2',
@@ -58,13 +64,14 @@ export const config: SheriffConfig = {
       'scope:lib',
     ],
     // Specific-before-generic so the field-testing barrel wins over the
-    // forms/<entry> matcher at the field/src/testing depth.
-    'projects/forms/field/src/testing': [
+    // forms/<entry> matcher at the field/testing depth.
+    'projects/forms/field/testing': [
       'lib:forms',
       'level:3',
       'entry:field-testing',
       'scope:test',
     ],
+    'projects/forms': ['lib:forms', 'level:3', 'entry:primary', 'scope:lib'],
     'projects/forms/<entry>': ({ entry }) => [
       'lib:forms',
       'level:3',
@@ -80,12 +87,14 @@ export const config: SheriffConfig = {
       'scope:lib',
       'grant:material',
     ],
+    'projects/data-display': ['lib:data-display', 'level:3', 'entry:primary', 'scope:lib'],
     'projects/data-display/<entry>': ({ entry }) => [
       'lib:data-display',
       'level:3',
       `entry:${entry}`,
       'scope:lib',
     ],
+    'projects/ui': ['lib:ui', 'level:4', 'entry:primary', 'scope:lib'],
     'projects/ui/<entry>': ({ entry }) => [
       'lib:ui',
       'level:4',

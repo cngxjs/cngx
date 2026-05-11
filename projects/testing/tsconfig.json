@@ -4,5 +4,5 @@
     "outDir": "../../out-tsc/testing",
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["**/*.ts"]
 }

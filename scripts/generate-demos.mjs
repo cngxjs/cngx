@@ -762,24 +762,42 @@ async function loadCompodocJson() {
   return JSON.parse(raw);
 }
 
+/**
+ * Build a directory → @cngx-alias lookup from tsconfig.base.json. Longest
+ * directory prefix wins, so a secondary entry like
+ * `projects/common/a11y/public-api.ts` resolves to `@cngx/common/a11y`
+ * before the more-generic `@cngx/common` primary catches it. Files that
+ * sit at the primary root (e.g. `projects/ui/action-button/...`, which
+ * is re-exported by the primary umbrella) fall through to the primary
+ * alias entry.
+ */
+async function loadAliasLookup() {
+  const raw = await readFile(join(WORKSPACE_ROOT, 'tsconfig.base.json'), 'utf8');
+  const stripped = raw.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+  const config = JSON.parse(stripped);
+  const paths = config.compilerOptions?.paths ?? {};
+  const entries = [];
+  for (const [alias, targets] of Object.entries(paths)) {
+    if (!alias.startsWith('@cngx/')) continue;
+    const target = targets[0];
+    if (!target) continue;
+    const dir = dirname(target);
+    if (!dir.startsWith('projects/')) continue;
+    entries.push({ alias, dir });
+  }
+  entries.sort((a, b) => b.dir.length - a.dir.length);
+  return entries;
+}
+
 /** Build a Map<className, modulePath> from compodoc JSON for import resolution. */
-function buildImportMap(compodocData) {
+function buildImportMap(compodocData, aliasLookup) {
   const map = new Map(KNOWN_ANGULAR_IMPORTS);
   for (const section of ['directives', 'components', 'pipes', 'classes', 'injectables']) {
     for (const item of compodocData[section] ?? []) {
       if (item.name && item.file) {
-        // Convert file path to @cngx import — handles primary and secondary entry points.
-        // Primary:   projects/<lib>/src/...         → @cngx/<lib>
-        // Secondary: projects/<lib>/<entry>/src/... → @cngx/<lib>/<entry>
-        const file = item.file;
-        const primary = file.match(/projects\/([^/]+)\/src\//);
-        if (primary) {
-          map.set(item.name, `@cngx/${primary[1]}`);
-          continue;
-        }
-        const secondary = file.match(/projects\/([^/]+)\/([^/]+)\/src\//);
-        if (secondary) {
-          map.set(item.name, `@cngx/${secondary[1]}/${secondary[2]}`);
+        const match = aliasLookup.find(({ dir }) => item.file.startsWith(`${dir}/`));
+        if (match) {
+          map.set(item.name, match.alias);
         }
       }
     }
@@ -846,7 +864,8 @@ function computeSharedRelativePath(demoFolder, appDir) {
 async function main() {
   await ensureCompodocJson();
   const compodocData = await loadCompodocJson();
-  const importMap = buildImportMap(compodocData);
+  const aliasLookup = await loadAliasLookup();
+  const importMap = buildImportMap(compodocData, aliasLookup);
 
   const demoDirs = await findDemoDirs(DEMOS_ROOT);
   const demos = [];

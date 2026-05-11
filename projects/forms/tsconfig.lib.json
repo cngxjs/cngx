@@ -19,9 +19,9 @@
       "@cngx/common/popover": ["dist/common/types/cngx-common-popover.d.ts"],
       "@cngx/common/data": ["dist/common/types/cngx-common-data.d.ts"],
       "@cngx/common/display": ["dist/common/types/cngx-common-display.d.ts"],
-      "@cngx/forms/field": ["projects/forms/field/src/index.ts"]
+      "@cngx/forms/field": ["projects/forms/field/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts", "select/**/*.ts"],
+  "include": ["*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts", "select/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

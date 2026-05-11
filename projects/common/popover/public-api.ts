@@ -3,10 +3,10 @@
  */
 
 // Atoms
-export type { PopoverPlacement, PopoverState, PopoverMode } from './src/popover.types';
-export { CngxPopover } from './src/popover.directive';
-export { CngxPopoverTrigger } from './src/popover-trigger.directive';
-export { CngxTooltip } from './src/tooltip.directive';
+export type { PopoverPlacement, PopoverState, PopoverMode } from './popover.types';
+export { CngxPopover } from './popover.directive';
+export { CngxPopoverTrigger } from './popover-trigger.directive';
+export { CngxTooltip } from './tooltip.directive';
 
 // Floating UI fallback (opt-in)
 export {
@@ -14,10 +14,10 @@ export {
   provideFloatingFallback,
   type ComputePositionFn,
   type FloatingFallbackConfig,
-} from './src/floating-fallback';
+} from './floating-fallback';
 
 // Panel molecule
-export type { CngxPopoverPanelConfig, PopoverPanelFeature } from './src/popover-panel.types';
+export type { CngxPopoverPanelConfig, PopoverPanelFeature } from './popover-panel.types';
 export {
   CNGX_POPOVER_PANEL_CONFIG,
   providePopoverPanel,
@@ -26,9 +26,9 @@ export {
   withDefaultVariant,
   withCloseButton,
   withArrow,
-} from './src/popover-panel.config';
-export { CngxPopoverPanel } from './src/popover-panel.component';
-export { CngxPopoverAction, type PopoverActionVariant } from './src/popover-action.component';
+} from './popover-panel.config';
+export { CngxPopoverPanel } from './popover-panel.component';
+export { CngxPopoverAction, type PopoverActionVariant } from './popover-action.component';
 export {
   CngxPopoverHeader,
   CngxPopoverBody,
@@ -37,4 +37,4 @@ export {
   CngxPopoverLoading,
   CngxPopoverEmpty,
   CngxPopoverError,
-} from './src/popover-panel-slots';
+} from './popover-panel-slots';

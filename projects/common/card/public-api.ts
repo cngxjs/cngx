@@ -3,24 +3,24 @@
  */
 
 // Types
-export type { EmptyReason } from './src/card.types';
+export type { EmptyReason } from './card.types';
 
 // Card
-export { CngxCard } from './src/card.component';
-export { CngxCardHeader } from './src/card-header.directive';
-export { CngxCardTitle } from './src/card-title.directive';
-export { CngxCardSubtitle } from './src/card-subtitle.directive';
-export { CngxCardBody } from './src/card-body.directive';
-export { CngxCardMedia } from './src/card-media.directive';
-export { CngxCardFooter } from './src/card-footer.directive';
-export { CngxCardActions } from './src/card-actions.directive';
-export { CngxCardBadge } from './src/card-badge.directive';
-export { CngxCardAccent } from './src/card-accent.directive';
-export { CngxCardSkeleton } from './src/card-skeleton.component';
+export { CngxCard } from './card.component';
+export { CngxCardHeader } from './card-header.directive';
+export { CngxCardTitle } from './card-title.directive';
+export { CngxCardSubtitle } from './card-subtitle.directive';
+export { CngxCardBody } from './card-body.directive';
+export { CngxCardMedia } from './card-media.directive';
+export { CngxCardFooter } from './card-footer.directive';
+export { CngxCardActions } from './card-actions.directive';
+export { CngxCardBadge } from './card-badge.directive';
+export { CngxCardAccent } from './card-accent.directive';
+export { CngxCardSkeleton } from './card-skeleton.component';
 
 // Grid
-export { CngxCardGrid } from './src/card-grid.component';
-export { CngxCardGridEmpty } from './src/card-grid-empty.directive';
+export { CngxCardGrid } from './card-grid.component';
+export { CngxCardGridEmpty } from './card-grid-empty.directive';
 
 // Card-specific atoms
-export { CngxCardTimestamp } from './src/card-timestamp.component';
+export { CngxCardTimestamp } from './card-timestamp.component';

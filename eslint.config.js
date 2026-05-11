@@ -83,8 +83,8 @@ module.exports = tseslint.config(
     // `<cngx-sparkline>` (still elements) continue to be enforced.
     {
         files: [
-            'projects/common/chart/src/axis/**/*.ts',
-            'projects/common/chart/src/layers/**/*.ts',
+            'projects/common/chart/axis/**/*.ts',
+            'projects/common/chart/layers/**/*.ts',
         ],
         rules: {
             '@angular-eslint/component-selector': [
@@ -137,7 +137,7 @@ module.exports = tseslint.config(
         files: [
             'projects/common/**/*.ts',
             'projects/data-display/treetable/**/*.ts',
-            'projects/data-display/src/**/*.ts',
+            'projects/data-display/*.ts',
         ],
         rules: {
             'no-restricted-imports': [
@@ -237,14 +237,14 @@ module.exports = tseslint.config(
   // in the five organism libs.
   {
     files: [
-      'projects/ui/tabs/src/**/*.component.ts',
-      'projects/ui/tabs/src/**/*.directive.ts',
-      'projects/ui/stepper/src/**/*.component.ts',
-      'projects/ui/stepper/src/**/*.directive.ts',
-      'projects/ui/mat-stepper/src/**/*.component.ts',
-      'projects/ui/mat-stepper/src/**/*.directive.ts',
-      'projects/ui/mat-tabs/src/**/*.component.ts',
-      'projects/ui/mat-tabs/src/**/*.directive.ts',
+      'projects/ui/tabs/**/*.component.ts',
+      'projects/ui/tabs/**/*.directive.ts',
+      'projects/ui/stepper/**/*.component.ts',
+      'projects/ui/stepper/**/*.directive.ts',
+      'projects/ui/mat-stepper/**/*.component.ts',
+      'projects/ui/mat-stepper/**/*.directive.ts',
+      'projects/ui/mat-tabs/**/*.component.ts',
+      'projects/ui/mat-tabs/**/*.directive.ts',
     ],
     plugins: { local: localRules },
     rules: {

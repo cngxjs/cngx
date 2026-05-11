@@ -12,15 +12,15 @@ export {
   createBandScale,
   createOrdinalScale,
   type BandScale,
-} from './src/scales';
+} from './scales';
 
-export { CngxChart } from './src/chart/chart.component';
+export { CngxChart } from './chart/chart.component';
 export {
   CNGX_CHART_CONTEXT,
   type CngxChartContext,
   type ScaleFn,
   type XScaleInput,
-} from './src/chart/chart-context';
+} from './chart/chart-context';
 
 export {
   CngxChartLoading,
@@ -29,51 +29,51 @@ export {
   CHART_SMALL_BREAKPOINT_PX,
   type CngxChartErrorContext,
   type CngxChartSlotContext,
-} from './src/chart/template-slots';
+} from './chart/template-slots';
 
 export {
   CngxAxis,
   type CngxAxisPosition,
   type CngxAxisType,
-} from './src/axis/axis.component';
+} from './axis/axis.component';
 
 export {
   CngxChartLegend,
   type CngxChartLegendItem,
-} from './src/legend/legend.component';
+} from './legend/legend.component';
 
-export { CngxLine } from './src/layers/line.component';
-export { CngxArea } from './src/layers/area.component';
-export { CngxBar } from './src/layers/bar.component';
-export type { BarYAccessor } from './src/layers/bar.component';
+export { CngxLine } from './layers/line.component';
+export { CngxArea } from './layers/area.component';
+export { CngxBar } from './layers/bar.component';
+export type { BarYAccessor } from './layers/bar.component';
 export {
   CngxScatter,
   type ScatterXAccessor,
   type ScatterYAccessor,
-} from './src/layers/scatter.component';
-export { CngxThreshold } from './src/layers/threshold.component';
-export { CngxBand } from './src/layers/band.component';
+} from './layers/scatter.component';
+export { CngxThreshold } from './layers/threshold.component';
+export { CngxBand } from './layers/band.component';
 
 export {
   CNGX_CHART_I18N,
   provideChartI18n,
   type CngxChartI18n,
   type CngxChartSummary,
-} from './src/i18n/chart-i18n';
+} from './i18n/chart-i18n';
 
-export { CngxSparkline } from './src/presets/sparkline.component';
-export { CngxMiniBar } from './src/presets/mini-bar.component';
-export { CngxDeviationBar } from './src/presets/deviation-bar.component';
-export { CngxMiniArea } from './src/presets/mini-area.component';
-export { CngxDonut } from './src/presets/donut.component';
+export { CngxSparkline } from './presets/sparkline.component';
+export { CngxMiniBar } from './presets/mini-bar.component';
+export { CngxDeviationBar } from './presets/deviation-bar.component';
+export { CngxMiniArea } from './presets/mini-area.component';
+export { CngxDonut } from './presets/donut.component';
 export {
   CngxBullet,
   type CngxBulletRange,
-} from './src/presets/bullet.component';
+} from './presets/bullet.component';
 export {
   CngxStackedBar,
   type CngxStackedSegment,
-} from './src/presets/stacked-bar.component';
+} from './presets/stacked-bar.component';
 export {
   createPathBuilder,
   type PathBuilder,
@@ -83,4 +83,4 @@ export {
   buildCurvePath,
   type CngxCurve,
   type PathPoint,
-} from './src/path';
+} from './path';

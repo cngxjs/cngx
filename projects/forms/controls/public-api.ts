@@ -3,5 +3,5 @@
  * @module @cngx/forms/controls
  */
 
-export * from './src/typed-control.directive';
-export * from './src/form-bridge.directive';
+export * from './typed-control.directive';
+export * from './form-bridge.directive';

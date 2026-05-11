@@ -7,16 +7,20 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts",
-    "layout/src/**/*.spec.ts",
-    "overlay/src/**/*.spec.ts",
-    "empty-state/src/**/*.spec.ts",
-    "feedback/src/**/*.spec.ts",
-    "material/src/**/*.spec.ts",
-    "stepper/src/**/*.spec.ts",
-    "mat-stepper/src/**/*.spec.ts",
-    "mat-tabs/src/**/*.spec.ts",
-    "tabs/src/**/*.spec.ts"
+    "*.d.ts",
+    "*.spec.ts",
+    "action-button/**/*.spec.ts",
+    "sidenav/**/*.spec.ts",
+    "skeleton/**/*.spec.ts",
+    "speak/**/*.spec.ts",
+    "layout/**/*.spec.ts",
+    "overlay/**/*.spec.ts",
+    "empty-state/**/*.spec.ts",
+    "feedback/**/*.spec.ts",
+    "material/**/*.spec.ts",
+    "stepper/**/*.spec.ts",
+    "mat-stepper/**/*.spec.ts",
+    "mat-tabs/**/*.spec.ts",
+    "tabs/**/*.spec.ts"
   ]
 }

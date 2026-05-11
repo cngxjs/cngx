@@ -3,5 +3,5 @@
  * @module @cngx/ui/layout
  */
 
-export * from './src/stack.component';
-export * from './src/grid.component';
+export * from './stack.component';
+export * from './grid.component';

@@ -5,8 +5,8 @@
     "types": ["vitest/globals"]
   },
   "include": [
-    "src/**/*.d.ts",
-    "src/**/*.spec.ts",
-    "treetable/src/**/*.spec.ts"
+    "*.d.ts",
+    "*.spec.ts",
+    "treetable/**/*.spec.ts"
   ]
 }
