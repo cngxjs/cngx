@@ -71,6 +71,7 @@ export const config: SheriffConfig = {
       'entry:field-testing',
       'scope:test',
     ],
+    'projects/forms': ['lib:forms', 'level:3', 'entry:primary', 'scope:lib'],
     'projects/forms/<entry>': ({ entry }) => [
       'lib:forms',
       'level:3',

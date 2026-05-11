@@ -34,7 +34,7 @@
       "@cngx/core": ["projects/core/public-api.ts"],
       "@cngx/core/tokens": ["projects/core/tokens/public-api.ts"],
       "@cngx/core/utils": ["projects/core/utils/public-api.ts"],
-      "@cngx/forms": ["projects/forms/src/public-api.ts"],
+      "@cngx/forms": ["projects/forms/public-api.ts"],
       "@cngx/forms/controls": ["projects/forms/controls/public-api.ts"],
       "@cngx/forms/validators": ["projects/forms/validators/public-api.ts"],
       "@cngx/forms/field": ["projects/forms/field/public-api.ts"],
