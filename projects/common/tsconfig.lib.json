@@ -26,6 +26,6 @@
       "@cngx/common/tabs": ["projects/common/tabs/public-api.ts"]
     }
   },
-  "include": ["src/**/*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts"],
+  "include": ["*.ts", "a11y/**/*.ts", "interactive/**/*.ts", "layout/**/*.ts", "data/**/*.ts", "dialog/**/*.ts", "popover/**/*.ts", "card/**/*.ts", "chart/**/*.ts", "display/**/*.ts", "stepper/**/*.ts", "tabs/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

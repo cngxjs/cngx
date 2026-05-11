@@ -19,7 +19,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "paths": {
-      "@cngx/common": ["projects/common/src/public-api.ts"],
+      "@cngx/common": ["projects/common/public-api.ts"],
       "@cngx/common/a11y": ["projects/common/a11y/public-api.ts"],
       "@cngx/common/interactive": ["projects/common/interactive/public-api.ts"],
       "@cngx/common/layout": ["projects/common/layout/public-api.ts"],
