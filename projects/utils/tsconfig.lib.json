@@ -10,6 +10,6 @@
     "sourceMap": true,
     "types": []
   },
-  "include": ["src/**/*.ts", "rxjs-interop/**/*.ts"],
+  "include": ["*.ts", "rxjs-interop/**/*.ts"],
   "exclude": ["**/*.spec.ts"]
 }

@@ -51,7 +51,7 @@
       "@cngx/ui/mat-stepper": ["projects/ui/mat-stepper/public-api.ts"],
       "@cngx/ui/mat-tabs": ["projects/ui/mat-tabs/public-api.ts"],
       "@cngx/ui/tabs": ["projects/ui/tabs/public-api.ts"],
-      "@cngx/utils": ["projects/utils/src/public-api.ts"],
+      "@cngx/utils": ["projects/utils/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/src/public-api.ts"],
       "@cngx/data-display/treetable": ["projects/data-display/treetable/public-api.ts"],

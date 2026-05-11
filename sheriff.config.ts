@@ -39,6 +39,10 @@ export const config: SheriffConfig = {
   excludeRoot: true,
 
   modules: {
+    // Specific-before-generic — the primary root rule catches files at
+    // `projects/utils/<file>.ts` after the src/ wrapper drop; the
+    // `<entry>` rule still picks up secondaries like rxjs-interop/.
+    'projects/utils': ['lib:utils', 'level:0', 'entry:primary', 'scope:lib'],
     'projects/utils/<entry>': ({ entry }) => [
       'lib:utils',
       'level:0',
