@@ -1,16 +1,30 @@
 /**
  * Public API Surface of @cngx/ui
+ *
+ * Re-exports all secondary entry points for backwards compatibility.
+ * Prefer importing from specific entry points:
+ *   @cngx/ui/action-button
+ *   @cngx/ui/empty-state
+ *   @cngx/ui/feedback
+ *   @cngx/ui/layout
+ *   @cngx/ui/mat-stepper
+ *   @cngx/ui/mat-tabs
+ *   @cngx/ui/material
+ *   @cngx/ui/overlay
+ *   @cngx/ui/sidenav
+ *   @cngx/ui/skeleton
+ *   @cngx/ui/speak
+ *   @cngx/ui/stepper
+ *   @cngx/ui/tabs
+ *
  * @module @cngx/ui
  */
 
 export * from './ui';
-export * from '@cngx/ui/speak';
-export { CngxSidenavLayout } from './sidenav/sidenav-layout';
-export { CngxSidenav, type SidenavPosition, type SidenavMode } from './sidenav/sidenav';
-export { CngxSidenavContent } from './sidenav/sidenav-content';
-export { CngxSidenavHeader } from './sidenav/sidenav-header';
-export { CngxSidenavFooter } from './sidenav/sidenav-footer';
-export * from '@cngx/ui/skeleton';
 export * from '@cngx/ui/action-button';
+export * from '@cngx/ui/sidenav';
+export * from '@cngx/ui/skeleton';
+export * from '@cngx/ui/speak';
+
 // Re-export from @cngx/common/interactive for backwards compatibility
 export { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';

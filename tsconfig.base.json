@@ -54,6 +54,7 @@
       "@cngx/ui/action-button": ["projects/ui/action-button/public-api.ts"],
       "@cngx/ui/skeleton": ["projects/ui/skeleton/public-api.ts"],
       "@cngx/ui/speak": ["projects/ui/speak/public-api.ts"],
+      "@cngx/ui/sidenav": ["projects/ui/sidenav/public-api.ts"],
       "@cngx/utils": ["projects/utils/public-api.ts"],
       "@cngx/utils/rxjs-interop": ["projects/utils/rxjs-interop/public-api.ts"],
       "@cngx/data-display": ["projects/data-display/public-api.ts"],
