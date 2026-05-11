@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { CngxSpeak } from '@cngx/common/interactive';
-import { CngxSpeakButton } from 'TODO';
+import { CngxSpeakButton } from '@cngx/ui';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
