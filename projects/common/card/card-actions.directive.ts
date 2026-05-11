@@ -14,8 +14,6 @@ import { Directive, input } from '@angular/core';
  *   </div>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: '[cngxCardActions]',

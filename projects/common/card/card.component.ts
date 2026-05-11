@@ -38,8 +38,6 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  *   <img cngxCardMedia alt="Photo" />
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-card',

@@ -26,8 +26,6 @@ import { CNGX_TREE_CONFIG } from './tree-config';
  * integration pattern this stack is designed to support. Forcing the
  * caller to think about identity at construction eliminates that whole
  * class of heisenbugs.
- *
- * @category interactive
  */
 export interface CngxTreeControllerOptions<T> {
   /** Source tree — the controller re-derives on every change. */
@@ -100,8 +98,6 @@ export interface CngxTreeControllerOptions<T> {
  * All mutators (`expand`, `collapse`, `toggle`, `expandAll`, `collapseAll`)
  * peek at the expansion set via `untracked()` so invoking them from
  * inside an `effect()` never latches that effect onto the expansion set.
- *
- * @category interactive
  */
 export interface CngxTreeController<T> {
   /** Flat DFS projection with ARIA metadata + backref to the source node. */
@@ -177,8 +173,6 @@ export type CngxTreeControllerFactory = <T>(
  *
  * Symmetrical to `CNGX_SELECTION_CONTROLLER_FACTORY` in `@cngx/core/utils` —
  * same override surface, one concern below: tree-aware derived views.
- *
- * @category interactive
  */
 export const CNGX_TREE_CONTROLLER_FACTORY = new InjectionToken<CngxTreeControllerFactory>(
   'CngxTreeControllerFactory',

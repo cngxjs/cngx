@@ -58,8 +58,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   (valueChange)="toggleAll($event)"
  * >Select all</cngx-checkbox>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-checkbox, [cngxCheckbox]',

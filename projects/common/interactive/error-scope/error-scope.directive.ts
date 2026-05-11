@@ -29,8 +29,6 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  *   <input [cngxErrorState]="email().invalid()" />
  * </form>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxErrorScope]',

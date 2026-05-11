@@ -39,8 +39,6 @@ export interface FileRejection {
  *   }
  * </div>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxFileDrop]',

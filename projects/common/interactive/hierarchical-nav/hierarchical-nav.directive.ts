@@ -46,8 +46,6 @@ import {
  *   tabindex="0"
  * ></ul>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxHierarchicalNav]',

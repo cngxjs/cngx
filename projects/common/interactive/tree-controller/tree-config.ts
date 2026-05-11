@@ -23,8 +23,6 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
  * system where per-instance generics can't be preserved; per-
  * controller options are still properly typed via the call site's
  * `CngxTreeControllerOptions<T>`.
- *
- * @category interactive
  */
 export interface CngxTreeConfig {
   /**
@@ -57,8 +55,6 @@ export interface CngxTreeConfig {
  * DI token carrying the merged {@link CngxTreeConfig}. Defaults to an
  * empty object so consumers who never call {@link provideTreeConfig}
  * see library-default behaviour unchanged.
- *
- * @category interactive
  */
 export const CNGX_TREE_CONFIG = new InjectionToken<CngxTreeConfig>('CngxTreeConfig', {
   providedIn: 'root',
@@ -68,8 +64,6 @@ export const CNGX_TREE_CONFIG = new InjectionToken<CngxTreeConfig>('CngxTreeConf
 /**
  * Feature returned by a `with*` function — merged by
  * {@link provideTreeConfig}.
- *
- * @category interactive
  */
 export interface CngxTreeConfigFeature {
   readonly config: Partial<CngxTreeConfig>;
@@ -84,8 +78,6 @@ function feature(mix: Partial<CngxTreeConfig>): CngxTreeConfigFeature {
  * Use this to enforce a domain id convention across the whole app
  * (e.g. `(v) => (v as { uuid: string }).uuid`) without repeating it
  * at every call site.
- *
- * @category interactive
  */
 export function withDefaultNodeIdFn<T>(
   fn: (value: T, path: readonly number[]) => string,
@@ -97,8 +89,6 @@ export function withDefaultNodeIdFn<T>(
 
 /**
  * App-wide default `labelFn`. Library default is `String(value)`.
- *
- * @category interactive
  */
 export function withDefaultLabelFn<T>(fn: (value: T) => string): CngxTreeConfigFeature {
   return feature({ defaultLabelFn: fn as (value: unknown) => string });
@@ -106,8 +96,6 @@ export function withDefaultLabelFn<T>(fn: (value: T) => string): CngxTreeConfigF
 
 /**
  * App-wide default `keyFn`. Library default is identity.
- *
- * @category interactive
  */
 export function withDefaultKeyFn<T>(fn: (value: T) => unknown): CngxTreeConfigFeature {
   return feature({ defaultKeyFn: fn as (value: unknown) => unknown });
@@ -116,8 +104,6 @@ export function withDefaultKeyFn<T>(fn: (value: T) => unknown): CngxTreeConfigFe
 /**
  * Bound the `isExpanded(id)` signal cache. See
  * {@link CngxTreeConfig.cacheLimit} for the trade-off.
- *
- * @category interactive
  */
 export function withTreeCacheLimit(limit: number): CngxTreeConfigFeature {
   return feature({ cacheLimit: limit });
@@ -125,8 +111,6 @@ export function withTreeCacheLimit(limit: number): CngxTreeConfigFeature {
 
 /**
  * App-wide default `initiallyExpanded` seed.
- *
- * @category interactive
  */
 export function withDefaultInitiallyExpanded(
   mode: 'all' | 'none' | readonly string[],
@@ -150,8 +134,6 @@ export function withDefaultInitiallyExpanded(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideTreeConfig(...features: CngxTreeConfigFeature[]): Provider[] {
   const merged = features.reduce<CngxTreeConfig>(
@@ -164,8 +146,6 @@ export function provideTreeConfig(...features: CngxTreeConfigFeature[]): Provide
 /**
  * Sub-tree / component-scoped variant — use in `viewProviders` so the
  * tree config only applies to descendants of this component.
- *
- * @category interactive
  */
 export function provideTreeConfigAt(
   ...features: CngxTreeConfigFeature[]
@@ -176,8 +156,6 @@ export function provideTreeConfigAt(
 /**
  * Inject the currently-resolved config. Safe to call in any injection
  * context; returns `{}` if no `provideTreeConfig` is registered.
- *
- * @category interactive
  */
 export function injectTreeConfig(): CngxTreeConfig {
   return inject(CNGX_TREE_CONFIG);

@@ -50,8 +50,6 @@ import {
  *   <p>Loaded content here</p>
  * </cngx-skeleton>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-skeleton',

@@ -19,8 +19,6 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  *   Action required
  * </span>
  * ```
- *
- * @category display
  */
 @Directive({
   selector: 'ng-template[cngxTagPrefix]',

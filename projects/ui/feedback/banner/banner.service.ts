@@ -66,8 +66,6 @@ export interface BannerState {
  *   action: { label: 'Extend', handler: () => this.extendSession() },
  * });
  * ```
- *
- * @category feedback
  */
 @Injectable()
 export class CngxBanner {

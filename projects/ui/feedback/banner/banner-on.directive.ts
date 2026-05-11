@@ -31,8 +31,6 @@ import { CngxBanner } from './banner.service';
  *   bannerError="You are offline. Changes will sync when reconnected.">
  * </div>
  * ```
- *
- * @category feedback
  */
 @Directive({
   selector: '[cngxBannerOn]',

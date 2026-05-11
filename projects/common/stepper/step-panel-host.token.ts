@@ -10,8 +10,6 @@ import type { CngxStepNode } from './stepper-host.token';
  * `active` reflects `presenter.activeStepId`; `busy` mirrors
  * `presenter.intendedStepIndex` matching this step; `disabled` reads
  * `node.disabled()`.
- *
- * @category interactive
  */
 export interface CngxStepLabelContext {
   readonly node: CngxStepNode;
@@ -25,8 +23,6 @@ export interface CngxStepLabelContext {
  * Context delivered to `*cngxStepContent` templates. Mirrors
  * {@link CngxStepLabelContext} — content templates need the same
  * derivations to gate inner controls on `disabled` / `busy`.
- *
- * @category interactive
  */
 export interface CngxStepContentContext {
   readonly node: CngxStepNode;
@@ -41,8 +37,6 @@ export interface CngxStepContentContext {
  * consume to render the panel body. Narrower than the presenter's
  * full interface — just enough to project label / content templates
  * and react to active-step changes.
- *
- * @category interactive/stepper
  */
 export interface CngxStepPanelHost {
   readonly flatSteps: Signal<readonly CngxStepNode[]>;
@@ -57,8 +51,6 @@ export interface CngxStepPanelHost {
 /**
  * DI token providing the rendering-surface contract to organism shells
  * (`<cngx-stepper>`, `<cngx-mat-stepper>`) and consumer-authored skins.
- *
- * @category interactive
  */
 export const CNGX_STEP_PANEL_HOST = new InjectionToken<CngxStepPanelHost>(
   'CngxStepPanelHost',

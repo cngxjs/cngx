@@ -47,8 +47,6 @@ import type { EmptyReason } from './card.types';
  *   </ng-template>
  * </cngx-card-grid>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-card-grid',

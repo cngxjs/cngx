@@ -19,8 +19,6 @@ import {
  *   <input [cngxOtpSlot]="i" />
  * }
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxOtpSlot]',
@@ -119,8 +117,6 @@ export class CngxOtpSlot {
  *   }
  * </div>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxOtpInput]',

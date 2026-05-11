@@ -11,8 +11,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * Descendant directives (`CngxErrorAggregator`, `CngxErrorState`) read
  * the scope's `showErrors` signal to gate their own visibility, so a
  * single `reveal()` propagates atomically through the subtree.
- *
- * @category interfaces
  */
 export interface CngxErrorScopeContract {
   /** Reactive flag — `true` when errors should be visible to the user. */
@@ -31,8 +29,6 @@ export interface CngxErrorScopeContract {
  * Provided by {@link CngxErrorScope} via `useExisting`; descendants inject
  * with `{ optional: true }` and fall back gracefully when no scope is
  * present (no-op).
- *
- * @category tokens
  */
 export const CNGX_ERROR_SCOPE = new InjectionToken<CngxErrorScopeContract>(
   'CngxErrorScope',

@@ -21,8 +21,6 @@ import { CngxRipple } from './ripple.directive';
  * ```html
  * <button cngxPressRipple [rippleColor]="'rgba(0,0,0,0.2)'">Click</button>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxPressRipple]',

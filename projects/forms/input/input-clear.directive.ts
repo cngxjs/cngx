@@ -15,8 +15,6 @@ import { fromEvent } from 'rxjs';
  *   @if (clr.hasValue()) { Clear }
  * </button>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxInputClear]',

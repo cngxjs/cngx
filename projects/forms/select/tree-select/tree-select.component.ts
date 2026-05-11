@@ -112,8 +112,6 @@ import type {
  * `(selectionChange)` handlers; `option` carries a `FlatTreeNode<T>`
  * (not a `CngxSelectOptionDef`). `'cascade-toggle'` fires once per
  * parent-toggle that propagated to descendants.
- *
- * @category interactive
  */
 export interface CngxTreeSelectChange<T = unknown> {
   readonly source: CngxTreeSelect<T>;
@@ -140,8 +138,6 @@ export interface CngxTreeSelectChange<T = unknown> {
  * - `[cascadeChildren]="true"`: parent toggle selects/deselects every
  *   descendant atomically. Single `selectionChange` with
  *   `action: 'cascade-toggle'` carries aggregated `added`/`removed`.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-tree-select',

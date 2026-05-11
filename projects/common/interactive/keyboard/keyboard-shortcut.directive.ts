@@ -35,8 +35,6 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *   Press Escape to close
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxKeyboardShortcut]',

@@ -32,8 +32,6 @@ export type ToastPosition =
  * ```html
  * <cngx-toast-outlet position="bottom-end" [maxVisible]="5" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-toast-outlet',

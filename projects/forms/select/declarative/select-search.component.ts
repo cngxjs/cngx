@@ -31,8 +31,6 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
  *   }
  * </cngx-select-shell>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-select-search',

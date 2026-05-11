@@ -24,8 +24,6 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
  * // usage
  * const ref = overlayService.open(MyComponent, { hasBackdrop: true });
  * ref.afterClosed$.subscribe(result => console.log(result));
- *
- * @category overlay
  */
 @Injectable()
 export class CngxOverlay {

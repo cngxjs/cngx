@@ -66,8 +66,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * <ng-template #icon><span aria-hidden="true">★</span></ng-template>
  * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: '[cngxToggle], cngx-toggle',

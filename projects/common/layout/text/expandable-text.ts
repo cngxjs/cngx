@@ -80,8 +80,6 @@ export class CngxExpandableToggle {
  *   </ng-template>
  * </cngx-expandable-text>
  * ```
- *
- * @category layout
  */
 @Component({
   selector: 'cngx-expandable-text',

@@ -39,8 +39,6 @@ import {
  * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
  * the instrumentation layer. `stepper-accepted-debt §1`'s blocker
  * applies to adoption, not this direction.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxMatStepper]',

@@ -29,8 +29,6 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  *   {{ cp.copied() ? 'Link copied to clipboard' : '' }}
  * </span>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxCopyText]',

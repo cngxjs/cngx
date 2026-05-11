@@ -23,8 +23,6 @@ import type { CngxTagLabelContext } from './tag-slot.context';
  *   </ng-template>
  * </span>
  * ```
- *
- * @category display
  */
 @Directive({
   selector: 'ng-template[cngxTagLabel]',

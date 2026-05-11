@@ -20,8 +20,6 @@ import {
  * config (`CNGX_STEPPER_CONFIG`) and i18n (`CNGX_STEPPER_I18N`). Future
  * surfaces widen this union and dispatch via the hidden `_target`
  * discriminator.
- *
- * @category interactive
  */
 export type CngxStepperFeature =
   | CngxStepperConfigFeature
@@ -83,8 +81,6 @@ function partitionFeatures(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideCngxStepper(
   ...features: readonly CngxStepperFeature[]
@@ -114,8 +110,6 @@ export function provideCngxStepper(
  *   ],
  * })
  * ```
- *
- * @category interactive
  */
 export function provideCngxStepperAt(
   ...features: readonly CngxStepperFeature[]

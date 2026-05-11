@@ -39,8 +39,6 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * ```html
  * <cngx-loading-indicator [loading]="isLoading()" label="Fetching data" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-loading-indicator',

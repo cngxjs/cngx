@@ -4,8 +4,6 @@ import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Input bundle for {@link CngxPanelRendererFactory}.
- *
- * @category interactive
  */
 export interface PanelRendererInput<T> {
   /** Full flattened option list. Identity renderer passes through. */
@@ -14,8 +12,6 @@ export interface PanelRendererInput<T> {
 
 /**
  * Renderer surface read by the panel.
- *
- * @category interactive
  */
 export interface PanelRenderer<T> {
   /** Subset rendered into the DOM. Identity → `flatOptions` verbatim. */
@@ -44,8 +40,6 @@ export interface PanelRenderer<T> {
  * Pass-through renderer: every option enters the DOM. Comfortable to
  * ~500 options; beyond that, wire a virtualising renderer via
  * {@link CNGX_PANEL_RENDERER_FACTORY}.
- *
- * @category interactive
  */
 export function createIdentityPanelRenderer<T>(
   input: PanelRendererInput<T>,
@@ -57,8 +51,6 @@ export function createIdentityPanelRenderer<T>(
 
 /**
  * Factory signature for {@link CNGX_PANEL_RENDERER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxPanelRendererFactory = <T>(
   input: PanelRendererInput<T>,
@@ -73,8 +65,6 @@ export type CngxPanelRendererFactory = <T>(
  * 2. Renderer extends the window when AD nav exceeds it.
  * 3. `totalCount` returns the full count, not the windowed count.
  * 4. Renderer is signal-reactive.
- *
- * @category interactive
  */
 export const CNGX_PANEL_RENDERER_FACTORY =
   new InjectionToken<CngxPanelRendererFactory>('CngxPanelRendererFactory', {

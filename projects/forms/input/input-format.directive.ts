@@ -29,8 +29,6 @@ export type ParseFn = (display: string) => string;
  * <!-- Phone formatting -->
  * <input [cngxInputFormat]="formatPhone" />
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxInputFormat]',

@@ -30,7 +30,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * automatically.
  *
  * @typeParam T - The item type the predicate operates on.
- * @category filter
  */
 @Directive({
   selector: '[cngxFilter]',

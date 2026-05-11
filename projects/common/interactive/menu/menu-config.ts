@@ -11,8 +11,6 @@ import {
 /**
  * Localised UI strings the menu announces or otherwise renders. English by
  * default; consumers override via {@link withAriaLabels}.
- *
- * @category interactive
  */
 export interface CngxMenuAriaLabels {
   readonly submenuOpened: string;
@@ -26,8 +24,6 @@ export interface CngxMenuAriaLabels {
  * Default values live in {@link DEFAULT_MENU_CONFIG}; override at app
  * scope via {@link provideMenuConfig} or per-component via
  * {@link provideMenuConfigAt}.
- *
- * @category interactive
  */
 export interface CngxMenuConfig {
   readonly ariaLabels: CngxMenuAriaLabels;
@@ -83,8 +79,6 @@ export const DEFAULT_MENU_CONFIG: CngxMenuConfig = {
  * {@link DEFAULT_MENU_CONFIG} at root; override via {@link provideMenuConfig}
  * (app-wide) or {@link provideMenuConfigAt} (component scope via
  * `viewProviders`).
- *
- * @category interactive
  */
 export const CNGX_MENU_CONFIG = new InjectionToken<CngxMenuConfig>('CngxMenuConfig', {
   providedIn: 'root',
@@ -110,8 +104,6 @@ function applyFeatures(base: CngxMenuConfig, features: readonly CngxMenuConfigFe
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideMenuConfig(...features: CngxMenuConfigFeature[]): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -126,8 +118,6 @@ export function provideMenuConfig(...features: CngxMenuConfigFeature[]): Environ
  * Component-scoped menu configuration override. Pass into a directive or
  * component's `viewProviders`; features merge on top of the parent
  * config (root or an enclosing scope).
- *
- * @category interactive
  */
 export function provideMenuConfigAt(...features: CngxMenuConfigFeature[]): Provider[] {
   return [
@@ -143,8 +133,6 @@ export function provideMenuConfigAt(...features: CngxMenuConfigFeature[]): Provi
 /**
  * Resolves the {@link CngxMenuConfig} from the current injection scope.
  * Must run inside an injection context.
- *
- * @category interactive
  */
 export function injectMenuConfig(): CngxMenuConfig {
   return inject(CNGX_MENU_CONFIG);

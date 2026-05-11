@@ -23,8 +23,6 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * input signals by reference, so input changes propagate without
  * re-registration. `labelTemplate` / `contentTemplate` are projected
  * by the organism — the atom carries no rendering logic.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxTab]',

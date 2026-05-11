@@ -48,8 +48,6 @@ export interface AlertState {
  * via `viewProviders`, scoping alerts to that stack's subtree.
  *
  * For root-level injection, use `provideFeedback(withAlerts())`.
- *
- * @category feedback
  */
 @Injectable()
 export class CngxAlerter {

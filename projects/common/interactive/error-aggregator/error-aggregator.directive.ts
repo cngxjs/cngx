@@ -40,8 +40,6 @@ import {
  *   {{ agg.announcement() }}
  * </span>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxErrorAggregator]',

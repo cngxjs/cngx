@@ -30,8 +30,6 @@ import { CngxBanner } from './banner.service';
  *   actionLabel="Extend"
  *   [actionHandler]="extendSession" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-banner-trigger',

@@ -7,8 +7,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * derived from `presenter.originIndexDuringCommit()` — `undefined`
  * for the synchronous-rejection edge case. Sibling shape to
  * `CngxStepRejectionContext`.
- *
- * @category interactive
  */
 export interface CngxTabRejectionIconContext {
   /** Flat-index of the rejected tab (`presenter.lastFailedIndex()`). */
@@ -38,8 +36,6 @@ export interface CngxTabRejectionIconContext {
  *   </ng-template>
  * </cngx-tab-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTabRejectionIcon]',

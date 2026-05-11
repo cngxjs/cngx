@@ -24,8 +24,6 @@ import { createSizeCache } from './size-cache';
 /**
  * I18n interface for recycler SR announcements.
  * All methods return the announcement text. No hardcoded strings.
- *
- * @category recycler
  */
 export interface RecyclerI18n {
   /** Announced when new items are loaded (infinite scroll). */
@@ -41,8 +39,6 @@ export interface RecyclerI18n {
 /**
  * Injection token for recycler SR announcement texts.
  * Provides English defaults via factory. Override with `provideRecyclerI18n()`.
- *
- * @category recycler
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecyclerI18n', {
   factory: (): RecyclerI18n => ({
@@ -64,8 +60,6 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecycler
  *   error: () => 'Fehler beim Laden.',
  * })]
  * ```
- *
- * @category recycler
  */
 export function provideRecyclerI18n(i18n: RecyclerI18n) {
   return { provide: CNGX_RECYCLER_I18N, useValue: i18n };
@@ -75,8 +69,6 @@ export function provideRecyclerI18n(i18n: RecyclerI18n) {
 
 /**
  * Configuration for {@link injectRecycler}.
- *
- * @category recycler
  */
 export interface RecyclerConfig {
   /** Scroll container. CSS selector, native element, or `ElementRef`. */
@@ -134,8 +126,6 @@ export interface RecyclerConfig {
 /**
  * Signal-based virtualizer returned by {@link injectRecycler}.
  * All derived values are `computed()` — the system cannot become inconsistent.
- *
- * @category recycler
  */
 export interface CngxRecycler {
   /** Start index (inclusive) of the rendered range, including overscan. */
@@ -311,8 +301,6 @@ function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boo
  *   state: this.state,
  * });
  * ```
- *
- * @category recycler
  */
 export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);

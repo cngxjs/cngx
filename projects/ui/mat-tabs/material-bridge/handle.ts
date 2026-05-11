@@ -20,8 +20,6 @@ import type { MaterialPrivateSurfaces } from './private-surfaces';
  * `[cngxMatTabError]` per-tab directive can pump aggregators into
  * it; `label` and `disabled` track Material's current state via a
  * `toSignal(matTab._stateChanges)` trigger.
- *
- * @category material-bridge
  */
 export interface CngxMatTabHandleSetup {
   readonly handle: CngxTabHandle;
@@ -50,8 +48,6 @@ export interface CngxMatTabHandleSetup {
  *   `[cngxMatTabError]` writes its bound aggregator in and resets
  *   on teardown. The handle exposes `.asReadonly()` to preserve the
  *   `CngxTabHandle` contract.
- *
- * @category material-bridge
  */
 export function createMatTabHandle(
   matTab: MatTab,
@@ -102,8 +98,6 @@ export function createMatTabHandle(
  * Factory signature for {@link createMatTabHandle}. The DI token
  * {@link CNGX_MAT_TAB_HANDLE_FACTORY} resolves to a function with
  * this exact shape — overrides match it identically.
- *
- * @category material-bridge
  */
 export type CngxMatTabHandleFactory = typeof createMatTabHandle;
 
@@ -134,8 +128,6 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  *   },
  * ]
  * ```
- *
- * @category material-bridge
  */
 export const CNGX_MAT_TAB_HANDLE_FACTORY =
   new InjectionToken<CngxMatTabHandleFactory>('CNGX_MAT_TAB_HANDLE_FACTORY', {

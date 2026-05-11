@@ -15,8 +15,6 @@ import type { CngxRecycler } from './recycler';
  * ```html
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
  * ```
- *
- * @category recycler
  */
 @Component({
   selector: 'cngx-recycler-announcer',

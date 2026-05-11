@@ -19,8 +19,6 @@ import type { CngxSelectVirtualizationConfig } from './config';
  * identity for small lists.
  *
  * Injection context required — calls `injectRecycler` internally.
- *
- * @category interactive
  */
 export function createAutoPanelRenderer<T>(opts: {
   readonly flatOptions: Signal<readonly CngxSelectOptionDef<T>[]>;

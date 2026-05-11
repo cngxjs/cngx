@@ -20,8 +20,6 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category services
  */
 @Injectable()
 export class CngxErrorRegistry {

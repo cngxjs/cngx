@@ -14,8 +14,6 @@ import type { CngxStepContentContext } from './step-panel-host.token';
  *   <input [disabled]="busy">
  * </ng-template>
  * ```
- *
- * @category interactive/stepper
  */
 @Directive({
   selector: 'ng-template[cngxStepContent]',

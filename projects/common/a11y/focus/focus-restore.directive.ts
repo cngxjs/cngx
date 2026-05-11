@@ -30,8 +30,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * </div>
  * <button #fallbackBtn>Fallback target</button>
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxFocusRestore]',

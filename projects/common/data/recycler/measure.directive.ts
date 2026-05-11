@@ -22,8 +22,6 @@ import type { CngxRecycler } from './recycler';
  *   </div>
  * }
  * ```
- *
- * @category recycler
  */
 @Directive({
   selector: '[cngxMeasure]',

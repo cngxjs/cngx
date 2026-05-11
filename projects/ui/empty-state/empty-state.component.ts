@@ -27,8 +27,6 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  *   <button cngxEmptyStateAction (click)="resetSearch()">Reset</button>
  * </cngx-empty-state>
  * ```
- *
- * @category ui
  */
 @Component({
   selector: 'cngx-empty-state',

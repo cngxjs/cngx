@@ -77,8 +77,6 @@ type ParentResolution<T> = SingleResolution<T> | MultiResolution<T>;
  * not own a sr-only span (it is a `@Directive` on a native
  * `<button>` — no template to inject siblings into). Native
  * `<button aria-describedby>` semantics apply.
- *
- * @category interactive
  */
 @Directive({
   selector: 'button[cngxButtonToggle]',

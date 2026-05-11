@@ -16,8 +16,6 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * <!-- With explicit value -->
  * <button [cngxCopyValue]="apiKey()">Copy API Key</button>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxCopyValue]',

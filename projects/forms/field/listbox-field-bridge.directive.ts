@@ -34,8 +34,6 @@ import type { CngxFieldRef, CngxFormFieldControl } from './models';
  * For Reactive Forms, wrap the `FormControl` in `adaptFormControl(...)` and
  * pass the returned accessor to `[field]` — the bridge doesn't care about the
  * source.
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxListboxFieldBridge]',

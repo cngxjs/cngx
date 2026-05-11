@@ -2,8 +2,6 @@ import type { AsyncStatus } from '@cngx/core/utils';
 
 /**
  * Possible view states for async content rendering.
- *
- * @category async
  */
 export type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'content+error';
 
@@ -22,8 +20,6 @@ export type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'c
  * | success     | *         | true  | empty         |
  * | error       | false     | *     | content+error |
  * | (all other) | *         | *     | content       |
- *
- * @category async
  */
 export function resolveAsyncView(
   status: AsyncStatus,

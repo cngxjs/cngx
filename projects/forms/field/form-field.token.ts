@@ -25,8 +25,6 @@ export {
  * `CngxErrorScope` (via `CngxErrorScopeFieldBridge`) is the default producer;
  * router-driven, interceptor-driven, or test-harness triggers may provide
  * their own. Decouples the presenter from the scope contract.
- *
- * @category interfaces
  */
 export interface CngxFormFieldRevealContract {
   /** Reactive flag — `true` when errors should be visible to the user. */
@@ -38,8 +36,6 @@ export interface CngxFormFieldRevealContract {
  * `CngxFormField`. Optional — when no provider exists the presenter falls
  * back to the default `touched OR strategy(...)` gate without scope-driven
  * reveal semantics.
- *
- * @category tokens
  */
 export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealContract>(
   'CngxFormFieldReveal',
@@ -56,8 +52,6 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  *   minLength: (e) => `Min ${(e as any).minLength} chars.`,
  * }))]
  * ```
- *
- * @category tokens
  */
 export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErrorMessages', {
   factory: () => ({}),
@@ -65,8 +59,6 @@ export const CNGX_ERROR_MESSAGES = new InjectionToken<ErrorMessageMap>('CngxErro
 
 /**
  * Application-wide configuration for cngx form fields.
- *
- * @category configuration
  */
 export interface FormFieldConfig {
   /** Error message map for auto-rendering. */
@@ -104,8 +96,6 @@ export interface FormFieldConfig {
 
 /**
  * Built-in error visibility strategies used by {@link withErrorStrategy}.
- *
- * @category configuration
  */
 export type ErrorStrategyName =
   | 'onTouched'
@@ -119,8 +109,6 @@ export type ErrorStrategyName =
  *
  * `submitted` reflects the ambient `CngxErrorScope.showErrors` state — `true`
  * after the scope has been revealed (typically on form submit).
- *
- * @category configuration
  */
 export interface ErrorStrategyContext {
   readonly touched: boolean;
@@ -132,8 +120,6 @@ export interface ErrorStrategyContext {
 /**
  * Custom error visibility strategy. Returns `true` when errors should be
  * visible to the user.
- *
- * @category configuration
  */
 export type ErrorStrategyFn = (context: ErrorStrategyContext) => boolean;
 
@@ -153,8 +139,6 @@ export interface FormFieldFeature {
 
 /**
  * Injection token for the application-wide {@link FormFieldConfig}.
- *
- * @category tokens
  */
 export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxFormFieldConfig', {
   factory: () => ({}),
@@ -175,8 +159,6 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  *   ],
  * });
  * ```
- *
- * @category configuration
  */
 export function provideFormField(...features: FormFieldFeature[]): EnvironmentProviders {
   let config: FormFieldConfig = {};
@@ -202,8 +184,6 @@ export function provideFormField(...features: FormFieldFeature[]): EnvironmentPr
  * ```ts
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
- *
- * @category configuration
  */
 export function provideErrorMessages(messages: ErrorMessageMap): EnvironmentProviders {
   return makeEnvironmentProviders([{ provide: CNGX_ERROR_MESSAGES, useValue: messages }]);
@@ -233,8 +213,6 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  *   (c) => c.invalid && (c.dirty || c.submitted),
  * ))
  * ```
- *
- * @category configuration
  */
 export function withErrorStrategy(
   strategy: ErrorStrategyName | ErrorStrategyFn,

@@ -11,8 +11,6 @@ import { Directive, input } from '@angular/core';
  *   <img cngxCardMedia [decorative]="false" alt="Photo of patient" />
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: '[cngxCardMedia]',

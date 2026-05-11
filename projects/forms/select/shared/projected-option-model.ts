@@ -16,8 +16,6 @@ import {
 
 /**
  * Input for {@link createProjectedOptionModel}.
- *
- * @category interactive
  */
 export interface ProjectedOptionModelInput<T> {
   readonly containers: Signal<readonly CngxOptionContainer[]>;
@@ -30,8 +28,6 @@ export interface ProjectedOptionModelInput<T> {
 /**
  * Output of {@link createProjectedOptionModel}. Each signal carries a
  * structural `equal` so unrelated CD passes don't cascade.
- *
- * @category interactive
  */
 export interface ProjectedOptionModel<T> {
   readonly derivedOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -44,8 +40,6 @@ export interface ProjectedOptionModel<T> {
  * Hierarchy-preserving option model derived from projected DOM. Leaves
  * stay leaves, groups stay groups; `createSelectCore` reflattens for AD
  * lookup. Labels are plain-text via `{{ }}` interpolation.
- *
- * @category interactive
  */
 export function createProjectedOptionModel<T>(
   input: ProjectedOptionModelInput<T>,
@@ -210,8 +204,6 @@ export function createProjectedOptionModel<T>(
 
 /**
  * Factory signature for {@link CNGX_PROJECTED_OPTION_MODEL_FACTORY}.
- *
- * @category interactive
  */
 export type CngxProjectedOptionModelFactory = <T>(
   input: ProjectedOptionModelInput<T>,
@@ -221,8 +213,6 @@ export type CngxProjectedOptionModelFactory = <T>(
  * Factory token. Default {@link createProjectedOptionModel}. Override
  * for custom value extraction, async labels, or fold-in of custom
  * group sub-types.
- *
- * @category interactive
  */
 export const CNGX_PROJECTED_OPTION_MODEL_FACTORY =
   new InjectionToken<CngxProjectedOptionModelFactory>(

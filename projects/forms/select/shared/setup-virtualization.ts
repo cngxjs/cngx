@@ -16,8 +16,6 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
  * Resolves the renderer cascade (consumer-supplied → config-driven →
  * identity), surfaces `virtualItemCount`, and installs the AD→recycler
  * `scrollToIndex` bridge. Injection context required.
- *
- * @category interactive
  */
 export function setupVirtualization<T, TCommit>(opts: {
   readonly core: CngxSelectCore<T, TCommit>;

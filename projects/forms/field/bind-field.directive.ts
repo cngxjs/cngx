@@ -44,8 +44,6 @@ import type { CngxFormFieldControl } from './models';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxBindField]',

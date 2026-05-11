@@ -37,8 +37,6 @@ import type { CngxRecycler } from './recycler';
  *   }
  * }
  * ```
- *
- * @category recycler
  */
 export function connectRecyclerToRoving(recycler: CngxRecycler, roving: CngxRovingTabindex): void {
   const hostEl = inject(ElementRef).nativeElement as HTMLElement;

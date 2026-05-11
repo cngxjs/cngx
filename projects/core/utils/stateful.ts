@@ -8,8 +8,6 @@ import type { CngxAsyncState } from './async-state';
  * Declarative transition bridges (`CngxToastOn`, `CngxAlertOn`, `CngxBannerOn`)
  * auto-discover state via this interface through the `CNGX_STATEFUL` injection
  * token when no explicit `[state]` input is bound.
- *
- * @category state
  */
 export interface CngxStateful<T = unknown> {
   readonly state: CngxAsyncState<T>;
@@ -26,7 +24,5 @@ export interface CngxStateful<T = unknown> {
  * 1. Explicit `[state]` input on the bridge directive
  * 2. `inject(CNGX_STATEFUL, { optional: true })?.state`
  * 3. Dev-mode error if neither is available
- *
- * @category state
  */
 export const CNGX_STATEFUL = new InjectionToken<CngxStateful>('CNGX_STATEFUL');

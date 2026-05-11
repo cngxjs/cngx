@@ -16,8 +16,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * `@cngx/forms/field` re-exports both this interface and the matching
  * token for back-compatibility with the public-API surface forms
  * consumers already depend on.
- *
- * @category interfaces
  */
 export interface CngxFormFieldControl {
   /** Unique element ID for the control. */
@@ -42,8 +40,6 @@ export interface CngxFormFieldControl {
  * `@cngx/forms/field` re-exports this constant so the existing
  * `import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field'` import
  * path keeps working unchanged.
- *
- * @category tokens
  */
 export const CNGX_FORM_FIELD_CONTROL = new InjectionToken<CngxFormFieldControl>(
   'CngxFormFieldControl',

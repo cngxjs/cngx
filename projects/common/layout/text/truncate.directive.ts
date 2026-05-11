@@ -33,8 +33,6 @@ import {
  *   </button>
  * }
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxTruncate]',

@@ -44,8 +44,6 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
- *
- * @category feedback
  */
 @Directive({
   selector: '[cngxToastOn]',

@@ -43,8 +43,6 @@ import type {
  *   }
  * }
  * ```
- *
- * @category interactive
  */
 export function createRecyclerPanelRendererFactory(
   recycler: CngxRecycler,

@@ -28,8 +28,6 @@ import {
  * `aggregatedStatus` rolls up child states: `error` if any errored,
  * `success` if all are success, `pending` if any is pending or busy,
  * otherwise `idle`.
- *
- * @category interactive/stepper
  */
 @Directive({
   selector: '[cngxStepGroup]',

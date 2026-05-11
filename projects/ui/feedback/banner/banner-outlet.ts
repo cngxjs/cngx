@@ -28,8 +28,6 @@ import { CngxBanner, type BannerState } from './banner.service';
  * <cngx-banner-outlet />
  * <router-outlet />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-banner-outlet',

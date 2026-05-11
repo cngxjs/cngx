@@ -54,8 +54,6 @@ import {
  *      (loadMore)="loadMore()">
  * </div>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxInfiniteScroll]',

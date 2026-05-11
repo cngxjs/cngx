@@ -53,8 +53,6 @@ export interface ErrorRegistryFeature {
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category configuration
  */
 export function provideErrorRegistry(
   ...features: ErrorRegistryFeature[]
@@ -121,8 +119,6 @@ export function provideErrorRegistry(
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category configuration
  */
 export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
   return { _apply: (c) => ({ ...c, revealOnSubmit: true }) };
@@ -144,8 +140,6 @@ export function withGlobalRevealOnSubmit(): ErrorRegistryFeature {
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category configuration
  */
 export function withRevealOnNavigate(): ErrorRegistryFeature {
   return { _apply: (c) => ({ ...c, revealOnNavigate: true }) };

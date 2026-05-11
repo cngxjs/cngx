@@ -56,8 +56,6 @@ import {
  * forwards `activeStepIndex`/`linear`/`orientation`/`commitAction`/
  * `commitMode` to the presenter. Material twin lives in
  * `@cngx/ui/mat-stepper`. ARIA attrs are in the `computed()` graph.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-stepper',

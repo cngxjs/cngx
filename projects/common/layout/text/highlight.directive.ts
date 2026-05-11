@@ -35,8 +35,6 @@ import {
  *   CamelCase matters here.
  * </p>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxHighlight]',

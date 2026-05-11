@@ -25,8 +25,6 @@ import { fromEvent, map, switchMap, timer } from 'rxjs';
  * <input cngxSearch #search="cngxSearch" placeholder="Search..." />
  * <button (click)="search.clear()">Clear</button>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'input[cngxSearch]',

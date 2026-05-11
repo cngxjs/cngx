@@ -22,8 +22,6 @@ import {
  *   }
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-card-skeleton',

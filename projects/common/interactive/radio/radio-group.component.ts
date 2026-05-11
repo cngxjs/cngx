@@ -66,8 +66,6 @@ import {
  *   <cngx-radio value="invoice" disabled>Invoice</cngx-radio>
  * </cngx-radio-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-radio-group, [cngxRadioGroup]',

@@ -50,8 +50,6 @@ import type { CngxRecycler } from './recycler';
  *   }
  * }
  * ```
- *
- * @category recycler
  */
 export function connectRecyclerToActiveDescendant(
   recycler: CngxRecycler,

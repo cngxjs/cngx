@@ -31,8 +31,6 @@
  * grouped name through ESLint's `@typescript-eslint` type resolver
  * — a flat `export * as` re-export from `public-api.ts` does not
  * resolve nested members through the path-alias.
- *
- * @category material-bridge
  */
 
 import type { TemplateRef, WritableSignal } from '@angular/core';

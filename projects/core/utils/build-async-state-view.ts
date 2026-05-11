@@ -35,8 +35,6 @@ const ALWAYS_UNDEFINED_DATE: Signal<Date | undefined> = computed(() => undefined
  *
  * This is the shared kernel used by all async state factories and state producers.
  * No injection context required — uses only `computed()`.
- *
- * @category async
  */
 export function buildAsyncStateView<T>(sources: AsyncStateViewSources<T>): CngxAsyncState<T> {
   const { status, data, error } = sources;

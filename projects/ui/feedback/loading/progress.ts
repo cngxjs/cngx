@@ -35,8 +35,6 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * ```html
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-progress',

@@ -31,8 +31,6 @@ export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
  *   …
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxSwipeDismiss]',

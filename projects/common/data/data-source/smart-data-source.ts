@@ -10,8 +10,6 @@ import { CngxSearch } from '@cngx/common/interactive';
 
 /**
  * Optional customization for {@link CngxSmartDataSource}.
- *
- * @category data-source
  */
 export interface CngxSmartDataSourceOptions<T> {
   /**
@@ -53,7 +51,6 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * ```
  *
  * @typeParam T - The row item type.
- * @category data-source
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -211,8 +208,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
- *
- * @category data-source
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

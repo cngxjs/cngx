@@ -27,8 +27,6 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  *   Tappable card
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxPressable]',

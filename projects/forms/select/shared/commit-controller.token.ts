@@ -25,8 +25,6 @@ export type {
  * {@link CngxSelectCommitAction} directly. The action-shape adapter
  * keeps every existing select call-site working while
  * `@cngx/common/data` owns the generic state machine.
- *
- * @category interactive
  */
 export interface CngxCommitController<T>
   extends Omit<CngxGenericCommitController<T>, 'begin'> {
@@ -83,8 +81,6 @@ function wrapAsSelectController<T>(
  * {@link CNGX_COMMIT_CONTROLLER_FACTORY}. Use
  * {@link CNGX_SELECT_COMMIT_CONTROLLER_FACTORY} for DI-aware
  * resolution.
- *
- * @category interactive
  */
 export function createCommitController<T>(): CngxCommitController<T> {
   return wrapAsSelectController(createGenericCommitController<T>());
@@ -94,8 +90,6 @@ export function createCommitController<T>(): CngxCommitController<T> {
  * Factory signature for {@link CngxCommitController} instances scoped
  * to the select family. Override this token (retry-with-backoff,
  * offline queues, telemetry) without touching call sites.
- *
- * @category interactive
  */
 export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>;
 
@@ -117,8 +111,6 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export const CNGX_SELECT_COMMIT_CONTROLLER_FACTORY =
   new InjectionToken<CngxSelectCommitControllerFactory>(

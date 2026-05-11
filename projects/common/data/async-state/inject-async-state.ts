@@ -6,8 +6,6 @@ import { createManualState, type ManualAsyncState } from './create-manual-state'
 
 /**
  * Configuration options for `injectAsyncState`.
- *
- * @category async
  */
 export interface InjectAsyncStateOptions {
   /**
@@ -23,8 +21,6 @@ export interface InjectAsyncStateOptions {
  *
  * Extends the read-only `CngxAsyncState` with a `refresh()` method
  * to explicitly re-trigger the query.
- *
- * @category async
  */
 export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
   /** Explicitly re-trigger the query. */
@@ -48,8 +44,6 @@ export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
  * // Caches last result during refresh (refreshing state).
  * // Deduplicates parallel requests.
  * ```
- *
- * @category async
  */
 export function injectAsyncState<T>(
   fn: () => Promise<T> | Observable<T>,

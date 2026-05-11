@@ -382,8 +382,6 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <!-- Credit card with auto-format switching -->
  * <input cngxInputMask="creditcard" />
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxInputMask]',

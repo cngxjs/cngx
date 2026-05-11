@@ -44,8 +44,6 @@ interface PopoverController {
  * Touch-driven opening via long-press is deliberately out of scope for the
  * initial commit; consumers can compose `CngxLongPress` against the same
  * popover anchor pattern as a follow-up.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxContextMenuTrigger]',

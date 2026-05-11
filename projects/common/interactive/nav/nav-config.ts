@@ -52,8 +52,6 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
  * })
  * class SidebarComponent { }
  * ```
- *
- * @category nav
  */
 export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFIG');
 
@@ -68,8 +66,6 @@ export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFI
  * ```typescript
  * providers: [provideNavConfig(withSingleAccordion(), withNavIndent(16))]
  * ```
- *
- * @category nav
  */
 export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
   const config = features.reduce<CngxNavConfig>((c, f) => f.apply(c), {});
@@ -83,8 +79,6 @@ export function provideNavConfig(...features: NavConfigFeature[]): Provider[] {
 
 /**
  * Enables single-accordion mode — only one nav group can be open at a time.
- *
- * @category nav
  */
 export function withSingleAccordion(): NavConfigFeature {
   return { apply: (c) => ({ ...c, singleAccordion: true }) };
@@ -92,8 +86,6 @@ export function withSingleAccordion(): NavConfigFeature {
 
 /**
  * Sets the indentation per depth level in px.
- *
- * @category nav
  */
 export function withNavIndent(px: number): NavConfigFeature {
   return { apply: (c) => ({ ...c, indent: px }) };
@@ -101,8 +93,6 @@ export function withNavIndent(px: number): NavConfigFeature {
 
 /**
  * Sets the animation duration for nav group expand/collapse in ms.
- *
- * @category nav
  */
 export function withNavAnimation(ms: number): NavConfigFeature {
   return { apply: (c) => ({ ...c, animationDuration: ms }) };
@@ -111,8 +101,6 @@ export function withNavAnimation(ms: number): NavConfigFeature {
 /**
  * Injects the resolved nav config, merging provided values with defaults.
  * Must be called in an injection context.
- *
- * @category nav
  */
 export function injectNavConfig(): Readonly<Required<CngxNavConfig>> {
   return { ...CNGX_NAV_DEFAULTS, ...inject(CNGX_NAV_CONFIG, { optional: true }) };

@@ -28,8 +28,6 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  *   Hold for action
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxLongPress]',

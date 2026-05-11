@@ -20,8 +20,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * snapshotted into the decorated entry — re-emissions of the
  * underlying signals re-fire the projector's effect, which
  * re-applies the decoration with the fresh context.
- *
- * @category interactive
  */
 export interface CngxMatTabAggregatorContentContext {
   /** Aggregated error count for this tab (≥ 1 when shown). */
@@ -72,8 +70,6 @@ export interface CngxMatTabAggregatorContentContext {
  *   <mat-tab label="Profile" cngxMatTabError="profile">…</mat-tab>
  * </mat-tab-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxMatTabAggregatorContent]',

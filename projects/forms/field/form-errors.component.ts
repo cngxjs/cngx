@@ -42,8 +42,6 @@ import type { CngxFieldAccessor } from './models';
  *   </ng-template>
  * </cngx-form-errors>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-form-errors',

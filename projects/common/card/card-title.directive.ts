@@ -14,8 +14,6 @@ import { Directive } from '@angular/core';
  *   </header>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: '[cngxCardTitle]',

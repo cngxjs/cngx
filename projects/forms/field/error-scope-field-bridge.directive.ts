@@ -17,8 +17,6 @@ import {
  *
  * No-op when no ancestor scope is provided — the form-field falls back to
  * the default error gate (`touched OR errorStrategy(...)`).
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxErrorScopeFieldBridge]',

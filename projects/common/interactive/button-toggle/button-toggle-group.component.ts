@@ -58,8 +58,6 @@ import {
  *   <button cngxButtonToggle value="table">Table</button>
  * </cngx-button-toggle-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',

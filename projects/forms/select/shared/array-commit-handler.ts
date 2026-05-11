@@ -12,8 +12,6 @@ import type { CngxSelectCompareFn, CngxSelectCore } from './select-core';
 
 /**
  * Configuration for {@link createArrayCommitHandler}.
- *
- * @category interactive
  */
 export interface ArrayCommitHandlerOptions<T> {
   /** Component's primary value signal (multi-select / combobox). */
@@ -39,8 +37,6 @@ export interface ArrayCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createArrayCommitHandler}.
- *
- * @category interactive
  */
 export interface ArrayCommitHandler<T> {
   /**
@@ -71,8 +67,6 @@ export interface ArrayCommitHandler<T> {
  * owns change-event payloads via the finalize callbacks.
  *
  * Scalar twin rejected — see select-family-accepted-debt §6.
- *
- * @category interactive
  */
 export function createArrayCommitHandler<T>(
   opts: ArrayCommitHandlerOptions<T>,
@@ -163,8 +157,6 @@ export function createArrayCommitHandler<T>(
 
 /**
  * Factory signature for {@link CNGX_ARRAY_COMMIT_HANDLER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxArrayCommitHandlerFactory = <T>(
   opts: ArrayCommitHandlerOptions<T>,
@@ -175,8 +167,6 @@ export type CngxArrayCommitHandlerFactory = <T>(
  * {@link createArrayCommitHandler}. One layer above
  * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY` — controls value reconciliation
  * and finalize orchestration on top of the state machine.
- *
- * @category interactive
  */
 export const CNGX_ARRAY_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxArrayCommitHandlerFactory>(

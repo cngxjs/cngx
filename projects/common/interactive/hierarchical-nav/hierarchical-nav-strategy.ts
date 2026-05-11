@@ -8,8 +8,6 @@ import { type CngxTreeController } from '../tree-controller/tree-controller';
  * output, calls `event.preventDefault()` for anything non-`noop`, and
  * (for move actions) relies on the strategy having already called
  * `ad.highlightByValue` on the context.
- *
- * @category interactive
  */
 export type CngxHierarchicalNavAction =
   | { readonly kind: 'expand'; readonly id: string }
@@ -22,8 +20,6 @@ export type CngxHierarchicalNavAction =
  * Context passed to every strategy step. `ad` is guaranteed non-null
  * (the directive checks before invoking the strategy); `activeId` is
  * the current `ad.activeId()` snapshot captured at key-press time.
- *
- * @category interactive
  */
 export interface CngxHierarchicalNavContext<T> {
   readonly controller: CngxTreeController<T>;
@@ -43,8 +39,6 @@ export interface CngxHierarchicalNavContext<T> {
  * they may call `ctrl.expand()` / `ctrl.collapse()` / `ad.highlightByValue()`
  * before returning the corresponding action. The directive then emits
  * the informational output + prevents default key handling.
- *
- * @category interactive
  */
 export interface CngxHierarchicalNavStrategy {
   onArrowRight<T>(ctx: CngxHierarchicalNavContext<T>): CngxHierarchicalNavAction;
@@ -67,8 +61,6 @@ const NOOP: CngxHierarchicalNavAction = { kind: 'noop' };
  * changed `activeId` (e.g. disabled skip rejection), and downgrade to
  * `'noop'` when it didn't — so consumers bound to `(movedToChild)` /
  * `(movedToParent)` only see state-change-truthful emissions.
- *
- * @category interactive
  */
 export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
   const attemptMove = <T>(
@@ -142,8 +134,6 @@ export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export const CNGX_HIERARCHICAL_NAV_STRATEGY =
   new InjectionToken<CngxHierarchicalNavStrategy>('CngxHierarchicalNavStrategy', {

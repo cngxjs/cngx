@@ -13,8 +13,6 @@ import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
  *   {{ pwd.visible() ? 'Hide' : 'Show' }}
  * </button>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxPasswordToggle]',

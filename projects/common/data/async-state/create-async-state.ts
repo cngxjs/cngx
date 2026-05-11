@@ -9,8 +9,6 @@ import { createManualState, type ManualAsyncState } from './create-manual-state'
  *
  * Extends the read-only `CngxAsyncState` with an `execute()` method
  * that runs an async action and manages the full lifecycle.
- *
- * @category async
  */
 export interface MutableAsyncState<T> extends CngxAsyncState<T> {
   /**
@@ -46,8 +44,6 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  *   );
  * }
  * ```
- *
- * @category async
  */
 export function createAsyncState<T>(): MutableAsyncState<T> {
   const destroyRef = inject(DestroyRef);

@@ -67,8 +67,6 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * />
  * <cngx-toast-on />
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'input[cngxChipInput]',

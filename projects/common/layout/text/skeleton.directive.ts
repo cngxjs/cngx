@@ -42,8 +42,6 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  *   }
  * </div>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxSkeleton]',

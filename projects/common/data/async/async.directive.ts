@@ -62,8 +62,6 @@ export interface CngxAsyncContext<T> {
  *   <li>Error: {{ err }}</li>
  * </ng-template>
  * ```
- *
- * @category data
  */
 @Directive({
   selector: '[cngxAsync]',

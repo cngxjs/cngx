@@ -4,8 +4,6 @@ import { type CngxTreeNode, type FlatTreeNode } from '@cngx/utils';
  * Re-export of `@cngx/utils`'s `CngxTreeNode<T>` so `CngxTreeSelect`
  * consumers import everything from a single secondary-entry. Shape
  * unchanged: `value` / `label?` / `disabled?` / `children?`.
- *
- * @category interactive
  */
 export type { CngxTreeNode, FlatTreeNode };
 
@@ -17,8 +15,6 @@ export type { CngxTreeNode, FlatTreeNode };
  *   - `'cascade-toggle'` — parent toggle propagated to all descendants
  *     atomically (requires `[cascadeChildren]="true"`).
  *   - `'clear'` — full selection cleared.
- *
- * @category interactive
  */
 export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
 
@@ -26,8 +22,6 @@ export type CngxTreeSelectAction = 'toggle' | 'cascade-toggle' | 'clear';
  * Resolved selection entry surfaced to the chip strip and the chip /
  * trigger-label slots. Carries a display label alongside the raw value
  * so custom markup never has to call `labelFn`.
- *
- * @category interactive
  */
 export interface CngxTreeSelectedItem<T = unknown> {
   readonly value: T;
@@ -37,8 +31,6 @@ export interface CngxTreeSelectedItem<T = unknown> {
 /**
  * Context for `*cngxTreeSelectChip`. Mirrors `CngxMultiSelectChipContext`
  * shape so consumer snippets share across variants.
- *
- * @category interactive
  */
 export interface CngxTreeSelectChipContext<T = unknown> {
   readonly $implicit: CngxTreeSelectedItem<T>;
@@ -53,8 +45,6 @@ export interface CngxTreeSelectChipContext<T = unknown> {
 /**
  * Context for `*cngxTreeSelectTriggerLabel`. Mirrors the flat-family
  * trigger-label context so `"3 selected"` summaries share templates.
- *
- * @category interactive
  */
 export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxTreeSelectedItem<T>[];
@@ -72,8 +62,6 @@ export interface CngxTreeSelectTriggerLabelContext<T = unknown> {
  * `toggleExpand` / `handleSelect` are closed callbacks bound to the
  * surrounding component — wire into `(click)` on a custom twisty
  * button or row body.
- *
- * @category interactive
  */
 export interface CngxTreeSelectNodeContext<T = unknown> {
   readonly $implicit: FlatTreeNode<T>;

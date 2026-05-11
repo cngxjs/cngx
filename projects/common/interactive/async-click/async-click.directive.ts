@@ -48,8 +48,6 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * ```html
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxAsyncClick]',

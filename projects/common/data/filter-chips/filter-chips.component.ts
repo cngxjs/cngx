@@ -36,8 +36,6 @@ import type { CngxFilter } from '../filter/filter.directive';
  * the consumer's component, NOT the bridge's inner
  * `<cngx-multi-chip-group>`, so a consumer-supplied
  * `cngxChipInGroup` would fail to resolve `CNGX_CHIP_GROUP_HOST`).
- *
- * @category filter
  */
 export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
   readonly $implicit: TItem;
@@ -52,8 +50,6 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
  * `<ng-template cngxFilterChip>` to project decoration; the bridge
  * wraps that decoration in `cngxChipInGroup`-bound chip wrappers
  * automatically. Absence falls back to the default text-only label.
- *
- * @category filter
  */
 @Directive({
   selector: 'ng-template[cngxFilterChip]',
@@ -131,8 +127,6 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *   }
  * </ng-container>
  * ```
- *
- * @category filter
  */
 @Component({
   selector: 'cngx-filter-chips',

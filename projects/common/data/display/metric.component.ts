@@ -35,8 +35,6 @@ import {
  *   <cngx-metric cngxCardBody [value]="75" unit="bpm" />
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-metric',

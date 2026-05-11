@@ -18,7 +18,6 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * Optionally closes the drawer when the user clicks outside the panel
  * (`closeOnClickOutside`, default `true`).
  *
- * @category layout
  *
  * @usageNotes
  *

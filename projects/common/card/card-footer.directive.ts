@@ -11,8 +11,6 @@ import { Directive } from '@angular/core';
  *   <footer cngxCardFooter>Footer content</footer>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: 'footer[cngxCardFooter]',

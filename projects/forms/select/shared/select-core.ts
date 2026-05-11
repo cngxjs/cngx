@@ -50,23 +50,17 @@ import type {
 
 /**
  * Value-to-option equality. Default `Object.is`; override via `[compareWith]`.
- *
- * @category interactive
  */
 export type CngxSelectCompareFn<T> = (a: T | undefined, b: T | undefined) => boolean;
 
 /**
  * Identity comparator — `Object.is`.
- *
- * @category interactive
  */
 export const cngxSelectDefaultCompare: CngxSelectCompareFn<unknown> = (a, b) => Object.is(a, b);
 
 /**
  * ARIA projection for the trigger. Bundle is structural-equal to keep
  * `[attr.aria-*]` bindings stable.
- *
- * @category interactive
  */
 export interface CngxSelectTriggerAria {
   readonly label: string | null;
@@ -83,8 +77,6 @@ export interface CngxSelectTriggerAria {
 /**
  * Signal inputs for {@link createSelectCore}. Core reads signals only —
  * never component instance fields.
- *
- * @category interactive
  */
 export interface CngxSelectCoreDeps<T, TCommit> {
   readonly label: Signal<string>;
@@ -140,8 +132,6 @@ export interface CngxSelectCoreDeps<T, TCommit> {
 
 /**
  * Per-instance announcer inputs.
- *
- * @category interactive
  */
 export interface CngxSelectAnnouncerInputs {
   readonly announceChanges: Signal<boolean | null>;
@@ -151,8 +141,6 @@ export interface CngxSelectAnnouncerInputs {
 /**
  * Output of {@link createSelectCore} — pure-derivation signals shared by
  * every select-family component.
- *
- * @category interactive
  */
 export interface CngxSelectCore<T, TCommit> {
   readonly effectiveOptions: Signal<CngxSelectOptionsInput<T>>;
@@ -263,8 +251,6 @@ export interface CngxSelectCore<T, TCommit> {
 
 /**
  * Pre-bound bundle for {@link CngxSelectCore.panelHostAdapter}.
- *
- * @category interactive
  */
 export interface CngxSelectPanelHostAdapter<T> {
   readonly isGroup: (
@@ -281,8 +267,6 @@ export interface CngxSelectPanelHostAdapter<T> {
  * Factory rather than hostDirective: hostDirective collapses generics
  * to `unknown` through the input/output decorator metadata slot, so a
  * typed factory wins. Injection context required.
- *
- * @category interactive
  */
 export function createSelectCore<T, TCommit>(
   deps: CngxSelectCoreDeps<T, TCommit>,
@@ -797,14 +781,10 @@ export function createSelectCore<T, TCommit>(
 
 /**
  * Form-field integration shape exposed by every select-family component.
- *
- * @category interactive
  */
 export type CngxSelectFormFieldControl = CngxFormFieldControl;
 
 /**
  * Lifecycle status union for select-family outputs.
- *
- * @category interactive
  */
 export type CngxSelectStatus = AsyncStatus;

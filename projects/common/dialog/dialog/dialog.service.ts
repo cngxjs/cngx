@@ -43,8 +43,6 @@ import { CngxDialogOutlet } from './dialog-outlet';
  *   if (result !== 'dismissed') console.log('Confirmed:', result);
  * });
  * ```
- *
- * @category dialog
  */
 export class CngxDialogRef<T = unknown> {
   /** @internal */
@@ -173,8 +171,6 @@ export class CngxDialogRef<T = unknown> {
  *   save(user: User) { this.dialogRef.close(user); }
  * }
  * ```
- *
- * @category dialog
  */
 @Injectable()
 export class CngxDialogOpener {
@@ -335,8 +331,6 @@ export class CngxDialogOpener {
  *   providers: [provideDialog()],
  * });
  * ```
- *
- * @category dialog
  */
 export function provideDialog(): Provider[] {
   return [CngxDialogOpener];

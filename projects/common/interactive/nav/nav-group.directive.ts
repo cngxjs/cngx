@@ -42,8 +42,6 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  *   ],
  * })
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: '[cngxNavGroup]',

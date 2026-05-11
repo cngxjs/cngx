@@ -28,8 +28,6 @@ import {
  *         label="Email already in use"></span>
  * </fieldset>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxErrorSource]',

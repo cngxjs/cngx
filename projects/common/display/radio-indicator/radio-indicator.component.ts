@@ -34,8 +34,6 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
  * - Accessibility announcements — `aria-hidden="true"` unconditionally.
  *   Selection is announced via the row's `role="radio"` /
  *   `aria-checked` ARIA, never by this decoration.
- *
- * @category display
  */
 @Component({
   selector: 'cngx-radio-indicator',

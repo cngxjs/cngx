@@ -25,8 +25,6 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  * // In template:
  * <form [cngxBeforeUnload]="editForm.dirty()">…</form>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxBeforeUnload]',

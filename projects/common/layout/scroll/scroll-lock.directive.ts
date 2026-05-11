@@ -38,7 +38,6 @@ function releaseScrollLock(html: HTMLElement): void {
  * Multiple instances are ref-counted — the original styles are only
  * restored when the last lock is released.
  *
- * @category layout
  *
  * @usageNotes
  *

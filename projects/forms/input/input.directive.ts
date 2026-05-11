@@ -19,8 +19,6 @@ import {
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',

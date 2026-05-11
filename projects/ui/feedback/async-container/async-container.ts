@@ -87,8 +87,6 @@ export class CngxAsyncErrorTpl {
  *   </ng-template>
  * </cngx-async-container>
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-async-container',

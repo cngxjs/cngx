@@ -48,8 +48,6 @@ export interface OptimisticState {
  * @param current - The writable signal to update optimistically.
  * @param action - Async action that confirms the value. Should return the confirmed value.
  * @returns Tuple of `[applyFn, state]`.
- *
- * @category interactive
  */
 export function optimistic<T>(
   current: WritableSignal<T>,

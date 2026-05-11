@@ -20,8 +20,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *   }
  * </div>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxError]',

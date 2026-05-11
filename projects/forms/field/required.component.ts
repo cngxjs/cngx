@@ -40,8 +40,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *   </cngx-required>
  * </label>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-required',

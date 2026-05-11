@@ -65,8 +65,6 @@ import {
  *   <button cngxButtonToggle value="archived">Archived</button>
  * </cngx-button-multi-toggle-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-button-multi-toggle-group, [cngxButtonMultiToggleGroup]',

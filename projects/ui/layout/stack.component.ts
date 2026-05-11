@@ -25,8 +25,6 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  *   <div>Item 1</div>
  *   <div>Item 2</div>
  * </cngx-stack>
- *
- * @category layout
  */
 @Component({
   selector: 'cngx-stack',

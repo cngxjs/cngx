@@ -12,8 +12,6 @@ import type { CngxStepperCommitAction } from './presenter.directive';
  * Adapter between the lifted commit-controller and the stepper's
  * action shape. The presenter delegates to `beginTransition` on
  * every step change driven by `commitAction`.
- *
- * @category interactive/stepper
  */
 export interface CngxStepperCommitHandler {
   /**
@@ -39,8 +37,6 @@ export interface CngxStepperCommitHandler {
 
 /**
  * Options for {@link createStepperCommitHandler}.
- *
- * @category interactive
  */
 export interface CngxStepperCommitHandlerOptions {
   readonly controller: CngxCommitController<number>;
@@ -50,8 +46,6 @@ export interface CngxStepperCommitHandlerOptions {
  * Build a stepper commit handler over an existing {@link CngxCommitController}.
  * Resolves `Observable<boolean>` / `Promise<boolean>` / `boolean` returns into
  * a unified `accept: boolean` outcome.
- *
- * @category interactive
  */
 export function createStepperCommitHandler(
   opts: CngxStepperCommitHandlerOptions,
@@ -146,8 +140,6 @@ function runStepperAction(
  * Factory signature for {@link CngxStepperCommitHandler}. Override
  * {@link CNGX_STEPPER_COMMIT_HANDLER_FACTORY} for retry-with-backoff,
  * telemetry, or offline queues.
- *
- * @category interactive
  */
 export type CngxStepperCommitHandlerFactory = (
   opts: CngxStepperCommitHandlerOptions,
@@ -156,8 +148,6 @@ export type CngxStepperCommitHandlerFactory = (
 /**
  * DI token carrying the factory the presenter uses to allocate its commit
  * handler. Symmetric to the select family's `CNGX_ARRAY_COMMIT_HANDLER_FACTORY`.
- *
- * @category interactive
  */
 export const CNGX_STEPPER_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxStepperCommitHandlerFactory>(

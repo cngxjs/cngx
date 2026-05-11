@@ -21,7 +21,6 @@ import {
  * visual styling (background color, opacity, transitions) via CSS
  * custom properties and the `.cngx-backdrop--visible` class.
  *
- * @category layout
  *
  * @usageNotes
  *

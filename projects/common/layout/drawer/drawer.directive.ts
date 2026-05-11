@@ -13,7 +13,6 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * Child directives (`CngxDrawerPanel`, `CngxDrawerContent`) receive a
  * reference to this directive via an explicit input — no ancestor injection.
  *
- * @category layout
  *
  * @usageNotes
  *

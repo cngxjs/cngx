@@ -129,8 +129,6 @@ export class CngxAlertAction {}
  * - **Boolean-driven** (`[when]`): visible when true, hidden when false
  *
  * `[state]` takes precedence over `[when]`.
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-alert',

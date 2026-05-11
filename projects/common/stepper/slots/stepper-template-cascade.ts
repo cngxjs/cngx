@@ -28,8 +28,6 @@ import type { CngxStepperEmpty } from './stepper-empty.directive';
  * the `contentChild()` queries (NG8110 — must run in component
  * injection context) and the resolved {@link CngxStepperConfig}; this
  * factory absorbs the 3-stage cascade per slot key.
- *
- * @category interactive
  */
 export interface CngxStepperTemplateBindingsOptions {
   readonly indicatorSlot: Signal<CngxStepIndicator | undefined>;
@@ -45,8 +43,6 @@ export interface CngxStepperTemplateBindingsOptions {
  * Output of {@link createStepperTemplateBindings}. One resolved
  * `Signal<TemplateRef | null>` per slot — `null` falls through to the
  * organism's built-in default markup.
- *
- * @category interactive
  */
 export interface CngxStepperTemplateBindings {
   readonly indicator: Signal<TemplateRef<CngxStepIndicatorContext> | null>;
@@ -68,8 +64,6 @@ export interface CngxStepperTemplateBindings {
  *
  * Tabs has no parallel slot surface yet — see
  * `stepper-accepted-debt §3` for the planned Phase-4 closure.
- *
- * @category interactive
  */
 export function createStepperTemplateBindings(
   opts: CngxStepperTemplateBindingsOptions,

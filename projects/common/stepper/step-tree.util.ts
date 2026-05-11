@@ -4,8 +4,6 @@ import type { CngxStepNode } from './stepper-host.token';
  * DFS-flatten a step tree. Group nodes emit before their children;
  * the consumer keys off `kind` to render a panel container vs. a
  * group header.
- *
- * @category interactive/stepper
  */
 export function flattenStepTree(
   nodes: readonly CngxStepNode[],
@@ -34,8 +32,6 @@ export function flattenStepTree(
  * id, kind, depth, parentId, children length. Reactive fields
  * (`label`, `disabled`, `state`, `errorAggregator`) are signals; their
  * own subscribers track identity changes.
- *
- * @category interactive
  */
 export function stepTreeEqual(
   a: readonly CngxStepNode[],
@@ -71,7 +67,6 @@ export function stepTreeEqual(
  * @internal Exported from `public-api.ts` so the cngx-stepper and
  * cngx-mat-stepper organisms share the comparator across the
  * secondary-entry boundary (Sheriff forbids deep-relative imports).
- * @category interactive
  */
 export function flatStepsEqual(
   a: readonly CngxStepNode[],
@@ -100,8 +95,6 @@ export function flatStepsEqual(
  * Structural equality for any flat node array — `id`, `kind`,
  * `parentId` only, ignoring `flatIndex` and `depth`. Use for
  * `CngxStepGroup.children` and other `-1`-placeholder projections.
- *
- * @category interactive
  */
 export function stepNodesEqual(
   a: readonly CngxStepNode[],

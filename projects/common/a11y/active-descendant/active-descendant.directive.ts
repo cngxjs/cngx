@@ -47,8 +47,6 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * Mirrors the model used by `cdk-listbox` and `mat-select` but exposes it as a
  * standalone primitive — not coupled to any visual shell, signal-reactive end
  * to end, and unified across listbox/menu/combobox stacks.
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxActiveDescendant]',

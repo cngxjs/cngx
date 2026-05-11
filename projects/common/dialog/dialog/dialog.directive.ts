@@ -108,8 +108,6 @@ function releaseScrollLock(html: HTMLElement): void {
  *   <input id="name-input" />
  * </dialog>
  * ```
- *
- * @category dialog
  */
 @Directive({
   selector: 'dialog[cngxDialog]',

@@ -11,8 +11,6 @@ import type { CngxStepNode, CngxStepStatus } from '../stepper-host.token';
  * `status` mirrors `node.state()`. `busy` is the presenter-derived
  * "this step is the in-flight commit target" flag — independent of
  * `status === 'pending'` (which is the aggregate landmark state).
- *
- * @category interactive
  */
 export interface CngxStepIndicatorContext {
   /** Convenience alias for `position` — usable as `let-position` shorthand. */
@@ -49,8 +47,6 @@ export interface CngxStepIndicatorContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxStepIndicator]',

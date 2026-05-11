@@ -38,8 +38,6 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * ```html
  * <cngx-close-button />
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-close-button',

@@ -21,8 +21,6 @@ import type { CngxTagSuffixContext } from './tag-slot.context';
  *   </ng-template>
  * </span>
  * ```
- *
- * @category display
  */
 @Directive({
   selector: 'ng-template[cngxTagSuffix]',

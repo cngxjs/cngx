@@ -34,8 +34,6 @@ import {
  *   </header>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-trend',

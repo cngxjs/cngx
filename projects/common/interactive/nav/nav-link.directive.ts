@@ -39,8 +39,6 @@ import {
  * <a cngxNavLink [depth]="1">Nested</a>
  * <a cngxNavLink [depth]="2">Deep nested</a>
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: 'a[cngxNavLink], button[cngxNavLink]',

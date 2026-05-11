@@ -22,8 +22,6 @@ import { computed, Directive, input } from '@angular/core';
  * />
  * <span id="email-error" role="alert">Please enter a valid email.</span>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxErrorState]',

@@ -24,8 +24,6 @@ import { CngxCopyText } from './copy-text.directive';
  *   {{ apiKey() }}
  * </cngx-copy-block>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-copy-block',

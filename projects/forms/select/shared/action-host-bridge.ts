@@ -19,8 +19,6 @@ import type { CngxSelectActionCallbacks } from './panel-host';
  * `dirty` + `callbacks` feed the panel shell, `shouldTrapFocus` drives
  * the shell's `actionFocusTrapEnabled`, `shouldBlockDismiss` gates the
  * variant's click-outside and Escape handlers.
- *
- * @category interactive
  */
 export interface ActionHostBridge {
   /** Dirty flag flipped by the slot's `setDirty` callback. */
@@ -44,8 +42,6 @@ export interface ActionHostBridge {
 
 /**
  * Options for {@link createActionHostBridge}.
- *
- * @category interactive
  */
 export interface ActionHostBridgeOptions {
   /** Bound `close()` from the variant — dismisses the panel. */
@@ -68,8 +64,6 @@ export interface ActionHostBridgeOptions {
  * the only writable slot; everything else is `computed`. Installs a
  * capture-phase Escape listener on the host element via `DestroyRef`.
  * Injection context required.
- *
- * @category interactive
  */
 export function createActionHostBridge(
   options: ActionHostBridgeOptions,
@@ -162,8 +156,6 @@ export function createActionHostBridge(
 
 /**
  * Factory signature for {@link CNGX_ACTION_HOST_BRIDGE_FACTORY}.
- *
- * @category interactive
  */
 export type CngxActionHostBridgeFactory = (
   options: ActionHostBridgeOptions,
@@ -185,8 +177,6 @@ export type CngxActionHostBridgeFactory = (
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export const CNGX_ACTION_HOST_BRIDGE_FACTORY =
   new InjectionToken<CngxActionHostBridgeFactory>(

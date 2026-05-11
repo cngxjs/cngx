@@ -41,8 +41,6 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  *
  * Zero-logic holder — typed wrapper around `TemplateRef`, discovered
  * via `contentChild`.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectNode]',

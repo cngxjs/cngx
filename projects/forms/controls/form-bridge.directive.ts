@@ -36,8 +36,6 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  *   </cngx-multi-chip-group>
  * </form>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector:

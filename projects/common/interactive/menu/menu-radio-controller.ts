@@ -5,8 +5,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * `CngxMenuItemRadio` children. Children read `selectedValue()` to compute
  * `aria-checked` and call `select(value)` to update on click; the host owns
  * the writable signal so consumers two-way bind through it.
- *
- * @category interactive
  */
 export interface CngxMenuRadioGroup<T> {
   readonly selectedValue: ModelSignal<T | undefined>;

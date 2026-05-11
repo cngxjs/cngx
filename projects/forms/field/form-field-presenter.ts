@@ -39,8 +39,6 @@ function buildHint(
  * Reads a Signal Forms `Field<T>` accessor and derives all ARIA IDs, visibility states,
  * and constraint metadata as pure `computed()` signals. Applied as a `hostDirective`
  * on `CngxFormField` — not used directly in templates.
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxFormFieldPresenter]',

@@ -6,7 +6,6 @@ import { Directive, signal } from '@angular/core';
  * Adds `cngx-focus-visible` CSS class when the element receives focus via keyboard
  * and removes it on blur or when focus was initiated by pointer interaction.
  *
- * @category a11y
  *
  * ```html
  * <button cngxFocusVisible #fv="cngxFocusVisible">

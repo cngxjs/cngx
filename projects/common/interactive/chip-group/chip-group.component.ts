@@ -69,8 +69,6 @@ import {
  *   <cngx-chip cngxChipInGroup [value]="'lg'">Large</cngx-chip>
  * </cngx-chip-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-chip-group, [cngxChipGroup]',

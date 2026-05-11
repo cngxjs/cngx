@@ -35,8 +35,6 @@ import {
  *   transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
  * }
  * ```
- *
- * @category dialog
  */
 @Directive({
   selector: '[cngxDialogDraggable]',

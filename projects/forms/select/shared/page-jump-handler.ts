@@ -9,8 +9,6 @@ import { resolvePageJumpTarget } from './typeahead-controller';
  * popover when closed, jumps ±10 from the AD-highlighted index via
  * {@link resolvePageJumpTarget}, returns `true` when handled. Other keys
  * return `false`.
- *
- * @category interactive
  */
 export function handlePageJumpKey(
   event: KeyboardEvent,

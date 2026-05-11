@@ -17,8 +17,6 @@ import { DIALOG_REF } from './dialog-ref';
  *   …
  * </dialog>
  * ```
- *
- * @category dialog
  */
 @Directive({
   selector: '[cngxDialogDescription]',

@@ -22,8 +22,6 @@ import { CngxOption } from './option.directive';
  * each group's `options` to populate `CngxSelectOptionGroupDef.options`.
  * Nested option groups are unsupported — a dev-warning fires when one is
  * detected.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxOptionGroup]',

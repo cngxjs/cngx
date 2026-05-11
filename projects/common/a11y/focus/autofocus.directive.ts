@@ -37,8 +37,6 @@ import {
  * ```html
  * <input cngxAutofocus [autofocusDelay]="200" />
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxAutofocus]',

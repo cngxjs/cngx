@@ -72,8 +72,6 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *   Save
  * </cngx-action-button>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-action-button',

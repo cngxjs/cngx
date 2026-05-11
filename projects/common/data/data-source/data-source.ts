@@ -21,7 +21,6 @@ import type { Observable } from 'rxjs';
  * ```
  *
  * @typeParam T - The row item type.
- * @category data-source
  */
 export class CngxDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -48,8 +47,6 @@ export class CngxDataSource<T> extends DataSource<T> {
  * ```typescript
  * readonly dataSource = injectDataSource(this.items);
  * ```
- *
- * @category data-source
  */
 export function injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
   return new CngxDataSource(data);

@@ -42,8 +42,6 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  *   errors.forEach(e => this.alerter.show({ message: e, severity: 'error' }));
  * }
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-alert-stack',

@@ -23,8 +23,6 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxScrollSpy]',

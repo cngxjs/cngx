@@ -4,8 +4,6 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
  * Tabs i18n surface. Library defaults are English; consumers
  * override via {@link provideTabsI18n}. Sibling to
  * `CNGX_STEPPER_I18N` and `CNGX_CHART_I18N`.
- *
- * @category interactive
  */
 export interface CngxTabsI18n {
   readonly tabsLabel: string;
@@ -49,8 +47,6 @@ const TABS_I18N_DEFAULTS: CngxTabsI18n = {
 /**
  * DI token for the tabs i18n bundle. `providedIn: 'root'` with
  * English defaults.
- *
- * @category interactive
  */
 export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
   'CngxTabsI18n',
@@ -62,8 +58,6 @@ export const CNGX_TABS_I18N = new InjectionToken<CngxTabsI18n>(
  * {@link provideCngxTabs}. The hidden `_target` discriminator routes
  * i18n features to `provideTabsI18n` and config features to
  * `provideTabsConfig` from the unified aggregator.
- *
- * @category interactive
  */
 export type CngxTabsI18nFeature = ((
   bundle: CngxTabsI18n,
@@ -87,8 +81,6 @@ function defineTabsI18nFeature(
  * English default. Same shape as `withTabsAriaLabels` /
  * `withTabsFallbackLabels` so `provideCngxTabs` composes both
  * surfaces uniformly.
- *
- * @category interactive
  */
 export function withTabsI18nLabels(
   overrides: Partial<CngxTabsI18n>,
@@ -120,8 +112,6 @@ function resolveI18nFeatures(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideTabsI18n(
   ...features: readonly CngxTabsI18nFeature[]
@@ -134,8 +124,6 @@ export function provideTabsI18n(
 
 /**
  * Inject the resolved tabs i18n bundle.
- *
- * @category interactive
  */
 export function injectTabsI18n(): CngxTabsI18n {
   return inject(CNGX_TABS_I18N);

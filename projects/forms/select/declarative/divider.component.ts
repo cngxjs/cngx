@@ -17,8 +17,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  *   <cngx-option [value]="'b'">B</cngx-option>
  * </div>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-select-divider',

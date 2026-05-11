@@ -11,7 +11,6 @@ import { Directive, input } from '@angular/core';
  * attributes (`aria-expanded` + `aria-controls`) in a single declaration,
  * preventing mismatches where one is set without the other.
  *
- * @category a11y
  *
  * @usageNotes
  *
