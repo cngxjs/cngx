@@ -19,7 +19,7 @@ import {
  *
  * The `expanded` state supports two-way binding (controlled + uncontrolled).
  *
- * @usageNotes
+ * @example
  *
  * ### Basic truncation with toggle
  * ```html

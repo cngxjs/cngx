@@ -11,7 +11,7 @@ import { CngxToaster, type ToastRef } from './toast.service';
  *
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
- * @usageNotes
+ * @example
  *
  * ### Simple message
  * ```html

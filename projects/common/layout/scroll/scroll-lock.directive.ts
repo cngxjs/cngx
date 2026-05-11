@@ -39,7 +39,7 @@ function releaseScrollLock(html: HTMLElement): void {
  * restored when the last lock is released.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### With a drawer
  * ```html

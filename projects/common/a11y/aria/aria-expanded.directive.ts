@@ -12,7 +12,7 @@ import { Directive, input } from '@angular/core';
  * preventing mismatches where one is set without the other.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Simple disclosure
  * ```html

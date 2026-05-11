@@ -43,7 +43,7 @@ export const CNGX_NAV_DEFAULTS: Readonly<Required<CngxNavConfig>> = {
 /**
  * Injection token for nav system configuration.
  *
- * @usageNotes
+ * @example
  *
  * ### Using feature functions
  * ```typescript
@@ -62,7 +62,7 @@ export const CNGX_NAV_CONFIG = new InjectionToken<CngxNavConfig>('CNGX_NAV_CONFI
  * Automatically includes `CngxNavGroupRegistry` when `singleAccordion` is enabled
  * (either directly or via `withSingleAccordion()`).
  *
- * @usageNotes
+ * @example
  * ```typescript
  * providers: [provideNavConfig(withSingleAccordion(), withNavIndent(16))]
  * ```

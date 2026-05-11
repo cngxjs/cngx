@@ -14,7 +14,7 @@ import { fromEvent, switchMap } from 'rxjs';
  * The event type defaults to `'pointerdown'` which covers mouse, touch, and
  * pen input. Change it via the `[eventType]` input.
  *
- * @usageNotes
+ * @example
  *
  * ### Dropdown dismiss
  * ```html

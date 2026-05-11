@@ -35,7 +35,7 @@ export type SidenavMode = 'over' | 'push' | 'side' | 'mini';
  * Use inside `CngxSidenavLayout` for dual-sidebar support and
  * shared backdrop coordination.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-sidenav-layout>

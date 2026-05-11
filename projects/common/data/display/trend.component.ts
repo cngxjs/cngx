@@ -13,7 +13,7 @@ import {
  * The consumer can override the SR label for full context
  * (e.g. "vs. last month" instead of the generic default).
  *
- * @usageNotes
+ * @example
  *
  * ### Basic
  * ```html

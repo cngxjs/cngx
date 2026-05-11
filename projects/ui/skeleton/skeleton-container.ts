@@ -29,7 +29,7 @@ import {
  * - Project content directly for the loaded state.
  * - Uses `display: contents` — no extra DOM wrapper.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic usage
  * ```html

@@ -15,7 +15,7 @@ import { Directive, input } from '@angular/core';
  * element declaratively — the content you render IS the announcement.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Status message
  * ```html

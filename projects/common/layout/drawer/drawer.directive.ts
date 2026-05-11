@@ -14,7 +14,7 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  * reference to this directive via an explicit input — no ancestor injection.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Uncontrolled
  * ```html

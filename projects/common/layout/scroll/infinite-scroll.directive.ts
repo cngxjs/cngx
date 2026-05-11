@@ -21,7 +21,7 @@ import {
  * `threshold` inputs change, and disconnected on destroy or when `enabled`
  * is set to `false`.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic infinite list
  * ```html

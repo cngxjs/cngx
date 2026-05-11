@@ -22,7 +22,7 @@ import {
  * custom properties and the `.cngx-backdrop--visible` class.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Drawer backdrop
  * ```html

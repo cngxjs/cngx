@@ -20,7 +20,7 @@ interface HttpResourceLike<T> extends Resource<T> {
  *
  * Must be called in an injection context.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * private readonly res = httpResource<Item[]>(() => ({

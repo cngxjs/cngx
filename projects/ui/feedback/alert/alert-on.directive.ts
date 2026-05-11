@@ -23,7 +23,7 @@ import { CngxAlerter } from './alerter.service';
  * when the bound `CngxAsyncState` transitions to `error` (or optionally `success`).
  * Only fires on actual transitions, not on initial `idle` state.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-alert-stack scope="form" />

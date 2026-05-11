@@ -8,7 +8,7 @@ import { DestroyRef, Directive, inject, input } from '@angular/core';
  * confirmation dialog when `enabled` is `true`. Does NOT integrate with
  * the Angular Router — for route guard protection, use `canDeactivateWhenClean()`.
  *
- * @usageNotes
+ * @example
  *
  * ### Protect a form
  * ```html

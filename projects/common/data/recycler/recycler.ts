@@ -279,7 +279,7 @@ function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boo
  * Must be called in an injection context (field initializer or constructor).
  * Internally injects `DestroyRef` and `DOCUMENT` for cleanup and selector resolution.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic list
  * ```typescript

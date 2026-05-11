@@ -10,7 +10,7 @@ import { DIALOG_REF } from './dialog-ref';
  * parent `CngxDialog` for `aria-labelledby`. The title text is also
  * announced via `aria-live` when the dialog transitions to `'open'`.
  *
- * @usageNotes
+ * @example
  * ```html
  * <dialog cngxDialog>
  *   <h2 cngxDialogTitle>Confirm Delete</h2>

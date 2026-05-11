@@ -71,7 +71,7 @@ function warnMissingPopoverApi(el: HTMLElement): void {
  * CSS classes `cngx-popover--opening`, `cngx-popover--open`, and
  * `cngx-popover--closing` are applied to the host for transition hooks.
  *
- * @usageNotes
+ * @example
  *
  * ### Declarative click popover
  * ```html

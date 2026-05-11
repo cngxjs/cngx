@@ -10,7 +10,7 @@ import type { Observable } from 'rxjs';
  * No sort, filter, or search logic is included — the consumer builds a
  * `computed()` with any transformations and passes the result here.
  *
- * @usageNotes
+ * @example
  * ```typescript
  * readonly processed = computed(() => {
  *   let items = this.raw();

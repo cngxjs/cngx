@@ -10,7 +10,7 @@ import type { CngxRecycler } from './recycler';
  *
  * Uses `display: contents` — no layout impact.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />

@@ -16,7 +16,7 @@ import {
  *
  * Composable — works inside any card variant, header, body, or standalone.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic
  * ```html

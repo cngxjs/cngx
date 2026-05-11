@@ -22,7 +22,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * during execution, announces state changes to screen readers, and guards against
  * double-clicks.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic usage
  * ```html

@@ -27,7 +27,7 @@ import { CngxDialogOutlet } from './dialog-outlet';
  * (`state`, `result`) and Observable convenience methods (`afterClosed()`,
  * `afterOpened()`) for migration compatibility with `MatDialogRef`.
  *
- * @usageNotes
+ * @example
  *
  * ### Signal-based result reading
  * ```typescript
@@ -149,7 +149,7 @@ export class CngxDialogRef<T = unknown> {
  *
  * Must be provided via `provideDialog()`.
  *
- * @usageNotes
+ * @example
  *
  * ### Open a component dialog
  * ```typescript
@@ -325,7 +325,7 @@ export class CngxDialogOpener {
  * Must be called in the application's `providers` array or a route's
  * `providers` for `CngxDialogOpener` to be injectable.
  *
- * @usageNotes
+ * @example
  * ```typescript
  * bootstrapApplication(AppComponent, {
  *   providers: [provideDialog()],

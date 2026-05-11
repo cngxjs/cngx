@@ -19,7 +19,7 @@ import {
  * meaning the header is now stuck. Toggles a CSS class for shadow,
  * elevation, or background changes.
  *
- * @usageNotes
+ * @example
  *
  * ### Sticky header with shadow
  * ```html

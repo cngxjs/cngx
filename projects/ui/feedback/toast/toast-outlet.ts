@@ -27,7 +27,7 @@ export type ToastPosition =
  * Place once in the app shell. Reads from `CngxToaster` reactively.
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-toast-outlet position="bottom-end" [maxVisible]="5" />

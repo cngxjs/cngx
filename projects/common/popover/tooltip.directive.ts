@@ -30,7 +30,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * The consumer sees only the attribute — no extra elements in the template.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic
  * ```html

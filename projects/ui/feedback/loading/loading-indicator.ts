@@ -28,7 +28,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  *
  * For content-blocking overlays, use `cngx-loading-overlay` instead.
  *
- * @usageNotes
+ * @example
  *
  * ### With async state
  * ```html

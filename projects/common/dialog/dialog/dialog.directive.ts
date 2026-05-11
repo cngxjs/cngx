@@ -67,7 +67,7 @@ function releaseScrollLock(html: HTMLElement): void {
  * CSS classes `cngx-dialog--opening`, `cngx-dialog--open`, and
  * `cngx-dialog--closing` are applied to the host for transition hooks.
  *
- * @usageNotes
+ * @example
  *
  * ### Declarative (template-driven)
  * ```html

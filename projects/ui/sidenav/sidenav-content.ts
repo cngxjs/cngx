@@ -7,7 +7,7 @@ import { CngxSidenavLayout } from './sidenav-layout';
  * Auto-adjusts margins when sibling sidenavs are in `push` or `side`
  * mode. Must be a direct child of `CngxSidenavLayout`.
  *
- * @usageNotes
+ * @example
  * ```html
  * <cngx-sidenav-layout>
  *   <cngx-sidenav position="start">…</cngx-sidenav>

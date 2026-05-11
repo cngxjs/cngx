@@ -13,7 +13,7 @@ import { CngxBanner } from './banner.service';
  *
  * Requires `provideFeedback(withBanners())`.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-banner-trigger

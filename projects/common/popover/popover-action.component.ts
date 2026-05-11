@@ -31,7 +31,7 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  * Supports the same `cngxPending`/`cngxSucceeded`/`cngxFailed` templates
  * as `CngxActionButton`, or use `status()` + `@switch` for full control.
  *
- * @usageNotes
+ * @example
  *
  * ### Dismiss button
  * ```html

@@ -19,7 +19,7 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  * Icon is provided via the `[cngxEmptyStateIcon]` content slot — no Material
  * dependency. Consumers project `<mat-icon>`, `<svg>`, or any icon system.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-empty-state title="No results" description="Try a different search term">

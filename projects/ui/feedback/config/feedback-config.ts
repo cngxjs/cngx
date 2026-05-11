@@ -66,7 +66,7 @@ export interface FeedbackFeature {
 /**
  * Register global defaults for all feedback components.
  *
- * @usageNotes
+ * @example
  *
  * ```ts
  * bootstrapApplication(AppComponent, {

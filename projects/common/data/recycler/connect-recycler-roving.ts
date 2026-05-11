@@ -20,7 +20,7 @@ import type { CngxRecycler } from './recycler';
  * `[data-cngx-recycle-index]` — calling from a child component would query the
  * wrong subtree.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * @Component({

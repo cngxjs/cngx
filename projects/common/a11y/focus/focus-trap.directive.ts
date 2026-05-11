@@ -13,7 +13,7 @@ import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } fr
  * is handled internally via `effect()` and `DestroyRef`.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Modal dialog
  * ```html

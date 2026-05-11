@@ -22,7 +22,7 @@ export interface StatusTransition {
  *
  * @param source Reactive function that reads the current `AsyncStatus`.
  *
- * @usageNotes
+ * @example
  *
  * ```ts
  * const tracker = createTransitionTracker(() => this.state().status());

@@ -16,7 +16,7 @@ import {
  * toggles an `active` class. Does NOT depend on `@angular/router` —
  * the consumer wires `routerLinkActive` or binds `[active]` manually.
  *
- * @usageNotes
+ * @example
  *
  * ### With Router
  * ```html

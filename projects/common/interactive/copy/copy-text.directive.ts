@@ -12,7 +12,7 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * Unlike `CngxCopyValue` from `@cngx/forms/input`, this has no forms dependency
  * and lives at Level 2 (`@cngx/common`), making it available to any consumer.
  *
- * @usageNotes
+ * @example
  *
  * ### Copy a token
  * ```html

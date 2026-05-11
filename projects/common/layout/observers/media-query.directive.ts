@@ -9,7 +9,7 @@ import { Directive, effect, inject, input, signal } from '@angular/core';
  * or any behavior that depends on viewport/preference queries.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Responsive drawer mode
  * ```html

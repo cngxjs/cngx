@@ -21,7 +21,7 @@ import {
  * animations, "back to top" buttons, analytics viewport tracking.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Lazy load sentinel
  * ```html

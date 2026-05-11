@@ -19,7 +19,7 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * (`closeOnClickOutside`, default `true`).
  *
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"

@@ -12,7 +12,7 @@ import { DIALOG_REF } from './dialog-ref';
  * accidental form submission. Sets a default `aria-label="Close dialog"`
  * when the host has no descriptive text content (icon-only buttons).
  *
- * @usageNotes
+ * @example
  * ```html
  * <dialog cngxDialog>
  *   <button [cngxDialogClose]="false">Cancel</button>

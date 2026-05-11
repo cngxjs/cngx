@@ -23,7 +23,7 @@ import { CngxBanner } from './banner.service';
  * transitions to `error`. Dismisses automatically on `success` or `idle`.
  * Only fires on actual transitions, not on initial `idle` state.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <div [cngxBannerOn]="connectionState"

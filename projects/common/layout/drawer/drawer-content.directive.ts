@@ -8,7 +8,7 @@ import type { CngxDrawer } from './drawer.directive';
  * the content via CSS transitions or transforms.
  *
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <main [cngxDrawerContent]="drawer">

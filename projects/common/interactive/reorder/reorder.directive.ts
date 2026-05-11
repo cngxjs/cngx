@@ -74,7 +74,7 @@ interface ActiveDrag {
  * controller so optimistic / pessimistic behaviour stays owned by the
  * composing component, not by this atom.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic chip-strip reorder
  * ```html

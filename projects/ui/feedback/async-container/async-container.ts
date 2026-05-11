@@ -66,7 +66,7 @@ export class CngxAsyncErrorTpl {
  * `CngxAsyncState` lifecycle. Includes a built-in refresh indicator (bar)
  * and ARIA state announcements.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-async-container [state]="residents">

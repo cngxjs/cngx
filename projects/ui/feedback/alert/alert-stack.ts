@@ -22,7 +22,7 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  * `inject(CngxAlerter)` get this stack's instance. Supports nesting
  * (each stack is independent).
  *
- * @usageNotes
+ * @example
  *
  * ### In a dialog
  * ```html

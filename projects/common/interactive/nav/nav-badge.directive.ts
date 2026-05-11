@@ -16,7 +16,7 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * unique information (e.g., unread count), provide `[ariaLabel]` to make
  * it accessible — this removes `aria-hidden` and adds a visually-hidden label.
  *
- * @usageNotes
+ * @example
  *
  * ### Decorative badge (aria-hidden, default)
  * ```html

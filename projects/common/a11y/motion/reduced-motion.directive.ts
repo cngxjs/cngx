@@ -14,7 +14,7 @@ import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/cor
  * a different animation strategy or suppress requestAnimationFrame loops).
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Conditional animation
  * ```html

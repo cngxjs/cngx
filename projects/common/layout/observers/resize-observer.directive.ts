@@ -23,7 +23,7 @@ import {
  * resize-aware layouts.
  *
  *
- * @usageNotes
+ * @example
  *
  * ### Display current size
  * ```html
