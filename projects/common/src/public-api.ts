@@ -22,4 +22,4 @@ export * from '@cngx/common/data';
 export * from '@cngx/common/dialog';
 export * from '@cngx/common/popover';
 
-export { VERSION } from './lib/version';
+export { VERSION } from './version';

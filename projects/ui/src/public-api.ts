@@ -3,18 +3,18 @@
  * @module @cngx/ui
  */
 
-export * from './lib/ui';
-export { CngxSpeakButton } from './lib/speak/speak-button';
-export { CngxSidenavLayout } from './lib/sidenav/sidenav-layout';
-export { CngxSidenav, type SidenavPosition, type SidenavMode } from './lib/sidenav/sidenav';
-export { CngxSidenavContent } from './lib/sidenav/sidenav-content';
-export { CngxSidenavHeader } from './lib/sidenav/sidenav-header';
-export { CngxSidenavFooter } from './lib/sidenav/sidenav-footer';
-export { CngxSkeletonContainer } from './lib/skeleton/skeleton-container';
+export * from './ui';
+export { CngxSpeakButton } from './speak/speak-button';
+export { CngxSidenavLayout } from './sidenav/sidenav-layout';
+export { CngxSidenav, type SidenavPosition, type SidenavMode } from './sidenav/sidenav';
+export { CngxSidenavContent } from './sidenav/sidenav-content';
+export { CngxSidenavHeader } from './sidenav/sidenav-header';
+export { CngxSidenavFooter } from './sidenav/sidenav-footer';
+export { CngxSkeletonContainer } from './skeleton/skeleton-container';
 export {
   CngxSkeletonPlaceholder,
   type CngxSkeletonPlaceholderContext,
-} from './lib/skeleton/skeleton-placeholder';
-export { CngxActionButton, type ActionButtonVariant } from './lib/action-button/action-button';
+} from './skeleton/skeleton-placeholder';
+export { CngxActionButton, type ActionButtonVariant } from './action-button/action-button';
 // Re-export from @cngx/common/interactive for backwards compatibility
 export { CngxPending, CngxSucceeded, CngxFailed } from '@cngx/common/interactive';

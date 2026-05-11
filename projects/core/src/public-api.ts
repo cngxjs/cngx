@@ -3,4 +3,4 @@
  * @module @cngx/core
  */
 
-export * from './lib/core';
+export * from './core';

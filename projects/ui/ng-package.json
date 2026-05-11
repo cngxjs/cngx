@@ -5,7 +5,7 @@
     "entryFile": "src/public-api.ts"
   },
   "assets": [
-    "src/lib/speak/speak-button-theme.scss",
+    "src/speak/speak-button-theme.scss",
     "mat-tabs/styles/mat-tabs.css"
   ]
 }

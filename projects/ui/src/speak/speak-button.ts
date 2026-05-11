@@ -19,7 +19,7 @@ import { type CngxSpeak } from '@cngx/common';
  *
  * ### Material theme integration
  * ```scss
- * @use '@cngx/ui/src/lib/speak/speak-button-theme' as speak;
+ * @use '@cngx/ui/src/speak/speak-button-theme' as speak;
  * @include speak.theme($theme);
  * ```
  */
