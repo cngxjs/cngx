@@ -6,5 +6,5 @@
     "outDir": "../../out-tsc/spec",
     "types": ["vitest/globals"]
   },
-  "include": ["*.d.ts", "*.spec.ts", "rxjs-interop/src/**/*.spec.ts"]
+  "include": ["*.d.ts", "*.spec.ts", "rxjs-interop/**/*.spec.ts"]
 }

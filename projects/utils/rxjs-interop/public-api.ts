@@ -3,4 +3,4 @@
  * @module @cngx/utils/rxjs-interop
  */
 
-export * from './src/rxjs-interop';
+export * from './rxjs-interop';

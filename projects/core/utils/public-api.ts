@@ -1,22 +1,22 @@
 /**
  * @module @cngx/core/utils
  */
-export { coerceBooleanProperty, coerceNumberProperty } from './src/coerce.util';
-export { memoize } from './src/memo.util';
-export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './src/keyboard.util';
-export { hasTransition, onTransitionDone } from './src/transition.util';
-export { nextUid } from './src/uid.util';
-export { type AsyncStatus, type CngxAsyncState } from './src/async-state';
+export { coerceBooleanProperty, coerceNumberProperty } from './coerce.util';
+export { memoize } from './memo.util';
+export { parseKeyCombo, matchesKeyCombo, type KeyCombo } from './keyboard.util';
+export { hasTransition, onTransitionDone } from './transition.util';
+export { nextUid } from './uid.util';
+export { type AsyncStatus, type CngxAsyncState } from './async-state';
 export {
   buildAsyncStateView,
   type AsyncStateViewSources,
-} from './src/build-async-state-view';
-export { createTransitionTracker, type StatusTransition } from './src/transition-tracker';
-export { CNGX_STATEFUL, type CngxStateful } from './src/stateful';
+} from './build-async-state-view';
+export { createTransitionTracker, type StatusTransition } from './transition-tracker';
+export { CNGX_STATEFUL, type CngxStateful } from './stateful';
 export {
   CNGX_SELECTION_CONTROLLER_FACTORY,
   createSelectionController,
   type CngxSelectionControllerFactory,
   type SelectionController,
   type SelectionControllerOptions,
-} from './src/selection-controller';
+} from './selection-controller';

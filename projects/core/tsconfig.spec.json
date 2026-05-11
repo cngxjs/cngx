@@ -9,7 +9,7 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
-    "utils/src/**/*.spec.ts",
-    "tokens/src/**/*.spec.ts"
+    "utils/**/*.spec.ts",
+    "tokens/**/*.spec.ts"
   ]
 }
