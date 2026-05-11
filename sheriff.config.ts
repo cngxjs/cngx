@@ -49,6 +49,7 @@ export const config: SheriffConfig = {
       `entry:${entry}`,
       'scope:lib',
     ],
+    'projects/core': ['lib:core', 'level:1', 'entry:primary', 'scope:lib'],
     'projects/core/<entry>': ({ entry }) => [
       'lib:core',
       'level:1',

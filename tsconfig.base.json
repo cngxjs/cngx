@@ -31,7 +31,7 @@
       "@cngx/common/tabs": ["projects/common/tabs/public-api.ts"],
       "@cngx/common/display": ["projects/common/display/public-api.ts"],
       "@cngx/common/stepper": ["projects/common/stepper/public-api.ts"],
-      "@cngx/core": ["projects/core/src/public-api.ts"],
+      "@cngx/core": ["projects/core/public-api.ts"],
       "@cngx/core/tokens": ["projects/core/tokens/public-api.ts"],
       "@cngx/core/utils": ["projects/core/utils/public-api.ts"],
       "@cngx/forms": ["projects/forms/src/public-api.ts"],
