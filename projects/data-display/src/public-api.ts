@@ -3,4 +3,4 @@
  * @module @cngx/data-display
  */
 
-export * from './lib/data-display';
+export * from './data-display';
