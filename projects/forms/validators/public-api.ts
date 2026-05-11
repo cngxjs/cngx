@@ -3,5 +3,5 @@
  * @module @cngx/forms/validators
  */
 
-export * from './src/required-true.validator';
-export * from './src/pattern-match.validator';
+export * from './required-true.validator';
+export * from './pattern-match.validator';

@@ -20,8 +20,8 @@
 @use '../../projects/common/card/card-skeleton' as cngx-card-skeleton;
 @use '../../projects/ui/empty-state/src/empty-state-theme' as empty-state;
 @use '../../projects/ui/empty-state/src/empty-state' as cngx-empty-state;
-@use '../../projects/forms/input/src/file-drop' as cngx-file-drop;
-@use '../../projects/forms/input/src/file-drop-theme' as file-drop;
+@use '../../projects/forms/input/file-drop' as cngx-file-drop;
+@use '../../projects/forms/input/file-drop-theme' as file-drop;
 @use './app/demos/demo-shared';
 
 // `@cngx/ui/mat-tabs` ships its sticky-error skin as a standalone

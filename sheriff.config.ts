@@ -64,8 +64,8 @@ export const config: SheriffConfig = {
       'scope:lib',
     ],
     // Specific-before-generic so the field-testing barrel wins over the
-    // forms/<entry> matcher at the field/src/testing depth.
-    'projects/forms/field/src/testing': [
+    // forms/<entry> matcher at the field/testing depth.
+    'projects/forms/field/testing': [
       'lib:forms',
       'level:3',
       'entry:field-testing',
