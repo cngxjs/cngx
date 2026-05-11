@@ -7,6 +7,6 @@
   "include": [
     "*.d.ts",
     "*.spec.ts",
-    "treetable/src/**/*.spec.ts"
+    "treetable/**/*.spec.ts"
   ]
 }
