@@ -10,6 +10,11 @@ import { Overlay, OverlayConfig, type OverlayRef as CdkOverlayRef } from '@angul
 import { ComponentPortal } from '@angular/cdk/portal';
 import { CngxOverlayRef } from './overlay-ref';
 
+/**
+ * Config accepted by {@link CngxOverlay.open}. Partial alias of CDK's
+ * {@link OverlayConfig} — every field is optional and falls back to
+ * the CDK overlay default.
+ */
 export type CngxOverlayConfig = Partial<OverlayConfig>;
 
 /**

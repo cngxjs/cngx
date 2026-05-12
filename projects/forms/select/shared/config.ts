@@ -169,6 +169,13 @@ export interface CngxSelectFallbackLabels {
   readonly commitFailedRetry?: string;
 }
 
+/**
+ * Resolved select-family configuration cascade. Built by composing
+ * `with*` features through `provideSelectConfig` /
+ * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
+ * injection token. Every field is optional — unset keys fall back to
+ * the library defaults.
+ */
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:

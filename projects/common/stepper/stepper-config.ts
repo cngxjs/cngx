@@ -132,10 +132,20 @@ export function withStepperDefaultOrientation(
   }));
 }
 
+/**
+ * Override the default linear-progression setting. Per-instance
+ * `[linear]` Input still wins.
+ */
 export function withStepperLinear(linear: boolean): CngxStepperConfigFeature {
   return defineStepperConfigFeature((cfg) => ({ ...cfg, defaultLinear: linear }));
 }
 
+/**
+ * Override the default commit mode for async step transitions.
+ * `'optimistic'` advances on action dispatch and rolls back on error;
+ * `'pessimistic'` waits for success. Per-instance `[commitMode]`
+ * Input still wins.
+ */
 export function withStepperCommitMode(
   mode: 'optimistic' | 'pessimistic',
 ): CngxStepperConfigFeature {
@@ -145,6 +155,11 @@ export function withStepperCommitMode(
   }));
 }
 
+/**
+ * Configure router synchronisation for the active step. `mode` chooses
+ * the URL surface (URL fragment or query parameter); `param` names the
+ * key (default `'step'`).
+ */
 export function withStepperRouterSync(
   mode: 'fragment' | 'queryParam',
   param = 'step',
@@ -156,6 +171,10 @@ export function withStepperRouterSync(
   }));
 }
 
+/**
+ * Merge ARIA labels into the cascade. Keys not provided keep their
+ * library defaults; per-instance overrides on the stepper still win.
+ */
 export function withStepperAriaLabels(
   labels: CngxStepperAriaLabels,
 ): CngxStepperConfigFeature {
@@ -165,6 +184,10 @@ export function withStepperAriaLabels(
   }));
 }
 
+/**
+ * Merge text fallback labels (button captions, error strings) into the
+ * cascade. Used when a slot directive is not present.
+ */
 export function withStepperFallbackLabels(
   labels: CngxStepperFallbackLabels,
 ): CngxStepperConfigFeature {

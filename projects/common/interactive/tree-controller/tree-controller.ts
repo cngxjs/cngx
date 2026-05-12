@@ -218,6 +218,15 @@ interface TreeIndexes<T> {
   readonly firstChildById: ReadonlyMap<string, FlatTreeNode<T>>;
 }
 
+/**
+ * Plain factory for a signal-native tree controller. Reads `opts.nodes`
+ * reactively, derives flat / visible projections via `computed`, and
+ * tracks expanded-id state internally. Must be called in an injection
+ * context (reads {@link CNGX_TREE_CONFIG} for defaults).
+ *
+ * See {@link CngxTreeController} for the returned surface and
+ * {@link CngxTreeControllerOptions} for the configuration cascade.
+ */
 export function createTreeController<T>(
   opts: CngxTreeControllerOptions<T>,
 ): CngxTreeController<T> {

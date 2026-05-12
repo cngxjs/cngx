@@ -57,6 +57,15 @@ export interface CngxCommitErrorAnnouncerOptions {
   readonly policy: Signal<CngxCommitErrorAnnouncePolicy>;
 }
 
+/**
+ * Default factory for the scalar commit-error announcer. Dispatches
+ * via `policy.kind`: `'verbose'` announces the formatted error message
+ * at the configured severity; `'soft'` calls the soft-announce hook
+ * (`CngxTypeahead` removal pattern).
+ *
+ * Override the {@link CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY} token to
+ * swap in telemetry or locale-aware variants.
+ */
 export function createCommitErrorAnnouncer(
   opts: CngxCommitErrorAnnouncerOptions,
 ): (err: unknown) => void {

@@ -8,6 +8,7 @@
  */
 export type CngxCurve = 'linear' | 'monotone';
 
+/** Pixel-space point fed into {@link buildCurvePath}. */
 export interface PathPoint {
   readonly x: number;
   readonly y: number;

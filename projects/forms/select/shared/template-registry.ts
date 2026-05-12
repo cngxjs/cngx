@@ -108,6 +108,16 @@ const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefin
 const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
   signal(undefined);
 
+/**
+ * Build a resolved {@link CngxSelectTemplateRegistry} from raw
+ * `contentChild` directive queries. Runs each slot through the
+ * 3-stage cascade (instance directive → `CNGX_SELECT_CONFIG.templates`
+ * default → `null`). Must be called in an injection context.
+ *
+ * Used by every select-family variant to replace ~13 inline
+ * `injectResolvedTemplate(...)` cascade blocks. See
+ * {@link CngxSelectTemplateRegistryQueries} for the input shape.
+ */
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {

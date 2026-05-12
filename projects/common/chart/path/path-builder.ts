@@ -1,15 +1,26 @@
 import { buildCurvePath, type CngxCurve, type PathPoint } from './curve';
 import type { ScaleFn, XScaleInput } from '../chart/chart-context';
 
+/** Reads the Y value of a data row at index `i`. */
 export type LineYAccessor<T> = (d: T, i: number) => number;
+/**
+ * Reads the X value of a data row at index `i`. Default behaviour
+ * (when omitted on a builder) is the row's positional index.
+ */
 export type LineXAccessor<T> = (d: T, i: number) => XScaleInput;
 
+/** Construction options for {@link createPathBuilder}. */
 export interface PathBuilderOptions<T> {
   readonly y: LineYAccessor<T>;
   readonly x?: LineXAccessor<T>;
   readonly curve: CngxCurve;
 }
 
+/**
+ * Single-slot LRU cache around an SVG `d`-attribute builder. Returned
+ * by {@link createPathBuilder}; consumed by the `<cngx-line>` /
+ * `<cngx-area>` family.
+ */
 export interface PathBuilder<T> {
   /**
    * Build the SVG `d` attribute for the given data + scales. Same

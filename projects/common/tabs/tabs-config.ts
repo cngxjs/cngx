@@ -171,10 +171,20 @@ export function withTabsDefaultOrientation(
  */
 export const withDefaultOrientation = withTabsDefaultOrientation;
 
+/**
+ * Override whether roving-tabindex navigation loops from last back to
+ * first (and vice versa). Per-instance `[loop]` Input still wins.
+ */
 export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, defaultLoop: loop }));
 }
 
+/**
+ * Override the default commit mode for async tab transitions.
+ * `'optimistic'` activates the tab on action dispatch and rolls back
+ * on error; `'pessimistic'` waits for success. Per-instance
+ * `[commitMode]` Input still wins.
+ */
 export function withTabsCommitMode(
   mode: 'optimistic' | 'pessimistic',
 ): CngxTabsConfigFeature {
@@ -184,6 +194,11 @@ export function withTabsCommitMode(
   }));
 }
 
+/**
+ * Configure router synchronisation for the active tab. `mode` chooses
+ * the URL surface (URL fragment or query parameter); `param` names
+ * the key (default `'tab'`).
+ */
 export function withTabsRouterSync(
   mode: 'fragment' | 'queryParam',
   param = 'tab',
@@ -195,6 +210,10 @@ export function withTabsRouterSync(
   }));
 }
 
+/**
+ * Merge ARIA labels into the cascade. Keys not provided keep their
+ * library defaults; per-instance overrides on the tab group still win.
+ */
 export function withTabsAriaLabels(
   labels: CngxTabsAriaLabels,
 ): CngxTabsConfigFeature {
@@ -204,6 +223,10 @@ export function withTabsAriaLabels(
   }));
 }
 
+/**
+ * Merge text fallback labels (overflow trigger, busy / rejection text)
+ * into the cascade. Used when a slot directive is not present.
+ */
 export function withTabsFallbackLabels(
   labels: CngxTabsFallbackLabels,
 ): CngxTabsConfigFeature {
