@@ -1,11 +1,7 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-popover-panel theming ──────────────────────────────────────
-//
 //   @use '@cngx/common/popover/popover-panel-theme' as panel;
 //   html { @include panel.theme($theme); }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-pp-bg: #fff;
@@ -20,12 +16,10 @@
   --cngx-pp-transition-duration: 200ms;
   --cngx-pp-transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
 
-  // Header
   --cngx-pp-header-font-size: 0.875rem;
   --cngx-pp-header-font-weight: 600;
   --cngx-pp-header-gap: 8px;
 
-  // Footer
   --cngx-pp-footer-gap: 8px;
   --cngx-pp-footer-border-top: 1px solid rgba(0, 0, 0, 0.06);
   --cngx-pp-footer-padding-top: 12px;
@@ -48,8 +42,6 @@
     --cngx-pp-color: #{mat.get-theme-color($theme, foreground, text)};
   }
 }
-
-// ─── Variant colors ──────────────────────────────────────────────
 
 @mixin _variant-colors($theme) {
   @if mat.get-theme-version($theme) == 1 {
@@ -89,8 +81,6 @@
   }
 }
 
-// ─── Structural styles ──────────────────────────────────────────
-
 @mixin styles() {
   cngx-popover-panel {
     position: fixed;
@@ -117,7 +107,6 @@
     display: block;
   }
 
-  // ── Transitions ────────────────────────────────────────────────
   cngx-popover-panel.cngx-popover--opening {
     opacity: 0;
     transform: translateY(4px) scale(0.98);
@@ -131,7 +120,6 @@
     transform: translateY(4px) scale(0.98);
   }
 
-  // ── Header ─────────────────────────────────────────────────────
   .cngx-popover-panel__header {
     font-size: var(--cngx-pp-header-font-size, 0.875rem);
     font-weight: var(--cngx-pp-header-font-weight, 600);
@@ -139,13 +127,11 @@
     color: var(--cngx-pp-accent-text, inherit);
   }
 
-  // ── Body ───────────────────────────────────────────────────────
   .cngx-popover-panel__body {
     font-size: 0.8125rem;
     line-height: 1.5;
   }
 
-  // ── Footer ─────────────────────────────────────────────────────
   .cngx-popover-panel__footer {
     display: flex;
     justify-content: flex-end;
@@ -155,7 +141,6 @@
     margin-top: var(--cngx-pp-footer-margin-top, 12px);
   }
 
-  // ── Header row (header + close button) ─────────────────────────
   .cngx-popover-panel__header-row {
     display: flex;
     align-items: center;
@@ -168,7 +153,6 @@
     margin-bottom: 0;
   }
 
-  // ── Close button ───────────────────────────────────────────────
   .cngx-popover-panel__close {
     flex-shrink: 0;
     display: flex;
@@ -198,7 +182,6 @@
     }
   }
 
-  // ── Arrow ──────────────────────────────────────────────────────
   .cngx-popover-panel__arrow {
     position: absolute;
     width: calc(var(--cngx-pp-arrow-size, 8px) * 2);
@@ -209,8 +192,7 @@
     pointer-events: none;
   }
 
-  // Arrow placement — derived from position-area
-  // Bottom placement: arrow on top
+  // Arrow placement — derived from position-area.
   [style*='position-area: bottom'] > .cngx-popover-panel__arrow,
   [style*='position-area:bottom'] > .cngx-popover-panel__arrow {
     top: calc(var(--cngx-pp-arrow-size, 8px) * -1);
@@ -220,7 +202,6 @@
     border-bottom: none;
   }
 
-  // Top placement: arrow on bottom
   [style*='position-area: top'] > .cngx-popover-panel__arrow,
   [style*='position-area:top'] > .cngx-popover-panel__arrow {
     bottom: calc(var(--cngx-pp-arrow-size, 8px) * -1);
@@ -230,7 +211,6 @@
     border-top: none;
   }
 
-  // Left placement: arrow on right
   [style*='position-area: left'] > .cngx-popover-panel__arrow,
   [style*='position-area:left'] > .cngx-popover-panel__arrow {
     right: calc(var(--cngx-pp-arrow-size, 8px) * -1);
@@ -240,7 +220,6 @@
     border-bottom: none;
   }
 
-  // Right placement: arrow on left
   [style*='position-area: right'] > .cngx-popover-panel__arrow,
   [style*='position-area:right'] > .cngx-popover-panel__arrow {
     left: calc(var(--cngx-pp-arrow-size, 8px) * -1);
@@ -250,7 +229,6 @@
     border-top: none;
   }
 
-  // ── Variant accent strip + fallback colors ─────────────────────
   .cngx-popover-panel--info {
     --cngx-pp-accent: #dbeafe;
     --cngx-pp-accent-text: #1e40af;
@@ -272,7 +250,6 @@
     border-left: 3px solid var(--cngx-pp-accent-text);
   }
 
-  // ── Action button base styles ──────────────────────────────────
   .cngx-popover-action {
     display: inline-flex;
     align-items: center;
@@ -331,7 +308,6 @@
     }
   }
 
-  // ── Loading/Error/Empty states ─────────────────────────────────
   .cngx-popover-panel__loading,
   .cngx-popover-panel__error,
   .cngx-popover-panel__empty {
@@ -349,15 +325,12 @@
     opacity: 0.6;
   }
 
-  // ── Reduced motion ─────────────────────────────────────────────
   @media (prefers-reduced-motion: reduce) {
     cngx-popover-panel {
       transition: none;
     }
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(cngx-popover-panel) {

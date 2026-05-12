@@ -142,8 +142,6 @@ export class CngxPopoverPanel {
   private readonly config = inject(CNGX_POPOVER_PANEL_CONFIG);
   private readonly destroyRef = inject(DestroyRef);
 
-  // ── Inputs ────────────────────────────────────────────────────────
-
   /**
    * Variant string — mapped to CSS class `cngx-popover-panel--{variant}`.
    * Pre-themed: `default`, `info`, `warning`, `danger`, `success`.
@@ -195,14 +193,10 @@ export class CngxPopoverPanel {
   /** Whether the footer slot has projected content. */
   readonly hasFooter = input(false);
 
-  // ── Content state templates ───────────────────────────────────────
-
   protected readonly closeTpl = contentChild(CngxPopoverClose);
   protected readonly loadingTpl = contentChild(CngxPopoverLoading);
   protected readonly emptyTpl = contentChild(CngxPopoverEmpty);
   protected readonly errorTpl = contentChild(CngxPopoverError);
-
-  // ── IDs ───────────────────────────────────────────────────────────
 
   private readonly uid = nextUid('cngx-pp');
   protected readonly headerId = `${this.uid}-header`;
@@ -212,8 +206,6 @@ export class CngxPopoverPanel {
   protected readonly ariaDescribedBy = computed(() =>
     this.effectiveLoading() || this.effectiveError() || this.effectiveEmpty() ? null : this.bodyId,
   );
-
-  // ── Computed ──────────────────────────────────────────────────────
 
   protected readonly hostClass = computed(() => {
     const v = this.variant() ?? this.config.defaultVariant ?? 'default';
@@ -227,13 +219,11 @@ export class CngxPopoverPanel {
   private autoDismissTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    // Auto-dismiss based on variant config
     effect(() => {
       const isVisible = this.popover.isVisible();
       const v = this.variant() ?? untracked(() => this.config.defaultVariant) ?? 'default';
       const timing = untracked(() => this.config.autoDismiss);
 
-      // Always clear previous timer before setting a new one
       if (this.autoDismissTimer) {
         clearTimeout(this.autoDismissTimer);
         this.autoDismissTimer = null;

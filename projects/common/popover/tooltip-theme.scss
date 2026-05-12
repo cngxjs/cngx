@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-tooltip theming ──────────────────────────────────────
-//
 // Aligns with Material's tooltip token API (inverse-surface / inverse-on-surface)
 // so cngx tooltips feel native in a Material app.
 //
@@ -14,8 +12,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include tooltip.theme($theme);
 //   }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-tooltip-bg: #1c1b1f;
@@ -68,8 +64,6 @@
   }
 }
 
-// ─── Structural styles ──────────────────────────────────────────
-
 @mixin styles() {
   .cngx-tooltip {
     position: fixed;
@@ -101,7 +95,6 @@
         var(--cngx-tooltip-transition-easing, cubic-bezier(0.4, 0, 0.2, 1));
   }
 
-  // ── Open / close transitions ───────────────────────────────────
   .cngx-tooltip.cngx-popover--opening {
     opacity: 0;
     transform: scale(0.95);
@@ -117,7 +110,6 @@
     transform: scale(0.95);
   }
 
-  // ── Reduced motion ─────────────────────────────────────────────
   @media (prefers-reduced-motion: reduce) {
     .cngx-tooltip {
       transition: none;
@@ -125,7 +117,6 @@
   }
 }
 
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(.cngx-tooltip) {

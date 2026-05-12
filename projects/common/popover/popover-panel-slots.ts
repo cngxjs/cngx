@@ -1,7 +1,5 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
-// ── Content projection markers ──────────────────────────────────
-
 /** Marks the header content inside `cngx-popover-panel`. */
 @Directive({ selector: '[cngxPopoverHeader]', standalone: true })
 export class CngxPopoverHeader {}
@@ -30,8 +28,6 @@ export class CngxPopoverFooter {}
 export class CngxPopoverClose {
   readonly templateRef = inject(TemplateRef);
 }
-
-// ── Content state templates ─────────────────────────────────────
 
 /** Template shown while panel content is loading. */
 @Directive({ selector: 'ng-template[cngxPopoverLoading]', standalone: true })

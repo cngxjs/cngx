@@ -137,8 +137,6 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export class CngxPopoverAction {
   private readonly popover = inject(CngxPopover, { optional: true });
 
-  // ── Inputs ────────────────────────────────────────────────────────
-
   /** Button role: `'dismiss'` closes immediately, `'confirm'` runs an async action. */
   readonly role = input<'dismiss' | 'confirm'>('confirm');
 
@@ -151,13 +149,9 @@ export class CngxPopoverAction {
   /** Duration in ms to show success/error feedback. */
   readonly feedbackDuration = input(2000);
 
-  // ── Template queries ──────────────────────────────────────────────
-
   protected readonly pendingTpl = contentChild(CngxPending);
   protected readonly succeededTpl = contentChild(CngxSucceeded);
   protected readonly failedTpl = contentChild(CngxFailed);
-
-  // ── Handlers ──────────────────────────────────────────────────────
 
   protected handleDismiss(): void {
     this.popover?.hide();
