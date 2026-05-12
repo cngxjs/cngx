@@ -1,13 +1,9 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-bottom-sheet theming ──────────────────────────────────
-//
 // Include in your global theme stylesheet:
 //
 //   @use '@cngx/common/dialog/bottom-sheet-theme' as bottom-sheet;
 //   @include bottom-sheet.theme($theme);
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-bottom-sheet-radius: 16px 16px 0 0;
@@ -26,8 +22,6 @@
     --cngx-bottom-sheet-handle-color: var(--mat-sys-outline-variant);
   }
 }
-
-// ─── Structural styles ──────────────────────────────────────────
 
 @mixin styles() {
   // Override the UA top-layer centering for bottom positioning
@@ -57,7 +51,6 @@
     margin: var(--cngx-bottom-sheet-handle-margin, 0 auto 16px);
   }
 
-  // Opening animation: slide up from bottom
   dialog.cngx-bottom-sheet.cngx-dialog--opening {
     opacity: 0;
     transform: translateY(100%);
@@ -79,8 +72,6 @@
     }
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(dialog.cngx-bottom-sheet) {

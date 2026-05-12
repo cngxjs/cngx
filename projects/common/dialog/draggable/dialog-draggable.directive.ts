@@ -78,7 +78,6 @@ export class CngxDialogDraggable {
    */
   readonly snapMode = input<'live' | 'release'>('live');
 
-  // ── State ─────────────────────────────────────────────────────────
   private readonly positionState = signal({ x: 0, y: 0 });
   private readonly draggingState = signal(false);
 
@@ -91,7 +90,7 @@ export class CngxDialogDraggable {
   protected readonly cssX = computed(() => `${this.positionState().x}px`);
   protected readonly cssY = computed(() => `${this.positionState().y}px`);
 
-  // ── Drag state (not reactive — perf critical) ─────────────────────
+  // Drag state — not reactive, perf critical (pointermove runs at framerate).
   private dragStartX = 0;
   private dragStartY = 0;
   private posStartX = 0;
@@ -100,7 +99,6 @@ export class CngxDialogDraggable {
   private boundUp: ((e: PointerEvent) => void) | null = null;
 
   constructor() {
-    // Wire handle events after render
     effect(() => {
       const handleEl = this.handle() ?? this.elRef.nativeElement;
       this.setupHandle(handleEl);
@@ -109,15 +107,12 @@ export class CngxDialogDraggable {
     this.destroyRef.onDestroy(() => this.cleanup());
   }
 
-  // ── Private ───────────────────────────────────────────────────────
-
   private currentHandle: HTMLElement | null = null;
   private boundPointerDown: ((e: PointerEvent) => void) | null = null;
   private boundKeyDown: ((e: KeyboardEvent) => void) | null = null;
 
   /** Attach pointer and keyboard listeners to `el`, cleaning up the previous handle first. */
   private setupHandle(el: HTMLElement): void {
-    // Clean up previous handle
     if (this.currentHandle && this.boundPointerDown) {
       this.currentHandle.removeEventListener('pointerdown', this.boundPointerDown);
     }
@@ -145,7 +140,6 @@ export class CngxDialogDraggable {
   }
 
   private handlePointerDown(event: PointerEvent): void {
-    // Only primary button
     if (event.button !== 0) {
       return;
     }
@@ -211,7 +205,6 @@ export class CngxDialogDraggable {
       this.currentHandle.style.cursor = 'var(--cngx-dialog-drag-cursor, grab)';
     }
 
-    // Snap to grid on release
     if (this.gridSize() > 0 && this.snapMode() === 'release') {
       const { x, y } = this.positionState();
       this.positionState.set(this.snap(x, y));
