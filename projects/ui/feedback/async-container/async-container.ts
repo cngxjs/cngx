@@ -18,8 +18,6 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
 import { CngxLoadingIndicator } from '../loading/loading-indicator';
 import { CngxToaster } from '../toast/toast.service';
 
-// ── Template marker directives ──────────────────────────────────────
-
 /** Marks the skeleton template inside `cngx-async-container`. */
 @Directive({ selector: 'ng-template[cngxAsyncSkeleton]', standalone: true })
 export class CngxAsyncSkeletonTpl {
@@ -56,8 +54,6 @@ export class CngxAsyncEmptyTpl {
 export class CngxAsyncErrorTpl {
   readonly templateRef = inject<TemplateRef<{ $implicit: unknown }>>(TemplateRef);
 }
-
-// ── Component ───────────────────────────────────────────────────────
 
 /**
  * Async container molecule — coordinates all feedback states for data loading.
@@ -186,8 +182,6 @@ export class CngxAsyncContainer<T> {
   /** Toast message on error. If set, fires a toast via CngxToaster. */
   readonly toastError = input<string | undefined>(undefined);
 
-  // ── Template queries ──────────────────────────────────────────────
-
   /** @internal */
   protected readonly skeletonTpl = contentChild(CngxAsyncSkeletonTpl);
   /** @internal */
@@ -196,8 +190,6 @@ export class CngxAsyncContainer<T> {
   protected readonly emptyTpl = contentChild(CngxAsyncEmptyTpl);
   /** @internal */
   protected readonly errorTpl = contentChild(CngxAsyncErrorTpl);
-
-  // ── Derived view ──────────────────────────────────────────────────
 
   /** @internal */
   protected readonly activeView = computed<AsyncView>(() => {
@@ -224,8 +216,6 @@ export class CngxAsyncContainer<T> {
   protected readonly errorContext = computed(() => ({
     $implicit: this.state().error(),
   }));
-
-  // ── SR announcements ──────────────────────────────────────────────
 
   /** @internal */
   protected readonly announcement = signal<string>('');

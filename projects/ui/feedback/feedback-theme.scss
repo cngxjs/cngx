@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx feedback theming ─────────────────────────────────────
-//
 // Include in your global theme stylesheet:
 //
 //   @use '@angular/material' as mat;
@@ -14,7 +12,6 @@
 //     @include feedback.theme($theme);
 //   }
 
-// ─── Loading Indicator ─────────────────────────────────────────
 
 @mixin loading-indicator-base() {
   --cngx-loading-indicator-color: currentColor;
@@ -34,7 +31,6 @@
   }
 }
 
-// ─── Loading Overlay ───────────────────────────────────────────
 
 @mixin loading-overlay-base() {
   --cngx-loading-overlay-backdrop-bg: rgba(255, 255, 255, 0.5);
@@ -50,7 +46,6 @@
   }
 }
 
-// ─── Progress ──────────────────────────────────────────────────
 
 @mixin progress-base() {
   --cngx-progress-color: currentColor;
@@ -75,7 +70,6 @@
   }
 }
 
-// ─── Alert ─────────────────────────────────────────────────────
 
 @mixin alert-base() {
   --cngx-alert-gap: 12px;
@@ -137,7 +131,6 @@
   }
 }
 
-// ─── Toast ─────────────────────────────────────────────────────
 
 @mixin toast-base() {
   --cngx-toast-z-index: 9999;
@@ -190,7 +183,6 @@
   }
 }
 
-// ─── Alert Stack ───────────────────────────────────────────────
 
 @mixin alert-stack-base() {
   --cngx-alert-stack-gap: 8px;
@@ -212,7 +204,6 @@
   }
 }
 
-// ─── Banner ────────────────────────────────────────────────────
 
 @mixin banner-base() {
   --cngx-banner-z-index: 900;
@@ -284,8 +275,6 @@
   }
 }
 
-// ─── Close / Dismiss Button Density ────────────────────────────
-//
 // Shared density presets for all dismiss/close buttons across
 // alert, toast, and popover. Three levels:
 //
@@ -336,8 +325,6 @@
     --cngx-close-button-padding: #{map-get($preset, padding)};
   }
 }
-
-// ─── Public entrypoint ─────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(.cngx-loading-indicator) {

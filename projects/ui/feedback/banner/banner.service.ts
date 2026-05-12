@@ -169,13 +169,11 @@ export class CngxBanner {
 
     try {
       await banner.config.action.handler();
-      // Success: clear pending state, then dismiss
       this.banners.update((bs) =>
         bs.map((b) => (b.id === id ? { ...b, actionPending: false } : b)),
       );
       this.dismiss(id);
     } catch (err: unknown) {
-      // Error: keep banner open, store error
       this.banners.update((bs) =>
         bs.map((b) => (b.id === id ? { ...b, actionPending: false, actionError: err } : b)),
       );

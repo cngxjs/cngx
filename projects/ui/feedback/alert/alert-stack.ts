@@ -245,8 +245,6 @@ export class CngxAlertStack {
   /** Auto-scroll stack into view when new alert appears. */
   readonly autoScroll = input<boolean>(true);
 
-  // ── Computed ──────────────────────────────────────────────
-
   /** @internal — expanded state. Resets when alert count drops to maxVisible or below. */
   private readonly expanded = linkedSignal({
     source: () => this.scopedAlerts().length <= this.maxVisible(),
