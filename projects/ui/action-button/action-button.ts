@@ -248,8 +248,6 @@ export class CngxActionButton {
     return click ? click.error() : undefined;
   });
 
-  // ── Produced state ──────────────────────────────────────────────────
-
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
 
   /**
@@ -275,7 +273,6 @@ export class CngxActionButton {
   protected readonly failedTpl = contentChild(CngxFailed);
 
   constructor() {
-    // ── Toast + lastUpdated effect ────────────────────────────────────
     // Double-toast guard: warn once if consumer also placed [cngxToastOn] on this element
     if (
       typeof ngDevMode !== 'undefined' &&
