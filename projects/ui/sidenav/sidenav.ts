@@ -154,7 +154,7 @@ export class CngxSidenav {
   /** @internal Reference to host element for layout positioning. */
   readonly elementRef = inject(ElementRef<HTMLElement>);
 
-  // ── Responsive media query (inlined, not CngxMediaQuery directive) ──
+  // Inlined matchMedia, not CngxMediaQuery directive.
   private readonly mediaMatches = signal(false);
 
   /** Resolved mode — responsive overrides to `'side'` when matching, falls back to `mode()`. */
@@ -183,7 +183,6 @@ export class CngxSidenav {
   private readonly prevMode = signal<SidenavMode | undefined>(undefined);
 
   constructor() {
-    // Wire responsive matchMedia
     effect((onCleanup) => {
       const query = this.responsive();
       const win = this.win;
@@ -294,7 +293,6 @@ export class CngxSidenav {
     }
   }
 
-  // ── Resize ──────────────────────────────────────────────────────
 
   /** @internal Parse a CSS px value to a number. */
   widthPx = computed(() => Number.parseInt(this.width(), 10) || 280);
