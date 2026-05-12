@@ -9,12 +9,10 @@ export function coerceBooleanProperty(value: unknown): boolean {
     return false;
   }
 
-  // Handle string values explicitly
   if (typeof value === 'string') {
     return value !== 'false';
   }
 
-  // For non-string values, convert to boolean directly
   return Boolean(value);
 }
 
@@ -32,7 +30,6 @@ export function coerceNumberProperty(value: unknown, fallback = 0): number {
     return Number.isNaN(value) ? fallback : value;
   }
 
-  // Convert to string only for string or number-like values
   const parsed =
     typeof value === 'string' || typeof value === 'boolean'
       ? Number.parseFloat(String(value))
