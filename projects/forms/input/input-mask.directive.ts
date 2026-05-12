@@ -536,7 +536,6 @@ export class CngxInputMask implements ControlValueAccessor {
       }
     });
 
-    // Reset raw state when the mask input changes.
     effect(() => {
       const currentMask = this.mask();
       if (this.prevMask != null && currentMask !== this.prevMask) {
@@ -620,7 +619,6 @@ export class CngxInputMask implements ControlValueAccessor {
       return;
     }
 
-    // Block other mutations.
     if (event.inputType.startsWith('insert') || event.inputType.startsWith('delete')) {
       event.preventDefault();
     }

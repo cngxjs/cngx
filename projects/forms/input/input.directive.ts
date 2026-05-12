@@ -50,8 +50,6 @@ export class CngxInput implements CngxFormFieldControl {
   private readonly el =
     inject<ElementRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>>(ElementRef);
 
-  // CngxFormFieldControl implementation.
-
   readonly id = computed(() => this.presenter?.inputId() ?? (this.el.nativeElement.id || ''));
   private readonly focusedState = signal(false);
   readonly focused = this.focusedState.asReadonly();
