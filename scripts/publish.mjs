@@ -6,6 +6,8 @@
 //   node scripts/publish.mjs --lib core --bump patch   # single lib
 //   node scripts/publish.mjs --dry-run --bump patch    # preview without publishing
 //   node scripts/publish.mjs --tag next --bump major   # publish with dist-tag
+//   node scripts/publish.mjs --skip-git-tag --bump patch  # do not tag/push git
+//   node scripts/publish.mjs --registry <url> ...      # override npm registry
 
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
@@ -14,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const LIBS = ['utils', 'core', 'forms', 'ui', 'common', 'data-display'];
+const LIBS = ['utils', 'core', 'common', 'forms', 'data-display', 'ui'];
 const PLACEHOLDER = '0.0.0-PLACEHOLDER';
 
 function readRootPkg() {
@@ -60,17 +62,58 @@ function run(cmd, cwd = ROOT) {
   execSync(cmd, { cwd, stdio: 'inherit' });
 }
 
+function capture(cmd, cwd = ROOT) {
+  return execSync(cmd, { cwd, encoding: 'utf8' }).trim();
+}
+
+function assertCleanWorktree() {
+  const status = capture('git status --porcelain');
+  if (status.length > 0) {
+    console.error('Refusing to publish: working tree is dirty.');
+    console.error('Commit or stash changes first, then re-run.');
+    console.error('\n--- git status ---');
+    console.error(status);
+    process.exit(1);
+  }
+}
+
+function assertTagAvailable(tagName) {
+  const existing = capture(`git tag --list ${tagName}`);
+  if (existing) {
+    console.error(`Refusing to publish: git tag "${tagName}" already exists.`);
+    console.error('Bump to a different version or delete the tag first.');
+    process.exit(1);
+  }
+}
+
+function createAndPushGitTag(version) {
+  const tagName = `v${version}`;
+  run(`git tag ${tagName} -m "Release ${tagName}"`);
+  run(`git push origin ${tagName}`);
+  console.log(`  Pushed git tag ${tagName}`);
+}
+
 function parseArgs() {
   const args = process.argv.slice(2);
-  const result = { libs: [], version: null, bump: null, dryRun: false, tag: 'latest' };
+  const result = {
+    libs: [],
+    version: null,
+    bump: null,
+    dryRun: false,
+    tag: 'latest',
+    registry: null,
+    skipGitTag: false,
+  };
 
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--lib':     result.libs.push(args[++i]); break;
-      case '--version': result.version = args[++i]; break;
-      case '--bump':    result.bump = args[++i]; break;
-      case '--tag':     result.tag = args[++i]; break;
-      case '--dry-run': result.dryRun = true; break;
+      case '--lib':          result.libs.push(args[++i]); break;
+      case '--version':      result.version = args[++i]; break;
+      case '--bump':         result.bump = args[++i]; break;
+      case '--tag':          result.tag = args[++i]; break;
+      case '--registry':     result.registry = args[++i]; break;
+      case '--dry-run':      result.dryRun = true; break;
+      case '--skip-git-tag': result.skipGitTag = true; break;
       default:
         console.error(`Unknown argument: ${args[i]}`);
         process.exit(1);
@@ -84,7 +127,7 @@ function parseArgs() {
 }
 
 function main() {
-  const { libs, version, bump, dryRun, tag } = parseArgs();
+  const { libs, version, bump, dryRun, tag, registry, skipGitTag } = parseArgs();
 
   if (!version && !bump) {
     console.error('Specify --version <x.y.z> or --bump patch|minor|major');
@@ -101,16 +144,27 @@ function main() {
   const rootPkg = readRootPkg();
   const currentVersion = rootPkg.version;
   const nextVersion = version ?? bumpVersion(currentVersion, bump);
+  const gitTagName = `v${nextVersion}`;
 
-  console.log(`\nVersion: ${currentVersion} -> ${nextVersion}${dryRun ? ' (dry run)' : ''}`);
-  console.log(`Libs:    ${libs.join(', ')}`);
-  console.log(`Tag:     ${tag}\n`);
+  // Pre-flight: clean worktree + tag availability when going for real
+  if (!dryRun) {
+    assertCleanWorktree();
+    if (!skipGitTag) assertTagAvailable(gitTagName);
+  }
+
+  console.log(`\nVersion:  ${currentVersion} -> ${nextVersion}${dryRun ? ' (dry run)' : ''}`);
+  console.log(`Libs:     ${libs.join(', ')}`);
+  console.log(`Tag:      ${tag}`);
+  if (registry) console.log(`Registry: ${registry}`);
+  console.log(`Git tag:  ${skipGitTag ? 'skipped' : gitTagName}\n`);
+
+  const registryFlag = registry ? ` --registry ${registry}` : '';
 
   for (const lib of libs) {
     console.log(`\n[${lib}]`);
 
     console.log('  Building...');
-    run(`ng build ${lib}`);
+    run(`npx ng build ${lib}`);
 
     const distPkgPath = join(ROOT, 'dist', lib, 'package.json');
     const distPkg = JSON.parse(readFileSync(distPkgPath, 'utf8'));
@@ -124,7 +178,7 @@ function main() {
     if (!dryRun) {
       writeFileSync(distPkgPath, JSON.stringify(distPkg, null, 2) + '\n');
       replaceVersionInDist(join(ROOT, 'dist', lib), nextVersion);
-      run(`npm publish --access public --tag ${tag}`, join(ROOT, 'dist', lib));
+      run(`npm publish --access public --tag ${tag}${registryFlag}`, join(ROOT, 'dist', lib));
       console.log(`  Published @cngx/${lib}@${nextVersion}`);
     } else {
       console.log(`  Would publish @cngx/${lib}@${nextVersion} (dist/${lib})`);
@@ -136,6 +190,18 @@ function main() {
     rootPkg.version = nextVersion;
     writeRootPkg(rootPkg);
     console.log(`\nRoot package.json updated to ${nextVersion}`);
+
+    if (skipGitTag) {
+      console.log('\nGit tagging skipped (--skip-git-tag).');
+      console.log('Note: root package.json was bumped — remember to commit it.');
+    } else {
+      console.log('\nCreating git tag...');
+      // Commit the root version bump so the tag points at it
+      run(`git add package.json`);
+      run(`git commit -m "chore(release): ${nextVersion}"`);
+      createAndPushGitTag(nextVersion);
+      run(`git push origin HEAD`);
+    }
   }
 
   console.log('\nDone.');
