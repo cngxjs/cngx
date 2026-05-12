@@ -183,8 +183,6 @@ export class CngxActiveDescendant {
     });
   }
 
-  /* ---------------- Public primitives ---------------- */
-
   highlightNext(): void {
     const next = this.findFrom(this.activeIndexState(), 1);
     if (next !== null) {
@@ -262,16 +260,10 @@ export class CngxActiveDescendant {
     this.pendingHighlightState.set(null);
   }
 
-  /* ---------------- Keyboard handler ---------------- */
-
   protected handleKeydown(event: KeyboardEvent): void {
-    // Skip events that originate from editable descendants (form inputs
-    // inside an action slot, a search field below the options, etc.).
-    // The AD host element itself stays handled — `target === currentTarget`
-    // still takes the normal path. Without this guard, every printable
-    // key typed into a descendant `<input>` would fire AD's typeahead
-    // branch, `event.preventDefault()` fires, and the keystroke never
-    // reaches the input the user is actually typing into.
+    // Skip events from editable descendants. Without this, every
+    // printable key typed into a descendant <input> hits AD's typeahead
+    // branch, gets preventDefault'd, and never reaches the input.
     const target = event.target as HTMLElement | null;
     if (target && target !== event.currentTarget && isEditableTarget(target)) {
       return;
@@ -392,8 +384,6 @@ export class CngxActiveDescendant {
       }
     }
   }
-
-  /* ---------------- Navigation helpers ---------------- */
 
   private findFrom(current: number, direction: 1 | -1): number | null {
     const total = this.totalCount();

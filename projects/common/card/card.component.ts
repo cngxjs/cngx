@@ -91,7 +91,6 @@ export class CngxCard {
     skipSelf: true,
   });
 
-  // --- Archetype ---
   /** Semantic archetype: `'article'` (display), `'button'` (action), or `'link'` (navigation). */
   readonly cardType = input<'article' | 'link' | 'button'>('article', {
     alias: 'as',
@@ -103,7 +102,6 @@ export class CngxCard {
   /** Accessible label for the card. Overrides the default screen reader announcement. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
-  // --- State ---
   /** Two-way selection state. Only relevant when `selectable` is `true`. */
   readonly selected = model<boolean>(false);
 
@@ -119,7 +117,6 @@ export class CngxCard {
   /** Explanation for why the card is disabled. Communicated to SR via `aria-describedby`. */
   readonly disabledReason = input<string | undefined>(undefined);
 
-  // --- Derived ---
   /** Whether this card is interactive (button or link). */
   readonly interactive = computed(() => this.cardType() !== 'article');
 
@@ -178,7 +175,6 @@ export class CngxCard {
     return '';
   });
 
-  // --- Events ---
   /** Emits when an interactive card is clicked or activated via keyboard. */
   readonly clicked = output<void>();
 
