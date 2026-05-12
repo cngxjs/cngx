@@ -59,8 +59,7 @@ export class CngxTruncate {
   private observer: ResizeObserver | null = null;
   private rafHandle: number | null = null;
 
-  // When collapsed, applies the CSS properties required for -webkit-line-clamp.
-  // When expanded, bindings are removed (null = no attribute written).
+  // null strips the host binding — preferred over an empty string for -webkit-line-clamp.
   /** @internal */
   protected clampValue = () => (this.expanded() ? null : String(this.lines()));
   /** @internal */

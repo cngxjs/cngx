@@ -64,8 +64,7 @@ export class CngxHighlight {
       this.initialized.set(true);
     });
 
-    // DOM manipulation is a legitimate effect side effect here.
-    // matchCountState is written outside the reactive graph to avoid a re-trigger loop.
+    // matchCountState is written via untracked path — re-entering the effect would loop.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();

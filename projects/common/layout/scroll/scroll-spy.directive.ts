@@ -97,7 +97,6 @@ export class CngxScrollSpy {
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
 
-    // Fine-grained thresholds give accurate per-step ratio tracking.
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => this.ratios.set(entry.target.id, entry.intersectionRatio));

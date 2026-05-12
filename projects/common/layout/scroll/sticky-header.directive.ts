@@ -59,8 +59,7 @@ export class CngxStickyHeader {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // A 1px invisible sentinel is inserted before the host.
-    // When the sentinel scrolls out of view, the header is stuck.
+    // IntersectionObserver sentinel pattern — host is stuck once the 1px sentinel leaves the viewport.
     afterNextRender(() => {
       const host = this.el.nativeElement as HTMLElement;
       const sentinel = this.doc.createElement('div');
