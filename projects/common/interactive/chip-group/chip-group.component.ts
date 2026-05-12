@@ -164,8 +164,6 @@ export class CngxChipGroup<T = unknown>
     }
   }
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-chip-group-')).asReadonly();
 
   private readonly focusedState = signal(false);

@@ -115,10 +115,8 @@ export class CngxMenuItemSubmenu implements CngxMenuSubmenuLike {
     }
   }
 
-  // ── Hover-driven open/close lifecycle ────────────────────────────────
-  // The submenu opens on parent hover and stays open as long as the pointer
-  // is over EITHER the parent menu-item OR the submenu popover. When the
-  // pointer leaves both for `submenuCloseDelay` ms, the submenu closes.
+  // Submenu opens on parent hover; stays open while the pointer is over the
+  // parent OR the popover. Closes `submenuCloseDelay` ms after leaving both.
 
   private readonly parentHovered = signal(false);
   private readonly popoverHovered = signal(false);

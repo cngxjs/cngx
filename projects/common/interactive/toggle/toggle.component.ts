@@ -149,8 +149,6 @@ export class CngxToggle
     this.disabledReason() ? this.describedId : null,
   );
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   /** Stable per-instance id used for `<label for>` wiring. */
   readonly id = signal(nextUid('cngx-toggle-')).asReadonly();
 
@@ -178,8 +176,6 @@ export class CngxToggle
     () =>
       this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
-
-  // ── Event handlers ───────────────────────────────────────────────
 
   protected handleClick(): void {
     if (this.disabled()) {

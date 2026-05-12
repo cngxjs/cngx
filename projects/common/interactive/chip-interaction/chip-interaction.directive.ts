@@ -192,8 +192,6 @@ export class CngxChipInteraction<T = unknown>
     return this.describedBy();
   });
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-chip-')).asReadonly();
 
   private readonly focusedState = signal(false);

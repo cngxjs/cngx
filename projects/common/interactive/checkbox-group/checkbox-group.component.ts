@@ -211,8 +211,6 @@ export class CngxCheckboxGroup<T = unknown>
     this.controller.deselect(value);
   }
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-checkbox-group-')).asReadonly();
 
   private readonly focusedState = signal(false);

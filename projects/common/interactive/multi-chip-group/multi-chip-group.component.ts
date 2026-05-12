@@ -202,8 +202,6 @@ export class CngxMultiChipGroup<T = unknown>
     this.controller.deselect(value);
   }
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-multi-chip-group-')).asReadonly();
 
   private readonly focusedState = signal(false);

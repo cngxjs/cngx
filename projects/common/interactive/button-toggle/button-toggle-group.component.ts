@@ -153,8 +153,6 @@ export class CngxButtonToggleGroup<T = unknown>
       key === 'End';
   }
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-button-toggle-group-')).asReadonly();
 
   private readonly focusedState = signal(false);

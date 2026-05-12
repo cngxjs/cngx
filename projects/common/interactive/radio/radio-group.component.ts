@@ -143,8 +143,6 @@ export class CngxRadioGroup<T = unknown>
   private readonly registry = new Map<string, CngxRadioRegistration<T>>();
   private pendingArrowSelect = false;
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-radio-group-')).asReadonly();
 
   private readonly focusedState = signal(false);

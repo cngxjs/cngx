@@ -99,7 +99,6 @@ export class CngxRipple {
         Math.hypot(rect.width - x, rect.height - y),
       ) * 2;
 
-    // Create wave element
     const wave = this.doc.createElement('span');
     wave.className = 'cngx-ripple__wave';
     wave.style.setProperty('--cngx-ripple-x', `${x}px`);

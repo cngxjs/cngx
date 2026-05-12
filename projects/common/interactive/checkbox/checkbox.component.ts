@@ -147,8 +147,6 @@ export class CngxCheckbox
     this.indeterminate() ? 'mixed' : this.value() ? 'true' : 'false',
   );
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-checkbox-')).asReadonly();
 
   private readonly focusedState = signal(false);
@@ -171,8 +169,6 @@ export class CngxCheckbox
     () =>
       this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
-
-  // ── Event handlers ───────────────────────────────────────────────
 
   protected handleClick(): void {
     this.advance();

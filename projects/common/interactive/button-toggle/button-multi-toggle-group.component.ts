@@ -166,8 +166,6 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     this.controller.toggle(value);
   }
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-button-multi-toggle-group-')).asReadonly();
 
   private readonly focusedState = signal(false);
