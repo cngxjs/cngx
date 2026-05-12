@@ -2,8 +2,6 @@
 @use 'sass:math';
 @use '@angular/material' as mat;
 
-// ─── cngx-speak-button theming ─────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -16,7 +14,6 @@
 //     @include speak.theme($theme);
 //   }
 
-// ─── Token definitions ───────────────────────────────────────────
 
 @mixin base() {
   --cngx-speak-btn-size: 36px;
@@ -71,7 +68,6 @@
   --cngx-speak-btn-icon-size: #{map.get($icon-sizes, $scale)};
 }
 
-// ─── Public entrypoint ───────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(cngx-speak-button) {
