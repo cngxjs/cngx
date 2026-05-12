@@ -10,7 +10,7 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * All signals are derived reactively from the resource — no manual
  * synchronization. The resource stays the single source of truth.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * private readonly res = resource({
@@ -24,8 +24,6 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * // items.status(), items.data(), items.isFirstLoad() — all work
  * // <cngx-async-container [state]="items"> — direct binding
  * ```
- *
- * @category async
  */
 export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   // Track whether a successful load has ever occurred.
@@ -74,7 +72,6 @@ export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   });
   const lastUpdated = signal<Date | undefined>(undefined);
 
-  // Track lastUpdated on success transitions
   effect(() => {
     const s = ref.status();
     if (s === 'resolved' || s === 'local') {

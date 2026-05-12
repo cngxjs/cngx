@@ -22,8 +22,6 @@ import {
  * (component scope), which wins over `provideMatTabsConfig(...)`
  * (root), which wins over the library defaults captured by
  * {@link CNGX_MAT_TABS_CONFIG_DEFAULTS}.
- *
- * @category interactive
  */
 export interface CngxMatTabsConfig {
   /**
@@ -78,8 +76,6 @@ export const CNGX_MAT_TABS_CONFIG_DEFAULTS = {
  * {@link provideMatTabsConfigAt} (component scope). Read via
  * {@link injectMatTabsConfig}, which merges with the library
  * defaults so callers never see `undefined`.
- *
- * @category interactive
  */
 export const CNGX_MAT_TABS_CONFIG = new InjectionToken<CngxMatTabsConfig>(
   'CngxMatTabsConfig',
@@ -92,8 +88,6 @@ export const CNGX_MAT_TABS_CONFIG = new InjectionToken<CngxMatTabsConfig>(
  * cross-family aggregator (`provideCngxMatTabs`) that dispatches
  * features to the right provider — analogous to `_target: 'select'`
  * in the select family.
- *
- * @category interactive
  */
 export interface CngxMatTabsConfigFeature {
   readonly config: Partial<CngxMatTabsConfig>;
@@ -110,8 +104,6 @@ function feature(
 /**
  * Cap on the `[cngxMatTabs]` overflow-anchor retry loop.
  * See {@link CngxMatTabsConfig.anchorMaxAttempts} for default + rationale.
- *
- * @category interactive
  */
 export function withAnchorRetryAttempts(n: number): CngxMatTabsConfigFeature {
   return feature({ anchorMaxAttempts: n });
@@ -120,8 +112,6 @@ export function withAnchorRetryAttempts(n: number): CngxMatTabsConfigFeature {
 /**
  * Override the half-wired-slot diagnostic sink.
  * See {@link CngxMatTabsConfig.halfWiredSlotSink}.
- *
- * @category interactive
  */
 export function withHalfWiredSlotSink(
   sink: CngxMatTabHalfWiredSlotSink,
@@ -157,8 +147,6 @@ function mergeFeatures(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideMatTabsConfig(
   ...features: CngxMatTabsConfigFeature[]
@@ -184,8 +172,6 @@ export function provideMatTabsConfig(
  *   ...
  * })
  * ```
- *
- * @category interactive
  */
 export function provideMatTabsConfigAt(
   ...features: CngxMatTabsConfigFeature[]
@@ -202,8 +188,6 @@ export function provideMatTabsConfigAt(
  * 1. `CNGX_MAT_TABS_CONFIG` value (set via
  *    {@link provideMatTabsConfig} / {@link provideMatTabsConfigAt}).
  * 2. {@link CNGX_MAT_TABS_CONFIG_DEFAULTS} (library default).
- *
- * @category interactive
  */
 export function injectMatTabsConfig(): Required<CngxMatTabsConfig> {
   const user = inject(CNGX_MAT_TABS_CONFIG, { optional: true }) ?? {};

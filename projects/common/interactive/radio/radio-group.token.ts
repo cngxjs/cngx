@@ -8,8 +8,6 @@ import { InjectionToken, type ModelSignal, type Signal } from '@angular/core';
  * value-equality check (`group.value() === radio.value()`) both
  * have access to the leaf without injecting the concrete radio
  * class.
- *
- * @category interactive
  */
 export interface CngxRadioRegistration<T = unknown> {
   readonly id: string;
@@ -33,8 +31,6 @@ export interface CngxRadioRegistration<T = unknown> {
  * `name` attribute applied to all radio inputs in this group —
  * defaults to a `nextUid('cngx-radio-group')` value when the
  * consumer does not supply one.
- *
- * @category interactive
  */
 export interface CngxRadioGroupContract<T = unknown> {
   readonly value: ModelSignal<T | undefined>;
@@ -60,8 +56,6 @@ export interface CngxRadioGroupContract<T = unknown> {
  * `{ provide: CNGX_RADIO_GROUP, useExisting: CngxRadioGroup }`
  * — never via concrete-class injection (per
  * `reference_atomic_decompose` §4).
- *
- * @category interactive
  */
 export const CNGX_RADIO_GROUP = new InjectionToken<CngxRadioGroupContract>(
   'CngxRadioGroup',

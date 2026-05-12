@@ -121,8 +121,6 @@ import { CNGX_TRIGGER_FOCUS_FACTORY } from '../shared/trigger-focus';
 /**
  * Change event emitted by {@link CngxSelectShell.selectionChange} on
  * a user pick.
- *
- * @category interactive
  */
 export interface CngxSelectShellChange<T = unknown> {
   readonly source: CngxSelectShell<T>;
@@ -144,8 +142,6 @@ export interface CngxSelectShellChange<T = unknown> {
  * Naming: distinct from the internal `CngxSelectPanelShell` —
  * `Shell` here is the *projection-shell* that wraps consumer option
  * markup.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-select-shell',

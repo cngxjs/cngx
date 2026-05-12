@@ -11,7 +11,7 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  *
  * Ships a companion `_ripple.scss` with sensible defaults.
  *
- * @usageNotes
+ * @example
  *
  * ### Button with ripple
  * ```html
@@ -29,8 +29,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * ```html
  * <button cngxRipple [rippleDisabled]="isReducedMotion()">Click</button>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxRipple]',
@@ -101,7 +99,6 @@ export class CngxRipple {
         Math.hypot(rect.width - x, rect.height - y),
       ) * 2;
 
-    // Create wave element
     const wave = this.doc.createElement('span');
     wave.className = 'cngx-ripple__wave';
     wave.style.setProperty('--cngx-ripple-x', `${x}px`);

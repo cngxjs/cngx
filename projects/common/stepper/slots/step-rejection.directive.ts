@@ -12,8 +12,6 @@ import type { CngxStepNode } from '../stepper-host.token';
  * `presenter.originIndexDuringCommit()`. May be `undefined` when the
  * origin index is out of range (synchronous-rejection edge case);
  * gate richer UI on its presence.
- *
- * @category interactive
  */
 export interface CngxStepRejectionContext {
   /** Flat-index of the rejected step (`presenter.lastFailedIndex()`). */
@@ -44,8 +42,6 @@ export interface CngxStepRejectionContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxStepRejection]',

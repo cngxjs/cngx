@@ -1,7 +1,5 @@
 /**
  * Parsed keyboard combo.
- *
- * @category utils
  */
 export interface KeyCombo {
   readonly key: string;
@@ -19,7 +17,6 @@ export interface KeyCombo {
  * The `mod` modifier resolves to `meta` on macOS and `ctrl` elsewhere.
  * Modifier names are case-insensitive.
  *
- * @category utils
  *
  * @example
  * ```typescript
@@ -49,7 +46,6 @@ export function parseKeyCombo(combo: string): KeyCombo {
  * @param event The keyboard event to test.
  * @param combo The parsed combo to match against.
  * @param isMac Whether the current platform is macOS (affects `mod` resolution).
- * @category utils
  */
 export function matchesKeyCombo(event: KeyboardEvent, combo: KeyCombo, isMac: boolean): boolean {
   return (

@@ -51,8 +51,6 @@ import {
  * `CngxLiveRegion` is mounted as a child `<span>` rather than a
  * host directive: its `role="status"` would clobber the wrapper's
  * `role="group"` landmark.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-tab-group',

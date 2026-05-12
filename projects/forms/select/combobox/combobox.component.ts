@@ -107,8 +107,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxCombobox.selectionChange}.
- *
- * @category interactive
  */
 export interface CngxComboboxChange<T = unknown> {
   readonly source: CngxCombobox<T>;
@@ -133,8 +131,6 @@ export interface CngxComboboxChange<T = unknown> {
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin adapter binding the trigger template to the core's signals plus
  * value-shape write-paths (AD dispatch, Field↔sync, search filter).
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-combobox',
@@ -711,8 +707,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
    * Append a pre-built option to the local buffer. Renders in the next
    * panel emission and silently drops once the server includes a
    * matching value. Idempotent under `compareWith`.
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -720,8 +714,6 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

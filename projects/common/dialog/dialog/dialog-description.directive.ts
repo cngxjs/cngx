@@ -9,7 +9,7 @@ import { DIALOG_REF } from './dialog-ref';
  * Automatically generates a deterministic ID and registers with the
  * parent `CngxDialog` for `aria-describedby`.
  *
- * @usageNotes
+ * @example
  * ```html
  * <dialog cngxDialog>
  *   <h2 cngxDialogTitle>Delete item?</h2>
@@ -17,8 +17,6 @@ import { DIALOG_REF } from './dialog-ref';
  *   …
  * </dialog>
  * ```
- *
- * @category dialog
  */
 @Directive({
   selector: '[cngxDialogDescription]',

@@ -35,38 +35,6 @@ export class SaveButtonComponent {
 }
 ```
 
-## API
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxAsyncClick | `AsyncAction` | required | The async action function to execute on click (returns Promise or Observable) |
-| feedbackDuration | `number` | `2000` | Duration in ms to display success/error state before resetting |
-| enabled | `boolean` | `true` | When false, clicks are ignored (does not set disabled attribute) |
-| succeededAnnouncement | `string` | `'Action succeeded'` | Label announced to screen readers on success |
-| failedAnnouncement | `string` | `'Action failed'` | Label announced to screen readers on failure |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-### Signals
-
-#### Public Signals (read-only)
-- `pending: Signal<boolean>` — True while the action is executing
-- `succeeded: Signal<boolean>` — True for feedbackDuration ms after success
-- `failed: Signal<boolean>` — True for feedbackDuration ms after failure
-- `error: Signal<unknown>` — The error value from a failed action (undefined if not failed)
-- `status: Signal<AsyncStatus>` — Current lifecycle status: 'idle' | 'pending' | 'success' | 'error'
-- `announcement: Signal<string>` — Screen reader announcement for the current state (bind to aria-live region)
-- `state: CngxAsyncState<unknown>` — Full async state view; bind to feedback system consumers ([state]="btn.state")
-
-#### CSS Custom Properties
-- No CSS custom properties — styling is the consumer's responsibility
-
 ## Accessibility
 
 CngxAsyncClick is fully accessible out of the box:
@@ -274,6 +242,6 @@ Template shown after an async action fails (for feedbackDuration ms). The implic
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxAsyncClick.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/async-click-demo/`
-- Tests: `projects/common/interactive/src/async-click/async-click.directive.spec.ts`
+- Tests: `projects/common/interactive/async-click/async-click.directive.spec.ts`

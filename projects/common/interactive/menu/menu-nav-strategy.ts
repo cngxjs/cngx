@@ -5,8 +5,6 @@ import { InjectionToken } from '@angular/core';
  * menu trigger or a future menubar directive) interpret the action: fire
  * the matching side effect (open/close a popover, hand focus to a parent
  * menu) and `event.preventDefault()` for anything non-`noop`.
- *
- * @category interactive
  */
 export type CngxMenuNavAction =
   | { readonly kind: 'open-submenu'; readonly id: string }
@@ -19,8 +17,6 @@ export type CngxMenuNavAction =
  * `CngxActiveDescendant.activeId()` snapshot at key-press time;
  * `hasSubmenu`/`submenuOpen` describe whatever submenu state the consumer
  * tracks for the active item.
- *
- * @category interactive
  */
 export interface CngxMenuNavContext {
   readonly activeId: string | null;
@@ -38,8 +34,6 @@ export interface CngxMenuNavContext {
  * Strategy steps are pure decisions — they do not call popover.show() or
  * touch any signal directly. The directive that consults the strategy
  * acts on the returned action.
- *
- * @category interactive
  */
 export interface CngxMenuNavStrategy {
   onArrowRight(ctx: CngxMenuNavContext): CngxMenuNavAction;
@@ -58,8 +52,6 @@ const NOOP: CngxMenuNavAction = { kind: 'noop' };
  * - **ArrowLeft** when a submenu is open at the current level →
  *   `close-submenu`. Otherwise → `move-to-parent` (an enclosing menubar
  *   interprets that; a standalone menu trigger treats it as noop).
- *
- * @category interactive
  */
 export function createW3CMenuStrategy(): CngxMenuNavStrategy {
   return {
@@ -83,8 +75,6 @@ export function createW3CMenuStrategy(): CngxMenuNavStrategy {
  * directives consult on every ArrowLeft/ArrowRight press. Defaults to
  * {@link createW3CMenuStrategy}; override via `providers` /
  * `viewProviders` for alternative keyboard semantics.
- *
- * @category interactive
  */
 export const CNGX_MENU_NAV_STRATEGY = new InjectionToken<CngxMenuNavStrategy>(
   'CngxMenuNavStrategy',

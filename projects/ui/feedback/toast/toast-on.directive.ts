@@ -23,7 +23,7 @@ import { CngxToaster } from './toast.service';
  * transitions to `success` or `error`. Only fires on actual transitions,
  * not on initial `idle` state.
  *
- * @usageNotes
+ * @example
  *
  * ### On a button
  * ```html
@@ -44,8 +44,6 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
- *
- * @category feedback
  */
 @Directive({
   selector: '[cngxToastOn]',

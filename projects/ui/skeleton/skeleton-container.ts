@@ -29,7 +29,7 @@ import {
  * - Project content directly for the loaded state.
  * - Uses `display: contents` — no extra DOM wrapper.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic usage
  * ```html
@@ -50,8 +50,6 @@ import {
  *   <p>Loaded content here</p>
  * </cngx-skeleton>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-skeleton',
@@ -100,8 +98,6 @@ export class CngxSkeletonContainer {
 
   /** Array of indices for internal `@for` rendering. */
   readonly indices = computed(() => Array.from({ length: this.count() }, (_, i) => i));
-
-  // ── Reduced motion (inline) ─────────────────────────────────────────
 
   private readonly prefersReducedMotion: Signal<boolean>;
 

@@ -25,8 +25,6 @@ interface PopoverController {
  * Up / Home / End / Enter target the submenu's items via its own
  * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
  * top submenu.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxMenuTrigger]',

@@ -15,15 +15,6 @@ import { CngxToaster } from '@cngx/ui/feedback';
 import { provideFeedback, withToasts } from '@cngx/ui/feedback';
 ```
 
-#### Methods
-
-- `show(config: ToastConfig): ToastRef` — Show a toast; returns handle for programmatic dismiss
-- `dismissAll(): void` — Dismiss all toasts
-
-#### Signals (read-only)
-
-- `toasts: Signal<readonly ToastState[]>` — Current visible toasts
-
 #### ToastConfig
 
 ```typescript
@@ -96,14 +87,6 @@ Outlet component that renders the toast stack. Must be placed once in the app sh
 import { CngxToastOutlet } from '@cngx/ui/feedback';
 ```
 
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `position` | `ToastPosition` | `'bottom-end'` | Viewport position: `'top-start'`, `'top-center'`, `'top-end'`, `'bottom-start'`, `'bottom-center'`, `'bottom-end'` |
-| `maxVisible` | `number` | `3` | Maximum simultaneous toasts. Oldest evicted when limit exceeded. |
-| `insertPosition` | `'start' \| 'end'` | `'start'` | Stack order: `'start'` (newest at top), `'end'` (newest at bottom) |
-
 #### Usage
 
 ```typescript
@@ -117,12 +100,6 @@ import { CngxToastOutlet } from '@cngx/ui/feedback';
 })
 export class AppComponent {}
 ```
-
-#### CSS Classes
-
-- `cngx-toast-outlet` — Applied to the host
-- `cngx-toast-outlet--top-start`, `--top-center`, `--top-end` — Position classes
-- `cngx-toast-outlet--bottom-start`, `--bottom-center`, `--bottom-end`
 
 #### CSS Custom Properties
 
@@ -141,17 +118,6 @@ Declarative directive bridging `CngxAsyncState` changes to toast displays.
 ```typescript
 import { CngxToastOn } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `state` | `CngxAsyncState<unknown>` | Required | Async state to monitor for transitions. |
-| `toastSuccess` | `string \| undefined` | `undefined` | Message to show on `success` transition. |
-| `toastError` | `string \| undefined` | `undefined` | Message to show on `error` transition. |
-| `toastErrorDetail` | `boolean` | `false` | Append `error.message` to toast body. |
-| `toastSuccessDuration` | `number` | `3000` | Auto-dismiss duration for success toasts (ms). |
-| `toastErrorDuration` | `number \| 'persistent'` | `'persistent'` | Auto-dismiss duration for error toasts. |
 
 #### Behavior
 
@@ -184,16 +150,6 @@ Condition-driven toast trigger that requires no service injection.
 ```typescript
 import { CngxToast } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `when` | `boolean` | Required | Condition for showing the toast. Rising-edge trigger (false→true). |
-| `message` | `string` | Required | Toast message. |
-| `title` | `string \| undefined` | `undefined` | Bold primary text. |
-| `severity` | `AlertSeverity` | `'info'` | Severity level. |
-| `duration` | `number \| 'persistent'` | Severity default | Auto-dismiss duration. |
 
 #### Behavior
 

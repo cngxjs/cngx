@@ -224,8 +224,6 @@ export class CngxTreetablePresenter<T = unknown> {
   /** @internal Exposed so templates can call it without importing the utility. */
   readonly capitalise = capitalise;
 
-  // ── Selection ──────────────────────────────────────────────────────────────
-
   private readonly selectionModel = linkedSignal(
     () => new SelectionModel<string>(this.selectionMode() === 'multi', []),
   );
@@ -265,15 +263,11 @@ export class CngxTreetablePresenter<T = unknown> {
     return count > 0 && count < nodes.length;
   });
 
-  // ── Track-by ───────────────────────────────────────────────────────────────
-
   /**
    * `TrackByFunction` wired to the `trackBy` input.
    * Pass directly to the CDK/Material table's `[trackBy]` binding.
    */
   readonly trackByFn: TrackByFunction<FlatNode<T>> = (_, node) => this.trackBy()(node);
-
-  // ── Keyboard focus ─────────────────────────────────────────────────────────
 
   /**
    * The ID of the currently keyboard-focused row, or `null` when no row has
@@ -326,8 +320,6 @@ export class CngxTreetablePresenter<T = unknown> {
       });
     });
   }
-
-  // ── Public API ─────────────────────────────────────────────────────────────
 
   /**
    * Casts a node value to `Record<string, unknown>` for template property access.

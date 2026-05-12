@@ -20,8 +20,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * consumer / bridge surface in scope reads it. A future feature
  * that needs mode discovery can extend the interface then; until
  * then the field stays out of the public surface.
- *
- * @category interactive
  */
 export interface CngxChipGroupHost<T = unknown> {
   isSelected(value: T): boolean;
@@ -42,8 +40,6 @@ export interface CngxChipGroupHost<T = unknown> {
  * Standalone chips outside any group use `[cngxChipInteraction]`
  * instead, which provides `CNGX_CONTROL_VALUE` directly without ever
  * touching this token.
- *
- * @category interactive
  */
 export const CNGX_CHIP_GROUP_HOST = new InjectionToken<CngxChipGroupHost>(
   'CngxChipGroupHost',

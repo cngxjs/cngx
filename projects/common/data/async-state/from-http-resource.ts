@@ -20,7 +20,7 @@ interface HttpResourceLike<T> extends Resource<T> {
  *
  * Must be called in an injection context.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * private readonly res = httpResource<Item[]>(() => ({
@@ -32,8 +32,6 @@ interface HttpResourceLike<T> extends Resource<T> {
  * // items.progress() tracks upload/download progress
  * // <cngx-progress [state]="items"> — auto-wired progress bar
  * ```
- *
- * @category async
  */
 export function fromHttpResource<T>(ref: HttpResourceLike<T>): CngxAsyncState<T> {
   const hadSuccess = signal(false);

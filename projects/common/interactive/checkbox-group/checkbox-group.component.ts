@@ -83,8 +83,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   >{{ opt }}</cngx-checkbox>
  * </cngx-checkbox-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-checkbox-group, [cngxCheckboxGroup]',
@@ -212,8 +210,6 @@ export class CngxCheckboxGroup<T = unknown>
     }
     this.controller.deselect(value);
   }
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-checkbox-group-')).asReadonly();
 

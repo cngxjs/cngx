@@ -22,7 +22,6 @@ import { CngxCloseButton } from '@cngx/common/interactive';
 import { CNGX_FEEDBACK_CONFIG } from '../config/feedback-config';
 import { CngxSeverityIcon } from '../config/severity-icon';
 
-// ── Types ───────────────────────────────────────────────────────
 
 /** Severity level for the alert — determines visual style, icon, and ARIA role. */
 export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
@@ -30,7 +29,6 @@ export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
 /** Visibility phase for enter/exit CSS animations. */
 export type AlertVisibilityPhase = 'hidden' | 'entering' | 'visible' | 'exiting';
 
-// ── PausableTimer ───────────────────────────────────────────────
 
 /** @internal — timer with pause/resume support for hover/focus interactions. */
 interface PausableTimer {
@@ -88,7 +86,6 @@ function createPausableTimer(): PausableTimer {
   };
 }
 
-// ── Slot Directives ─────────────────────────────────────────────
 
 /** Content slot directive for custom alert icons. */
 @Directive({ selector: '[cngxAlertIcon]', standalone: true })
@@ -102,7 +99,7 @@ export class CngxAlertIcon {
  * When present, the alert container uses `aria-atomic="false"` to prevent
  * re-announcing the entire alert on button interaction.
  *
- * @usageNotes
+ * @example
  * ```html
  * <cngx-alert severity="error" title="Save failed" [state]="saveState">
  *   Check your connection and try again.
@@ -117,7 +114,6 @@ export class CngxAlertIcon {
 })
 export class CngxAlertAction {}
 
-// ── CngxAlert ───────────────────────────────────────────────────
 
 /**
  * Inline alert atom with enter/exit animations, state-driven visibility,
@@ -129,8 +125,6 @@ export class CngxAlertAction {}
  * - **Boolean-driven** (`[when]`): visible when true, hidden when false
  *
  * `[state]` takes precedence over `[when]`.
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-alert',
@@ -140,7 +134,6 @@ export class CngxAlertAction {}
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'cngx-alert',
-    // Severity classes
     '[class.cngx-alert--info]': 'severity() === "info"',
     '[class.cngx-alert--success]': 'severity() === "success"',
     '[class.cngx-alert--warning]': 'severity() === "warning"',
@@ -150,7 +143,6 @@ export class CngxAlertAction {}
     '[class.cngx-alert--entering]': 'visibilityPhase() === "entering"',
     '[class.cngx-alert--visible]': 'visibilityPhase() === "visible"',
     '[class.cngx-alert--exiting]': 'visibilityPhase() === "exiting"',
-    // Collapse
     '[class.cngx-alert--collapsed]': 'collapsed()',
     // ARIA — role present only when visible
     '[attr.role]': 'isVisible() ? ariaRole() : null',
@@ -159,7 +151,6 @@ export class CngxAlertAction {}
     '[attr.aria-expanded]': 'collapsible() ? !collapsed() : null',
     '[attr.aria-busy]': 'isStateBusy() || null',
     '[attr.hidden]': '!isVisible() || null',
-    // Events
     '(animationend)': 'handleAnimationEnd($event)',
     '(pointerenter)': 'handlePointerEnter()',
     '(pointerleave)': 'handlePointerLeave()',
@@ -374,7 +365,6 @@ export class CngxAlert {
   private readonly config = inject(CNGX_FEEDBACK_CONFIG, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
 
-  // ── Inputs ──────────────────────────────────────────────────
 
   /** Alert severity — determines visual style, default icon, and ARIA role. */
   readonly severity = input<AlertSeverity>('info');
@@ -412,12 +402,10 @@ export class CngxAlert {
   /** Delay in ms before auto-collapsing. Defaults to `autoDismissDelay`. */
   readonly collapseDelay = input<number | undefined>(undefined);
 
-  // ── Outputs ─────────────────────────────────────────────────
 
   /** Emitted when the dismiss button is clicked. */
   readonly dismissed = output<void>();
 
-  // ── Content children ────────────────────────────────────────
 
   /** @internal — detects projected custom icon to hide default/global icon. */
   protected readonly customIcon = contentChild(CngxAlertIcon);
@@ -425,7 +413,6 @@ export class CngxAlert {
   /** @internal — detects projected action buttons for aria-atomic strategy. */
   protected readonly hasActions = contentChild(CngxAlertAction);
 
-  // ── Internal state ──────────────────────────────────────────
 
   private readonly manualDismissed = signal(false);
   private readonly autoDismissed = signal(false);
@@ -435,13 +422,11 @@ export class CngxAlert {
   /** @internal — animation phase, drives host CSS classes. */
   protected readonly visibilityPhase = signal<AlertVisibilityPhase>('hidden');
 
-  // ── Timers ──────────────────────────────────────────────────
 
   private readonly autoDismissTimer = createPausableTimer();
   private readonly collapseTimer = createPausableTimer();
   private animationFallbackId: ReturnType<typeof setTimeout> | undefined;
 
-  // ── Computed ────────────────────────────────────────────────
 
   /** @internal — global icon component for the current severity (from provideFeedback config). */
   protected readonly globalIcon = computed(
@@ -509,16 +494,13 @@ export class CngxAlert {
   /** @internal — SR announcement text for state transitions. */
   protected readonly announcement = this.announcementState.asReadonly();
 
-  // ── Effective collapse delay ────────────────────────────────
 
   private readonly effectiveCollapseDelay = computed(
     () => this.collapseDelay() ?? this.autoDismissDelay() ?? 5000,
   );
 
-  // ── Constructor (effects) ───────────────────────────────────
 
   constructor() {
-    // Effect 1: Watch state transitions — manage auto-dismiss timer
     effect(() => {
       const s = this.state();
       if (!s) {
@@ -540,13 +522,11 @@ export class CngxAlert {
           this.autoDismissTimer.start(delay, () => this.autoDismissed.set(true));
         }
       } else if (status === 'idle') {
-        // Idle: clean up
         this.autoDismissTimer.clear();
       }
       // loading/pending/refreshing: keep current state, don't touch timers
     });
 
-    // Effect 2: Animate visibility transitions
     effect(() => {
       const show = this.shouldBeVisible();
       const phase = untracked(() => this.visibilityPhase());
@@ -558,7 +538,6 @@ export class CngxAlert {
       }
     });
 
-    // Cleanup on destroy
     this.destroyRef.onDestroy(() => {
       this.autoDismissTimer.clear();
       this.collapseTimer.clear();
@@ -566,7 +545,6 @@ export class CngxAlert {
     });
   }
 
-  // ── Animation lifecycle ─────────────────────────────────────
 
   private beginEnter(): void {
     this.collapsedState.set(false);
@@ -580,7 +558,6 @@ export class CngxAlert {
   }
 
   private onBecameVisible(): void {
-    // Start collapse timer if collapsible
     if (this.collapsible()) {
       this.collapseTimer.start(this.effectiveCollapseDelay(), () => this.collapsedState.set(true));
     }
@@ -623,7 +600,6 @@ export class CngxAlert {
     }
   }
 
-  // ── Event handlers ──────────────────────────────────────────
 
   /** @internal */
   protected handleAnimationEnd(event: AnimationEvent): void {

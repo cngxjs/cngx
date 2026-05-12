@@ -114,8 +114,6 @@ import {
  * Change event emitted by {@link CngxActionSelect.selectionChange}.
  * `action`: `'select'` user pick, `'clear'` reset, `'create'`
  * successful inline quick-create via `*cngxSelectAction`.
- *
- * @category interactive
  */
 export interface CngxActionSelectChange<T = unknown> {
   readonly source: CngxActionSelect<T>;
@@ -141,8 +139,6 @@ export interface CngxActionSelectChange<T = unknown> {
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
  * Escape fires `cancel()` to reset.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-action-select',
@@ -599,8 +595,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
    * Append a pre-built option to the local buffer. Used internally by
    * the create-commit handler; exposed for consumer pre-seed (recent-
    * items, history workflows).
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -608,8 +602,6 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

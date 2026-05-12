@@ -10,8 +10,6 @@ import { CngxSearch } from '@cngx/common/interactive';
 
 /**
  * Optional customization for {@link CngxSmartDataSource}.
- *
- * @category data-source
  */
 export interface CngxSmartDataSourceOptions<T> {
   /**
@@ -53,7 +51,6 @@ function isAsyncState<T>(source: Signal<T[]> | CngxAsyncState<T[]>): source is C
  * ```
  *
  * @typeParam T - The row item type.
- * @category data-source
  */
 export class CngxSmartDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -76,8 +73,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   readonly filteredCount: Signal<number>;
 
   private readonly processed: Signal<T[]>;
-
-  // ── Async state — only populated when source is CngxAsyncState ─────
 
   /** The async state source, or `undefined` if constructed from a plain signal. */
   readonly asyncState: CngxAsyncState<T[]> | undefined;
@@ -106,7 +101,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   ) {
     super();
 
-    // Resolve data signal and async state from the source
     let data: Signal<T[]>;
     if (isAsyncState(source)) {
       this.asyncState = source;
@@ -170,7 +164,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
           return dir === 'asc' ? cmp : -cmp;
         });
 
-      // Pipeline: filtered → sort → paginate
       const sorted =
         sorts.length > 0
           ? [...this.filtered()].sort((a, b) =>
@@ -202,7 +195,7 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>` for
  * full UX state integration (loading, error, refresh, empty).
  *
- * @usageNotes
+ * @example
  * ```typescript
  * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);
@@ -211,8 +204,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * readonly residents = injectAsyncState(() => this.api.getAll());
  * readonly dataSource = injectSmartDataSource(this.residents);
  * ```
- *
- * @category data-source
  */
 export function injectSmartDataSource<T>(
   source: Signal<T[]> | CngxAsyncState<T[]>,

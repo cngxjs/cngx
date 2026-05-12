@@ -7,7 +7,7 @@ import { Directive, input } from '@angular/core';
  * Use `[heading]="true"` to opt in to `role="heading"` with `aria-level`
  * when the label genuinely represents a heading in the document outline.
  *
- * @usageNotes
+ * @example
  *
  * ### Section label (default — no heading role)
  * ```html
@@ -18,8 +18,6 @@ import { Directive, input } from '@angular/core';
  * ```html
  * <span cngxNavLabel [heading]="true" [level]="3">Settings</span>
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: '[cngxNavLabel]',

@@ -6,8 +6,6 @@ import { Directive } from '@angular/core';
  * so the surrounding `CngxActiveDescendant` skips it during arrow-key
  * navigation and typeahead — required for action-menu and dropdown-menu
  * patterns where separators visually group items but are not selectable.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxMenuSeparator]',

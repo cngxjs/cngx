@@ -19,7 +19,7 @@ import {
  * Focuses the host element after the next render frame using `afterNextRender`.
  * When `when` changes to `true`, focus is re-applied.
  *
- * @usageNotes
+ * @example
  *
  * ### Focus on insertion
  * ```html
@@ -37,8 +37,6 @@ import {
  * ```html
  * <input cngxAutofocus [autofocusDelay]="200" />
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxAutofocus]',

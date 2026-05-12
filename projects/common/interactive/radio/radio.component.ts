@@ -50,8 +50,6 @@ import {
  * the `<div role="radio">` host does not participate in HTML
  * form submission, so the attribute carries no functional
  * weight.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-radio, [cngxRadio]',

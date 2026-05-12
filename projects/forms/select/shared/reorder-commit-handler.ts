@@ -11,8 +11,6 @@ import type { CngxSelectOptionDef } from './option.model';
 
 /**
  * Configuration for {@link createReorderCommitHandler}.
- *
- * @category interactive
  */
 export interface ReorderCommitHandlerOptions<T> {
   /** Component's primary value signal. */
@@ -65,8 +63,6 @@ export interface ReorderCommitHandlerOptions<T> {
 
 /**
  * API returned from {@link createReorderCommitHandler}.
- *
- * @category interactive
  */
 export interface ReorderCommitHandler<T> {
   /**
@@ -103,8 +99,6 @@ export interface ReorderCommitHandler<T> {
  *
  * `CngxTreeSelect.dispatchValueChange` follows the same pattern
  * inline; a future refactor could lift it here.
- *
- * @category interactive
  */
 export function createReorderCommitHandler<T>(
   opts: ReorderCommitHandlerOptions<T>,
@@ -160,8 +154,6 @@ export function createReorderCommitHandler<T>(
 
 /**
  * Signature of the factory behind {@link CNGX_REORDER_COMMIT_HANDLER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxReorderCommitHandlerFactory = <T>(
   opts: ReorderCommitHandlerOptions<T>,
@@ -172,8 +164,6 @@ export type CngxReorderCommitHandlerFactory = <T>(
  * {@link createReorderCommitHandler}. Override via `providers` /
  * `viewProviders` for retry-with-backoff, offline queues, audit
  * logging, or telemetry.
- *
- * @category interactive
  */
 export const CNGX_REORDER_COMMIT_HANDLER_FACTORY =
   new InjectionToken<CngxReorderCommitHandlerFactory>(

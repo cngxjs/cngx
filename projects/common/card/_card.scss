@@ -14,7 +14,6 @@ cngx-card {
   min-width: var(--cngx-card-min-width, 120px);
   touch-action: manipulation;
 
-  // --- Interactive ---
   &.cngx-card--interactive {
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -33,7 +32,6 @@ cngx-card {
     }
   }
 
-  // --- Focus ---
   &:focus-visible {
     outline: var(--cngx-card-focus-width, 2px) solid
       var(--cngx-card-focus-color, var(--mat-sys-primary, #6750a4));
@@ -47,7 +45,6 @@ cngx-card {
     outline-offset: var(--cngx-card-focus-offset, 2px);
   }
 
-  // --- Selected ---
   &.cngx-card--selected {
     border-color: var(--cngx-card-selected-border, var(--mat-sys-primary, #6750a4));
     background: var(
@@ -67,18 +64,15 @@ cngx-card {
     }
   }
 
-  // --- Disabled ---
   &.cngx-card--disabled {
     opacity: var(--cngx-card-disabled-opacity, 0.5);
     pointer-events: none;
   }
 
-  // --- Loading ---
   &.cngx-card--loading {
     pointer-events: none;
     cursor: wait;
 
-    // Shimmer overlay
     &::after {
       content: '';
       position: absolute;
@@ -101,7 +95,6 @@ cngx-card {
   }
 }
 
-// --- Slots ---
 .cngx-card__media {
   margin: calc(-1 * var(--cngx-card-padding, var(--cngx-space-md, 16px)));
   margin-bottom: 0;
@@ -164,7 +157,6 @@ cngx-card {
   }
 }
 
-// --- Accent ---
 .cngx-card--accent {
   border-top: var(--cngx-card-accent-width, 3px) solid var(--cngx-card-accent-color, transparent);
 }
@@ -205,7 +197,6 @@ cngx-card {
   --cngx-card-accent-color: var(--cngx-accent-neutral, var(--mat-sys-outline-variant, #c4c7c5));
 }
 
-// --- Badge ---
 .cngx-card__badge {
   position: absolute;
   z-index: 1;
@@ -240,7 +231,6 @@ cngx-card {
   }
 }
 
-// --- SR-only ---
 .cngx-sr-only {
   position: absolute;
   width: 1px;

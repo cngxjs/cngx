@@ -31,8 +31,6 @@ import type {
 
 /**
  * Override contexts mirroring the per-instance `*cngxSelect*` slots.
- *
- * @category interactive
  */
 export interface CngxSelectTemplateContexts {
   readonly check?: CngxSelectCheckContext;
@@ -57,8 +55,6 @@ export interface CngxSelectTemplateContexts {
 
 /**
  * Live-region announcer config: politeness + formatter.
- *
- * @category interactive
  */
 export interface CngxSelectAnnouncerConfig {
   readonly enabled?: boolean;
@@ -82,23 +78,17 @@ export interface CngxSelectAnnouncerConfig {
 
 /**
  * First-load async view variant. Per-instance `*cngxSelectLoading` wins.
- *
- * @category interactive
  */
 export type CngxSelectLoadingVariant = 'skeleton' | 'spinner' | 'bar' | 'text';
 
 /**
  * Subsequent-load indicator overlaying visible options. Per-instance
  * `*cngxSelectRefreshing` wins. `'none'` suppresses.
- *
- * @category interactive
  */
 export type CngxSelectRefreshingVariant = 'bar' | 'spinner' | 'dots' | 'none';
 
 /**
  * Selection-indicator position relative to the option label.
- *
- * @category interactive
  */
 export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
 
@@ -110,16 +100,12 @@ export type CngxSelectSelectionIndicatorPosition = 'before' | 'after';
  * - `'checkmark'` — bare checkmark.
  * - `'radio'` — dot-in-circle. Single-select intent; multi panels render
  *   it but the exclusive-selection visual is misleading there.
- *
- * @category interactive
  */
 export type CngxSelectSelectionIndicatorVariant = 'auto' | 'checkbox' | 'checkmark' | 'radio';
 
 /**
  * ARIA-label overrides. Per-instance
  * `[clearButtonAriaLabel]`/`[chipRemoveAriaLabel]` wins.
- *
- * @category interactive
  */
 export interface CngxSelectAriaLabels {
   /** Single → `'Clear selection'`; multi/combobox/typeahead → `'Reset selection'`. */
@@ -146,8 +132,6 @@ export interface CngxSelectAriaLabels {
  * Built-in recycler virtualiser tuning. Provide
  * `CNGX_PANEL_RENDERER_FACTORY` directly for custom scrollElement,
  * per-index `estimateSize`, or grid layout.
- *
- * @category interactive
  */
 export interface CngxSelectVirtualizationConfig {
   /** Item height in px. Default `32`. */
@@ -165,8 +149,6 @@ export interface CngxSelectVirtualizationConfig {
 /**
  * Fallback labels for `CngxSelectPanelShell`'s built-in views.
  * Per-instance template projection wins.
- *
- * @category interactive
  */
 export interface CngxSelectFallbackLabels {
   /** `loadingVariant === 'text'` body. Default `'Loading…'`. */
@@ -187,6 +169,13 @@ export interface CngxSelectFallbackLabels {
   readonly commitFailedRetry?: string;
 }
 
+/**
+ * Resolved select-family configuration cascade. Built by composing
+ * `with*` features through `provideSelectConfig` /
+ * `provideSelectConfigAt`; consumed via the `CNGX_SELECT_CONFIG`
+ * injection token. Every field is optional — unset keys fall back to
+ * the library defaults.
+ */
 export interface CngxSelectConfig {
   /**
    * Panel width strategy:
@@ -435,15 +424,11 @@ export const CNGX_SELECT_DEFAULTS: Required<
 
 /**
  * Resolved {@link CngxSelectConfig} token.
- *
- * @category interactive
  */
 export const CNGX_SELECT_CONFIG = new InjectionToken<CngxSelectConfig>('CngxSelectConfig');
 
 /**
  * Feature returned by a `with*` helper. Merged by `provideSelectConfig`.
- *
- * @category interactive
  */
 export interface CngxSelectConfigFeature {
   readonly config: Partial<CngxSelectConfig>;
@@ -457,8 +442,6 @@ function feature(config: Partial<CngxSelectConfig>): CngxSelectConfigFeature {
 
 /**
  * Panel width: `'trigger'` (match), fixed px number, or `null` (natural).
- *
- * @category interactive
  */
 export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelectConfigFeature {
   return feature({ panelWidth: width });
@@ -466,8 +449,6 @@ export function withPanelWidth(width: CngxSelectConfig['panelWidth']): CngxSelec
 
 /**
  * First-load indicator variant. Default `'spinner'`.
- *
- * @category interactive
  */
 export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelectConfigFeature {
   return feature({ loadingVariant: variant });
@@ -475,8 +456,6 @@ export function withLoadingVariant(variant: CngxSelectLoadingVariant): CngxSelec
 
 /**
  * Sets `skeletonRowCount`. Default `3`.
- *
- * @category interactive
  */
 export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
   return feature({ skeletonRowCount: count });
@@ -484,8 +463,6 @@ export function withSkeletonRowCount(count: number): CngxSelectConfigFeature {
 
 /**
  * Sets the refreshing indicator. Default `'bar'`. `'none'` suppresses.
- *
- * @category interactive
  */
 export function withRefreshingVariant(
   variant: CngxSelectRefreshingVariant,
@@ -495,8 +472,6 @@ export function withRefreshingVariant(
 
 /**
  * Default `[commitAction]` error surface. Default `'banner'`.
- *
- * @category interactive
  */
 export function withCommitErrorDisplay(
   display: CngxSelectCommitErrorDisplay,
@@ -507,8 +482,6 @@ export function withCommitErrorDisplay(
 /**
  * Forces the scalar-commit error-announce policy. `null` restores each
  * variant's baseline.
- *
- * @category interactive
  */
 export function withCommitErrorAnnouncePolicy(
   policy: CngxCommitErrorAnnouncePolicy | null,
@@ -519,8 +492,6 @@ export function withCommitErrorAnnouncePolicy(
 /**
  * Default popover placement for flat variants. Default `'bottom'`.
  * Action organisms use `withActionPopoverPlacement`.
- *
- * @category interactive
  */
 export function withPopoverPlacement(
   placement: PopoverPlacement,
@@ -530,8 +501,6 @@ export function withPopoverPlacement(
 
 /**
  * Sets `inputmode` for input-trigger variants. Default `'search'`.
- *
- * @category interactive
  */
 export function withInputMode(
   mode: NonNullable<CngxSelectConfig['inputMode']>,
@@ -542,8 +511,6 @@ export function withInputMode(
 /**
  * Forces `enterkeyhint` across input-trigger variants. `null` restores
  * each variant's baseline.
- *
- * @category interactive
  */
 export function withEnterKeyHint(
   hint: NonNullable<CngxSelectConfig['enterKeyHint']> | null,
@@ -553,8 +520,6 @@ export function withEnterKeyHint(
 
 /**
  * Sets the chip-strip overflow mode. Default `'wrap'`.
- *
- * @category interactive
  */
 export function withChipOverflow(
   mode: NonNullable<CngxSelectConfig['chipOverflow']>,
@@ -564,8 +529,6 @@ export function withChipOverflow(
 
 /**
  * Sets `maxVisibleChips` for truncate mode. Coerces ≤ 0 to `1`. Default `3`.
- *
- * @category interactive
  */
 export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
   return feature({ maxVisibleChips: Math.max(1, count) });
@@ -582,8 +545,6 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
  *   withVirtualization({ estimateSize: 36, overscan: 8, threshold: 500 }),
  * )
  * ```
- *
- * @category interactive
  */
 export function withVirtualization(
   config: CngxSelectVirtualizationConfig | boolean = true,
@@ -611,8 +572,6 @@ export function withVirtualization(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function withFallbackLabels(
   labels: CngxSelectFallbackLabels,
@@ -622,8 +581,6 @@ export function withFallbackLabels(
 
 /**
  * Class list applied to every select panel.
- *
- * @category interactive
  */
 export function withPanelClass(
   panelClass: string | readonly string[],
@@ -633,8 +590,6 @@ export function withPanelClass(
 
 /**
  * Typeahead buffer debounce in ms. Default `300`.
- *
- * @category interactive
  */
 export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
   return feature({ typeaheadDebounceInterval: ms });
@@ -642,8 +597,6 @@ export function withTypeaheadDebounce(ms: number): CngxSelectConfigFeature {
 
 /**
  * Typeahead-while-closed (native `<select>` parity). Default `true`.
- *
- * @category interactive
  */
 export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeature {
   return feature({ typeaheadWhileClosed: enabled });
@@ -651,8 +604,6 @@ export function withTypeaheadWhileClosed(enabled: boolean): CngxSelectConfigFeat
 
 /**
  * Whether the selected-option checkmark is rendered at all. Default `true`.
- *
- * @category interactive
  */
 export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showSelectionIndicator: enabled });
@@ -660,8 +611,6 @@ export function withSelectionIndicator(enabled: boolean): CngxSelectConfigFeatur
 
 /**
  * Sets the selection-indicator position. Default `'before'`.
- *
- * @category interactive
  */
 export function withSelectionIndicatorPosition(
   position: CngxSelectSelectionIndicatorPosition,
@@ -671,8 +620,6 @@ export function withSelectionIndicatorPosition(
 
 /**
  * Sets the selection-indicator glyph. Default `'auto'`.
- *
- * @category interactive
  */
 export function withSelectionIndicatorVariant(
   variant: CngxSelectSelectionIndicatorVariant,
@@ -682,8 +629,6 @@ export function withSelectionIndicatorVariant(
 
 /**
  * Whether the trigger's dropdown caret glyph is rendered. Default `true`.
- *
- * @category interactive
  */
 export function withCaret(enabled: boolean): CngxSelectConfigFeature {
   return feature({ showCaret: enabled });
@@ -691,8 +636,6 @@ export function withCaret(enabled: boolean): CngxSelectConfigFeature {
 
 /**
  * Whether the trigger is re-focused after the panel closes. Default `true`.
- *
- * @category interactive
  */
 export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
   return feature({ restoreFocus: enabled });
@@ -700,8 +643,6 @@ export function withRestoreFocus(enabled: boolean): CngxSelectConfigFeature {
 
 /**
  * Dismiss strategy for the panel. Default `'both'`.
- *
- * @category interactive
  */
 export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectConfigFeature {
   return feature({ dismissOn: mode });
@@ -709,8 +650,6 @@ export function withDismissOn(mode: CngxSelectConfig['dismissOn']): CngxSelectCo
 
 /**
  * Open strategy for the trigger. Default `'click'`.
- *
- * @category interactive
  */
 export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFeature {
   return feature({ openOn: mode });
@@ -718,8 +657,6 @@ export function withOpenOn(mode: CngxSelectConfig['openOn']): CngxSelectConfigFe
 
 /**
  * Configure the live-region announcer used for selection changes.
- *
- * @category interactive
  */
 export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConfigFeature {
   return feature({ announcer: config });
@@ -741,8 +678,6 @@ export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConf
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFeature {
   return feature({ ariaLabels: labels });
@@ -751,8 +686,6 @@ export function withAriaLabels(labels: CngxSelectAriaLabels): CngxSelectConfigFe
 /**
  * App-wide defaults for the Select family. `provideSelectConfigAt` and
  * per-instance inputs win.
- *
- * @category interactive
  */
 export function provideSelectConfig(
   ...features: CngxSelectConfigFeature[]
@@ -790,8 +723,6 @@ export function provideSelectConfig(
  *   viewProviders: [...provideSelectConfigAt(withPanelWidth(300))],
  * })
  * ```
- *
- * @category interactive
  */
 export function provideSelectConfigAt(
   ...features: CngxSelectConfigFeature[]

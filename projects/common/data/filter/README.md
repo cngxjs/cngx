@@ -65,67 +65,7 @@ export class ListComponent {
 
 Holds one or more named predicates. All active predicates are AND-combined: an item must pass **every** predicate to appear in results.
 
-Supports both **uncontrolled** (internal state via `addPredicate` / `removePredicate`) and **controlled** (`cngxFilter` input) modes.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxFilter` | `((value: T) => boolean) \| null` | `null` | **Controlled** predicate. Takes precedence over the `'default'` internal predicate. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `filterChange` | `((value: T) => boolean) \| null` | Emitted when the `'default'` predicate changes (backward-compat single-filter output). |
-| `predicatesChange` | `Map<string, (value: T) => boolean>` | Emitted whenever any named predicate is added or removed. Full map at time of emission. |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `predicates()` | `Map<string, (value: T) => boolean>` | All active named predicates. |
-| `activeCount()` | `number` | Number of active named predicates (controlled input not counted). |
-| `predicate()` | `((value: T) => boolean) \| null` | Combined predicate — AND of all named predicates plus controlled input. Returns `null` when nothing active. |
-| `isActive()` | `boolean` | `true` when at least one predicate is active. |
-
-### Methods
-
-#### `addPredicate(key: string, fn: (value: T) => boolean): void`
-
-Add or replace the named predicate `key`. Emits `predicatesChange` with the updated map.
-
-```typescript
-filter.addPredicate('location', (item) => selectedLocations.has(item.location));
-filter.addPredicate('role', (item) => selectedRoles.has(item.role));
-// Both active → AND combined
-```
-
-#### `removePredicate(key: string): void`
-
-Remove the named predicate `key` (no-op if not present). Emits `predicatesChange`.
-
-```typescript
-filter.removePredicate('location');
-// 'role' predicate still active
-```
-
-#### `setPredicate(fn: ((value: T) => boolean) | null): void`
-
-Set the `'default'` predicate and emit `filterChange`. Pass `null` to clear it.
-
-```typescript
-filter.setPredicate((item) => item.active === true);
-```
-
-#### `clear(): void`
-
-Remove all named predicates and emit both `filterChange(null)` and `predicatesChange(new Map())`.
-
-```typescript
-filter.clear();
-// All predicates gone, predicate() returns null
-```
+Supports both **uncontrolled** (internal state via `addPredicate` / `removePredicate`) and **controlled** (`cngxFilter` input) modes. Use `addPredicate(key, fn)` / `removePredicate(key)` for multi-dimensional filters; `setPredicate(fn | null)` maps to the `'default'` key; `clear()` drops everything.
 
 ## AND vs OR Logic
 
@@ -174,7 +114,7 @@ handleFilterChange(pred: ((v: any) => boolean) | null) {
 }
 ```
 
-**Backward-compatible:** The controlled input maps to the `'default'` key internally. Named predicates (`addPredicate`) still work alongside it.
+Backward-compatible: the controlled input maps to the `'default'` key internally. Named predicates (`addPredicate`) still work alongside it.
 
 ## Composition with Data Processing
 

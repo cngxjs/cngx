@@ -22,7 +22,7 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  * The host element **is** the semantic element — no inner wrapper.
  * This eliminates double focus rings and wrapper problems for screen readers.
  *
- * @usageNotes
+ * @example
  *
  * ### Action card with selection
  * ```html
@@ -38,8 +38,6 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  *   <img cngxCardMedia alt="Photo" />
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-card',
@@ -93,7 +91,6 @@ export class CngxCard {
     skipSelf: true,
   });
 
-  // --- Archetype ---
   /** Semantic archetype: `'article'` (display), `'button'` (action), or `'link'` (navigation). */
   readonly cardType = input<'article' | 'link' | 'button'>('article', {
     alias: 'as',
@@ -105,7 +102,6 @@ export class CngxCard {
   /** Accessible label for the card. Overrides the default screen reader announcement. */
   readonly ariaLabel = input<string | undefined>(undefined);
 
-  // --- State ---
   /** Two-way selection state. Only relevant when `selectable` is `true`. */
   readonly selected = model<boolean>(false);
 
@@ -121,7 +117,6 @@ export class CngxCard {
   /** Explanation for why the card is disabled. Communicated to SR via `aria-describedby`. */
   readonly disabledReason = input<string | undefined>(undefined);
 
-  // --- Derived ---
   /** Whether this card is interactive (button or link). */
   readonly interactive = computed(() => this.cardType() !== 'article');
 
@@ -180,7 +175,6 @@ export class CngxCard {
     return '';
   });
 
-  // --- Events ---
   /** Emits when an interactive card is clicked or activated via keyboard. */
   readonly clicked = output<void>();
 

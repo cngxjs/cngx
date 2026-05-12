@@ -1,5 +1,3 @@
-// Step 3: recycler.ts — injectRecycler() factory, CngxRecycler interface, RecyclerConfig
-
 import {
   DestroyRef,
   type ElementRef,
@@ -19,13 +17,9 @@ import { computeRange } from './range-computer';
 import { createScrollObserver } from './scroll-observer';
 import { createSizeCache } from './size-cache';
 
-// ── I18n Token ──────────────────────────────────────────────
-
 /**
  * I18n interface for recycler SR announcements.
  * All methods return the announcement text. No hardcoded strings.
- *
- * @category recycler
  */
 export interface RecyclerI18n {
   /** Announced when new items are loaded (infinite scroll). */
@@ -41,8 +35,6 @@ export interface RecyclerI18n {
 /**
  * Injection token for recycler SR announcement texts.
  * Provides English defaults via factory. Override with `provideRecyclerI18n()`.
- *
- * @category recycler
  */
 export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecyclerI18n', {
   factory: (): RecyclerI18n => ({
@@ -64,19 +56,13 @@ export const CNGX_RECYCLER_I18N = new InjectionToken<RecyclerI18n>('CngxRecycler
  *   error: () => 'Fehler beim Laden.',
  * })]
  * ```
- *
- * @category recycler
  */
 export function provideRecyclerI18n(i18n: RecyclerI18n) {
   return { provide: CNGX_RECYCLER_I18N, useValue: i18n };
 }
 
-// ── Config ──────────────────────────────────────────────────
-
 /**
  * Configuration for {@link injectRecycler}.
- *
- * @category recycler
  */
 export interface RecyclerConfig {
   /** Scroll container. CSS selector, native element, or `ElementRef`. */
@@ -129,13 +115,9 @@ export interface RecyclerConfig {
   serverTotal?: () => number;
 }
 
-// ── Return Interface ────────────────────────────────────────
-
 /**
  * Signal-based virtualizer returned by {@link injectRecycler}.
  * All derived values are `computed()` — the system cannot become inconsistent.
- *
- * @category recycler
  */
 export interface CngxRecycler {
   /** Start index (inclusive) of the rendered range, including overscan. */
@@ -246,8 +228,6 @@ export interface CngxRecycler {
   reset(): void;
 }
 
-// ── Delayed flag (inline createVisibilityTimer equivalent) ──
-
 /**
  * Inline equivalent of `createVisibilityTimer` from `@cngx/ui/feedback` (Level 4, not importable).
  *
@@ -281,15 +261,13 @@ function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boo
   return flag.asReadonly();
 }
 
-// ── Factory ─────────────────────────────────────────────────
-
 /**
  * Creates a Signal-based virtualizer for DOM recycling.
  *
  * Must be called in an injection context (field initializer or constructor).
  * Internally injects `DestroyRef` and `DOCUMENT` for cleanup and selector resolution.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic list
  * ```typescript
@@ -311,8 +289,6 @@ function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boo
  *   state: this.state,
  * });
  * ```
- *
- * @category recycler
  */
 export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const destroyRef = inject(DestroyRef);
@@ -320,7 +296,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const overscan = config.overscan ?? 5;
   const isGrid = (config.layout ?? 'list') === 'grid';
 
-  // Grid mode: require explicit columns
   if (isGrid && config.columns == null && isDevMode()) {
     console.error(
       '[CngxRecycler] layout: "grid" requires explicit `columns`. Falling back to columns=1.',
@@ -345,10 +320,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     }
   }
 
-  // ── Scroll observer (lazy DOM resolution inside effect) ──
   const scrollState = createScrollObserver(config.scrollElement, destroyRef);
 
-  // ── Size cache (Phase 2) — measured heights override estimateSize ──
   const sizeCache = createSizeCache();
 
   // Resolve size for an index: measured value from cache, or estimateSize fallback.
@@ -359,7 +332,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return sizeCache.resolve(index, config.estimateSize);
   };
 
-  // ── Range computation ──
   // Grid mode uses raw estimateSize (uniform row height, no SizeCache).
   // List mode uses resolveSize (SizeCache-backed).
   const range = computed(() => {
@@ -383,11 +355,9 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
   const offsetAfter = computed(() => (isGrid ? 0 : range().offsetAfter));
   const totalSize = computed(() => range().totalSize);
 
-  // ── Grid placeholders ──
   const placeholdersBefore = computed(() => (isGrid ? start() : 0));
   const placeholdersAfter = computed(() => (isGrid ? Math.max(0, config.totalCount() - end()) : 0));
 
-  // ── Visibility without overscan ──
   // start/end include overscan. firstVisible/lastVisible strip it back
   // to reflect the items actually in the viewport.
   // In grid mode, overscan is in rows (ceil(overscan/columns) * columns items).
@@ -423,7 +393,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return Math.max(0, lastVisible() - firstVisible() + 1);
   });
 
-  // ── Async state ──
   const state = config.state;
   const isLoading = computed(() => state?.isFirstLoad() ?? false);
   const isRefreshing = computed(() => state?.isRefreshing() ?? false);
@@ -448,7 +417,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
 
   const showSkeleton = createDelayedFlag(isLoading, config.skeletonDelay ?? 0);
 
-  // ── SR communication ──
   // previousTotal is a signal, not a mutable let — reactive, no stale-value risk.
   const announcementState = signal('');
   const previousTotal = signal(config.totalCount());
@@ -502,10 +470,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     });
   }
 
-  // ── A11y ──
   const ariaSetSize = computed(() => config.serverTotal?.() ?? config.totalCount());
 
-  // Scroll-Anchoring
   const anchorState = signal<{ index: number; offsetFromTop: number } | null>(null);
 
   function computeItemTop(targetIndex: number, cols?: number): number {
@@ -542,7 +508,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     }
   });
 
-  // ── Focus-Preservation (Phase 2) ──
   // Tracks which item has focus inside the scroll container.
   // Uses `data-cngx-recycle-index` attribute on items (set by CngxMeasure or consumer).
   // When a focused item leaves the visible range, `lostFocus` reports its index.
@@ -583,10 +548,8 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     return null;
   });
 
-  // ── Needed range (for page-based loading) ──
   const neededRange = computed(() => ({ start: start(), end: end() }));
 
-  // ── Deep-link scrollToIndex (Phase 3) ──
   const pendingScrollTarget = signal<{ index: number; behavior: ScrollBehavior } | null>(null);
   const pendingTarget = computed(() => pendingScrollTarget()?.index ?? null);
 
@@ -599,7 +562,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
     if (!target || target.index >= total) {
       return;
     }
-    // Target now reachable — execute scroll
     untracked(() => {
       pendingScrollTarget.set(null);
       const el = scrollState.element();
@@ -674,7 +636,6 @@ export function injectRecycler(config: RecyclerConfig): CngxRecycler {
         pendingScrollTarget.set({ index, behavior });
         return;
       }
-      // Clear any pending target
       pendingScrollTarget.set(null);
       const el = scrollState.element();
       if (el) {

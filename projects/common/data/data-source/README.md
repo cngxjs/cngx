@@ -43,34 +43,7 @@ export class ListComponent {
 
 ## CngxDataSource — Minimal Signal Bridge
 
-Dumb CDK bridge with zero logic. The consumer builds all transformations via `computed()`.
-
-### Class
-
-```typescript
-class CngxDataSource<T> extends DataSource<T>
-```
-
-**Constructor:**
-
-```typescript
-constructor(data: Signal<T[]>)
-```
-
-**Methods:**
-
-- `connect(): Observable<T[]>` — returns Observable of current data
-- `disconnect(): void` — no-op (Signal cleanup automatic)
-
-### Factory Function
-
-```typescript
-injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T>
-```
-
-**Requires:** Injection context (field initializer or constructor).
-
-**Example:**
+Dumb CDK bridge with zero logic. The consumer builds all transformations via `computed()`. Use `injectDataSource(data)` inside an injection context.
 
 ```typescript
 readonly processed = computed(() => {
@@ -95,21 +68,6 @@ All directives are injected **optionally** — missing directives simply skip th
 
 Accepts either a plain `Signal<T[]>` or `CngxAsyncState<T[]>`. When async state is provided, the data source exposes the full UX state: loading, error, refreshing, empty.
 
-### Class
-
-```typescript
-class CngxSmartDataSource<T> extends DataSource<T>
-```
-
-**Constructor:**
-
-```typescript
-constructor(
-  source: Signal<T[]> | CngxAsyncState<T[]>,
-  options?: CngxSmartDataSourceOptions<T>
-)
-```
-
 **Options Interface:**
 
 ```typescript
@@ -130,35 +88,7 @@ interface CngxSmartDataSourceOptions<T> {
 }
 ```
 
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `processed` | `Observable<T[]>` | Final data after all transformations (via `connect()`). |
-| `filteredCount` | `Signal<number>` | Item count after filter/search, before pagination. Use for paginator `total` input. |
-| `asyncState` | `CngxAsyncState<T[]> \| undefined` | The async state source (if constructed with one). |
-| `isLoading` | `Signal<boolean>` | First load in progress (from async state). |
-| `isRefreshing` | `Signal<boolean>` | Reload with cached data visible. |
-| `isBusy` | `Signal<boolean>` | Any operation running. |
-| `isFirstLoad` | `Signal<boolean>` | No successful load completed yet. |
-| `error` | `Signal<unknown>` | Error from async state (if any). |
-| `isEmpty` | `Signal<boolean>` | No data AND not busy. |
-
-### Methods
-
-- `connect(): Observable<T[]>` — returns Observable of processed data
-- `disconnect(): void` — no-op (Signal cleanup automatic)
-
-### Factory Function
-
-```typescript
-injectSmartDataSource<T>(
-  source: Signal<T[]> | CngxAsyncState<T[]>,
-  options?: CngxSmartDataSourceOptions<T>
-): CngxSmartDataSource<T>
-```
-
-**Requires:** Injection context.
+Use `injectSmartDataSource(source, options?)` inside an injection context.
 
 **Plain Signal Example:**
 

@@ -24,7 +24,7 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * `aria-valuenow` is only present in determinate mode — AT uses its
  * absence to distinguish the two modes.
  *
- * @usageNotes
+ * @example
  *
  * ### With async state
  * ```html
@@ -35,8 +35,6 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * ```html
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-progress',

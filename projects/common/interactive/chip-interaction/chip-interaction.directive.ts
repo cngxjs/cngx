@@ -94,8 +94,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   cngxDescribedBy="chip-locked-reason"
  * >{{ tag }}</cngx-chip>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxChipInteraction]',
@@ -193,8 +191,6 @@ export class CngxChipInteraction<T = unknown>
     }
     return this.describedBy();
   });
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-chip-')).asReadonly();
 

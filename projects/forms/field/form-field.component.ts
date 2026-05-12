@@ -21,8 +21,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-form-field',

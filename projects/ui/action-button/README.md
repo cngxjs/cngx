@@ -16,11 +16,7 @@ import { CngxActionButton } from '@cngx/ui';
 
 @Component({
   selector: 'app-example',
-  template: `
-    <cngx-action-button [action]="save">
-      Save Draft
-    </cngx-action-button>
-  `,
+  template: ` <cngx-action-button [action]="save"> Save Draft </cngx-action-button> `,
   imports: [CngxActionButton],
 })
 export class ExampleComponent {
@@ -39,55 +35,6 @@ The component supports three visual feedback pathways:
 3. **Automatic state prop** — bind `btn.state` to any state consumer
 
 A screen-reader-only `aria-live` region announces state transitions without visual noise.
-
-## API
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| action | `AsyncAction` | required | The async function to execute on click. Must return a `Promise` or `Observable`. |
-| type | `'button' \| 'submit' \| 'reset'` | `'button'` | HTML button type attribute. Defaults to `'button'` to prevent accidental form submission. |
-| variant | `'primary' \| 'secondary' \| 'ghost'` | `'primary'` | Visual variant — maps to `cngx-action-button--{variant}` CSS class. |
-| enabled | `boolean` | `true` | When `false`, clicks are ignored. Does not set the `disabled` attribute. |
-| feedbackDuration | `number` | `2000` | Duration in milliseconds to show success/error visual feedback before returning to idle. Passed through to the inner `CngxAsyncClick` directive. |
-| succeededAnnouncement | `string \| undefined` | `undefined` | Screen reader announcement on success. Falls back to `succeededLabel`, then `'Action succeeded'`. |
-| failedAnnouncement | `string \| undefined` | `undefined` | Screen reader announcement on failure. Falls back to `failedLabel`, then `'Action failed'`. |
-| pendingLabel | `string \| undefined` | `undefined` | Fallback text while pending (when no `cngxPending` template is projected). |
-| succeededLabel | `string \| undefined` | `undefined` | Fallback text after success (when no `cngxSucceeded` template is projected). |
-| failedLabel | `string \| undefined` | `undefined` | Fallback text after failure (when no `cngxFailed` template is projected). |
-| externalState | `CngxAsyncState<unknown> \| undefined` | `undefined` | Bind an external async state to derive visual status from. When set, button status follows the external state's status, data, and error. Takes precedence over internal action tracking. |
-| toastSuccess | `string \| undefined` | `undefined` | Toast message on success. Requires `CngxToaster` (via `provideFeedback(withToasts())` or `provideToasts()`). Silently ignored if toaster is not provided. |
-| toastError | `string \| undefined` | `undefined` | Toast message on error. |
-| toastErrorDetail | `boolean` | `false` | Include the error detail message in the error toast body. Appends `error.message` to the toast message. |
-| toastSuccessDuration | `number` | `3000` | Duration in milliseconds for success toast. Recommended to be >= `feedbackDuration` to avoid toast spam on rapid clicks. |
-| toastErrorDuration | `number \| 'persistent'` | `'persistent'` | Duration for error toast. `'persistent'` means manual dismiss only. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `state: CngxAsyncState<unknown>` — Full async state view of the button's effective lifecycle. Reflects the external state when `[externalState]` is bound, otherwise the inner `CngxAsyncClick` directive's state. Bind to any state consumer: `<cngx-alert [state]="btn.state" />`.
-
-#### CSS Custom Properties
-- `--cngx-action-btn-transition` (`0.2s ease`) — Transition duration and easing
-- `--cngx-action-btn-radius` (`6px`) — Border radius
-- `--cngx-action-btn-padding` (`8px 16px`) — Padding
-- `--cngx-action-btn-border` (`--mat-sys-outline-variant` M3, `#ddd` fallback) — Border color
-- `--cngx-action-btn-bg` (transparent) — Default background
-- `--cngx-action-btn-pending-opacity` (`0.7`) — Opacity while pending
-- `--cngx-action-btn-succeeded-bg` (M3 primary 12%, `#e8f5e9` fallback) — Success state background
-- `--cngx-action-btn-succeeded-color` (M3 primary, `#2e7d32` fallback) — Success state text
-- `--cngx-action-btn-succeeded-border` (M3 primary, `#2e7d32` fallback) — Success state border
-- `--cngx-action-btn-failed-bg` (M3 error 12%, `#ffebee` fallback) — Error state background
-- `--cngx-action-btn-failed-color` (M3 error, `#c62828` fallback) — Error state text
-- `--cngx-action-btn-failed-border` (M3 error, `#c62828` fallback) — Error state border
-- `--cngx-action-btn-primary-bg` (M3 primary, `#1976d2` fallback) — Primary variant background
-- `--cngx-action-btn-primary-color` (M3 on-primary, `#fff` fallback) — Primary variant text
-- `--cngx-action-btn-secondary-bg` (transparent) — Secondary variant background
-- `--cngx-action-btn-secondary-color` (M3 primary, `#1976d2` fallback) — Secondary variant text
-- `--cngx-action-btn-secondary-border` (M3 outline, `#79747e` fallback) — Secondary variant border
-- `--cngx-action-btn-ghost-color` (M3 on-surface-variant, `#49454f` fallback) — Ghost variant text
-- `--cngx-action-btn-ghost-hover-bg` (M3 on-surface 8%, `rgba(0,0,0,0.04)` fallback) — Ghost variant hover background
 
 ## Accessibility
 
@@ -132,102 +79,6 @@ All colors and spacing use CSS Custom Properties with Material 3 defaults. Overr
 }
 ```
 
-## Examples
-
-### Basic Usage
-
-```typescript
-// Minimal setup — use default variant and labels
-<cngx-action-button [action]="save">
-  Save
-</cngx-action-button>
-```
-
-### With String Labels
-
-```typescript
-<cngx-action-button
-  [action]="save"
-  pendingLabel="Saving..."
-  succeededLabel="Saved!"
-  failedLabel="Save failed — retry?">
-  Save
-</cngx-action-button>
-```
-
-### With Template Slots
-
-```typescript
-<cngx-action-button [action]="save">
-  Save Draft
-  <ng-template cngxPending>
-    <mat-spinner diameter="18" /> Saving...
-  </ng-template>
-  <ng-template cngxSucceeded>
-    Done! Changes saved.
-  </ng-template>
-  <ng-template cngxFailed let-err>
-    Failed: {{ err instanceof Error ? err.message : 'Unknown error' }}
-  </ng-template>
-</cngx-action-button>
-```
-
-### With Toast Feedback
-
-```typescript
-// Requires provideFeedback(withToasts()) or provideToasts() in app config
-<cngx-action-button
-  [action]="save"
-  toastSuccess="Document saved"
-  toastError="Save failed">
-  Save
-</cngx-action-button>
-```
-
-### With External State
-
-```typescript
-// Derive button status from a separate async state (e.g., a data source)
-@Component({...})
-export class MyComponent {
-  readonly saveState = injectAsyncState(() => this.http.post('/api/draft', {}));
-
-  save = () => this.saveState.execute(() => this.http.post('/api/draft', {}));
-}
-
-// In template
-<cngx-action-button [action]="save" [externalState]="saveState.state">
-  Save
-</cngx-action-button>
-```
-
-### Variants
-
-```typescript
-<cngx-action-button [action]="save" variant="primary">
-  Primary Action
-</cngx-action-button>
-
-<cngx-action-button [action]="delete" variant="secondary">
-  Secondary Action
-</cngx-action-button>
-
-<cngx-action-button [action]="expand" variant="ghost">
-  Ghost Action
-</cngx-action-button>
-```
-
-### Accessibility-First: SR Announcements
-
-```typescript
-<cngx-action-button
-  [action]="deleteItem"
-  succeededAnnouncement="Item deleted successfully"
-  failedAnnouncement="Could not delete item">
-  Delete
-</cngx-action-button>
-```
-
 ## Material Theme
 
 To apply Material Design 3 theme colors, include the theme SCSS in your global stylesheet:
@@ -245,11 +96,3 @@ html {
 ```
 
 The theme mixin automatically derives success/error colors from Material's primary and error palettes. Both Material 3 (M3) and Material 2 (M2) are supported; colors adapt to the theme version automatically.
-
-## See Also
-
-- [CngxAsyncClick](../../../common/src/lib/interactive/async-click.ts) — The underlying directive
-- [CngxToaster](../../../feedback/src/) — Toast system
-- [compodoc API documentation](../../../../../docs)
-- Demo: `dev-app/src/app/demos/ui/action-button-demo/`
-- Tests: `projects/ui/src/lib/action-button/action-button.spec.ts`

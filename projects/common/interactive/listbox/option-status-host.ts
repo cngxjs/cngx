@@ -9,8 +9,6 @@ import { InjectionToken, type Signal, type TemplateRef } from '@angular/core';
  * carries the actual glyph; the host MAY return `tpl: null` to reserve
  * layout space without rendering anything (rare — used for force-revealing
  * the slot during animation transitions).
- *
- * @category interactive
  */
 export interface CngxOptionStatus {
   readonly kind: 'pending' | 'error';
@@ -27,8 +25,6 @@ export interface CngxOptionStatus {
  * the option calls `host.statusFor(value)` once and consumes the returned
  * `Signal<CngxOptionStatus | null>` reactively; the host owns the policy
  * for resolving which value gets which status at any given commit-id.
- *
- * @category interactive
  */
 export interface CngxOptionStatusHost {
   /**
@@ -46,8 +42,6 @@ export interface CngxOptionStatusHost {
  * `CngxOption` injects this token with `{ optional: true }` — standalone
  * use (no host provides the token) results in a stable `null` status with
  * no DOM cost.
- *
- * @category interactive
  */
 export const CNGX_OPTION_STATUS_HOST = new InjectionToken<CngxOptionStatusHost>(
   'CNGX_OPTION_STATUS_HOST',

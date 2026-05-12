@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-dialog theming ──────────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -13,8 +11,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include dialog.theme($theme);
 //   }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-dialog-backdrop-bg: rgba(0, 0, 0, 0.5);
@@ -46,8 +42,6 @@
   }
 }
 
-// ─── Structural styles ──────────────────────────────────────────
-
 @mixin styles() {
   dialog[cngxDialog] {
     border: none;
@@ -68,7 +62,6 @@
         var(--cngx-dialog-transition-easing, ease);
   }
 
-  // ── Backdrop ────────────────────────────────────────────────────
   dialog[cngxDialog]::backdrop {
     // backdrop-opacity controls visibility (used by CngxDialogStack for nesting).
     // The background color's own alpha channel controls the darkness level.
@@ -79,7 +72,6 @@
     backdrop-filter: blur(var(--cngx-dialog-backdrop-blur, 0px));
   }
 
-  // ── Open / close transitions ───────────────────────────────────
   dialog[cngxDialog].cngx-dialog--opening {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
@@ -95,7 +87,6 @@
     transform: translateY(8px) scale(0.98);
   }
 
-  // ── Draggable ──────────────────────────────────────────────────
   dialog[cngxDialogDraggable] {
     transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
   }
@@ -119,15 +110,12 @@
     transition: none;
   }
 
-  // ── Reduced motion ─────────────────────────────────────────────
   @media (prefers-reduced-motion: reduce) {
     dialog[cngxDialog] {
       transition: none;
     }
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(dialog[cngxDialog]) {

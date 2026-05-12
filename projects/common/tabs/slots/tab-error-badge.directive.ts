@@ -6,8 +6,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * Context for the `*cngxTabErrorBadge` template. Renders only when
  * the tab's `errorAggregator?.shouldShow()` is `true`; the visibility
  * gate stays library-owned. Sibling shape to `CngxStepBadgeContext`.
- *
- * @category interactive
  */
 export interface CngxTabErrorBadgeContext {
   /** The tab handle carrying id / label / disabled / aggregator signals. */
@@ -30,8 +28,6 @@ export interface CngxTabErrorBadgeContext {
  *   </ng-template>
  * </cngx-tab-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTabErrorBadge]',

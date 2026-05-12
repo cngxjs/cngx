@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-form-field theming ─────────────────────────────────────
-//
 // Optional Material theme integration for cngx-form-field.
 // cngx-form-field itself has zero visual opinion — this mixin maps
 // Material design tokens to CSS custom properties on the child
@@ -64,14 +62,11 @@
   }
 }
 
-// ─── Public entrypoint ───────────────────────────────────────────
-
 @mixin theme($theme) {
   cngx-form-field {
     @include base();
     @include color($theme);
 
-    // ── Label ──────────────────────────────────────────────────
     [cngxLabel] {
       color: var(--cngx-field-label-color);
       font-size: var(--cngx-field-label-font-size);
@@ -86,20 +81,17 @@
       }
     }
 
-    // ── Hint ───────────────────────────────────────────────────
     [cngxHint] {
       color: var(--cngx-field-hint-color);
       font-size: var(--cngx-field-hint-font-size);
     }
 
-    // ── Errors ─────────────────────────────────────────────────
     [cngxError],
     cngx-field-errors {
       color: var(--cngx-field-error-color);
       font-size: var(--cngx-field-error-font-size);
     }
 
-    // ── Input ──────────────────────────────────────────────────
     [cngxInput] {
       border-color: var(--cngx-field-input-border-color);
 
@@ -112,7 +104,6 @@
       }
     }
 
-    // ── Char count ──────────────────────────────────────────────
     cngx-char-count {
       font-size: var(--cngx-field-char-count-font-size, 0.75rem);
       color: var(--cngx-field-hint-color);
@@ -122,19 +113,16 @@
       }
     }
 
-    // ── Disabled state ───────────────────────────────────────────
     &.cngx-field--disabled {
       opacity: var(--cngx-field-disabled-opacity);
     }
 
-    // ── Success state ────────────────────────────────────────────
     &.cngx-field--valid.cngx-field--touched:not(.cngx-field--pending) {
       [cngxInput] {
         border-color: var(--cngx-field-success-border-color, var(--cngx-field-success-color, #2e7d32));
       }
     }
 
-    // ── Error shake animation ────────────────────────────────────
     &.cngx-field--error [cngxInput] {
       animation: cngx-field-shake var(--cngx-field-shake-duration, 0.3s) ease-in-out;
     }

@@ -117,10 +117,6 @@ cdk-cell {
   }
 }
 
-/* ─── Mobile / Tablet (≤ 960 px) ───────────────────────────────── */
-// Reduced horizontal padding → more compact width
-// Increased vertical padding → larger touch targets
-
 @media (max-width: 960px) {
   :host {
     --cngx-table-indent-size: 1.25rem;

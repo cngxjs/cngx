@@ -24,8 +24,6 @@ import {
  *   <button cngxRovingItem>Three</button>
  * </div>
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxRovingItem]',
@@ -63,7 +61,7 @@ export class CngxRovingItem {
  * (out of rendered range), `pendingFocus` is set so a wiring function like
  * `connectRecyclerToRoving()` can scroll it into view.
  *
- * @usageNotes
+ * @example
  *
  * ### Horizontal toolbar
  * ```html
@@ -93,8 +91,6 @@ export class CngxRovingItem {
  *   }
  * </div>
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxRovingTabindex]',
@@ -116,8 +112,6 @@ export class CngxRovingTabindex {
    * Total item count for virtual mode. When set, `activeIndex` ranges from 0 to
    * `virtualCount - 1` and items are matched by `data-cngx-recycle-index` attribute.
    * When not set, standard `contentChildren`-based navigation is used.
-   *
-   * @category a11y
    */
   readonly virtualCount = input<number | undefined>(undefined);
 
@@ -136,8 +130,6 @@ export class CngxRovingTabindex {
    * Index of the item that should receive focus but is not currently in the DOM.
    * Non-null when virtual navigation targets an out-of-range item.
    * Used by `connectRecyclerToRoving()` to scroll the item into view and focus it.
-   *
-   * @category a11y
    */
   readonly pendingFocus = this.pendingFocusState.asReadonly();
 
@@ -176,8 +168,6 @@ export class CngxRovingTabindex {
   /**
    * Clears the pending focus target. Called by `connectRecyclerToRoving()`
    * after the item has been scrolled into view and focused.
-   *
-   * @category a11y
    */
   clearPendingFocus(): void {
     this.pendingFocusState.set(null);

@@ -4,8 +4,6 @@ import { inject, InjectionToken, type Provider } from '@angular/core';
  * Stepper i18n surface. Library defaults are English; locales come from
  * consumer overrides via {@link provideStepperI18n}. Sibling of
  * `CNGX_TABS_I18N` / `CNGX_CHART_I18N`.
- *
- * @category interactive
  */
 export interface CngxStepperI18n {
   readonly stepperLabel: string;
@@ -59,8 +57,6 @@ const STEPPER_I18N_DEFAULTS: CngxStepperI18n = {
 /**
  * DI token for the resolved stepper i18n bundle. `providedIn: 'root'`
  * with English defaults.
- *
- * @category interactive
  */
 export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
   'CngxStepperI18n',
@@ -71,8 +67,6 @@ export const CNGX_STEPPER_I18N = new InjectionToken<CngxStepperI18n>(
  * Feature shape consumed by {@link provideStepperI18n} and {@link provideCngxStepper}.
  * Hidden `_target: 'i18n'` discriminator routes through the family aggregator.
  * Sibling of `CngxTabsI18nFeature`.
- *
- * @category interactive
  */
 export type CngxStepperI18nFeature = ((
   bundle: CngxStepperI18n,
@@ -96,8 +90,6 @@ function defineStepperI18nFeature(
  * Override stepper i18n labels. Partial override — unset keys keep
  * the English default. Sibling of `withStepperAriaLabels` /
  * `withStepperFallbackLabels`.
- *
- * @category interactive
  */
 export function withStepperI18nLabels(
   overrides: Partial<CngxStepperI18n>,
@@ -128,8 +120,6 @@ function resolveI18nFeatures(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export function provideStepperI18n(
   ...features: readonly CngxStepperI18nFeature[]
@@ -142,8 +132,6 @@ export function provideStepperI18n(
 
 /**
  * Inject the resolved stepper i18n bundle in an injection context.
- *
- * @category interactive
  */
 export function injectStepperI18n(): CngxStepperI18n {
   return inject(CNGX_STEPPER_I18N);

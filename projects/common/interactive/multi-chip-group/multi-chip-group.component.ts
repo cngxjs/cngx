@@ -97,8 +97,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   }
  * </cngx-multi-chip-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-multi-chip-group, [cngxMultiChipGroup]',
@@ -203,8 +201,6 @@ export class CngxMultiChipGroup<T = unknown>
     }
     this.controller.deselect(value);
   }
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-multi-chip-group-')).asReadonly();
 

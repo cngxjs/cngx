@@ -13,7 +13,7 @@ import { CngxBanner } from './banner.service';
  *
  * Requires `provideFeedback(withBanners())`.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-banner-trigger
@@ -30,8 +30,6 @@ import { CngxBanner } from './banner.service';
  *   actionLabel="Extend"
  *   [actionHandler]="extendSession" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-banner-trigger',

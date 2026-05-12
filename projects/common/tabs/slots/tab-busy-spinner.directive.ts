@@ -8,8 +8,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * with `commitState.status() === 'pending'`); the visibility gate
  * stays library-owned. `intendedIndex` is exposed so positional
  * variants (progress bars, step counters) read the same source.
- *
- * @category interactive
  */
 export interface CngxTabBusySpinnerContext {
   /** The tab handle carrying id / label / disabled / aggregator signals. */
@@ -31,8 +29,6 @@ export interface CngxTabBusySpinnerContext {
  *   </ng-template>
  * </cngx-tab-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTabBusySpinner]',

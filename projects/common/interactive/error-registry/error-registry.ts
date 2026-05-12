@@ -20,8 +20,6 @@ import { mapKeySetEqual, shallowReadonlyArrayEqual } from './equal-fns';
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category services
  */
 @Injectable()
 export class CngxErrorRegistry {
@@ -65,8 +63,6 @@ export class CngxErrorRegistry {
     { equal: shallowReadonlyArrayEqual },
   );
 
-  // ── Scope mutations ─────────────────────────────────────────────────
-
   /**
    * Registers the named scope. Idempotent for the same `(name, scope)`
    * pair.
@@ -109,8 +105,6 @@ export class CngxErrorRegistry {
     return this.scopesState().get(name);
   }
 
-  // ── Aggregator mutations ────────────────────────────────────────────
-
   /**
    * Registers the named aggregator. Idempotent for the same
    * `(name, aggregator)` pair.
@@ -147,8 +141,6 @@ export class CngxErrorRegistry {
   getAggregator(name: string): CngxErrorAggregatorContract | undefined {
     return this.aggregatorsState().get(name);
   }
-
-  // ── Reveal / reset helpers ──────────────────────────────────────────
 
   /** Reveals the named scope. Idempotent; no-op if name not registered. */
   reveal(name: string): void {

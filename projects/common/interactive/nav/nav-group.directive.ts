@@ -17,7 +17,7 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * The consumer renders the content separately and wires `role="group"`
  * and `aria-labelledby` on the content container.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic
  * ```html
@@ -42,8 +42,6 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  *   ],
  * })
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: '[cngxNavGroup]',

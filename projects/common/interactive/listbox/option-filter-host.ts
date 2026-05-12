@@ -10,8 +10,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * filtering decides — substring, fuzzy, server-driven — and gives the
  * host a single point of control. Empty search term ALWAYS resolves to
  * "show everything"; the option short-circuits before calling `matches`.
- *
- * @category interactive
  */
 export interface CngxOptionFilterHost {
   /** Current search term. Empty string means "no filter active". */
@@ -31,8 +29,6 @@ export interface CngxOptionFilterHost {
  * `CngxOption` injects this token with `{ optional: true }` — standalone
  * use (no host provides the token) leaves every option visible at all
  * times with no DOM cost.
- *
- * @category interactive
  */
 export const CNGX_OPTION_FILTER_HOST = new InjectionToken<CngxOptionFilterHost>(
   'CNGX_OPTION_FILTER_HOST',

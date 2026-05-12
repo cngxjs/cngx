@@ -10,8 +10,6 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
  *
  * Optional status indicator dot via `status`. Size and shape driven by
  * CSS custom properties.
- *
- * @category display
  */
 @Component({
   selector: 'cngx-avatar',

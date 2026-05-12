@@ -8,8 +8,6 @@ import { Directive, input } from '@angular/core';
  * CSS custom properties (`--cngx-divider-color`, `--cngx-divider-thickness`,
  * `--cngx-divider-inset`). Consumers apply their own styles through
  * `.cngx-divider` or override the variables.
- *
- * @category display
  */
 @Directive({
   selector: 'cngx-divider, [cngxDivider]',

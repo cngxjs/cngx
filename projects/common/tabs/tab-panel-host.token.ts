@@ -12,8 +12,6 @@ import type { CngxTabHandle } from './tab-group-host.token';
  * gating. Template resolvers let skin sub-components project the
  * `*cngxTabLabel` / `*cngxTabContent` slots without depending on the
  * concrete `CngxTabGroup` class.
- *
- * @category interactive
  */
 export interface CngxTabPanelHost {
   readonly tabs: Signal<readonly CngxTabHandle[]>;
@@ -32,8 +30,6 @@ export interface CngxTabPanelHost {
  * DI token the organism provides via `useExisting`. The overflow
  * molecule and consumer-authored skin sub-components inject this
  * instead of the concrete component class.
- *
- * @category interactive
  */
 export const CNGX_TAB_PANEL_HOST = new InjectionToken<CngxTabPanelHost>(
   'CngxTabPanelHost',

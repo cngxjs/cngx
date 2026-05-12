@@ -37,8 +37,6 @@ function adEq(
  * Returns a structurally-equal memoized computed — consumers can pass the
  * signal straight into `[items]="adItems()"` without worrying about cascade
  * re-renders on irrelevant tree re-emissions.
- *
- * @category interactive
  */
 export function createTreeAdItems<T>(
   ctrl: CngxTreeController<T>,

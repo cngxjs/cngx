@@ -14,7 +14,7 @@ export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
  * completes past the threshold. Exposes `swiping` and `swipeProgress`
  * signals for real-time visual feedback during the gesture.
  *
- * @usageNotes
+ * @example
  *
  * ### Close drawer on swipe-left
  * ```html
@@ -31,8 +31,6 @@ export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
  *   …
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxSwipeDismiss]',

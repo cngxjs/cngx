@@ -29,8 +29,6 @@ import type {
  * Stable across CD passes so `aria-activedescendant` resolves to
  * the same `<li>`. `-overflow-option` suffix avoids collision with
  * the strip-button (`-header`) and per-tab descriptor (`-desc`).
- *
- * @category interactive
  */
 export function tabOverflowOptionId(tab: CngxTabHandle): string {
   return `${tab.id}-overflow-option`;
@@ -41,8 +39,6 @@ export function tabOverflowOptionId(tab: CngxTabHandle): string {
  * runs the `contentChild()` queries (injection-context-only) and
  * supplies the reactive sources; the factory owns cascade
  * resolution and per-context builders.
- *
- * @category interactive
  */
 export interface CngxTabOverflowTemplateBindingsOptions {
   /** `contentChild(CngxTabOverflowTrigger)` from the molecule. */
@@ -63,8 +59,6 @@ export interface CngxTabOverflowTemplateBindingsOptions {
  * Output of {@link createTabOverflowTemplateBindings}. Carries the two
  * resolved templates plus a stable trigger-context signal and an
  * imperative item-context builder.
- *
- * @category interactive
  */
 export interface CngxTabOverflowTemplateBindings {
   readonly triggerTemplate: Signal<
@@ -136,8 +130,6 @@ function adItemsEqual(
  * Pure — no DI, no side effects, no destroy hooks. Safe to call
  * from a component's field-init block. Mirrors the select-family
  * `createTemplateRegistry` pattern.
- *
- * @category interactive
  */
 export function createTabOverflowTemplateBindings(
   opts: CngxTabOverflowTemplateBindingsOptions,
@@ -223,8 +215,6 @@ export function createTabOverflowTemplateBindings(
  * inherit a stale index from the prior keyboard session.
  *
  * Must run in injection context.
- *
- * @category interactive
  */
 export function createOverflowPopoverHighlightSync(
   popover: Signal<CngxPopover>,
@@ -242,8 +232,6 @@ export function createOverflowPopoverHighlightSync(
 
 /**
  * Factory signature for {@link CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY}.
- *
- * @category interactive
  */
 export type CngxOverflowPopoverHighlightSyncFactory = (
   popover: Signal<CngxPopover>,
@@ -257,8 +245,6 @@ export type CngxOverflowPopoverHighlightSyncFactory = (
  * telemetry on close, custom highlight rules. Symmetric to
  * `CNGX_TAB_OVERFLOW_DOM_ADAPTER_FACTORY` and
  * `CNGX_TABS_COMMIT_HANDLER_FACTORY`.
- *
- * @category interactive
  */
 export const CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY =
   new InjectionToken<CngxOverflowPopoverHighlightSyncFactory>(

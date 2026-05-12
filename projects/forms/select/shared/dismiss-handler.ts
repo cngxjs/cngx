@@ -4,8 +4,6 @@ import type { CngxPopover } from '@cngx/common/popover';
 
 /**
  * Config for {@link createDismissHandler}.
- *
- * @category interactive
  */
 export interface DismissHandlerOptions {
   /** Variant's `viewChild(CngxPopover)`. `.hide()` only when visible. */
@@ -24,8 +22,6 @@ export interface DismissHandlerOptions {
 
 /**
  * API from {@link createDismissHandler}.
- *
- * @category interactive
  */
 export interface DismissHandler {
   /**
@@ -39,8 +35,6 @@ export interface DismissHandler {
  * Click-outside handler. Pure closure over `opts` — no Angular DI.
  * Override via {@link CNGX_DISMISS_HANDLER_FACTORY} for telemetry or
  * conditional-dismiss prompts.
- *
- * @category interactive
  */
 export function createDismissHandler(
   opts: DismissHandlerOptions,
@@ -62,8 +56,6 @@ export function createDismissHandler(
 
 /**
  * Factory signature for {@link CNGX_DISMISS_HANDLER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxDismissHandlerFactory = (
   opts: DismissHandlerOptions,
@@ -72,8 +64,6 @@ export type CngxDismissHandlerFactory = (
 /**
  * Factory token for {@link DismissHandler}. Default
  * {@link createDismissHandler}.
- *
- * @category interactive
  */
 export const CNGX_DISMISS_HANDLER_FACTORY =
   new InjectionToken<CngxDismissHandlerFactory>('CngxDismissHandlerFactory', {

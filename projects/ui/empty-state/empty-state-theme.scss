@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-empty-state theming ──────────────────────────────────
-//
 //   @use '@angular/material' as mat;
 //   @use '@cngx/ui/empty-state/empty-state-theme' as empty;
 //
@@ -11,8 +9,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include empty.theme($theme);
 //   }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-empty-gap: 16px;
@@ -44,8 +40,6 @@
     --cngx-empty-desc-size: var(--mat-sys-body-medium-size, 0.875rem);
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(cngx-empty-state) {

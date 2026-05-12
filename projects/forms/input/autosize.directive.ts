@@ -21,8 +21,6 @@ import {
  * <textarea cngxAutosize [minRows]="2" [maxRows]="10" #auto="cngxAutosize"></textarea>
  * <span>Height: {{ auto.height() }}px</span>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'textarea[cngxAutosize]',

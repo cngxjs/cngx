@@ -12,7 +12,7 @@ export interface NavGroupRef {
  * Provided at the sidebar/nav container level — only groups within the
  * same provider scope coordinate. Not `providedIn: 'root'` on purpose.
  *
- * @usageNotes
+ * @example
  * ```typescript
  * @Component({
  *   providers: [
@@ -21,8 +21,6 @@ export interface NavGroupRef {
  *   ],
  * })
  * ```
- *
- * @category nav
  */
 @Injectable()
 export class CngxNavGroupRegistry {

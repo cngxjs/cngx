@@ -18,8 +18,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   </ng-template>
  * </cngx-stepper>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxStepperEmpty]',

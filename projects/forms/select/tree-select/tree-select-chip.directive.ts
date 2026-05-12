@@ -20,8 +20,6 @@ import { type CngxTreeSelectChipContext } from './tree-select.model';
  *   </ng-template>
  * </cngx-tree-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTreeSelectChip]',

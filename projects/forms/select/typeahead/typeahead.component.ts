@@ -105,8 +105,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxTypeahead.selectionChange}.
- *
- * @category interactive
  */
 export interface CngxTypeaheadChange<T = unknown> {
   readonly source: CngxTypeahead<T>;
@@ -128,8 +126,6 @@ export interface CngxTypeaheadChange<T = unknown> {
  *
  * Stateless graph in {@link createSelectCore}; this component is a
  * thin scalar-value adapter.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-typeahead',
@@ -509,8 +505,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
    * Append a pre-built option to the local buffer. Renders in the next
    * panel emission and silently drops once the server includes a
    * matching value. Idempotent under `compareWith`.
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -518,8 +512,6 @@ export class CngxTypeahead<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

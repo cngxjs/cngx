@@ -7,8 +7,6 @@ import type { CngxTabHandle } from '../tab-group-host.token';
  * default `tab.label() ?? tab.id` text inside the More popover; the
  * surrounding `<li role="menuitem">` shell (`aria-disabled`, click
  * handler, `data-tab-id`) stays library-owned.
- *
- * @category interactive
  */
 export interface CngxTabOverflowItemContext {
   /** Convenience alias for `tab` — usable as `let-tab` shorthand. */
@@ -42,8 +40,6 @@ export interface CngxTabOverflowItemContext {
  *   </ng-template>
  * </cngx-tab-overflow>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTabOverflowItem]',

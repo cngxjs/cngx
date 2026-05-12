@@ -70,8 +70,6 @@ import {
  *   }
  * </cngx-multi-chip-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxChipInGroup]',

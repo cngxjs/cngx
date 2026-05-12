@@ -5,8 +5,6 @@
  *
  * `start`/`end` are item indices. `offsetBefore`/`offsetAfter`/`totalSize` are pixels.
  * In grid mode, offsets are row-based (rows = ceil(totalCount / columns)).
- *
- * @category recycler
  */
 export interface RangeResult {
   /** Start index (inclusive) of the visible range. */

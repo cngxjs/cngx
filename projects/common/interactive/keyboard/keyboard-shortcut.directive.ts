@@ -19,7 +19,7 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *
  * Uses `parseKeyCombo` and `matchesKeyCombo` from `@cngx/core/utils`.
  *
- * @usageNotes
+ * @example
  *
  * ### Global save shortcut
  * ```html
@@ -35,8 +35,6 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *   Press Escape to close
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxKeyboardShortcut]',

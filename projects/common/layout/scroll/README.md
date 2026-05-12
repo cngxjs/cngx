@@ -67,31 +67,9 @@ export class ScrollExampleComponent {
 }
 ```
 
----
-
 ## CngxScrollSpy
 
 Tracks which section is currently most visible in the viewport using `IntersectionObserver`. Ideal for scroll-based navigation highlighting and reading progress.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxScrollSpy` | `string[]` | Required | IDs of the sections to observe. |
-| `threshold` | `number` | `0.3` | Minimum visibility ratio (0–1) to consider a section as a candidate. |
-| `root` | `string \| null` | `null` | CSS selector for the scroll container root. `null` uses the viewport. |
-| `rootMargin` | `string` | `'0px'` | Root margin for the observer (CSS margin syntax, e.g., `'100px 0px'`). |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `activeIdChange` | `string \| null` | Emitted when the active section changes. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `activeId: Signal<string \| null>` — ID of the section with the highest intersection ratio. Null if none meet the threshold.
 
 ### Usage Example
 
@@ -109,17 +87,9 @@ Tracks which section is currently most visible in the viewport using `Intersecti
 <section id="section-3">Content 3</section>
 ```
 
----
-
 ## CngxScrollLock
 
 Prevents scrolling on the document body by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`. Multiple instances are ref-counted — original styles are only restored when the last lock is released.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxScrollLock` | `boolean` | `false` | Whether scroll lock is active. |
 
 ### Behavior
 
@@ -142,39 +112,9 @@ Prevents scrolling on the document body by setting `overflow: hidden` and `scrol
 </div>
 ```
 
----
-
 ## CngxStickyHeader
 
 Communicates when a sticky-positioned element becomes stuck (scrolled past its natural position) using a sentinel element and `IntersectionObserver`.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `threshold` | `number` | `0` | Intersection threshold. `0` triggers as soon as the sentinel leaves viewport. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `stickyChange` | `boolean` | Emitted when the sticky state changes. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `isSticky: Signal<boolean>` — Whether the header is currently in its stuck position (scrolled past natural position).
-
-### CSS Classes
-
-- `.cngx-sticky--active` — Applied when the header is stuck.
-
-### Host Styling
-
-The directive automatically applies:
-- `position: sticky`
-- `top: 0`
-- `z-index: var(--cngx-sticky-z-index, 1)`
 
 ### Usage Example
 
@@ -195,42 +135,9 @@ The directive automatically applies:
 
 A 1px invisible sentinel element is inserted before the host. When the sentinel scrolls out of view, the header must be stuck. The `IntersectionObserver` tracks sentinel visibility and updates the `isSticky` signal accordingly.
 
----
-
 ## CngxInfiniteScroll
 
 Infinite scroll trigger using `IntersectionObserver`. Place on a sentinel element at the bottom of a scrollable list. Fires `loadMore` when the sentinel enters the viewport (with debounce guard).
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `threshold` | `number` | `0` | Intersection threshold (0–1). `0` = any pixel visible. |
-| `rootMargin` | `string` | `'0px 0px 200px 0px'` | Pre-fetch margin. Triggers 200px before sentinel is visible. |
-| `root` | `string \| null` | `null` | CSS selector for custom scroll container. `null` uses viewport. |
-| `enabled` | `boolean` | `true` | When `false`, observer disconnects entirely. Use to stop when all items loaded. |
-| `loading` | `boolean` | `false` | Set to `true` while fetching. Prevents re-trigger until fetch completes. |
-| `debounceMs` | `number` | `200` | Minimum ms between consecutive `loadMore` emissions. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `loadMore` | `void` | Emitted when sentinel is visible, not loading, and debounce has elapsed. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `isLoading: Signal<boolean>` — Readonly mirror of the `loading` input.
-
-### CSS Classes
-
-- `.cngx-infinite-scroll` — Always applied.
-- `.cngx-infinite-scroll--loading` — Applied when `loading()` is true.
-
-### ARIA Attributes
-
-- `aria-busy="true"` — Applied when `loading()` is true.
 
 ### Usage Example
 
@@ -246,7 +153,7 @@ fetchNextPage() {
 
   this.api.getItems(this.page()).subscribe({
     next: (result) => {
-      this.items.mutate((list) => list.push(...result.items));
+      this.items.update((list) => [...list, ...result.items]);
       this.page.update((p) => p + 1);
       this.hasMore.set(result.hasMore);
     },
@@ -275,8 +182,6 @@ fetchNextPage() {
   </div>
 </div>
 ```
-
----
 
 ## Accessibility
 
@@ -389,8 +294,8 @@ div[cngxInfiniteScroll] {
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/scroll-demo/`
-- Tests: `projects/common/layout/src/scroll/*.spec.ts`
+- Tests: `projects/common/layout/scroll/*.spec.ts`
 - `CngxIntersectionObserver` in `@cngx/common/layout` — Low-level observer primitive
 - `CngxResizeObserver` in `@cngx/common/layout` — Element size tracking

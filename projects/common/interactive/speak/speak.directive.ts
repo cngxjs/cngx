@@ -22,7 +22,7 @@ import {
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
  *
- * @usageNotes
+ * @example
  *
  * ### Headless — consumer-owned button
  * ```html

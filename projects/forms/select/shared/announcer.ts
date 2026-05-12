@@ -4,8 +4,6 @@ import { Injectable, inject } from '@angular/core';
 /**
  * Select-family live-region announcer. One container per politeness per
  * document.
- *
- * @category interactive
  */
 @Injectable({ providedIn: 'root' })
 export class CngxSelectAnnouncer {

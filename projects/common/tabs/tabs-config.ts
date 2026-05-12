@@ -21,8 +21,6 @@ import type { CngxTabRejectionIconContext } from './slots/tab-rejection-icon.dir
  * Per-tab nav phrasing (`previousTab`, `nextTab`) lives in
  * {@link CngxTabsI18n}, not here — landmark naming and SR phrasing
  * stay on separate override paths.
- *
- * @category interactive
  */
 export interface CngxTabsAriaLabels {
   readonly tabsRegion?: string;
@@ -32,8 +30,6 @@ export interface CngxTabsAriaLabels {
  * Fallback labels for derived strings (role descriptions, badge SR
  * announcements). Library defaults are English; consumers override
  * per locale.
- *
- * @category interactive
  */
 export interface CngxTabsFallbackLabels {
   readonly tabRoleDescription?: string;
@@ -47,8 +43,6 @@ export interface CngxTabsFallbackLabels {
  * Apply via the matching `with*Template` builders. Shape mirrors
  * `CngxStepperTemplates` so consumer templates port across
  * families.
- *
- * @category interactive
  */
 export interface CngxTabsTemplates {
   readonly overflowTrigger?: TemplateRef<CngxTabOverflowTriggerContext>;
@@ -62,8 +56,6 @@ export interface CngxTabsTemplates {
  * Tab-group config surface. Resolution priority: per-instance Input
  * → `provideTabsConfigAt` (viewProviders) → `provideTabsConfig`
  * (root) → library default.
- *
- * @category interactive
  */
 export interface CngxTabsConfig {
   readonly defaultOrientation?: 'horizontal' | 'vertical';
@@ -127,8 +119,6 @@ const TABS_CONFIG_DEFAULTS: Required<
  * DI token for the resolved tabs config. `providedIn: 'root'` with
  * the library defaults; override via {@link provideTabsConfig}
  * (root) or {@link provideTabsConfigAt} (component scope).
- *
- * @category interactive
  */
 export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
   'CngxTabsConfig',
@@ -140,8 +130,6 @@ export const CNGX_TABS_CONFIG = new InjectionToken<CngxTabsConfig>(
  * `_target` discriminator lets {@link provideCngxTabs} dispatch
  * config features to {@link provideTabsConfig} while i18n features
  * route to {@link provideTabsI18n}.
- *
- * @category interactive
  */
 export type CngxTabsConfigFeature = ((
   config: CngxTabsConfig,
@@ -165,8 +153,6 @@ function defineTabsConfigFeature(
 /**
  * Override the default orientation. Per-instance `[orientation]`
  * still wins; this changes the cascade default only.
- *
- * @category interactive
  */
 export function withTabsDefaultOrientation(
   orientation: 'horizontal' | 'vertical',
@@ -182,15 +168,23 @@ export function withTabsDefaultOrientation(
  * collides with the stepper family's identical symbol when both libs
  * are auto-imported. The alias stays for one minor release before
  * removal.
- *
- * @category interactive
  */
 export const withDefaultOrientation = withTabsDefaultOrientation;
 
+/**
+ * Override whether roving-tabindex navigation loops from last back to
+ * first (and vice versa). Per-instance `[loop]` Input still wins.
+ */
 export function withTabsRovingLoop(loop: boolean): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({ ...cfg, defaultLoop: loop }));
 }
 
+/**
+ * Override the default commit mode for async tab transitions.
+ * `'optimistic'` activates the tab on action dispatch and rolls back
+ * on error; `'pessimistic'` waits for success. Per-instance
+ * `[commitMode]` Input still wins.
+ */
 export function withTabsCommitMode(
   mode: 'optimistic' | 'pessimistic',
 ): CngxTabsConfigFeature {
@@ -200,6 +194,11 @@ export function withTabsCommitMode(
   }));
 }
 
+/**
+ * Configure router synchronisation for the active tab. `mode` chooses
+ * the URL surface (URL fragment or query parameter); `param` names
+ * the key (default `'tab'`).
+ */
 export function withTabsRouterSync(
   mode: 'fragment' | 'queryParam',
   param = 'tab',
@@ -211,6 +210,10 @@ export function withTabsRouterSync(
   }));
 }
 
+/**
+ * Merge ARIA labels into the cascade. Keys not provided keep their
+ * library defaults; per-instance overrides on the tab group still win.
+ */
 export function withTabsAriaLabels(
   labels: CngxTabsAriaLabels,
 ): CngxTabsConfigFeature {
@@ -220,6 +223,10 @@ export function withTabsAriaLabels(
   }));
 }
 
+/**
+ * Merge text fallback labels (overflow trigger, busy / rejection text)
+ * into the cascade. Used when a slot directive is not present.
+ */
 export function withTabsFallbackLabels(
   labels: CngxTabsFallbackLabels,
 ): CngxTabsConfigFeature {
@@ -232,8 +239,6 @@ export function withTabsFallbackLabels(
 /**
  * Override the IO-debounce window (ms). See
  * {@link CngxTabsConfig.overflowStabilizeMs}.
- *
- * @category interactive
  */
 export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -245,8 +250,6 @@ export function withTabOverflowStabilizeMs(ms: number): CngxTabsConfigFeature {
 /**
  * Override the worst-case staleness ceiling on the visibility-map
  * commit. See {@link CngxTabsConfig.overflowMaxDeferMs}.
- *
- * @category interactive
  */
 export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
   return defineTabsConfigFeature((cfg) => ({
@@ -266,8 +269,6 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
  *
  * providers: [provideTabsConfig(withTabOverflowTriggerTemplate(this.moreTrigger))]
  * ```
- *
- * @category interactive
  */
 export function withTabOverflowTriggerTemplate(
   template: TemplateRef<CngxTabOverflowTriggerContext>,
@@ -281,8 +282,6 @@ export function withTabOverflowTriggerTemplate(
 /**
  * App-wide override for each row inside the overflow popover.
  * Middle tier; per-instance `*cngxTabOverflowItem` still wins.
- *
- * @category interactive
  */
 export function withTabOverflowItemTemplate(
   template: TemplateRef<CngxTabOverflowItemContext>,
@@ -297,8 +296,6 @@ export function withTabOverflowItemTemplate(
  * App-wide override for the error-badge decoration. Middle tier;
  * per-instance `*cngxTabErrorBadge` still wins. Sibling of the
  * stepper family's `withStepBadgeTemplate`.
- *
- * @category interactive
  */
 export function withTabErrorBadgeTemplate(
   template: TemplateRef<CngxTabErrorBadgeContext>,
@@ -313,8 +310,6 @@ export function withTabErrorBadgeTemplate(
  * App-wide override for the rejection-icon decoration. Middle
  * tier; per-instance `*cngxTabRejectionIcon` still wins. Sibling
  * of {@link withStepRejectionTemplate}.
- *
- * @category interactive
  */
 export function withTabRejectionIconTemplate(
   template: TemplateRef<CngxTabRejectionIconContext>,
@@ -329,8 +324,6 @@ export function withTabRejectionIconTemplate(
  * App-wide override for the commit-pending busy-spinner overlay.
  * Middle tier; per-instance `*cngxTabBusySpinner` still wins.
  * Sibling of {@link withStepBusySpinnerTemplate}.
- *
- * @category interactive
  */
 export function withTabBusySpinnerTemplate(
   template: TemplateRef<CngxTabBusySpinnerContext>,
@@ -354,8 +347,6 @@ function resolveFeatures(
  * Root-level provider. Apply once in `bootstrapApplication` /
  * `appConfig.providers`. Returns {@link EnvironmentProviders} per
  * the canonical cngx config-cascade signature.
- *
- * @category interactive
  */
 export function provideTabsConfig(
   ...features: readonly CngxTabsConfigFeature[]
@@ -377,8 +368,6 @@ export function provideTabsConfig(
  *   viewProviders: [...provideTabsConfigAt(withTabsDefaultOrientation('vertical'))],
  * })
  * ```
- *
- * @category interactive
  */
 export function provideTabsConfigAt(
   ...features: readonly CngxTabsConfigFeature[]
@@ -388,8 +377,6 @@ export function provideTabsConfigAt(
 
 /**
  * Inject the resolved tabs config in an injection context.
- *
- * @category interactive
  */
 export function injectTabsConfig(): CngxTabsConfig {
   return inject(CNGX_TABS_CONFIG);

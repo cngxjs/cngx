@@ -19,7 +19,7 @@ import {
  * meaning the header is now stuck. Toggles a CSS class for shadow,
  * elevation, or background changes.
  *
- * @usageNotes
+ * @example
  *
  * ### Sticky header with shadow
  * ```html
@@ -32,8 +32,6 @@ import {
  * ```css
  * .cngx-sticky--active { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxStickyHeader]',
@@ -61,8 +59,7 @@ export class CngxStickyHeader {
   constructor() {
     const destroyRef = inject(DestroyRef);
 
-    // A 1px invisible sentinel is inserted before the host.
-    // When the sentinel scrolls out of view, the header is stuck.
+    // IntersectionObserver sentinel pattern — host is stuck once the 1px sentinel leaves the viewport.
     afterNextRender(() => {
       const host = this.el.nativeElement as HTMLElement;
       const sentinel = this.doc.createElement('div');

@@ -85,8 +85,6 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  *   the right call until a future shared concern lands.
  * - Configuration cascade (`provideTagConfig`) — deferred (see
  *   `display-accepted-debt.md §1`).
- *
- * @category display
  */
 @Component({
   selector: 'cngx-tag-group',

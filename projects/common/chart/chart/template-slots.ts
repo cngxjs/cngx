@@ -86,6 +86,10 @@ export interface CngxChartErrorContext extends CngxChartSlotContext {
   readonly error: unknown;
 }
 
+/**
+ * `*cngxChartError` slot — overrides the chart-level error placeholder.
+ * Receives a {@link CngxChartErrorContext}.
+ */
 @Directive({
   selector: 'ng-template[cngxChartError]',
   standalone: true,

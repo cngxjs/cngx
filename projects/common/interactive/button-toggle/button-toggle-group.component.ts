@@ -58,8 +58,6 @@ import {
  *   <button cngxButtonToggle value="table">Table</button>
  * </cngx-button-toggle-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',
@@ -154,8 +152,6 @@ export class CngxButtonToggleGroup<T = unknown>
       key === 'Home' ||
       key === 'End';
   }
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-button-toggle-group-')).asReadonly();
 

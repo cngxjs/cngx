@@ -40,8 +40,6 @@ import type {
  * `triggerLabel` is excluded because each variant wires a distinct
  * directive class. NG8110 forces `contentChild()` at the call site;
  * only the cascade lives in the factory.
- *
- * @category interactive
  */
 export interface CngxSelectTemplateRegistryQueries<T = unknown> {
   readonly check: Signal<CngxSelectCheck<T> | undefined>;
@@ -67,8 +65,6 @@ export interface CngxSelectTemplateRegistryQueries<T = unknown> {
 /**
  * Resolved template-ref signals — output of the 3-stage cascade, ready
  * for `*ngTemplateOutlet`.
- *
- * @category interactive
  */
 export interface CngxSelectTemplateRegistry<T = unknown> {
   readonly check: Signal<TemplateRef<CngxSelectCheckContext<T>> | null>;
@@ -106,14 +102,22 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  *   });
  * }
  * ```
- *
- * @category interactive
  */
 const NO_ACTION_DIRECTIVE: Signal<CngxSelectAction | undefined> = signal(undefined);
 
 const NO_LOADING_GLYPH_DIRECTIVE: Signal<CngxSelectLoadingGlyph | undefined> =
   signal(undefined);
 
+/**
+ * Build a resolved {@link CngxSelectTemplateRegistry} from raw
+ * `contentChild` directive queries. Runs each slot through the
+ * 3-stage cascade (instance directive → `CNGX_SELECT_CONFIG.templates`
+ * default → `null`). Must be called in an injection context.
+ *
+ * Used by every select-family variant to replace ~13 inline
+ * `injectResolvedTemplate(...)` cascade blocks. See
+ * {@link CngxSelectTemplateRegistryQueries} for the input shape.
+ */
 export function createTemplateRegistry<T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
 ): CngxSelectTemplateRegistry<T> {
@@ -142,8 +146,6 @@ export function createTemplateRegistry<T = unknown>(
 
 /**
  * Factory signature for {@link CNGX_TEMPLATE_REGISTRY_FACTORY}.
- *
- * @category interactive
  */
 export type CngxTemplateRegistryFactory = <T = unknown>(
   queries: CngxSelectTemplateRegistryQueries<T>,
@@ -152,8 +154,6 @@ export type CngxTemplateRegistryFactory = <T = unknown>(
 /**
  * Factory token for the template-slot cascade. Default
  * {@link createTemplateRegistry}.
- *
- * @category interactive
  */
 export const CNGX_TEMPLATE_REGISTRY_FACTORY =
   new InjectionToken<CngxTemplateRegistryFactory>('CNGX_TEMPLATE_REGISTRY_FACTORY', {

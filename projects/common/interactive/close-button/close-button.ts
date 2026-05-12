@@ -27,7 +27,7 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * All visual properties are CSS Custom Properties — density is controlled
  * via the `feedback.density()` SCSS mixin or direct overrides.
  *
- * @usageNotes
+ * @example
  *
  * ### Standalone
  * ```html
@@ -38,8 +38,6 @@ export const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon'
  * ```html
  * <cngx-close-button />
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-close-button',

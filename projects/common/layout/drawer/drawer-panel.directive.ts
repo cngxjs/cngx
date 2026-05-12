@@ -18,9 +18,8 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * Optionally closes the drawer when the user clicks outside the panel
  * (`closeOnClickOutside`, default `true`).
  *
- * @category layout
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"
@@ -72,9 +71,8 @@ export class CngxDrawerPanel {
   constructor() {
     const doc = inject(DOCUMENT);
 
-    // Clicks outside the drawer **container** close the panel.
-    // Using the container (not just the panel) ensures toggle buttons and
-    // backdrop elements inside it don't trigger an unwanted close.
+    // Hit-test against the container, not the panel — toggle buttons and backdrops
+    // sit inside the container and must not count as outside clicks.
     fromEvent<MouseEvent>(doc, 'click')
       .pipe(takeUntilDestroyed())
       .subscribe((e) => {

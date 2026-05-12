@@ -9,7 +9,7 @@ import { type CngxSpeak } from '@cngx/common';
  * theming control. Include `speak-button-theme.scss` for automatic Material
  * theme integration.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic usage
  * ```html

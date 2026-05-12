@@ -8,6 +8,7 @@ import {
 import type { CngxAsyncState } from '@cngx/core/utils';
 import { injectPresetState } from './preset-state';
 
+/** One segment in a stacked-bar series: a value, a label, optional colour. */
 export interface CngxStackedSegment {
   readonly value: number;
   readonly color?: string;

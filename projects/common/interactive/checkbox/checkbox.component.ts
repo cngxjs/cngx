@@ -58,8 +58,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   (valueChange)="toggleAll($event)"
  * >Select all</cngx-checkbox>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-checkbox, [cngxCheckbox]',
@@ -149,8 +147,6 @@ export class CngxCheckbox
     this.indeterminate() ? 'mixed' : this.value() ? 'true' : 'false',
   );
 
-  // ── CngxFormFieldControl ─────────────────────────────────────────
-
   readonly id = signal(nextUid('cngx-checkbox-')).asReadonly();
 
   private readonly focusedState = signal(false);
@@ -173,8 +169,6 @@ export class CngxCheckbox
     () =>
       this.fieldHost?.showError() ?? this.aggregator?.shouldShow() ?? false,
   );
-
-  // ── Event handlers ───────────────────────────────────────────────
 
   protected handleClick(): void {
     this.advance();

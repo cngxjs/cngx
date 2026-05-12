@@ -14,7 +14,7 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  * .cngx-pressed { transform: scale(0.97); }
  * ```
  *
- * @usageNotes
+ * @example
  *
  * ### Button with press feedback
  * ```html
@@ -27,8 +27,6 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  *   Tappable card
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxPressable]',

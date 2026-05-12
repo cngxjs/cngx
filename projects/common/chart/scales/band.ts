@@ -20,6 +20,11 @@ export interface BandScale<T> {
   bandwidth(): number;
 }
 
+/**
+ * Construct a {@link BandScale} from a categorical domain and a numeric
+ * range. See the type-level documentation above for parameter
+ * semantics.
+ */
 export function createBandScale<T>(
   domain: readonly T[],
   range: readonly [number, number],

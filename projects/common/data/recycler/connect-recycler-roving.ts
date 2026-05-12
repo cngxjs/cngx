@@ -20,7 +20,7 @@ import type { CngxRecycler } from './recycler';
  * `[data-cngx-recycle-index]` — calling from a child component would query the
  * wrong subtree.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * @Component({
@@ -37,8 +37,6 @@ import type { CngxRecycler } from './recycler';
  *   }
  * }
  * ```
- *
- * @category recycler
  */
 export function connectRecyclerToRoving(recycler: CngxRecycler, roving: CngxRovingTabindex): void {
   const hostEl = inject(ElementRef).nativeElement as HTMLElement;

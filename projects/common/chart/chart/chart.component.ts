@@ -589,13 +589,10 @@ function buildScale(
     }
     case 'band': {
       const band = createBandScale<unknown>(domain, range);
-      // The pure `createBandScale` returns each band's leading edge.
-      // Inside the chart, every consumer (tick labels, line / area /
-      // scatter via the xScale, threshold / band's yScale) wants the
-      // BAND CENTRE: ticks align with their slot's bar content, and
-      // lines drawn on top of bars trace through bar centres. The
-      // bar atom uses its own slot logic — independent of the scale —
-      // so this centring shift does not affect bar positioning.
+      // createBandScale returns the leading edge; chart consumers
+      // (ticks, line/area/scatter, threshold/band yScale) want the
+      // centre so ticks align with their slot and lines trace through
+      // bar centres. Bar atom uses its own slot logic — unaffected.
       const half = band.bandwidth() / 2;
       return (v: XScaleInput) => band(v) + half;
     }

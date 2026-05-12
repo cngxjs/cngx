@@ -8,24 +8,6 @@ Implements the WAI-ARIA roving tabindex pattern for composite widgets. Enables k
 
 Container directive implementing the roving tabindex pattern. Only the active item has `tabindex="0"`; all others get `tabindex="-1"`. Arrow keys navigate within the group; Tab leaves it.
 
-#### Import
-
-```typescript
-import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `orientation` | `'horizontal' \| 'vertical' \| 'both'` | `'horizontal'` | Arrow key navigation axis. `'both'` enables both horizontal (Left/Right) and vertical (Up/Down) arrows. |
-| `loop` | `boolean` | `true` | Whether navigation wraps from last to first and vice versa. |
-| `activeIndex` | `number` (model) | `0` | Index of the currently active (focusable) item. Supports two-way `[(activeIndex)]` binding. |
-
-#### Signals (read-only)
-
-- `activeIndex: WritableSignal<number>` — Current active item index. Updates on arrow-key navigation or explicit binding changes.
-
 #### Keyboard Interactions
 
 - `ArrowRight` (horizontal/both): Move to next enabled item
@@ -63,23 +45,9 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
 </div>
 ```
 
----
-
 ### CngxRovingItem
 
 Marker directive for focusable items within a `[cngxRovingTabindex]` container. The parent sets `tabindex` dynamically; the item must not manually set `tabindex`.
-
-#### Import
-
-```typescript
-import { CngxRovingItem } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxRovingItemDisabled` | `boolean` | `false` | Whether this item is disabled and should be skipped during navigation. |
 
 #### Example
 
@@ -99,8 +67,6 @@ import { CngxRovingItem } from '@cngx/common/a11y';
 </div>
 ```
 
----
-
 ## Composition
 
 `CngxRovingTabindex` works with any child elements that receive `cngxRovingItem`. It does not require specific HTML elements or roles.
@@ -118,8 +84,6 @@ import { CngxRovingItem } from '@cngx/common/a11y';
   }
 </cngx-card-grid>
 ```
-
----
 
 ## Accessibility
 
@@ -139,8 +103,6 @@ The consumer is responsible for providing semantically correct roles:
 - **Tab lists**: Apply `role="tablist"` on the container; `role="tab"` on items
 - **Menu bars**: Apply `role="menubar"` on the container; `role="menuitem"` on items
 - **Listboxes**: Apply `role="listbox"` on the container; `role="option"` on items
-
----
 
 ## Advanced Patterns
 
@@ -183,8 +145,6 @@ protected readonly selectedIdx = signal(0);
 
 When items are added or removed, the `activeIndex` is automatically clamped to the valid range.
 
----
-
 ## Styling
 
 Roving tabindex manages `tabindex` attributes only; styling is the consumer's responsibility.
@@ -203,8 +163,6 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 }
 ```
 
----
-
 ## Common Use Cases
 
 | Widget | Orientation | Loop | Notes |
@@ -215,8 +173,6 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 | Vertical menu | `vertical` | `true` | Up/Down navigate; loops to opposite end |
 | Card grid | `both` | `true` | Both axes enabled; full 2D navigation |
 | Combobox popup | `vertical` | `false` | Up/Down select options; no wrapping |
-
----
 
 ## See Also
 

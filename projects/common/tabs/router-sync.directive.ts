@@ -24,8 +24,6 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * `Router` is optional — without it the directive logs a dev warning
  * via `afterNextRender` and becomes a no-op. Every `router.navigate`
  * and `host.selectById` inside the effects sits in `untracked()`.
- *
- * @category interactive/tabs
  */
 @Directive({
   selector: '[cngxTabsFragmentSync]',

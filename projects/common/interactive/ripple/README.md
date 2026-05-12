@@ -39,90 +39,6 @@ import { CngxRipple, CngxPressable, CngxPressRipple } from '@cngx/common/interac
 export class ButtonComponent {}
 ```
 
-## API
-
-### CngxRipple
-
-Touch/click ripple feedback without Material dependency.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxRipple | — | — | Presence enables ripple (no value required) |
-| rippleColor | `string` | `'currentColor'` | Ripple color -- passed as `--cngx-ripple-color` |
-| rippleCentered | `boolean` | `false` | Whether ripple originates from center (icon buttons) |
-| rippleDisabled | `boolean` | `false` | Disable ripple effect |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `active: Signal<boolean>` — Whether a ripple animation is currently playing
-
-#### CSS Custom Properties
-
-- `--cngx-ripple-x` (px) — Ripple origin X coordinate (set by directive)
-- `--cngx-ripple-y` (px) — Ripple origin Y coordinate (set by directive)
-- `--cngx-ripple-size` (px) — Ripple diameter (set by directive)
-- `--cngx-ripple-color` (currentColor) — Ripple color (from rippleColor input)
-- `--cngx-ripple-duration` (0.6s) — Animation duration
-- `--cngx-ripple-easing` (cubic-bezier(0.4, 0, 0.2, 1)) — Animation easing
-
-### CngxPressable
-
-Instant press feedback via CSS class on pointerdown.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxPressable | — | — | Presence enables press feedback (no value required) |
-| pressableReleaseDelay | `number` | `80` | Minimum time (ms) the pressed class stays active -- prevents flash on quick taps |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `pressed: Signal<boolean>` — Whether the element is currently pressed
-
-#### CSS Custom Properties
-
-None (apply your own visual styles to the `.cngx-pressed` class)
-
-### CngxPressRipple
-
-Molecule combining CngxPressable and CngxRipple as hostDirectives.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxPressRipple | — | — | Presence enables both press and ripple |
-| pressableReleaseDelay | `number` | `80` | From CngxPressable |
-| rippleColor | `string` | `'currentColor'` | From CngxRipple |
-| rippleCentered | `boolean` | `false` | From CngxRipple |
-| rippleDisabled | `boolean` | `false` | From CngxRipple |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `pressed: Signal<boolean>` — From CngxPressable
-- `active: Signal<boolean>` — From CngxRipple
-
 ## Accessibility
 
 Ripple and Pressable are low-level feedback atoms — no ARIA management required:
@@ -173,7 +89,7 @@ Ripple and Pressable are typically composed together via CngxPressRipple, but ca
 The ripple creates a `<span class="cngx-ripple__wave">` injected into the DOM. All visual styling is your responsibility. Ships with `_ripple.scss` defaults:
 
 ```scss
-// projects/common/interactive/src/ripple/_ripple.scss
+// projects/common/interactive/ripple/_ripple.scss
 .cngx-ripple__wave {
   position: absolute;
   pointer-events: none;
@@ -350,7 +266,7 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxRipple.html)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - `_ripple.scss` — Default ripple animation styles
 - Demo: `dev-app/src/app/demos/common/ripple-demo/`
-- Tests: `projects/common/interactive/src/ripple/ripple.directive.spec.ts`
+- Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`

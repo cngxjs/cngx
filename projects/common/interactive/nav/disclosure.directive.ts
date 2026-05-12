@@ -22,7 +22,7 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * <div id="content" [hidden]="!group.opened()">…</div>
  * ```
  *
- * @usageNotes
+ * @example
  *
  * ### FAQ accordion
  * ```html
@@ -44,8 +44,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <a href="/security">Security</a>
  * </div>
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: '[cngxDisclosure]',

@@ -13,7 +13,7 @@ import { type CngxPopover } from './popover.directive';
  *
  * Contains **no event handlers** — the consumer binds interactions directly:
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <button [cngxPopoverTrigger]="pop" (click)="pop.toggle()">Menu</button>

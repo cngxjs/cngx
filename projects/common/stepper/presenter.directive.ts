@@ -33,8 +33,6 @@ import { flatStepsEqual, flattenStepTree, stepTreeEqual } from './step-tree.util
  * and target indices; resolves `true` to advance, `false` to refuse.
  * The `Observable | Promise | sync` union matches every cngx
  * commit-action signature.
- *
- * @category interactive/stepper
  */
 export type CngxStepperCommitAction = (
   fromIndex: number,
@@ -51,8 +49,6 @@ export type CngxStepperCommitAction = (
  *
  * Sheriff: common Level 2. Pure directive — zero template, zero CSS.
  * Level-4 organisms compose this via `hostDirectives`.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxStepper]',

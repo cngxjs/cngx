@@ -24,8 +24,6 @@ import { DOCUMENT } from '@angular/common';
  * @param isDirty - Callback that returns `true` when there are unsaved changes.
  * @param message - Confirmation message. Default: `'You have unsaved changes. Leave anyway?'`
  * @returns A functional guard compatible with Angular's `canDeactivate`.
- *
- * @category interactive
  */
 export function canDeactivateWhenClean(
   isDirty: () => boolean,

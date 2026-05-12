@@ -26,8 +26,6 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
  *
  * `Router` is optional — without `@angular/router` the directive
  * dev-warns once and becomes a no-op.
- *
- * @category interactive/stepper
  */
 @Directive({
   selector: '[cngxStepperRouterSync]',

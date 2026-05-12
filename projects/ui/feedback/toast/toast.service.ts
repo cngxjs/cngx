@@ -89,8 +89,6 @@ export interface ToastState {
  * app-shell or route level.
  *
  * Manages the toast stack as a signal array. `CngxToastOutlet` reads it reactively.
- *
- * @category feedback
  */
 @Injectable()
 export class CngxToaster {

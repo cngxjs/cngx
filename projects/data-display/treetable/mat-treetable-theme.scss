@@ -2,8 +2,6 @@
 @use 'sass:math';
 @use '@angular/material' as mat;
 
-// ─── cngx-mat-treetable theming ──────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -16,10 +14,7 @@
 //     @include treetable.theme($theme);
 //   }
 
-// ─── Token definitions ───────────────────────────────────────────
-
 @mixin base() {
-  // Structural / non-color tokens
   --cngx-mat-treetable-row-item-outline-width: 1px;
   --cngx-mat-treetable-depth-indent: 1.5rem;
   --cngx-mat-treetable-expand-column-width: 40px;
@@ -54,8 +49,6 @@
   --cngx-mat-treetable-header-container-height: #{map.get($header-heights, $scale)};
   --cngx-mat-treetable-row-item-container-height: #{map.get($row-heights, $scale)};
 }
-
-// ─── Public entrypoint ───────────────────────────────────────────
 
 @mixin theme($theme) {
   cngx-mat-treetable {

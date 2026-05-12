@@ -93,8 +93,6 @@ function mapBoolEqual(
  * the organism's `scrollIntoView` effect this forms the self-healing
  * loop: pick hidden tab -> strip scrolls -> IO fires -> `hiddenTabs`
  * self-trims.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-tab-overflow',

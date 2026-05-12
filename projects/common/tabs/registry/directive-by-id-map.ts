@@ -23,8 +23,6 @@ function directiveMapEqual<T>(a: Map<string, T>, b: Map<string, T>): boolean {
 
 /**
  * Options for {@link createDirectiveByIdMap}.
- *
- * @category interactive
  */
 export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
   /** Reactive source — typically `contentChildren(...)`. */
@@ -36,8 +34,6 @@ export interface CngxDirectiveByIdMapOptions<T extends { id: () => string }> {
  * directives keyed by `id()`. Structural equal prevents cascade when
  * `contentChildren` re-emits an unchanged child set. Shared by
  * `<cngx-tab-group>`, `<cngx-stepper>`, and `<cngx-mat-stepper>`.
- *
- * @category interactive
  */
 export function createDirectiveByIdMap<T extends { id: () => string }>(
   opts: CngxDirectiveByIdMapOptions<T>,
@@ -56,8 +52,6 @@ export function createDirectiveByIdMap<T extends { id: () => string }>(
 
 /**
  * Factory signature for {@link CNGX_DIRECTIVE_BY_ID_MAP_FACTORY}.
- *
- * @category interactive
  */
 export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
   opts: CngxDirectiveByIdMapOptions<T>,
@@ -69,8 +63,6 @@ export type CngxDirectiveByIdMapFactory = <T extends { id: () => string }>(
  * telemetry, or custom equality. Sibling to
  * `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_ORGANISM_SCROLL_SYNC_FACTORY`.
- *
- * @category interactive
  */
 export const CNGX_DIRECTIVE_BY_ID_MAP_FACTORY =
   new InjectionToken<CngxDirectiveByIdMapFactory>(

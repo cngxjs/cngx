@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-action-button theming ─────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -13,8 +11,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include action-btn.theme($theme);
 //   }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-action-btn-transition: 0.2s ease;
@@ -53,11 +49,7 @@
   }
 }
 
-// ─── Structural styles ──────────────────────────────────────────
-
 @mixin styles() {
-  // ── State classes (work on both atom and molecule) ─────────────
-
   .cngx-async--pending {
     opacity: var(--cngx-action-btn-pending-opacity, 0.7);
     cursor: wait;
@@ -83,8 +75,6 @@
       color var(--cngx-action-btn-transition, 0.2s ease),
       border-color var(--cngx-action-btn-transition, 0.2s ease);
   }
-
-  // ── Variant classes ───────────────────────────────────────────
 
   .cngx-action-button {
     cursor: pointer;
@@ -123,8 +113,6 @@
     background: var(--cngx-action-btn-ghost-hover-bg, rgba(0, 0, 0, 0.04));
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(cngx-action-button),

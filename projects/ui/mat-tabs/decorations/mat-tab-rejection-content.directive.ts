@@ -33,8 +33,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * lift heavy state into a sibling `*ngTemplateOutlet`-friendly
  * structure outside the slot. Cheap text + simple markup (the
  * intended use) sees no observable difference.
- *
- * @category interactive
  */
 export interface CngxMatTabRejectionContentContext {
   /** Stable id of the rejected `CngxTabHandle`. */
@@ -99,8 +97,6 @@ export interface CngxMatTabRejectionContentContext {
  *   <mat-tab label="Profile">…</mat-tab>
  * </mat-tab-group>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxMatTabRejectionContent]',

@@ -35,7 +35,7 @@ export interface CngxAsyncContext<T> {
  * - **refreshing / loading (with data)** → content template (old data stays visible)
  * - **error (with data)** → content template (old data stays visible)
  *
- * @usageNotes
+ * @example
  *
  * ### Minimal — just content
  * ```html
@@ -62,8 +62,6 @@ export interface CngxAsyncContext<T> {
  *   <li>Error: {{ err }}</li>
  * </ng-template>
  * ```
- *
- * @category data
  */
 @Directive({
   selector: '[cngxAsync]',
@@ -85,14 +83,10 @@ export class CngxAsync<T> {
   /** Optional error template shown on error during first load. Context: `{ $implicit: error }`. */
   readonly cngxAsyncError = input<TemplateRef<{ $implicit: unknown }> | undefined>(undefined);
 
-  // ── Derived state ───────────────────────────────────────────────────
-
   private readonly view = computed(() => {
     const s = this.cngxAsync();
     return resolveAsyncView(s.status(), s.isFirstLoad(), s.isEmpty());
   });
-
-  // ── View management ─────────────────────────────────────────────────
 
   private readonly currentView = signal<AsyncView>('none');
   private contentViewRef: EmbeddedViewRef<CngxAsyncContext<T>> | null = null;

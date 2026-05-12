@@ -111,8 +111,6 @@ import {
  * Change event emitted by `CngxReorderableMultiSelect.selectionChange`
  * and `.reordered`. The `'reorder'` branch carries `fromIndex` /
  * `toIndex`; other branches leave them `undefined`.
- *
- * @category interactive
  */
 export interface CngxReorderableMultiSelectChange<T = unknown> {
   readonly source: CngxReorderableMultiSelect<T>;
@@ -135,8 +133,6 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
  * `sameArrayContents` guard would skip same-membership reorders) and
  * drive the commit controller directly.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-reorderable-multi-select',
@@ -640,8 +636,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
    * Append a pre-built option to the local buffer. Renders in the next
    * panel emission and silently drops once the server includes a
    * matching value. Idempotent under `compareWith`.
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -649,8 +643,6 @@ export class CngxReorderableMultiSelect<T = unknown> implements CngxFormFieldCon
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

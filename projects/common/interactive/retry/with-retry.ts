@@ -58,8 +58,6 @@ export interface RetryState {
  * <ng-container [cngxToastOn]="retryState.state"
  *   toastSuccess="Saved" toastError="All retries failed" />
  * ```
- *
- * @category interactive
  */
 export function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState] {
   const maxAttempts = config?.maxAttempts ?? 3;

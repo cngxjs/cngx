@@ -9,8 +9,6 @@ import {
 
 /**
  * Config for {@link createPanelLifecycleEmitter}.
- *
- * @category interactive
  */
 export interface PanelLifecycleEmitterOptions {
   readonly panelOpen: Signal<boolean>;
@@ -28,8 +26,6 @@ export interface PanelLifecycleEmitterOptions {
  * `panelOpen` flips and restores focus to the trigger after close.
  * Output emits + focus call wrapped in `untracked`. Injection context
  * required.
- *
- * @category interactive
  */
 export function createPanelLifecycleEmitter(
   opts: PanelLifecycleEmitterOptions,
@@ -55,8 +51,6 @@ export function createPanelLifecycleEmitter(
 
 /**
  * Factory signature for {@link CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxPanelLifecycleEmitterFactory = (
   opts: PanelLifecycleEmitterOptions,
@@ -65,8 +59,6 @@ export type CngxPanelLifecycleEmitterFactory = (
 /**
  * Factory token. Default {@link createPanelLifecycleEmitter}. Override
  * for telemetry, analytics, or custom focus-restore strategy.
- *
- * @category interactive
  */
 export const CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY =
   new InjectionToken<CngxPanelLifecycleEmitterFactory>(

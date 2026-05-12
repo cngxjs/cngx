@@ -79,8 +79,6 @@ export type CngxTagSize = 'sm' | 'md' | 'lg' | 'xl';
  *   focus + Enter/Space.
  * - Configuration cascade — deferred (see
  *   `display-accepted-debt.md §1`).
- *
- * @category display
  */
 @Component({
   selector: '[cngxTag], cngx-tag',

@@ -5,8 +5,6 @@ import type { CngxSelectOptionDef, CngxSelectOptionGroupDef } from './option.mod
 /**
  * Selection-indicator slot context. Discriminated on `variant` — radio
  * has no `indeterminate`; narrow on `variant` before reading.
- *
- * @category interactive
  */
 export type CngxSelectCheckContext<T = unknown> =
   | CngxSelectCheckBoxContext<T>
@@ -15,8 +13,6 @@ export type CngxSelectCheckContext<T = unknown> =
 /**
  * Box-style indicator branch. `indeterminate` carries tree /
  * select-all semantics.
- *
- * @category interactive
  */
 export interface CngxSelectCheckBoxContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -31,8 +27,6 @@ export interface CngxSelectCheckBoxContext<T = unknown> {
 
 /**
  * Radio-style indicator branch. No `indeterminate` — radio is exclusive.
- *
- * @category interactive
  */
 export interface CngxSelectCheckRadioContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -45,8 +39,6 @@ export interface CngxSelectCheckRadioContext<T = unknown> {
 
 /**
  * Context for the trigger caret template.
- *
- * @category interactive
  */
 export interface CngxSelectCaretContext {
   readonly $implicit: boolean;
@@ -55,8 +47,6 @@ export interface CngxSelectCaretContext {
 
 /**
  * Context for the optgroup header template.
- *
- * @category interactive
  */
 export interface CngxSelectOptgroupContext<T = unknown> {
   readonly $implicit: CngxSelectOptionGroupDef<T>;
@@ -65,8 +55,6 @@ export interface CngxSelectOptgroupContext<T = unknown> {
 
 /**
  * Context for the placeholder template (empty selection).
- *
- * @category interactive
  */
 export interface CngxSelectPlaceholderContext {
   readonly $implicit: string;
@@ -75,8 +63,6 @@ export interface CngxSelectPlaceholderContext {
 
 /**
  * Empty-state template context.
- *
- * @category interactive
  */
 export interface CngxSelectEmptyContext {
   /** Live filter term; `''` for button-trigger variants. */
@@ -89,8 +75,6 @@ export interface CngxSelectEmptyContext {
 
 /**
  * Loading-template context.
- *
- * @category interactive
  */
 export interface CngxSelectLoadingContext {
   /** 0–1 progress. Undefined unless consumer extends `CngxAsyncState`. */
@@ -100,8 +84,6 @@ export interface CngxSelectLoadingContext {
 
 /**
  * Context for the trigger label template.
- *
- * @category interactive
  */
 export interface CngxSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T> | null;
@@ -114,8 +96,6 @@ export interface CngxSelectTriggerLabelContext<T = unknown> {
 
 /**
  * Context for the option label template (rich content inside each option).
- *
- * @category interactive
  */
 export interface CngxSelectOptionLabelContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -126,8 +106,6 @@ export interface CngxSelectOptionLabelContext<T = unknown> {
 
 /**
  * Context for the error panel template (shown when `state()?.isError()`).
- *
- * @category interactive
  */
 export interface CngxSelectErrorContext {
   readonly $implicit: unknown;
@@ -138,8 +116,6 @@ export interface CngxSelectErrorContext {
 /**
  * Retry-button slot context. Drives every retry surface (load /
  * refresh / commit). Routing handled by the panel-shell host.
- *
- * @category interactive
  */
 export interface CngxSelectRetryButtonContext {
   readonly $implicit: () => void;
@@ -153,8 +129,6 @@ export interface CngxSelectRetryButtonContext {
 
 /**
  * Refreshing-indicator template context.
- *
- * @category interactive
  */
 export interface CngxSelectRefreshingContext {
   /** Count from the most recent successful load. */
@@ -163,8 +137,6 @@ export interface CngxSelectRefreshingContext {
 
 /**
  * Commit-error template context. `retry` re-invokes the commit.
- *
- * @category interactive
  */
 export interface CngxSelectCommitErrorContext<T = unknown> {
   readonly $implicit: unknown;
@@ -178,8 +150,6 @@ export interface CngxSelectCommitErrorContext<T = unknown> {
  * `CngxReorderableMultiSelect`. `remove()` routes through the commit
  * flow when `[commitAction]` is bound. `index` is only set by the
  * reorderable variant.
- *
- * @category interactive
  */
 export interface CngxMultiSelectChipContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -190,8 +160,6 @@ export interface CngxMultiSelectChipContext<T = unknown> {
 
 /**
  * Clear-button context shared by single-clear and clear-all surfaces.
- *
- * @category interactive
  */
 export interface CngxSelectClearButtonContext {
   readonly $implicit: () => void;
@@ -202,8 +170,6 @@ export interface CngxSelectClearButtonContext {
 /**
  * Per-row pending-indicator context. Replaces
  * `.cngx-select__option-spinner`.
- *
- * @category interactive
  */
 export interface CngxSelectOptionPendingContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -213,8 +179,6 @@ export interface CngxSelectOptionPendingContext<T = unknown> {
 /**
  * Per-row commit-error glyph context for
  * `commitErrorDisplay === 'inline'`.
- *
- * @category interactive
  */
 export interface CngxSelectOptionErrorContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -225,8 +189,6 @@ export interface CngxSelectOptionErrorContext<T = unknown> {
 /**
  * Trigger-label context for `CngxMultiSelect`. Replaces the chip strip
  * entirely.
- *
- * @category interactive
  */
 export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxSelectOptionDef<T>[];
@@ -239,8 +201,6 @@ export interface CngxMultiSelectTriggerLabelContext<T = unknown> {
  * Trigger-label context for `CngxCombobox`. Replaces only the chip strip;
  * the search `<input>` stays. Shape mirrors
  * {@link CngxMultiSelectTriggerLabelContext}.
- *
- * @category interactive
  */
 export interface CngxComboboxTriggerLabelContext<T = unknown> {
   readonly $implicit: readonly CngxSelectOptionDef<T>[];
@@ -252,8 +212,6 @@ export interface CngxComboboxTriggerLabelContext<T = unknown> {
 /**
  * Per-chip context for `CngxCombobox`. Mirrors
  * {@link CngxMultiSelectChipContext}.
- *
- * @category interactive
  */
 export interface CngxComboboxChipContext<T = unknown> {
   readonly $implicit: CngxSelectOptionDef<T>;
@@ -273,8 +231,6 @@ export interface CngxComboboxChipContext<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectCheck]',
@@ -287,8 +243,6 @@ export class CngxSelectCheck<T = unknown> {
 
 /**
  * `*cngxSelectCaret` slot — overrides the trigger caret.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectCaret]',
@@ -301,8 +255,6 @@ export class CngxSelectCaret {
 
 /**
  * `*cngxSelectOptgroup` slot — overrides the optgroup header.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptgroup]',
@@ -315,8 +267,6 @@ export class CngxSelectOptgroupTemplate<T = unknown> {
 
 /**
  * `*cngxSelectPlaceholder` slot — overrides the trigger placeholder.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectPlaceholder]',
@@ -329,8 +279,6 @@ export class CngxSelectPlaceholder {
 
 /**
  * `*cngxSelectEmpty` slot.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectEmpty]',
@@ -343,8 +291,6 @@ export class CngxSelectEmpty {
 
 /**
  * `*cngxSelectLoading` slot.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoading]',
@@ -357,8 +303,6 @@ export class CngxSelectLoading {
 
 /**
  * `*cngxSelectTriggerLabel` slot.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectTriggerLabel]',
@@ -371,8 +315,6 @@ export class CngxSelectTriggerLabel<T = unknown> {
 
 /**
  * `*cngxSelectOptionLabel` slot.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionLabel]',
@@ -395,8 +337,6 @@ export class CngxSelectOptionLabel<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectError]',
@@ -419,8 +359,6 @@ export class CngxSelectError {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectRetryButton]',
@@ -443,8 +381,6 @@ export class CngxSelectRetryButton {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectLoadingGlyph]',
@@ -457,8 +393,6 @@ export class CngxSelectLoadingGlyph {
 
 /**
  * `*cngxSelectRefreshing` slot — top-bar overlay during refresh.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectRefreshing]',
@@ -482,8 +416,6 @@ export class CngxSelectRefreshing {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectCommitError]',
@@ -505,8 +437,6 @@ export class CngxSelectCommitError<T = unknown> {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChip]',
@@ -530,8 +460,6 @@ export class CngxMultiSelectChip<T = unknown> {
  *   </ng-template>
  * </cngx-reorderable-multi-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChipHandle]',
@@ -555,8 +483,6 @@ export class CngxMultiSelectChipHandle {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectTriggerLabel]',
@@ -580,8 +506,6 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectClearButton]',
@@ -605,8 +529,6 @@ export class CngxSelectClearButton {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionPending]',
@@ -630,8 +552,6 @@ export class CngxSelectOptionPending<T = unknown> {
  *   </ng-template>
  * </cngx-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectOptionError]',
@@ -655,8 +575,6 @@ export class CngxSelectOptionError<T = unknown> {
  *   </ng-template>
  * </cngx-combobox>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxComboboxTriggerLabel]',
@@ -680,8 +598,6 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  *   </ng-template>
  * </cngx-combobox>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxComboboxChip]',
@@ -698,8 +614,6 @@ export class CngxComboboxChip<T = unknown> {
  * drive the dismiss-guard. `isPending`/`error`/`hasError` mirror the
  * commit controller. `value` is type-erased — single forwards
  * `value()`, multi forwards `values()`.
- *
- * @category interactive
  */
 export interface CngxSelectActionContext {
   readonly $implicit: string;
@@ -718,8 +632,6 @@ export interface CngxSelectActionContext {
 
 /**
  * Context for input-prefix / input-suffix slots.
- *
- * @category interactive
  */
 export interface CngxSelectInputSlotContext {
   readonly disabled: boolean;
@@ -739,8 +651,6 @@ export interface CngxSelectInputSlotContext {
  *   </ng-template>
  * </cngx-typeahead>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputPrefix]',
@@ -755,8 +665,6 @@ export class CngxSelectInputPrefix {
 /**
  * `*cngxSelectInputSuffix` slot — projected after the trigger `<input>`,
  * before clear/caret. Same context as {@link CngxSelectInputPrefix}.
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectInputSuffix]',
@@ -785,8 +693,6 @@ export class CngxSelectInputSuffix {
  *   </ng-template>
  * </cngx-action-select>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxSelectAction]',

@@ -6,7 +6,7 @@ import { Directive, input } from '@angular/core';
  * Typically used for status indicators (P-badges, notification dots)
  * that float in the card's top-right corner.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-card>
@@ -14,8 +14,6 @@ import { Directive, input } from '@angular/core';
  *   <header cngxCardHeader>Pflegeplan</header>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: '[cngxCardBadge]',

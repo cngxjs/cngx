@@ -10,15 +10,8 @@
  * @module @cngx/forms/select
  */
 
-// ── Variant components ────────────────────────────────────────────────
-export {
-  CngxSelect,
-  type CngxSelectChange,
-} from './single-select/select.component';
-export {
-  CngxMultiSelect,
-  type CngxMultiSelectChange,
-} from './multi-select/multi-select.component';
+export { CngxSelect, type CngxSelectChange } from './single-select/select.component';
+export { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select/multi-select.component';
 export {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -41,14 +34,8 @@ export {
   type CngxReorderableSelectConfig,
   type CngxReorderableSelectConfigFeature,
 } from './shared/reorderable-select-config';
-export {
-  CngxCombobox,
-  type CngxComboboxChange,
-} from './combobox/combobox.component';
-export {
-  CngxTypeahead,
-  type CngxTypeaheadChange,
-} from './typeahead/typeahead.component';
+export { CngxCombobox, type CngxComboboxChange } from './combobox/combobox.component';
+export { CngxTypeahead, type CngxTypeaheadChange } from './typeahead/typeahead.component';
 export {
   CngxActionSelect,
   type CngxActionSelectChange,
@@ -64,9 +51,7 @@ export {
   type CreateCommitHandler,
   type CreateCommitHandlerOptions,
 } from './shared/create-commit-handler';
-export {
-  type CngxSelectCreateAction,
-} from './shared/create-action.types';
+export { type CngxSelectCreateAction } from './shared/create-action.types';
 export { CngxTreeSelectNode } from './tree-select/tree-select-node.directive';
 export { CngxTreeSelectChip } from './tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './tree-select/tree-select-trigger-label.directive';
@@ -79,21 +64,13 @@ export {
   type CngxTreeSelectedItem,
   type FlatTreeNode,
 } from './tree-select/tree-select.model';
-export {
-  CngxTreeSelect,
-  type CngxTreeSelectChange,
-} from './tree-select/tree-select.component';
-export {
-  CngxSelectShell,
-  type CngxSelectShellChange,
-} from './select-shell/select-shell.component';
+export { CngxTreeSelect, type CngxTreeSelectChange } from './tree-select/tree-select.component';
+export { CngxSelectShell, type CngxSelectShellChange } from './select-shell/select-shell.component';
 
-// ── Declarative element components ────────────────────────────────────
 // Intended for consumer-assembled listbox templates (the "compose yourself"
 // path) and as direct children of `<cngx-select-shell>` (the projection
 // variant — see `select-shell/`). Still NOT usable as direct children of
-// the data-mode `<cngx-select>` — see
-// `.internal/architektur/select-family-architecture.md` for the reasoning.
+// the data-mode `<cngx-select>`
 export { CngxSelectOption } from './declarative/option.component';
 export { CngxSelectOptgroup } from './declarative/optgroup.component';
 export { CngxSelectDivider } from './declarative/divider.component';
@@ -103,7 +80,6 @@ export {
   type CngxSelectShellSearchHost,
 } from './declarative/select-search-host';
 
-// ── Shared data model (option types + helpers) ────────────────────────
 export {
   type CngxSelectOptionDef,
   type CngxSelectOptionGroupDef,
@@ -114,7 +90,6 @@ export {
   mergeLocalItems,
 } from './shared/option.model';
 
-// ── Local-items buffer (quick-create persistence) ─────────────────────
 export {
   CNGX_LOCAL_ITEMS_BUFFER_FACTORY,
   createLocalItemsBuffer,
@@ -122,7 +97,6 @@ export {
   type LocalItemsBuffer,
 } from './shared/local-items-buffer';
 
-// ── Action-slot config + host bridge ──────────────────────────────────
 export {
   CNGX_ACTION_SELECT_CONFIG,
   provideActionSelectConfig,
@@ -146,11 +120,8 @@ export {
   type ActionHostBridgeOptions,
   type CngxActionHostBridgeFactory,
 } from './shared/action-host-bridge';
-export {
-  type CngxSelectActionCallbacks,
-} from './shared/panel-host';
+export { type CngxSelectActionCallbacks } from './shared/panel-host';
 
-// ── Config system ─────────────────────────────────────────────────────
 export {
   CNGX_SELECT_CONFIG,
   type CngxSelectConfig,
@@ -193,23 +164,16 @@ export {
   type CngxSelectVirtualizationConfig,
 } from './shared/config';
 
-// ── Commit action types ───────────────────────────────────────────────
 export {
   type CngxSelectCommitAction,
   type CngxSelectCommitMode,
   type CngxSelectCommitErrorDisplay,
 } from './shared/commit-action.types';
 
-// ── Announcer ─────────────────────────────────────────────────────────
 export { CngxSelectAnnouncer } from './shared/announcer';
 
-// ── Inject helpers ────────────────────────────────────────────────────
-export {
-  injectSelectConfig,
-  injectSelectAnnouncer,
-} from './shared/inject-helpers';
+export { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
 
-// ── Template-slot directives ──────────────────────────────────────────
 export {
   CngxSelectCheck,
   CngxSelectCaret,
@@ -260,7 +224,6 @@ export {
   type CngxSelectActionContext,
 } from './shared/template-slots';
 
-// ── Commit-controller DI factory ──────────────────────────────────────
 export {
   CNGX_SELECT_COMMIT_CONTROLLER_FACTORY,
   type CngxSelectCommitControllerFactory,
@@ -269,19 +232,13 @@ export {
   createCommitController,
 } from './shared/commit-controller.token';
 
-// ── Field sync factory ────────────────────────────────────────────────
-export {
-  createFieldSync,
-  type FieldSyncOptions,
-} from './shared/field-sync';
+export { createFieldSync, type FieldSyncOptions } from './shared/field-sync';
 
-// ── ActiveDescendant activation dispatcher ────────────────────────────
 export {
   createADActivationDispatcher,
   type ADActivationDispatcherOptions,
 } from './shared/ad-activation-dispatcher';
 
-// ── Keyboard typeahead controller + page-jump helper ──────────────────
 export {
   createTypeaheadController,
   resolvePageJumpTarget,
@@ -289,7 +246,6 @@ export {
   type TypeaheadControllerOptions,
 } from './shared/typeahead-controller';
 
-// ── Display binding (scalar value ↔ input text) ───────────────────────
 export {
   CNGX_DISPLAY_BINDING_FACTORY,
   createDisplayBinding,
@@ -298,7 +254,6 @@ export {
   type DisplayBindingOptions,
 } from './shared/display-binding';
 
-// ── Array commit handler (multi-select / combobox) ────────────────────
 export {
   CNGX_ARRAY_COMMIT_HANDLER_FACTORY,
   createArrayCommitHandler,
@@ -307,7 +262,6 @@ export {
   type CngxArrayCommitHandlerFactory,
 } from './shared/array-commit-handler';
 
-// ── Scalar commit handler (action-select / planned: single + typeahead) ─
 export {
   CNGX_SCALAR_COMMIT_HANDLER_FACTORY,
   createScalarCommitHandler,
@@ -316,7 +270,6 @@ export {
   type ScalarCommitHandlerOptions,
 } from './shared/scalar-commit-handler';
 
-// ── Shared template-slot registry ─────────────────────────────────────
 export {
   CNGX_TEMPLATE_REGISTRY_FACTORY,
   createTemplateRegistry,
@@ -325,7 +278,6 @@ export {
   type CngxTemplateRegistryFactory,
 } from './shared/template-registry';
 
-// ── Scalar commit-error announce policy ───────────────────────────────
 export {
   CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY,
   createCommitErrorAnnouncer,
@@ -335,7 +287,6 @@ export {
   type CngxCommitErrorAnnouncerFactory,
 } from './shared/commit-error-announcer';
 
-// ── Shared trigger focus state ────────────────────────────────────────
 export {
   CNGX_TRIGGER_FOCUS_FACTORY,
   createTriggerFocusState,
@@ -343,7 +294,6 @@ export {
   type CngxTriggerFocusFactory,
 } from './shared/trigger-focus';
 
-// ── Shared dismiss handler ────────────────────────────────────────────
 export {
   CNGX_DISMISS_HANDLER_FACTORY,
   createDismissHandler,
@@ -352,7 +302,6 @@ export {
   type DismissHandlerOptions,
 } from './shared/dismiss-handler';
 
-// ── Shared panel lifecycle emitter ────────────────────────────────────
 export {
   CNGX_PANEL_LIFECYCLE_EMITTER_FACTORY,
   createPanelLifecycleEmitter,
@@ -360,7 +309,6 @@ export {
   type PanelLifecycleEmitterOptions,
 } from './shared/panel-lifecycle-emitter';
 
-// ── Shared panel renderer (virtualisation extension point) ───────────
 export {
   CNGX_PANEL_RENDERER_FACTORY,
   createIdentityPanelRenderer,
@@ -370,7 +318,6 @@ export {
 } from './shared/panel-renderer';
 export { createRecyclerPanelRendererFactory } from './shared/recycler-panel-renderer';
 
-// ── Shared search-term effects ────────────────────────────────────────
 export {
   CNGX_SEARCH_EFFECTS_FACTORY,
   createSearchEffects,
@@ -378,7 +325,6 @@ export {
   type SearchEffectsOptions,
 } from './shared/search-effects';
 
-// ── Projected option model (CngxSelectShell DOM → option-model) ──────
 export {
   CNGX_PROJECTED_OPTION_MODEL_FACTORY,
   createProjectedOptionModel,
@@ -387,14 +333,12 @@ export {
   type ProjectedOptionModelInput,
 } from './shared/projected-option-model';
 
-// ── Unified aggregator across all 3 config surfaces ──────────────────
 export {
   provideCngxSelect,
   provideCngxSelectAt,
   type CngxSelectAggregatorFeature,
 } from './shared/provide-cngx-select';
 
-// ── Shared chip-removal handler ───────────────────────────────────────
 export {
   CNGX_CHIP_REMOVAL_HANDLER_FACTORY,
   createChipRemovalHandler,
@@ -404,7 +348,6 @@ export {
   type CngxChipRemovalHandlerOptions,
 } from './shared/chip-removal-handler';
 
-// ── Shared flat-listbox keyboard-nav strategy ─────────────────────────
 export {
   CNGX_FLAT_NAV_STRATEGY,
   createDefaultFlatNavStrategy,

@@ -74,59 +74,7 @@ export class ExampleComponent {
 }
 ```
 
-## API
-
-All inputs, outputs, and signals are identical to `CngxTreetable` (the CDK variant), as they both use `CngxTreetablePresenter` via `hostDirectives`. See the CDK README for complete API documentation.
-
-### Unique Features
-
-#### Material Components
-
-CngxMaterialTreetable uses Material Design components for native integration:
-
-- **Expand/collapse buttons** — Material icon buttons with Material icons (`expand_more`, `expand_less`)
-- **Selection checkboxes** — Material `<mat-checkbox>` with Material Design styling
-- **Table structure** — Material `<mat-table>` with Material rows and cells
-- **Icons** — Material icon font for expand/collapse indicators
-
-#### Material Theming
-
-The table responds to Material 3 theme colors and typography:
-
-```scss
-@use '@angular/material' as mat;
-@use '@cngx/data-display/mat-treetable/mat-treetable-theme' as treetable;
-
-$theme: mat.define-theme(/* ... */);
-
-html {
-  @include mat.all-component-themes($theme);
-  @include treetable.theme($theme);
-}
-```
-
-Density support via Material density system:
-
-```scss
-@include treetable.density(-1); // compact
-@include treetable.density(0);  // default
-@include treetable.density(1);  // comfortable
-```
-
 ## Styling
-
-### CSS Classes
-
-Same as CDK variant, applied to Material table elements:
-
-- `cngx-mat-treetable` — Root `<mat-table>`
-- `cngx-mat-treetable--loading` — Applied when `isLoading()=true`
-- `cngx-mat-treetable--empty` — Applied when `isEmpty()=true`
-- `cngx-mat-treetable__row` — Each Material `<mat-table-row>`
-- `cngx-mat-treetable__row--focused` — Keyboard-focused row
-- `cngx-mat-treetable__row--expanded` — Node is expanded
-- `cngx-mat-treetable__row--selected` — Row is selected
-- `cngx-mat-treetable__row--hover` — Row is hovered
 
 ### CSS Custom Properties
 
@@ -378,4 +326,4 @@ Choose **Material** for:
 - [compodoc API documentation](https://cngxjs.dev/docs/modules/data_display_mat_treetable.html)
 - CDK variant: `@cngx/data-display/treetable`
 - Demo: `dev-app/src/app/demos/data-display/mat-treetable-demo/`
-- Tests: `projects/data-display/mat-treetable/src/` (spec files)
+- Tests: `projects/data-display/mat-treetable/` (spec files)

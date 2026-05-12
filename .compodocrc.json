@@ -3,12 +3,12 @@
     "tsconfig": "./tsconfig.doc.json",
     "output": "./docs",
     "theme": "gitbook",
-    "hideGenerator": true,
-    "disablePrivate": true,
-    "disableInternal": true,
+    "multiVersion": false,
+    "includes": "core-concepts",
+    "includesName": "Core Concepts",
+    "groupBy": "folder",
+    "groupDepth": 2,
     "disableSourceCode": true,
-    "disableStyleTab": true,
-    "disableRoutesGraph": true,
-    "groupDepth": 3,
-    "multiVersion": false
+    "disableTemplateTab": true,
+    "disableStyleTab": true
 }

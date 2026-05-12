@@ -36,8 +36,6 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  *   </ng-template>
  * </cngx-field-errors>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-field-errors',

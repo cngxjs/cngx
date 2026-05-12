@@ -22,7 +22,7 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * during execution, announces state changes to screen readers, and guards against
  * double-clicks.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic usage
  * ```html
@@ -48,8 +48,6 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * ```html
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: '[cngxAsyncClick]',
@@ -84,8 +82,6 @@ export class CngxAsyncClick {
   /** Label announced to screen readers on failure. */
   readonly failedAnnouncement = input<string>('Action failed');
 
-  // ── Internal state ──────────────────────────────────────────────────
-
   private readonly pendingState = signal(false);
   private readonly succeededState = signal(false);
   private readonly failedState = signal(false);
@@ -107,8 +103,6 @@ export class CngxAsyncClick {
       }
     });
   }
-
-  // ── Public signals ──────────────────────────────────────────────────
 
   /** `true` while the action is executing. */
   readonly pending: Signal<boolean> = this.pendingState.asReadonly();
@@ -165,8 +159,6 @@ export class CngxAsyncClick {
     this.pendingState() && this.supportsDisabled ? '' : null,
   );
 
-  // ── Event handler ───────────────────────────────────────────────────
-
   /** @internal */
   protected async handleClick(event: Event): Promise<void> {
     if (!this.enabled() || this.pendingState()) {
@@ -201,8 +193,6 @@ export class CngxAsyncClick {
       this.scheduleFeedbackReset();
     }
   }
-
-  // ── Feedback timer ──────────────────────────────────────────────────
 
   private scheduleFeedbackReset(): void {
     if (this.feedbackTimer != null) {

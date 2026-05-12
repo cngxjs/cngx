@@ -3,8 +3,6 @@ import { Subject, takeUntil } from 'rxjs';
 
 /**
  * Typed wrapper around a CDK OverlayRef that exposes a close result stream.
- *
- * @category overlay
  */
 export class CngxOverlayRef<R = unknown> {
   private readonly _afterClosed = new Subject<R | undefined>();

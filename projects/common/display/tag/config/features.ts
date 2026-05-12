@@ -12,8 +12,6 @@ import type { CngxTagConfigFeature } from './provide-tag-config';
  *   withTagDefaults({ variant: 'subtle', size: 'sm' }),
  * );
  * ```
- *
- * @category display
  */
 export function withTagDefaults(
   payload: NonNullable<CngxTagConfig['defaults']>,
@@ -31,8 +29,6 @@ export function withTagDefaults(
  *   withTagGroupDefaults({ gap: 'md', semanticList: true }),
  * );
  * ```
- *
- * @category display
  */
 export function withTagGroupDefaults(
   payload: NonNullable<CngxTagConfig['groupDefaults']>,
@@ -64,8 +60,6 @@ export function withTagGroupDefaults(
  *   }),
  * );
  * ```
- *
- * @category display
  */
 export function withTagColors(
   payload: NonNullable<CngxTagConfig['colors']>,
@@ -105,8 +99,6 @@ export function withTagColors(
  * // Then in providers:
  * provideTagConfig(withTagSlots({ label: shell.brandLabel() }));
  * ```
- *
- * @category display
  */
 export function withTagSlots(
   payload: NonNullable<CngxTagConfig['templates']>,

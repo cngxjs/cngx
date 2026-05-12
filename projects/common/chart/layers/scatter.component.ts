@@ -10,7 +10,9 @@ import {
   type XScaleInput,
 } from '../chart/chart-context';
 
+/** Reads the data-space X value of a scatter row at index `i`. */
 export type ScatterXAccessor<T> = (d: T, i: number) => XScaleInput;
+/** Reads the data-space Y value of a scatter row at index `i`. */
 export type ScatterYAccessor<T> = (d: T, i: number) => number;
 
 interface ScatterCircle {

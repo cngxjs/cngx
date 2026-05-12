@@ -36,10 +36,7 @@ Or via the Angular CLI `angular.json` `styles` array:
   "architect": {
     "build": {
       "options": {
-        "styles": [
-          "src/styles.css",
-          "node_modules/@cngx/ui/mat-tabs/styles/mat-tabs.css"
-        ]
+        "styles": ["src/styles.css", "node_modules/@cngx/ui/mat-tabs/styles/mat-tabs.css"]
       }
     }
   }
@@ -54,12 +51,12 @@ themes (`@angular/material/prebuilt-themes/*.css`).
 Theme via `--mat-sys-*` (Material design tokens) by default; override
 per-instance or globally via `--cngx-mat-tab-error-*`:
 
-| Variable | Default | Purpose |
-|-|-|-|
-| `--cngx-mat-tab-error-color` | `var(--mat-sys-error, #c62828)` | Foreground / outline colour |
-| `--cngx-mat-tab-error-outline` | `2px solid currentColor` | Full `outline` shorthand |
-| `--cngx-mat-tab-error-outline-offset` | `1px` | Gap between outline and tab edge |
-| `--cngx-mat-tab-error-font-weight` | `600` | Label-glyph weight bump |
+| Variable                              | Default                         | Purpose                          |
+| ------------------------------------- | ------------------------------- | -------------------------------- |
+| `--cngx-mat-tab-error-color`          | `var(--mat-sys-error, #c62828)` | Foreground / outline colour      |
+| `--cngx-mat-tab-error-outline`        | `2px solid currentColor`        | Full `outline` shorthand         |
+| `--cngx-mat-tab-error-outline-offset` | `1px`                           | Gap between outline and tab edge |
+| `--cngx-mat-tab-error-font-weight`    | `600`                           | Label-glyph weight bump          |
 
 Three-tier fallback: consumer override → Material design token →
 hard-coded `#c62828`. Consumers theming the rest of their Material
@@ -114,17 +111,6 @@ commit-action rejection lifecycle — a tab can carry both
 the `--has-errors` badge slightly when both classes co-occur so the
 two signals read as distinct.
 
-### CSS custom properties
-
-| Variable | Default | Purpose |
-|-|-|-|
-| `--cngx-mat-tab-has-errors-color` | `var(--mat-sys-error, #c62828)` | Badge background |
-| `--cngx-mat-tab-has-errors-glyph-color` | `var(--mat-sys-on-error, #ffffff)` | Badge glyph foreground |
-| `--cngx-mat-tab-has-errors-glyph-size` | `16px` | Badge diameter + font sizing |
-| `--cngx-mat-tab-has-errors-glyph-offset` | `4px` | Top + trailing offset (single-state) |
-| `--cngx-mat-tab-has-errors-glyph-offset-stacked` | `6px` | Top + trailing offset when both `--error` + `--has-errors` co-occur |
-| `--cngx-mat-tab-has-errors-font-weight` | `700` | Glyph stroke weight |
-
 ## Smart overflow
 
 `[cngxMatTabs]` ships a smart overflow story: when Material's tab
@@ -145,17 +131,7 @@ on its `providers` array so the molecule's `IntersectionObserver`
 attaches against `.mat-mdc-tab-label-container` (Material's
 IO-friendly scroll viewport) and resolves per-tab buttons by
 positional index into `.mat-mdc-tab` (Material owns the rendered
-DOM; cngx handle ids never appear on the buttons). All four
-selector couplings are tracked under `tabs-accepted-debt §5`.
-
-```html
-<!-- Just add cngxMatTabs — overflow is automatic. -->
-<mat-tab-group cngxMatTabs [(activeIndex)]="active">
-  <mat-tab label="Profile">…</mat-tab>
-  <mat-tab label="Settings">…</mat-tab>
-  <!-- … many more tabs that overflow the viewport … -->
-</mat-tab-group>
-```
+DOM; cngx handle ids never appear on the buttons).
 
 Material's built-in horizontal scroll buttons (`<` / `>`) remain
 visible alongside the More button. The More button is laid out as a
@@ -172,26 +148,10 @@ theme-level override:
 
 ```css
 /* AFTER importing @cngx/ui/mat-tabs/styles/mat-tabs.css */
-.mat-mdc-tab-header:has(cngx-tab-overflow)
-  .mat-mdc-tab-header-pagination {
+.mat-mdc-tab-header:has(cngx-tab-overflow) .mat-mdc-tab-header-pagination {
   display: none;
 }
 ```
-
-### CSS custom properties
-
-The skin is targeted by the `cngx-mat-tabs-more` class on the
-mounted molecule's host element. Three-tier fallback: consumer
-override → Material design token → hard-coded value.
-
-| Variable | Default | Purpose |
-|-|-|-|
-| `--cngx-mat-tabs-more-bg` | `var(--mat-app-background-color, #ffffff)` | Background fill of the More affordance — should match the page surface so scrolled tabs fade out cleanly. |
-| `--cngx-mat-tabs-more-shadow` | `-8px 0 8px -4px rgba(0,0,0,0.1)` | Inline-start fade gradient simulating the scroll-mask. |
-| `--cngx-mat-tabs-more-z` | `2` | Stack order above the strip but below Material's pagination buttons. |
-| `--cngx-mat-tabs-more-top` | `0` | Trailing-edge offsets — rarely overridden; useful for asymmetric headers. |
-| `--cngx-mat-tabs-more-right` | `0` | |
-| `--cngx-mat-tabs-more-bottom` | `0` | |
 
 ### Idempotent positioning
 

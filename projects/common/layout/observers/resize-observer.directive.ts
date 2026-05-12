@@ -22,9 +22,8 @@ import {
  * container queries without CSS support, dynamic canvas/chart sizing,
  * resize-aware layouts.
  *
- * @category layout
  *
- * @usageNotes
+ * @example
  *
  * ### Display current size
  * ```html

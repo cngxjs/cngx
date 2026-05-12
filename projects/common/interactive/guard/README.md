@@ -34,54 +34,6 @@ export class EditorComponent {
 }
 ```
 
-## API
-
-### CngxBeforeUnload
-
-Directive that prevents accidental page navigation via browser `beforeunload` event.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxBeforeUnload | `boolean` | required | When true, shows browser confirmation dialog on page close |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-None
-
-#### CSS Custom Properties
-
-None
-
-### canDeactivateWhenClean Function
-
-Functional route guard that prevents navigation when a form is dirty.
-
-#### Signature
-
-```typescript
-function canDeactivateWhenClean(
-  isDirty: () => boolean,
-  message?: string
-): () => boolean
-```
-
-#### Parameters
-
-- **isDirty** (() => boolean) — Callback that returns true when there are unsaved changes
-- **message** (string, optional) — Confirmation dialog message. Default: `'You have unsaved changes. Leave anyway?'`
-
-#### Returns
-
-() => boolean — A functional guard compatible with Angular's `CanDeactivateFn`
-
 ## Accessibility
 
 Unload guards are low-level navigation protection — no ARIA needed:
@@ -271,7 +223,7 @@ window.addEventListener('beforeunload', handler);
 
 When active (`enabled() === true`), the browser shows its native "Leave this site?" dialog. The user can click "Leave" or "Stay".
 
-**Important:** This only protects against browser close, tab close, or URL bar navigation. It does NOT protect against:
+This only protects against browser close, tab close, or URL bar navigation. It does NOT protect against:
 - Router navigation (use `canDeactivate` guard for that)
 - Programmatic `window.location` changes
 - Browser refresh (F5)
@@ -297,7 +249,7 @@ return () => {
 
 Returns `true` (allow) or `false` (block) based on the user's choice in the confirmation dialog.
 
-**Important:** The guard uses `inject()` which is valid in Angular's guard execution context.
+The guard uses `inject()` which is valid in Angular's guard execution context.
 
 ### Coverage Recommendations
 
@@ -347,8 +299,8 @@ This ensures SSR doesn't throw errors.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxBeforeUnload.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [Angular Route Guards](https://angular.io/guide/router-tutorial-toh#preventing-unsaved-changes)
 - [MDN: beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
 - Demo: `dev-app/src/app/demos/common/guard-demo/`
-- Tests: `projects/common/interactive/src/guard/before-unload.directive.spec.ts`
+- Tests: `projects/common/interactive/guard/before-unload.directive.spec.ts`

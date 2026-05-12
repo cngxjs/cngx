@@ -33,7 +33,7 @@ import type { CngxRecycler } from './recycler';
  * constructor) on the same component that owns both the recycler
  * and the AD directive.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * @Component({
@@ -50,8 +50,6 @@ import type { CngxRecycler } from './recycler';
  *   }
  * }
  * ```
- *
- * @category recycler
  */
 export function connectRecyclerToActiveDescendant(
   recycler: CngxRecycler,

@@ -12,9 +12,8 @@ import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } fr
  * The CDK's imperative `create()` / `destroy()` / `enabled` setter lifecycle
  * is handled internally via `effect()` and `DestroyRef`.
  *
- * @category a11y
  *
- * @usageNotes
+ * @example
  *
  * ### Modal dialog
  * ```html

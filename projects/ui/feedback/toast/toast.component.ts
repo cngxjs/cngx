@@ -11,7 +11,7 @@ import { CngxToaster, type ToastRef } from './toast.service';
  *
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
- * @usageNotes
+ * @example
  *
  * ### Simple message
  * ```html
@@ -30,8 +30,6 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="success" message="Item saved" [when]="saveState.status() === 'success'" />
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-toast',

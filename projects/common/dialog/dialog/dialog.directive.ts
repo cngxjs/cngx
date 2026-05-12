@@ -67,7 +67,7 @@ function releaseScrollLock(html: HTMLElement): void {
  * CSS classes `cngx-dialog--opening`, `cngx-dialog--open`, and
  * `cngx-dialog--closing` are applied to the host for transition hooks.
  *
- * @usageNotes
+ * @example
  *
  * ### Declarative (template-driven)
  * ```html
@@ -108,8 +108,6 @@ function releaseScrollLock(html: HTMLElement): void {
  *   <input id="name-input" />
  * </dialog>
  * ```
- *
- * @category dialog
  */
 @Directive({
   selector: 'dialog[cngxDialog]',
@@ -139,11 +137,9 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogStack = inject(CngxDialogStack);
 
-  // ── Content children ──────────────────────────────────────────────
   private readonly titleDirective = contentChild(CngxDialogTitle);
   private readonly descriptionDirective = contentChild(CngxDialogDescription);
 
-  // ── Inputs ────────────────────────────────────────────────────────
   /**
    * Whether the dialog opens as modal (`showModal()`) or non-modal (`show()`).
    *
@@ -240,7 +236,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
    */
   readonly error = input(false);
 
-  // ── State ─────────────────────────────────────────────────────────
   private readonly lifecycleSignal = signal<DialogState>('closed');
   private readonly resultSignal = signal<T | 'dismissed' | undefined>(undefined);
   private readonly idSignal = signal(nextUid('cngx-dialog'));
@@ -265,7 +260,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
   /** Unique auto-generated ID for this dialog instance. Used for ARIA and stack tracking. */
   readonly id = this.idSignal.asReadonly();
 
-  // ── Submit state ────────────────────────────────────────────────
   private readonly submitStatusState = signal<AsyncStatus>('idle');
   private readonly submitErrorState = signal<unknown>(undefined);
 
@@ -283,7 +277,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     error: this.submitErrorState.asReadonly(),
   });
 
-  // ── Async state derived ──────────────────────────────────────────
   /**
    * `true` when any async operation is pending. Blocks close/dismiss and sets `aria-busy`.
    *
@@ -314,7 +307,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     return this.error();
   });
 
-  // ── Computed host bindings (protected for Angular compiler) ───────
   protected readonly isOpening = computed(() => this.lifecycleSignal() === 'opening');
   protected readonly isOpen = computed(() => this.lifecycleSignal() === 'open');
   protected readonly isClosing = computed(() => this.lifecycleSignal() === 'closing');
@@ -331,13 +323,11 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.dialogStack.topmost() === this.idSignal() ? null : '0',
   );
 
-  // ── SR live region ────────────────────────────────────────────────
   private liveRegion: HTMLSpanElement | null = null;
 
   constructor() {
     this.createLiveRegion();
 
-    // Announce title when state transitions to 'open'
     effect(() => {
       if (this.lifecycleSignal() === 'open') {
         const titleText = this.titleDirective()?.textContent() ?? '';
@@ -353,7 +343,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       }
     });
 
-    // Announce async error via live region (external state or submit state)
     effect(() => {
       if (this.effectiveError() && this.liveRegion) {
         const errMsg = this.state()?.error() ?? this.submitErrorState();
@@ -361,15 +350,12 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       }
     });
 
-    // Cleanup on destroy
     this.destroyRef.onDestroy(() => {
       if (this.lifecycleSignal() !== 'closed') {
         this.finalize();
       }
     });
   }
-
-  // ── Public API ────────────────────────────────────────────────────
 
   /**
    * Open the dialog.
@@ -395,10 +381,8 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     // Store trigger element for focus return
     this.triggerElement.set(this.doc.activeElement as HTMLElement | null);
 
-    // Transition to opening
     this.lifecycleSignal.set('opening');
 
-    // Open native dialog
     if (this.modal()) {
       dialog.showModal();
       this.acquireScrollLock();
@@ -468,8 +452,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
     this.startClosing();
   }
 
-  // ── Submit execution ─────────────────────────────────────────────
-
   private async executeSubmit(
     action: (value: T) => Promise<unknown> | Observable<unknown>,
     value: T,
@@ -489,7 +471,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
         return;
       }
 
-      // Submit succeeded — auto-close
       this.submitStatusState.set('success');
       this.resultSignal.set(value);
       this.startClosing();
@@ -499,13 +480,10 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
         return;
       }
 
-      // Submit failed — stay open, show error
       this.submitStatusState.set('error');
       this.submitErrorState.set(err);
     }
   }
-
-  // ── Event handlers (protected for host bindings) ──────────────────
 
   protected handleCancel(event: Event): void {
     event.preventDefault();
@@ -533,8 +511,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       this.dismiss();
     }
   }
-
-  // ── Private ───────────────────────────────────────────────────────
 
   private get dialogElement(): HTMLDialogElement {
     return this.elRef.nativeElement;
@@ -590,7 +566,6 @@ export class CngxDialog<T = unknown> implements DialogRef<T> {
       );
       focusable?.focus();
     } else {
-      // CSS selector
       const target = dialog.querySelector<HTMLElement>(strategy);
       target?.focus();
     }

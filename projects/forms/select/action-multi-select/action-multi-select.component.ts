@@ -118,8 +118,6 @@ import {
  * `action` mirrors the flat multi family plus `'create'` — `added`
  * carries exactly the one new value and `removed` is empty, so delta-
  * aggregating consumers treat create identically to toggle-add.
- *
- * @category interactive
  */
 export interface CngxActionMultiSelectChange<T = unknown> {
   readonly source: CngxActionMultiSelect<T>;
@@ -145,8 +143,6 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  *
  * Dismiss-guard: Escape and click-outside intercepted while
  * `actionDirty()` is `true`; Escape fires `cancel()`.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-action-multi-select',
@@ -664,12 +660,10 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
     },
   );
 
-  /** @category interactive */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
   }
 
-  /** @category interactive */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();
   }

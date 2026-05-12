@@ -21,7 +21,7 @@ import { CngxSidenav } from './sidenav';
  * Manages shared backdrop, scroll lock, and click-outside coordination.
  * Supports up to two sidenavs: one `position="start"` and one `position="end"`.
  *
- * @usageNotes
+ * @example
  *
  * ### Dual sidebar
  * ```html
@@ -38,8 +38,6 @@ import { CngxSidenav } from './sidenav';
  *   </cngx-sidenav>
  * </cngx-sidenav-layout>
  * ```
- *
- * @category layout
  */
 @Component({
   selector: 'cngx-sidenav-layout',

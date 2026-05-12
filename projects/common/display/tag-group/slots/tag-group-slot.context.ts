@@ -26,8 +26,6 @@ import type {
  *
  * `$implicit` is `void` because the slot has no positional payload —
  * consumers reach for the named fields below.
- *
- * @category display
  */
 export interface CngxTagGroupHeaderContext {
   readonly $implicit: void;
@@ -43,8 +41,6 @@ export interface CngxTagGroupHeaderContext {
  * identical to {@link CngxTagGroupHeaderContext}; kept separate so
  * future per-slot fields can land without breaking header-slot
  * consumers.
- *
- * @category display
  */
 export interface CngxTagGroupAccessoryContext {
   readonly $implicit: void;

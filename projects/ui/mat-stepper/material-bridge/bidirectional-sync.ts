@@ -6,8 +6,6 @@ import type { CngxStepperHost } from '@cngx/common/stepper';
 
 /**
  * Options for {@link createMatStepperBidirectionalSync}.
- *
- * @category material-bridge
  */
 export interface CngxMatStepperBidirectionalSyncOptions {
   /** Material stepper the helper bridges against. */
@@ -49,8 +47,6 @@ export interface CngxMatStepperBidirectionalSyncOptions {
  * Phase 7.2 of `mat-stepper-mat-tabs-hardening-plan` extracted this
  * helper to close E-C12 + E-C13 (duplicated bidirectional-sync glue
  * between the wrapper component and the instrumentation directive).
- *
- * @category material-bridge
  */
 export function createMatStepperBidirectionalSync(
   opts: CngxMatStepperBidirectionalSyncOptions,

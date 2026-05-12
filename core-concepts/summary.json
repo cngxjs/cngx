@@ -1,0 +1,30 @@
+[
+    {
+        "title": "The CNGX Way",
+        "file": "the-cngx-way.md"
+    },
+    {
+        "title": "The Three Pillars",
+        "file": "three-pillars.md"
+    },
+    {
+        "title": "Layered Design",
+        "file": "layered-design.md"
+    },
+    {
+        "title": "Signal-First Internals",
+        "file": "signal-first-internals.md"
+    },
+    {
+        "title": "Async State Machine",
+        "file": "async-state-machine.md"
+    },
+    {
+        "title": "Dual Rendering",
+        "file": "dual-rendering.md"
+    },
+    {
+        "title": "Instrumentation Pattern",
+        "file": "instrumentation-pattern.md"
+    }
+]

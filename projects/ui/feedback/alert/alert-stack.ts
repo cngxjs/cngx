@@ -22,7 +22,7 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  * `inject(CngxAlerter)` get this stack's instance. Supports nesting
  * (each stack is independent).
  *
- * @usageNotes
+ * @example
  *
  * ### In a dialog
  * ```html
@@ -42,8 +42,6 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  *   errors.forEach(e => this.alerter.show({ message: e, severity: 'error' }));
  * }
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-alert-stack',
@@ -246,8 +244,6 @@ export class CngxAlertStack {
 
   /** Auto-scroll stack into view when new alert appears. */
   readonly autoScroll = input<boolean>(true);
-
-  // ── Computed ──────────────────────────────────────────────
 
   /** @internal — expanded state. Resets when alert count drops to maxVisible or below. */
   private readonly expanded = linkedSignal({

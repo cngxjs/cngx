@@ -28,7 +28,7 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  *
  * For content-blocking overlays, use `cngx-loading-overlay` instead.
  *
- * @usageNotes
+ * @example
  *
  * ### With async state
  * ```html
@@ -39,8 +39,6 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * ```html
  * <cngx-loading-indicator [loading]="isLoading()" label="Fetching data" />
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-loading-indicator',

@@ -30,7 +30,7 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * The consumer sees only the attribute — no extra elements in the template.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic
  * ```html
@@ -65,8 +65,6 @@ export class CngxTooltip {
   private readonly destroyRef = inject(DestroyRef);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
 
-  // ── Inputs ────────────────────────────────────────────────────────
-
   /** Tooltip text content. */
   readonly text = input.required<string>({ alias: 'cngxTooltip' });
 
@@ -85,21 +83,15 @@ export class CngxTooltip {
   /** Whether the tooltip is active. When `false`, no tooltip appears and ARIA is cleared. */
   readonly enabled = input(true);
 
-  // ── State ─────────────────────────────────────────────────────────
-
   private readonly stateSignal = signal<PopoverState>('closed');
   private readonly idSignal = signal(nextUid('cngx-tooltip'));
 
   /** Current lifecycle state. */
   readonly state = this.stateSignal.asReadonly();
 
-  // ── Internal ──────────────────────────────────────────────────────
-
   private tooltipEl: HTMLElement | null = null;
   private openTimer: ReturnType<typeof setTimeout> | null = null;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
-
-  // ── Computed (protected — for host bindings) ──────────────────────
 
   protected readonly ariaDescribedBy = computed(() => (this.enabled() ? this.idSignal() : null));
 
@@ -110,7 +102,6 @@ export class CngxTooltip {
   constructor() {
     this.createTooltipElement();
 
-    // Sync text content into the tooltip element reactively
     effect(() => {
       const text = this.text();
       const el = untracked(() => this.tooltipEl);
@@ -119,7 +110,6 @@ export class CngxTooltip {
       }
     });
 
-    // Sync placement + offset into the tooltip element styles
     effect(() => {
       const placement = this.placement();
       const offset = this.offset();
@@ -135,7 +125,6 @@ export class CngxTooltip {
       }
     });
 
-    // Close if disabled while open
     effect(() => {
       const enabled = this.enabled();
       if (!enabled) {
@@ -151,8 +140,6 @@ export class CngxTooltip {
       this.tooltipEl?.remove();
     });
   }
-
-  // ── Public API ────────────────────────────────────────────────────
 
   /** Show the tooltip immediately (bypassing delay). */
   show(): void {
@@ -177,8 +164,6 @@ export class CngxTooltip {
     this.clearTimers();
     this.finalize();
   }
-
-  // ── Event handlers (protected — for host bindings) ────────────────
 
   protected handleMouseEnter(): void {
     if (!this.enabled()) {
@@ -225,8 +210,6 @@ export class CngxTooltip {
       this.hide();
     }
   }
-
-  // ── Private ───────────────────────────────────────────────────────
 
   private applyFloatingPosition(): void {
     if (SUPPORTS_ANCHOR || !this.floatingFallback || !this.tooltipEl) {

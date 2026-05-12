@@ -71,7 +71,7 @@ function warnMissingPopoverApi(el: HTMLElement): void {
  * CSS classes `cngx-popover--opening`, `cngx-popover--open`, and
  * `cngx-popover--closing` are applied to the host for transition hooks.
  *
- * @usageNotes
+ * @example
  *
  * ### Declarative click popover
  * ```html
@@ -120,8 +120,6 @@ export class CngxPopover {
   private readonly doc = inject(DOCUMENT);
   private readonly floatingFallback = inject(CNGX_FLOATING_FALLBACK, { optional: true });
 
-  // ── Inputs ────────────────────────────────────────────────────────
-
   /** Anchor-relative placement. */
   readonly placement = input<PopoverPlacement>('bottom');
 
@@ -149,8 +147,6 @@ export class CngxPopover {
    */
   readonly exclusive = input(true);
 
-  // ── State ─────────────────────────────────────────────────────────
-
   private readonly stateSignal = signal<PopoverState>('closed');
   private readonly idSignal = signal(nextUid('cngx-popover'));
 
@@ -166,8 +162,6 @@ export class CngxPopover {
    */
   readonly anchorElement = signal<HTMLElement | null>(null);
 
-  // ── Computed (protected — for host bindings) ──────────────────────
-
   protected readonly isOpening = computed(() => this.stateSignal() === 'opening');
   protected readonly isOpen = computed(() => this.stateSignal() === 'open');
   protected readonly isClosing = computed(() => this.stateSignal() === 'closing');
@@ -180,8 +174,7 @@ export class CngxPopover {
   protected readonly cssMargin = computed(() => (SUPPORTS_ANCHOR ? `${this.offset()}px` : null));
 
   constructor() {
-    // Sync position-area / inset-area using the correct property name for this browser.
-    // Cannot use a host binding because the CSS property name is dynamic.
+    // Host binding needs a static property name; position-area/inset-area name flips per browser.
     if (SUPPORTS_ANCHOR) {
       effect(() => {
         this.elRef.nativeElement.style.setProperty(
@@ -190,7 +183,6 @@ export class CngxPopover {
         );
       });
     }
-    // Controlled open: react to input changes
     effect(() => {
       const desired = this.controlledOpen();
       if (desired === undefined) {
@@ -212,15 +204,12 @@ export class CngxPopover {
     });
   }
 
-  // ── Public API ────────────────────────────────────────────────────
-
   /** Open the popover. No-op if not `closed`. */
   show(): void {
     warnMissingPopoverApi(this.elRef.nativeElement);
     if (this.stateSignal() !== 'closed') {
       return;
     }
-    // Close other open popovers when exclusive (default)
     if (this.exclusive()) {
       for (const other of openPopovers) {
         if (other !== this) {
@@ -257,16 +246,12 @@ export class CngxPopover {
     }
   }
 
-  // ── Event handlers ────────────────────────────────────────────────
-
   protected handleToggle(e: ToggleEvent): void {
     // Sync with browser when it closes the popover (e.g. popover="auto" light dismiss)
     if (e.newState === 'closed' && this.stateSignal() !== 'closed') {
       this.stateSignal.set('closed');
     }
   }
-
-  // ── Private ───────────────────────────────────────────────────────
 
   /**
    * Apply Floating UI positioning when CSS Anchor is not supported
@@ -286,7 +271,6 @@ export class CngxPopover {
     const placement = FLOATING_PLACEMENT[this.placement()];
     const offsetVal = this.offset();
 
-    // Build middleware: prepend offset if not already in the consumer's list
     const middleware = fb.middleware ?? [];
 
     void fb.computePosition(anchor, el, { placement, middleware }).then(({ x, y }) => {

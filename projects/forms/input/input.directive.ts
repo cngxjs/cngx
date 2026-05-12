@@ -19,8 +19,6 @@ import {
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',
@@ -51,8 +49,6 @@ export class CngxInput implements CngxFormFieldControl {
   private readonly config = inject(CNGX_FORM_FIELD_CONFIG);
   private readonly el =
     inject<ElementRef<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>>(ElementRef);
-
-  // CngxFormFieldControl implementation.
 
   readonly id = computed(() => this.presenter?.inputId() ?? (this.el.nativeElement.id || ''));
   private readonly focusedState = signal(false);

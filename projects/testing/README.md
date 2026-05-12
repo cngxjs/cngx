@@ -203,12 +203,6 @@ interface MatchMediaMock {
 
 - `initialMatches` — Initial `matches` value (default: `false`).
 
-#### Methods
-
-- **`install(win)`** — Install the mock on the given window object.
-- **`trigger(matches)`** — Trigger a media query change event with the new `matches` value.
-- **`restore(win)`** — Restore the original `matchMedia`.
-
 #### Example
 
 ```typescript
@@ -239,17 +233,6 @@ interface ResizeObserverMock {
   restore: (win: Window) => void;
 }
 ```
-
-#### Methods
-
-- **`install(win)`** — Install the mock on the given window object.
-- **`triggerResize(entry)`** — Trigger a resize callback with a partial entry.
-- **`restore(win)`** — Restore the original `ResizeObserver`.
-
-#### Spies
-
-- **`observe`** — Vitest spy on `observe()` calls.
-- **`disconnect`** — Vitest spy on `disconnect()` calls.
 
 #### Example
 

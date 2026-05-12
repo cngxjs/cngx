@@ -31,8 +31,6 @@ interface PopoverController {
  * | open | ArrowDown / ArrowUp / Home / End | delegate to AD primitives |
  * | open | Enter / Space | activate; close if `closeOnSelect()` |
  * | any | Escape | close and restore focus to trigger |
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxListboxTrigger]',
@@ -62,8 +60,6 @@ export class CngxListboxTrigger<T = unknown> {
    * deletes the trailing chip" lives at the trigger, so consumers only
    * wire one subscription to own the delete path. On non-input hosts
    * (classic button triggers) the event never fires.
-   *
-   * @category interactive
    */
   readonly backspaceOnEmpty = output<void>();
 

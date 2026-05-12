@@ -9,8 +9,6 @@ import {
 
 /**
  * Options for {@link createOrganismScrollSync}.
- *
- * @category interactive
  */
 export interface CngxOrganismScrollSyncOptions {
   /** Reactive source for the active item id; tracked by the effect. */
@@ -43,8 +41,6 @@ const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
  *
  * The DOM call sits in `untracked()` (only `activeId` is tracked).
  * `scrollIntoView` is missing in jsdom — guarded with optional chain.
- *
- * @category interactive
  */
 export function createOrganismScrollSync(
   opts: CngxOrganismScrollSyncOptions,
@@ -70,8 +66,6 @@ export function createOrganismScrollSync(
 
 /**
  * Factory signature for {@link CNGX_ORGANISM_SCROLL_SYNC_FACTORY}.
- *
- * @category interactive
  */
 export type CngxOrganismScrollSyncFactory = (
   opts: CngxOrganismScrollSyncOptions,
@@ -83,8 +77,6 @@ export type CngxOrganismScrollSyncFactory = (
  * custom selector, telemetry, or `prefers-reduced-motion` opt-out.
  * Sibling to `CNGX_DOM_ANCHOR_RETRY_FACTORY` and
  * `CNGX_OVERFLOW_POPOVER_HIGHLIGHT_FACTORY`.
- *
- * @category interactive
  */
 export const CNGX_ORGANISM_SCROLL_SYNC_FACTORY =
   new InjectionToken<CngxOrganismScrollSyncFactory>(

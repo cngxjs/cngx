@@ -2,8 +2,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
 
 /**
  * A single sort entry: the active field key and its direction.
- *
- * @category sort
  */
 export interface SortEntry {
   active: string;
@@ -25,8 +23,6 @@ export interface SortEntry {
  *
  * Consumer connects this to a table or list via a `computed()` — nothing is
  * injected automatically.
- *
- * @category sort
  */
 @Directive({
   selector: '[cngxSort]',

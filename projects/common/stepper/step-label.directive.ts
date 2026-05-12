@@ -14,8 +14,6 @@ import type { CngxStepLabelContext } from './step-panel-host.token';
  *   {{ node.label() }}
  * </ng-template>
  * ```
- *
- * @category interactive/stepper
  */
 @Directive({
   selector: 'ng-template[cngxStepLabel]',

@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
+/** Main-axis direction for {@link CngxStack}. */
 export type StackDirection = 'row' | 'column';
+/** Cross-axis alignment for {@link CngxStack}. */
 export type StackAlign = 'start' | 'center' | 'end' | 'stretch';
+/** Spacing scale for {@link CngxStack}. Maps to `--cngx-gap-*` tokens. */
 export type StackGap = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 const GAP_DEFAULTS: Record<StackGap, string> = {
@@ -25,8 +28,6 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  *   <div>Item 1</div>
  *   <div>Item 2</div>
  * </cngx-stack>
- *
- * @category layout
  */
 @Component({
   selector: 'cngx-stack',

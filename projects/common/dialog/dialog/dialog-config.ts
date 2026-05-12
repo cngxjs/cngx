@@ -5,8 +5,6 @@ export const CNGX_DIALOG_DATA = new InjectionToken<unknown>('CngxDialogData');
 
 /**
  * Configuration for programmatically opened dialogs.
- *
- * @category dialog
  */
 export interface CngxDialogConfig<D = unknown> {
   /** Data to inject via `CNGX_DIALOG_DATA` inside the dialog component. */

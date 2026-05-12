@@ -32,8 +32,6 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * ```html
  * <label cngxLabel>E-Mail <cngx-required /></label>
  * ```
- *
- * @category components
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- attribute selector by design (label can be any element)

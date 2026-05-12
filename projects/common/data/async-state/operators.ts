@@ -29,7 +29,7 @@ interface AsyncStateSink<T> {
  *
  * The Observable passes through unchanged — `tapAsyncState` is a side-effect operator.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * readonly residents = createManualState<Resident[]>();
@@ -41,8 +41,6 @@ interface AsyncStateSink<T> {
  *   ).subscribe();
  * }
  * ```
- *
- * @category async
  */
 export function tapAsyncState<T>(
   state: AsyncStateSink<T>,
@@ -92,7 +90,7 @@ const RESPONSE = 4;
  *
  * Use with `{ observe: 'events', reportProgress: true }` on HttpClient.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * readonly upload = createManualState<UploadResult>();
@@ -107,8 +105,6 @@ const RESPONSE = 4;
  *   ).subscribe();
  * }
  * ```
- *
- * @category async
  */
 export function tapAsyncProgress<E>(
   state: Pick<AsyncStateSink<unknown>, 'setProgress'>,
@@ -139,7 +135,7 @@ export function tapAsyncProgress<E>(
  * The output Observable emits the **response body** (not HttpEvents).
  * Throws if the response body is `null`.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * readonly upload = createManualState<UploadResult>();
@@ -155,8 +151,6 @@ export function tapAsyncProgress<E>(
  *   // upload.status(), upload.progress(), upload.data() — all wired
  * }
  * ```
- *
- * @category async
  */
 export function tapHttpAsyncState<T>(
   state: AsyncStateSink<T>,

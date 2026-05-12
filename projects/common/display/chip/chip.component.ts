@@ -32,8 +32,6 @@ import { nextUid } from '@cngx/core/utils';
  * - Commit/async behaviour — remove simply fires an event; the parent
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
- *
- * @category display
  */
 @Component({
   selector: 'cngx-chip',

@@ -35,48 +35,6 @@ export class ProfileComponent {
 }
 ```
 
-## API
-
-### optimistic Function
-
-```typescript
-function optimistic<T>(
-  current: WritableSignal<T>,
-  action: (value: T) => Observable<T>
-): [(newValue: T) => void, OptimisticState]
-```
-
-Returns a tuple: an apply function and an OptimisticState object.
-
-#### Parameters
-
-- **current** (WritableSignal\<T\>) — The writable signal to update optimistically
-- **action** ((value: T) => Observable\<T\>) — Async action that confirms the value. Must return an Observable that emits the confirmed value (or error).
-
-#### Returns
-
-- **Tuple[0]** ((newValue: T) => void) — Function to apply the optimistic update
-- **Tuple[1]** (OptimisticState) — State for UI feedback
-
-### OptimisticState Interface
-
-```typescript
-interface OptimisticState {
-  readonly rolledBack: Signal<boolean>;       // Whether rollback occurred on last invocation
-  readonly error: Signal<unknown>;            // Error from the failed action
-  readonly state: CngxAsyncState<unknown>;    // Full async state view
-}
-```
-
-#### Signals
-
-- `rolledBack: Signal<boolean>` — True when the last action failed and the value was rolled back. Resets to false on the next invocation.
-- `error: Signal<unknown>` — The error from the failed action. Undefined on success or before any action.
-- `state: CngxAsyncState<unknown>` — Full async state view combining all signals. Maps:
-  - 'pending' while confirming
-  - 'success' on confirmation
-  - 'error' on rollback
-
 ## Accessibility
 
 optimistic provides state signals but has no built-in ARIA:
@@ -351,8 +309,8 @@ signal.set(valueB);  // Cancels valueA, new action with valueB
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/optimistic.html)
-- [CngxAsyncState](../../../../../../core/utils/) — The shared state interface
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [CngxAsyncState](../../../core/utils/) — The shared state interface
 - [withRetry](../retry/) — Combines well with optimistic for resilient updates
 - Demo: `dev-app/src/app/demos/common/optimistic-demo/`
-- Tests: `projects/common/interactive/src/optimistic/optimistic.spec.ts`
+- Tests: `projects/common/interactive/optimistic/optimistic.spec.ts`

@@ -19,8 +19,6 @@ import { injectMenuConfig } from './menu-config';
  *
  * Click activates (honouring the disabled state). `pointerenter` highlights
  * without activating, matching native menu behaviour.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxMenuItem]',

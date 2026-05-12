@@ -20,7 +20,7 @@ import {
  *
  * Original DOM structure is restored when the term changes or the directive is destroyed.
  *
- * @usageNotes
+ * @example
  *
  * ### Search result highlighting
  * ```html
@@ -35,8 +35,6 @@ import {
  *   CamelCase matters here.
  * </p>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxHighlight]',
@@ -66,8 +64,7 @@ export class CngxHighlight {
       this.initialized.set(true);
     });
 
-    // DOM manipulation is a legitimate effect side effect here.
-    // matchCountState is written outside the reactive graph to avoid a re-trigger loop.
+    // matchCountState is written via untracked path — re-entering the effect would loop.
     effect(() => {
       const term = this.term();
       const caseSensitive = this.caseSensitive();

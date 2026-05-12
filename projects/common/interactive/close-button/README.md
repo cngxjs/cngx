@@ -31,53 +31,6 @@ export class AlertComponent {
 }
 ```
 
-## API
-
-### CngxCloseButton Component
-
-A configurable close/dismiss button atom used across cngx feedback components.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| label | `string` | required | Accessible label for the button (e.g., "Close dialog", "Dismiss notification") |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-None (state managed by parent component)
-
-#### CSS Custom Properties
-
-- `--cngx-close-button-bg` (none) — Button background color
-- `--cngx-close-button-border` (none) — Button border
-- `--cngx-close-button-size` (32px) — Button min-width and min-height
-- `--cngx-close-button-padding` (8px) — Button padding
-- `--cngx-close-button-color` (inherit) — Button/icon color
-- `--cngx-close-button-opacity` (0.5) — Resting opacity
-- `--cngx-close-button-radius` (4px) — Border radius
-- `--cngx-close-button-transition` (150ms) — Opacity transition duration
-- `--cngx-close-button-hover-opacity` (1) — Opacity on hover
-- `--cngx-close-button-hover-bg` (rgba(0, 0, 0, 0.04)) — Background on hover
-- `--cngx-close-button-focus-outline` (2px solid currentColor) — Focus ring
-- `--cngx-close-button-focus-offset` (2px) — Focus ring offset
-- `--cngx-close-button-active-opacity` (0.8) — Opacity on active/press
-- `--cngx-close-button-icon-size` (16px) — Icon width and height
-
-### CNGX_CLOSE_ICON Token
-
-Injection token for globally overriding the close icon component.
-
-```typescript
-const CNGX_CLOSE_ICON = new InjectionToken<Type<unknown>>('CngxCloseIcon');
-```
-
 ## Accessibility
 
 CngxCloseButton is fully accessible:
@@ -385,9 +338,9 @@ This is lightweight and respects the button's color via `currentColor`.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxCloseButton.html)
-- [CngxAlert](../../../../../../ui/feedback/) — Uses CngxCloseButton
-- [CngxToastOutlet](../../../../../../ui/feedback/) — Uses CngxCloseButton
-- [provideFeedback with withCloseIcon](../../../../../../ui/feedback/) — Global icon override
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [CngxAlert](../../../ui/feedback/) — Uses CngxCloseButton
+- [CngxToastOutlet](../../../ui/feedback/) — Uses CngxCloseButton
+- [provideFeedback with withCloseIcon](../../../ui/feedback/) — Global icon override
 - Demo: `dev-app/src/app/demos/common/close-button-demo/`
-- Tests: `projects/common/interactive/src/close-button/close-button.spec.ts`
+- Tests: `projects/common/interactive/close-button/close-button.spec.ts`

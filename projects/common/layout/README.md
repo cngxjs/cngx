@@ -19,37 +19,6 @@ and ARIA attributes. The consumer renders the skeleton UI.
 </div>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxSkeleton` | `boolean` | `false` | Controls the loading state |
-| `shimmer` | `boolean` | `true` | Enables shimmer animation class (respects `prefers-reduced-motion`) |
-| `count` | `number` | `1` | Repeat count for `indices()` signal |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `loading` | `boolean` | Mirrors the `cngxSkeleton` input |
-| `indices` | `number[]` | Array of indices `[0..count-1]` for `@for` rendering |
-
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-skeleton` | Always |
-| `cngx-skeleton--loading` | `loading()` is `true` |
-| `cngx-skeleton--shimmer` | Loading, shimmer enabled, and reduced motion not preferred |
-
-### ARIA
-
-- `aria-busy="true"` when loading
-
-### Selector
-
-`[cngxSkeleton]` -- exportAs `"cngxSkeleton"`
-
 ## CngxInfiniteScroll
 
 Infinite scroll trigger using `IntersectionObserver`. Place on a sentinel element at the
@@ -70,51 +39,11 @@ bottom of a list. Fires `loadMore` when the sentinel enters the viewport.
 </div>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `threshold` | `number` | `0` | IntersectionObserver threshold (0--1) |
-| `rootMargin` | `string` | `'0px 0px 200px 0px'` | Pre-fetch margin (200px before visible by default) |
-| `root` | `string \| null` | `null` | CSS selector for custom scroll container (`null` = viewport) |
-| `enabled` | `boolean` | `true` | When `false`, observer disconnects. Use to stop at end of data |
-| `loading` | `boolean` | `false` | Set `true` while fetching. Prevents re-trigger |
-| `debounceMs` | `number` | `200` | Minimum ms between consecutive `loadMore` emissions |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `loadMore` | `void` | Emitted when sentinel is visible, not loading, and debounce elapsed |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `isLoading` | `boolean` | Readonly mirror of the `loading` input |
-
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-infinite-scroll` | Always (static) |
-| `cngx-infinite-scroll--loading` | `isLoading()` is `true` |
-
-### ARIA
-
-- `aria-busy="true"` when loading
-
-### Selector
-
-`[cngxInfiniteScroll]` -- exportAs `"cngxInfiniteScroll"`
-
 ### Notes
 
 - Observer auto-recreates when `root`, `rootMargin`, or `threshold` inputs change.
 - Observer disconnects on destroy or when `enabled` is `false`.
 - Includes a time-based debounce guard to prevent rapid re-triggers.
-
----
 
 ## CngxStickyHeader
 
@@ -130,41 +59,11 @@ Communicates when a `position: sticky` element becomes stuck. Does NOT apply sti
 .cngx-sticky--active { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `threshold` | `number` | `0` | IO threshold — `0` triggers as soon as sentinel leaves |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `stickyChange` | `boolean` | Emitted when the sticky state changes |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `isSticky` | `boolean` | Whether the header is currently stuck |
-
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-sticky--active` | Header is in stuck position |
-
-### Selector
-
-`[cngxStickyHeader]` -- exportAs `"cngxStickyHeader"`
-
 ### Notes
 
 - Sentinel is a 1px invisible element with `aria-hidden="true"`.
 - Sentinel and observer are created in `afterNextRender`, cleaned up via `DestroyRef`.
 - Sticky header itself remains visible to screen readers (`aria-hidden` is not set on host).
-
----
 
 ## CngxScrollSpy
 
@@ -182,38 +81,11 @@ Tracks which section is currently most visible in the viewport. Observes a list 
 <section id="pricing">…</section>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxScrollSpy` | `string[]` | required | Section IDs to observe |
-| `threshold` | `number` | `0.3` | Minimum visibility ratio to consider a section active |
-| `root` | `string \| null` | `null` | CSS selector for custom scroll container |
-| `rootMargin` | `string` | `'0px'` | Root margin for the observer |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `activeIdChange` | `string \| null` | Emitted when the active section changes |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `activeId` | `string \| null` | ID of the most-visible section (or `null` if none meets threshold) |
-
-### Selector
-
-`[cngxScrollSpy]` -- exportAs `"cngxScrollSpy"`
-
 ### Notes
 
 - Observer recreated via `effect()` when `sections`, `threshold`, `root`, or `rootMargin` change.
 - Uses 11 threshold steps (0, 0.1, 0.2 … 1.0) for accurate ratio tracking.
 - Pairs naturally with `CngxNavLink` for scroll-based navigation highlighting.
-
----
 
 ## CngxTruncate
 
@@ -231,23 +103,6 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 }
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxTruncate` | `number` | `3` | Maximum visible lines when collapsed |
-| `expanded` | `boolean` | `false` | Whether text is fully visible. Supports two-way `[(expanded)]` |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `isClamped` | `boolean` | Whether content actually overflows the line limit |
-
-### Selector
-
-`[cngxTruncate]` -- exportAs `"cngxTruncate"`
-
 ### Notes
 
 - Host styles applied automatically: `-webkit-line-clamp`, `display: -webkit-box`, `-webkit-box-orient: vertical`, `overflow: hidden`.
@@ -255,8 +110,6 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 - `ResizeObserver` re-checks on container resize.
 - `isClamped` is only updated when collapsed — expanded state preserves the last known value.
 - Consumer is responsible for the toggle button and `aria-expanded` attribute.
-
----
 
 ## Other Exports
 

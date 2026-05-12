@@ -11,7 +11,7 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  *
  * Fallback chain: stored element → provided fallback → nearest focusable ancestor → body.
  *
- * @usageNotes
+ * @example
  *
  * ### Panel that restores focus on close
  * ```html
@@ -30,8 +30,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * </div>
  * <button #fallbackBtn>Fallback target</button>
  * ```
- *
- * @category a11y
  */
 @Directive({
   selector: '[cngxFocusRestore]',

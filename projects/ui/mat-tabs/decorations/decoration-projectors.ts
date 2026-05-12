@@ -35,7 +35,6 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  *
  * Index-based DOM lookup tracks `tabs-accepted-debt §5`.
  *
- * @category interactive
  * @internal package-private — consumers bind `[cngxMatTabError]` on
  * each `<mat-tab>`; the directive owns the projection mechanics.
  */

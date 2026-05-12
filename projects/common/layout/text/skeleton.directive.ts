@@ -10,7 +10,7 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  * Exposes an `indices()` signal for `@for` rendering of repeated skeleton elements.
  * Respects `prefers-reduced-motion` (disables shimmer animation class).
  *
- * @usageNotes
+ * @example
  *
  * ### Basic loading placeholder
  * ```html
@@ -42,8 +42,6 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  *   }
  * </div>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxSkeleton]',

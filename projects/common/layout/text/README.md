@@ -71,36 +71,9 @@ export class TextExampleComponent {
 }
 ```
 
----
-
 ## CngxTruncate
 
 Manages text truncation with expand/collapse state detection via CSS `-webkit-line-clamp`. Detects whether text is actually clamped and exposes an `isClamped` signal so consumers can conditionally show a "Show more" toggle only when needed.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxTruncate` | `number` | Required | Maximum number of visible lines when collapsed. |
-| `expanded` | `boolean` | `false` | Whether the text is expanded (full content visible). Supports two-way binding via `[(expanded)]`. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `isClamped: Signal<boolean>` — Whether text content exceeds the line limit and is being clamped.
-
-#### Template-Accessible
-- `expanded: WritableSignal<boolean>` — Two-way bindable signal for expand state.
-
-### Host Styling
-
-When collapsed, the directive automatically applies:
-- `display: -webkit-box`
-- `-webkit-box-orient: vertical`
-- `overflow: hidden`
-- `-webkit-line-clamp: <lines>`
-
-When expanded, all styles are removed (set to `null`).
 
 ### Browser Support
 
@@ -132,23 +105,9 @@ Uses `-webkit-line-clamp` which is widely supported (Chrome, Firefox, Safari, Ed
 </p>
 ```
 
----
-
 ## CngxHighlight
 
 Search-text highlighting via `<mark>` elements. Walks text nodes of the host, splits at match boundaries, and wraps matches in `<mark>` elements. No `innerHTML` — safe by construction. The `<mark>` element has native SR semantics.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxHighlight` | `string` | Required | Search term to highlight. Empty string clears highlights. |
-| `highlightCaseSensitive` | `boolean` | `false` | Whether matching is case-sensitive. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `matchCount: Signal<number>` — Number of matches found in current highlight pass.
 
 ### Behavior
 
@@ -225,30 +184,9 @@ mark {
 }
 ```
 
----
-
 ## CngxExpandableText
 
 Molecule wrapping `CngxTruncate` with a built-in expand/collapse toggle button. Projects content into a truncated container and conditionally renders a "Show more" / "Show less" button when content is actually clamped.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `lines` | `number` | `3` | Maximum visible lines when collapsed. |
-| `expanded` | `boolean` | `false` | Whether the text is expanded. Supports two-way `[(expanded)]` binding. |
-| `moreLabel` | `string` | `'Show more'` | Label for the "show more" button. |
-| `lessLabel` | `string` | `'Show less'` | Label for the "show less" button. |
-
-### Content Slots
-
-- Default slot — The text to be truncated.
-- `<ng-template cngxExpandableToggle>` (optional) — Custom toggle template.
-
-### Signals
-
-#### Template-Accessible
-- `expanded: WritableSignal<boolean>` — Two-way bindable expand state.
 
 ### Usage Example
 
@@ -325,35 +263,9 @@ The built-in toggle button has the class `.cngx-expandable-text__toggle` for cus
 }
 ```
 
----
-
 ## CngxSkeleton
 
 Headless skeleton loading placeholder. Toggles between loading and content states via CSS classes and ARIA attributes. Exposes an `indices()` signal for `@for` rendering repeated skeleton elements. Respects `prefers-reduced-motion`.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxSkeleton` | `boolean` | Required | Controls the loading state. |
-| `shimmer` | `boolean` | `true` | Enables the `.cngx-skeleton--shimmer` CSS class (respects `prefers-reduced-motion`). |
-| `count` | `number` | `1` | Repeat count — exposed via `indices()` signal for `@for` rendering. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `loading: Signal<boolean>` — Whether the skeleton is in loading state. Mirrors the `cngxSkeleton` input.
-- `indices: Signal<number[]>` — Array of indices [0, 1, ..., count-1] for `@for` rendering of repeated skeleton elements.
-
-### CSS Classes
-
-- `.cngx-skeleton` — Always applied.
-- `.cngx-skeleton--loading` — Applied when in loading state.
-- `.cngx-skeleton--shimmer` — Applied when loading and shimmer is enabled (respects `prefers-reduced-motion`).
-
-### ARIA Attributes
-
-- `aria-busy="true"` — Applied when in loading state (omitted when not loading).
 
 ### Usage Example
 
@@ -445,8 +357,6 @@ Headless skeleton loading placeholder. Toggles between loading and content state
   }
 }
 ```
-
----
 
 ## Accessibility
 
@@ -559,7 +469,7 @@ Text utilities expose CSS classes for consumer styling:
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/text-demo/`
-- Tests: `projects/common/layout/src/text/*.spec.ts`
+- Tests: `projects/common/layout/text/*.spec.ts`
 - `CngxResizeObserver` in `@cngx/common/layout` — Used internally by `CngxTruncate` for overflow detection

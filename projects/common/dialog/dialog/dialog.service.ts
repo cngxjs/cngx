@@ -27,7 +27,7 @@ import { CngxDialogOutlet } from './dialog-outlet';
  * (`state`, `result`) and Observable convenience methods (`afterClosed()`,
  * `afterOpened()`) for migration compatibility with `MatDialogRef`.
  *
- * @usageNotes
+ * @example
  *
  * ### Signal-based result reading
  * ```typescript
@@ -43,8 +43,6 @@ import { CngxDialogOutlet } from './dialog-outlet';
  *   if (result !== 'dismissed') console.log('Confirmed:', result);
  * });
  * ```
- *
- * @category dialog
  */
 export class CngxDialogRef<T = unknown> {
   /** @internal */
@@ -151,7 +149,7 @@ export class CngxDialogRef<T = unknown> {
  *
  * Must be provided via `provideDialog()`.
  *
- * @usageNotes
+ * @example
  *
  * ### Open a component dialog
  * ```typescript
@@ -173,8 +171,6 @@ export class CngxDialogRef<T = unknown> {
  *   save(user: User) { this.dialogRef.close(user); }
  * }
  * ```
- *
- * @category dialog
  */
 @Injectable()
 export class CngxDialogOpener {
@@ -213,12 +209,10 @@ export class CngxDialogOpener {
     content: Type<unknown> | TemplateRef<unknown>,
     config: CngxDialogConfig<D> = {},
   ): CngxDialogRef<T> {
-    // 1. Create the outlet (the <dialog> wrapper)
     const outletRef = createComponent(CngxDialogOutlet, {
       environmentInjector: this.envInjector,
     });
 
-    // Apply config inputs
     outletRef.setInput('modal', config.modal ?? true);
     outletRef.setInput('closeOnBackdropClick', config.closeOnBackdropClick ?? true);
     outletRef.setInput('closeOnEscape', config.closeOnEscape ?? true);
@@ -229,14 +223,11 @@ export class CngxDialogOpener {
     // Attach to ApplicationRef so change detection runs
     this.appRef.attachView(outletRef.hostView);
 
-    // Append to document body
     const hostEl = outletRef.location.nativeElement as HTMLElement;
     this.doc.body.appendChild(hostEl);
 
-    // 2. Get the inner CngxDialog directive
     const innerDialog = outletRef.instance.dialog() as DialogRef<T>;
 
-    // 3. Create the content component inside the outlet's ViewContainerRef
     const outletVcr = outletRef.instance.contentOutlet();
     let contentRef: ComponentRef<unknown> | null = null;
 
@@ -251,12 +242,10 @@ export class CngxDialogOpener {
 
     if (outletVcr) {
       if (typeof content === 'function') {
-        // Component type
         contentRef = outletVcr.createComponent(content, {
           injector: childInjector,
         });
       } else {
-        // TemplateRef
         outletVcr.createEmbeddedView(
           content,
           { $implicit: innerDialog },
@@ -265,16 +254,14 @@ export class CngxDialogOpener {
       }
     }
 
-    // 4. Build the CngxDialogRef
     const dialogRef = new CngxDialogRef<T>(innerDialog, outletRef, contentRef, this.injector);
 
     this.openDialogs.push(dialogRef as CngxDialogRef<unknown>);
 
-    // 5. Open the dialog (CngxDialog has open() but DialogRef<T> interface does not)
+    // CngxDialog has open() but the DialogRef<T> interface does not — call the concrete instance.
     const dialogInstance = outletRef.instance.dialog();
     dialogInstance.open();
 
-    // 6. Cleanup when dialog closes
     effect(
       () => {
         if (
@@ -309,7 +296,6 @@ export class CngxDialogOpener {
       this.openDialogs.splice(idx, 1);
     }
 
-    // Destroy content and outlet
     if (ref.componentRef && !ref.componentRef.hostView.destroyed) {
       ref.componentRef.destroy();
     }
@@ -329,14 +315,12 @@ export class CngxDialogOpener {
  * Must be called in the application's `providers` array or a route's
  * `providers` for `CngxDialogOpener` to be injectable.
  *
- * @usageNotes
+ * @example
  * ```typescript
  * bootstrapApplication(AppComponent, {
  *   providers: [provideDialog()],
  * });
  * ```
- *
- * @category dialog
  */
 export function provideDialog(): Provider[] {
   return [CngxDialogOpener];

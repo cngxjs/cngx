@@ -55,7 +55,7 @@ export interface BannerState {
  * `id` is required and serves as the dedup key. Calling `show()` with an existing
  * `id` calls `update()` instead (e.g., session timeout countdown).
  *
- * @usageNotes
+ * @example
  * ```typescript
  * private readonly banner = inject(CngxBanner);
  *
@@ -66,8 +66,6 @@ export interface BannerState {
  *   action: { label: 'Extend', handler: () => this.extendSession() },
  * });
  * ```
- *
- * @category feedback
  */
 @Injectable()
 export class CngxBanner {
@@ -171,13 +169,11 @@ export class CngxBanner {
 
     try {
       await banner.config.action.handler();
-      // Success: clear pending state, then dismiss
       this.banners.update((bs) =>
         bs.map((b) => (b.id === id ? { ...b, actionPending: false } : b)),
       );
       this.dismiss(id);
     } catch (err: unknown) {
-      // Error: keep banner open, store error
       this.banners.update((bs) =>
         bs.map((b) => (b.id === id ? { ...b, actionPending: false, actionError: err } : b)),
       );

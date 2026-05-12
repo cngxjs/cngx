@@ -8,8 +8,6 @@ import { InjectionToken } from '@angular/core';
  * `{ kind: 'group' }`. Both providers expose `useExisting` so consumers
  * can `inject(CNGX_OPTION_CONTAINER)` and reach the directive instance
  * through the discriminator.
- *
- * @category interactive
  */
 export type CngxOptionContainer =
   | (CngxOptionContainerOption & { readonly kind: 'option' })
@@ -19,8 +17,6 @@ export type CngxOptionContainer =
  * Public surface a `CngxOption` exposes when registered under
  * `CNGX_OPTION_CONTAINER`. Kept structural so consumers can walk the
  * projection tree without importing the directive class directly.
- *
- * @category interactive
  */
 export interface CngxOptionContainerOption {
   readonly id: string;
@@ -31,8 +27,6 @@ export interface CngxOptionContainerOption {
  * `CNGX_OPTION_CONTAINER`. The `options` signal yields the direct
  * `CngxOption` children of the group; nested groups are unsupported
  * (the surrounding directive dev-warns when one is detected).
- *
- * @category interactive
  */
 export interface CngxOptionContainerGroup {
   readonly label: () => string;
@@ -47,8 +41,6 @@ export interface CngxOptionContainerGroup {
  * { descendants: false })` and walk the result preserving DOM order.
  * The discriminated `kind` field separates leaves from groups without
  * forcing the consumer to import either directive class.
- *
- * @category interactive
  */
 export const CNGX_OPTION_CONTAINER = new InjectionToken<CngxOptionContainer>(
   'CNGX_OPTION_CONTAINER',

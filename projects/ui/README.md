@@ -17,7 +17,7 @@ Every component supports two theming paths:
 
 ```scss
 @use '@angular/material' as mat;
-@use '@cngx/ui/src/lib/speak/speak-button-theme' as speak;
+@use '@cngx/ui/speak/speak-button-theme' as speak;
 
 $theme: mat.define-theme((...));
 
@@ -71,7 +71,7 @@ Ready-made speaker button that connects to `CngxSpeak` (headless,
 | `--cngx-speak-btn-active-color` | `--cngx-accent` / `#f5a623` | Icon color while speaking or on hover |
 | `--cngx-speak-btn-transition` | `0.15s` | Color transition duration |
 
-**Material theme:** `@use '@cngx/ui/src/lib/speak/speak-button-theme'`
+**Material theme:** `@use '@cngx/ui/speak/speak-button-theme'`
 
 ### CngxSkeletonContainer
 

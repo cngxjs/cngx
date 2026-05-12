@@ -27,8 +27,6 @@ import {
  *
  * `state` is a `linkedSignal` over `[disabled]`, `[completed]`, and
  * the optional `[errorAggregator]`'s `hasError()`.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxStep]',

@@ -8,8 +8,6 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
  *   <div>Cell 1</div>
  *   <div>Cell 2</div>
  * </cngx-grid>
- *
- * @category layout
  */
 @Component({
   selector: 'cngx-grid',

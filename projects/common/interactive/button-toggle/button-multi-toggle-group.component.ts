@@ -65,8 +65,6 @@ import {
  *   <button cngxButtonToggle value="archived">Archived</button>
  * </cngx-button-multi-toggle-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-button-multi-toggle-group, [cngxButtonMultiToggleGroup]',
@@ -167,8 +165,6 @@ export class CngxButtonMultiToggleGroup<T = unknown>
     }
     this.controller.toggle(value);
   }
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-button-multi-toggle-group-')).asReadonly();
 

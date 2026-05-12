@@ -170,18 +170,6 @@ Structural helper that exposes a typed `FormControl` from the parent
 `FormGroup` by name. Eliminates the need for `as FormControl<T>` casts
 in templates.
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxTypedControl` | `string` | Required | Name of the control to look up in the parent `FormGroup`. |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `control` | `Signal<AbstractControl<T> \| null>` | The resolved control, or `null` if not found. |
-
 ### Usage
 
 ```ts
@@ -275,6 +263,6 @@ falls out for free.
   strategy.
 - `@cngx/common/interactive` — the nine value-bearing atoms the bridge
   attaches to.
-- Tests: `projects/forms/controls/src/*.spec.ts` (bridge unit + integration).
+- Tests: `projects/forms/controls/*.spec.ts` (bridge unit + integration).
 - Demo: `dev-app/src/app/demos/forms/form-primitives-demo/` — runs both
   Signal Forms and Reactive Forms paths side by side.

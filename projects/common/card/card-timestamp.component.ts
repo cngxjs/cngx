@@ -13,7 +13,7 @@ import {
  *
  * Uses `Intl.DateTimeFormat` with the injected `LOCALE_ID`.
  *
- * @usageNotes
+ * @example
  *
  * ```html
  * <cngx-card>
@@ -22,8 +22,6 @@ import {
  *   </footer>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Component({
   selector: 'cngx-card-timestamp',

@@ -27,8 +27,6 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
  * Selection state (`isSelected`) is driven externally by the enclosing listbox.
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxOption]',

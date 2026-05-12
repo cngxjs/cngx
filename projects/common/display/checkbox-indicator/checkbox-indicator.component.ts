@@ -28,8 +28,6 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
  * - Accessibility announcements — `aria-hidden="true"` unconditionally. The
  *   truth about "selected" is communicated by the row's own `aria-selected`
  *   / `role="option"` ARIA, not by this decoration.
- *
- * @category display
  */
 @Component({
   selector: 'cngx-checkbox-indicator',

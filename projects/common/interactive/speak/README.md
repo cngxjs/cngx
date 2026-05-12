@@ -34,43 +34,6 @@ export class ArticleComponent {
 }
 ```
 
-## API
-
-### CngxSpeak
-
-Headless text-to-speech directive.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxSpeak | `string` | required | Text to speak. When `enabled` is true, triggers speech on every non-empty value change |
-| rate | `number` | `1` | Speech rate (0.1-10, default 1) |
-| pitch | `number` | `1` | Speech pitch (0-2, default 1) |
-| volume | `number` | `1` | Speech volume (0-1, default 1) |
-| lang | `string` | `''` | BCP 47 language tag (e.g. `'de-DE'`). Empty uses browser default |
-| enabled | `boolean` | `true` | Controls auto-speak on text changes. Does NOT affect `speak()` or `cancel()` |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `speaking: Signal<boolean>` — True while an utterance is being spoken
-
-#### Methods
-
-- `speak(text: string): void` — Speak arbitrary text (always works regardless of `enabled`)
-- `cancel(): void` — Cancel any ongoing speech
-- `toggle(): void` — Toggle speech: speak if idle, cancel if speaking
-
-#### Properties
-
-- `supported: boolean` — Whether the browser supports the SpeechSynthesis API
-
 ## Accessibility
 
 CngxSpeak provides cognitive accessibility (dyslexia support, reading assistance):
@@ -499,8 +462,8 @@ Invalid tags are silently ignored by the browser.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxSpeak.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [SpeechSynthesis API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
 - [Cognitive Accessibility - WebAIM](https://webaim.org/articles/cognitive/)
 - Demo: `dev-app/src/app/demos/common/speak-demo/`
-- Tests: `projects/common/interactive/src/speak/speak.directive.spec.ts`
+- Tests: `projects/common/interactive/speak/speak.directive.spec.ts`

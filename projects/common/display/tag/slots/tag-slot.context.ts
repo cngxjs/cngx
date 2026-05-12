@@ -26,8 +26,6 @@ import type {
  * `$implicit` is `void` because the slot has no positional payload —
  * consumers reach for the named fields below. Pattern mirrors
  * `CngxSelectInputSlotContext` in `@cngx/forms/select/shared`.
- *
- * @category display
  */
 export interface CngxTagLabelContext {
   readonly $implicit: void;
@@ -42,8 +40,6 @@ export interface CngxTagLabelContext {
  * identical to {@link CngxTagLabelContext}; kept as a separate
  * interface so future per-slot fields (e.g. spacing tokens) can
  * land without breaking label-slot consumers.
- *
- * @category display
  */
 export interface CngxTagPrefixContext {
   readonly $implicit: void;
@@ -58,8 +54,6 @@ export interface CngxTagPrefixContext {
  * identical to {@link CngxTagLabelContext}; kept as a separate
  * interface so future per-slot fields can land without breaking
  * label-slot consumers.
- *
- * @category display
  */
 export interface CngxTagSuffixContext {
   readonly $implicit: void;

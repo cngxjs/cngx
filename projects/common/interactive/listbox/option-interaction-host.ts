@@ -17,8 +17,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  * host wires its AD — the shell forwards to its inner listbox's AD,
  * a hypothetical custom host could route through telemetry / multi-AD
  * coordination / etc. without changing the option directive.
- *
- * @category interactive
  */
 export interface CngxOptionInteractionHost {
   /**
@@ -53,8 +51,6 @@ export interface CngxOptionInteractionHost {
  * standalone use (no host provides the token) leaves option behaviour
  * unchanged because the option's own AD inject takes precedence when
  * available.
- *
- * @category interactive
  */
 export const CNGX_OPTION_INTERACTION_HOST =
   new InjectionToken<CngxOptionInteractionHost>('CNGX_OPTION_INTERACTION_HOST');

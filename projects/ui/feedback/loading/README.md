@@ -14,15 +14,6 @@ Animated loading spinner with optional label and delay/minimum duration timing.
 import { CngxLoadingIndicator } from '@cngx/ui/feedback';
 ```
 
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `loading` | `boolean` | `false` | Whether to show the spinner. |
-| `label` | `string` | `'Loading'` | SR label for the spinner. |
-| `delay` | `number` | `200` | Delay in ms before showing (prevents flash on fast operations). |
-| `minDuration` | `number` | `500` | Minimum visible duration in ms (prevents flicker). |
-
 #### Example
 
 ```typescript
@@ -50,17 +41,6 @@ Full-coverage overlay that blocks interaction and shows a centered spinner durin
 ```typescript
 import { CngxLoadingOverlay } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `state` | `CngxAsyncState<unknown> \| undefined` | `undefined` | Async state controlling visibility. `isBusy()` shows the overlay. |
-| `loading` | `boolean` | `false` | Boolean fallback when `state` is not set. |
-| `label` | `string` | `'Loading'` | SR label. |
-| `delay` | `number` | `200` | Delay before showing (ms). |
-| `minDuration` | `number` | `500` | Minimum visible duration (ms). |
-| `firstLoadOnly` | `boolean` | `false` | Only show on `isFirstLoad()` (not on refreshes). |
 
 #### Structure
 
@@ -142,14 +122,6 @@ Progress bar component for file uploads or long operations.
 ```typescript
 import { CngxProgress } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `value` | `number` | `0` | Progress value 0–100 (%). |
-| `indeterminate` | `boolean` | `false` | Show indeterminate progress (animated bar, no % value). |
-| `label` | `string \| undefined` | `undefined` | Optional label above the bar. |
 
 #### Example
 

@@ -8,8 +8,6 @@ import { Directive } from '@angular/core';
  *   <div cngxCardBody>Main content here</div>
  * </cngx-card>
  * ```
- *
- * @category card
  */
 @Directive({
   selector: '[cngxCardBody]',

@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { injectChartContext } from '../chart/chart-context';
 
+/** Reads the bar height (data-space Y) of a data row at index `i`. */
 export type BarYAccessor<T> = (d: T, i: number) => number;
 
 interface BarRect {

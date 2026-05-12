@@ -41,7 +41,7 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *
  * For full control, use `[cngxAsyncClick]` directly on any element instead.
  *
- * @usageNotes
+ * @example
  *
  * ### Minimal (covers 80% of cases)
  * ```html
@@ -72,8 +72,6 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *   Save
  * </cngx-action-button>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-action-button',
@@ -250,8 +248,6 @@ export class CngxActionButton {
     return click ? click.error() : undefined;
   });
 
-  // ── Produced state ──────────────────────────────────────────────────
-
   private readonly lastUpdatedState = signal<Date | undefined>(undefined);
 
   /**
@@ -277,7 +273,6 @@ export class CngxActionButton {
   protected readonly failedTpl = contentChild(CngxFailed);
 
   constructor() {
-    // ── Toast + lastUpdated effect ────────────────────────────────────
     // Double-toast guard: warn once if consumer also placed [cngxToastOn] on this element
     if (
       typeof ngDevMode !== 'undefined' &&

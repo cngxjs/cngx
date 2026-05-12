@@ -26,8 +26,6 @@ import { CngxOption } from '@cngx/common/interactive';
  *   </div>
  * </div>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-option',

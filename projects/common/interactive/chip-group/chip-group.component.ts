@@ -69,8 +69,6 @@ import {
  *   <cngx-chip cngxChipInGroup [value]="'lg'">Large</cngx-chip>
  * </cngx-chip-group>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-chip-group, [cngxChipGroup]',
@@ -165,8 +163,6 @@ export class CngxChipGroup<T = unknown>
       this.selected.set(undefined);
     }
   }
-
-  // ── CngxFormFieldControl ─────────────────────────────────────────
 
   readonly id = signal(nextUid('cngx-chip-group-')).asReadonly();
 

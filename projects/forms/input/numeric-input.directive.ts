@@ -84,8 +84,6 @@ function isAllowedChar(
  * <!-- Integer-only -->
  * <input cngxNumericInput [decimals]="0" [allowNegative]="false" />
  * ```
- *
- * @category directives
  */
 @Directive({
   selector: 'input[cngxNumericInput]',

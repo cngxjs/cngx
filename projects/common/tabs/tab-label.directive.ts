@@ -12,8 +12,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   <ng-template cngxTabContent>...</ng-template>
  * </div>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: 'ng-template[cngxTabLabel]',

@@ -16,8 +16,6 @@ import { CngxToaster } from '../toast/toast.service';
 /**
  * Global configuration for all feedback components.
  * Provided via `provideFeedback()` with `with*` features.
- *
- * @category configuration
  */
 export interface FeedbackConfig {
   /** Custom spinner component to replace the built-in SVG spinner. */
@@ -54,8 +52,6 @@ export interface FeedbackConfig {
 /**
  * Injection token for the global feedback configuration.
  * Components read this with `inject(CNGX_FEEDBACK_CONFIG, { optional: true })`.
- *
- * @category tokens
  */
 export const CNGX_FEEDBACK_CONFIG = new InjectionToken<FeedbackConfig>('CngxFeedbackConfig');
 
@@ -70,7 +66,7 @@ export interface FeedbackFeature {
 /**
  * Register global defaults for all feedback components.
  *
- * @usageNotes
+ * @example
  *
  * ```ts
  * bootstrapApplication(AppComponent, {
@@ -83,8 +79,6 @@ export interface FeedbackFeature {
  *   ],
  * });
  * ```
- *
- * @category configuration
  */
 export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProviders {
   let config: FeedbackConfig = {};

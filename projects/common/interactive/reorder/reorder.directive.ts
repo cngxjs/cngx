@@ -27,8 +27,6 @@ import {
  * Modifier key that arms the keyboard-reorder handler. Plain arrow keys
  * keep their default meaning (focus navigation) — only the configured
  * modifier + arrow produces a move.
- *
- * @category interactive
  */
 export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
 
@@ -40,8 +38,6 @@ export type CngxReorderModifier = 'ctrl' | 'alt' | 'meta';
  * so downstream `computed()` graphs see a new reference and re-evaluate.
  * Consumers own the write back to the source signal (directly, or via a
  * commit controller for optimistic / pessimistic policies).
- *
- * @category interactive
  */
 export interface CngxReorderEvent<T> {
   readonly fromIndex: number;
@@ -78,7 +74,7 @@ interface ActiveDrag {
  * controller so optimistic / pessimistic behaviour stays owned by the
  * composing component, not by this atom.
  *
- * @usageNotes
+ * @example
  *
  * ### Basic chip-strip reorder
  * ```html
@@ -91,8 +87,6 @@ interface ActiveDrag {
  *   }
  * </span>
  * ```
- *
- * @category interactive
  */
 @Directive({
   selector: '[cngxReorder]',

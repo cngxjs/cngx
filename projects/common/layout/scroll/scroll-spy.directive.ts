@@ -8,7 +8,7 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * and reports the one with the highest intersection ratio as the active section.
  * Ideal for scroll-based navigation highlighting and reading progress.
  *
- * @usageNotes
+ * @example
  *
  * ### Navigation highlighting
  * ```html
@@ -23,8 +23,6 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
- *
- * @category layout
  */
 @Directive({
   selector: '[cngxScrollSpy]',
@@ -99,7 +97,6 @@ export class CngxScrollSpy {
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;
 
-    // Fine-grained thresholds give accurate per-step ratio tracking.
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => this.ratios.set(entry.target.id, entry.intersectionRatio));

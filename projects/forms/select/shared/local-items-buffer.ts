@@ -9,8 +9,6 @@ import type { CngxSelectCompareFn } from './select-core';
  * and drops entries matching a server value — quick-create items
  * disappear once the backend catches up. Consumer clears explicitly via
  * {@link LocalItemsBuffer.clear}; no auto-clear on state refresh.
- *
- * @category interactive
  */
 export interface LocalItemsBuffer<T> {
   /** Identity-stable until mutated. */
@@ -24,8 +22,6 @@ export interface LocalItemsBuffer<T> {
 /**
  * Builds a {@link LocalItemsBuffer}. Reads `compareWith` lazily so
  * mid-flight comparator swaps are honoured.
- *
- * @category interactive
  */
 export function createLocalItemsBuffer<T>(
   compareWith: Signal<CngxSelectCompareFn<T>>,
@@ -55,8 +51,6 @@ export function createLocalItemsBuffer<T>(
 
 /**
  * Factory signature for {@link CNGX_LOCAL_ITEMS_BUFFER_FACTORY}.
- *
- * @category interactive
  */
 export type CngxLocalItemsBufferFactory = <T>(
   compareWith: Signal<CngxSelectCompareFn<T>>,
@@ -85,8 +79,6 @@ export type CngxLocalItemsBufferFactory = <T>(
  *   ],
  * });
  * ```
- *
- * @category interactive
  */
 export const CNGX_LOCAL_ITEMS_BUFFER_FACTORY =
   new InjectionToken<CngxLocalItemsBufferFactory>(

@@ -40,8 +40,6 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  *   </ng-template>
  * </cngx-char-count>
  * ```
- *
- * @category components
  */
 @Component({
   selector: 'cngx-char-count',

@@ -31,32 +31,6 @@ import { CngxHoverable } from '@cngx/common/interactive';
 export class CardComponent {}
 ```
 
-## API
-
-### CngxHoverable
-
-Directive that tracks hover state via mouseenter/mouseleave events.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxHoverable | — | — | Presence enables hover tracking (no value required) |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `hovered: WritableSignal<boolean>` — True while the pointer is over the host element
-
-#### CSS Custom Properties
-
-None
-
 ## Accessibility
 
 CngxHoverable is a low-level interaction atom:
@@ -66,7 +40,7 @@ CngxHoverable is a low-level interaction atom:
 - **Screen reader:** No announcements (purely visual feedback)
 - **Focus management:** No focus changes
 
-**Important:** Hover state is mouse-only. Use `cngxHoverable` for visual feedback only — never gate critical functionality behind hover states. Provide keyboard alternatives.
+Hover state is mouse-only. Use `cngxHoverable` for visual feedback only — never gate critical functionality behind hover states. Provide keyboard alternatives.
 
 ## Composition
 
@@ -427,8 +401,8 @@ This is rarely needed but enables special cases like testing or forced states.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxHoverable.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [CngxPressable](../ripple/) — Press feedback (pointer-down)
 - [CngxRipple](../ripple/) — Ripple animation (pointer-down)
 - Demo: `dev-app/src/app/demos/common/hoverable-demo/`
-- Tests: `projects/common/interactive/src/hoverable/hoverable.directive.spec.ts`
+- Tests: `projects/common/interactive/hoverable/hoverable.directive.spec.ts`

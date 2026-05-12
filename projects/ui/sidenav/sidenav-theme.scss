@@ -3,8 +3,6 @@
 @use '@angular/material' as mat;
 @use './nav-link-theme' as nav-link;
 
-// ─── cngx-sidenav theming ──────────────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -16,8 +14,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include sidenav.theme($theme);
 //   }
-
-// ─── Token definitions ───────────────────────────────────────────
 
 @mixin base() {
   --cngx-sidenav-width: 280px;

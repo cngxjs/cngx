@@ -2,56 +2,6 @@
 
 Bottom-positioned dialog variant with optional swipe-to-dismiss support.
 
-## Directive
-
-### CngxBottomSheet
-
-Molecule combining `CngxDialog` with bottom sheet positioning and swipe gesture support. Applied alongside `cngxDialog` on the same `<dialog>` element.
-
-#### Import
-
-```typescript
-import { CngxBottomSheet } from '@cngx/common/dialog';
-import { CngxSwipeDismiss } from '@cngx/common/interactive';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `showHandle` | `boolean` | `true` | Whether to show the drag handle bar at the top (rendered via CSS `::before` pseudo-element). |
-
-#### Composition with CngxSwipeDismiss
-
-When both `cngxBottomSheet` and `cngxSwipeDismiss` are on the same element, the directive auto-wires the swipe event to `dialogRef.dismiss()` — no manual binding needed.
-
-#### CSS Class
-
-- `cngx-bottom-sheet` — Applied to the host for styling
-
-#### Example
-
-```typescript
-// Basic bottom sheet with swipe-to-dismiss
-<dialog cngxDialog cngxBottomSheet [cngxSwipeDismiss]="'down'"
-        #sheet="cngxDialog">
-  <h2 cngxDialogTitle>Share</h2>
-  <button [cngxDialogClose]="'copy'">Copy Link</button>
-  <button [cngxDialogClose]="'email'">Email</button>
-  <button cngxDialogClose>Cancel</button>
-</dialog>
-
-<button (click)="sheet.open()">Share</button>
-
-// Static bottom sheet (no swipe)
-<dialog cngxDialog cngxBottomSheet #sheet="cngxDialog">
-  <p>Content positioned at the bottom.</p>
-  <button [cngxDialogClose]="true">Close</button>
-</dialog>
-```
-
----
-
 ## Styling
 
 Bottom sheet positioning and animations are handled via CSS. Basic setup:
@@ -95,8 +45,6 @@ dialog[cngxBottomSheet] {
 }
 ```
 
----
-
 ## Accessibility
 
 Bottom sheets follow standard dialog accessibility:
@@ -105,8 +53,6 @@ Bottom sheets follow standard dialog accessibility:
 - **Keyboard dismiss**: Escape closes the sheet
 - **Focus management**: Focus returns to trigger on close
 - **Gesture labels**: SR users are informed of swipe-to-dismiss via dynamic content
-
----
 
 ## Gestures
 
@@ -132,8 +78,6 @@ Use `[cngxSwipeDismiss]` to enable gesture closing:
 ```
 
 When a swipe is detected, `CngxBottomSheet` automatically calls `dialogRef.dismiss()`.
-
----
 
 ## Common Patterns
 
@@ -186,8 +130,6 @@ When a swipe is detected, `CngxBottomSheet` automatically calls `dialogRef.dismi
 <button (click)="menu.open()">Menu</button>
 ```
 
----
-
 ## Material Theme
 
 A Material theme mixin is available in `bottom-sheet-theme.scss`:
@@ -201,8 +143,6 @@ html {
 ```
 
 Sets surface color, border-radius (top corners only), drag handle styling, and shadow from the Material palette.
-
----
 
 ## See Also
 

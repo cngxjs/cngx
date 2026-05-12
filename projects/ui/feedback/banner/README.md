@@ -15,14 +15,6 @@ import { CngxBanner } from '@cngx/ui/feedback';
 import { provideFeedback, withBanners } from '@cngx/ui/feedback';
 ```
 
-#### Methods
-
-- `show(config: BannerConfig): void` — Show or upsert a banner (keyed by `id`)
-- `update(id: string, patch: Partial<BannerConfig>): void` — Update banner in-place
-- `dismiss(id: string): void` — Dismiss a specific banner
-- `dismissAll(): void` — Dismiss all banners
-- `executeAction(id: string): Promise<void>` — Execute the banner's action handler
-
 #### BannerConfig
 
 ```typescript
@@ -95,10 +87,6 @@ import { CngxBannerOutlet } from '@cngx/ui/feedback';
 export class AppComponent {}
 ```
 
-#### CSS Classes
-
-- `cngx-banner-outlet` — Applied to the host (typically `<div>`)
-
 #### CSS Custom Properties
 
 - `--cngx-banner-z-index` (default `900`) — Stacking context
@@ -125,16 +113,6 @@ Declarative directive bridging `CngxAsyncState` changes to banner displays.
 ```typescript
 import { CngxBannerOn } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `state` | `CngxAsyncState<unknown>` | Required | Async state to monitor. |
-| `bannerId` | `string` | Required | Banner ID (dedup key). |
-| `bannerError` | `string` | Required | Message to show on `error` status. |
-| `bannerSeverity` | `'error' \| 'warning'` | `'error'` | Severity level. |
-| `bannerErrorDetail` | `boolean` | `false` | Append `error.message` to banner. |
 
 #### Behavior
 
@@ -164,18 +142,6 @@ Condition-driven banner that requires no service injection. Renders nothing; man
 ```typescript
 import { CngxBannerTrigger } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `when` | `boolean` | Required | Condition for showing the banner. |
-| `message` | `string` | Required | Banner message. |
-| `id` | `string` | Required | Unique banner ID. |
-| `severity` | `'info' \| 'warning' \| 'error'` | `'info'` | Severity level. |
-| `dismissible` | `boolean` | `true` | Whether the banner can be dismissed. |
-| `actionLabel` | `string \| undefined` | `undefined` | Action button label. |
-| `actionHandler` | `(() => void) \| undefined` | `undefined` | Action click handler. |
 
 #### Behavior
 

@@ -100,8 +100,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxMultiSelect.selectionChange}.
- *
- * @category interactive
  */
 export interface CngxMultiSelectChange<T = unknown> {
   readonly source: CngxMultiSelect<T>;
@@ -122,8 +120,6 @@ export interface CngxMultiSelectChange<T = unknown> {
  * Multi-select sibling of {@link CngxSelect}. Stateless graph in
  * {@link createSelectCore}; keeps the multi-specific trigger template,
  * chip strip, AD-activated dispatch, keyboard, and Field↔sync.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-multi-select',
@@ -545,8 +541,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
    * Append a pre-built option to the local buffer. Renders in the next
    * panel emission and silently drops once the server includes a
    * matching value. Idempotent under `compareWith`.
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -554,8 +548,6 @@ export class CngxMultiSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

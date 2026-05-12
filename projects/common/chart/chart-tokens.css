@@ -27,9 +27,7 @@
   --cngx-chart-grid-color: var(--border, #e5e7eb);
   --cngx-chart-axis-color: var(--text-secondary, #6b7280);
   --cngx-chart-text-color: var(--text-primary, #1f2937);
-  /* Default aspect ratio when <cngx-chart> runs in responsive mode
-     (no width/height inputs bound). 5/2 (2.5) is more chart-typical
-     than 16/9 — dashboards expect wider, shorter chart cards.
-     Override globally at :root or per-instance via inline style. */
+  /* Default aspect ratio in responsive mode (no width/height bound).
+     5/2 over 16/9 — dashboard cards expect wider, shorter charts. */
   --cngx-chart-aspect-ratio: 5 / 2;
 }

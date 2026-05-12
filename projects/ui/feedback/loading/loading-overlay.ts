@@ -27,7 +27,7 @@ import { createVisibilityTimer } from './visibility-timer';
  * Uses `display: grid` with a shared grid cell — backdrop and content
  * overlap naturally without `position: absolute` or `display: contents`.
  *
- * @usageNotes
+ * @example
  *
  * ### With async state
  * ```html
@@ -49,8 +49,6 @@ import { createVisibilityTimer } from './visibility-timer';
  *   <cngx-async-container [state]="query">...</cngx-async-container>
  * </cngx-loading-overlay>
  * ```
- *
- * @category feedback
  */
 @Component({
   selector: 'cngx-loading-overlay',
@@ -160,8 +158,6 @@ export class CngxLoadingOverlay {
 
   /** @internal — debounced visibility via shared timer factory. */
   protected readonly visible = createVisibilityTimer(this.isActive, this.delay, this.minDuration);
-
-  // ── Focus management ────────────────────────────────────────────────
 
   private readonly savedFocus = signal<HTMLElement | null>(null);
 

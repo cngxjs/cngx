@@ -97,8 +97,6 @@ import {
 
 /**
  * Change event emitted by {@link CngxSelect.selectionChange} on user picks.
- *
- * @category interactive
  */
 export interface CngxSelectChange<T = unknown> {
   readonly source: CngxSelect<T>;
@@ -117,8 +115,6 @@ export interface CngxSelectChange<T = unknown> {
  * exceeds `mat-select` on a11y. Stateless signal graph (ARIA, panel
  * view, option model, commit-controller surface) lives in
  * {@link createSelectCore}.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-select',
@@ -550,8 +546,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
    * Append a pre-built option to the local buffer. Renders in the next
    * panel emission and silently drops once the server includes a
    * matching value. Idempotent under `compareWith`.
-   *
-   * @category interactive
    */
   patchData(item: CngxSelectOptionDef<T>): void {
     this.localItemsBuffer.patch(item);
@@ -559,8 +553,6 @@ export class CngxSelect<T = unknown> implements CngxFormFieldControl {
 
   /**
    * Reset the local buffer. Idempotent.
-   *
-   * @category interactive
    */
   clearLocalItems(): void {
     this.localItemsBuffer.clear();

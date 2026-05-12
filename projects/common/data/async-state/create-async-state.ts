@@ -9,8 +9,6 @@ import { createManualState, type ManualAsyncState } from './create-manual-state'
  *
  * Extends the read-only `CngxAsyncState` with an `execute()` method
  * that runs an async action and manages the full lifecycle.
- *
- * @category async
  */
 export interface MutableAsyncState<T> extends CngxAsyncState<T> {
   /**
@@ -35,7 +33,7 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  * Must be called in an injection context (field initializer or constructor)
  * because it uses `inject(DestroyRef)` for cleanup.
  *
- * @usageNotes
+ * @example
  *
  * ```typescript
  * readonly saveResident = createAsyncState<Resident>();
@@ -46,8 +44,6 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  *   );
  * }
  * ```
- *
- * @category async
  */
 export function createAsyncState<T>(): MutableAsyncState<T> {
   const destroyRef = inject(DestroyRef);
@@ -61,7 +57,6 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
   });
 
   return {
-    // Delegate all read-only signals
     status: state.status,
     data: state.data,
     error: state.error,
@@ -77,7 +72,6 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
     lastUpdated: state.lastUpdated,
 
     async execute(fn: () => Promise<T> | Observable<T>): Promise<void> {
-      // Cancel any in-flight execution
       abortController?.abort();
       const controller = new AbortController();
       abortController = controller;

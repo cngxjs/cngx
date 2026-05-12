@@ -16,8 +16,6 @@ export type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'succe
  *
  * All UI feedback components accept `CngxAsyncState<unknown>` as input —
  * typed on the interface, not on a concrete implementation.
- *
- * @category async
  */
 export interface CngxAsyncState<T> {
   /** Current status of the async operation. Single source of truth. */

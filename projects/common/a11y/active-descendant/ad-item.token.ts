@@ -5,8 +5,6 @@ import { InjectionToken, type Signal } from '@angular/core';
  *
  * `id` must be unique and stable across change detection runs (use `nextUid()`
  * from `@cngx/core/utils`). `label` is used by typeahead matching.
- *
- * @category a11y
  */
 export interface ActiveDescendantItem {
   /** Unique DOM `id` on the element — required for `aria-activedescendant`. */
@@ -31,8 +29,6 @@ export interface ActiveDescendantItem {
  *
  * The contained directive must expose `id`, `value`, `label`, and optionally
  * `disabled` as signals — the AD reads them reactively.
- *
- * @category a11y
  */
 export const CNGX_AD_ITEM = new InjectionToken<CngxAdItemHandle>('CNGX_AD_ITEM');
 
@@ -40,8 +36,6 @@ export const CNGX_AD_ITEM = new InjectionToken<CngxAdItemHandle>('CNGX_AD_ITEM')
  * Minimum shape an AD-registered directive must expose.
  *
  * The shape is signal-based so the AD recomputes when any field changes.
- *
- * @category a11y
  */
 export interface CngxAdItemHandle {
   readonly id: string;

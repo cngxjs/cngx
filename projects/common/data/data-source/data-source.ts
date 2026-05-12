@@ -10,7 +10,7 @@ import type { Observable } from 'rxjs';
  * No sort, filter, or search logic is included — the consumer builds a
  * `computed()` with any transformations and passes the result here.
  *
- * @usageNotes
+ * @example
  * ```typescript
  * readonly processed = computed(() => {
  *   let items = this.raw();
@@ -21,7 +21,6 @@ import type { Observable } from 'rxjs';
  * ```
  *
  * @typeParam T - The row item type.
- * @category data-source
  */
 export class CngxDataSource<T> extends DataSource<T> {
   private readonly injector = inject(Injector);
@@ -48,8 +47,6 @@ export class CngxDataSource<T> extends DataSource<T> {
  * ```typescript
  * readonly dataSource = injectDataSource(this.items);
  * ```
- *
- * @category data-source
  */
 export function injectDataSource<T>(data: Signal<T[]>): CngxDataSource<T> {
   return new CngxDataSource(data);

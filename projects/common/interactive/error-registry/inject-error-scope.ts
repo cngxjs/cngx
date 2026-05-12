@@ -18,8 +18,6 @@ import { CngxErrorRegistry } from './error-registry';
  * @internal Staged API — single-consumer.
  * See form-primitives-accepted-debt.md §A for the re-evaluation trigger
  * and collapse plan.
- *
- * @category functions
  */
 export function injectErrorScope(name?: string): CngxErrorScopeContract {
   const showErrorsState = signal(false);

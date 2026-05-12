@@ -16,7 +16,7 @@ import {
  * toggles an `active` class. Does NOT depend on `@angular/router` —
  * the consumer wires `routerLinkActive` or binds `[active]` manually.
  *
- * @usageNotes
+ * @example
  *
  * ### With Router
  * ```html
@@ -39,8 +39,6 @@ import {
  * <a cngxNavLink [depth]="1">Nested</a>
  * <a cngxNavLink [depth]="2">Deep nested</a>
  * ```
- *
- * @category nav
  */
 @Directive({
   selector: 'a[cngxNavLink], button[cngxNavLink]',

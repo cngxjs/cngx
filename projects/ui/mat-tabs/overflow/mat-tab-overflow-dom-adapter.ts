@@ -23,8 +23,6 @@ import { MaterialPrivateSurfaces } from '../material-bridge/private-surfaces';
  *     useValue: createCngxMatTabOverflowDomAdapter }
  * ]
  * ```
- *
- * @category interactive
  */
 export function createCngxMatTabOverflowDomAdapter(): CngxTabOverflowDomAdapter {
   return {

@@ -24,8 +24,6 @@ import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
  *   <span cngxTag>Backend</span>
  * </cngx-tag-group>
  * ```
- *
- * @category display
  */
 @Directive({
   selector: 'ng-template[cngxTagGroupHeader]',

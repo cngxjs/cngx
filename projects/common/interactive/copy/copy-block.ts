@@ -9,7 +9,7 @@ import { CngxCopyText } from './copy-text.directive';
  * internally. Shows "Copied!" feedback automatically. The copy button includes
  * an `aria-live` region for screen reader announcements.
  *
- * @usageNotes
+ * @example
  *
  * ### Copy a code snippet
  * ```html
@@ -24,8 +24,6 @@ import { CngxCopyText } from './copy-text.directive';
  *   {{ apiKey() }}
  * </cngx-copy-block>
  * ```
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-copy-block',

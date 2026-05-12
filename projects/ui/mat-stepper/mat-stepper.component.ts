@@ -52,8 +52,6 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
  * `CngxFocusRestore`. Group nodes flatten — `<mat-stepper>` does not
  * support nesting — with the depth preserved as a `data-step-depth`
  * hint on the rendered label.
- *
- * @category interactive
  */
 @Component({
   selector: 'cngx-mat-stepper',
