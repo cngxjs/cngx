@@ -10,14 +10,8 @@
  * @module @cngx/forms/select
  */
 
-export {
-  CngxSelect,
-  type CngxSelectChange,
-} from './single-select/select.component';
-export {
-  CngxMultiSelect,
-  type CngxMultiSelectChange,
-} from './multi-select/multi-select.component';
+export { CngxSelect, type CngxSelectChange } from './single-select/select.component';
+export { CngxMultiSelect, type CngxMultiSelectChange } from './multi-select/multi-select.component';
 export {
   CngxReorderableMultiSelect,
   type CngxReorderableMultiSelectChange,
@@ -40,14 +34,8 @@ export {
   type CngxReorderableSelectConfig,
   type CngxReorderableSelectConfigFeature,
 } from './shared/reorderable-select-config';
-export {
-  CngxCombobox,
-  type CngxComboboxChange,
-} from './combobox/combobox.component';
-export {
-  CngxTypeahead,
-  type CngxTypeaheadChange,
-} from './typeahead/typeahead.component';
+export { CngxCombobox, type CngxComboboxChange } from './combobox/combobox.component';
+export { CngxTypeahead, type CngxTypeaheadChange } from './typeahead/typeahead.component';
 export {
   CngxActionSelect,
   type CngxActionSelectChange,
@@ -63,9 +51,7 @@ export {
   type CreateCommitHandler,
   type CreateCommitHandlerOptions,
 } from './shared/create-commit-handler';
-export {
-  type CngxSelectCreateAction,
-} from './shared/create-action.types';
+export { type CngxSelectCreateAction } from './shared/create-action.types';
 export { CngxTreeSelectNode } from './tree-select/tree-select-node.directive';
 export { CngxTreeSelectChip } from './tree-select/tree-select-chip.directive';
 export { CngxTreeSelectTriggerLabel } from './tree-select/tree-select-trigger-label.directive';
@@ -78,20 +64,13 @@ export {
   type CngxTreeSelectedItem,
   type FlatTreeNode,
 } from './tree-select/tree-select.model';
-export {
-  CngxTreeSelect,
-  type CngxTreeSelectChange,
-} from './tree-select/tree-select.component';
-export {
-  CngxSelectShell,
-  type CngxSelectShellChange,
-} from './select-shell/select-shell.component';
+export { CngxTreeSelect, type CngxTreeSelectChange } from './tree-select/tree-select.component';
+export { CngxSelectShell, type CngxSelectShellChange } from './select-shell/select-shell.component';
 
 // Intended for consumer-assembled listbox templates (the "compose yourself"
 // path) and as direct children of `<cngx-select-shell>` (the projection
 // variant — see `select-shell/`). Still NOT usable as direct children of
-// the data-mode `<cngx-select>` — see
-// `.internal/architektur/select-family-architecture.md` for the reasoning.
+// the data-mode `<cngx-select>`
 export { CngxSelectOption } from './declarative/option.component';
 export { CngxSelectOptgroup } from './declarative/optgroup.component';
 export { CngxSelectDivider } from './declarative/divider.component';
@@ -141,9 +120,7 @@ export {
   type ActionHostBridgeOptions,
   type CngxActionHostBridgeFactory,
 } from './shared/action-host-bridge';
-export {
-  type CngxSelectActionCallbacks,
-} from './shared/panel-host';
+export { type CngxSelectActionCallbacks } from './shared/panel-host';
 
 export {
   CNGX_SELECT_CONFIG,
@@ -195,10 +172,7 @@ export {
 
 export { CngxSelectAnnouncer } from './shared/announcer';
 
-export {
-  injectSelectConfig,
-  injectSelectAnnouncer,
-} from './shared/inject-helpers';
+export { injectSelectConfig, injectSelectAnnouncer } from './shared/inject-helpers';
 
 export {
   CngxSelectCheck,
@@ -258,10 +232,7 @@ export {
   createCommitController,
 } from './shared/commit-controller.token';
 
-export {
-  createFieldSync,
-  type FieldSyncOptions,
-} from './shared/field-sync';
+export { createFieldSync, type FieldSyncOptions } from './shared/field-sync';
 
 export {
   createADActivationDispatcher,
