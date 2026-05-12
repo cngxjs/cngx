@@ -30,8 +30,6 @@ export interface ManualAsyncState<T> extends CngxAsyncState<T> {
  * Use for local operations: heavy computations, Web Workers, complex local processes.
  * Does **not** require an injection context — uses only `signal()` and `computed()`.
  *
- * @example
- *
  * ```typescript
  * readonly processState = createManualState<ProcessResult>();
  *

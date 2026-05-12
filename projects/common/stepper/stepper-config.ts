@@ -300,7 +300,6 @@ export function provideStepperConfig(
  * Resolution priority: per-instance Input > viewProviders (`At`) >
  * root provider > library default.
  *
- * @example
  * ```ts
  * @Component({
  *   viewProviders: [...provideStepperConfigAt(withStepperLinear(true))],

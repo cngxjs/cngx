@@ -57,7 +57,6 @@ export interface CngxMatTabAggregatorContentContext {
  * projector). The shape is uniform with the rest of the family
  * pattern; the staging is acknowledged debt.
  *
- * @example
  * ```html
  * <mat-tab-group cngxMatTabs>
  *   <ng-template

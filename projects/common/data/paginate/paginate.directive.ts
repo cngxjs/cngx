@@ -12,7 +12,6 @@ import type { CngxAsyncState } from '@cngx/core/utils';
  * Consumer connects this to a list or table via `range()` — nothing is injected
  * automatically.
  *
- * @example
  * // Headless: read range() from a template ref
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
  *   @for (item of items.slice(pg.range()[0], pg.range()[1]); track item.id) { ... }

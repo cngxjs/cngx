@@ -22,8 +22,6 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  * `inject(CngxAlerter)` get this stack's instance. Supports nesting
  * (each stack is independent).
  *
- * @example
- *
  * ### In a dialog
  * ```html
  * <dialog cngxDialog [submitAction]="save">

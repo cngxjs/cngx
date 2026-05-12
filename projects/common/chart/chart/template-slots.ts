@@ -42,7 +42,6 @@ export const CHART_SMALL_BREAKPOINT_PX = 400;
  * the chart's rendered width/height plus a `small` flag for
  * container-size-aware branching.
  *
- * @example
  * ```html
  * <cngx-chart [state]="state()">
  *   <ng-template cngxChartLoading let-small="small">

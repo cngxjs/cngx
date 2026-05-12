@@ -114,7 +114,6 @@ export function createW3CTreeStrategy(): CngxHierarchicalNavStrategy {
  * Defaults to {@link createW3CTreeStrategy}; override via
  * `providers`/`viewProviders` for alternative keyboard semantics.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

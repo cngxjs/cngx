@@ -52,7 +52,6 @@ export interface MockFieldOptions<T = unknown> {
  * Creates a mock `CngxFieldAccessor` that returns a fully writable `MockFieldRef`.
  * Tests can mutate any signal to simulate field state changes.
  *
- * @example
  * ```typescript
  * const { accessor, ref } = createMockField({ name: 'email', required: true });
  * // Pass `accessor` to [field] input

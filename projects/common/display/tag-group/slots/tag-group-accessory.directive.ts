@@ -14,7 +14,6 @@ import type { CngxTagGroupAccessoryContext } from './tag-group-slot.context';
  * `<span cngxTag>` siblings is exposed via the slot context so
  * consumer "Clear all (5)" patterns work without injection.
  *
- * @example
  * ```html
  * <cngx-tag-group [semanticList]="true" label="Active filters">
  *   <span cngxTag>Frontend</span>

@@ -22,8 +22,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * <div id="content" [hidden]="!group.opened()">…</div>
  * ```
  *
- * @example
- *
  * ### FAQ accordion
  * ```html
  * <button cngxDisclosure #faq="cngxDisclosure" [controls]="'answer-1'">

@@ -27,8 +27,6 @@ import { createVisibilityTimer } from './visibility-timer';
  * Uses `display: grid` with a shared grid cell — backdrop and content
  * overlap naturally without `position: absolute` or `display: contents`.
  *
- * @example
- *
  * ### With async state
  * ```html
  * <cngx-loading-overlay [state]="tableData">

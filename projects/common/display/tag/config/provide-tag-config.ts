@@ -112,7 +112,6 @@ function mergeConfig(
  * The provider deep-merges supplied features with the library
  * defaults so consumers only declare keys they want to override.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
@@ -163,7 +162,6 @@ export function provideTagConfig(
  * descendant tag instances see the merged config, sibling sub-trees
  * keep the inherited value untouched.
  *
- * @example
  * ```ts
  * @Component({
  *   selector: 'admin-section',

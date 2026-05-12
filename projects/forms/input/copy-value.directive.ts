@@ -6,7 +6,6 @@ import { DestroyRef, Directive, inject, input, output, signal, type Signal } fro
  * Place on a button or any clickable element. Copies `value` input or reads from
  * a `source` element. Shows a `copied` signal for feedback (auto-resets after `resetDelay`).
  *
- * @example
  * ```html
  * <input #tokenInput readonly [value]="token()" />
  * <button [cngxCopyValue] [source]="tokenInput" #cp="cngxCopyValue">

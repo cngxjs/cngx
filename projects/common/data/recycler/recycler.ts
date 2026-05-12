@@ -182,7 +182,6 @@ export interface CngxRecycler {
    * Unlike `firstVisible`/`lastVisible` (which exclude overscan), this includes
    * overscan items — all indices in this range may be rendered.
    *
-   * @example
    * ```typescript
    * effect(() => {
    *   const { start, end } = recycler.neededRange();
@@ -266,8 +265,6 @@ function createDelayedFlag(source: Signal<boolean>, delayMs: number): Signal<boo
  *
  * Must be called in an injection context (field initializer or constructor).
  * Internally injects `DestroyRef` and `DOCUMENT` for cleanup and selector resolution.
- *
- * @example
  *
  * ### Basic list
  * ```typescript

@@ -18,7 +18,6 @@ export interface OutputSpy<T> {
 /**
  * Subscribes a vitest spy to an Angular `output()` and returns a typed wrapper.
  *
- * @example
  * ```typescript
  * const spy = spyOnOutput(directive.sortChange);
  * directive.setSort('name');

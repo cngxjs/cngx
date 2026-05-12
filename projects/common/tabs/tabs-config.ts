@@ -262,7 +262,6 @@ export function withTabOverflowMaxDeferMs(ms: number): CngxTabsConfigFeature {
  * App-wide override for the More-button label. Middle tier;
  * per-instance `*cngxTabOverflowTrigger` still wins.
  *
- * @example
  * ```ts
  * @ViewChild('moreTrigger', { static: true, read: TemplateRef })
  * moreTrigger!: TemplateRef<CngxTabOverflowTriggerContext>;
@@ -362,7 +361,6 @@ export function provideTabsConfig(
  * opaque environment providers. Resolution priority: per-instance
  * Input > viewProviders (`At`) > root > default.
  *
- * @example
  * ```ts
  * @Component({
  *   viewProviders: [...provideTabsConfigAt(withTabsDefaultOrientation('vertical'))],

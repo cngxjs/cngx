@@ -13,8 +13,6 @@ import type { CngxRecycler } from './recycler';
  *
  * Also sets `data-cngx-recycle-index` on the host element for focus tracking.
  *
- * @example
- *
  * ```html
  * @for (item of visibleItems(); track item.id; let i = $index) {
  *   <div [cngxMeasure]="recycler" [cngxMeasureIndex]="recycler.start() + i">

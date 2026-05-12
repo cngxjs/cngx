@@ -15,7 +15,6 @@ import type { CngxTagLabelContext } from './tag-slot.context';
  * Replacing the label drops the default ellipsis hook — the
  * consumer template owns the overflow strategy.
  *
- * @example
  * ```html
  * <span cngxTag [color]="'success'">
  *   <ng-template cngxTagLabel>

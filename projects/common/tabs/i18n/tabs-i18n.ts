@@ -102,7 +102,6 @@ function resolveI18nFeatures(
  * (and future i18n `with*` features); unset keys fall back to the
  * English default.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

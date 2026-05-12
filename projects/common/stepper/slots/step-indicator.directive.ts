@@ -33,7 +33,6 @@ export interface CngxStepIndicatorContext {
  * `CNGX_STEPPER_CONFIG.templates.indicator` before falling back to
  * the built-in numeric span (`{{ position }}`).
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepIndicator let-position let-node="node" let-status="status">

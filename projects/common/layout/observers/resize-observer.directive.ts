@@ -22,9 +22,6 @@ import {
  * container queries without CSS support, dynamic canvas/chart sizing,
  * resize-aware layouts.
  *
- *
- * @example
- *
  * ### Display current size
  * ```html
  * <div cngxResizeObserver #ro="cngxResizeObserver" style="resize: horizontal; overflow: auto;">

@@ -195,7 +195,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
  * Accepts either a plain `Signal<T[]>` or a `CngxAsyncState<T[]>` for
  * full UX state integration (loading, error, refresh, empty).
  *
- * @example
  * ```typescript
  * // Plain signal
  * readonly dataSource = injectSmartDataSource(this.items);

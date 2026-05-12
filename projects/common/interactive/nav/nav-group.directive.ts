@@ -17,8 +17,6 @@ import { CngxNavGroupRegistry } from './nav-group-registry';
  * The consumer renders the content separately and wires `role="group"`
  * and `aria-labelledby` on the content container.
  *
- * @example
- *
  * ### Basic
  * ```html
  * <button cngxNavGroup #group="cngxNavGroup" [controls]="'settings-nav'"

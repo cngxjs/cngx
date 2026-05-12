@@ -23,13 +23,12 @@ import type { CngxFieldAccessor } from './models';
  * This implements the WCAG 3.3.1 pattern: "If an input error is detected, the item
  * that is in error is identified and the error is described to the user in text."
  *
- * @example
  * ```html
  * <cngx-form-errors [fields]="[emailField, passwordField]" [show]="showFormErrors()">
  * </cngx-form-errors>
  * ```
  *
- * @example Custom template
+ * Custom template
  * ```html
  * <cngx-form-errors [fields]="[emailField, passwordField]" [show]="submitted()">
  *   <ng-template let-errors="errors" let-count="count">

@@ -29,7 +29,6 @@ export interface CngxTabOverflowItemContext {
  * 3-stage cascade: per-instance directive >
  * `CNGX_TABS_CONFIG.templates.overflowItem` > built-in label text.
  *
- * @example
  * ```html
  * <cngx-tab-overflow>
  *   <ng-template cngxTabOverflowItem let-tab let-disabled="disabled">

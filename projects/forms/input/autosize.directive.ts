@@ -16,7 +16,6 @@ import {
  * Signal-first alternative to `cdkTextareaAutosize`. Measures via the `scrollHeight` trick
  * and reacts to `input` events + `ResizeObserver` for programmatic value changes.
  *
- * @example
  * ```html
  * <textarea cngxAutosize [minRows]="2" [maxRows]="10" #auto="cngxAutosize"></textarea>
  * <span>Height: {{ auto.height() }}px</span>

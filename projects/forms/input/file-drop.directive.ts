@@ -28,7 +28,6 @@ export interface FileRejection {
  * files against `accept` and `maxSize`, and provides a `browse()` method
  * for programmatic file picker access.
  *
- * @example
  * ```html
  * <div cngxFileDrop [accept]="['image/*']" [maxSize]="5_000_000"
  *      #drop="cngxFileDrop" (filesChange)="upload($event)">

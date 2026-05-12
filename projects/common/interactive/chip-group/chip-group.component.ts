@@ -61,7 +61,6 @@ import {
  * `CngxRovingTabindex` and emits no implicit children — consumers
  * project chip rows themselves.
  *
- * @example
  * ```html
  * <cngx-chip-group label="Size" [(selected)]="size">
  *   <cngx-chip cngxChipInGroup [value]="'sm'">Small</cngx-chip>

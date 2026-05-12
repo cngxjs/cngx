@@ -9,7 +9,6 @@ import { type CngxTreeSelectChipContext } from './tree-select.model';
  * Zero-logic slot holder discovered via `contentChild` and rendered
  * through `*ngTemplateOutlet`.
  *
- * @example
  * ```html
  * <cngx-tree-select [nodes]="tree" [(values)]="picked">
  *   <ng-template cngxTreeSelectChip let-opt let-remove="remove">

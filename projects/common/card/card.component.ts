@@ -22,8 +22,6 @@ import { CngxRovingItem, CngxRovingTabindex } from '@cngx/common/a11y';
  * The host element **is** the semantic element — no inner wrapper.
  * This eliminates double focus rings and wrapper problems for screen readers.
  *
- * @example
- *
  * ### Action card with selection
  * ```html
  * <cngx-card as="button" [selectable]="true" [(selected)]="isSelected">

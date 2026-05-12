@@ -21,7 +21,6 @@ export interface CngxTabRejectionIconContext {
  * `CNGX_TABS_CONFIG.templates.rejectionIcon` >
  * `CNGX_TABS_GLYPHS.rejectionIcon`.
  *
- * @example
  * ```html
  * <cngx-tab-group>
  *   <ng-template

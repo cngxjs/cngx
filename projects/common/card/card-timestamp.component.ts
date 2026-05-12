@@ -13,8 +13,6 @@ import {
  *
  * Uses `Intl.DateTimeFormat` with the injected `LOCALE_ID`.
  *
- * @example
- *
  * ```html
  * <cngx-card>
  *   <footer cngxCardFooter>

@@ -6,7 +6,6 @@ import type { CngxTagConfigFeature } from './provide-tag-config';
  * `size`, `truncate`, `maxWidth`). Per-instance bindings still win
  * over the cascade — this only sets the *fallback* per directive.
  *
- * @example
  * ```ts
  * provideTagConfig(
  *   withTagDefaults({ variant: 'subtle', size: 'sm' }),
@@ -23,7 +22,6 @@ export function withTagDefaults(
  * Override the default `CngxTagGroup` input values (`gap`, `align`,
  * `semanticList`). Per-instance bindings still win.
  *
- * @example
  * ```ts
  * provideTagConfig(
  *   withTagGroupDefaults({ gap: 'md', semanticList: true }),
@@ -48,7 +46,6 @@ export function withTagGroupDefaults(
  * keys composed via `data-color="my-brand"` resolve through the
  * registered entry.
  *
- * @example
  * ```ts
  * provideTagConfig(
  *   withTagColors({
@@ -83,7 +80,6 @@ export function withTagColors(
  * time. Per the cngx-review architecture lens, the surface is
  * tracked rather than left silent.
  *
- * @example
  * ```ts
  * @Component({
  *   template: `

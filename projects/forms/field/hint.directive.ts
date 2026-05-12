@@ -8,7 +8,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * The hint remains in the DOM at all times — screen readers read it alongside errors
  * to provide context.
  *
- * @example
  * ```html
  * <span cngxHint>Business email address</span>
  * ```

@@ -16,7 +16,6 @@ export const CNGX_POPOVER_PANEL_CONFIG = new InjectionToken<CngxPopoverPanelConf
 /**
  * Provides configuration for `CngxPopoverPanel` instances.
  *
- * @example
  * ```typescript
  * providers: [
  *   providePopoverPanel(

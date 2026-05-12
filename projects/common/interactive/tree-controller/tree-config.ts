@@ -122,7 +122,6 @@ export function withDefaultInitiallyExpanded(
  * Register an app-wide {@link CngxTreeConfig} composed from `with*`
  * features.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

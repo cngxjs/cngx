@@ -23,8 +23,6 @@ import type { EmptyReason } from './card.types';
  * Keyboard navigation is provided by `CngxRovingTabindex` as a host directive.
  * Arrow keys navigate between cards; Enter/Space activates.
  *
- * @example
- *
  * ### Basic grid
  * ```html
  * <cngx-card-grid minWidth="280px">

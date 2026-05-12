@@ -20,8 +20,6 @@ import {
  *
  * Original DOM structure is restored when the term changes or the directive is destroyed.
  *
- * @example
- *
  * ### Search result highlighting
  * ```html
  * <p [cngxHighlight]="searchTerm()">

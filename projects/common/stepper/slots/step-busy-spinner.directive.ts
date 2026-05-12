@@ -19,7 +19,6 @@ export interface CngxStepBusySpinnerContext {
  * `CNGX_STEPPER_CONFIG.templates.busySpinner` before falling back to
  * the built-in pulse-animation span.
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepBusySpinner>

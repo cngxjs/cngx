@@ -16,7 +16,6 @@ import type {
  * `connectRecyclerToActiveDescendant` separately; this factory doesn't
  * touch AD state.
  *
- * @example
  * ```typescript
  * @Component({
  *   selector: 'my-huge-select',

@@ -9,7 +9,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  * path) or as a direct child of `<cngx-select-shell>`. Not supported
  * inside data-mode `<cngx-select>` (consumes via `[options]`).
  *
- * @example
  * ```html
  * <div cngxListbox>
  *   <cngx-option [value]="'a'">A</cngx-option>

@@ -22,7 +22,6 @@ import { CNGX_ERROR_SCOPE, type CngxErrorScopeContract } from './error-scope.tok
  * Phase 6b) can read `showErrors` reactively without injecting a
  * concrete class.
  *
- * @example
  * ```html
  * <form [cngxErrorScope] cngxErrorScopeName="checkout"
  *       (submit)="scope.reveal(); save()" #scope="cngxErrorScope">

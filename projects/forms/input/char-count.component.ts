@@ -24,7 +24,7 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  * Pass `[max]` / `[min]` explicitly or let the component read them from
  * the presenter's constraint metadata.
  *
- * @example Basic (auto-wired)
+ * Basic (auto-wired)
  * ```html
  * <cngx-form-field [field]="bioField">
  *   <textarea cngxInput [formField]="bioField"></textarea>
@@ -32,7 +32,7 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  * </cngx-form-field>
  * ```
  *
- * @example Custom template
+ * Custom template
  * ```html
  * <cngx-char-count [max]="140">
  *   <ng-template let-current="current" let-remaining="remaining" let-over="over">

@@ -26,7 +26,6 @@ export interface TreetableFeature {
 /**
  * Injection token for the application-wide {@link TreetableConfig}.
  *
- * @example
  * ```ts
  * const config = inject(CNGX_TREETABLE_CONFIG);
  * ```
@@ -39,7 +38,6 @@ export const CNGX_TREETABLE_CONFIG = new InjectionToken<TreetableConfig>('CNGX_T
  * Registers application-wide defaults for all treetable instances.
  * Accepts `withXxx()` feature functions for composable configuration.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

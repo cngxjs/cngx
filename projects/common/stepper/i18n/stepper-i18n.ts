@@ -110,7 +110,6 @@ function resolveI18nFeatures(
  * Provider for the stepper i18n bundle. Compose `withStepperI18nLabels(...)`
  * (plus any future i18n `with*`) — unset keys fall back to English.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

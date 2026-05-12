@@ -11,8 +11,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  *
  * Ships a companion `_ripple.scss` with sensible defaults.
  *
- * @example
- *
  * ### Button with ripple
  * ```html
  * <button cngxRipple>Click me</button>

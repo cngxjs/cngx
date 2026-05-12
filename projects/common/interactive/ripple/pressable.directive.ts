@@ -14,8 +14,6 @@ import { DestroyRef, Directive, inject, input, signal } from '@angular/core';
  * .cngx-pressed { transform: scale(0.97); }
  * ```
  *
- * @example
- *
  * ### Button with press feedback
  * ```html
  * <button cngxPressable>Click me</button>

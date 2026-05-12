@@ -23,7 +23,6 @@ export interface CngxTriggerFocusState {
 /**
  * Builds the focus-state slot.
  *
- * @example
  * ```ts
  * private readonly focus = inject(CNGX_TRIGGER_FOCUS_FACTORY)();
  * readonly focused = this.focus.focused;
@@ -57,7 +56,6 @@ export type CngxTriggerFocusFactory = () => CngxTriggerFocusState;
  * Factory token. Default {@link createTriggerFocusState}. Override for
  * external-controlled focus mode or test doubles.
  *
- * @example
  * ```ts
  * providers: [
  *   {

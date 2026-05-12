@@ -64,7 +64,6 @@ function partitionFeatures(
  * `viewProviders` use {@link provideCngxTabsAt} — opaque
  * `EnvironmentProviders` cannot live there.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
@@ -93,7 +92,6 @@ export function provideCngxTabs(
  * `Provider[]` for `viewProviders`/`providers`; same dispatch
  * semantics, different scope.
  *
- * @example
  * ```ts
  * @Component({
  *   viewProviders: [

@@ -252,7 +252,6 @@ export class CngxToaster {
 /**
  * Standalone provider for the toast system — use when not using `provideFeedback()`.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [provideToasts()],

@@ -100,7 +100,6 @@ export type CngxSelectCommitControllerFactory = <T>() => CngxCommitController<T>
  * every cngx feature; override on this token to swap only the select
  * family.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

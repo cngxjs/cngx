@@ -22,7 +22,6 @@ export type CngxOverlayConfig = Partial<OverlayConfig>;
  *
  * Must be provided via `provideOverlay()` in application or component providers.
  *
- * @example
  * // app.config.ts
  * provideOverlay()
  *

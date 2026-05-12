@@ -10,8 +10,6 @@ import { Directive, signal } from '@angular/core';
  *
  * Used internally by `CngxTreetableRow` for row highlight-on-hover.
  *
- * @example
- *
  * ### As hostDirective
  * ```typescript
  * @Component({

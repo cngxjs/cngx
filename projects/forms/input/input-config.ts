@@ -52,7 +52,6 @@ export type InputConfigFeature = (config: InputConfig) => InputConfig;
 /**
  * Provides global configuration for `@cngx/forms/input` directives.
  *
- * @example
  * ```typescript
  * // app.config.ts
  * export const appConfig: ApplicationConfig = {

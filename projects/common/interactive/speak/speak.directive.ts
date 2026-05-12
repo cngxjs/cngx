@@ -22,8 +22,6 @@ import {
  *
  * Pair with `CngxSpeakButton` (`@cngx/ui`) for a ready-made speaker button.
  *
- * @example
- *
  * ### Headless — consumer-owned button
  * ```html
  * <p [cngxSpeak]="text" #tts="cngxSpeak">

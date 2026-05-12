@@ -10,8 +10,6 @@ import { CngxRipple } from './ripple.directive';
  * gets both behaviors with one attribute. The `cngx-pressed` class and ripple wave
  * both activate on pointer contact.
  *
- * @example
- *
  * ### Button with press + ripple
  * ```html
  * <button cngxPressRipple>Click me</button>

@@ -13,8 +13,6 @@ import type { CngxRecycler } from './recycler';
  *
  * Does NOT set `role` — the consumer decides (`listitem`, `option`, `treeitem`, `tab`).
  *
- * @example
- *
  * ```html
  * @for (item of visibleItems(); track item.id; let i = $index) {
  *   <div role="listitem"

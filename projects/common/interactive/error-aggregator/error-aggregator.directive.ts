@@ -30,7 +30,6 @@ import {
  * Consumers render the SR live region themselves to keep the directive
  * template-free:
  *
- * @example
  * ```html
  * <fieldset cngxErrorAggregator #agg="cngxErrorAggregator">
  *   <span cngxErrorSource="format" [when]="email().invalid()" label="Format"></span>

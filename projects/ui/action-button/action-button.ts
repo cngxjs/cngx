@@ -41,8 +41,6 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *
  * For full control, use `[cngxAsyncClick]` directly on any element instead.
  *
- * @example
- *
  * ### Minimal (covers 80% of cases)
  * ```html
  * <cngx-action-button [action]="save">Save</cngx-action-button>

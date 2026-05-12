@@ -35,8 +35,6 @@ export interface CngxAsyncContext<T> {
  * - **refreshing / loading (with data)** → content template (old data stays visible)
  * - **error (with data)** → content template (old data stays visible)
  *
- * @example
- *
  * ### Minimal — just content
  * ```html
  * <ul *cngxAsync="residents; let data">

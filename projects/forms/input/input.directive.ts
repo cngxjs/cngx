@@ -15,7 +15,6 @@ import {
  * Provides {@link CNGX_FORM_FIELD_CONTROL} so the parent form field can discover it.
  * Works standalone (without `cngx-form-field`) as a no-op — no crash.
  *
- * @example
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```

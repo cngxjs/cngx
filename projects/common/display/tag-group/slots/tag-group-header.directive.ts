@@ -14,7 +14,6 @@ import type { CngxTagGroupHeaderContext } from './tag-group-slot.context';
  * `<span cngxTag>` siblings is exposed via the slot context for
  * consumer "Filters ({{ count }})" patterns without injection.
  *
- * @example
  * ```html
  * <cngx-tag-group [semanticList]="true" label="Filters">
  *   <ng-template cngxTagGroupHeader let-count="count">

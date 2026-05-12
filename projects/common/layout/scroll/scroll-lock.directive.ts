@@ -38,9 +38,6 @@ function releaseScrollLock(html: HTMLElement): void {
  * Multiple instances are ref-counted — the original styles are only
  * restored when the last lock is released.
  *
- *
- * @example
- *
  * ### With a drawer
  * ```html
  * <div cngxDrawer #drawer="cngxDrawer" [cngxScrollLock]="drawer.opened()">

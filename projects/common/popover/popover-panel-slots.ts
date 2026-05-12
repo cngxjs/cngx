@@ -15,7 +15,6 @@ export class CngxPopoverFooter {}
 /**
  * Custom close button template. Overrides the default close button.
  *
- * @example
  * ```html
  * <ng-template cngxPopoverClose>
  *   <button mat-icon-button (click)="panel.popover.hide()">

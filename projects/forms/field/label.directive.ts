@@ -14,7 +14,7 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * - `cngx-label--error` — when errors are visible (touched AND invalid)
  * - `cngx-label--disabled` — when the field is disabled
  *
- * @example Global required marker (no per-label code needed)
+ * Global required marker (no per-label code needed)
  * ```ts
  * provideFormField(withRequiredMarker())
  * ```
@@ -23,12 +23,12 @@ import { CNGX_FORM_FIELD_CONFIG } from './form-field.token';
  * <!-- renders: E-Mail * -->
  * ```
  *
- * @example Opt-out per label
+ * Opt-out per label
  * ```html
  * <label cngxLabel [showRequired]="false">Optional Field</label>
  * ```
  *
- * @example Manual marker (without global config)
+ * Manual marker (without global config)
  * ```html
  * <label cngxLabel>E-Mail <cngx-required /></label>
  * ```

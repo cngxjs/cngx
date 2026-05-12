@@ -13,7 +13,6 @@ import type { FieldTree } from '@angular/forms/signals';
  * @param tree The root FieldTree of the form.
  * @returns `true` if a field was focused, `false` if no focusable error found.
  *
- * @example
  * ```typescript
  * async handleSubmit() {
  *   const success = await submit(this.loginForm, async () => { ... });

@@ -18,7 +18,6 @@ export interface ResizeObserverMock {
  * Creates a mock for `ResizeObserver` that captures the callback
  * and allows programmatic triggering of resize events.
  *
- * @example
  * ```typescript
  * const mock = createResizeObserverMock();
  * mock.install(window);

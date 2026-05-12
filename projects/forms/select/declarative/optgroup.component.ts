@@ -10,7 +10,6 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
  * of `<cngx-select-shell>`. Not supported inside data-mode
  * `<cngx-select>` (consumes via `[options]`).
  *
- * @example
  * ```html
  * <div cngxListbox #lb="cngxListbox" [label]="'Color'" [(value)]="color">
  *   <cngx-optgroup label="Warm">

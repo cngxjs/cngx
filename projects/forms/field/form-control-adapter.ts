@@ -24,7 +24,6 @@ import type { CngxFieldAccessor, CngxFieldRef } from './models';
  *  field initialiser, or wrap the call in `runInInjectionContext`.
  * @returns A `CngxFieldAccessor` compatible with `[field]` input on `cngx-form-field`.
  *
- * @example
  * ```typescript
  * readonly emailControl = new FormControl('', [Validators.required, Validators.email]);
  * readonly emailField = adaptFormControl(this.emailControl, 'email', inject(DestroyRef));

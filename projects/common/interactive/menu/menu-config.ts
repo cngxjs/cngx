@@ -93,7 +93,6 @@ function applyFeatures(base: CngxMenuConfig, features: readonly CngxMenuConfigFe
  * Provide a menu configuration at app root. Each feature is a partial
  * override produced by `with*` helpers (see `menu-config-features.ts`).
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

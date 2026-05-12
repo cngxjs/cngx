@@ -23,7 +23,6 @@ const GAP_DEFAULTS: Record<StackGap, string> = {
  * with sensible fallback defaults. Override them at any scope to match your
  * application's spacing scale.
  *
- * @example
  * <cngx-stack direction="row" gap="md" align="center">
  *   <div>Item 1</div>
  *   <div>Item 2</div>

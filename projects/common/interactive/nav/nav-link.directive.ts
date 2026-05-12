@@ -16,8 +16,6 @@ import {
  * toggles an `active` class. Does NOT depend on `@angular/router` —
  * the consumer wires `routerLinkActive` or binds `[active]` manually.
  *
- * @example
- *
  * ### With Router
  * ```html
  * <a cngxNavLink routerLink="/dashboard" routerLinkActive

@@ -25,7 +25,6 @@ export interface DemoActionContext {
  * host slot should drop `<demo-action-buttons />` in instead of
  * re-duplicating the styled `<button>` pair.
  *
- * @example
  * ```html
  * <cngx-action-select [(value)]="value" [quickCreateAction]="create">
  *   <ng-template cngxSelectAction let-commit="commit" let-close="close" let-pending="isPending" let-dirty="dirty">

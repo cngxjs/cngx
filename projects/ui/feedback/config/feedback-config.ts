@@ -66,8 +66,6 @@ export interface FeedbackFeature {
 /**
  * Register global defaults for all feedback components.
  *
- * @example
- *
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
@@ -103,7 +101,6 @@ export function provideFeedback(...features: FeedbackFeature[]): EnvironmentProv
  * The component receives no inputs — it should be a self-contained spinner
  * (e.g. a Lucide `<loader-2>` with CSS animation, or a Material `<mat-spinner>`).
  *
- * @example
  * ```ts
  * provideFeedback(withSpinnerTemplate(MatProgressSpinner))
  * ```
@@ -118,7 +115,6 @@ export function withSpinnerTemplate(component: Type<unknown>): FeedbackFeature {
  * Each component receives no inputs — it should render a single icon.
  * Only specified severities are replaced; others keep the built-in SVG.
  *
- * @example
  * ```ts
  * provideFeedback(withAlertIcons({
  *   error: MyErrorIcon,
@@ -144,7 +140,6 @@ export function withAlertIcons(
  *
  * Individual components can still override via their `[delay]` and `[minDuration]` inputs.
  *
- * @example
  * ```ts
  * provideFeedback(withLoadingDefaults({ delay: 300, minDuration: 600 }))
  * ```
@@ -168,7 +163,6 @@ export function withLoadingDefaults(opts: {
  * The component receives no inputs — it should render a single icon.
  * Per-instance override via content projection on `CngxCloseButton` takes precedence.
  *
- * @example
  * ```ts
  * provideFeedback(withCloseIcon(MyLucideXIcon))
  * ```
@@ -189,7 +183,6 @@ export function withCloseIcon(component: Type<unknown>): FeedbackFeature {
  *
  * @param opts Optional toast defaults.
  *
- * @example
  * ```ts
  * provideFeedback(
  *   withToasts(),
@@ -225,7 +218,6 @@ export function withToasts(opts?: {
  *
  * @param opts Optional alert defaults.
  *
- * @example
  * ```ts
  * provideFeedback(
  *   withToasts(),
@@ -261,7 +253,6 @@ export function withAlerts(opts?: {
  * Banners are always persistent — no `duration`. Dismiss programmatically
  * via `banner.dismiss(id)` when the condition resolves.
  *
- * @example
  * ```ts
  * provideFeedback(
  *   withToasts(),

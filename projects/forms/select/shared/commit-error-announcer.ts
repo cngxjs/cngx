@@ -37,7 +37,6 @@ export interface CngxCommitErrorAnnounceDeps {
  * Popover-close timing stays inline per variant — see
  * `select-family-accepted-debt §2`.
  *
- * @example
  * ```ts
  * // CngxSelect (verbose, assertive)
  * private readonly announceCommitError = createCommitErrorAnnouncer({

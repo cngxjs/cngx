@@ -22,7 +22,6 @@ export type CngxMenuFeature = CngxMenuConfigFeature;
  *
  * Mirrors `provideCngxSelect` from the select-family A+ closure.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

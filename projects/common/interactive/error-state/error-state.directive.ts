@@ -14,7 +14,6 @@ import { computed, Directive, input } from '@angular/core';
  * invoked at the binding site (canonical Angular pattern), not detected at
  * runtime.
  *
- * @example
  * ```html
  * <input
  *   [cngxErrorState]="emailField().invalid()"

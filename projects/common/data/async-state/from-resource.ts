@@ -10,8 +10,6 @@ import type { AsyncStatus, CngxAsyncState } from '@cngx/core/utils';
  * All signals are derived reactively from the resource — no manual
  * synchronization. The resource stays the single source of truth.
  *
- * @example
- *
  * ```typescript
  * private readonly res = resource({
  *   request: () => ({ filter: this.filter() }),

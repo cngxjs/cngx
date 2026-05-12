@@ -22,7 +22,6 @@ import {
  * - Shift + Arrow moves 50px
  * - Home resets to origin
  *
- * @example
  * ```html
  * <dialog cngxDialog cngxDialogDraggable>
  *   <div class="dialog-header" #handle>Title</div>

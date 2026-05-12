@@ -19,7 +19,6 @@ import {
  * binding site (canonical Angular pattern), mirroring `CngxErrorState`
  * discipline.
  *
- * @example
  * ```html
  * <fieldset cngxErrorAggregator>
  *   <span cngxErrorSource="email-format" [when]="email().invalid()"

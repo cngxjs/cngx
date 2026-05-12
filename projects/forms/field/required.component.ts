@@ -19,17 +19,17 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *
  * Supports a custom template for rendering icons, tooltips, or styled badges.
  *
- * @example Text marker (default)
+ * Text marker (default)
  * ```html
  * <label cngxLabel>E-Mail <cngx-required /></label>
  * ```
  *
- * @example Custom marker text
+ * Custom marker text
  * ```html
  * <label cngxLabel>E-Mail <cngx-required marker="(required)" /></label>
  * ```
  *
- * @example Custom template (icon)
+ * Custom template (icon)
  * ```html
  * <label cngxLabel>
  *   E-Mail

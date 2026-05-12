@@ -48,7 +48,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * `disabledReason` follows the same always-in-DOM rule as
  * `CngxToggle`.
  *
- * @example
  * ```html
  * <cngx-checkbox [(value)]="acceptTerms">I accept the terms</cngx-checkbox>
  *

@@ -34,8 +34,6 @@ export interface ReactiveAsyncState<T> extends CngxAsyncState<T> {
  * The computation function is tracked by Angular's `effect()` — any signal
  * read inside `fn` will cause a re-load when it changes.
  *
- * @example
- *
  * ```typescript
  * readonly residents = injectAsyncState(
  *   () => this.api.getResidents(this.filter())

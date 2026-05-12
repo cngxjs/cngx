@@ -20,9 +20,6 @@ import {
  * Use cases: lazy loading images, infinite scroll sentinels, scroll-triggered
  * animations, "back to top" buttons, analytics viewport tracking.
  *
- *
- * @example
- *
  * ### Lazy load sentinel
  * ```html
  * <div cngxIntersectionObserver #io="cngxIntersectionObserver"

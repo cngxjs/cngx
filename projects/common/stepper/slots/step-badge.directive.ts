@@ -21,7 +21,6 @@ export interface CngxStepBadgeContext {
  * `CNGX_STEPPER_CONFIG.templates.badge` before falling back to
  * `CNGX_STEPPER_GLYPHS.errorBadge`.
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepBadge let-count="count">

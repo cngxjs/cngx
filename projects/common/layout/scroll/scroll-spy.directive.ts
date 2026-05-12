@@ -8,8 +8,6 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * and reports the one with the highest intersection ratio as the active section.
  * Ideal for scroll-based navigation highlighting and reading progress.
  *
- * @example
- *
  * ### Navigation highlighting
  * ```html
  * <nav [cngxScrollSpy]="['intro', 'features', 'pricing']"

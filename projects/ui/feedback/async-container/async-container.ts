@@ -62,8 +62,6 @@ export class CngxAsyncErrorTpl {
  * `CngxAsyncState` lifecycle. Includes a built-in refresh indicator (bar)
  * and ARIA state announcements.
  *
- * @example
- *
  * ```html
  * <cngx-async-container [state]="residents">
  *   <ng-template cngxAsyncSkeleton>

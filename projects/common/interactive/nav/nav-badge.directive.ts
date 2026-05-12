@@ -16,8 +16,6 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * unique information (e.g., unread count), provide `[ariaLabel]` to make
  * it accessible — this removes `aria-hidden` and adds a visually-hidden label.
  *
- * @example
- *
  * ### Decorative badge (aria-hidden, default)
  * ```html
  * <a cngxNavLink>Inbox <span cngxNavBadge [value]="5">5</span></a>

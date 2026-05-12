@@ -4,7 +4,6 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 /**
  * Sets a signal value, runs change detection, and flushes effects.
  *
- * @example
  * ```typescript
  * updateAndFlush(fixture, host.active, true);
  * expect(el.classList.contains('active')).toBe(true);

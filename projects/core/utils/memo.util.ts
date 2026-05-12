@@ -2,7 +2,6 @@
  * Creates a memoized version of a single-argument pure function.
  * Each call to `memoize()` produces an independent cache.
  *
- * @example
  * const expensive = memoize((id: string) => computeHeavy(id));
  * expensive('a'); // computes
  * expensive('a'); // cached

@@ -12,8 +12,6 @@ import { DIALOG_REF } from '../dialog/dialog-ref';
  * When `CngxSwipeDismiss` is also present, auto-wires the swipe output
  * to `dialogRef.dismiss()` — no manual `(swiped)` binding needed.
  *
- * @example
- *
  * ### Basic bottom sheet
  * ```html
  * <dialog cngxDialog cngxBottomSheet [cngxSwipeDismiss]="'down'"

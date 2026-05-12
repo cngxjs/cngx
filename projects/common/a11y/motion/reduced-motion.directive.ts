@@ -13,9 +13,6 @@ import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/cor
  * directive makes the preference available in component logic (e.g., to pick
  * a different animation strategy or suppress requestAnimationFrame loops).
  *
- *
- * @example
- *
  * ### Conditional animation
  * ```html
  * <div cngxReducedMotion #rm="cngxReducedMotion"

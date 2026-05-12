@@ -6,7 +6,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * The template is repeated `count` times while loading. Context provides the
  * current index as `$implicit`.
  *
- * @example
  * ```html
  * <cngx-skeleton [loading]="loading()" [count]="3">
  *   <ng-template cngxSkeletonPlaceholder let-i>

@@ -539,7 +539,6 @@ export function withMaxVisibleChips(count: number): CngxSelectConfigFeature {
  * `null` / `false` falls back to identity. Custom pipelines provide
  * `CNGX_PANEL_RENDERER_FACTORY` directly.
  *
- * @example
  * ```ts
  * provideSelectConfig(
  *   withVirtualization({ estimateSize: 36, overscan: 8, threshold: 500 }),
@@ -558,7 +557,6 @@ export function withVirtualization(
  * Sets the panel-shell visible-fallback labels. Partial. Per-instance
  * template projection wins.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [
@@ -665,7 +663,6 @@ export function withAnnouncer(config: CngxSelectAnnouncerConfig): CngxSelectConf
 /**
  * Sets ARIA-label overrides. Partial. Per-instance inputs win.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [
@@ -717,7 +714,6 @@ export function provideSelectConfig(
  * Component-scoped config. Returns `Provider[]` because `viewProviders`
  * rejects `EnvironmentProviders`.
  *
- * @example
  * ```ts
  * @Component({
  *   viewProviders: [...provideSelectConfigAt(withPanelWidth(300))],

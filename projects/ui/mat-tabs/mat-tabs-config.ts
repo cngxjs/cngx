@@ -136,7 +136,6 @@ function mergeFeatures(
  * `EnvironmentProviders` for use inside `bootstrapApplication`'s
  * `providers` array.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [
@@ -162,7 +161,6 @@ export function provideMatTabsConfig(
  * `providers` or `viewProviders` (which cannot accept opaque
  * environment providers).
  *
- * @example
  * ```ts
  * @Component({
  *   selector: 'app-tabs-page',

@@ -65,7 +65,6 @@ function bucket(
  * the correct underlying provider. The three individual providers stay
  * exported.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [
@@ -108,7 +107,6 @@ export function provideCngxSelect(
  * Component-scoped twin of {@link provideCngxSelect}. Returns
  * `Provider[]` because `viewProviders` rejects `EnvironmentProviders`.
  *
- * @example
  * ```ts
  * @Component({
  *   selector: 'tagged-multi-select-host',

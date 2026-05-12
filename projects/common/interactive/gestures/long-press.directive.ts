@@ -12,8 +12,6 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  *
  * Exposes `longPressing` signal for real-time visual feedback while the user holds.
  *
- * @example
- *
  * ### Context menu on long press
  * ```html
  * <div cngxLongPress (longPressed)="showContextMenu($event)">
