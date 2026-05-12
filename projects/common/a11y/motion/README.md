@@ -8,62 +8,6 @@ Reactive signal reflecting the user's `prefers-reduced-motion` media query prefe
 
 Reflects the user's `prefers-reduced-motion: reduce` media query as a reactive signal. Updates reactively when the OS preference changes (e.g., if the user toggles accessibility settings).
 
-#### Import
-
-```typescript
-import { CngxReducedMotion } from '@cngx/common/a11y';
-```
-
-#### Signals (read-only)
-
-- `prefersReducedMotion: Signal<boolean>` — `true` when the user prefers reduced motion, `false` otherwise.
-
-#### Host Binding
-
-The directive applies the `cngx-reduced-motion` CSS class to the host element, enabling CSS-based motion reduction.
-
-#### Example
-
-```typescript
-// Conditional animation in template
-<div cngxReducedMotion #rm="cngxReducedMotion"
-     [style.animation]="rm.prefersReducedMotion() ? 'none' : 'spin 2s linear infinite'">
-  Loading…
-</div>
-
-// TypeScript logic
-readonly rm = viewChild(CngxReducedMotion);
-readonly animationDuration = computed(() =>
-  this.rm()?.prefersReducedMotion() ? 0 : 300
-);
-
-// Conditional class for CSS animations
-<div cngxReducedMotion
-     [class.animate]="!rm.prefersReducedMotion()">
-  Animated content
-</div>
-```
-
-#### Component Example
-
-```typescript
-import { CngxReducedMotion } from '@cngx/common/a11y';
-import { inject, signal, computed } from '@angular/core';
-
-@Component({
-  selector: 'app-spinner',
-  template: `
-    <div [class.spinning]="!rm.prefersReducedMotion()">
-      Loading…
-    </div>
-  `,
-  imports: [CngxReducedMotion],
-})
-export class SpinnerComponent {
-  protected readonly rm = inject(CngxReducedMotion);
-}
-```
-
 ---
 
 ## CSS Integration
@@ -185,6 +129,7 @@ The directive monitors the standard `prefers-reduced-motion` media query:
 ```
 
 Support:
+
 - Modern browsers (Chrome 63+, Firefox 63+, Safari 10.1+, Edge 79+)
 - OS-level setting: Windows, macOS, iOS, Android all support this preference
 - Fallback: When unsupported, `prefersReducedMotion()` is always `false`
@@ -201,18 +146,21 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
 export const slideAnimation = [
   transition(':enter', [
     style({ opacity: 0, transform: 'translateX(-20px)' }),
-    animate('300ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
-  ])
+    animate('300ms ease-out', style({ opacity: 1, transform: 'translateX(0)' })),
+  ]),
 ];
 
 @Component({
   template: `
-    <div cngxReducedMotion #rm="cngxReducedMotion"
-         [@slide]="rm.prefersReducedMotion() ? null : 'in'">
+    <div
+      cngxReducedMotion
+      #rm="cngxReducedMotion"
+      [@slide]="rm.prefersReducedMotion() ? null : 'in'"
+    >
       Animated content
     </div>
   `,
-  animations: [trigger('slide', slideAnimation)]
+  animations: [trigger('slide', slideAnimation)],
 })
 export class MyComponent {}
 ```
@@ -272,12 +220,3 @@ it('respects reduced motion', () => {
                    [animationDuration]="rm.prefersReducedMotion() ? 0 : 300">
 </cngx-toast-outlet>
 ```
-
----
-
-## See Also
-
-- [Web.dev: prefers-reduced-motion](https://web.dev/articles/prefers-reduced-motion)
-- [WCAG 2.1 Animation from Interactions](https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions)
-- [MDN: prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion)
-- Compodoc API documentation: `npm run docs:serve`

@@ -8,39 +8,6 @@ Reactive directives for declarative ARIA attribute management. Handles disclosur
 
 Manages `aria-expanded` and `aria-controls` on a trigger element (button or link). Couples both attributes in a single declaration, preventing mismatches where one is set without the other.
 
-#### Import
-
-```typescript
-import { CngxAriaExpanded } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxAriaExpanded` | `boolean` | `false` | Whether the controlled element is currently expanded. Sets `aria-expanded`. |
-| `controls` | `string \| undefined` | `undefined` | The `id` of the controlled element. Sets `aria-controls`. |
-
-#### Example
-
-```typescript
-// Simple disclosure
-<button [cngxAriaExpanded]="open()" [controls]="'panel-id'" (click)="open.set(!open())">
-  Toggle
-</button>
-<div id="panel-id" role="region" [hidden]="!open()">Panel content</div>
-
-// Accordion with multiple panels
-@for (panel of panels(); track panel.id) {
-  <button [cngxAriaExpanded]="panel.open" [controls]="panel.id" (click)="toggle(panel)">
-    {{ panel.label }}
-  </button>
-  @if (panel.open) {
-    <div [id]="panel.id" role="region">{{ panel.content }}</div>
-  }
-}
-```
-
 #### Composition
 
 Pair `CngxAriaExpanded` with `CngxRovingTabindex` for accessible accordion/menu patterns:
@@ -73,66 +40,17 @@ Pair `CngxAriaExpanded` with `CngxRovingTabindex` for accessible accordion/menu 
 
 Configures the host element as an ARIA live region. Screen readers monitor live regions and announce content changes automatically without user action.
 
-#### Import
-
-```typescript
-import { CngxLiveRegion } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `politeness` | `'polite' \| 'assertive' \| 'off'` | `'polite'` | Controls announcement urgency. `'polite'` queues announcements; `'assertive'` interrupts immediately; `'off'` disables announcements. |
-| `atomic` | `boolean` | `true` | Whether the entire region is announced as a whole (vs. individual changes). |
-| `relevant` | `string` | `'additions text'` | Space-separated list of change types to announce: `additions`, `removals`, `text`. |
-
-#### Host Bindings
-
-The directive sets the appropriate ARIA role based on politeness:
-
-- `politeness='polite'` → `role="status"`
-- `politeness='assertive'` → `role="alert"`
-- `politeness='off'` → no role
-
-#### Example
-
-```typescript
-// Status message (polite, queued)
-<div cngxLiveRegion politeness="polite">
-  {{ statusMessage() }}
-</div>
-
-// Form validation error (assertive, interrupts)
-<div cngxLiveRegion politeness="assertive"
-     [style.color]="error() ? 'red' : 'transparent'">
-  {{ error() }}
-</div>
-
-// Custom announcement region (respects additions and removals)
-<div cngxLiveRegion politeness="polite" relevant="additions removals">
-  @for (item of items(); track item.id) {
-    <div>{{ item.name }}</div>
-  }
-</div>
-
-// Dialog title announcement (atomic)
-<div cngxLiveRegion politeness="assertive" [atomic]="true" style="display: none;">
-  {{ dialogTitle() }}
-</div>
-```
-
 #### Comparison to CDK LiveAnnouncer
 
 Unlike `LiveAnnouncer` from `@angular/cdk/a11y`:
 
-| Aspect | CngxLiveRegion | LiveAnnouncer |
-|-|-|-|
-| DOM element | Your own, visible | Hidden element created by service |
-| API | Declarative, input binding | Imperative `announce()` call |
-| Content source | Template rendering | String argument |
-| Lifecycle | Directive lifecycle | Service lifetime |
-| Overhead | Minimal | Creates hidden `<div>` |
+| Aspect         | CngxLiveRegion             | LiveAnnouncer                     |
+| -------------- | -------------------------- | --------------------------------- |
+| DOM element    | Your own, visible          | Hidden element created by service |
+| API            | Declarative, input binding | Imperative `announce()` call      |
+| Content source | Template rendering         | String argument                   |
+| Lifecycle      | Directive lifecycle        | Service lifetime                  |
+| Overhead       | Minimal                    | Creates hidden `<div>`            |
 
 Use `CngxLiveRegion` when the announcement content is part of your template; use `LiveAnnouncer` for programmatic announcements with custom messaging.
 
@@ -219,12 +137,3 @@ ARIA directives are orthogonal and can be combined freely:
   }
 }
 ```
-
----
-
-## See Also
-
-- [CngxRovingTabindex](../roving/README.md) — Keyboard navigation for composite widgets
-- [WAI-ARIA: disclosure (Show/Hide) Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
-- [WAI-ARIA: Alerts](https://www.w3.org/WAI/ARIA/apg/patterns/alert/)
-- Compodoc API documentation: `npm run docs:serve`

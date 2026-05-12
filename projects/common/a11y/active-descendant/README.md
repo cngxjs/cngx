@@ -21,34 +21,34 @@ Counterpart to `CngxRovingTabindex` — use AD when options should not be indivi
 ## Usage
 
 ```html
-<div cngxActiveDescendant
-     role="listbox"
-     aria-label="Fruits"
-     tabindex="0"
-     [items]="fruits()"
-     #ad="cngxActiveDescendant">
+<div
+  cngxActiveDescendant
+  role="listbox"
+  aria-label="Fruits"
+  tabindex="0"
+  [items]="fruits()"
+  #ad="cngxActiveDescendant"
+>
   @for (fruit of fruits(); track fruit.id) {
-    <div role="option"
-         [id]="fruit.id"
-         [attr.aria-selected]="ad.activeId() === fruit.id">
-      {{ fruit.label }}
-    </div>
+  <div role="option" [id]="fruit.id" [attr.aria-selected]="ad.activeId() === fruit.id">
+    {{ fruit.label }}
+  </div>
   }
 </div>
 ```
 
 ## WAI-ARIA keyboard matrix
 
-| Key | Vertical orientation | Horizontal orientation |
-|-|-|-|
-| ArrowDown | next item | — |
-| ArrowUp | previous item | — |
-| ArrowRight | — | next item |
-| ArrowLeft | — | previous item |
-| Home | first enabled item | first enabled item |
-| End | last enabled item | last enabled item |
-| Enter / Space | activate current | activate current |
-| printable character | typeahead (debounced) | typeahead (debounced) |
+| Key                 | Vertical orientation  | Horizontal orientation |
+| ------------------- | --------------------- | ---------------------- |
+| ArrowDown           | next item             | —                      |
+| ArrowUp             | previous item         | —                      |
+| ArrowRight          | —                     | next item              |
+| ArrowLeft           | —                     | previous item          |
+| Home                | first enabled item    | first enabled item     |
+| End                 | last enabled item     | last enabled item      |
+| Enter / Space       | activate current      | activate current       |
+| printable character | typeahead (debounced) | typeahead (debounced)  |
 
 Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` controls wrap-around.
 
@@ -57,5 +57,3 @@ Disabled items are skipped when `skipDisabled()` is `true` (default). `loop()` c
 - **`@angular/cdk/overlay` / `CngxPopoverTrigger`** — The trigger implements its own keymap and calls `highlightFirst/Last/Next/Prev` + `activateCurrent` on the AD hostDirective. AD does not implement open/close.
 - **`CngxRovingTabindex`** — Do not nest an AD inside a roving group. They model different focus strategies.
 - **Recycler / virtual scroll** — With `virtualCount`, out-of-range targets surface as `pendingHighlight`. Consumers scroll the index into view, then call `clearPendingHighlight()`.
-
-See the [interactive demo](../../../../../../dev-app/src/app/demos/common/a11y/active-descendant-demo/active-descendant-demo.story.ts) for usage.

@@ -14,34 +14,15 @@ Implements the [WAI-ARIA roving tabindex](https://www.w3.org/WAI/ARIA/apg/practi
 </div>
 ```
 
-### CngxRovingTabindex Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `orientation` | `'horizontal' \| 'vertical' \| 'both'` | `'horizontal'` | Arrow key axis |
-| `loop` | `boolean` | `true` | Wrap from last to first and vice versa |
-| `activeIndex` | `number` | `0` | Index of the active item. Supports two-way `[(activeIndex)]` |
-
 ### CngxRovingTabindex Keyboard
 
-| Key | Action |
-|-|-|
-| `ArrowRight` / `ArrowDown` | Move to next item (axis-dependent) |
-| `ArrowLeft` / `ArrowUp` | Move to previous item (axis-dependent) |
-| `Home` | Jump to first enabled item |
-| `End` | Jump to last enabled item |
-| `Tab` | Leave the group (standard tab order) |
-
-### CngxRovingItem Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxRovingItemDisabled` | `boolean` | `false` | Skip this item during navigation |
-
-### Selectors
-
-- `[cngxRovingTabindex]` -- exportAs `"cngxRovingTabindex"`
-- `[cngxRovingItem]` -- exportAs `"cngxRovingItem"`
+| Key                        | Action                                 |
+| -------------------------- | -------------------------------------- |
+| `ArrowRight` / `ArrowDown` | Move to next item (axis-dependent)     |
+| `ArrowLeft` / `ArrowUp`    | Move to previous item (axis-dependent) |
+| `Home`                     | Jump to first enabled item             |
+| `End`                      | Jump to last enabled item              |
+| `Tab`                      | Leave the group (standard tab order)   |
 
 ### Notes
 
@@ -57,26 +38,12 @@ Captures the previously focused element on init and restores focus when the host
 
 ```html
 @if (panelOpen()) {
-  <div cngxFocusRestore>
-    Panel content…
-    <button (click)="panelOpen.set(false)">Close</button>
-  </div>
+<div cngxFocusRestore>
+  Panel content…
+  <button (click)="panelOpen.set(false)">Close</button>
+</div>
 }
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `restoreOnDestroy` | `boolean` | `true` | Whether to auto-restore on destroy |
-| `fallback` | `HTMLElement \| null` | `null` | Explicit fallback element |
-
-### Methods
-
-| Method | Description |
-|-|-|
-| `capture()` | Manually store the currently focused element |
-| `restore()` | Manually restore focus to the stored element |
 
 ### Fallback Chain
 
@@ -97,21 +64,9 @@ Reactive autofocus for dynamically inserted elements. The native `autofocus` att
 
 ```html
 @if (showSearch()) {
-  <input [cngxAutofocus]="true" placeholder="Search…" />
+<input [cngxAutofocus]="true" placeholder="Search…" />
 }
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxAutofocus` | `boolean` | `true` | Focus when `true`. Re-focuses on transition from `false` to `true` |
-| `autofocusDelay` | `number` | `0` | Delay in ms before focusing (for transitions) |
-| `autofocusOptions` | `FocusOptions` | `{}` | Passed to `element.focus()` (e.g. `{ preventScroll: true }`) |
-
-### Selector
-
-`[cngxAutofocus]` -- exportAs `"cngxAutofocus"`
 
 ### Notes
 

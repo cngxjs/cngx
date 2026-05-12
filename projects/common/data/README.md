@@ -141,7 +141,7 @@ this.residents.refresh();
 
 ### Status lifecycle
 
-```
+```text
 Component init:     idle → loading → success
 Filter changes:     success → refreshing → success  (data stays visible)
 Network error:      loading → error
@@ -562,8 +562,8 @@ readonly report = fromHttpResource(this.res);
 
 ## Full Example: Resident Management
 
-A complete, production-ready feature combining query, mutation, skeleton,
-loading bar, error handling, toast, and empty state — all from typed sources.
+A complete feature combining query, mutation, skeleton, loading bar,
+error handling, toast, and empty state — all from typed sources.
 
 ### Service
 
@@ -725,9 +725,8 @@ Every factory returns this interface — every UI component accepts it.
 
 ## SmartDataSource — Table with Full UX State
 
-The most powerful integration. Pass a `CngxAsyncState<T[]>` directly
-to `injectSmartDataSource` — the table gets skeleton, error, empty,
-and loading bar for free.
+Pass a `CngxAsyncState<T[]>` to `injectSmartDataSource` and the table
+receives skeleton, error, empty, and loading-bar projections automatically.
 
 ### Setup
 
