@@ -99,8 +99,6 @@ type AsyncAction = () => Promise<unknown> | Observable<unknown>;
 type AsyncStatus = 'idle' | 'loading' | 'pending' | 'refreshing' | 'success' | 'error';
 ```
 
----
-
 ## CngxPressable
 
 Instant press feedback via CSS class on `pointerdown`. Click feedback fires too late — press feedback is immediate (0ms latency). The class is removed on `pointerup` with an optional delay to prevent a visual flash on quick taps.
@@ -140,8 +138,6 @@ No ARIA attributes — purely visual class-based feedback. Consumer applies `ari
 ### Selector
 
 `[cngxPressable]` -- exportAs `"cngxPressable"`
-
----
 
 ## CngxLongPress
 
@@ -188,8 +184,6 @@ No ARIA attributes. Consumer is responsible for `aria-haspopup` or similar if th
 - Cancels on: `pointerup`, `pointercancel`, `pointerleave`, or movement > `moveThreshold` px.
 - Uses `Math.hypot` for Euclidean distance (diagonal movement measured correctly).
 
----
-
 ## CngxKeyboardShortcut
 
 Declarative keyboard shortcut handler. No global event listener service — each directive manages its own subscription, cleaned up via `takeUntilDestroyed`.
@@ -230,8 +224,6 @@ No ARIA attributes set by the directive. Consumer should add `aria-keyshortcuts`
 - `self` scope only fires when the host element (or a descendant) has focus.
 - `preventDefault()` is called on matching events.
 - Combo string is memoised — re-parsed only when the input changes.
-
----
 
 ## withRetry
 
@@ -290,8 +282,6 @@ const [saveWithRetry, retryState] = withRetry(
 
 `reset()` clears all state back to `'idle'`.
 
----
-
 ## optimistic
 
 Creates an optimistic update function for a signal. Sets the value immediately,
@@ -336,8 +326,6 @@ readonly [updateName, nameState] = optimistic(
   returns to the last server-confirmed value, not a stale optimistic value.
 - No `DestroyRef` cleanup — the subscription is unmanaged. If the component is
   destroyed mid-flight, the subscription completes silently.
-
----
 
 ## Other Exports
 

@@ -94,8 +94,6 @@ closing  [cngx-dialog--closing class applied]
 closed
 ```
 
----
-
 ### CngxDialogTitle
 
 Marks an element as the dialog's title for ARIA labelling.
@@ -124,8 +122,6 @@ import { CngxDialogTitle } from '@cngx/common/dialog';
 - The title text is announced via `aria-live` when the dialog transitions to `'open'`
 - The ID is automatically derived from the parent dialog's ID (e.g., `cngx-dialog-0-title`)
 
----
-
 ### CngxDialogDescription
 
 Marks an element as the dialog's description for ARIA.
@@ -148,8 +144,6 @@ import { CngxDialogDescription } from '@cngx/common/dialog';
   <p cngxDialogDescription>This action cannot be undone.</p>
 </dialog>
 ```
-
----
 
 ### CngxDialogClose
 
@@ -187,8 +181,6 @@ import { CngxDialogClose } from '@cngx/common/dialog';
 </dialog>
 ```
 
----
-
 ## Accessibility
 
 Dialog is fully WCAG 2.1 Level AA compliant:
@@ -199,8 +191,6 @@ Dialog is fully WCAG 2.1 Level AA compliant:
 - **Focus management**: Focus returns to trigger element on close
 - **SR announcements**: Title announced on open; errors announced via live region
 - **Semantic HTML**: Uses native `<dialog>` element (full browser support)
-
----
 
 ## Composition
 
@@ -265,8 +255,6 @@ export class MyComponent {
 }
 ```
 
----
-
 ## Styling
 
 Dialog styling is fully in the consumer's hands. Basic example:
@@ -298,8 +286,6 @@ dialog[cngxDialog] {
 }
 ```
 
----
-
 ## CSS Custom Properties
 
 | Property | Default | Description |
@@ -309,8 +295,6 @@ dialog[cngxDialog] {
 | `--cngx-dialog-y` | `'0px'` | Vertical offset (set by `CngxDialogDraggable`) |
 | `--cngx-dialog-drag-cursor` | `'grab'` | Cursor when hovering drag handle |
 | `--cngx-dialog-dragging-cursor` | `'grabbing'` | Cursor while dragging |
-
----
 
 ## Material Theme
 
@@ -325,8 +309,6 @@ html {
 ```
 
 Sets backdrop, border-radius, padding, surface colors, and shadow from the Material palette. Supports both M2 and M3 themes. Includes a `density($level)` mixin for compact/default/comfortable spacing.
-
----
 
 ## See Also
 

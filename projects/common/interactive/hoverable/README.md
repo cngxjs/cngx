@@ -66,7 +66,7 @@ CngxHoverable is a low-level interaction atom:
 - **Screen reader:** No announcements (purely visual feedback)
 - **Focus management:** No focus changes
 
-**Important:** Hover state is mouse-only. Use `cngxHoverable` for visual feedback only — never gate critical functionality behind hover states. Provide keyboard alternatives.
+Hover state is mouse-only. Use `cngxHoverable` for visual feedback only — never gate critical functionality behind hover states. Provide keyboard alternatives.
 
 ## Composition
 

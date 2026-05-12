@@ -63,8 +63,6 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
 </div>
 ```
 
----
-
 ### CngxRovingItem
 
 Marker directive for focusable items within a `[cngxRovingTabindex]` container. The parent sets `tabindex` dynamically; the item must not manually set `tabindex`.
@@ -99,8 +97,6 @@ import { CngxRovingItem } from '@cngx/common/a11y';
 </div>
 ```
 
----
-
 ## Composition
 
 `CngxRovingTabindex` works with any child elements that receive `cngxRovingItem`. It does not require specific HTML elements or roles.
@@ -118,8 +114,6 @@ import { CngxRovingItem } from '@cngx/common/a11y';
   }
 </cngx-card-grid>
 ```
-
----
 
 ## Accessibility
 
@@ -139,8 +133,6 @@ The consumer is responsible for providing semantically correct roles:
 - **Tab lists**: Apply `role="tablist"` on the container; `role="tab"` on items
 - **Menu bars**: Apply `role="menubar"` on the container; `role="menuitem"` on items
 - **Listboxes**: Apply `role="listbox"` on the container; `role="option"` on items
-
----
 
 ## Advanced Patterns
 
@@ -183,8 +175,6 @@ protected readonly selectedIdx = signal(0);
 
 When items are added or removed, the `activeIndex` is automatically clamped to the valid range.
 
----
-
 ## Styling
 
 Roving tabindex manages `tabindex` attributes only; styling is the consumer's responsibility.
@@ -203,8 +193,6 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 }
 ```
 
----
-
 ## Common Use Cases
 
 | Widget | Orientation | Loop | Notes |
@@ -215,8 +203,6 @@ Roving tabindex manages `tabindex` attributes only; styling is the consumer's re
 | Vertical menu | `vertical` | `true` | Up/Down navigate; loops to opposite end |
 | Card grid | `both` | `true` | Both axes enabled; full 2D navigation |
 | Combobox popup | `vertical` | `false` | Up/Down select options; no wrapping |
-
----
 
 ## See Also
 

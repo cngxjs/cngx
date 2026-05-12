@@ -49,8 +49,6 @@ export class ObserverExampleComponent {
 }
 ```
 
----
-
 ## CngxIntersectionObserver
 
 Observes whether the host element is visible in the viewport or a scroll container using the `IntersectionObserver` API. Exposes visibility state as Angular signals.
@@ -129,8 +127,6 @@ Observes whether the host element is visible in the viewport or a scroll contain
   Ad unit (fires impression when visible)
 </div>
 ```
-
----
 
 ## CngxResizeObserver
 
@@ -222,8 +218,6 @@ export class CanvasComponent {
 }
 ```
 
----
-
 ## CngxMediaQuery
 
 Reactive media query directive that exposes a `matches` signal. Wraps `window.matchMedia()` with automatic cleanup. Use for responsive layouts, drawer mode switching, and conditional rendering.
@@ -310,8 +304,6 @@ Implement with template directives:
 @else if (tablet.matches()) { Tablet }
 @else { Desktop }
 ```
-
----
 
 ## Accessibility
 

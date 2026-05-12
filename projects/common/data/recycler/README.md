@@ -123,7 +123,7 @@ export class InfiniteProductList {
 }
 ```
 
-**Why scrolling back up doesn't re-fetch:** The items array only grows (append-only). Already-loaded items stay in memory. The recycler just slices a different window — no HTTP call, no re-rendering of the full list.
+Scrolling back up doesn't re-fetch: the items array only grows (append-only). Already-loaded items stay in memory; the recycler just slices a different window — no HTTP call, no re-rendering of the full list.
 
 ```
 Page 1 loaded → items = [0..49]    → recycler shows 0-20
@@ -310,7 +310,7 @@ export class HybridList {
 }
 ```
 
-**How they stay in sync:**
+How they stay in sync:
 - User scrolls → `firstVisible()` / `lastVisible()` update → paginator can derive current page from it
 - User clicks page 5 → `scrollToIndex(250)` → recycler scrolls → if items not loaded yet, `pendingTarget` waits → infinite scroll loads more pages → auto-scrolls when target is reachable
 - No double-fetching: already-loaded items are in the array, infinite scroll only loads new pages
@@ -422,7 +422,7 @@ export class WindowedList {
 }
 ```
 
-**Key differences from append-only:**
+Key differences from append-only:
 
 | | Append-only (Pattern 2) | Windowed (Pattern 8) |
 |-|-|-|

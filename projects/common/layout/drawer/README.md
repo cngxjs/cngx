@@ -87,8 +87,6 @@ The state owner for the drawer system. Manages open/close state and Escape key h
 
 - `.cngx-drawer--opened` — Applied to the host when the drawer is open.
 
----
-
 ### CngxDrawerPanel
 
 The sliding panel of the drawer. Requires an explicit reference to `CngxDrawer` via `[cngxDrawerPanel]`. Composes `CngxFocusTrap` as a host directive for automatic focus management.
@@ -126,8 +124,6 @@ The sliding panel of the drawer. Requires an explicit reference to `CngxDrawer` 
 - `role="complementary"` — Applied to the panel.
 - `aria-hidden="true"` — When `mode !== 'side'` and the drawer is closed.
 
----
-
 ### CngxDrawerContent
 
 Marks the main content area adjacent to a drawer. Adds a CSS class when the drawer is open so consumers can offset content via CSS transitions or transforms.
@@ -147,8 +143,6 @@ Marks the main content area adjacent to a drawer. Adds a CSS class when the draw
 
 - `.cngx-drawer-content` — Always applied.
 - `.cngx-drawer-content--shifted` — Applied when the drawer is open.
-
----
 
 ### CngxBackdrop
 

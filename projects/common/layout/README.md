@@ -114,8 +114,6 @@ bottom of a list. Fires `loadMore` when the sentinel enters the viewport.
 - Observer disconnects on destroy or when `enabled` is `false`.
 - Includes a time-based debounce guard to prevent rapid re-triggers.
 
----
-
 ## CngxStickyHeader
 
 Communicates when a `position: sticky` element becomes stuck. Does NOT apply sticky positioning — CSS handles that. Inserts a sentinel element before the host and uses `IntersectionObserver` to detect when the sentinel scrolls out.
@@ -164,8 +162,6 @@ Communicates when a `position: sticky` element becomes stuck. Does NOT apply sti
 - Sentinel and observer are created in `afterNextRender`, cleaned up via `DestroyRef`.
 - Sticky header itself remains visible to screen readers (`aria-hidden` is not set on host).
 
----
-
 ## CngxScrollSpy
 
 Tracks which section is currently most visible in the viewport. Observes a list of elements by their IDs using `IntersectionObserver` with fine-grained thresholds (10% steps). Reports the one with the highest ratio above the minimum threshold.
@@ -213,8 +209,6 @@ Tracks which section is currently most visible in the viewport. Observes a list 
 - Uses 11 threshold steps (0, 0.1, 0.2 … 1.0) for accurate ratio tracking.
 - Pairs naturally with `CngxNavLink` for scroll-based navigation highlighting.
 
----
-
 ## CngxTruncate
 
 Manages text truncation with expand/collapse state detection. Applies `-webkit-line-clamp` when collapsed and uses `ResizeObserver` to detect whether the text actually overflows. The `isClamped` signal lets the consumer show a toggle button only when needed.
@@ -255,8 +249,6 @@ Manages text truncation with expand/collapse state detection. Applies `-webkit-l
 - `ResizeObserver` re-checks on container resize.
 - `isClamped` is only updated when collapsed — expanded state preserves the last known value.
 - Consumer is responsible for the toggle button and `aria-expanded` attribute.
-
----
 
 ## Other Exports
 

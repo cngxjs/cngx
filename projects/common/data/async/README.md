@@ -274,7 +274,7 @@ Error template receives the error as context:
 </ng-template>
 ```
 
-**Important:** Error template only shows on error during **first load**. If error occurs after data loads (refresh error), the error template is **not** shown — data stays visible. Error should be communicated via an alert or toast separately in that case.
+Error template only shows on error during first load. If error occurs after data loads (refresh error), the error template is not shown — data stays visible. Error should be communicated via an alert or toast separately in that case.
 
 ```typescript
 // Show error alert for refresh errors

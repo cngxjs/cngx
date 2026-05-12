@@ -8,8 +8,6 @@ Reactive signal reflecting the user's `prefers-reduced-motion` media query prefe
 
 Reflects the user's `prefers-reduced-motion: reduce` media query as a reactive signal. Updates reactively when the OS preference changes (e.g., if the user toggles accessibility settings).
 
----
-
 ## CSS Integration
 
 Use the `cngx-reduced-motion` class for motion-specific styling:
@@ -51,8 +49,6 @@ Use the `cngx-reduced-motion` class for motion-specific styling:
 }
 ```
 
----
-
 ## Advanced Patterns
 
 ### Media Query Listener
@@ -89,8 +85,6 @@ readonly shouldAutoPlay = computed(() =>
 </video>
 ```
 
----
-
 ## Accessibility Requirements
 
 WCAG 2.1 Success Criterion 2.3.3 (Animation from Interactions) requires:
@@ -116,8 +110,6 @@ WCAG 2.1 Success Criterion 2.3.3 (Animation from Interactions) requires:
 }
 ```
 
----
-
 ## Media Query
 
 The directive monitors the standard `prefers-reduced-motion` media query:
@@ -133,8 +125,6 @@ Support:
 - Modern browsers (Chrome 63+, Firefox 63+, Safari 10.1+, Edge 79+)
 - OS-level setting: Windows, macOS, iOS, Android all support this preference
 - Fallback: When unsupported, `prefersReducedMotion()` is always `false`
-
----
 
 ## Animation Frameworks
 
@@ -185,8 +175,6 @@ export class MyComponent {
 }
 ```
 
----
-
 ## Testing
 
 Mock the media query in tests:
@@ -199,8 +187,6 @@ it('respects reduced motion', () => {
   // Component should skip animations
 });
 ```
-
----
 
 ## Composition
 

@@ -174,7 +174,7 @@ handleFilterChange(pred: ((v: any) => boolean) | null) {
 }
 ```
 
-**Backward-compatible:** The controlled input maps to the `'default'` key internally. Named predicates (`addPredicate`) still work alongside it.
+Backward-compatible: the controlled input maps to the `'default'` key internally. Named predicates (`addPredicate`) still work alongside it.
 
 ## Composition with Data Processing
 

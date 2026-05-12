@@ -50,8 +50,6 @@ When both `cngxBottomSheet` and `cngxSwipeDismiss` are on the same element, the 
 </dialog>
 ```
 
----
-
 ## Styling
 
 Bottom sheet positioning and animations are handled via CSS. Basic setup:
@@ -95,8 +93,6 @@ dialog[cngxBottomSheet] {
 }
 ```
 
----
-
 ## Accessibility
 
 Bottom sheets follow standard dialog accessibility:
@@ -105,8 +101,6 @@ Bottom sheets follow standard dialog accessibility:
 - **Keyboard dismiss**: Escape closes the sheet
 - **Focus management**: Focus returns to trigger on close
 - **Gesture labels**: SR users are informed of swipe-to-dismiss via dynamic content
-
----
 
 ## Gestures
 
@@ -132,8 +126,6 @@ Use `[cngxSwipeDismiss]` to enable gesture closing:
 ```
 
 When a swipe is detected, `CngxBottomSheet` automatically calls `dialogRef.dismiss()`.
-
----
 
 ## Common Patterns
 
@@ -186,8 +178,6 @@ When a swipe is detected, `CngxBottomSheet` automatically calls `dialogRef.dismi
 <button (click)="menu.open()">Menu</button>
 ```
 
----
-
 ## Material Theme
 
 A Material theme mixin is available in `bottom-sheet-theme.scss`:
@@ -201,8 +191,6 @@ html {
 ```
 
 Sets surface color, border-radius (top corners only), drag handle styling, and shadow from the Material palette.
-
----
 
 ## See Also
 

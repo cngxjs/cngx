@@ -67,8 +67,6 @@ export class ScrollExampleComponent {
 }
 ```
 
----
-
 ## CngxScrollSpy
 
 Tracks which section is currently most visible in the viewport using `IntersectionObserver`. Ideal for scroll-based navigation highlighting and reading progress.
@@ -109,8 +107,6 @@ Tracks which section is currently most visible in the viewport using `Intersecti
 <section id="section-3">Content 3</section>
 ```
 
----
-
 ## CngxScrollLock
 
 Prevents scrolling on the document body by setting `overflow: hidden` and `scrollbar-gutter: stable` on `<html>`. Multiple instances are ref-counted — original styles are only restored when the last lock is released.
@@ -141,8 +137,6 @@ Prevents scrolling on the document body by setting `overflow: hidden` and `scrol
   <!-- Modal content -->
 </div>
 ```
-
----
 
 ## CngxStickyHeader
 
@@ -194,8 +188,6 @@ The directive automatically applies:
 ### How It Works
 
 A 1px invisible sentinel element is inserted before the host. When the sentinel scrolls out of view, the header must be stuck. The `IntersectionObserver` tracks sentinel visibility and updates the `isSticky` signal accordingly.
-
----
 
 ## CngxInfiniteScroll
 
@@ -275,8 +267,6 @@ fetchNextPage() {
   </div>
 </div>
 ```
-
----
 
 ## Accessibility
 

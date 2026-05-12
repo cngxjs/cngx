@@ -271,7 +271,7 @@ window.addEventListener('beforeunload', handler);
 
 When active (`enabled() === true`), the browser shows its native "Leave this site?" dialog. The user can click "Leave" or "Stay".
 
-**Important:** This only protects against browser close, tab close, or URL bar navigation. It does NOT protect against:
+This only protects against browser close, tab close, or URL bar navigation. It does NOT protect against:
 - Router navigation (use `canDeactivate` guard for that)
 - Programmatic `window.location` changes
 - Browser refresh (F5)
@@ -297,7 +297,7 @@ return () => {
 
 Returns `true` (allow) or `false` (block) based on the user's choice in the confirmation dialog.
 
-**Important:** The guard uses `inject()` which is valid in Angular's guard execution context.
+The guard uses `inject()` which is valid in Angular's guard execution context.
 
 ### Coverage Recommendations
 

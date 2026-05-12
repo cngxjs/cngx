@@ -71,8 +71,6 @@ export class TextExampleComponent {
 }
 ```
 
----
-
 ## CngxTruncate
 
 Manages text truncation with expand/collapse state detection via CSS `-webkit-line-clamp`. Detects whether text is actually clamped and exposes an `isClamped` signal so consumers can conditionally show a "Show more" toggle only when needed.
@@ -131,8 +129,6 @@ Uses `-webkit-line-clamp` which is widely supported (Chrome, Firefox, Safari, Ed
   Responsive truncation based on viewport width…
 </p>
 ```
-
----
 
 ## CngxHighlight
 
@@ -224,8 +220,6 @@ mark {
   }
 }
 ```
-
----
 
 ## CngxExpandableText
 
@@ -324,8 +318,6 @@ The built-in toggle button has the class `.cngx-expandable-text__toggle` for cus
   }
 }
 ```
-
----
 
 ## CngxSkeleton
 
@@ -445,8 +437,6 @@ Headless skeleton loading placeholder. Toggles between loading and content state
   }
 }
 ```
-
----
 
 ## Accessibility
 
