@@ -499,8 +499,8 @@ Invalid tags are silently ignored by the browser.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxSpeak.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [SpeechSynthesis API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis)
 - [Cognitive Accessibility - WebAIM](https://webaim.org/articles/cognitive/)
 - Demo: `dev-app/src/app/demos/common/speak-demo/`
-- Tests: `projects/common/interactive/src/speak/speak.directive.spec.ts`
+- Tests: `projects/common/interactive/speak/speak.directive.spec.ts`

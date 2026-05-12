@@ -427,8 +427,8 @@ This is rarely needed but enables special cases like testing or forced states.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxHoverable.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [CngxPressable](../ripple/) — Press feedback (pointer-down)
 - [CngxRipple](../ripple/) — Ripple animation (pointer-down)
 - Demo: `dev-app/src/app/demos/common/hoverable-demo/`
-- Tests: `projects/common/interactive/src/hoverable/hoverable.directive.spec.ts`
+- Tests: `projects/common/interactive/hoverable/hoverable.directive.spec.ts`

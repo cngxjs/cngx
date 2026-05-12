@@ -378,4 +378,4 @@ Choose **Material** for:
 - [compodoc API documentation](https://cngxjs.dev/docs/modules/data_display_mat_treetable.html)
 - CDK variant: `@cngx/data-display/treetable`
 - Demo: `dev-app/src/app/demos/data-display/mat-treetable-demo/`
-- Tests: `projects/data-display/mat-treetable/src/` (spec files)
+- Tests: `projects/data-display/mat-treetable/` (spec files)

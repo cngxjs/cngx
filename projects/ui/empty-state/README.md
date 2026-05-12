@@ -97,7 +97,7 @@ The theme mixin provides:
 
 ## See Also
 
-- [CngxAsyncState](../../../core/src/lib/utils/async-state/) — Async state contract
-- [compodoc API documentation](../../../../../docs)
+- [CngxAsyncState](../../core/utils/) — Async state contract
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/ui/empty-state-demo/`
-- Tests: `projects/ui/empty-state/src/empty-state.component.spec.ts`
+- Tests: `projects/ui/empty-state/empty-state.component.spec.ts`

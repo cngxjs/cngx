@@ -419,9 +419,9 @@ export class ResponsiveTableComponent {}
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/observers-demo/`
-- Tests: `projects/common/layout/src/observers/*.spec.ts`
+- Tests: `projects/common/layout/observers/*.spec.ts`
 - `CngxScrollSpy` in `@cngx/common/layout` — Uses `CngxIntersectionObserver` internally
 - `CngxTruncate` in `@cngx/common/layout` — Uses `CngxResizeObserver` internally
 - [MDN: IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)

@@ -375,8 +375,8 @@ export class ResponsiveDrawerComponent {}
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/drawer-demo/`
-- Tests: `projects/common/layout/src/drawer/*.spec.ts`
+- Tests: `projects/common/layout/drawer/*.spec.ts`
 - `CngxFocusTrap` in `@cngx/common/a11y` — Composed by `CngxDrawerPanel`
 - `CngxScrollLock` in `@cngx/common/layout` — Pair with drawer to prevent scrolling

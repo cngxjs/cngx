@@ -347,8 +347,8 @@ This ensures SSR doesn't throw errors.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxBeforeUnload.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [Angular Route Guards](https://angular.io/guide/router-tutorial-toh#preventing-unsaved-changes)
 - [MDN: beforeunload event](https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeunload_event)
 - Demo: `dev-app/src/app/demos/common/guard-demo/`
-- Tests: `projects/common/interactive/src/guard/before-unload.directive.spec.ts`
+- Tests: `projects/common/interactive/guard/before-unload.directive.spec.ts`

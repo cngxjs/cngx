@@ -275,6 +275,6 @@ falls out for free.
   strategy.
 - `@cngx/common/interactive` — the nine value-bearing atoms the bridge
   attaches to.
-- Tests: `projects/forms/controls/src/*.spec.ts` (bridge unit + integration).
+- Tests: `projects/forms/controls/*.spec.ts` (bridge unit + integration).
 - Demo: `dev-app/src/app/demos/forms/form-primitives-demo/` — runs both
   Signal Forms and Reactive Forms paths side by side.

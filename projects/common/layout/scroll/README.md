@@ -246,7 +246,7 @@ fetchNextPage() {
 
   this.api.getItems(this.page()).subscribe({
     next: (result) => {
-      this.items.mutate((list) => list.push(...result.items));
+      this.items.update((list) => [...list, ...result.items]);
       this.page.update((p) => p + 1);
       this.hasMore.set(result.hasMore);
     },
@@ -389,8 +389,8 @@ div[cngxInfiniteScroll] {
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/scroll-demo/`
-- Tests: `projects/common/layout/src/scroll/*.spec.ts`
+- Tests: `projects/common/layout/scroll/*.spec.ts`
 - `CngxIntersectionObserver` in `@cngx/common/layout` — Low-level observer primitive
 - `CngxResizeObserver` in `@cngx/common/layout` — Element size tracking

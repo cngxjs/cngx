@@ -432,4 +432,4 @@ selectedIds = signal<Set<string>>(new Set());
 - [compodoc API documentation](https://cngxjs.dev/docs/modules/data_display_treetable.html)
 - Material variant: `@cngx/data-display/mat-treetable`
 - Demo: `dev-app/src/app/demos/data-display/treetable-demo/`
-- Tests: `projects/data-display/treetable/src/` (spec files)
+- Tests: `projects/data-display/treetable/` (spec files)

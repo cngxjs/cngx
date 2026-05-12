@@ -173,7 +173,7 @@ Ripple and Pressable are typically composed together via CngxPressRipple, but ca
 The ripple creates a `<span class="cngx-ripple__wave">` injected into the DOM. All visual styling is your responsibility. Ships with `_ripple.scss` defaults:
 
 ```scss
-// projects/common/interactive/src/ripple/_ripple.scss
+// projects/common/interactive/ripple/_ripple.scss
 .cngx-ripple__wave {
   position: absolute;
   pointer-events: none;
@@ -350,7 +350,7 @@ The `theme()` mixin sets `--cngx-ripple-color` from the Material palette (`on-su
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxRipple.html)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - `_ripple.scss` — Default ripple animation styles
 - Demo: `dev-app/src/app/demos/common/ripple-demo/`
-- Tests: `projects/common/interactive/src/ripple/ripple.directive.spec.ts`
+- Tests: `projects/common/interactive/ripple/ripple.directive.spec.ts`

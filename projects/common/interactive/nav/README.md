@@ -637,6 +637,6 @@ Internally uses `CngxNavGroupRegistry` to track registered groups and close sibl
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxNavGroup.html)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/nav-demo/`
-- Tests: `projects/common/interactive/src/nav/nav-group.directive.spec.ts`
+- Tests: `projects/common/interactive/nav/nav-group.directive.spec.ts`

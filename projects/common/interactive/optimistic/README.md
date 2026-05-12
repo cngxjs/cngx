@@ -351,8 +351,8 @@ signal.set(valueB);  // Cancels valueA, new action with valueB
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/optimistic.html)
-- [CngxAsyncState](../../../../../../core/utils/) — The shared state interface
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [CngxAsyncState](../../../core/utils/) — The shared state interface
 - [withRetry](../retry/) — Combines well with optimistic for resilient updates
 - Demo: `dev-app/src/app/demos/common/optimistic-demo/`
-- Tests: `projects/common/interactive/src/optimistic/optimistic.spec.ts`
+- Tests: `projects/common/interactive/optimistic/optimistic.spec.ts`

@@ -243,6 +243,6 @@ CngxCopyText automatically uses `document.execCommand('copy')` fallback when the
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxCopyText.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/copy-demo/`
-- Tests: `projects/common/interactive/src/copy/copy-text.directive.spec.ts`
+- Tests: `projects/common/interactive/copy/copy-text.directive.spec.ts`

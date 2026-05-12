@@ -559,7 +559,7 @@ Text utilities expose CSS classes for consumer styling:
 
 ## See Also
 
-- [compodoc API documentation](http://localhost:4200/docs/common/layout)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - Demo: `dev-app/src/app/demos/common/text-demo/`
-- Tests: `projects/common/layout/src/text/*.spec.ts`
+- Tests: `projects/common/layout/text/*.spec.ts`
 - `CngxResizeObserver` in `@cngx/common/layout` — Used internally by `CngxTruncate` for overflow detection

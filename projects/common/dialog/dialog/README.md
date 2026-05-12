@@ -82,7 +82,7 @@ export class MyComponent {
 
 #### Lifecycle Diagram
 
-```
+```text
 closed
   ↓ open()
 opening  [cngx-dialog--opening class applied]

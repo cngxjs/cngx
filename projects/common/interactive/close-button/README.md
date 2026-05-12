@@ -385,9 +385,9 @@ This is lightweight and respects the button's color via `currentColor`.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxCloseButton.html)
-- [CngxAlert](../../../../../../ui/feedback/) — Uses CngxCloseButton
-- [CngxToastOutlet](../../../../../../ui/feedback/) — Uses CngxCloseButton
-- [provideFeedback with withCloseIcon](../../../../../../ui/feedback/) — Global icon override
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
+- [CngxAlert](../../../ui/feedback/) — Uses CngxCloseButton
+- [CngxToastOutlet](../../../ui/feedback/) — Uses CngxCloseButton
+- [provideFeedback with withCloseIcon](../../../ui/feedback/) — Global icon override
 - Demo: `dev-app/src/app/demos/common/close-button-demo/`
-- Tests: `projects/common/interactive/src/close-button/close-button.spec.ts`
+- Tests: `projects/common/interactive/close-button/close-button.spec.ts`

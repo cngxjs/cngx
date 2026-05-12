@@ -308,8 +308,8 @@ try {
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/withRetry.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [CngxAsyncClick](../async-click/) — The most common consumer of retry actions
-- [CngxAsyncState](../../../../../../core/utils/) — The shared state interface
+- [CngxAsyncState](../../../core/utils/) — The shared state interface
 - Demo: `dev-app/src/app/demos/common/retry-demo/`
-- Tests: `projects/common/interactive/src/retry/with-retry.spec.ts`
+- Tests: `projects/common/interactive/retry/with-retry.spec.ts`

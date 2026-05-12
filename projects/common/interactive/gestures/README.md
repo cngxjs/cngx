@@ -390,7 +390,7 @@ Progress is clamped to 0–1: `min(1, delta / threshold)`
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxLongPress.html)
+- [compodoc API documentation](https://cngxjs.github.io/cngx/)
 - [CngxKeyboardShortcut](../keyboard/) — Pair with gestures for keyboard alternatives
 - Demo: `dev-app/src/app/demos/common/gestures-demo/`
-- Tests: `projects/common/interactive/src/gestures/long-press.directive.spec.ts`
+- Tests: `projects/common/interactive/gestures/long-press.directive.spec.ts`

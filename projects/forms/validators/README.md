@@ -149,4 +149,4 @@ const schema = formGroup({
 
 - [CngxFormField documentation](/projects/forms/field/README.md)
 - Angular Forms [Validators](https://angular.io/api/forms/Validators)
-- Tests: `/projects/forms/validators/src/*.spec.ts`
+- Tests: `/projects/forms/validators/*.spec.ts`

@@ -446,8 +446,8 @@ Global scope shortcuts skip input elements automatically via `INPUT_TAGS` check.
 
 ## See Also
 
-- [compodoc API documentation](../../../../../../../docs/modules/CngxKeyboardShortcut.html)
+- [compodocx API documentation](https://cngxjs.github.io/cngx/)
 - [CngxLongPress and CngxSwipeDismiss](../gestures/) — Gesture-based interactions
-- [parseKeyCombo from @cngx/core/utils](../../../../../../core/utils/) — Keyboard parsing utilities
+- [parseKeyCombo from @cngx/core/utils](../../../core/utils/) — Keyboard parsing utilities
 - Demo: `dev-app/src/app/demos/common/keyboard-demo/`
-- Tests: `projects/common/interactive/src/keyboard/keyboard-shortcut.directive.spec.ts`
+- Tests: `projects/common/interactive/keyboard/keyboard-shortcut.directive.spec.ts`
