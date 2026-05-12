@@ -17,7 +17,6 @@ export {
   type CngxSmartDataSourceOptions,
 } from './data-source/smart-data-source';
 
-// Async state
 export {
   createManualState,
   type ManualAsyncState,
@@ -30,14 +29,11 @@ export {
   type AsyncView,
 } from './async-state';
 
-// Async structural directive
 export { CngxAsync, type CngxAsyncContext } from './async/async.directive';
 
-// Display atoms
 export { CngxMetric } from './display/metric.component';
 export { CngxTrend } from './display/trend.component';
 
-// Recycler
 export {
   injectRecycler,
   provideRecyclerI18n,

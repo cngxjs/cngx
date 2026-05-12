@@ -74,8 +74,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
 
   private readonly processed: Signal<T[]>;
 
-  // ── Async state — only populated when source is CngxAsyncState ─────
-
   /** The async state source, or `undefined` if constructed from a plain signal. */
   readonly asyncState: CngxAsyncState<T[]> | undefined;
 
@@ -103,7 +101,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
   ) {
     super();
 
-    // Resolve data signal and async state from the source
     let data: Signal<T[]>;
     if (isAsyncState(source)) {
       this.asyncState = source;
@@ -167,7 +164,6 @@ export class CngxSmartDataSource<T> extends DataSource<T> {
           return dir === 'asc' ? cmp : -cmp;
         });
 
-      // Pipeline: filtered → sort → paginate
       const sorted =
         sorts.length > 0
           ? [...this.filtered()].sort((a, b) =>

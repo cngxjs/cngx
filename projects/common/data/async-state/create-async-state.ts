@@ -57,7 +57,6 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
   });
 
   return {
-    // Delegate all read-only signals
     status: state.status,
     data: state.data,
     error: state.error,
@@ -73,7 +72,6 @@ export function createAsyncState<T>(): MutableAsyncState<T> {
     lastUpdated: state.lastUpdated,
 
     async execute(fn: () => Promise<T> | Observable<T>): Promise<void> {
-      // Cancel any in-flight execution
       abortController?.abort();
       const controller = new AbortController();
       abortController = controller;

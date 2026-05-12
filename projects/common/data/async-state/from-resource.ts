@@ -72,7 +72,6 @@ export function fromResource<T>(ref: Resource<T>): CngxAsyncState<T> {
   });
   const lastUpdated = signal<Date | undefined>(undefined);
 
-  // Track lastUpdated on success transitions
   effect(() => {
     const s = ref.status();
     if (s === 'resolved' || s === 'local') {
