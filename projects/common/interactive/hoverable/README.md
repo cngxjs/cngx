@@ -31,32 +31,6 @@ import { CngxHoverable } from '@cngx/common/interactive';
 export class CardComponent {}
 ```
 
-## API
-
-### CngxHoverable
-
-Directive that tracks hover state via mouseenter/mouseleave events.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxHoverable | — | — | Presence enables hover tracking (no value required) |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-- `hovered: WritableSignal<boolean>` — True while the pointer is over the host element
-
-#### CSS Custom Properties
-
-None
-
 ## Accessibility
 
 CngxHoverable is a low-level interaction atom:

@@ -40,54 +40,6 @@ export class GesturesComponent {
 }
 ```
 
-## API
-
-### CngxLongPress
-
-Detects long-press gestures via Pointer Events.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxLongPress | — | — | Presence enables long-press detection (no value required) |
-| threshold | `number` | `500` | Time in ms the pointer must be held to trigger |
-| enabled | `boolean` | `true` | Whether the directive is active |
-| moveThreshold | `number` | `10` | Maximum pointer movement in px before gesture is cancelled |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| longPressed | `PointerEvent` | Emitted when a long-press gesture completes |
-
-#### Signals
-
-- `longPressing: Signal<boolean>` — True while a long-press gesture is building (pointer held, timer running)
-
-### CngxSwipeDismiss
-
-Detects directional swipe gestures via Pointer Events.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxSwipeDismiss | `SwipeDirection` | required | Direction of swipe: `'left' \| 'right' \| 'up' \| 'down'` |
-| threshold | `number` | `50` | Minimum distance in px to register as a completed swipe |
-| enabled | `boolean` | `true` | Whether the directive is active |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| swiped | `void` | Emitted when a swipe gesture completes past the threshold |
-
-#### Signals
-
-- `swiping: Signal<boolean>` — True while a swipe gesture is in progress
-- `swipeProgress: Signal<number>` — Progress 0–1 (clamped) representing distance traveled
-
 ## Accessibility
 
 Both gesture directives are low-level interaction atoms:

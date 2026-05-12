@@ -52,10 +52,6 @@ Captures the previously focused element on init and restores focus when the host
 3. Nearest focusable ancestor
 4. Nothing (focus stays where it is)
 
-### Selector
-
-`[cngxFocusRestore]` -- exportAs `"cngxFocusRestore"`
-
 ---
 
 ## CngxAutofocus

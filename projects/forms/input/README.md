@@ -47,20 +47,6 @@ Projects these attributes automatically when inside a `cngx-form-field`:
 `id`, `aria-describedby`, `aria-labelledby`, `aria-invalid`, `aria-required`,
 `aria-busy`, `aria-errormessage`, `aria-readonly`, `disabled`, `autocomplete`, `spellcheck`
 
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-input--error` | `touched && invalid` |
-| `cngx-input--focused` | Input has DOM focus |
-
-### Inputs
-
-| Input | Description |
-|-|-|
-| `autocomplete` | Explicit override (default: auto-inferred from field name) |
-| `spellcheck` | Explicit override (default: auto-disabled for email/password/url/phone/code) |
-
 ### Smart Autocomplete Mappings
 
 | Field name | autocomplete value |
@@ -153,40 +139,6 @@ Implements `ControlValueAccessor` for Reactive Forms.
 <input cngxInputMask="(00) 0000-0000|(00) 00000-0000" />
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxInputMask` | `string` | required | Mask pattern, preset name, or `\|`-separated patterns |
-| `placeholder` | `string` | `'_'` | Char shown for unfilled positions |
-| `includeLiterals` | `boolean` | `false` | Include literal chars in the raw value |
-| `guide` | `boolean` | `true` | Show unfilled slots and auto-position cursor |
-| `prefix` | `string` | `''` | Static text prepended to display value |
-| `suffix` | `string` | `''` | Static text appended to display value |
-| `transform` | `(char: string) => string` | `undefined` | Transform applied to each accepted char |
-| `customTokens` | `MaskTokenMap` | `undefined` | Custom token definitions |
-| `clearOnBlur` | `boolean` | `false` | Clear input on blur when mask is incomplete |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `rawValue` | `string` | Unmasked value (digits/letters only) |
-| `maskedValue` | `string` | Formatted value with prefix/suffix |
-| `maskedValueCore` | `string` | Formatted value without prefix/suffix |
-| `isComplete` | `boolean` | All required positions filled |
-| `currentPattern` | `string` | Currently active pattern |
-
-### Outputs
-
-| Output | Type |
-|-|-|
-| `valueChange` | `string` |
-
-### Methods
-
-`setValue(raw: string)`, `clear()`
-
 ### Built-in Mask Tokens
 
 | Token | Description | Regex |
@@ -235,35 +187,6 @@ Implements `ControlValueAccessor` for Reactive Forms.
 <input cngxNumericInput [decimals]="0" [allowNegative]="false" />
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `locale` | `string` | `LOCALE_ID` | Locale for number formatting |
-| `min` | `number` | `undefined` | Minimum allowed value |
-| `max` | `number` | `undefined` | Maximum allowed value |
-| `step` | `number` | `1` | Step for Arrow key increment/decrement |
-| `decimals` | `number` | `undefined` | Max decimal places (`0` = integer only) |
-| `formatOnBlur` | `boolean` | `true` | Format with thousands separator on blur |
-| `allowNegative` | `boolean` | `true` | Allow negative values |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `numericValue` | `number \| null` | The numeric value (`null` when empty) |
-| `isValid` | `boolean` | Within min/max bounds |
-
-### Outputs
-
-| Output | Type |
-|-|-|
-| `valueChange` | `number \| null` |
-
-### Methods
-
-`setValue(value: number | null)`, `clear()`
-
 ## CngxAutosize
 
 Auto-resize textarea based on content. Signal-first alternative to `cdkTextareaAutosize`.
@@ -275,23 +198,6 @@ Sets `resize: none` and `box-sizing: border-box` on the host.
 <span>Height: {{ auto.height() }}px</span>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `minRows` | `number` | `1` | Minimum number of rows |
-| `maxRows` | `number` | `undefined` | Maximum rows (`undefined` = unlimited) |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `height` | `number` | Current computed height in px |
-
-### Methods
-
-`resize()` -- force recalculation of height.
-
 ## CngxInputClear
 
 Headless clear behavior for an input or textarea. Place on a button or any element.
@@ -302,28 +208,6 @@ Headless clear behavior for an input or textarea. Place on a button or any eleme
   @if (clr.hasValue()) { Clear }
 </button>
 ```
-
-### Inputs
-
-| Input | Type | Description |
-|-|-|-|
-| `cngxInputClear` | `HTMLInputElement \| HTMLTextAreaElement` | required -- target element to clear |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `hasValue` | `boolean` | Whether the target has a value |
-
-### Outputs
-
-| Output | Type |
-|-|-|
-| `cleared` | `void` |
-
-### Methods
-
-`clear()` -- clears value, dispatches `input` event, focuses target.
 
 ## CngxCopyValue
 
@@ -340,36 +224,6 @@ Shows `copied` feedback that auto-resets after `resetDelay`.
 <button [cngxCopyValue]="apiKey()">Copy API Key</button>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxCopyValue` | `string` | `undefined` | Explicit value to copy |
-| `source` | `HTMLInputElement \| HTMLTextAreaElement` | `undefined` | Fallback source element |
-| `resetDelay` | `number` | `2000` | Milliseconds to keep `copied` true |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `copied` | `boolean` | `true` for `resetDelay` ms after a successful copy |
-
-### Properties
-
-| Property | Type | Description |
-|-|-|-|
-| `supported` | `boolean` | Whether the Clipboard API is available |
-
-### Outputs
-
-| Output | Type |
-|-|-|
-| `didCopy` | `string` |
-
-### Methods
-
-`copy(): Promise<void>` -- copies value to clipboard.
-
 ## CngxOtpInput + CngxOtpSlot
 
 OTP/PIN input with auto-advance, paste support, and arrow key navigation.
@@ -383,38 +237,6 @@ The consumer provides slot `<input>` elements inside the container.
 </div>
 ```
 
-### CngxOtpInput Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `length` | `number` | `6` | Number of input fields |
-| `inputType` | `'text' \| 'number' \| 'password'` | `'text'` | Input type for each field |
-
-### CngxOtpInput Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `indices` | `number[]` | Array of indices for `@for` rendering |
-| `value` | `string` | Combined value of all inputs |
-| `isComplete` | `boolean` | All positions filled |
-
-### CngxOtpInput Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `valueChange` | `string` | Emitted when value changes |
-| `completed` | `string` | Emitted when all positions filled |
-
-### CngxOtpInput Methods
-
-`focusAt(index: number)`, `clear()`
-
-### CngxOtpSlot Inputs
-
-| Input | Type | Description |
-|-|-|-|
-| `cngxOtpSlot` | `number` | required -- zero-based slot index |
-
 ## CngxInputFormat
 
 Display formatting on blur, raw value on focus. Applies a `format` function on blur
@@ -424,20 +246,6 @@ and a `parse` function on focus. Implements `ControlValueAccessor` for Reactive 
 <!-- Currency formatting -->
 <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" />
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxInputFormat` | `FormatFn` | required | Format function applied on blur |
-| `parse` | `ParseFn` | identity | Parse function applied on focus (inverse of format) |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `rawValue` | `string` | The raw (unformatted) value |
-| `displayValue` | `string` | The display (formatted) value |
 
 ## CngxFileDrop
 
@@ -454,44 +262,6 @@ and `maxSize`. Provides a `browse()` method for programmatic file picker access.
   }
 </div>
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `accept` | `string[]` | `[]` | Accepted MIME types (e.g. `'image/*'`, `'.pdf'`). Empty = all |
-| `maxSize` | `number` | `undefined` | Maximum file size in bytes |
-| `multiple` | `boolean` | `false` | Allow multiple files |
-
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-file-drop--dragging` | Dragging over the element |
-| `cngx-file-drop--has-files` | Files have been selected |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `dragging` | `boolean` | Dragging over the element |
-| `files` | `readonly File[]` | Valid dropped/selected files |
-| `rejected` | `readonly FileRejection[]` | Files rejected by validation |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `filesChange` | `File[]` | Valid files dropped/selected |
-| `rejectedChange` | `FileRejection[]` | Rejected files |
-
-### Methods
-
-`browse()` -- opens native file picker. `clear()` -- clears file selection.
-
-### ARIA
-
-Sets `aria-dropeffect="copy"` on the host element.
 
 ## Global Configuration
 

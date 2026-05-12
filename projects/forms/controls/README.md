@@ -170,18 +170,6 @@ Structural helper that exposes a typed `FormControl` from the parent
 `FormGroup` by name. Eliminates the need for `as FormControl<T>` casts
 in templates.
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxTypedControl` | `string` | Required | Name of the control to look up in the parent `FormGroup`. |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `control` | `Signal<AbstractControl<T> \| null>` | The resolved control, or `null` if not found. |
-
 ### Usage
 
 ```ts

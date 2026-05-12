@@ -20,17 +20,6 @@ import {
 } from '@cngx/ui/feedback';
 ```
 
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `state` | `CngxAsyncState<T>` | Required | Async state controlling which template renders. |
-| `toastSuccess` | `string \| undefined` | `undefined` | Show success toast on state transition to `success`. |
-| `toastError` | `string \| undefined` | `undefined` | Show error toast on state transition to `error`. |
-| `toastErrorDetail` | `boolean` | `false` | Append `error.message` to error toast. |
-| `toastSuccessDuration` | `number` | `3000` | Auto-dismiss duration for success toast (ms). |
-| `toastErrorDuration` | `number \| 'persistent'` | `'persistent'` | Auto-dismiss duration for error toast. |
-
 #### Rendering Rules
 
 | State | Template |
@@ -95,17 +84,6 @@ readonly state = injectAsyncState(() => this.loadItems$);
   </ng-template>
 </cngx-async-container>
 ```
-
-#### CSS Classes
-
-| Class | When Applied |
-|-|-|
-| `cngx-async-container` | Always on host |
-| `cngx-async-container--skeleton` | Skeleton template visible |
-| `cngx-async-container--content` | Content template visible |
-| `cngx-async-container--empty` | Empty template visible |
-| `cngx-async-container--error` | Error template visible |
-| `cngx-async-container--refreshing` | Data visible + refresh in progress |
 
 #### Refresh Indicator
 

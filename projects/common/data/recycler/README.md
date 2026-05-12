@@ -494,6 +494,3 @@ Zero-JS optimization complementary to the recycler. The browser skips layout/pai
 }
 ```
 
-## API Reference
-
-Full API documentation is in compodoc — run `npm run docs:serve`.

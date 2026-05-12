@@ -70,15 +70,6 @@ export class ResidentsComponent {
 
 Structural directive that renders different template slots based on `CngxAsyncState` status.
 
-### Inputs
-
-| Input | Type | Description |
-|-|-|-|
-| `cngxAsync` | `CngxAsyncState<T>` | **Required.** The async state to render. |
-| `cngxAsyncSkeleton` | `TemplateRef<unknown> \| undefined` | Optional skeleton template shown during first load. |
-| `cngxAsyncEmpty` | `TemplateRef<unknown> \| undefined` | Optional empty template shown when data is empty after success. |
-| `cngxAsyncError` | `TemplateRef<{ $implicit: unknown }> \| undefined` | Optional error template shown on error during first load. Context: `{ $implicit: error }`. |
-
 ### Microsyntax
 
 ```

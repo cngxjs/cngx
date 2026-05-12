@@ -8,24 +8,6 @@ Implements the WAI-ARIA roving tabindex pattern for composite widgets. Enables k
 
 Container directive implementing the roving tabindex pattern. Only the active item has `tabindex="0"`; all others get `tabindex="-1"`. Arrow keys navigate within the group; Tab leaves it.
 
-#### Import
-
-```typescript
-import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `orientation` | `'horizontal' \| 'vertical' \| 'both'` | `'horizontal'` | Arrow key navigation axis. `'both'` enables both horizontal (Left/Right) and vertical (Up/Down) arrows. |
-| `loop` | `boolean` | `true` | Whether navigation wraps from last to first and vice versa. |
-| `activeIndex` | `number` (model) | `0` | Index of the currently active (focusable) item. Supports two-way `[(activeIndex)]` binding. |
-
-#### Signals (read-only)
-
-- `activeIndex: WritableSignal<number>` — Current active item index. Updates on arrow-key navigation or explicit binding changes.
-
 #### Keyboard Interactions
 
 - `ArrowRight` (horizontal/both): Move to next enabled item
@@ -66,18 +48,6 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
 ### CngxRovingItem
 
 Marker directive for focusable items within a `[cngxRovingTabindex]` container. The parent sets `tabindex` dynamically; the item must not manually set `tabindex`.
-
-#### Import
-
-```typescript
-import { CngxRovingItem } from '@cngx/common/a11y';
-```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxRovingItemDisabled` | `boolean` | `false` | Whether this item is disabled and should be skipped during navigation. |
 
 #### Example
 

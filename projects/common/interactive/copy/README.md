@@ -28,68 +28,6 @@ export class ApiKeyComponent {
 }
 ```
 
-## API
-
-### CngxCopyText
-
-Directive that copies text on click. Use on a button or clickable element.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxCopyText | `string` | required | The text to copy to the clipboard |
-| resetDelay | `number` | `2000` | Duration in ms to keep `copied` true after a successful copy |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| didCopy | `string` | Emitted after successful copy with the copied text |
-| copyFailed | `unknown` | Emitted when a copy attempt fails |
-
-#### Signals
-
-- `copied: Signal<boolean>` — True for resetDelay ms after successful copy
-- `failed: Signal<boolean>` — True when the last copy attempt failed
-- `supported: boolean` — Whether the Clipboard API is available in this environment
-
-### CngxCopyBlock
-
-Component that renders a text/code block with a built-in copy button.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| value | `string` | required | The text value to copy to clipboard |
-| buttonLabel | `string` | `'Copy'` | Label for the copy button |
-| copiedLabel | `string` | `'Copied!'` | Label shown after successful copy |
-| srAnnouncement | `string` | `'Copied to clipboard'` | Screen reader announcement on copy |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-None (state managed internally by CngxCopyText)
-
-#### CSS Custom Properties
-
-- `--cngx-copy-block-gap` (8px) — Gap between content and button
-- `--cngx-copy-block-btn-border` (currentColor) — Button border color
-- `--cngx-copy-block-btn-bg` (transparent) — Button background
-- `--cngx-copy-block-btn-color` (inherit) — Button text color
-- `--cngx-copy-block-btn-radius` (4px) — Button border radius
-- `--cngx-copy-block-btn-padding` (4px 8px) — Button padding
-- `--cngx-copy-block-btn-font-size` (0.75rem) — Button font size
-- `--cngx-copy-block-btn-copied-bg` (#e8f5e9) — Button background when copied
-- `--cngx-copy-block-btn-copied-border` (#2e7d32) — Button border when copied
-- `--cngx-copy-block-btn-copied-color` (#2e7d32) — Button text color when copied
-
 ## Accessibility
 
 CngxCopyText and CngxCopyBlock are fully accessible:

@@ -53,28 +53,6 @@ export class ObserverExampleComponent {
 
 Observes whether the host element is visible in the viewport or a scroll container using the `IntersectionObserver` API. Exposes visibility state as Angular signals.
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `root` | `string \| null` | `null` | CSS selector for the scroll container root. `null` uses the viewport. |
-| `rootMargin` | `string` | `'0px'` | Margin around the root (CSS margin syntax, e.g., `'100px 0px'`). |
-| `threshold` | `number \| number[]` | `0` | Visibility ratio(s) (0–1) at which callback fires. `0` = any pixel visible, `1` = fully visible. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `intersectionChange` | `IntersectionObserverEntry` | Emitted on every intersection change with raw entry. |
-| `entered` | `void` | Emitted once when element enters the observed area. |
-| `left` | `void` | Emitted once when element leaves the observed area. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `isIntersecting: Signal<boolean>` — `true` when any part of the element is visible within the root.
-- `intersectionRatio: Signal<number>` — Fraction of the element currently visible (0–1).
-
 ### Usage Examples
 
 #### Lazy Load Images
@@ -131,26 +109,6 @@ Observes whether the host element is visible in the viewport or a scroll contain
 ## CngxResizeObserver
 
 Observes size changes of the host element via the `ResizeObserver` API. Exposes dimensions as Angular signals for responsive component logic in TypeScript.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `box` | `'content-box' \| 'border-box' \| 'device-pixel-content-box'` | `'content-box'` | Which box model to observe. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `resize` | `ResizeObserverEntry` | Emitted on every resize with raw entry. |
-
-### Signals
-
-#### Public Signals (read-only)
-- `contentRect: Signal<DOMRectReadOnly \| null>` — Full `DOMRectReadOnly` of the content box. `null` before first observation.
-- `width: Signal<number>` — Current width in pixels. `0` before first observation.
-- `height: Signal<number>` — Current height in pixels. `0` before first observation.
-- `isReady: Signal<boolean>` — `true` after the first resize observation received.
 
 ### Usage Examples
 
@@ -221,17 +179,6 @@ export class CanvasComponent {
 ## CngxMediaQuery
 
 Reactive media query directive that exposes a `matches` signal. Wraps `window.matchMedia()` with automatic cleanup. Use for responsive layouts, drawer mode switching, and conditional rendering.
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxMediaQuery` | `string` | Required | CSS media query string to evaluate (e.g., `'(min-width: 1024px)'`). |
-
-### Signals
-
-#### Public Signals (read-only)
-- `matches: Signal<boolean>` — Whether the media query currently matches.
 
 ### Usage Examples
 

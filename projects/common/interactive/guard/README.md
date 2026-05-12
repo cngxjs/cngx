@@ -34,54 +34,6 @@ export class EditorComponent {
 }
 ```
 
-## API
-
-### CngxBeforeUnload
-
-Directive that prevents accidental page navigation via browser `beforeunload` event.
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| cngxBeforeUnload | `boolean` | required | When true, shows browser confirmation dialog on page close |
-
-#### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| — | — | — |
-
-#### Signals
-
-None
-
-#### CSS Custom Properties
-
-None
-
-### canDeactivateWhenClean Function
-
-Functional route guard that prevents navigation when a form is dirty.
-
-#### Signature
-
-```typescript
-function canDeactivateWhenClean(
-  isDirty: () => boolean,
-  message?: string
-): () => boolean
-```
-
-#### Parameters
-
-- **isDirty** (() => boolean) — Callback that returns true when there are unsaved changes
-- **message** (string, optional) — Confirmation dialog message. Default: `'You have unsaved changes. Leave anyway?'`
-
-#### Returns
-
-() => boolean — A functional guard compatible with Angular's `CanDeactivateFn`
-
 ## Accessibility
 
 Unload guards are low-level navigation protection — no ARIA needed:

@@ -14,23 +14,6 @@ Inline alert with enter/exit animations and smart visibility management.
 import { CngxAlert, CngxAlertIcon, CngxAlertAction } from '@cngx/ui/feedback';
 ```
 
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `severity` | `'info' \| 'success' \| 'warning' \| 'error'` | `'info'` | Visual severity level — determines icon, color, and ARIA role. |
-| `title` | `string \| undefined` | `undefined` | Bold primary text rendered before the message. |
-| `message` | `string` | `''` | Alert message text. |
-| `state` | `CngxAsyncState<unknown> \| undefined` | `undefined` | Bind an async state — shows when status is `error`/`success`/`loading`, hides on `idle`. Takes precedence over `[when]`. |
-| `when` | `boolean` | `true` | Boolean-driven visibility (state-driven alert takes precedence). |
-| `duration` | `number \| undefined` | `undefined` | Auto-dismiss after N milliseconds. `undefined` = never auto-dismiss. Pauses on hover/focus. |
-| `collapsible` | `boolean` | `false` | Whether the alert can be collapsed/expanded. |
-| `collapsed` | `boolean` | `false` | Whether the alert is in collapsed state. Applies `[collapsed]` class. |
-
-#### Signals (read-only)
-
-- `visibilityPhase: Signal<'hidden' \| 'entering' \| 'visible' \| 'exiting'>` — Current visibility animation phase (drives CSS animations)
-
 #### Slot Directives
 
 - `cngxAlertIcon` — Custom icon template (overrides global `withAlertIcons()` config)
@@ -64,21 +47,6 @@ readonly saveState = injectAsyncState(() => this.save$);
 </cngx-alert>
 ```
 
-#### CSS Classes
-
-| Class | When Applied |
-|-|-|
-| `cngx-alert--info` | `severity="info"` |
-| `cngx-alert--success` | `severity="success"` |
-| `cngx-alert--warning` | `severity="warning"` |
-| `cngx-alert--error` | `severity="error"` |
-| `cngx-alert--hidden` | Visibility phase `hidden` |
-| `cngx-alert--entering` | Visibility phase `entering` |
-| `cngx-alert--visible` | Visibility phase `visible` |
-| `cngx-alert--exiting` | Visibility phase `exiting` |
-| `cngx-alert--collapsible` | `collapsible=true` |
-| `cngx-alert--collapsed` | `collapsed=true` |
-
 #### CSS Custom Properties
 
 - `--cngx-alert-gap` (default `8px`) — Gap between icon and message
@@ -109,18 +77,6 @@ Scoped alert stack with optional overflow management.
 ```typescript
 import { CngxAlertStack, CngxAlerter } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `scope` | `string \| undefined` | `undefined` | Filter alerts by scope key. When set, only alerts with matching scope are shown. |
-| `reserveSpace` | `boolean` | `false` | Set minimum height (`--cngx-alert-stack-reserve-height`) to reserve space. |
-| `maxVisible` | `number \| undefined` | `undefined` | Maximum visible alerts. Older alerts collapse into a "+ N more" button when exceeded. |
-
-#### CSS Classes
-
-- `cngx-alert-stack` — Applied to the host
 
 #### CSS Custom Properties
 
@@ -158,16 +114,6 @@ export class MyComponent {
 ### CngxAlerter
 
 Injectable service for programmatic alert control. Scoped via `CngxAlertStack` (not `providedIn: 'root'`).
-
-#### Signals (read-only)
-
-- `alerts: Signal<readonly AlertState[]>` — Current alerts in the stack
-
-#### Methods
-
-- `show(config: AlertConfig): AlertRef` — Show an alert; returns handle for manual dismiss
-- `dismiss(id: string): void` — Dismiss alert by ID
-- `dismissAll(scope?: string): void` — Dismiss all alerts, optionally filtered by scope
 
 #### AlertConfig
 
@@ -230,16 +176,6 @@ Declarative directive bridging `CngxAsyncState` changes to alert displays.
 ```typescript
 import { CngxAlertOn } from '@cngx/ui/feedback';
 ```
-
-#### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `state` | `CngxAsyncState<unknown>` | Required | Async state to monitor for transitions. |
-| `alertSuccess` | `string \| undefined` | `undefined` | Message to show on `success` transition. |
-| `alertError` | `string \| undefined` | `undefined` | Message to show on `error` transition. |
-| `alertErrorDetail` | `boolean` | `false` | Append `error.message` to the alert body. |
-| `alertScope` | `string \| undefined` | `undefined` | Scope for the alert (matches `CngxAlertStack` scope). |
 
 #### Example
 

@@ -44,54 +44,6 @@ export class SaveComponent {
 }
 ```
 
-## API
-
-### withRetry Function
-
-```typescript
-function withRetry(action: AsyncAction, config?: RetryConfig): [AsyncAction, RetryState]
-```
-
-Returns a tuple: a wrapped action function and a RetryState object.
-
-#### Parameters
-
-- **action** (AsyncAction) — The async action to wrap. Must return a Promise or Observable.
-- **config** (RetryConfig, optional):
-  - **maxAttempts** (number, default: 3) — Total attempts including the first
-  - **delay** (number, default: 1000) — Base delay in ms between retries
-  - **backoff** ('linear' | 'exponential', default: 'exponential') — Retry delay strategy
-    - exponential: delay * 2^(attempt - 1)
-    - linear: delay * attempt
-
-#### Returns
-
-- **Tuple[0]** (AsyncAction) — The wrapped action with retry logic
-- **Tuple[1]** (RetryState) — Read-only state for UI feedback
-
-### RetryState Interface
-
-```typescript
-interface RetryState {
-  readonly attempt: Signal<number>;          // Current attempt (1-based, 0 before first run)
-  readonly maxAttempts: Signal<number>;      // Total attempts allowed
-  readonly retrying: Signal<boolean>;        // Waiting for retry delay
-  readonly exhausted: Signal<boolean>;       // All attempts exhausted
-  readonly lastError: Signal<unknown>;       // Error from last failed attempt
-  readonly state: CngxAsyncState<unknown>;   // Full async state view
-  reset(): void;                              // Reset state for re-invocation
-}
-```
-
-#### Signals
-
-- `attempt: Signal<number>` — Current attempt number (1-based). Zero before first invocation. Increments after each failed attempt.
-- `maxAttempts: Signal<number>` — Static computed signal; always equals the configured max attempts
-- `retrying: Signal<boolean>` — True while waiting for the retry delay before the next attempt. The feedback system maps this to 'pending' status.
-- `exhausted: Signal<boolean>` — True after the final attempt fails. Persists until reset() or a new invocation.
-- `lastError: Signal<unknown>` — The error value from the most recent failed attempt. Undefined until first failure.
-- `state: CngxAsyncState<unknown>` — Full async state view combining all signals. Bind to feedback consumers ([state]="retryState.state").
-
 ## Accessibility
 
 withRetry exposes state via RetryState, but has no built-in ARIA:

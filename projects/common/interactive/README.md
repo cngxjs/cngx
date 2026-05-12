@@ -18,28 +18,6 @@ feedback after a configurable duration.
 </button>
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxAsyncClick` | `AsyncAction` | required | Async action: `() => Promise \| Observable` |
-| `feedbackDuration` | `number` | `2000` | Duration in ms to show success/error state before reset |
-| `enabled` | `boolean` | `true` | When `false`, clicks are ignored |
-| `succeededAnnouncement` | `string` | `'Action succeeded'` | Label announced to screen readers on success |
-| `failedAnnouncement` | `string` | `'Action failed'` | Label announced to screen readers on failure |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `pending` | `boolean` | `true` while the action is executing |
-| `succeeded` | `boolean` | `true` for `feedbackDuration` ms after success |
-| `failed` | `boolean` | `true` for `feedbackDuration` ms after failure |
-| `error` | `unknown` | Error value from a failed action (cleared on reset) |
-| `status` | `AsyncStatus` | Discriminated lifecycle status: `'idle'`, `'pending'`, `'success'`, `'error'` |
-| `announcement` | `string` | Screen reader announcement for the current state |
-| `state` | `CngxAsyncState<unknown>` | Full async state view — bind to any `[state]` consumer |
-
 ### State Producer
 
 `CngxAsyncClick` exposes a `state: CngxAsyncState<unknown>` property that plugs
@@ -67,31 +45,6 @@ state fields have fixed values:
 | `progress` | always `undefined` | No progress tracking |
 | `lastUpdated` | set on success | Persists across feedback resets |
 
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-async--pending` | Action is executing |
-| `cngx-async--success` | Success feedback window |
-| `cngx-async--error` | Error feedback window |
-
-### ARIA
-
-- `aria-busy="true"` when pending
-- `aria-disabled="true"` when pending
-- Native `disabled` attribute set on `<button>`, `<input>`, `<select>`, `<textarea>` when pending
-
-### Selector
-
-`[cngxAsyncClick]` -- exportAs `"cngxAsyncClick"`
-
-### Notes
-
-- Built-in double-click guard: clicks are ignored while `pending()` is `true`.
-- Accepts both `Promise` and `Observable` return types. Observables are converted via `firstValueFrom`.
-- Feedback timer is cleared on destroy.
-- Guards against state updates after directive destruction.
-
 ### Types
 
 ```typescript
@@ -113,32 +66,6 @@ The directive only toggles the `cngx-pressed` class. All visual treatment (scale
 .cngx-pressed { transform: scale(0.97); }
 ```
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `pressableReleaseDelay` | `number` | `80` | Minimum ms the pressed class stays active |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `pressed` | `boolean` | Whether the element is currently pressed |
-
-### CSS Classes
-
-| Class | When |
-|-|-|
-| `cngx-pressed` | Pointer is down (for at least `releaseDelay` ms) |
-
-### ARIA
-
-No ARIA attributes — purely visual class-based feedback. Consumer applies `aria-pressed` if semantically appropriate.
-
-### Selector
-
-`[cngxPressable]` -- exportAs `"cngxPressable"`
-
 ## CngxLongPress
 
 Detects long-press gestures via Pointer Events. Fires after the pointer is held for the threshold duration without moving beyond a distance limit. Cancels on scroll (prevents accidental triggers).
@@ -149,34 +76,6 @@ Detects long-press gestures via Pointer Events. Fires after the pointer is held 
   Long press me
 </div>
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `threshold` | `number` | `500` | Hold time in ms to trigger |
-| `enabled` | `boolean` | `true` | Whether the directive is active |
-| `moveThreshold` | `number` | `10` | Max pointer movement in px before cancel |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `longPressed` | `PointerEvent` | Emitted when the long-press completes |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `longPressing` | `boolean` | `true` while the hold timer is running |
-
-### ARIA
-
-No ARIA attributes. Consumer is responsible for `aria-haspopup` or similar if the long-press opens a menu/context action.
-
-### Selector
-
-`[cngxLongPress]` -- exportAs `"cngxLongPress"`
 
 ### Notes
 
@@ -195,28 +94,6 @@ Supports `mod` as a platform-aware modifier (`Meta` on macOS, `Ctrl` elsewhere).
   Save
 </button>
 ```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxKeyboardShortcut` | `string` | required | Combo string: `'mod+s'`, `'ctrl+shift+k'`, `'escape'` |
-| `shortcutScope` | `'global' \| 'self'` | `'global'` | Where to listen |
-| `enabled` | `boolean` | `true` | Whether the shortcut is active |
-
-### Outputs
-
-| Output | Type | Description |
-|-|-|-|
-| `shortcutTriggered` | `KeyboardEvent` | Emitted when the shortcut fires |
-
-### ARIA
-
-No ARIA attributes set by the directive. Consumer should add `aria-keyshortcuts` on the host element for discoverability (e.g. `aria-keyshortcuts="Control+S"`).
-
-### Selector
-
-`[cngxKeyboardShortcut]` -- exportAs `"cngxKeyboardShortcut"`
 
 ### Notes
 

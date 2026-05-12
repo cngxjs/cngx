@@ -15,20 +15,6 @@ import {
 
 Displays a numeric value with optional unit suffix. Uses `Intl.NumberFormat` for locale-aware formatting. Null values render as em-dash.
 
-### Selector
-
-```html
-<cngx-metric />
-```
-
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `value` | `number \| string \| null` | **Required** | Numeric or string value. `null` renders as em-dash (—). |
-| `unit` | `string \| undefined` | `undefined` | Unit suffix (e.g., "bpm", "h", "%", "kg"). |
-| `format` | `Intl.NumberFormatOptions \| undefined` | `undefined` | `Intl.NumberFormat` options for the numeric value. |
-
 ### Example
 
 ```html
@@ -72,12 +58,6 @@ Displays a numeric value with optional unit suffix. Uses `Intl.NumberFormat` for
 - For string values without units, `aria-label` is the string itself
 - `role` is implicit (span) — no explicit role required
 
-### CSS Classes
-
-- `.cngx-metric` — host element
-- `.cngx-metric__value` — the formatted numeric span
-- `.cngx-metric__unit` — the unit suffix span (conditional)
-
 ### Styling
 
 All sizing and spacing via CSS. No CSS custom properties — inherit from parent.
@@ -102,19 +82,6 @@ All sizing and spacing via CSS. No CSS custom properties — inherit from parent
 ## CngxTrend — Trend Indicator
 
 Displays a trend percentage with directional arrow (↑ positive, ↓ negative, → flat). Consumer can override the SR label for full context.
-
-### Selector
-
-```html
-<cngx-trend />
-```
-
-### Inputs
-
-| Input | Type | Required | Description |
-|-|-|-|-|
-| `value` | `number` | Yes | Trend percentage. Positive = up, negative = down, zero = flat. |
-| `label` | `string \| undefined` | No | Consumer-provided SR label override. When set, replaces the generated default (e.g., "Revenue increased 5.3% vs. last quarter"). |
 
 ### Example
 
@@ -155,12 +122,6 @@ Displays a trend percentage with directional arrow (↑ positive, ↓ negative, 
 - `aria-label` set to generated default or custom label (always present)
 - Arrow (↑↓→) marked with `aria-hidden="true"` (visual only)
 - Screen readers announce: `"+5.3 % up"` (default) or custom label
-
-### CSS Classes
-
-- `.cngx-trend` — host element
-- `.cngx-trend--up` — applied when value > 0
-- `.cngx-trend--down` — applied when value < 0
 
 ### Styling
 

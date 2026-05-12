@@ -9,5 +9,6 @@
     "groupBy": "folder",
     "groupDepth": 2,
     "disableSourceCode": true,
+    "disableTemplateTab": true,
     "disableStyleTab": true
 }

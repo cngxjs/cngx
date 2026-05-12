@@ -49,36 +49,7 @@ export class TableComponent {}
 
 Tracks the active sort field and direction. Supports both single-sort and multi-sort (Shift+click) modes. Nothing is injected automatically — consumer explicitly wires headers via `[cngxSortRef]`.
 
-### Inputs
-
-| Input | Type | Default | Description |
-|-|-|-|-|
-| `cngxSortActive` | `string \| undefined` | `undefined` | **Controlled** active field (single-sort only). Takes precedence over internal state. |
-| `cngxSortDirection` | `'asc' \| 'desc' \| undefined` | `undefined` | **Controlled** sort direction (single-sort only). Pair with `sortChange` to keep in sync. |
-| `multiSort` | `boolean` | `false` | When `true`, Shift+click on a header adds it to the sort stack instead of replacing. |
-
-### Outputs
-
-| Output | Emits | Description |
-|-|-|-|
-| `sortChange` | `SortEntry \| undefined` | Emitted when the primary sort changes. Emits `undefined` when cleared. |
-| `sortsChange` | `SortEntry[]` | Emitted whenever the sort stack changes (includes full clears). Always the complete array at time of emission. |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `active()` | `string \| undefined` | Active field of the primary sort entry (controlled takes precedence). |
-| `direction()` | `'asc' \| 'desc' \| undefined` | Direction of the primary sort (controlled takes precedence). |
-| `sort()` | `SortEntry \| null` | Primary sort as `{ active, direction }` or `null` if none active. |
-| `sorts()` | `SortEntry[]` | All active sorts in priority order. Multi-sort stack. |
-| `isActive()` | `boolean` | `true` when at least one sort is active. |
-
-### Methods
-
-#### `setSort(field: string, additive?: boolean): void`
-
-Apply sort to a field.
+### `setSort(field, additive?)` semantics
 
 **`additive = false`** (plain click, default):
 - Same field → cycle direction: asc → desc → asc
@@ -88,8 +59,6 @@ Apply sort to a field.
 - Field not in stack → append as asc
 - Field in stack as asc → change to desc
 - Field in stack as desc → remove from stack
-
-**Example:**
 
 ```typescript
 // Primary sort: age ascending
@@ -104,49 +73,13 @@ this.sort.setSort('age', false);
 // sorts() = [{ active: 'age', direction: 'desc' }]
 ```
 
-#### `clear(): void`
-
-Remove all sorts. Emits both `sortChange(undefined)` and `sortsChange([])`.
-
-```typescript
-this.sort.clear();
-// sort.sort() is now null
-```
+`clear()` removes all sorts and emits both `sortChange(undefined)` and `sortsChange([])`.
 
 ## CngxSortHeader — Sort Header Molecule
 
 Apply to clickable header elements. Consumer provides explicit `[cngxSortRef]` — no ancestor injection, no hidden wiring.
 
 Supports multi-sort: Shift+click adds column to stack (when `multiSort` enabled on owning `CngxSort`). Shows `priority()` badge for visual sort-order indication.
-
-### Inputs
-
-| Input | Type | Required | Description |
-|-|-|-|-|
-| `cngxSortHeader` | `string` | Yes | The field key this header represents. |
-| `cngxSortRef` | `CngxSort` | Yes | Explicit reference to the owning `CngxSort` directive. |
-
-### Signals
-
-| Signal | Type | Description |
-|-|-|-|
-| `isActive()` | `boolean` | `true` when this column is part of the active sort (primary or secondary). |
-| `isAsc()` | `boolean` | `true` when active and direction is ascending. |
-| `isDesc()` | `boolean` | `true` when active and direction is descending. |
-| `priority()` | `number` | 1-based position in the sort stack (0 when not active). Only meaningful in multi-sort mode. |
-| `ariaSort()` | `'ascending' \| 'descending' \| null` | ARIA attribute value for screen readers. |
-
-### Host Classes
-
-- `.cngx-sort-header--active` — applied when column is in the active sort
-- `.cngx-sort-header--asc` — applied when active and ascending
-- `.cngx-sort-header--desc` — applied when active and descending
-
-### ARIA Attributes
-
-- `aria-sort` — auto-set to `'ascending'`, `'descending'`, or removed based on sort state
-
-**Example:**
 
 ```html
 <button cngxSortHeader="name" [cngxSortRef]="sort" #nameCol="cngxSortHeader">
