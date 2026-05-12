@@ -23,7 +23,6 @@ export interface CngxTabOverflowTriggerContext {
  * `CNGX_TABS_CONFIG.templates.overflowTrigger` >
  * `i18n.moreTabsLabel(count)`.
  *
- * @example
  * ```html
  * <cngx-tab-overflow>
  *   <ng-template cngxTabOverflowTrigger let-count>

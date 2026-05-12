@@ -55,8 +55,6 @@ export class CngxExpandableToggle {
  * Supports custom toggle templates via `ng-template[cngxExpandableToggle]` —
  * use for icon buttons or any custom UI instead of plain text labels.
  *
- * @example
- *
  * ### Basic usage
  * ```html
  * <cngx-expandable-text [lines]="3">

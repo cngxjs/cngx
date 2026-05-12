@@ -30,8 +30,6 @@ const FOCUS_DEBOUNCE_MS = 50;
  *
  * The consumer sees only the attribute — no extra elements in the template.
  *
- * @example
- *
  * ### Basic
  * ```html
  * <button cngxTooltip="Ctrl+S">Save</button>

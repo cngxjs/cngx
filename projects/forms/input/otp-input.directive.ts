@@ -13,7 +13,6 @@ import {
 /**
  * Marks a single input slot within a `[cngxOtpInput]` container.
  *
- * @example
  * ```html
  * @for (i of otp.indices(); track i) {
  *   <input [cngxOtpSlot]="i" />
@@ -109,7 +108,6 @@ export class CngxOtpSlot {
  * Renders no inputs — the consumer provides `<input [cngxOtpSlot]="i" />` elements
  * inside the container.
  *
- * @example
  * ```html
  * <div cngxOtpInput [length]="6" #otp="cngxOtpInput" (completed)="verify($event)">
  *   @for (i of otp.indices(); track i) {

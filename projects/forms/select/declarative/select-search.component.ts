@@ -22,7 +22,6 @@ import { CNGX_SELECT_SHELL_SEARCH_HOST } from './select-search-host';
  * **Usage:** direct child of `<cngx-select-shell>`. The shell projects
  * via `<ng-content select="cngx-select-search" />`.
  *
- * @example
  * ```html
  * <cngx-select-shell [(value)]="city">
  *   <cngx-select-search [placeholder]="'Filter cities…'" />

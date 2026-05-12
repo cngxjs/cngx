@@ -36,7 +36,6 @@ export class CngxDialogStack {
  * one stack. Call `provideDialogStack()` in a component's `providers` array to
  * create an isolated stack scope (e.g., for a sub-application or dialog group).
  *
- * @example
  * ```typescript
  * @Component({
  *   providers: [provideDialogStack()],

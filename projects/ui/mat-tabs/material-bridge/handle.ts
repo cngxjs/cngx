@@ -115,7 +115,6 @@ export type CngxMatTabHandleFactory = typeof createMatTabHandle;
  * Tracked-debt: family-uniformity staging, single in-package
  * consumer today. See `tabs-accepted-debt §10`.
  *
- * @example
  * ```ts
  * providers: [
  *   {

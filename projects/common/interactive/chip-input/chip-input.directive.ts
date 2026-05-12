@@ -55,7 +55,6 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * (no embedded separator) is left to the default paste behaviour
  * so the input value populates normally and the user can decide.
  *
- * @example
  * ```html
  * <input
  *   cngxChipInput

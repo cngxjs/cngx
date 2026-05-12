@@ -26,7 +26,6 @@ export type CngxCommitControllerFactory = <T>() => CngxCommitController<T>;
  * delegates to this one, so a single override here cascades into
  * every select variant transparently.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

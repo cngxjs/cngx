@@ -17,8 +17,6 @@ export interface KeyCombo {
  * The `mod` modifier resolves to `meta` on macOS and `ctrl` elsewhere.
  * Modifier names are case-insensitive.
  *
- *
- * @example
  * ```typescript
  * const combo = parseKeyCombo('mod+b');
  * // { key: 'b', ctrl: false, meta: false, mod: true, shift: false, alt: false }

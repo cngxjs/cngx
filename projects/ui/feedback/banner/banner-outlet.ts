@@ -23,7 +23,6 @@ import { CngxBanner, type BannerState } from './banner.service';
  * Banners present at first render appear without animation to avoid
  * layout jump on page load.
  *
- * @example
  * ```html
  * <cngx-banner-outlet />
  * <router-outlet />

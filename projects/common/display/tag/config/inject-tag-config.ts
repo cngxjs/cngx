@@ -13,7 +13,6 @@ import { CNGX_TAG_CONFIG } from './tag.config.defaults';
  * consumers don't need to import the token directly. Mirrors
  * `injectSelectConfig` in `@cngx/forms/select`.
  *
- * @example
  * ```ts
  * export class MyDirective {
  *   private readonly cfg = injectTagConfig();

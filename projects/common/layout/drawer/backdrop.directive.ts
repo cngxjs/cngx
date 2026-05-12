@@ -21,9 +21,6 @@ import {
  * visual styling (background color, opacity, transitions) via CSS
  * custom properties and the `.cngx-backdrop--visible` class.
  *
- *
- * @example
- *
  * ### Drawer backdrop
  * ```html
  * <div cngxDrawer #drawer="cngxDrawer">

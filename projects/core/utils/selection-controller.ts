@@ -105,8 +105,6 @@ const POST_DESTROY_FALSE: Signal<boolean> = signal(false).asReadonly();
  * Create a signal-based selection engine that reads and writes an external
  * `WritableSignal<T[]>`.
  *
- * @example
- *
  * ```ts
  * const values = signal<User[]>([]);
  * const selection = createSelectionController(values, { keyFn: (u) => u.id });

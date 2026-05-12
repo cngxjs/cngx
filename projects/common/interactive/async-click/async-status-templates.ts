@@ -6,7 +6,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * Used by `CngxActionButton` and `CngxPopoverAction` to project
  * custom pending-state content.
  *
- * @example
  * ```html
  * <ng-template cngxPending>Saving...</ng-template>
  * ```
@@ -19,7 +18,6 @@ export class CngxPending {
 /**
  * Template shown after an async action succeeds (for `feedbackDuration` ms).
  *
- * @example
  * ```html
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
@@ -33,7 +31,6 @@ export class CngxSucceeded {
  * Template shown after an async action fails (for `feedbackDuration` ms).
  * The implicit template context provides the error value.
  *
- * @example
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```

@@ -8,7 +8,6 @@ import { fromEvent } from 'rxjs';
  * Place on a button or any element. Pass a reference to the target input.
  * The consumer renders the UI — this directive only provides the behavior.
  *
- * @example
  * ```html
  * <input #nameInput />
  * <button [cngxInputClear]="nameInput" #clr="cngxInputClear">

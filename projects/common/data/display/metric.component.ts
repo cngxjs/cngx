@@ -16,8 +16,6 @@ import {
  *
  * Composable — works inside any card variant, header, body, or standalone.
  *
- * @example
- *
  * ### Basic
  * ```html
  * <cngx-metric [value]="1234" unit="bpm" />

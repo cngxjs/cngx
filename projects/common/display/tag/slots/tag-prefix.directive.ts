@@ -10,7 +10,6 @@ import type { CngxTagPrefixContext } from './tag-slot.context';
  * The slot has no default body — when not projected, no DOM is
  * rendered in the prefix position.
  *
- * @example
  * ```html
  * <span cngxTag [color]="'warning'">
  *   <ng-template cngxTagPrefix>

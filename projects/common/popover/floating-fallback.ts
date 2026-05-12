@@ -39,7 +39,6 @@ export const CNGX_FLOATING_FALLBACK = new InjectionToken<FloatingFallbackConfig 
  * The consumer must install `@floating-ui/dom` themselves — this library
  * never imports it directly, keeping the bundle at zero cost for modern browsers.
  *
- * @example
  * ```typescript
  * import { computePosition, flip, offset, shift } from '@floating-ui/dom';
  *

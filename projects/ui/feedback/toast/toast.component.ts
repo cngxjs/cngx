@@ -11,8 +11,6 @@ import { CngxToaster, type ToastRef } from './toast.service';
  *
  * Requires `provideToasts()` or `provideFeedback(withToasts())`.
  *
- * @example
- *
  * ### Simple message
  * ```html
  * <cngx-toast severity="success" message="Saved" [when]="saved()" />

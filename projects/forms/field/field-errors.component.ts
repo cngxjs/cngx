@@ -23,12 +23,12 @@ import { CNGX_ERROR_MESSAGES } from './form-field.token';
  * Use `CngxError` instead if you need full control over error rendering.
  * Do not use both `CngxFieldErrors` and `CngxError` in the same form field.
  *
- * @example Default rendering
+ * Default rendering
  * ```html
  * <cngx-field-errors />
  * ```
  *
- * @example Custom error template
+ * Custom error template
  * ```html
  * <cngx-field-errors>
  *   <ng-template let-message="message" let-kind="kind" let-index="index">

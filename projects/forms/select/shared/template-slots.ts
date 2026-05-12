@@ -223,7 +223,6 @@ export interface CngxComboboxChipContext<T = unknown> {
 /**
  * `*cngxSelectCheck` slot — overrides the default selection indicator.
  *
- * @example
  * ```html
  * <cngx-select [options]="...">
  *   <ng-template cngxSelectCheck let-option let-selected="selected">
@@ -328,7 +327,6 @@ export class CngxSelectOptionLabel<T = unknown> {
 /**
  * `*cngxSelectError` slot. `retry` invokes `[retryFn]` and emits `(retry)`.
  *
- * @example
  * ```html
  * <cngx-select [state]="colorsState" [retryFn]="reload">
  *   <ng-template cngxSelectError let-error let-retry="retry">
@@ -351,7 +349,6 @@ export class CngxSelectError {
  * `*cngxSelectRetryButton` slot. Drives all three retry surfaces. Wiring
  * + disabled handling stay with the shell.
  *
- * @example
  * ```html
  * <cngx-select [state]="colorsState" [retryFn]="reload">
  *   <ng-template cngxSelectRetryButton let-retry let-disabled="disabled" let-label="label">
@@ -373,7 +370,6 @@ export class CngxSelectRetryButton {
  * `*cngxSelectLoadingGlyph` slot — replaces the spinner/bar/dots inner
  * body. ARIA wiring stays on the parent span. Skeleton ignores this slot.
  *
- * @example
  * ```html
  * <cngx-select [loading]="true">
  *   <ng-template cngxSelectLoadingGlyph>
@@ -407,7 +403,6 @@ export class CngxSelectRefreshing {
  * `*cngxSelectCommitError` slot. `retry` re-invokes the commit with the
  * same intended value.
  *
- * @example
  * ```html
  * <cngx-select [commitAction]="saveColor" [(value)]="color">
  *   <ng-template cngxSelectCommitError let-error let-option="option" let-retry="retry">
@@ -429,7 +424,6 @@ export class CngxSelectCommitError<T = unknown> {
 /**
  * `*cngxMultiSelectChip` slot. `remove` routes through the commit flow.
  *
- * @example
  * ```html
  * <cngx-multi-select [options]="tags" [(values)]="picked">
  *   <ng-template cngxMultiSelectChip let-opt let-remove="remove">
@@ -452,7 +446,6 @@ export class CngxMultiSelectChip<T = unknown> {
  * Cascade: this slot > `[chipDragHandle]` Input > default `⋮⋮`. Handle
  * span stays `aria-hidden="true"` (AT reads `[reorderAriaLabel]` instead).
  *
- * @example
  * ```html
  * <cngx-reorderable-multi-select [options]="tags" [(values)]="picked">
  *   <ng-template cngxMultiSelectChipHandle>
@@ -474,7 +467,6 @@ export class CngxMultiSelectChipHandle {
  * `*cngxMultiSelectTriggerLabel` slot — replaces the entire chip strip.
  * Mutually exclusive with `*cngxMultiSelectChip`.
  *
- * @example
  * ```html
  * <cngx-multi-select [options]="tags" [(values)]="picked">
  *   <ng-template cngxMultiSelectTriggerLabel let-count="count">
@@ -498,7 +490,6 @@ export class CngxMultiSelectTriggerLabel<T = unknown> {
  * `*cngxSelectClearButton` slot — replaces the `✕` button. Consumer owns
  * the element and invokes `clear()`.
  *
- * @example
  * ```html
  * <cngx-multi-select [clearable]="true" [(values)]="picked">
  *   <ng-template cngxSelectClearButton let-clear let-disabled="disabled">
@@ -521,7 +512,6 @@ export class CngxSelectClearButton {
  * `*cngxSelectOptionPending` slot — replaces
  * `.cngx-select__option-spinner`.
  *
- * @example
  * ```html
  * <cngx-multi-select [commitAction]="saveTag" [(values)]="tags">
  *   <ng-template cngxSelectOptionPending let-opt>
@@ -544,7 +534,6 @@ export class CngxSelectOptionPending<T = unknown> {
  * `*cngxSelectOptionError` slot — inline `!` badge for
  * `commitErrorDisplay === 'inline'`.
  *
- * @example
  * ```html
  * <cngx-select [commitAction]="saveColor" commitErrorDisplay="inline">
  *   <ng-template cngxSelectOptionError let-opt let-error="error">
@@ -567,7 +556,6 @@ export class CngxSelectOptionError<T = unknown> {
  * `*cngxComboboxTriggerLabel` slot — replaces the chip-strip loop;
  * search input stays in place.
  *
- * @example
  * ```html
  * <cngx-combobox [options]="tags" [(values)]="picked">
  *   <ng-template cngxComboboxTriggerLabel let-count="count">
@@ -590,7 +578,6 @@ export class CngxComboboxTriggerLabel<T = unknown> {
  * `*cngxComboboxChip` slot. Mirrors `CngxMultiSelectChip` so a chip
  * template can target either variant unchanged.
  *
- * @example
  * ```html
  * <cngx-combobox [options]="tags" [(values)]="picked">
  *   <ng-template cngxComboboxChip let-opt let-remove="remove">
@@ -643,7 +630,6 @@ export interface CngxSelectInputSlotContext {
  * `*cngxSelectInputPrefix` slot — projected before the trigger `<input>`.
  * `CngxTypeahead` / `CngxCombobox` only.
  *
- * @example
  * ```html
  * <cngx-typeahead [options]="users">
  *   <ng-template cngxSelectInputPrefix let-focused="focused">
@@ -681,7 +667,6 @@ export class CngxSelectInputSuffix {
  * `actionPosition` (`top` / `bottom` / `both`). Zero visual default;
  * the consumer template renders verbatim.
  *
- * @example
  * ```html
  * <cngx-action-select [options]="tags" [(value)]="current"
  *                     [quickCreateAction]="createTag">

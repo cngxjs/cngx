@@ -11,9 +11,6 @@ import { Directive, input } from '@angular/core';
  * attributes (`aria-expanded` + `aria-controls`) in a single declaration,
  * preventing mismatches where one is set without the other.
  *
- *
- * @example
- *
  * ### Simple disclosure
  * ```html
  * <button [cngxAriaExpanded]="open()" [controls]="'panel-id'" (click)="open.set(!open())">

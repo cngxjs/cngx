@@ -15,7 +15,6 @@ import { CngxOption } from '@cngx/common/interactive';
  * content-projection scoping issue that prevents direct use inside
  * data-mode `<cngx-select>` (which requires `[options]`).
  *
- * @example
  * ```html
  * <button type="button" [cngxPopoverTrigger]="pop" [cngxListboxTrigger]="lb"
  *         [popover]="pop" (click)="pop.toggle()">Choose…</button>

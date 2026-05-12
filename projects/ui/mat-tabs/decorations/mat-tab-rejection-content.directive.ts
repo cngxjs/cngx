@@ -79,7 +79,6 @@ export interface CngxMatTabRejectionContentContext {
  *      `commitRolledBackTo(originLabel)` / `commitFailedRetry`
  *      phrase from `injectTabsI18n()`).
  *
- * @example
  * ```html
  * <mat-tab-group cngxMatTabs [commitAction]="save">
  *   <ng-template

@@ -6,7 +6,6 @@ import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
  * Place on the same `<input>` element (works with or without `cngxInput`).
  * Exposes a `visible` signal and `toggle()` method for binding a toggle button.
  *
- * @example
  * ```html
  * <input cngxInput cngxPasswordToggle #pwd="cngxPasswordToggle" type="password" />
  * <button type="button" (click)="pwd.toggle()" [attr.aria-label]="pwd.visible() ? 'Hide password' : 'Show password'">

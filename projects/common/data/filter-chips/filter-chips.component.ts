@@ -110,7 +110,6 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  * mount and unmount cleans the latest binding (per
  * `reference_signal_architecture` memory-hygiene rule).
  *
- * @example
  * ```html
  * <cngx-filter-chips
  *   label="Tags"

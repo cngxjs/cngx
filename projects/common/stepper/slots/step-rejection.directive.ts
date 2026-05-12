@@ -31,7 +31,6 @@ export interface CngxStepRejectionContext {
  * Symmetric context shape with the upcoming tabs `cngxTabRejectionIcon`
  * slot so consumer templates port directly between the two families.
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepRejection let-failedIndex="failedIndex" let-originLabel="originLabel">

@@ -38,7 +38,6 @@ export interface ErrorRegistryFeature {
  * pair with {@link withGlobalRevealOnSubmit} or {@link withRevealOnNavigate}
  * to install ambient reveal behaviour.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

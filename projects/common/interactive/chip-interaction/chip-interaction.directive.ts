@@ -77,7 +77,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * routes to that. The two paths are mutually exclusive: a non-empty
  * `disabledReason` wins.
  *
- * @example
  * ```html
  * <cngx-chip cngxChipInteraction [value]="'red'" [(selected)]="redOn">
  *   Red

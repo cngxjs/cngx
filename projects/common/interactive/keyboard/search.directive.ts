@@ -18,8 +18,6 @@ import { fromEvent, map, switchMap, timer } from 'rxjs';
  * Converts the DOM `input` event stream into a debounced Signal. The raw
  * Observable is never exposed — signal at the API boundary.
  *
- * @example
- *
  * ### Basic usage
  * ```html
  * <input cngxSearch #search="cngxSearch" placeholder="Search..." />

@@ -6,8 +6,6 @@ import { Directive, input } from '@angular/core';
  * Typically used for status indicators (P-badges, notification dots)
  * that float in the card's top-right corner.
  *
- * @example
- *
  * ```html
  * <cngx-card>
  *   <cngx-status-badge cngxCardBadge status="pending" variant="dot" />

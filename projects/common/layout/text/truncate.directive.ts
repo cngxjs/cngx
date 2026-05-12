@@ -19,8 +19,6 @@ import {
  *
  * The `expanded` state supports two-way binding (controlled + uncontrolled).
  *
- * @example
- *
  * ### Basic truncation with toggle
  * ```html
  * <p [cngxTruncate]="3" [(expanded)]="expanded" #trunc="cngxTruncate">

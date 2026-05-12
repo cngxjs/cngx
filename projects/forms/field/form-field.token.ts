@@ -45,7 +45,6 @@ export const CNGX_FORM_FIELD_REVEAL = new InjectionToken<CngxFormFieldRevealCont
  * Injection token for the application-wide error message map.
  * `CngxFieldErrors` uses this to auto-render validation messages.
  *
- * @example
  * ```ts
  * providers: [provideFormField(withErrorMessages({
  *   required: () => 'Required.',
@@ -148,7 +147,6 @@ export const CNGX_FORM_FIELD_CONFIG = new InjectionToken<FormFieldConfig>('CngxF
  * Registers application-wide defaults for all cngx form field instances.
  * Accepts `withXxx()` feature functions for composable configuration.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
@@ -180,7 +178,6 @@ export function provideFormField(...features: FormFieldFeature[]): EnvironmentPr
 /**
  * Convenience function to provide error messages without using `provideFormField`.
  *
- * @example
  * ```ts
  * providers: [provideErrorMessages({ required: () => 'Required.' })]
  * ```
@@ -202,12 +199,12 @@ export function withErrorMessages(messages: ErrorMessageMap): FormFieldFeature {
  * The strategy fully overrides the default gate
  * (`touched OR errorScope.showErrors`).
  *
- * @example built-in
+ * built-in
  * ```ts
  * provideFormField(withErrorStrategy('onSubmit'))
  * ```
  *
- * @example custom
+ * custom
  * ```ts
  * provideFormField(withErrorStrategy(
  *   (c) => c.invalid && (c.dirty || c.submitted),
@@ -226,12 +223,12 @@ export function withErrorStrategy(
  * Enable auto-generated constraint hints for all form fields.
  * Pass `true` for English defaults, or a `ConstraintHintFormatters` object for i18n.
  *
- * @example English defaults
+ * English defaults
  * ```ts
  * provideFormField(withConstraintHints())
  * ```
  *
- * @example German
+ * German
  * ```ts
  * provideFormField(withConstraintHints({
  *   lengthRange: (min, max) => `${min}–${max} Zeichen`,
@@ -271,12 +268,12 @@ export interface ConstraintHintFormatters {
    * Additional hints from custom constraints.
    * Receives constraint metadata and returns extra hint strings to append.
    *
-   * @example Pattern hint
+   * Pattern hint
    * ```ts
    * extra: (c) => c.patterns.length ? ['Must match the required format'] : []
    * ```
    *
-   * @example Required hint
+   * Required hint
    * ```ts
    * extra: (c) => c.required ? ['This field is mandatory'] : []
    * ```
@@ -311,7 +308,6 @@ export const DEFAULT_HINT_FORMATTERS: ConstraintHintFormatters = {
  *
  * @param marker The marker text. Defaults to `'*'`.
  *
- * @example
  * ```ts
  * provideFormField(withRequiredMarker())       // shows '*'
  * provideFormField(withRequiredMarker('(required)'))
@@ -370,7 +366,6 @@ export const DEFAULT_NO_SPELLCHECK_FIELDS: ReadonlySet<string> = new Set([
  * @param mappings Additional or replacement field-name-to-autocomplete entries.
  *   Merged with built-in defaults. Pass a key with value `''` to remove a mapping.
  *
- * @example
  * ```ts
  * provideFormField(withAutocompleteMappings({
  *   iban: 'cc-number',
@@ -395,7 +390,6 @@ export function withAutocompleteMappings(mappings: Record<string, string>): Form
  *
  * @param fields Additional field names to disable spellcheck for.
  *
- * @example
  * ```ts
  * provideFormField(withNoSpellcheck(['iban', 'accountnumber', 'serialnumber']))
  * ```

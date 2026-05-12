@@ -19,8 +19,6 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *
  * Uses `parseKeyCombo` and `matchesKeyCombo` from `@cngx/core/utils`.
  *
- * @example
- *
  * ### Global save shortcut
  * ```html
  * <button [cngxKeyboardShortcut]="'mod+s'" (shortcutTriggered)="save()">

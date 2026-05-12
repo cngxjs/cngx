@@ -35,7 +35,6 @@ import {
  * strategy's `attemptMove` couldn't highlight never triggers a
  * `movedToChild` / `movedToParent` emission.
  *
- * @example
  * ```html
  * <ul
  *   role="tree"

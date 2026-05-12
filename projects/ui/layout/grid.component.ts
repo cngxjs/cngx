@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 /**
  * Composable CSS grid layout component.
  *
- * @example
  * <cngx-grid columns="3" gap="16px">
  *   <div>Cell 1</div>
  *   <div>Cell 2</div>

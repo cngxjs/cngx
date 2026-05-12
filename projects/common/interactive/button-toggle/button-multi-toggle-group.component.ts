@@ -57,7 +57,6 @@ import {
  * satisfies `CngxControlValue<T[]>` without owning two synchronised
  * models — both names point to the same `ModelSignal<T[]>` instance.
  *
- * @example
  * ```html
  * <cngx-button-multi-toggle-group label="Filters" [(selectedValues)]="filters">
  *   <button cngxButtonToggle value="open">Open</button>

@@ -37,8 +37,6 @@ import { CngxPopover } from './popover.directive';
  * in `popover-panel-theme.scss`: `default`, `info`, `warning`,
  * `danger`, `success`. Add custom variants via CSS.
  *
- * @example
- *
  * ### Basic with header/body/footer
  * ```html
  * <button [cngxPopoverTrigger]="panel" (click)="panel.popover.toggle()">Menu</button>

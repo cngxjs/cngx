@@ -14,7 +14,6 @@ export interface MatchMediaMock {
  * Creates a mock for `window.matchMedia` that captures the listener
  * and allows programmatic triggering of match changes.
  *
- * @example
  * ```typescript
  * const mock = createMatchMediaMock(true); // initial matches
  * mock.install(window);

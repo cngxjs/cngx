@@ -12,7 +12,6 @@ export interface NavGroupRef {
  * Provided at the sidebar/nav container level — only groups within the
  * same provider scope coordinate. Not `providedIn: 'root'` on purpose.
  *
- * @example
  * ```typescript
  * @Component({
  *   providers: [

@@ -22,8 +22,6 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * during execution, announces state changes to screen readers, and guards against
  * double-clicks.
  *
- * @example
- *
  * ### Basic usage
  * ```html
  * <button [cngxAsyncClick]="saveAction" #btn="cngxAsyncClick">

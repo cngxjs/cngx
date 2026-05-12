@@ -11,7 +11,6 @@ import { type CngxTreeSelectNodeContext } from './tree-select.model';
  * disabled) plus closed `toggleExpand` / `handleSelect` callbacks so
  * custom markup participates in commit / cascade / announce.
  *
- * @example
  * ```html
  * <cngx-tree-select [nodes]="tree" [(values)]="selected">
  *   <ng-template

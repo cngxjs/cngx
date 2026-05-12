@@ -55,7 +55,6 @@ export interface BannerState {
  * `id` is required and serves as the dedup key. Calling `show()` with an existing
  * `id` calls `update()` instead (e.g., session timeout countdown).
  *
- * @example
  * ```typescript
  * private readonly banner = inject(CngxBanner);
  *

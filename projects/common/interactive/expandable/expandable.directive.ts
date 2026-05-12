@@ -12,7 +12,6 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * flow, while expand/collapse is wired to ArrowLeft/Right via a sibling nav
  * directive or to a dedicated twisty button.
  *
- * @example
  * ```html
  * <div
  *   role="treeitem"

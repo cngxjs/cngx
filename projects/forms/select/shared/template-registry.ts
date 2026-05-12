@@ -90,7 +90,6 @@ export interface CngxSelectTemplateRegistry<T = unknown> {
  * Injection context required (`resolveTemplate` reads
  * `CNGX_SELECT_CONFIG`).
  *
- * @example
  * ```ts
  * @Component({ … })
  * export class CngxSelect<T> {

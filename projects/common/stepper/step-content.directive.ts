@@ -8,7 +8,6 @@ import type { CngxStepContentContext } from './step-panel-host.token';
  * {@link CngxStepContentContext} so `let-busy="busy"` etc. gives
  * typed access to live step state.
  *
- * @example
  * ```html
  * <ng-template cngxStepContent let-busy="busy">
  *   <input [disabled]="busy">

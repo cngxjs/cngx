@@ -8,9 +8,6 @@ import { Directive, effect, inject, input, signal } from '@angular/core';
  * responsive layouts, drawer mode switching, conditional rendering,
  * or any behavior that depends on viewport/preference queries.
  *
- *
- * @example
- *
  * ### Responsive drawer mode
  * ```html
  * <div cngxMediaQuery="(min-width: 1024px)" #mq="cngxMediaQuery">

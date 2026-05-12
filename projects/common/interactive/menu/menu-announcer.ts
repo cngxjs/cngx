@@ -100,7 +100,6 @@ export function createMenuAnnouncer(): CngxMenuAnnouncerLike {
  * announcers without forking the menu module. Symmetric to
  * `CNGX_COMMIT_ERROR_ANNOUNCER_FACTORY` from the select family.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [

@@ -50,7 +50,6 @@ import {
  * write happens inside a DOM event handler — never inside an
  * `effect()`.
  *
- * @example
  * ```html
  * <cngx-button-toggle-group label="Layout" [(value)]="view">
  *   <button cngxButtonToggle value="grid">Grid</button>

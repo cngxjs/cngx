@@ -11,8 +11,6 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  *
  * Fallback chain: stored element → provided fallback → nearest focusable ancestor → body.
  *
- * @example
- *
  * ### Panel that restores focus on close
  * ```html
  * @if (panelOpen()) {

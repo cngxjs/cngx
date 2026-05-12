@@ -8,7 +8,6 @@ import type { CngxStepLabelContext } from './step-panel-host.token';
  * {@link CngxStepLabelContext} for typed `let-node="node"` /
  * `let-active="active"` access.
  *
- * @example
  * ```html
  * <ng-template cngxStepLabel let-node="node">
  *   {{ node.label() }}

@@ -21,8 +21,6 @@ import { CngxSidenav } from './sidenav';
  * Manages shared backdrop, scroll lock, and click-outside coordination.
  * Supports up to two sidenavs: one `position="start"` and one `position="end"`.
  *
- * @example
- *
  * ### Dual sidebar
  * ```html
  * <cngx-sidenav-layout>

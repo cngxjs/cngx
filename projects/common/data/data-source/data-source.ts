@@ -10,7 +10,6 @@ import type { Observable } from 'rxjs';
  * No sort, filter, or search logic is included — the consumer builds a
  * `computed()` with any transformations and passes the result here.
  *
- * @example
  * ```typescript
  * readonly processed = computed(() => {
  *   let items = this.raw();
@@ -43,7 +42,6 @@ export class CngxDataSource<T> extends DataSource<T> {
  *
  * Must be called within an injection context (constructor or field initializer).
  *
- * @example
  * ```typescript
  * readonly dataSource = injectDataSource(this.items);
  * ```

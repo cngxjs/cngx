@@ -13,8 +13,6 @@ import {
  * The consumer can override the SR label for full context
  * (e.g. "vs. last month" instead of the generic default).
  *
- * @example
- *
  * ### Basic
  * ```html
  * <cngx-trend [value]="5.3" />

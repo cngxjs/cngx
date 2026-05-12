@@ -5,7 +5,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * Discovered by `<cngx-tab-group>` via `contentChild` on each
  * `CngxTab` and projected into the matching `role="tabpanel"`.
  *
- * @example
  * ```html
  * <div cngxTab id="settings">
  *   <ng-template cngxTabLabel>Settings</ng-template>

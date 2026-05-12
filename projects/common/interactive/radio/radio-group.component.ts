@@ -58,7 +58,6 @@ import {
  * keydown, so the flag stays false and no auto-select happens —
  * Tab leaves the consumer's `value` untouched.
  *
- * @example
  * ```html
  * <cngx-radio-group [(value)]="payment" name="payment-method">
  *   <cngx-radio value="card">Card</cngx-radio>

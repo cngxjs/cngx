@@ -19,8 +19,6 @@ import {
  * meaning the header is now stuck. Toggles a CSS class for shadow,
  * elevation, or background changes.
  *
- * @example
- *
  * ### Sticky header with shadow
  * ```html
  * <header cngxStickyHeader #sh="cngxStickyHeader"

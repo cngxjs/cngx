@@ -21,7 +21,6 @@ export type ParseFn = (display: string) => string;
  * Applies a `format` function when the input loses focus and a `parse` function
  * when it gains focus. Reactive forms always see the raw (unformatted) value.
  *
- * @example
  * ```html
  * <!-- Currency formatting -->
  * <input [cngxInputFormat]="formatCurrency" [parse]="parseCurrency" />

@@ -21,7 +21,6 @@ export interface CngxTabBusySpinnerContext {
  * per-instance directive >
  * `CNGX_TABS_CONFIG.templates.busySpinner` > built-in pulse span.
  *
- * @example
  * ```html
  * <cngx-tab-group>
  *   <ng-template cngxTabBusySpinner>

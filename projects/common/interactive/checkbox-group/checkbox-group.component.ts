@@ -70,7 +70,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * announces the busy moment without the consumer wiring the attribute
  * by hand.
  *
- * @example
  * ```html
  * <cngx-checkbox-group
  *   label="Notifications"

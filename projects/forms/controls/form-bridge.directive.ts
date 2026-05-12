@@ -27,7 +27,6 @@ import { CNGX_CONTROL_VALUE, type CngxControlValue } from '@cngx/common/interact
  * - `writeValue` stamps `lastSeen`; the change-listener short-circuits on
  *   `Object.is` so the RF→atom→RF round-trip never re-emits.
  *
- * @example
  * ```html
  * <form [formGroup]="form">
  *   <cngx-toggle [formControlName]="'notifications'" />

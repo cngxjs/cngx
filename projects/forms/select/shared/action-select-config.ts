@@ -142,7 +142,6 @@ export function withActionPopoverPlacement(
 /**
  * App-wide action-select config. `provideActionSelectConfigAt` wins.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

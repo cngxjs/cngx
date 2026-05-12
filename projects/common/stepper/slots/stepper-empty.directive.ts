@@ -10,7 +10,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * `CNGX_STEPPER_CONFIG.templates.empty` before falling back to no
  * markup (Honest-Absence default).
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepperEmpty>

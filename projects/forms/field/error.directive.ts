@@ -10,7 +10,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * The container is always in the DOM. `aria-hidden` toggles based on the `showError` gate
  * (touched AND invalid). `role="alert"` ensures screen readers announce errors.
  *
- * @example
  * ```html
  * <div cngxError>
  *   @if (presenter.errors(); as errors) {

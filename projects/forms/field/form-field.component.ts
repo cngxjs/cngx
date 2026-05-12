@@ -12,7 +12,6 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  * Child directives (`CngxLabel`, `CngxInput`, `CngxHint`, `CngxError`, `CngxFieldErrors`)
  * inject the presenter from this component via DI.
  *
- * @example
  * ```html
  * <cngx-form-field [field]="fields.email">
  *   <label cngxLabel>E-Mail</label>

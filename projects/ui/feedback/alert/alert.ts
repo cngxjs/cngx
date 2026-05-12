@@ -99,7 +99,6 @@ export class CngxAlertIcon {
  * When present, the alert container uses `aria-atomic="false"` to prevent
  * re-announcing the entire alert on button interaction.
  *
- * @example
  * ```html
  * <cngx-alert severity="error" title="Save failed" [state]="saveState">
  *   Check your connection and try again.

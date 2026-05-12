@@ -68,7 +68,6 @@ function partitionFeatures(
  * `Provider[]` because `viewProviders` cannot accept opaque
  * `EnvironmentProviders`.
  *
- * @example
  * ```ts
  * bootstrapApplication(AppComponent, {
  *   providers: [
@@ -99,7 +98,6 @@ export function provideCngxStepper(
  * `viewProviders` or `providers`. Same dispatch semantics — only the
  * provider scope differs.
  *
- * @example
  * ```ts
  * @Component({
  *   viewProviders: [

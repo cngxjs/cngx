@@ -33,8 +33,6 @@ import type { CngxRecycler } from './recycler';
  * constructor) on the same component that owns both the recycler
  * and the AD directive.
  *
- * @example
- *
  * ```typescript
  * @Component({
  *   hostDirectives: [

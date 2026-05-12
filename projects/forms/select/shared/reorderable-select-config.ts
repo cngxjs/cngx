@@ -104,7 +104,6 @@ export function withReorderStripFreeze(
  * App-wide defaults for reorder-aware select variants.
  * `provideReorderableSelectConfigAt` and per-instance inputs win.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

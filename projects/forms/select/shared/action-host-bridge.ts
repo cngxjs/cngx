@@ -166,7 +166,6 @@ export type CngxActionHostBridgeFactory = (
  * {@link createActionHostBridge}. Override via `providers` /
  * `viewProviders` for telemetry, audit logging, or offline persistence.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

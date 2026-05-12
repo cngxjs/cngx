@@ -9,7 +9,6 @@ import { type CngxTreeSelectTriggerLabelContext } from './tree-select.model';
  * Mirrors `CngxMultiSelectTriggerLabel` so the same snippet works
  * across variants.
  *
- * @example
  * ```html
  * <cngx-tree-select [nodes]="tree" [(values)]="picked">
  *   <ng-template cngxTreeSelectTriggerLabel let-selected let-count="count">

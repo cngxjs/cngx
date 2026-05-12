@@ -61,8 +61,6 @@ export class CngxRovingItem {
  * (out of rendered range), `pendingFocus` is set so a wiring function like
  * `connectRecyclerToRoving()` can scroll it into view.
  *
- * @example
- *
  * ### Horizontal toolbar
  * ```html
  * <div cngxRovingTabindex orientation="horizontal" #rv="cngxRovingTabindex">

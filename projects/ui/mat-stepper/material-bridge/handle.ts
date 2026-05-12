@@ -212,7 +212,6 @@ export type CngxMatStepHandleFactory = typeof createMatStepHandle;
  * Tracked-debt: ships under family-uniformity staging (single
  * in-package consumer today). See `stepper-accepted-debt §7`.
  *
- * @example
  * ```ts
  * providers: [
  *   {

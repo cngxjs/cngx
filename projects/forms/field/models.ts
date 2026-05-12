@@ -68,7 +68,6 @@ export type ErrorMessageFn = (error: ValidationError.WithFieldTree) => string;
 /**
  * A map of validation error `kind` strings to their message rendering functions.
  *
- * @example
  * ```ts
  * const messages: ErrorMessageMap = {
  *   required: () => 'This field is required.',

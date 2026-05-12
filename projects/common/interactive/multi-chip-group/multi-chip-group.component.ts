@@ -89,7 +89,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * statt Konfiguration), the group composes `CngxRovingTabindex` and
  * emits no implicit children — consumers project chip rows themselves.
  *
- * @example
  * ```html
  * <cngx-multi-chip-group label="Tags" [(selectedValues)]="tags">
  *   @for (tag of options(); track tag) {

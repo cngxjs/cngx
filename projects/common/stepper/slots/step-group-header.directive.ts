@@ -27,7 +27,6 @@ export interface CngxStepGroupHeaderContext {
  * `CNGX_STEPPER_CONFIG.templates.groupHeader` before falling back to
  * the built-in `<span class="cngx-stepper__group-label">`.
  *
- * @example
  * ```html
  * <cngx-stepper>
  *   <ng-template cngxStepGroupHeader let-group="group" let-status="status">

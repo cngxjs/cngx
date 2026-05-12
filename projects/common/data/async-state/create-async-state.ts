@@ -33,8 +33,6 @@ export interface MutableAsyncState<T> extends CngxAsyncState<T> {
  * Must be called in an injection context (field initializer or constructor)
  * because it uses `inject(DestroyRef)` for cleanup.
  *
- * @example
- *
  * ```typescript
  * readonly saveResident = createAsyncState<Resident>();
  *

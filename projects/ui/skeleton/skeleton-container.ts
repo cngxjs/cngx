@@ -29,8 +29,6 @@ import {
  * - Project content directly for the loaded state.
  * - Uses `display: contents` — no extra DOM wrapper.
  *
- * @example
- *
  * ### Basic usage
  * ```html
  * <cngx-skeleton [loading]="loading()" [count]="3">

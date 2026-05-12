@@ -34,7 +34,6 @@ export interface DirectiveFixture<D, H> {
  * @param hostType A pre-defined host component class with signal inputs.
  * @param options Additional configuration.
  *
- * @example
  * ```typescript
  * @Component({ template: '<div cngxHoverable>', imports: [CngxHoverable] })
  * class Host {}

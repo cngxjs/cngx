@@ -61,7 +61,6 @@ export type CngxLocalItemsBufferFactory = <T>(
  * {@link createLocalItemsBuffer}. Override for audit logging, backend
  * sync, or localStorage persistence.
  *
- * @example
  * ```ts
  * bootstrapApplication(App, {
  *   providers: [

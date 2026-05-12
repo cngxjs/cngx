@@ -304,7 +304,6 @@ function localeToRegion(locale: string): string {
  * Custom mask token definition. Use with the `customTokens` input to
  * define characters beyond the built-in `0`, `9`, `A`, `a`, `*`.
  *
- * @example
  * ```typescript
  * // Allow only uppercase hex digits for a color mask
  * customTokens = { H: { pattern: /[0-9A-F]/i } };
@@ -365,7 +364,6 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <input cngxInputMask="(00) 0000-0000|(00) 00000-0000" />
  * ```
  *
- * @example
  * ```html
  * <!-- Phone (locale-aware) -->
  * <input cngxInputMask="phone" />

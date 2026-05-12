@@ -6,7 +6,6 @@ import { type CngxPaginate } from '@cngx/common/data';
  * Material paginator wrapper that connects to a {@link CngxPaginate} directive
  * via an explicit `[cngxPaginateRef]` input — no ancestor injection.
  *
- * @example
  * ```html
  * <div cngxPaginate #pg="cngxPaginate" [total]="items.length">
  *   <!-- table / list -->

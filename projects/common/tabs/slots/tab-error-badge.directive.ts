@@ -18,7 +18,6 @@ export interface CngxTabErrorBadgeContext {
  * `CNGX_TABS_CONFIG.templates.errorBadge` >
  * `CNGX_TABS_GLYPHS.errorBadge`.
  *
- * @example
  * ```html
  * <cngx-tab-group>
  *   <ng-template cngxTabErrorBadge let-tab="tab">

@@ -26,7 +26,6 @@ type TemplateKey = keyof NonNullable<CngxSelectConfig['templates']>;
  * signal goes in, the resolved cascade comes out. Injection context
  * required.
  *
- * @example
  * ```ts
  * protected readonly checkTpl = injectResolvedTemplate(
  *   contentChild<CngxSelectCheck<T>>(CngxSelectCheck),

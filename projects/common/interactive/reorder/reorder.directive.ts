@@ -74,8 +74,6 @@ interface ActiveDrag {
  * controller so optimistic / pessimistic behaviour stays owned by the
  * composing component, not by this atom.
  *
- * @example
- *
  * ### Basic chip-strip reorder
  * ```html
  * <span class="chip-strip" [cngxReorder]="values" (reordered)="apply($event)">

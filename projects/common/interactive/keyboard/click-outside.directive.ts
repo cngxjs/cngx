@@ -14,8 +14,6 @@ import { fromEvent, switchMap } from 'rxjs';
  * The event type defaults to `'pointerdown'` which covers mouse, touch, and
  * pen input. Change it via the `[eventType]` input.
  *
- * @example
- *
  * ### Dropdown dismiss
  * ```html
  * <div cngxClickOutside (clickOutside)="closeDropdown()" [enabled]="isOpen()">

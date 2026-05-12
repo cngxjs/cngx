@@ -69,14 +69,12 @@ function isAllowedChar(
  *
  * Supports Arrow Up/Down (+ Shift) for increment/decrement with `min`/`max` clamping.
  *
- * @example
  * ```html
  * <input cngxNumericInput #num="cngxNumericInput"
  *        [min]="0" [max]="100" [step]="0.5" [decimals]="2" />
  * <span>Value: {{ num.numericValue() }}</span>
  * ```
  *
- * @example
  * ```html
  * <!-- Currency input (always 2 decimals) -->
  * <input cngxNumericInput [decimals]="2" [min]="0" [locale]="'de-CH'" />

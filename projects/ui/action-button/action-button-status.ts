@@ -3,7 +3,6 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 /**
  * Template shown while the async action is executing.
  *
- * @example
  * ```html
  * <cngx-action-button [action]="save">
  *   Save
@@ -20,7 +19,6 @@ export class CngxPending {
 /**
  * Template shown after the async action succeeds (for `feedbackDuration` ms).
  *
- * @example
  * ```html
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
@@ -34,7 +32,6 @@ export class CngxSucceeded {
 /**
  * Template shown after the async action fails (for `feedbackDuration` ms).
  *
- * @example
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```

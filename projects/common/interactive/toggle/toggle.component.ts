@@ -47,7 +47,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * `role="switch"` on a native `<button>` would conflict with the
  * browser's own Space → click synthesis and produce double-toggles.
  *
- * @example
  * ```html
  * <cngx-toggle [(value)]="emailNotifications">
  *   E-mails empfangen
@@ -61,7 +60,6 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * >Dark mode</div>
  * ```
  *
- * @example
  * ```html
  * <ng-template #icon><span aria-hidden="true">★</span></ng-template>
  * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>

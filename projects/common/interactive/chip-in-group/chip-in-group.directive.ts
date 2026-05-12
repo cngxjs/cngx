@@ -52,7 +52,6 @@ import {
  * element themselves and pass its id via `[describedBy]`. Same
  * pattern as `CngxButtonToggle` / `CngxChipInteraction`.
  *
- * @example
  * ```html
  * <cngx-chip-group [(selected)]="size" label="Size">
  *   <cngx-chip cngxChipInGroup [value]="'sm'">Small</cngx-chip>

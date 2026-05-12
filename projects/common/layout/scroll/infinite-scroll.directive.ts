@@ -21,8 +21,6 @@ import {
  * `threshold` inputs change, and disconnected on destroy or when `enabled`
  * is set to `false`.
  *
- * @example
- *
  * ### Basic infinite list
  * ```html
  * <div class="item-list">

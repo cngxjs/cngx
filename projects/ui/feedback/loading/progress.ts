@@ -24,8 +24,6 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * `aria-valuenow` is only present in determinate mode — AT uses its
  * absence to distinguish the two modes.
  *
- * @example
- *
  * ### With async state
  * ```html
  * <cngx-progress [state]="uploadState" label="File upload" [showLabel]="true" />

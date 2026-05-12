@@ -12,7 +12,6 @@ import type { CngxTagSuffixContext } from './tag-slot.context';
  * `CngxChip` (which ships its own remove button + announcer
  * wiring), not as a Tag suffix slot.
  *
- * @example
  * ```html
  * <span cngxTag [color]="'info'">
  *   Filter

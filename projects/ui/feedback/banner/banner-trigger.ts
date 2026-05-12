@@ -13,8 +13,6 @@ import { CngxBanner } from './banner.service';
  *
  * Requires `provideFeedback(withBanners())`.
  *
- * @example
- *
  * ```html
  * <cngx-banner-trigger
  *   [when]="isOffline()"

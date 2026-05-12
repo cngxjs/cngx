@@ -9,8 +9,6 @@ import { type CngxSpeak } from '@cngx/common';
  * theming control. Include `speak-button-theme.scss` for automatic Material
  * theme integration.
  *
- * @example
- *
  * ### Basic usage
  * ```html
  * <span [cngxSpeak]="text" #tts="cngxSpeak">{{ text }}</span>

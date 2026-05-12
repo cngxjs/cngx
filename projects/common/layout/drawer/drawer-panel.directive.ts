@@ -18,9 +18,6 @@ export type DrawerMode = 'over' | 'push' | 'side';
  * Optionally closes the drawer when the user clicks outside the panel
  * (`closeOnClickOutside`, default `true`).
  *
- *
- * @example
- *
  * ```html
  * <nav [cngxDrawerPanel]="drawer" position="left" mode="over"
  *      [enabled]="drawer.opened()" [autoFocus]="true">
