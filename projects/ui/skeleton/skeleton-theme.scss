@@ -1,7 +1,5 @@
 @use '@angular/material' as mat;
 
-// ─── cngx-skeleton theming ──────────────────────────────────────
-//
 // Include in your global theme stylesheet alongside the Material theme:
 //
 //   @use '@angular/material' as mat;
@@ -13,8 +11,6 @@
 //     @include mat.all-component-themes($theme);
 //     @include skeleton.theme($theme);
 //   }
-
-// ─── Token definitions ──────────────────────────────────────────
 
 @mixin base() {
   --cngx-skeleton-bg: #e0e0e0;
@@ -35,8 +31,6 @@
   }
 }
 
-// ─── Shimmer animation ──────────────────────────────────────────
-
 @keyframes cngx-skeleton-shimmer {
   0% {
     background-position: -200% 0;
@@ -45,8 +39,6 @@
     background-position: 200% 0;
   }
 }
-
-// ─── Structural styles ──────────────────────────────────────────
 
 @mixin styles() {
   .cngx-skeleton--shimmer .cngx-skeleton-bone {
@@ -69,8 +61,6 @@
     }
   }
 }
-
-// ─── Public entrypoint ──────────────────────────────────────────
 
 @mixin theme($theme) {
   :where(.cngx-skeleton) {

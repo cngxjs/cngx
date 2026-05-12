@@ -99,8 +99,6 @@ export class CngxSkeletonContainer {
   /** Array of indices for internal `@for` rendering. */
   readonly indices = computed(() => Array.from({ length: this.count() }, (_, i) => i));
 
-  // ── Reduced motion (inline) ─────────────────────────────────────────
-
   private readonly prefersReducedMotion: Signal<boolean>;
 
   constructor() {
