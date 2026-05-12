@@ -5,6 +5,9 @@
     "theme": "gitbook",
     "multiVersion": false,
     "includes": "core-concepts",
+    "includesName": "Core Concepts",
     "groupBy": "folder",
-    "groupDepth": 2
+    "groupDepth": 2,
+    "disableSourceCode": true,
+    "disableStyleTab": true
 }
