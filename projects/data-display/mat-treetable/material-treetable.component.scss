@@ -76,10 +76,6 @@ td.mat-mdc-cell.cngx-treetable__select-cell {
   padding: 4px;
 }
 
-/* ─── Mobile / Tablet (≤ 960 px) ───────────────────────────────── */
-// Token overrides drive row/header height changes automatically.
-// Horizontal padding is reduced for a more compact layout.
-
 @media (max-width: 960px) {
   :host {
     // Taller rows = larger touch targets (Material recommends 48 px minimum)
