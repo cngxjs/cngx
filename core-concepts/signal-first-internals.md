@@ -1,21 +1,21 @@
 # Signal-First Internals
 
-cngx is built on Angular Signals. Not "uses Signals where convenient" — built on them. Every reactive value flowing through a directive is a `Signal<T>`. RxJS exists at the boundary; the interior is signal-only.
+CNGX is built on Angular Signals. Not "uses Signals where convenient" — built on them. Every reactive value flowing through a directive is a `Signal<T>`. RxJS exists at the boundary; the interior is signal-only.
 
 This chapter is the operational manual: which primitive to use when, which rules are non-negotiable, and which patterns recur across the library.
 
 ## The four primitives
 
-| Primitive | When to use | When **not** to use |
-|-|-|-|
-| `signal(initial)` | Owned writable state where this component is the sole writer. | Anywhere a `computed` would express the same value. |
-| `computed(fn)` | Every derived value. ARIA attributes, disabled state, visible flags, panel views, resolved templates. | Side effects (DOM writes, service calls). |
-| `effect(fn)` | Imperative side effects that leave the reactive graph (DOM measurement, focusing, calling a service). | Writing a signal to mirror another signal — use `computed` or `linkedSignal`. |
-| `linkedSignal({ source, computation })` | Tracking a transition between two states (idle → loading → success) where the latest state needs to be remembered across source changes. | A simple derivation — use `computed`. A simple write — use `signal`. |
+| Primitive                               | When to use                                                                                                                              | When **not** to use                                                           |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `signal(initial)`                       | Owned writable state where this component is the sole writer.                                                                            | Anywhere a `computed` would express the same value.                           |
+| `computed(fn)`                          | Every derived value. ARIA attributes, disabled state, visible flags, panel views, resolved templates.                                    | Side effects (DOM writes, service calls).                                     |
+| `effect(fn)`                            | Imperative side effects that leave the reactive graph (DOM measurement, focusing, calling a service).                                    | Writing a signal to mirror another signal — use `computed` or `linkedSignal`. |
+| `linkedSignal({ source, computation })` | Tracking a transition between two states (idle → loading → success) where the latest state needs to be remembered across source changes. | A simple derivation — use `computed`. A simple write — use `signal`.          |
 
 ## Inputs and outputs
 
-cngx never uses decorators for inputs/outputs. They are signal-based across the entire library:
+CNGX never uses decorators for inputs/outputs. They are signal-based across the entire library:
 
 ```typescript
 readonly label = input<string>('');
@@ -33,7 +33,7 @@ readonly selectionChange = output<CngxSelectChange<T>>();
 
 ## Equality functions
 
-A `computed` that emits a fresh reference on every recomputation will cascade into every downstream consumer, even when the value is structurally identical. cngx routes around this with explicit `equal` functions on every hot `computed`:
+A `computed` that emits a fresh reference on every recomputation will cascade into every downstream consumer, even when the value is structurally identical. CNGX routes around this with explicit `equal` functions on every hot `computed`:
 
 ```typescript
 readonly selected = computed<readonly CngxSelectOptionDef<T>[]>(
@@ -48,7 +48,7 @@ Common shapes:
 - **Structural per entry** for option arrays with `compareWith`: length + pairwise `compareWith`. Prevents cascades when a server refetch produces fresh option objects with unchanged values.
 - **Set equality** for `expandedIds` / `selectedIds`: same size + every key present. Prevents `tree.expandAll()` from emitting when the tree is already fully expanded.
 
-If a `computed` is read by another `computed` or by a template `@if`, it needs an `equal`. The default `Object.is` is rarely correct for cngx's shapes.
+If a `computed` is read by another `computed` or by a template `@if`, it needs an `equal`. The default `Object.is` is rarely correct for CNGX's shapes.
 
 ## Effect rules
 
@@ -122,13 +122,13 @@ Use it for:
 
 ## What public is vs protected vs private
 
-cngx components have a strict access discipline because templates and host bindings have visibility rules:
+CNGX components have a strict access discipline because templates and host bindings have visibility rules:
 
-| Modifier | Used for |
-|-|-|
-| `readonly` (public) | Public API — inputs, outputs, public signals/methods, anything a consumer reads or writes via the directive reference. |
-| `protected readonly` | Members accessed from the component's own template or host bindings. Templates cannot access `private`. |
-| `private readonly` | Implementation-only — internal signals, derived state used inside component methods. |
+| Modifier             | Used for                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `readonly` (public)  | Public API — inputs, outputs, public signals/methods, anything a consumer reads or writes via the directive reference. |
+| `protected readonly` | Members accessed from the component's own template or host bindings. Templates cannot access `private`.                |
+| `private readonly`   | Implementation-only — internal signals, derived state used inside component methods.                                   |
 
 **Never** make a template- or host-accessed member `public` unless it is intentional public API. The schematic-decompose extractor reads access modifiers and copies only the public surface; misclassified `public` members leak into the decomposed output.
 

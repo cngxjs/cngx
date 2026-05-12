@@ -1,39 +1,69 @@
-# The cngx Way
+# The CNGX Way
 
-cngx is the composition layer between Angular CDK and Angular Material — declarative, Signal-first, and communicative by construction. It is not a wrapper around Material, not a re-skin of CDK, and not a kitchen-sink component kit. It is a library of small, focused units that read state, derive everything else, and tell the user (and the screen reader) what changed.
+CNGX is the composition layer between Angular CDK and Angular Material — declarative, Signal-native, and communicative by construction. It provides the architectural infrastructure to build complex UIs without the maintenance burden of cloned libraries or monolithic components.
 
 ## Manifest
 
-> **Zustand wird abgeleitet, nicht verwaltet — und Kommunikation ist Architektur, kein Nachgedanke.**
+> **State is derived, not managed — and communication is architecture, not an afterthought.**
 
-State is derived, not managed — and communication is architecture, not an afterthought. This single sentence is the load-bearing axiom of the library. Every directive, every component, every utility is auditable against it.
+This axiom dictates every line of code in the library. Every directive and component is audited against these constraints:
 
-If a value can be calculated from other signals, it is a `computed()`. If a state change happens, the user is told — visually, semantically, and to assistive technology. If two things look similar, they compose; they do not inherit, and they do not negotiate via options objects.
+- **Derivation:** If a value can be calculated, it **must** be a `computed()`. No manual state syncing.
+- **Communication:** Every state change must be reflected in the reactive ARIA graph. A11y is a functional requirement of the logic, not a visual add-on.
+- **Composition:** Functionality is added via `hostDirectives`. We favor small, pluggable units over inheritance or massive configuration objects.
 
-## What cngx is not
+## The Level Hierarchy
 
-- Not a styling library. Visual tokens are CSS custom properties with fallback defaults; consumers theme via `--cngx-*` vars.
-- Not a state container. There is no store, no reducer, no global service of truth. State lives where it is produced; everything downstream derives from it.
-- Not opinionated about routing, forms data model, or HTTP. It bridges Angular Signal Forms and Reactive Forms uniformly via `[field]` + `CNGX_FORM_FIELD_CONTROL`. RxJS is allowed at the boundary (HTTP, WebSocket, DOM events); inside, everything is Signals.
-- Not a Material replacement. cngx components that need Material wrap it explicitly (`@cngx/ui/*`, `@cngx/data-display/mat-*`). The rest is CDK-only or framework-agnostic.
+The library is strictly partitioned into five levels. This ensures a clean separation between **headless logic** (the brain) and **visual representation** (the skin).
 
-## What cngx is
+### [Levels 0 & 1] — Kernel & Core
 
-- An atom-up component library. Single-responsibility directives are the foundation; molecules wire atoms together; organisms compose molecules into a feature unit. Every level is decompose-eligible at the organism boundary.
-- A communication layer. A11y attributes (`aria-busy`, `aria-disabled`, `aria-describedby`, `aria-live`, `aria-expanded`, `aria-invalid`) are part of the `computed()` graph from day one — never bolted on during audit.
-- A consistent set of DI seams. Every controller (selection, commit, tree, display-binding, focus, chip-removal, flat-nav) ships behind a factory token (`CNGX_*_FACTORY`) so consumers can swap behavior without forking the component.
-- A typed surface. No `any`. No untyped forms. No silent overloads. Public API symbols follow a strict prefix convention (`provide*`, `with*`, `inject*`, `create*`).
+The non-visual foundation. Pure TypeScript and Angular DI tokens.
 
-## How to read this section
+- **Artefacts:** `AsyncStatus`, `CommitController`, `TransitionTracker`.
+- **Constraint:** Zero DOM dependency. These are the state machines and protocols that drive the logic layers above.
 
-The remaining core-concepts chapters expand the manifest into operational rules:
+### [Level 2] — Atoms (Headless Behaviors)
 
-| Chapter | What you take from it |
-|-|-|
-| **The Three Pillars** | The non-negotiables: derivation, communication, composition. Anti-patterns to recognize. |
-| **Layered Design** | The lib hierarchy (Level 0–4) and what belongs where. |
-| **Signal-First Internals** | How signals, `computed`, `effect`, `linkedSignal`, `equal` fns, and transition trackers compose inside cngx. |
-| **Async State Machine** | `CngxAsyncState`, the status enum, producers, consumers, and transition bridges. |
-| **Instrumentation Pattern** | Dual-rendering (presenter + CDK skin + Material skin), `hostDirectives`, and the decompose contract. |
+The functional building blocks, implemented as **directives**.
 
-You can read them in any order, but the three pillars are load-bearing for everything else.
+- **Artefacts:** `CngxKeyboardNav`, `CngxRovingTabindex`, `CngxActiveDescendant`, `CngxOverlay`.
+- **The "Brain":** An atom handles _how_ an interaction works (e.g., focus management or keyboard navigation) but has no HTML or CSS. It manages the reactive ARIA attributes and internal state flows.
+
+### [Level 3] — Molecules (Domain Logic)
+
+Functional units that wire atoms to specific data patterns.
+
+- **Artefacts:** `CngxListbox`, `CngxOption`, `CngxSortHeader`.
+- **The "Bridge":** These units connect behavior (Level 2) to domain-specific needs (Forms, Data-Display). They are often headless or provide minimal structural templates.
+
+### [Level 4] — Organisms (The Skin)
+
+The ready-to-use components.
+
+- **Artefacts:** `<cngx-select>`, `<cngx-tab-group>`, `<cngx-stepper>`.
+- **The "Skin":** Organisms compose Level 2/3 presenters via `hostDirectives` and provide the specific HTML/CSS.
+- **Ejection Point:** This is the only layer intended for the **Atomic Decompose** schematic. When a user decomputes an organism, they take ownership of the skin (HTML/CSS) while the brain (Level 2/3) remains updateable within the library.
+
+## What CNGX is not
+
+- **Not a style kit.** We provide structural CSS and CSS variables. We don't provide a "look" you have to fight against.
+- **Not a state store.** We don't manage your global data. We provide the primitives to make your local component state predictable and derived.
+- **Not a Material replacement.** We instrument and enhance Material where it fits (`@cngx/ui/mat-*`), providing a Signal-native interface for existing Material implementations.
+
+## What CNGX is
+
+- **An Atom-Up Architecture.** Everything starts with single-responsibility directives.
+- **A Reactive A11y Layer.** ARIA is a live projection of the signal graph, ensuring WCAG compliance by default.
+- **A DI-First Toolkit.** Logic units (Controllers) are injected via tokens, making every part of a component replaceable via the standard Angular DI tree.
+
+## Documentation Map
+
+| Chapter                     | Operational Focus                                                           |
+| :-------------------------- | :-------------------------------------------------------------------------- |
+| **The Three Pillars**       | Implementation rules for derivation, communication, and composition.        |
+| **Layered Design**          | Strict Sheriff boundaries and dependency rules between Level 0 and Level 4. |
+| **Signal Internals**        | Best practices for `computed`, `linkedSignal`, and `untracked` effects.     |
+| **Async State Machine**     | The `CngxAsyncState` protocol and transactional commit/rollback cycles.     |
+| **Instrumentation Pattern** | How CNGX directives "infect" and upgrade third-party components (Material). |
+| **Atomic Decompose**        | How the schematic separates skin from brain for maximum customization.      |

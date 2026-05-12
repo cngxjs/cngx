@@ -1,162 +1,100 @@
-# Instrumentation Pattern — The Material Bridge
+This document defines the **Instrumentation Pattern**, the primary strategy used by CNGX to enhance, synchronize, and "infect" third-party components (specifically Angular Material) with Signal-native logic without breaking their internal templates or incurring heavy migration costs.
 
-cngx solves a recurring problem: a feature has the same brain but needs two different skins — a CDK-only skin (lightweight, no Material dependency) and a Material skin (full Material theming, dialog, ripple, density). The naive solutions all fail:
+# Instrumentation Pattern
 
-- **Class inheritance** ties the two skins into one class hierarchy and bleeds Material types into the CDK twin.
-- **Configuration flags** (`[useMaterial]="true"`) push the cartesian product into runtime, kill tree-shaking, and force every consumer to opt out of Material somehow.
-- **Forks** double the maintenance cost and let the two skins drift apart silently.
+CNGX does not attempt to replace Angular Material; it **instruments** it.
 
-cngx uses **dual-rendering with a presenter directive**. One brain, two skins, one source of truth.
+Most libraries fail by trying to wrap Material components in "Thin Shells." This breaks Material’s internal `ContentChildren` queries, interferes with DI hierarchies, and creates a "Transclusion Deadlock" where the library and the consumer fight over the same DOM space.
 
-## The pattern
+CNGX solves this by separating the **Logic (Brain)** from the **Rendering (Hardware)** and connecting them via an **Attribute Directive (The Driver)**.
 
-The pattern has three pieces:
+## The Core Concept: Brain vs. Hardware
 
-| Piece | Role |
-|-|-|
-| **Presenter** | A `hostDirective` that owns all state, all logic, all DI tokens, and all `computed` derivations. It does not render. |
-| **CDK skin** | A thin component that applies the presenter as a `hostDirective` and renders the CDK-only template. Lives at the appropriate level (typically `@cngx/common` or `@cngx/data-display`). |
-| **Material skin** | A second thin component that applies the **same** presenter as a `hostDirective` and renders the Material template. Lives in `@cngx/ui` or in a `mat-*` sibling secondary entry. |
+The pattern relies on three distinct layers:
 
-The presenter exposes its surface (`signal`s, `computed`s, `output`s, methods) via the `hostDirective` mechanism. Both skins read the same surface; neither skin knows about the other.
+| Piece                   | Role                                                                           | Level | Location            |
+| :---------------------- | :----------------------------------------------------------------------------- | :---- | :------------------ |
+| **Brain (Presenter)**   | A headless directive owning all Signals, state machines, and A11y derivations. | 2     | `@cngx/common`      |
+| **Hardware**            | The third-party component providing the DOM and styles (e.g., `MatStepper`).   | -     | `@angular/material` |
+| **Driver (Instrument)** | An attribute directive that attaches the Brain to the Hardware.                | 4     | `@cngx/ui/mat-*`    |
 
-## Reference implementation — treetable
+## Reference Implementation: `[cngxMatStepper]`
 
-The canonical dual-rendering pair lives in `@cngx/data-display`:
+The Material Stepper is a "closed society" (hard inheritance, strict child queries). Wrapping it in a cngx-component would be brittle. Instead, we use an instrumentation directive.
+
+### 1. The Headless Brain (`@cngx/common/stepper`)
+
+The `CngxStepperPresenter` manages the `activeStepIndex`, `commitAction` (async gating), and `linear` logic. It is purely functional and has zero dependency on Material.
+
+### 2. The Driver (`@cngx/ui/mat-stepper`)
+
+The `CngxMatStepper` directive attaches directly to the existing Material markup.
 
 ```typescript
-// Presenter (the brain) — projects/data-display/treetable/treetable-presenter.ts
 @Directive({
-  selector: '[cngxTreetablePresenter]',
-  exportAs: 'cngxTreetablePresenter',
-})
-export class CngxTreetablePresenter<T> {
-  readonly data = input<readonly T[]>([]);
-  readonly state = input<CngxAsyncState<T[]>>(...);
-
-  readonly view = computed(() => this.resolveView());
-  readonly sortedRows = computed(() => this.deriveSortedRows());
-  // ...20+ computed derivations
-}
-
-// CDK skin — projects/data-display/treetable/treetable.component.ts
-@Component({
-  selector: 'cngx-treetable',
+  selector: 'mat-stepper[cngxMatStepper], mat-vertical-stepper[cngxMatStepper]',
   hostDirectives: [
-    { directive: CngxTreetablePresenter, inputs: ['data', 'state', ...], outputs: [...] }
+    {
+      directive: CngxStepperPresenter,
+      inputs: ['commitAction', 'linear', 'commitMode'],
+      outputs: ['activeStepIndexChange'],
+    },
   ],
-  template: `<!-- CDK <cdk-table> -->`,
 })
-export class CngxTreetable<T> {
-  protected readonly presenter = inject(CngxTreetablePresenter, { host: true });
-}
+export class CngxMatStepper {
+  // 1. Gain direct access to the "Hardware" on the same element
+  private hardware = inject(MatStepper, { self: true });
+  private brain = inject(CngxStepperPresenter, { host: true });
 
-// Material skin — projects/data-display/mat-treetable/material-treetable.component.ts
-@Component({
-  selector: 'cngx-mat-treetable',
-  hostDirectives: [
-    { directive: CngxTreetablePresenter, inputs: [...], outputs: [...] }
-  ],
-  template: `<!-- Material <mat-table> -->`,
-})
-export class CngxMaterialTreetable<T> {
-  protected readonly presenter = inject(CngxTreetablePresenter, { host: true });
+  constructor() {
+    // 2. Bidirectional Sync
+    // We project the Brain's state onto the Hardware's API
+    effect(() => {
+      const targetIndex = this.brain.activeStepIndex();
+      // Mandatory untracked() to prevent the effect from subscribing
+      // to Material's internal signal-reads during the write.
+      untracked(() => (this.hardware.selectedIndex = targetIndex));
+    });
+  }
 }
 ```
 
-Both skins are interchangeable from the consumer's perspective: same inputs, same outputs, same behavior. The choice is the import path.
+### The Consumer Story: "The Trojan Horse"
 
-## When to use it
-
-Dual-rendering is **organism-specific**. Apply it when:
-
-- The component is composed enough to be called an organism (template, panel, or multi-region UI).
-- A consumer might reasonably want either Material theming or zero Material dependency.
-- The brain is non-trivial — typically 200+ LOC of state and derivations.
-
-Do **not** apply dual-rendering to:
-
-- Atoms or molecules. They have no skin worth ejecting; the gain is zero.
-- Organisms with only one realistic rendering strategy. Forms field bridges (`CngxBindField`) work uniformly with both Material and native — they need no twin.
-- Components where Material is mandatory. Material-wrapper organisms (`cngx-mat-stepper`, `cngx-mat-tabs`) live in `@cngx/ui` and have no CDK twin because their job *is* to wrap Material.
-
-## How it differs from inheritance
-
-Inheritance shares behavior by extending a base class:
-
-```typescript
-// ANTI-PATTERN — not what cngx does
-class CngxTreetable<T> extends CngxTreetableBase<T> { ... }
-class CngxMatTreetable<T> extends CngxTreetableBase<T> { ... }
-```
-
-This couples the two skins through a static type hierarchy. Adding a state to the base forces both skins to handle it. Removing one is a breaking change for the other. The base class becomes a junk drawer.
-
-`hostDirectives` instead share behavior by **composition** at the DI level:
-
-- The presenter is a plain `Directive` with no special status.
-- Each skin declares it in `hostDirectives` with **explicit input/output forwarding**. The skin chooses what to expose.
-- `inject(CngxTreetablePresenter, { host: true })` retrieves the presenter from the host element. The skin reads the presenter's signals like any other directive.
-
-There is no `super`, no `protected` interface, no virtual dispatch. The presenter is a peer.
-
-## CngxBindField — the universal forms bridge
-
-The same pattern (presenter-as-brain, bridge-as-skin) shows up in forms. `CngxFormFieldPresenter` is the brain — it tracks `value`, `disabled`, `focused`, `empty`, `errorState`, `id`, and exposes a `markAsTouched` channel. The bridges are thin:
-
-| Bridge | What it bridges to |
-|-|-|
-| `CngxBindField` | Universal — works with Material (`mat-select`, `matInput`), native inputs, custom `FormValueControl`, RF `ControlValueAccessor`. |
-| `CngxListboxFieldBridge` | The raw `CngxListbox` atom (exotic value semantics — generic, multi-select-aware). |
-
-`CngxBindField` does not inject the concrete control. It reads the presenter, derives `id` / `empty` / `focused` / `disabled` / `errorState`, and writes them onto the host element as host bindings. Any control gets field integration; no new bridge needed.
-
-Native cngx form controls (`CngxSelect`, `CngxMultiSelect`, etc.) provide `CNGX_FORM_FIELD_CONTROL` directly — no bridge needed because they implement the field-control interface as their primary surface.
-
-## Decompose contract
-
-The dual-rendering pattern is also the **decompose contract**. The schematic-decompose tool ejects an organism's structural and thematic CSS into the consumer's project while leaving the brain in the library. The split is exactly the presenter/skin boundary:
-
-| Stays in library | Ejected to consumer |
-|-|-|
-| Presenter directive (brain) | Skin component (`*.component.ts`) |
-| DI tokens (`CNGX_*_FACTORY`) | Template (`*.component.html`) |
-| Default factory functions | Structural CSS (`*.component.css`) |
-| Shared utilities (`createSelectCore`, etc.) | Thematic CSS variables / tokens |
-
-The consumer ends up with a thin component they own (skin) that depends on a brain they cannot accidentally fork (presenter). Future library updates to the brain land for free; future consumer changes to the skin do not break the library.
-
-An organism is decompose-eligible when it satisfies all six of these authoring rules:
-
-1. **Thin `@Component` body.** Class logic is kept minimal — the body reads almost like configuration: `hostDirective` declarations, input/output forwarding, and minimal glue. Cross-cutting behavior (commit lifecycle, scroll, intersection) lives in controller factories (`createCommitController`, `createTransitionTracker`).
-2. **Explicit `hostDirectives` declarations.** Every input and output the consumer should be able to bind is listed in the host-directive forwarding block. Behavior comes from focused Level-2 atoms (`CngxActiveDescendant`, `CngxRovingTabindex`, `CngxFocusTrap`, …) — never from ad-hoc directives defined inline.
-3. **DI-token contracts for every controller.** Cross-component wiring goes through `InjectionToken<SomeContract>` + `{ provide: TOKEN, useExisting: ParentClass }`. A sub-component never injects a concrete parent class — that creates a cyclic type dependency and blocks decomposition. Default factories live behind `CNGX_*_FACTORY` tokens with `providedIn: 'root'`.
-4. **Structural CSS / thematic CSS split.** Structural styles (flex, grid, padding, layout) ship in their own file or block. Thematic styles (colors, font sizes, borders, focus rings) come from CSS custom properties with fallback defaults: `background: var(--cngx-select-panel-bg, var(--cngx-surface, #fff))`. Shared structural rules (skeletons, spinners, shimmer keyframes) live in shared files that the decompose schematic can leave linked or flatten on eject.
-5. **~100-line template.** If the main template doesn't fit on one screen, sub-structures (panel bodies, option loops, state switches) get extracted into sub-components behind DI-token host contracts.
-6. **Sub-token contracts and tokens.** Every visual element ships a corresponding `--cngx-*` CSS custom property with a sensible fallback default, so consumers can theme without forking. Sub-components (panel-shells, tree-panels) inject through their own host-contract token.
-
-The "could I eject this template plus styles to a consumer project, leaving only host-directive imports linked from the library?" check is the single question that summarizes all six rules. If the answer is "no", too much logic lives in the class.
-
-The select family is the reference state: 18 DI factory tokens, 17 public template slots, `provideCngxSelect` aggregator, structural `select-base.css` + per-skin trigger CSS. Treetable / mat-treetable is the canonical CDK + Material pair.
-
-## Consumer ergonomics
-
-From the consumer's side, the pattern is invisible:
+The developer does not rewrite their template. They upgrade existing Material markup by adding **exactly one attribute**:
 
 ```html
-<!-- CDK consumer -->
-<cngx-treetable [data]="rows" [state]="state" />
-
-<!-- Material consumer -->
-<cngx-mat-treetable [data]="rows" [state]="state" />
+<!-- Native Material markup remains. CNGX adds Signal power and Async gating. -->
+<mat-stepper cngxMatStepper [commitAction]="saveStep">
+  <mat-step label="Customer Data">...</mat-step>
+  <mat-step label="Payment">...</mat-step>
+</mat-stepper>
 ```
 
-Same API, same behavior, different visual stack and different bundle size. Tree-shaking works because the brain is one directive and each skin imports the brain plus its own template — neither skin imports the other.
+## Why Instrumentation Wins over Wrapping
 
-## What NOT to do
+| Feature           | Wrapping (`<cngx-mat-tabs>`)              | Instrumentation (`[cngxMatTabs]`)          |
+| :---------------- | :---------------------------------------- | :----------------------------------------- |
+| **Migration Tax** | High (Rename tags, move content)          | **Zero (Add one attribute)**               |
+| **Shadow DOM**    | Risk of breaking `ContentChildren`        | **None ( 앉 sit on the same node)**        |
+| **Logic Source**  | Divergent / Forked                        | **Unified (Same Presenter as Headless)**   |
+| **Maintenance**   | Brittle (Breaks on Material HTML changes) | **Robust (Relies on Material Public API)** |
 
-- Do not put rendering logic into the presenter. The presenter has no template. If you need to compute something visual, expose a `computed` and let the skin render it.
-- Do not import Material from the presenter. The presenter lives at the level appropriate for the **lowest** skin (typically `@cngx/common` or `@cngx/data-display`) — never in `@cngx/ui`.
-- Do not declare the presenter as `providedIn: 'root'`. It is a host directive, not a service.
-- Do not share state across the two skins. Each skin instance has its own presenter instance (via `hostDirective`). If two skins need to share state, the consumer wires them via a service or a `[state]` input.
-- Do not skip the `inputs`/`outputs` forwarding in the skin's `hostDirectives`. Angular requires every input/output to be listed explicitly — otherwise it stays internal to the presenter and the consumer cannot bind it.
+## The Decompose Contract
+
+The Instrumentation Pattern is the ultimate expression of the **Atomic Decompose** strategy. Because the logic is entirely encapsulated in the Level 2 Presenter, the "Skin" (Material) is irrelevant to the Brain.
+
+- **For cngx-native components:** `ng decompose` ejects the HTML/CSS so the user can own the "Skin."
+- **For Material components:** The user **already owns the skin** (the Material tags in their HTML). They simply use the CNGX Instrumentation Directive as a "software update" for their existing UI hardware.
+
+## Operational Rules
+
+1.  **Strict Self-Injection:** Instrumentation directives must use `inject(Target, { self: true })`. This ensures they only affect the element they are explicitly placed on.
+2.  **No Material in the Brain:** Level 2 Presenters must never import from `@angular/material`. All mapping from CNGX-Signals to Material-Properties happens inside the Level 4 Driver.
+3.  **The Untracked Rule:** Every write to a Material component property inside an `effect()` must be wrapped in `untracked()`. Material components often read signals internally (especially in v21+); failing to use `untracked` will create infinite reactivity loops between CNGX and Material.
+4.  **Hardware-Agnostic API:** The Instrument (Driver) should expose the Presenter's inputs/outputs via `hostDirectives` forwarding, maintaining a consistent API across both Headless and Material variants.
+5.  **Pessimistic Gating:** When a `commitAction` is pending, the Instrument must "freeze" the Hardware state (e.g., by not writing to `selectedIndex`) until the Brain's state machine signals success.
+
+### Summary
+
+> "CNGX doesn't fight against the platform or the existing UI ecosystem. We use **Instrumentation** to provide a Signal-native architectural layer on top of proven UI libraries, ensuring maximum freedom and zero migration pain."

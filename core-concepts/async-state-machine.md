@@ -8,21 +8,21 @@ The interface lives in `@cngx/core/utils` and underpins the entire feedback laye
 
 ```typescript
 type AsyncStatus =
-  | 'idle'       // never loaded, no data, no error
-  | 'loading'    // first load in flight, no data yet
-  | 'pending'    // commit/mutation in flight (write path)
+  | 'idle' // never loaded, no data, no error
+  | 'loading' // first load in flight, no data yet
+  | 'pending' // commit/mutation in flight (write path)
   | 'refreshing' // re-fetch in flight, prior data still valid
-  | 'success'    // data is current
-  | 'error';     // last operation failed
+  | 'success' // data is current
+  | 'error'; // last operation failed
 ```
 
 Six values, three concerns:
 
-| Concern | Statuses |
-|-|-|
-| **Read path** | `idle`, `loading`, `success`, `error` |
-| **Re-fetch path** | `refreshing` (with prior `success` data still in `state.data()`) |
-| **Write path** | `pending`, `success`, `error` (intentional commit, optimistic or pessimistic) |
+| Concern           | Statuses                                                                      |
+| ----------------- | ----------------------------------------------------------------------------- |
+| **Read path**     | `idle`, `loading`, `success`, `error`                                         |
+| **Re-fetch path** | `refreshing` (with prior `success` data still in `state.data()`)              |
+| **Write path**    | `pending`, `success`, `error` (intentional commit, optimistic or pessimistic) |
 
 The shape (every field is a `Signal<…>`):
 
@@ -34,14 +34,14 @@ interface CngxAsyncState<T> {
   readonly progress: Signal<number | undefined>;
 
   // Derived booleans — every consumer can read these directly.
-  readonly isLoading: Signal<boolean>;     // loading | pending | refreshing
-  readonly isPending: Signal<boolean>;     // pending only
-  readonly isRefreshing: Signal<boolean>;  // refreshing only
-  readonly isBusy: Signal<boolean>;        // aria-busy alias for isLoading
-  readonly isFirstLoad: Signal<boolean>;   // no successful load has completed
-  readonly isEmpty: Signal<boolean>;       // data is empty / undefined
-  readonly hasData: Signal<boolean>;       // data is present and non-empty
-  readonly isSettled: Signal<boolean>;     // success | error
+  readonly isLoading: Signal<boolean>; // loading | pending | refreshing
+  readonly isPending: Signal<boolean>; // pending only
+  readonly isRefreshing: Signal<boolean>; // refreshing only
+  readonly isBusy: Signal<boolean>; // aria-busy alias for isLoading
+  readonly isFirstLoad: Signal<boolean>; // no successful load has completed
+  readonly isEmpty: Signal<boolean>; // data is empty / undefined
+  readonly hasData: Signal<boolean>; // data is present and non-empty
+  readonly isSettled: Signal<boolean>; // success | error
 
   readonly lastUpdated: Signal<Date | undefined>;
 }
@@ -55,15 +55,15 @@ Consumers never wrap `CngxAsyncState` in another `Signal`. The interface **is** 
 
 A producer is anything that returns a `CngxAsyncState<T>`. The interface and the low-level `buildAsyncStateView` factory live in `@cngx/core/utils`; the application-level producers live in `@cngx/common/data` (secondary entry `@cngx/common/data/async-state`, re-exported from `@cngx/common/data`).
 
-| Producer | Lives in | Use when |
-|-|-|-|
-| `buildAsyncStateView<T>(sources)` | `@cngx/core/utils` | You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionButton`, `dialog[cngxDialog]`, and the optimistic helper. |
-| `createManualState<T>()` | `@cngx/common/data` | You drive status transitions imperatively (typical inside a commit controller). Returns `ManualAsyncState<T>` with explicit `setLoading`/`setSuccess`/`setError` methods. |
-| `createAsyncState<T>()` | `@cngx/common/data` | Same as manual, but the producer also exposes setters appropriate for ad-hoc orchestration. Returns `MutableAsyncState<T>`. |
-| `injectAsyncState<T>(fn)` | `@cngx/common/data` | Injection-context producer. Handles teardown via `DestroyRef`. Returns `ReactiveAsyncState<T>`. |
-| `fromResource<T>(resource)` | `@cngx/common/data` | Wraps an Angular `resource()` into the cngx shape. |
-| `fromHttpResource<T>(resource)` | `@cngx/common/data` | Wraps an Angular `httpResource()` with proper error mapping. |
-| `tapAsyncState`, `tapAsyncProgress`, `tapHttpAsyncState` | `@cngx/common/data` | RxJS operators that update a `ManualAsyncState` alongside an existing pipeline. |
+| Producer                                                 | Lives in            | Use when                                                                                                                                                                                      |
+| -------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buildAsyncStateView<T>(sources)`                        | `@cngx/core/utils`  | You already have separate `status`/`data`/`error` signals and want to assemble them into the standard interface. Used by `CngxActionButton`, `dialog[cngxDialog]`, and the optimistic helper. |
+| `createManualState<T>()`                                 | `@cngx/common/data` | You drive status transitions imperatively (typical inside a commit controller). Returns `ManualAsyncState<T>` with explicit `setLoading`/`setSuccess`/`setError` methods.                     |
+| `createAsyncState<T>()`                                  | `@cngx/common/data` | Same as manual, but the producer also exposes setters appropriate for ad-hoc orchestration. Returns `MutableAsyncState<T>`.                                                                   |
+| `injectAsyncState<T>(fn)`                                | `@cngx/common/data` | Injection-context producer. Handles teardown via `DestroyRef`. Returns `ReactiveAsyncState<T>`.                                                                                               |
+| `fromResource<T>(resource)`                              | `@cngx/common/data` | Wraps an Angular `resource()` into the CNGX shape.                                                                                                                                            |
+| `fromHttpResource<T>(resource)`                          | `@cngx/common/data` | Wraps an Angular `httpResource()` with proper error mapping.                                                                                                                                  |
+| `tapAsyncState`, `tapAsyncProgress`, `tapHttpAsyncState` | `@cngx/common/data` | RxJS operators that update a `ManualAsyncState` alongside an existing pipeline.                                                                                                               |
 
 Prefer `injectAsyncState` for HTTP fetches, `createManualState` for commit controllers, and `fromHttpResource` for anything already using Angular `httpResource`.
 
@@ -73,14 +73,14 @@ A consumer accepts `[state]` as an input. The `[state]` input **takes precedence
 
 Components that accept `[state]`:
 
-| Surface | Component |
-|-|-|
-| Loading scaffolds | `cngx-skeleton`, `cngx-loading-overlay`, `cngx-loading-indicator`, `cngx-empty-state` |
-| Async content containers | `cngx-async-container`, `*cngxAsync`, `cngx-card-grid` |
-| Overlays | `cngx-popover-panel`, `dialog[cngxDialog]` |
-| Tables | `cngx-treetable`, `cngx-mat-treetable` |
-| Form controls | `cngx-select`, `cngx-multi-select`, `cngx-combobox`, `cngx-typeahead`, `cngx-tree-select`, `cngx-reorderable-multi-select` |
-| Recycler | `injectRecycler` |
+| Surface                  | Component                                                                                                                  |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Loading scaffolds        | `cngx-skeleton`, `cngx-loading-overlay`, `cngx-loading-indicator`, `cngx-empty-state`                                      |
+| Async content containers | `cngx-async-container`, `*cngxAsync`, `cngx-card-grid`                                                                     |
+| Overlays                 | `cngx-popover-panel`, `dialog[cngxDialog]`                                                                                 |
+| Tables                   | `cngx-treetable`, `cngx-mat-treetable`                                                                                     |
+| Form controls            | `cngx-select`, `cngx-multi-select`, `cngx-combobox`, `cngx-typeahead`, `cngx-tree-select`, `cngx-reorderable-multi-select` |
+| Recycler                 | `injectRecycler`                                                                                                           |
 
 Each consumer derives its own concern from the bound `state`:
 
@@ -96,23 +96,19 @@ Each consumer derives its own concern from the bound `state`:
 ```typescript
 type AsyncView = 'none' | 'skeleton' | 'content' | 'empty' | 'error' | 'content+error';
 
-function resolveAsyncView(
-  status: AsyncStatus,
-  firstLoad: boolean,
-  empty: boolean,
-): AsyncView;
+function resolveAsyncView(status: AsyncStatus, firstLoad: boolean, empty: boolean): AsyncView;
 ```
 
 The lookup table:
 
-| status | firstLoad | empty | view |
-|-|-|-|-|
-| `idle` | true | * | `none` |
-| `loading` / `refreshing` / `pending` | true | * | `skeleton` |
-| `error` | true | * | `error` |
-| `success` | * | true | `empty` |
-| `error` | false | * | `content+error` |
-| (all other) | * | * | `content` |
+| status                               | firstLoad | empty | view            |
+| ------------------------------------ | --------- | ----- | --------------- |
+| `idle`                               | true      | \*    | `none`          |
+| `loading` / `refreshing` / `pending` | true      | \*    | `skeleton`      |
+| `error`                              | true      | \*    | `error`         |
+| `success`                            | \*        | true  | `empty`         |
+| `error`                              | false     | \*    | `content+error` |
+| (all other)                          | \*        | \*    | `content`       |
 
 No separate `'idle'` view exists. Idle on first load maps to `'none'`, which the consumer renders as a blank slate or a "press the button to load" prompt. After the first successful load, the view never goes back to `'none'`.
 
@@ -122,20 +118,18 @@ Consumers call `resolveAsyncView` from a `computed` and switch on the result. Th
 
 ## Transition bridges
 
-A **transition bridge** reacts to a status transition (`idle → success`, `loading → error`, `refreshing → error`) and triggers an out-of-band notification. cngx ships three, all as **attribute directives** (live in `@cngx/ui/feedback`):
+A **transition bridge** reacts to a status transition (`idle → success`, `loading → error`, `refreshing → error`) and triggers an out-of-band notification. CNGX ships three, all as **attribute directives** (live in `@cngx/ui/feedback`):
 
-| Bridge | What it does |
-|-|-|
-| `[cngxToastOn]` | Fires a toast on the configured transition. |
-| `[cngxAlertOn]` | Renders an inline alert tied to the host component. |
+| Bridge           | What it does                                                                  |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `[cngxToastOn]`  | Fires a toast on the configured transition.                                   |
+| `[cngxAlertOn]`  | Renders an inline alert tied to the host component.                           |
 | `[cngxBannerOn]` | Renders a top-of-page banner. Auto-dismisses on the next `success` or `idle`. |
 
 The state binding is the directive's primary input (aliased to the directive name itself):
 
 ```html
-<button [cngxToastOn]="saveState" toastSuccess="Saved" toastError="Save failed">
-  Save
-</button>
+<button [cngxToastOn]="saveState" toastSuccess="Saved" toastError="Save failed">Save</button>
 ```
 
 The state input is **optional**. When omitted (bare attribute `cngxToastOn`), the bridge falls back to `inject(CNGX_STATEFUL, { optional: true })?.state` from the host or any ancestor providing `CNGX_STATEFUL`. The select family and `CngxActionButton` provide `CNGX_STATEFUL` directly, which means:

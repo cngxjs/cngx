@@ -1,6 +1,6 @@
 [
     {
-        "title": "The cngx Way",
+        "title": "The CNGX Way",
         "file": "the-cngx-way.md"
     },
     {
@@ -18,6 +18,10 @@
     {
         "title": "Async State Machine",
         "file": "async-state-machine.md"
+    },
+    {
+        "title": "Dual Rendering",
+        "file": "dual-rendering.md"
     },
     {
         "title": "Instrumentation Pattern",
