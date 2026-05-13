@@ -32,6 +32,7 @@ export {
   type CngxFilterEditor,
   type CngxFilterNativeEditor,
 } from './src/filter-builder.config';
+export { CNGX_FILTER_EDITORS } from './src/filter-builder.tokens';
 // CngxFilterBuilderHost interface and CNGX_FILTER_BUILDER_HOST token are both
 // @internal — they describe the contract between the presenter and the recursive
 // context atoms. Consumers reach the host through the presenter directive, never
