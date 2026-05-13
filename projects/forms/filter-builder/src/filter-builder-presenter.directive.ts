@@ -27,10 +27,9 @@ import {
 } from './filter-builder-host.token';
 import {
   createFilterBuilderState,
+  EMPTY_ROOT,
   type CngxFilterBuilderState,
 } from './filter-builder-state';
-
-const EMPTY_ROOT: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
 
 /**
  * Thin presenter directive. Instantiates `createFilterBuilderState` against

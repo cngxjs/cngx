@@ -36,7 +36,8 @@ import {
  * are no-op when the requested write would not change the tree.
  */
 
-const EMPTY_ROOT: FilterGroup = Object.freeze({
+/** @internal Shared zero-state used by the presenter's `model<FilterGroup>` default and by `clear()`. */
+export const EMPTY_ROOT: FilterGroup = Object.freeze({
   type: 'group',
   logic: 'and',
   negated: false,
