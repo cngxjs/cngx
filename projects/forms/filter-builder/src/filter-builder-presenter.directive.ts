@@ -88,8 +88,11 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-'));
   readonly empty: Signal<boolean> = this.core.isEmpty;
+  // @todo(phase-6) wire to the underlying field's disabled state via CngxFormFieldPresenter
   readonly disabled: Signal<boolean> = signal(false);
+  // @todo(phase-6) drive from focusin/focusout host bindings or the first incomplete expression's focus state
   readonly focused: Signal<boolean> = signal(false);
+  // @todo(phase-6) derive from `core.expressionCount` of incomplete expressions + the field's touched flag
   readonly errorState: Signal<boolean> = signal(false);
 
   /** Implements `CngxStateful.state` — forwards `[cngxFilterBuilderState]` when bound, else an idle slot. */
