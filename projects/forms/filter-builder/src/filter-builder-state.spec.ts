@@ -106,7 +106,11 @@ describe('createFilterBuilderState', () => {
       const state = build(group([expr('name')]));
       state.removeNode([0]);
       expect(state.tree().filters).toHaveLength(0);
-      expect(state.lastMutation()).toEqual({ kind: 'remove-filter', path: [0] });
+      expect(state.lastMutation()).toEqual({
+        kind: 'remove-filter',
+        path: [0],
+        context: { fieldKey: 'name', operator: 'eq', value: null },
+      });
     });
 
     it('emits remove-group for a group target', () => {

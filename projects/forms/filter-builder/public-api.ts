@@ -63,6 +63,7 @@ export {
   type CngxFilterBuilderTemplateRegistryFactory,
   type CngxFilterBuilderTemplateRegistryQueries,
 } from './src/filter-builder-template-registry';
+export { CngxFilterBuilder } from './src/filter-builder.component';
 export {
   createEmptyFilterRoot,
   createFilterExpression,

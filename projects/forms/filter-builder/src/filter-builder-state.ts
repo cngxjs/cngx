@@ -166,7 +166,11 @@ export function createFilterBuilderState<TValue = unknown>(
 
   function addExpression(path: readonly number[], expression: FilterExpression): void {
     if (writeIfChanged(appendAtPath(source(), path, expression))) {
-      emit({ kind: 'add-filter', path });
+      emit({
+        kind: 'add-filter',
+        path,
+        context: { fieldKey: expression.field },
+      });
     }
   }
 
@@ -185,10 +189,19 @@ export function createFilterBuilderState<TValue = unknown>(
       return;
     }
     if (writeIfChanged(removeAtPath(source(), path))) {
-      emit({
-        kind: target.type === 'group' ? 'remove-group' : 'remove-filter',
-        path,
-      });
+      if (target.type === 'expression') {
+        emit({
+          kind: 'remove-filter',
+          path,
+          context: {
+            fieldKey: target.field,
+            operator: target.operator,
+            value: target.value,
+          },
+        });
+      } else {
+        emit({ kind: 'remove-group', path });
+      }
     }
   }
 
