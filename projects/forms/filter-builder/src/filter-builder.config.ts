@@ -4,13 +4,15 @@ import {
   makeEnvironmentProviders,
   type EnvironmentProviders,
   type Provider,
-  type TemplateRef,
   type Type,
 } from '@angular/core';
 import { CngxToggle } from '@cngx/common/interactive';
 
+import type { CngxFilterBuilderTemplates } from './filter-builder-slots';
 import { DEFAULT_OPERATORS } from './filter-builder.types';
 import type { FilterEditorType, FilterLogic } from './filter-builder.types';
+
+export type { CngxFilterBuilderTemplates };
 
 /**
  * Native-input sentinel union. When `CNGX_FILTER_BUILDER_CONFIG.editors`
@@ -59,8 +61,6 @@ export interface CngxFilterBuilderI18n {
   readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
   readonly unboundFilterLabel: string;
 }
-
-export type CngxFilterBuilderTemplates = Readonly<Record<string, TemplateRef<unknown> | null>>;
 
 export interface CngxFilterBuilderConfig {
   readonly templates: CngxFilterBuilderTemplates;

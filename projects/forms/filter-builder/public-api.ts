@@ -36,6 +36,26 @@ export {
 } from './src/filter-builder.config';
 export { CNGX_FILTER_EDITORS, injectFilterEditors } from './src/filter-builder.tokens';
 export {
+  CngxFilterBuilderAddFilterButton,
+  CngxFilterBuilderAddGroupButton,
+  CngxFilterBuilderEmpty,
+  CngxFilterBuilderError,
+  CngxFilterBuilderExpressionTemplate,
+  CngxFilterBuilderGroupTemplate,
+  CngxFilterBuilderLoading,
+  CngxFilterBuilderLogicToggle,
+  CngxFilterBuilderRemoveButton,
+  type CngxFilterBuilderAddFilterButtonContext,
+  type CngxFilterBuilderAddGroupButtonContext,
+  type CngxFilterBuilderEmptyContext,
+  type CngxFilterBuilderErrorContext,
+  type CngxFilterBuilderExpressionTemplateContext,
+  type CngxFilterBuilderGroupTemplateContext,
+  type CngxFilterBuilderLoadingContext,
+  type CngxFilterBuilderLogicToggleContext,
+  type CngxFilterBuilderRemoveButtonContext,
+} from './src/filter-builder-slots';
+export {
   createEmptyFilterRoot,
   createFilterExpression,
   createFilterGroup,
