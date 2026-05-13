@@ -150,4 +150,29 @@ describe('CngxFilterExpression', () => {
     expect(directive.isIncomplete()).toBe(true);
     expect(directive.expressionLabel()).toBe('Unbound filter');
   });
+
+  it('availableOperators returns the shared empty array when fieldDef is undefined', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', field: 'missing-key', operator: 'eq', value: null }],
+    };
+    const { directive } = setup(tree, []);
+    const a = directive.availableOperators();
+    const b = directive.availableOperators();
+    expect(a).toBe(b);
+    expect(a).toEqual([]);
+  });
+
+  it('node identity is stable across re-reads when tree unchanged', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+    };
+    const { directive } = setup(tree, [FIELD_NAME]);
+    expect(directive.node()).toBe(directive.node());
+  });
 });

@@ -127,4 +127,29 @@ describe('CngxFilterGroup', () => {
     expect(directive.logic()).toBe('and');
     expect(directive.negated()).toBe(false);
   });
+
+  it('node identity is stable across re-reads when tree unchanged', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      logic: 'and',
+      negated: false,
+      filters: [],
+    };
+    const { directive } = setup(tree);
+    expect(directive.node()).toBe(directive.node());
+  });
+
+  it('children returns the shared empty array when node is null', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+    };
+    const { directive } = setup(tree, [0]);
+    const a = directive.children();
+    const b = directive.children();
+    expect(a).toBe(b);
+    expect(a).toEqual([]);
+  });
 });

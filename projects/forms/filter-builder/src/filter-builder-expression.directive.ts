@@ -6,6 +6,10 @@ import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 
 const BUILTIN_OPERATORS = DEFAULT_OPERATORS as Readonly<Record<string, readonly string[]>>;
 
+const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
+
+const referenceEqual = <T>(a: T, b: T): boolean => a === b;
+
 /**
  * Context atom binding a `FilterExpression` node at the given path to
  * the recursive template body. Injects the host through
@@ -15,8 +19,13 @@ const BUILTIN_OPERATORS = DEFAULT_OPERATORS as Readonly<Record<string, readonly 
  *
  * `availableOperators` resolves from the field def's own `operators`
  * list when present, else from `DEFAULT_OPERATORS` keyed by the field's
- * `editorType`. Phase 3's `withDefaultOperators` config will replace
- * the builtin lookup at runtime.
+ * `editorType`. Phase 3's `withDefaultOperators` config replaces the
+ * builtin lookup at runtime.
+ *
+ * Every object/array signal carries an explicit `equal` fn per
+ * `reference_signal_architecture` §1; empty-operator and missing-node
+ * fallbacks resolve to shared frozen singletons so no-op reads never
+ * allocate.
  */
 @Directive({
   selector: '[cngxFilterExpression]',
@@ -33,32 +42,41 @@ export class CngxFilterExpression {
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
 
-  readonly node = computed<FilterExpression | null>(() => {
-    const found = this.host.getNodeAtPath(this.path());
-    if (!found) {
-      return null;
-    }
-    return found.type === 'expression' ? found : null;
-  });
+  readonly node = computed<FilterExpression | null>(
+    () => {
+      const found = this.host.getNodeAtPath(this.path());
+      if (!found) {
+        return null;
+      }
+      return found.type === 'expression' ? found : null;
+    },
+    { equal: referenceEqual },
+  );
 
-  readonly fieldDef = computed(() => {
-    const expr = this.node();
-    if (!expr) {
-      return undefined;
-    }
-    return this.host.getFieldDef(expr.field);
-  });
+  readonly fieldDef = computed(
+    () => {
+      const expr = this.node();
+      if (!expr) {
+        return undefined;
+      }
+      return this.host.getFieldDef(expr.field);
+    },
+    { equal: referenceEqual },
+  );
 
-  readonly availableOperators = computed<readonly string[]>(() => {
-    const def = this.fieldDef();
-    if (def?.operators && def.operators.length > 0) {
-      return def.operators;
-    }
-    if (!def) {
-      return [];
-    }
-    return BUILTIN_OPERATORS[def.editorType] ?? [];
-  });
+  readonly availableOperators = computed<readonly string[]>(
+    () => {
+      const def = this.fieldDef();
+      if (def?.operators && def.operators.length > 0) {
+        return def.operators;
+      }
+      if (!def) {
+        return EMPTY_OPERATORS;
+      }
+      return BUILTIN_OPERATORS[def.editorType] ?? EMPTY_OPERATORS;
+    },
+    { equal: referenceEqual },
+  );
 
   readonly isIncomplete = computed(() => {
     const expr = this.node();

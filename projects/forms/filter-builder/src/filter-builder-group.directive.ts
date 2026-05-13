@@ -1,7 +1,11 @@
 import { computed, Directive, inject, input } from '@angular/core';
 
-import type { FilterGroup } from './filter-builder.types';
+import type { FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+
+const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly FilterNode[];
+
+const referenceEqual = <T>(a: T, b: T): boolean => a === b;
 
 /**
  * Context atom binding a `FilterGroup` node at the given path to the
@@ -10,8 +14,9 @@ import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
  * decompose schematic can eject the recursive body independently of the
  * brain per `reference_atomic_decompose` rule 4.
  *
- * Every exposed signal is a `computed` over `host.tree` — no local
- * shadow state, no manual sync.
+ * Every object/array signal carries an explicit `equal` fn per
+ * `reference_signal_architecture` §1; the empty-filters fallback uses a
+ * shared frozen array so null reads do not allocate.
  */
 @Directive({
   selector: '[cngxFilterGroup]',
@@ -29,17 +34,23 @@ export class CngxFilterGroup {
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
 
-  readonly node = computed<FilterGroup | null>(() => {
-    const found = this.host.getNodeAtPath(this.path());
-    if (!found) {
-      return null;
-    }
-    return found.type === 'group' ? found : null;
-  });
+  readonly node = computed<FilterGroup | null>(
+    () => {
+      const found = this.host.getNodeAtPath(this.path());
+      if (!found) {
+        return null;
+      }
+      return found.type === 'group' ? found : null;
+    },
+    { equal: referenceEqual },
+  );
 
   readonly logic = computed(() => this.node()?.logic ?? 'and');
   readonly negated = computed(() => this.node()?.negated ?? false);
-  readonly children = computed(() => this.node()?.filters ?? []);
+  readonly children = computed<readonly FilterNode[]>(
+    () => this.node()?.filters ?? EMPTY_FILTERS,
+    { equal: referenceEqual },
+  );
   readonly childCount = computed(() => this.children().length);
   readonly isRoot = computed(() => this.path().length === 0);
 
