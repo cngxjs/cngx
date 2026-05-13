@@ -164,13 +164,15 @@ export function createFilterBuilderState<TValue = unknown>(
   }
 
   function addExpression(path: readonly number[], expression: FilterExpression): void {
-    writeIfChanged(appendAtPath(source(), path, expression));
-    emit({ kind: 'add-filter', path });
+    if (writeIfChanged(appendAtPath(source(), path, expression))) {
+      emit({ kind: 'add-filter', path });
+    }
   }
 
   function addGroup(path: readonly number[], group: FilterGroup): void {
-    writeIfChanged(appendAtPath(source(), path, group));
-    emit({ kind: 'add-group', path });
+    if (writeIfChanged(appendAtPath(source(), path, group))) {
+      emit({ kind: 'add-group', path });
+    }
   }
 
   function removeNode(path: readonly number[]): void {
@@ -181,11 +183,12 @@ export function createFilterBuilderState<TValue = unknown>(
     if (!target) {
       return;
     }
-    writeIfChanged(removeAtPath(source(), path));
-    emit({
-      kind: target.type === 'group' ? 'remove-group' : 'remove-filter',
-      path,
-    });
+    if (writeIfChanged(removeAtPath(source(), path))) {
+      emit({
+        kind: target.type === 'group' ? 'remove-group' : 'remove-filter',
+        path,
+      });
+    }
   }
 
   function setLogic(path: readonly number[], logic: FilterLogic): void {
@@ -198,8 +201,9 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, logic };
     });
-    writeIfChanged(updated);
-    emit({ kind: 'set-logic', path, context: { logic } });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'set-logic', path, context: { logic } });
+    }
   }
 
   function toggleNegated(path: readonly number[]): void {
@@ -211,8 +215,9 @@ export function createFilterBuilderState<TValue = unknown>(
       nextNegated = !node.negated;
       return { ...node, negated: nextNegated };
     });
-    writeIfChanged(updated);
-    emit({ kind: 'toggle-negated', path, context: { negated: nextNegated } });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'toggle-negated', path, context: { negated: nextNegated } });
+    }
   }
 
   function setField(path: readonly number[], fieldKey: string): void {
@@ -225,8 +230,9 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, field: fieldKey };
     });
-    writeIfChanged(updated);
-    emit({ kind: 'set-field', path, context: { fieldKey } });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'set-field', path, context: { fieldKey } });
+    }
   }
 
   function setOperator(path: readonly number[], operator: string): void {
@@ -239,8 +245,9 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, operator };
     });
-    writeIfChanged(updated);
-    emit({ kind: 'set-operator', path, context: { operator } });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'set-operator', path, context: { operator } });
+    }
   }
 
   function setValue(path: readonly number[], value: unknown): void {
@@ -253,13 +260,15 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, value };
     });
-    writeIfChanged(updated);
-    emit({ kind: 'set-value', path, context: { value } });
+    if (writeIfChanged(updated)) {
+      emit({ kind: 'set-value', path, context: { value } });
+    }
   }
 
   function clear(): void {
-    writeIfChanged(EMPTY_ROOT);
-    emit({ kind: 'clear', path: [] });
+    if (writeIfChanged(EMPTY_ROOT)) {
+      emit({ kind: 'clear', path: [] });
+    }
   }
 
   function getNodeAtPathFromTree(path: readonly number[]): FilterNode | null {

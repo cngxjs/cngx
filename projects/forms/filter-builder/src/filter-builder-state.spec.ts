@@ -197,6 +197,38 @@ describe('createFilterBuilderState', () => {
     });
   });
 
+  describe('no-op writes do not fire lastMutation', () => {
+    it('setLogic with the same value does not emit', () => {
+      const state = build(group([], 'and'));
+      state.setLogic([], 'and');
+      expect(state.lastMutation()).toBeNull();
+    });
+
+    it('setField with the same key does not emit', () => {
+      const state = build(group([expr('name', 'eq', 'foo')]));
+      state.setField([0], 'name');
+      expect(state.lastMutation()).toBeNull();
+    });
+
+    it('setOperator with the same operator does not emit', () => {
+      const state = build(group([expr('name', 'eq', 'foo')]));
+      state.setOperator([0], 'eq');
+      expect(state.lastMutation()).toBeNull();
+    });
+
+    it('setValue with an Object.is-equal value does not emit', () => {
+      const state = build(group([expr('name', 'eq', 'foo')]));
+      state.setValue([0], 'foo');
+      expect(state.lastMutation()).toBeNull();
+    });
+
+    it('toggleNegated on an expression path does not emit', () => {
+      const state = build(group([expr('name')]));
+      state.toggleNegated([0]);
+      expect(state.lastMutation()).toBeNull();
+    });
+  });
+
   describe('fieldMap', () => {
     it('keys field defs by their key', () => {
       const state = build(group());
