@@ -51,6 +51,9 @@ import {
  * `CngxLiveRegion` is mounted as a child `<span>` rather than a
  * host directive: its `role="status"` would clobber the wrapper's
  * `role="group"` landmark.
+ *
+ * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
+ * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
  */
 @Component({
   selector: 'cngx-tab-group',

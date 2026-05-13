@@ -102,6 +102,8 @@ export class CngxMatTabsPanelHostAdapter implements CngxTabPanelHost {
  * live in the package-private projector factories under
  * `./decorations/`; this directive supplies their reactive triggers
  * and the delegators consumer templates call.
+ *
+ * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  */
 @Directive({
   selector: '[cngxMatTabs]',

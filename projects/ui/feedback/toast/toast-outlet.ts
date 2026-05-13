@@ -30,6 +30,8 @@ export type ToastPosition =
  * ```html
  * <cngx-toast-outlet position="bottom-end" [maxVisible]="5" />
  * ```
+ *
+ * @playground Async state bridges ./examples/bridges/bridges-example.component.ts
  */
 @Component({
   selector: 'cngx-toast-outlet',
