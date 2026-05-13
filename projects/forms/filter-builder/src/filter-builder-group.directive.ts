@@ -2,10 +2,9 @@ import { computed, Directive, inject, input } from '@angular/core';
 
 import type { FilterGroup, FilterNode } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import { referenceEqual } from './filter-builder-internal';
 
 const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly FilterNode[];
-
-const referenceEqual = <T>(a: T, b: T): boolean => a === b;
 
 /**
  * Context atom binding a `FilterGroup` node at the given path to the

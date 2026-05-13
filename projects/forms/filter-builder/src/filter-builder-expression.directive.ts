@@ -1,14 +1,11 @@
 import { computed, Directive, inject, input } from '@angular/core';
 
-import { DEFAULT_OPERATORS } from './filter-builder.types';
 import type { FilterExpression } from './filter-builder.types';
+import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
-
-const BUILTIN_OPERATORS = DEFAULT_OPERATORS as Readonly<Record<string, readonly string[]>>;
+import { referenceEqual } from './filter-builder-internal';
 
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
-
-const referenceEqual = <T>(a: T, b: T): boolean => a === b;
 
 /**
  * Context atom binding a `FilterExpression` node at the given path to
@@ -18,9 +15,9 @@ const referenceEqual = <T>(a: T, b: T): boolean => a === b;
  * brain per `reference_atomic_decompose` rule 4.
  *
  * `availableOperators` resolves from the field def's own `operators`
- * list when present, else from `DEFAULT_OPERATORS` keyed by the field's
- * `editorType`. Phase 3's `withDefaultOperators` config replaces the
- * builtin lookup at runtime.
+ * list when present, else from `CNGX_FILTER_BUILDER_CONFIG.defaultOperators`
+ * keyed by the field's `editorType` — consumers swap defaults at app or
+ * view scope via `withDefaultOperators({...})`.
  *
  * Every object/array signal carries an explicit `equal` fn per
  * `reference_signal_architecture` §1; empty-operator and missing-node
@@ -41,6 +38,7 @@ export class CngxFilterExpression {
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterExpression' });
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  private readonly config = injectFilterBuilderConfig();
 
   readonly node = computed<FilterExpression | null>(
     () => {
@@ -73,7 +71,7 @@ export class CngxFilterExpression {
       if (!def) {
         return EMPTY_OPERATORS;
       }
-      return BUILTIN_OPERATORS[def.editorType] ?? EMPTY_OPERATORS;
+      return this.config.defaultOperators[def.editorType] ?? EMPTY_OPERATORS;
     },
     { equal: referenceEqual },
   );

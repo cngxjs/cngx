@@ -1,7 +1,6 @@
 import { InjectionToken } from '@angular/core';
-import { CngxToggle } from '@cngx/common/interactive';
 
-import type { CngxFilterEditor } from './filter-builder.config';
+import { CNGX_FILTER_BUILDER_DEFAULTS, type CngxFilterEditor } from './filter-builder.config';
 
 /**
  * Dedicated DI token for the editor registry. Resolves to the same shape
@@ -9,6 +8,9 @@ import type { CngxFilterEditor } from './filter-builder.config';
  * consumers who only need to swap one editor (typical: feed a richer
  * `string` input from `@cngx/forms/input`) do not have to thread the full
  * config object.
+ *
+ * Default factory clones the frozen `CNGX_FILTER_BUILDER_DEFAULTS.editors`
+ * map — single source of truth for the four builtin entries.
  *
  * Resolution priority for the filter-builder component (Phase 5):
  * 1. `CNGX_FILTER_BUILDER_CONFIG.editors` when the config was provided
@@ -21,13 +23,6 @@ export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFi
   'CngxFilterEditors',
   {
     providedIn: 'root',
-    factory: () => {
-      const map = new Map<string, CngxFilterEditor>();
-      map.set('string', 'native:string');
-      map.set('number', 'native:number');
-      map.set('date', 'native:date');
-      map.set('boolean', CngxToggle);
-      return map;
-    },
+    factory: () => new Map(CNGX_FILTER_BUILDER_DEFAULTS.editors),
   },
 );
