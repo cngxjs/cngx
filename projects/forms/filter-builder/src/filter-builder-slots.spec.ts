@@ -75,6 +75,21 @@ describe('filter-builder slot directives', () => {
     expect(host.logicToggle()).toBeTruthy();
   });
 
+  it('exposes templateRef on every slot directive instance', () => {
+    const fixture = TestBed.createComponent(SlotHost);
+    fixture.detectChanges();
+    const host = fixture.componentInstance;
+    expect(host.loading().templateRef).toBeTruthy();
+    expect(host.error().templateRef).toBeTruthy();
+    expect(host.empty().templateRef).toBeTruthy();
+    expect(host.expressionTemplate().templateRef).toBeTruthy();
+    expect(host.groupTemplate().templateRef).toBeTruthy();
+    expect(host.addFilterButton().templateRef).toBeTruthy();
+    expect(host.addGroupButton().templateRef).toBeTruthy();
+    expect(host.removeButton().templateRef).toBeTruthy();
+    expect(host.logicToggle().templateRef).toBeTruthy();
+  });
+
   it('ngTemplateContextGuard returns true for every slot directive', () => {
     expect(CngxFilterBuilderLoading.ngTemplateContextGuard(null as unknown as CngxFilterBuilderLoading, {})).toBe(true);
     expect(CngxFilterBuilderError.ngTemplateContextGuard(null as unknown as CngxFilterBuilderError, {})).toBe(true);

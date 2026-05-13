@@ -1,4 +1,4 @@
-import { Directive, type TemplateRef } from '@angular/core';
+import { Directive, inject, TemplateRef } from '@angular/core';
 
 import type {
   FilterExpression,
@@ -85,6 +85,8 @@ export interface CngxFilterBuilderLogicToggleContext {
   standalone: true,
 })
 export class CngxFilterBuilderLoading {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderLoadingContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderLoading,
     _ctx: unknown,
@@ -99,6 +101,8 @@ export class CngxFilterBuilderLoading {
   standalone: true,
 })
 export class CngxFilterBuilderError {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderErrorContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderError,
     _ctx: unknown,
@@ -113,6 +117,8 @@ export class CngxFilterBuilderError {
   standalone: true,
 })
 export class CngxFilterBuilderEmpty {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderEmptyContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderEmpty,
     _ctx: unknown,
@@ -127,6 +133,8 @@ export class CngxFilterBuilderEmpty {
   standalone: true,
 })
 export class CngxFilterBuilderExpressionTemplate {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderExpressionTemplateContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderExpressionTemplate,
     _ctx: unknown,
@@ -141,6 +149,8 @@ export class CngxFilterBuilderExpressionTemplate {
   standalone: true,
 })
 export class CngxFilterBuilderGroupTemplate {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderGroupTemplateContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderGroupTemplate,
     _ctx: unknown,
@@ -155,6 +165,8 @@ export class CngxFilterBuilderGroupTemplate {
   standalone: true,
 })
 export class CngxFilterBuilderAddFilterButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderAddFilterButtonContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderAddFilterButton,
     _ctx: unknown,
@@ -169,6 +181,8 @@ export class CngxFilterBuilderAddFilterButton {
   standalone: true,
 })
 export class CngxFilterBuilderAddGroupButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderAddGroupButtonContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderAddGroupButton,
     _ctx: unknown,
@@ -183,6 +197,8 @@ export class CngxFilterBuilderAddGroupButton {
   standalone: true,
 })
 export class CngxFilterBuilderRemoveButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderRemoveButtonContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderRemoveButton,
     _ctx: unknown,
@@ -197,6 +213,8 @@ export class CngxFilterBuilderRemoveButton {
   standalone: true,
 })
 export class CngxFilterBuilderLogicToggle {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderLogicToggleContext>>(TemplateRef);
+
   static ngTemplateContextGuard(
     _dir: CngxFilterBuilderLogicToggle,
     _ctx: unknown,
