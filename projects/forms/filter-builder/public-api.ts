@@ -56,6 +56,14 @@ export {
   type CngxFilterBuilderRemoveButtonContext,
 } from './src/filter-builder-slots';
 export {
+  CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY,
+  createFilterBuilderTemplateRegistry,
+  injectFilterBuilderTemplateRegistry,
+  type CngxFilterBuilderTemplateRegistry,
+  type CngxFilterBuilderTemplateRegistryFactory,
+  type CngxFilterBuilderTemplateRegistryQueries,
+} from './src/filter-builder-template-registry';
+export {
   createEmptyFilterRoot,
   createFilterExpression,
   createFilterGroup,
