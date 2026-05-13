@@ -16,19 +16,22 @@ import {
 } from './filter-builder.utils';
 
 /**
- * Plain-TS state factory for `<cngx-filter-builder>`. Owns the tree
- * `WritableSignal`, derives read-only signals (`tree`, `fieldMap`,
- * `isEmpty`, `expressionCount`), exposes path-keyed mutators, and emits
- * a structural `lastMutation` event slot that the presenter watches to
- * drive announcements. No `inject()` calls — the factory is testable
- * without `TestBed` and decompose-safe per `reference_atomic_decompose`
- * rule 4 (DI Abstraction).
+ * Plain-TS state factory for `<cngx-filter-builder>`. Wraps a single
+ * writable signal as the canonical tree source-of-truth, derives
+ * read-only signals (`tree`, `fieldMap`, `isEmpty`, `expressionCount`),
+ * exposes path-keyed mutators, and emits a structural `lastMutation`
+ * event slot the presenter watches to drive announcements. No
+ * `inject()` calls — the factory is testable without `TestBed` and
+ * decompose-safe per `reference_atomic_decompose` rule 4 (DI
+ * Abstraction).
  *
- * Controlled vs uncontrolled: when the caller provides a `value`
- * signal, `tree()` returns `value() ?? treeState()` — explicit
- * controlled source wins, internal state is the fallback.
+ * Two-way binding contract — pass the presenter's
+ * `model<FilterGroup>()` as `source`. Mutators write through it, so
+ * consumer `[(value)]` bindings emit on every user-initiated change.
+ * Uncontrolled callers omit `source`; the factory creates its own
+ * `WritableSignal` from `initial ?? EMPTY_ROOT`.
  *
- * Identity & equality: `tree` is wrapped with `equal: filterTreeEqual`
+ * Identity & equality — `tree` is wrapped with `equal: filterTreeEqual`
  * so consumer computeds short-circuit on structural equality. Mutators
  * are no-op when the requested write would not change the tree.
  */
@@ -67,8 +70,8 @@ export interface FilterMutationEvent {
 }
 
 export interface CngxFilterBuilderStateOptions<TValue = unknown> {
+  readonly source?: WritableSignal<FilterGroup>;
   readonly initial?: FilterGroup;
-  readonly value?: Signal<FilterGroup | undefined>;
   readonly fields: Signal<readonly FilterFieldDef<TValue>[]>;
 }
 
@@ -126,19 +129,13 @@ function countExpressions(group: FilterGroup): number {
 export function createFilterBuilderState<TValue = unknown>(
   opts: CngxFilterBuilderStateOptions<TValue>,
 ): CngxFilterBuilderState<TValue> {
-  const treeState: WritableSignal<FilterGroup> = signal<FilterGroup>(opts.initial ?? EMPTY_ROOT);
+  const source: WritableSignal<FilterGroup> =
+    opts.source ?? signal<FilterGroup>(opts.initial ?? EMPTY_ROOT);
+
   const lastMutationState: WritableSignal<FilterMutationEvent | null> =
     signal<FilterMutationEvent | null>(null);
 
-  const valueSource = opts.value;
-
-  const tree = computed<FilterGroup>(
-    () => {
-      const fromValue = valueSource?.();
-      return fromValue ?? treeState();
-    },
-    { equal: filterTreeEqual },
-  );
+  const tree = computed<FilterGroup>(() => source(), { equal: filterTreeEqual });
 
   const fieldMap = computed<ReadonlyMap<string, FilterFieldDef<TValue>>>(
     () => {
@@ -158,21 +155,21 @@ export function createFilterBuilderState<TValue = unknown>(
     lastMutationState.set(event);
   }
 
-  function writeTreeIfChanged(next: FilterGroup): boolean {
-    if (next === treeState()) {
+  function writeIfChanged(next: FilterGroup): boolean {
+    if (next === source()) {
       return false;
     }
-    treeState.set(next);
+    source.set(next);
     return true;
   }
 
   function addExpression(path: readonly number[], expression: FilterExpression): void {
-    writeTreeIfChanged(appendAtPath(treeState(), path, expression));
+    writeIfChanged(appendAtPath(source(), path, expression));
     emit({ kind: 'add-filter', path });
   }
 
   function addGroup(path: readonly number[], group: FilterGroup): void {
-    writeTreeIfChanged(appendAtPath(treeState(), path, group));
+    writeIfChanged(appendAtPath(source(), path, group));
     emit({ kind: 'add-group', path });
   }
 
@@ -180,11 +177,11 @@ export function createFilterBuilderState<TValue = unknown>(
     if (path.length === 0) {
       return;
     }
-    const target = getNodeAtPath(treeState(), path);
+    const target = getNodeAtPath(source(), path);
     if (!target) {
       return;
     }
-    writeTreeIfChanged(removeAtPath(treeState(), path));
+    writeIfChanged(removeAtPath(source(), path));
     emit({
       kind: target.type === 'group' ? 'remove-group' : 'remove-filter',
       path,
@@ -192,7 +189,7 @@ export function createFilterBuilderState<TValue = unknown>(
   }
 
   function setLogic(path: readonly number[], logic: FilterLogic): void {
-    const updated = updateAtPath(treeState(), path, (node) => {
+    const updated = updateAtPath(source(), path, (node) => {
       if (node.type !== 'group') {
         return node;
       }
@@ -201,25 +198,25 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, logic };
     });
-    writeTreeIfChanged(updated);
+    writeIfChanged(updated);
     emit({ kind: 'set-logic', path, context: { logic } });
   }
 
   function toggleNegated(path: readonly number[]): void {
     let nextNegated = false;
-    const updated = updateAtPath(treeState(), path, (node) => {
+    const updated = updateAtPath(source(), path, (node) => {
       if (node.type !== 'group') {
         return node;
       }
       nextNegated = !node.negated;
       return { ...node, negated: nextNegated };
     });
-    writeTreeIfChanged(updated);
+    writeIfChanged(updated);
     emit({ kind: 'toggle-negated', path, context: { negated: nextNegated } });
   }
 
   function setField(path: readonly number[], fieldKey: string): void {
-    const updated = updateAtPath(treeState(), path, (node) => {
+    const updated = updateAtPath(source(), path, (node) => {
       if (node.type !== 'expression') {
         return node;
       }
@@ -228,12 +225,12 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, field: fieldKey };
     });
-    writeTreeIfChanged(updated);
+    writeIfChanged(updated);
     emit({ kind: 'set-field', path, context: { fieldKey } });
   }
 
   function setOperator(path: readonly number[], operator: string): void {
-    const updated = updateAtPath(treeState(), path, (node) => {
+    const updated = updateAtPath(source(), path, (node) => {
       if (node.type !== 'expression') {
         return node;
       }
@@ -242,12 +239,12 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, operator };
     });
-    writeTreeIfChanged(updated);
+    writeIfChanged(updated);
     emit({ kind: 'set-operator', path, context: { operator } });
   }
 
   function setValue(path: readonly number[], value: unknown): void {
-    const updated = updateAtPath(treeState(), path, (node) => {
+    const updated = updateAtPath(source(), path, (node) => {
       if (node.type !== 'expression') {
         return node;
       }
@@ -256,12 +253,12 @@ export function createFilterBuilderState<TValue = unknown>(
       }
       return { ...node, value };
     });
-    writeTreeIfChanged(updated);
+    writeIfChanged(updated);
     emit({ kind: 'set-value', path, context: { value } });
   }
 
   function clear(): void {
-    writeTreeIfChanged(EMPTY_ROOT);
+    writeIfChanged(EMPTY_ROOT);
     emit({ kind: 'clear', path: [] });
   }
 

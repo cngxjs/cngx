@@ -1,4 +1,4 @@
-import { signal, type Signal } from '@angular/core';
+import { signal, type WritableSignal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
 
 import type { FilterExpression, FilterFieldDef, FilterGroup } from './filter-builder.types';
@@ -25,33 +25,50 @@ const group = (
 
 function build(
   initial: FilterGroup,
-  extra: Partial<Pick<CngxFilterBuilderStateOptions, 'value'>> = {},
+  extra: Partial<Pick<CngxFilterBuilderStateOptions, 'source'>> = {},
 ): ReturnType<typeof createFilterBuilderState> {
   const fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
   return createFilterBuilderState({ initial, fields, ...extra });
 }
 
 describe('createFilterBuilderState', () => {
-  describe('tree (controlled vs uncontrolled)', () => {
-    it('returns the initial tree when no value source is provided', () => {
+  describe('source-of-truth wiring', () => {
+    it('uses internal storage when no source is provided', () => {
       const initial = group([expr('name')]);
       const state = build(initial);
       expect(state.tree()).toEqual(initial);
     });
 
-    it('lets the controlled value source win over internal state', () => {
-      const internal = group([expr('age')]);
-      const external = group([expr('name')]);
-      const valueSource: Signal<FilterGroup | undefined> = signal<FilterGroup | undefined>(external);
-      const state = build(internal, { value: valueSource });
-      expect(state.tree()).toEqual(external);
+    it('writes through the caller-supplied source on every mutation', () => {
+      const source: WritableSignal<FilterGroup> = signal<FilterGroup>(group([], 'and'));
+      const fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
+      const state = createFilterBuilderState({ source, fields });
+
+      state.setLogic([], 'or');
+      expect(source().logic).toBe('or');
+      expect(state.tree().logic).toBe('or');
     });
 
-    it('falls back to internal state when the value source emits undefined', () => {
-      const internal = group([expr('age')]);
-      const valueSource = signal<FilterGroup | undefined>(undefined);
-      const state = build(internal, { value: valueSource });
-      expect(state.tree()).toEqual(internal);
+    it('reflects external writes to the source in tree()', () => {
+      const source: WritableSignal<FilterGroup> = signal<FilterGroup>(group([], 'and'));
+      const fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
+      const state = createFilterBuilderState({ source, fields });
+
+      source.set(group([expr('name')], 'or'));
+      expect(state.tree().logic).toBe('or');
+      expect(state.tree().filters).toHaveLength(1);
+    });
+
+    it('preserves tree identity when source emits a structurally-equal value', () => {
+      const a = group([expr('name', 'eq', 'foo')]);
+      const b = group([expr('name', 'eq', 'foo')]);
+      const source = signal<FilterGroup>(a);
+      const fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
+      const state = createFilterBuilderState({ source, fields });
+
+      const before = state.tree();
+      source.set(b);
+      expect(state.tree()).toBe(before);
     });
   });
 
@@ -201,5 +218,4 @@ describe('createFilterBuilderState', () => {
       expect(state.expressionCount()).toBe(3);
     });
   });
-
 });
