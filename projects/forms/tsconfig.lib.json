@@ -23,5 +23,5 @@
     }
   },
   "include": ["*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts", "select/**/*.ts"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts", "**/examples/**"]
 }

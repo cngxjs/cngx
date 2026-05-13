@@ -7,8 +7,19 @@
     "includes": "core-concepts",
     "includesName": "Core Concepts",
     "groupBy": "folder",
-    "groupDepth": 2,
+    "groupDepth": 3,
     "disableSourceCode": true,
     "disableTemplateTab": true,
-    "disableStyleTab": true
+    "disableStyleTab": true,
+    "hideGenerator": true,
+    "disablePrivate": true,
+    "disableInternal": true,
+    "disableRoutesGraph": true,
+    "playgroundDependencies": {
+        "@cngx/utils": "0.0.1-rc.0",
+        "@cngx/core": "0.0.1-rc.0",
+        "@cngx/common": "0.0.1-rc.0",
+        "@cngx/forms": "0.0.1-rc.0",
+        "@cngx/ui": "0.0.1-rc.0"
+    }
 }

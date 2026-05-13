@@ -81,6 +81,8 @@ export class CngxAsyncErrorTpl {
  *   </ng-template>
  * </cngx-async-container>
  * ```
+ *
+ * @playground Data flow ./examples/data-flow/data-flow-example.component.ts
  */
 @Component({
   selector: 'cngx-async-container',

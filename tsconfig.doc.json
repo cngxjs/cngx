@@ -1,5 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "include": ["projects/**/*.ts"],
-  "exclude": ["projects/**/*.spec.ts", "dev-app/**/*"]
+  "exclude": [
+    "projects/**/*.spec.ts",
+    "dev-app/**/*",
+    "projects/**/examples/**/*",
+    "projects/testing/**/*"
+  ]
 }

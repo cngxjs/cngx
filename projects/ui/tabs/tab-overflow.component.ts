@@ -93,6 +93,8 @@ function mapBoolEqual(
  * the organism's `scrollIntoView` effect this forms the self-healing
  * loop: pick hidden tab -> strip scrolls -> IO fires -> `hiddenTabs`
  * self-trims.
+ *
+ * @playground Overflow showcase ./examples/overflow-showcase/overflow-showcase.component.ts
  */
 @Component({
   selector: 'cngx-tab-overflow',

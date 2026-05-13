@@ -115,6 +115,8 @@ export interface CngxSelectChange<T = unknown> {
  * exceeds `mat-select` on a11y. Stateless signal graph (ARIA, panel
  * view, option model, commit-controller surface) lives in
  * {@link createSelectCore}.
+ *
+ * @playground Commit action ./examples/commit-action/commit-action-example.component.ts
  */
 @Component({
   selector: 'cngx-select',
