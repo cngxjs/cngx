@@ -5,13 +5,25 @@ import type {
   FilterLogic,
   FilterNode,
 } from './filter-builder.types';
-import { EMPTY_ROOT } from './filter-builder-state';
 
 /**
  * Pure helpers — zero Angular dependency, zero `inject()`. Importing this
  * module from a test or a non-Angular consumer (e.g. a backend predicate
  * translator) is safe.
  */
+
+/**
+ * @internal Shared frozen zero-state. The state factory and presenter both
+ * import this back from here so a single canonical instance is reused —
+ * keeps `filter-builder.helpers.ts` Angular-free (no transitive import of
+ * `@angular/core` through `filter-builder-state.ts`).
+ */
+export const EMPTY_ROOT: FilterGroup = Object.freeze({
+  type: 'group',
+  logic: 'and',
+  negated: false,
+  filters: Object.freeze([]),
+}) as FilterGroup;
 
 export interface CreateFilterGroupOptions {
   readonly negated?: boolean;

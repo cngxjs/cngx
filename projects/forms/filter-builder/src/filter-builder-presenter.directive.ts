@@ -26,9 +26,9 @@ import {
   CNGX_FILTER_BUILDER_HOST,
   type CngxFilterBuilderHost,
 } from './filter-builder-host.token';
+import { EMPTY_ROOT } from './filter-builder.helpers';
 import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
-  EMPTY_ROOT,
   type CngxFilterBuilderState,
 } from './filter-builder-state';
 
@@ -88,7 +88,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly isEmpty = this.core.isEmpty;
   readonly expressionCount = this.core.expressionCount;
 
-  readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-'));
+  readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-')).asReadonly();
   readonly empty: Signal<boolean> = this.core.isEmpty;
   // @todo(phase-6) wire to the underlying field's disabled state via CngxFormFieldPresenter
   readonly disabled: Signal<boolean> = signal(false);

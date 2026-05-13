@@ -87,11 +87,13 @@ export class CngxFilterExpression {
   readonly expressionLabel = computed(() => {
     const expr = this.node();
     if (!expr) {
-      return 'Unbound filter';
+      return this.config.i18n.unboundFilterLabel;
     }
     const def = this.fieldDef();
     const fieldLabel = def?.label ?? expr.field;
-    const op = expr.operator || '(no operator)';
-    return `Filter: ${fieldLabel} ${op}`;
+    return this.config.i18n.expressionLabel({
+      fieldLabel,
+      operator: expr.operator,
+    });
   });
 }

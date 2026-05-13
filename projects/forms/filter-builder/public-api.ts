@@ -34,7 +34,7 @@ export {
   type CngxFilterEditor,
   type CngxFilterNativeEditor,
 } from './src/filter-builder.config';
-export { CNGX_FILTER_EDITORS } from './src/filter-builder.tokens';
+export { CNGX_FILTER_EDITORS, injectFilterEditors } from './src/filter-builder.tokens';
 export {
   createEmptyFilterRoot,
   createFilterExpression,

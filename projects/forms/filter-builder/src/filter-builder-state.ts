@@ -14,6 +14,7 @@ import {
   removeAtPath,
   updateAtPath,
 } from './filter-builder.utils';
+import { EMPTY_ROOT } from './filter-builder.helpers';
 
 /**
  * Plain-TS state factory for `<cngx-filter-builder>`. Wraps a single
@@ -36,13 +37,6 @@ import {
  * are no-op when the requested write would not change the tree.
  */
 
-/** @internal Shared zero-state used by the presenter's `model<FilterGroup>` default and by `clear()`. */
-export const EMPTY_ROOT: FilterGroup = Object.freeze({
-  type: 'group',
-  logic: 'and',
-  negated: false,
-  filters: Object.freeze([]),
-}) as FilterGroup;
 
 export type FilterMutationKind =
   | 'add-filter'
@@ -136,6 +130,12 @@ export function createFilterBuilderState<TValue = unknown>(
   const lastMutationState: WritableSignal<FilterMutationEvent | null> =
     signal<FilterMutationEvent | null>(null);
 
+  // tree is an identity-proxy over `source` purely to attach `equal:
+  // filterTreeEqual` on the read side. ModelSignal/WritableSignal do not
+  // accept `equal` at construction; the consumer-supplied source
+  // (presenter's `model<FilterGroup>()`) therefore needs this `computed`
+  // wrapper to keep downstream readers from cascading on
+  // structurally-equal-but-fresh writes. Do not collapse to `source.asReadonly()`.
   const tree = computed<FilterGroup>(() => source(), { equal: filterTreeEqual });
 
   const fieldMap = computed<ReadonlyMap<string, FilterFieldDef<TValue>>>(

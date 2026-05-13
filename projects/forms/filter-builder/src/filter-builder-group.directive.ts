@@ -1,6 +1,7 @@
 import { computed, Directive, inject, input } from '@angular/core';
 
 import type { FilterGroup, FilterNode } from './filter-builder.types';
+import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { referenceEqual } from './filter-builder-internal';
 
@@ -32,6 +33,7 @@ export class CngxFilterGroup {
   readonly path = input.required<readonly number[]>({ alias: 'cngxFilterGroup' });
 
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+  private readonly config = injectFilterBuilderConfig();
 
   readonly node = computed<FilterGroup | null>(
     () => {
@@ -53,10 +55,11 @@ export class CngxFilterGroup {
   readonly childCount = computed(() => this.children().length);
   readonly isRoot = computed(() => this.path().length === 0);
 
-  readonly groupLabel = computed(() => {
-    const logic = this.logic().toUpperCase();
-    const negated = this.negated() ? ', negated' : '';
-    const heading = this.isRoot() ? 'Root filter group' : 'Filter group';
-    return `${heading} (${logic}${negated})`;
-  });
+  readonly groupLabel = computed(() =>
+    this.config.i18n.groupLabel({
+      logic: this.logic(),
+      negated: this.negated(),
+      isRoot: this.isRoot(),
+    }),
+  );
 }

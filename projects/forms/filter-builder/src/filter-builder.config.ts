@@ -33,6 +33,17 @@ export function isNativeEditor(value: CngxFilterEditor): value is CngxFilterNati
   return typeof value === 'string';
 }
 
+export interface CngxFilterBuilderGroupLabelContext {
+  readonly logic: FilterLogic;
+  readonly negated: boolean;
+  readonly isRoot: boolean;
+}
+
+export interface CngxFilterBuilderExpressionLabelContext {
+  readonly fieldLabel: string;
+  readonly operator: string;
+}
+
 export interface CngxFilterBuilderI18n {
   readonly addFilter: string;
   readonly addGroup: string;
@@ -44,6 +55,9 @@ export interface CngxFilterBuilderI18n {
   readonly negate: string;
   readonly emptyState: string;
   readonly operators: Readonly<Record<string, string>>;
+  readonly groupLabel: (ctx: CngxFilterBuilderGroupLabelContext) => string;
+  readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
+  readonly unboundFilterLabel: string;
 }
 
 export type CngxFilterBuilderTemplates = Readonly<Record<string, TemplateRef<unknown> | null>>;
@@ -81,6 +95,17 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
     lt: 'Less than',
     lte: 'Less than or equal',
   }),
+  groupLabel: ({ logic, negated, isRoot }: CngxFilterBuilderGroupLabelContext): string => {
+    const upper = logic.toUpperCase();
+    const negTag = negated ? ', negated' : '';
+    const heading = isRoot ? 'Root filter group' : 'Filter group';
+    return `${heading} (${upper}${negTag})`;
+  },
+  expressionLabel: ({ fieldLabel, operator }: CngxFilterBuilderExpressionLabelContext): string => {
+    const op = operator || '(no operator)';
+    return `Filter: ${fieldLabel} ${op}`;
+  },
+  unboundFilterLabel: 'Unbound filter',
 }) as CngxFilterBuilderI18n;
 
 function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
