@@ -40,6 +40,7 @@
       "@cngx/forms/field": ["projects/forms/field/public-api.ts"],
       "@cngx/forms/field/testing": ["projects/forms/field/testing/public-api.ts"],
       "@cngx/forms/input": ["projects/forms/input/public-api.ts"],
+      "@cngx/forms/filter-builder": ["projects/forms/filter-builder/public-api.ts"],
       "@cngx/forms/select": ["projects/forms/select/public-api.ts"],
       "@cngx/ui": ["projects/ui/public-api.ts"],
       "@cngx/ui/layout": ["projects/ui/layout/public-api.ts"],
