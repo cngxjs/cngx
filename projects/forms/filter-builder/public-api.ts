@@ -2,8 +2,10 @@
 // .internal/architektur/plans/filter-builder-plan.md.
 
 export {
+  CNGX_FILTER_BUILDER_STATE_FACTORY,
   createFilterBuilderState,
   type CngxFilterBuilderState,
+  type CngxFilterBuilderStateFactory,
   type CngxFilterBuilderStateOptions,
   type FilterMutationEvent,
   type FilterMutationContext,

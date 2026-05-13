@@ -1,5 +1,6 @@
 import {
   Directive,
+  inject,
   input,
   model,
   signal,
@@ -26,7 +27,7 @@ import {
   type CngxFilterBuilderHost,
 } from './filter-builder-host.token';
 import {
-  createFilterBuilderState,
+  CNGX_FILTER_BUILDER_STATE_FACTORY,
   EMPTY_ROOT,
   type CngxFilterBuilderState,
 } from './filter-builder-state';
@@ -74,8 +75,9 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   private readonly idleState: CngxAsyncState<unknown> = createManualState<unknown>();
 
-  /** @internal Always-on fallback used when the host needs an instance for tests. */
-  private readonly core: CngxFilterBuilderState<TValue> = createFilterBuilderState<TValue>({
+  private readonly stateFactory = inject(CNGX_FILTER_BUILDER_STATE_FACTORY);
+
+  private readonly core: CngxFilterBuilderState<TValue> = this.stateFactory<TValue>({
     source: this.value,
     fields: this.fields,
   });

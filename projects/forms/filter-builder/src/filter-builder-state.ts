@@ -1,4 +1,4 @@
-import { computed, signal, type Signal, type WritableSignal } from '@angular/core';
+import { computed, InjectionToken, signal, type Signal, type WritableSignal } from '@angular/core';
 
 import type {
   FilterExpression,
@@ -299,3 +299,27 @@ export function createFilterBuilderState<TValue = unknown>(
     getFieldDef,
   };
 }
+
+/**
+ * Signature alias for {@link createFilterBuilderState}. Allows enterprise
+ * consumers to wrap the default factory with telemetry, persistence, undo
+ * stacks, or other cross-cutting concerns via `CNGX_FILTER_BUILDER_STATE_FACTORY`
+ * without forking `CngxFilterBuilderPresenter`. Mirrors the select-family
+ * `Cngx*ControllerFactory` precedents (e.g. `createCommitController` +
+ * `CNGX_SELECT_COMMIT_CONTROLLER_FACTORY`).
+ */
+export type CngxFilterBuilderStateFactory = <TValue = unknown>(
+  opts: CngxFilterBuilderStateOptions<TValue>,
+) => CngxFilterBuilderState<TValue>;
+
+/**
+ * DI token for the state-machine factory. Resolves to {@link createFilterBuilderState}
+ * by default; consumers swap implementations via
+ * `providers: [{ provide: CNGX_FILTER_BUILDER_STATE_FACTORY, useValue: myWrapper }]`.
+ *
+ * Pillar 3 parity with the select family.
+ */
+export const CNGX_FILTER_BUILDER_STATE_FACTORY = new InjectionToken<CngxFilterBuilderStateFactory>(
+  'CngxFilterBuilderStateFactory',
+  { providedIn: 'root', factory: () => createFilterBuilderState },
+);

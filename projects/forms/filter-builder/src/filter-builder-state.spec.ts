@@ -1,9 +1,12 @@
 import { signal, type WritableSignal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { FilterExpression, FilterFieldDef, FilterGroup } from './filter-builder.types';
 import {
+  CNGX_FILTER_BUILDER_STATE_FACTORY,
   createFilterBuilderState,
+  type CngxFilterBuilderStateFactory,
   type CngxFilterBuilderStateOptions,
 } from './filter-builder-state';
 
@@ -248,6 +251,30 @@ describe('createFilterBuilderState', () => {
     it('counts nested expressions recursively', () => {
       const state = build(group([expr('a'), group([expr('b'), group([expr('c')])])]));
       expect(state.expressionCount()).toBe(3);
+    });
+  });
+
+  describe('CNGX_FILTER_BUILDER_STATE_FACTORY', () => {
+    it('resolves to createFilterBuilderState by default', () => {
+      TestBed.configureTestingModule({});
+      const factory = TestBed.inject(CNGX_FILTER_BUILDER_STATE_FACTORY);
+      expect(factory).toBe(createFilterBuilderState);
+    });
+
+    it('accepts a consumer-supplied wrapper that wraps the default factory', () => {
+      let wrapperCalls = 0;
+      const wrapper: CngxFilterBuilderStateFactory = (opts) => {
+        wrapperCalls += 1;
+        return createFilterBuilderState(opts);
+      };
+      TestBed.configureTestingModule({
+        providers: [{ provide: CNGX_FILTER_BUILDER_STATE_FACTORY, useValue: wrapper }],
+      });
+      const factory = TestBed.inject(CNGX_FILTER_BUILDER_STATE_FACTORY);
+      const fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
+      const state = factory({ initial: group(), fields });
+      expect(state.tree().filters).toHaveLength(0);
+      expect(wrapperCalls).toBe(1);
     });
   });
 });
