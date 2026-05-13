@@ -64,10 +64,8 @@ describe('filter-builder.types', () => {
       }
     });
 
-    it('exhaustive switch hits never branch', () => {
-      const node: FilterNode = { type: 'group', logic: 'or', negated: true, filters: [] };
-
-      const kind = ((): string => {
+    it('exhaustive switch hits both branches', () => {
+      const classify = (node: FilterNode): string => {
         switch (node.type) {
           case 'group':
             return 'g';
@@ -78,9 +76,12 @@ describe('filter-builder.types', () => {
             return _exhaustive;
           }
         }
-      })();
+      };
 
-      expect(kind).toBe('g');
+      const g: FilterNode = { type: 'group', logic: 'or', negated: true, filters: [] };
+      const e: FilterNode = { type: 'expression', field: 'a', operator: 'eq', value: 1 };
+      expect(classify(g)).toBe('g');
+      expect(classify(e)).toBe('e');
     });
   });
 

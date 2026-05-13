@@ -15,13 +15,19 @@ export function getNodeAtPath(
   root: FilterGroup,
   path: readonly number[],
 ): FilterNode | null {
-  if (path.length === 0) return root;
+  if (path.length === 0) {
+    return root;
+  }
 
   let current: FilterNode = root;
   for (const index of path) {
-    if (current.type !== 'group') return null;
-    const next = current.filters[index];
-    if (!next) return null;
+    if (current.type !== 'group') {
+      return null;
+    }
+    const next: FilterNode | undefined = current.filters[index];
+    if (!next) {
+      return null;
+    }
     current = next;
   }
   return current;
@@ -66,7 +72,9 @@ function updateGroupAtPath(
     nextChild = updateGroupAtPath(child, path, depth + 1, updater);
   }
 
-  if (nextChild === child) return group;
+  if (nextChild === child) {
+    return group;
+  }
 
   const nextFilters = group.filters.slice();
   nextFilters[index] = nextChild;
@@ -87,7 +95,9 @@ function removeFromGroupAtPath(
 ): FilterGroup {
   const index = path[depth] ?? -1;
   const child = group.filters[index];
-  if (!child) return group;
+  if (!child) {
+    return group;
+  }
 
   if (depth === path.length - 1) {
     const nextFilters = group.filters.slice();
@@ -95,10 +105,14 @@ function removeFromGroupAtPath(
     return { ...group, filters: nextFilters };
   }
 
-  if (child.type !== 'group') return group;
+  if (child.type !== 'group') {
+    return group;
+  }
 
   const nextChild = removeFromGroupAtPath(child, path, depth + 1);
-  if (nextChild === child) return group;
+  if (nextChild === child) {
+    return group;
+  }
 
   const nextFilters = group.filters.slice();
   nextFilters[index] = nextChild;
@@ -131,28 +145,51 @@ export function appendAtPath(
  * MUST pass an explicit equal fn). Identity short-circuits.
  */
 export function filterTreeEqual(a: FilterGroup, b: FilterGroup): boolean {
-  if (a === b) return true;
+  if (a === b) {
+    return true;
+  }
   return groupsEqual(a, b);
 }
 
 function groupsEqual(a: FilterGroup, b: FilterGroup): boolean {
-  if (a === b) return true;
-  if (a.logic !== b.logic || a.negated !== b.negated) return false;
-  if (a.filters.length !== b.filters.length) return false;
+  if (a === b) {
+    return true;
+  }
+  if (a.logic !== b.logic || a.negated !== b.negated) {
+    return false;
+  }
+  if (a.filters.length !== b.filters.length) {
+    return false;
+  }
   for (let i = 0; i < a.filters.length; i += 1) {
-    if (!nodesEqual(a.filters[i] as FilterNode, b.filters[i] as FilterNode)) return false;
+    const childA = a.filters[i];
+    const childB = b.filters[i];
+    if (!childA || !childB) {
+      return false;
+    }
+    if (!nodesEqual(childA, childB)) {
+      return false;
+    }
   }
   return true;
 }
 
 function expressionsEqual(a: FilterExpression, b: FilterExpression): boolean {
-  if (a === b) return true;
+  if (a === b) {
+    return true;
+  }
   return a.field === b.field && a.operator === b.operator && Object.is(a.value, b.value);
 }
 
 function nodesEqual(a: FilterNode, b: FilterNode): boolean {
-  if (a === b) return true;
-  if (a.type !== b.type) return false;
-  if (a.type === 'group') return groupsEqual(a, b as FilterGroup);
+  if (a === b) {
+    return true;
+  }
+  if (a.type !== b.type) {
+    return false;
+  }
+  if (a.type === 'group') {
+    return groupsEqual(a, b as FilterGroup);
+  }
   return expressionsEqual(a, b as FilterExpression);
 }

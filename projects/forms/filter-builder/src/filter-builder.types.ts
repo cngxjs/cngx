@@ -55,9 +55,9 @@ export interface FilterGroup {
 
 export type FilterNode = FilterGroup | FilterExpression;
 
-export const DEFAULT_OPERATORS: Readonly<Record<FilterEditorType, readonly string[]>> = {
+export const DEFAULT_OPERATORS = {
   string: ['contains', 'eq', 'neq', 'startsWith', 'endsWith', 'isEmpty', 'isNotEmpty'],
   number: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty'],
   date: ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'isEmpty', 'isNotEmpty'],
   boolean: ['eq', 'neq'],
-};
+} as const satisfies Record<FilterEditorType, readonly string[]>;
