@@ -1,0 +1,43 @@
+@let expression = node();
+@if (expression) {
+  <div class="cngx-filter-builder__expression" [cngxFilterExpression]="path()">
+    <select [value]="expression.field" (change)="handleFieldChange($event)">
+      @for (field of fields(); track field.key) {
+        <option [value]="field.key">{{ field.label }}</option>
+      }
+    </select>
+
+    <select [value]="expression.operator" (change)="handleOperatorChange($event)">
+      @for (op of operators(); track op) {
+        <option [value]="op">{{ operatorLabel(op) }}</option>
+      }
+    </select>
+
+    @let resolvedEditor = editor();
+    @if (resolvedEditor === 'native:string') {
+      <input
+        type="text"
+        [value]="expression.value ?? ''"
+        (input)="handleStringValueInput($event)"
+      />
+    } @else if (resolvedEditor === 'native:number') {
+      <input
+        type="number"
+        [value]="expression.value ?? ''"
+        (input)="handleNumberValueInput($event)"
+      />
+    } @else if (resolvedEditor === 'native:date') {
+      <input
+        type="date"
+        [value]="expression.value ?? ''"
+        (input)="handleStringValueInput($event)"
+      />
+    } @else if (resolvedEditor && !isNativeEditor(resolvedEditor)) {
+      <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
+    }
+
+    <button type="button" (click)="handleRemove()">
+      <span aria-hidden="true">{{ glyphs.remove }}</span> {{ config.i18n.removeFilter }}
+    </button>
+  </div>
+}

@@ -1,0 +1,10 @@
+:host {
+  display: contents;
+}
+
+.cngx-filter-builder__expression {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cngx-filter-builder-gap, 0.5rem);
+  align-items: center;
+}
