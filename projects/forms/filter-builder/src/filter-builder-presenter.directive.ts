@@ -89,7 +89,6 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly fieldMap = this.core.fieldMap;
   readonly lastMutation = this.core.lastMutation;
   readonly isEmpty = this.core.isEmpty;
-  readonly expressionCount = this.core.expressionCount;
 
   /**
    * Live-region announcement text. Built via the swappable
@@ -112,7 +111,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly disabled: Signal<boolean> = signal(false).asReadonly();
   // @todo(phase-6) drive from focusin/focusout host bindings or the first incomplete expression's focus state
   readonly focused: Signal<boolean> = signal(false).asReadonly();
-  // @todo(phase-6) derive from `core.expressionCount` of incomplete expressions + the field's touched flag
+  // @todo(phase-6) derive from incomplete-expression count + the field's touched flag
   readonly errorState: Signal<boolean> = signal(false).asReadonly();
 
   /** Implements `CngxStateful.state` — forwards `[cngxFilterBuilderState]` when bound, else an idle slot. */

@@ -106,7 +106,7 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(directive.id()).toMatch(/^cngx-filter-builder-/);
   });
 
-  it('flags isEmpty/expressionCount derivations', () => {
+  it('flags isEmpty derivation', () => {
     const { fixture, directive } = setup();
     expect(directive.empty()).toBe(true);
 
@@ -115,7 +115,6 @@ describe('CngxFilterBuilderPresenter', () => {
     TestBed.flushEffects();
 
     expect(directive.empty()).toBe(false);
-    expect(directive.expressionCount()).toBe(1);
   });
 
   it('exposes disabled/focused/errorState as read-only signals (no .set leak)', () => {

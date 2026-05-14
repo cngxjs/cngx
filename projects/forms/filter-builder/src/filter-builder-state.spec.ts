@@ -80,7 +80,6 @@ describe('createFilterBuilderState', () => {
       const state = build(group());
       state.addExpression([], expr('name'));
       expect(state.tree().filters).toHaveLength(1);
-      expect(state.expressionCount()).toBe(1);
       expect(state.isEmpty()).toBe(false);
     });
 
@@ -248,13 +247,6 @@ describe('createFilterBuilderState', () => {
       const state = build(group());
       expect(state.getFieldDef('name')).toBe(FIELD_NAME);
       expect(state.getFieldDef('missing')).toBeUndefined();
-    });
-  });
-
-  describe('expressionCount', () => {
-    it('counts nested expressions recursively', () => {
-      const state = build(group([expr('a'), group([expr('b'), group([expr('c')])])]));
-      expect(state.expressionCount()).toBe(3);
     });
   });
 

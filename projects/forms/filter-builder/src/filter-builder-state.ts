@@ -19,7 +19,7 @@ import { EMPTY_ROOT } from './filter-builder.helpers';
 /**
  * Plain-TS state factory for `<cngx-filter-builder>`. Wraps a single
  * writable signal as the canonical tree source-of-truth, derives
- * read-only signals (`tree`, `fieldMap`, `isEmpty`, `expressionCount`),
+ * read-only signals (`tree`, `fieldMap`, `isEmpty`),
  * exposes path-keyed mutators, and emits a structural `lastMutation`
  * event slot the presenter watches to drive announcements. No
  * `inject()` calls — the factory is testable without `TestBed` and
@@ -74,7 +74,6 @@ export interface CngxFilterBuilderState<TValue = unknown> {
   readonly tree: Signal<FilterGroup>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
   readonly isEmpty: Signal<boolean>;
-  readonly expressionCount: Signal<number>;
   readonly lastMutation: Signal<FilterMutationEvent | null>;
 
   readonly addExpression: (path: readonly number[], expression: FilterExpression) => void;
@@ -109,18 +108,6 @@ function fieldMapEqual<TValue>(
   return true;
 }
 
-function countExpressions(group: FilterGroup): number {
-  let count = 0;
-  for (const child of group.filters) {
-    if (child.type === 'expression') {
-      count += 1;
-    } else {
-      count += countExpressions(child);
-    }
-  }
-  return count;
-}
-
 export function createFilterBuilderState<TValue = unknown>(
   opts: CngxFilterBuilderStateOptions<TValue>,
 ): CngxFilterBuilderState<TValue> {
@@ -150,7 +137,6 @@ export function createFilterBuilderState<TValue = unknown>(
   );
 
   const isEmpty = computed(() => tree().filters.length === 0);
-  const expressionCount = computed(() => countExpressions(tree()));
 
   function emit(event: FilterMutationEvent): void {
     lastMutationState.set(event);
@@ -297,7 +283,6 @@ export function createFilterBuilderState<TValue = unknown>(
     tree,
     fieldMap,
     isEmpty,
-    expressionCount,
     lastMutation: lastMutationState.asReadonly(),
     addExpression,
     addGroup,
