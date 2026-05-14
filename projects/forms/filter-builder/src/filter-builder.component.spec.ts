@@ -222,6 +222,35 @@ describe('CngxFilterBuilder — slot-context reference stability', () => {
   });
 });
 
+describe('CngxFilterBuilder — cache teardown on destroy', () => {
+  it('clears all slot-context caches when the component is destroyed', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      addFilterButtonContext(path: readonly number[]): unknown;
+      removeButtonContext(path: readonly number[], label: string): unknown;
+      logicToggleContext(group: FilterGroup, path: readonly number[]): unknown;
+      readonly addFilterButtonContextCache: Map<string, unknown>;
+      readonly addGroupButtonContextCache: Map<string, unknown>;
+      readonly removeButtonContextCache: Map<string, unknown>;
+      readonly logicToggleContextCache: Map<string, unknown>;
+      readonly groupTemplateContextCache: Map<string, unknown>;
+      readonly expressionTemplateContextCache: Map<string, unknown>;
+    };
+    builder.addFilterButtonContext([0]);
+    builder.removeButtonContext([0], 'Remove');
+    builder.logicToggleContext(createFilterGroup('and'), []);
+    expect(builder.addFilterButtonContextCache.size).toBeGreaterThan(0);
+
+    fixture.destroy();
+    expect(builder.addFilterButtonContextCache.size).toBe(0);
+    expect(builder.addGroupButtonContextCache.size).toBe(0);
+    expect(builder.removeButtonContextCache.size).toBe(0);
+    expect(builder.logicToggleContextCache.size).toBe(0);
+    expect(builder.groupTemplateContextCache.size).toBe(0);
+    expect(builder.expressionTemplateContextCache.size).toBe(0);
+  });
+});
+
 describe('CngxFilterBuilder — emptyContext stability', () => {
   it('emptyContext returns the same reference across reads', () => {
     const { fixture } = basicSetup();

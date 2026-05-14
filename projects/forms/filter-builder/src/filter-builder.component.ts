@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   contentChild,
+  DestroyRef,
   inject,
 } from '@angular/core';
 
@@ -71,6 +72,17 @@ export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
   protected readonly config = injectFilterBuilderConfig();
   protected readonly editors = injectFilterEditors();
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.addFilterButtonContextCache.clear();
+      this.addGroupButtonContextCache.clear();
+      this.removeButtonContextCache.clear();
+      this.logicToggleContextCache.clear();
+      this.groupTemplateContextCache.clear();
+      this.expressionTemplateContextCache.clear();
+    });
+  }
 
   protected readonly loadingSlot = contentChild(CngxFilterBuilderLoading);
   protected readonly errorSlot = contentChild(CngxFilterBuilderError);
