@@ -53,6 +53,11 @@
         [value]="expression.value ?? ''"
         (input)="handleStringValueInput($event)"
       />
+    } @else if (resolvedEditor === 'native:boolean') {
+      <cngx-toggle
+        [value]="expression.value === true"
+        (valueChange)="handleBooleanValueChange($event)"
+      ></cngx-toggle>
     } @else if (resolvedEditor && !isNativeEditor(resolvedEditor)) {
       <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
     }

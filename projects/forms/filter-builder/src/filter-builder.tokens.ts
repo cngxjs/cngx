@@ -1,21 +1,23 @@
 import { inject, InjectionToken } from '@angular/core';
-import { CngxToggle } from '@cngx/common/interactive';
 
 import type { CngxFilterEditor } from './filter-builder.config';
 
 /**
  * Build the default editor registry. The single source of truth for the
- * four builtin entries — `string` / `number` / `date` → native sentinels,
- * `boolean` → `CngxToggle` from `@cngx/common/interactive`. Internal to
- * this file; consumers reach the defaults through `CNGX_FILTER_EDITORS`'s
- * `providedIn: 'root'` factory.
+ * four builtin entries — `string` / `number` / `date` / `boolean` →
+ * native sentinels. Boolean used to mount `CngxToggle` via `*ngComponentOutlet`
+ * but that path renders disconnected from the expression value (no input
+ * bindings, no output subscription); since the row component shipped, the
+ * boolean branch is inlined as `<cngx-toggle>` and the registry maps to
+ * the `'native:boolean'` sentinel. Internal to this file; consumers reach
+ * the defaults through `CNGX_FILTER_EDITORS`'s `providedIn: 'root'` factory.
  */
 function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
   const map = new Map<string, CngxFilterEditor>();
   map.set('string', 'native:string');
   map.set('number', 'native:number');
   map.set('date', 'native:date');
-  map.set('boolean', CngxToggle);
+  map.set('boolean', 'native:boolean');
   return map;
 }
 

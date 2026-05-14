@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxToggle } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
 
 import { CNGX_FILTER_EDITORS, injectFilterEditors } from './filter-builder.tokens';
@@ -18,13 +17,13 @@ describe('CNGX_FILTER_EDITORS', () => {
     expect([...registry.keys()].sort()).toEqual(['boolean', 'date', 'number', 'string']);
   });
 
-  it('maps scalar editor types to native sentinels and boolean to CngxToggle', () => {
+  it('maps every builtin editor type to a native sentinel', () => {
     TestBed.configureTestingModule({});
     const registry = TestBed.inject(CNGX_FILTER_EDITORS);
     expect(registry.get('string')).toBe('native:string');
     expect(registry.get('number')).toBe('native:number');
     expect(registry.get('date')).toBe('native:date');
-    expect(registry.get('boolean')).toBe(CngxToggle);
+    expect(registry.get('boolean')).toBe('native:boolean');
   });
 
   it('accepts a consumer override that wins over the default factory', () => {
@@ -51,7 +50,7 @@ describe('injectFilterEditors', () => {
     const fixture = TestBed.createComponent(EditorsProbe);
     const { resolved } = fixture.componentInstance;
     expect(resolved.size).toBe(4);
-    expect(resolved.get('boolean')).toBe(CngxToggle);
+    expect(resolved.get('boolean')).toBe('native:boolean');
   });
 
   it('returns the consumer-provided CNGX_FILTER_EDITORS map', () => {

@@ -17,6 +17,7 @@ import type {
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
 const FIELD_BIRTH: FilterFieldDef = { key: 'birth', label: 'Birth', editorType: 'date' };
+const FIELD_ACTIVE: FilterFieldDef = { key: 'active', label: 'Active', editorType: 'boolean' };
 
 interface MockHost extends CngxFilterBuilderHost {
   readonly tree: ReturnType<typeof signal<FilterGroup>>;
@@ -89,7 +90,7 @@ class Host {
 
 function setup(
   expression: FilterExpression,
-  fieldList: readonly FilterFieldDef[] = [FIELD_NAME, FIELD_AGE, FIELD_BIRTH],
+  fieldList: readonly FilterFieldDef[] = [FIELD_NAME, FIELD_AGE, FIELD_BIRTH, FIELD_ACTIVE],
 ): {
   fixture: ReturnType<typeof TestBed.createComponent<Host>>;
   host: MockHost;
@@ -125,7 +126,7 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     expect(selects).toHaveLength(2);
     const fieldSelect = selects[0].componentInstance as CngxSelect<string>;
     const operatorSelect = selects[1].componentInstance as CngxSelect<string>;
-    expect(fieldSelect.options()).toHaveLength(3);
+    expect(fieldSelect.options()).toHaveLength(4);
     expect(operatorSelect.options().length).toBeGreaterThan(0);
   });
 
@@ -218,6 +219,35 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     const { fixture } = setup(expression);
     const input = fixture.debugElement.query(By.css('input[type="date"]'));
     expect(input).not.toBeNull();
+  });
+
+  it('renders a cngx-toggle for boolean editor type and emits setValue on toggle change', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'active',
+      operator: 'eq',
+      value: false,
+    };
+    const { fixture, host } = setup(expression);
+    const toggle = fixture.debugElement.query(By.css('cngx-toggle')).nativeElement as HTMLElement;
+    toggle.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(host.setValueSpy).toHaveBeenCalledWith([0], true);
+  });
+
+  it('reflects the bound expression.value on the toggle aria-checked attribute', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'active',
+      operator: 'eq',
+      value: true,
+    };
+    const { fixture } = setup(expression);
+    const toggle = fixture.debugElement.query(By.css('cngx-toggle')).nativeElement as HTMLElement;
+    expect(toggle.getAttribute('aria-checked')).toBe('true');
   });
 
   it('emits removeNode via host on remove-button click', () => {

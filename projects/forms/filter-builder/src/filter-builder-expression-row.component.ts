@@ -10,6 +10,7 @@ import {
   untracked,
   ViewEncapsulation,
 } from '@angular/core';
+import { CngxToggle } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
@@ -52,7 +53,7 @@ const EMPTY_PATH: readonly number[] = Object.freeze([]) as readonly number[];
   selector: 'cngx-filter-expression-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect],
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
   templateUrl: './filter-builder-expression-row.component.html',
   styleUrl: './filter-builder-expression-row.component.css',
   encapsulation: ViewEncapsulation.None,
@@ -272,6 +273,10 @@ export class CngxFilterExpressionRow {
     const target = event.target as HTMLInputElement;
     const raw = target.value;
     this.writeValue(raw === '' ? null : Number(raw));
+  }
+
+  protected handleBooleanValueChange(next: boolean): void {
+    this.writeValue(next);
   }
 
   private writeValue(next: unknown): void {

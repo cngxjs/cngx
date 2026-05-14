@@ -20,7 +20,11 @@ export type { CngxFilterBuilderTemplates };
  * a custom editor component — keeps the bundle lean for the three builtin
  * scalar types.
  */
-export type CngxFilterNativeEditor = 'native:string' | 'native:number' | 'native:date';
+export type CngxFilterNativeEditor =
+  | 'native:string'
+  | 'native:number'
+  | 'native:date'
+  | 'native:boolean';
 
 /**
  * Editor-registry value type. Either one of the three native sentinels, or
