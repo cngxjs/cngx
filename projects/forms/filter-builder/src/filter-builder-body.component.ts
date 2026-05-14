@@ -78,11 +78,6 @@ export class CngxFilterBuilderBody {
   }
 
   private clearAllCaches(): void {
-    this.addFilterButtonContextCache.clear();
-    this.addGroupButtonContextCache.clear();
-    this.removeButtonContextCache.clear();
-    this.logicToggleContextCache.clear();
-    this.negationToggleContextCache.clear();
     this.groupTemplateContextCache.clear();
     this.expressionTemplateContextCache.clear();
   }
@@ -98,11 +93,6 @@ export class CngxFilterBuilderBody {
     { equal: () => true },
   );
 
-  private readonly addFilterButtonContextCache = new Map<string, AddFilterButtonCtx>();
-  private readonly addGroupButtonContextCache = new Map<string, AddGroupButtonCtx>();
-  private readonly removeButtonContextCache = new Map<string, RemoveButtonCtx>();
-  private readonly logicToggleContextCache = new Map<string, LogicToggleCtx>();
-  private readonly negationToggleContextCache = new Map<string, NegationToggleCtx>();
   private readonly groupTemplateContextCache = new Map<string, GroupTemplateCtx>();
   private readonly expressionTemplateContextCache = new Map<string, ExpressionTemplateCtx>();
 
@@ -112,69 +102,39 @@ export class CngxFilterBuilderBody {
   >();
 
   protected addFilterButtonContext(path: readonly number[]): AddFilterButtonCtx {
-    const key = path.join('.');
-    let ctx = this.addFilterButtonContextCache.get(key);
-    if (ctx === undefined) {
-      ctx = {
-        add: () => this.addFilterAt(path),
-        label: this.config.i18n.addFilter,
-        disabled: false,
-      };
-      this.addFilterButtonContextCache.set(key, ctx);
-    }
-    return ctx;
+    return {
+      add: () => this.addFilterAt(path),
+      label: this.config.i18n.addFilter,
+      disabled: false,
+    };
   }
 
   protected addGroupButtonContext(path: readonly number[]): AddGroupButtonCtx {
-    const key = path.join('.');
-    let ctx = this.addGroupButtonContextCache.get(key);
-    if (ctx === undefined) {
-      ctx = {
-        add: () => this.addGroupAt(path),
-        label: this.config.i18n.addGroup,
-        disabled: false,
-      };
-      this.addGroupButtonContextCache.set(key, ctx);
-    }
-    return ctx;
+    return {
+      add: () => this.addGroupAt(path),
+      label: this.config.i18n.addGroup,
+      disabled: false,
+    };
   }
 
   protected removeButtonContext(path: readonly number[], label: string): RemoveButtonCtx {
-    const key = `${path.join('.')}|${label}`;
-    let ctx = this.removeButtonContextCache.get(key);
-    if (ctx === undefined) {
-      ctx = { remove: () => this.host.removeNode(path), label };
-      this.removeButtonContextCache.set(key, ctx);
-    }
-    return ctx;
+    return { remove: () => this.host.removeNode(path), label };
   }
 
   protected logicToggleContext(group: FilterGroup, path: readonly number[]): LogicToggleCtx {
-    const key = `${path.join('.')}|${group.logic}`;
-    let ctx = this.logicToggleContextCache.get(key);
-    if (ctx === undefined) {
-      ctx = {
-        logic: group.logic,
-        options: this.config.logicOptions,
-        setLogic: (logic) => this.host.setLogic(path, logic),
-      };
-      this.logicToggleContextCache.set(key, ctx);
-    }
-    return ctx;
+    return {
+      logic: group.logic,
+      options: this.config.logicOptions,
+      setLogic: (logic) => this.host.setLogic(path, logic),
+    };
   }
 
   protected negationToggleContext(group: FilterGroup, path: readonly number[]): NegationToggleCtx {
-    const key = `${path.join('.')}|${group.negated ? '1' : '0'}`;
-    let ctx = this.negationToggleContextCache.get(key);
-    if (ctx === undefined) {
-      ctx = {
-        negated: group.negated,
-        toggle: () => this.host.toggleNegated(path),
-        label: this.config.i18n.negate,
-      };
-      this.negationToggleContextCache.set(key, ctx);
-    }
-    return ctx;
+    return {
+      negated: group.negated,
+      toggle: () => this.host.toggleNegated(path),
+      label: this.config.i18n.negate,
+    };
   }
 
   protected groupTemplateContext(group: FilterGroup, path: readonly number[]): GroupTemplateCtx {

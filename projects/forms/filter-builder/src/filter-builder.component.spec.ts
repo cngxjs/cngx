@@ -246,17 +246,10 @@ describe('CngxFilterBuilder — ARIA labels reactive', () => {
 });
 
 type BodyProbe = {
-  addFilterButtonContext(path: readonly number[]): unknown;
-  addGroupButtonContext(path: readonly number[]): unknown;
-  removeButtonContext(path: readonly number[], label: string): unknown;
-  logicToggleContext(group: FilterGroup, path: readonly number[]): unknown;
+  groupTemplateContext(group: FilterGroup, path: readonly number[]): unknown;
+  expressionTemplateContext(expression: unknown, path: readonly number[]): unknown;
   childPath(parent: readonly number[], child: FilterGroup, index: number): readonly number[];
   readonly rootPath: readonly number[];
-  readonly addFilterButtonContextCache: Map<string, unknown>;
-  readonly addGroupButtonContextCache: Map<string, unknown>;
-  readonly removeButtonContextCache: Map<string, unknown>;
-  readonly logicToggleContextCache: Map<string, unknown>;
-  readonly negationToggleContextCache: Map<string, unknown>;
   readonly groupTemplateContextCache: Map<string, unknown>;
   readonly expressionTemplateContextCache: Map<string, unknown>;
 };
@@ -266,75 +259,35 @@ function bodyOf(fixture: ReturnType<typeof basicSetup>['fixture']): BodyProbe {
   return debugBody.componentInstance as unknown as BodyProbe;
 }
 
-describe('CngxFilterBuilder — slot-context reference stability', () => {
-  it('addFilterButtonContext returns the same reference for content-equal paths', () => {
-    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
-    const { fixture } = basicSetup(initial);
-    const body = bodyOf(fixture);
-    const a = body.addFilterButtonContext([0, 1]);
-    const b = body.addFilterButtonContext([0, 1]);
-    expect(b).toBe(a);
-  });
-
-  it('removeButtonContext caches by (path, label) tuple', () => {
-    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
-    const { fixture } = basicSetup(initial);
-    const body = bodyOf(fixture);
-    const a = body.removeButtonContext([0], 'Remove');
-    const b = body.removeButtonContext([0], 'Remove');
-    const c = body.removeButtonContext([0], 'Different');
-    expect(b).toBe(a);
-    expect(c).not.toBe(a);
-  });
-
-  it('logicToggleContext rebuilds when group.logic changes', () => {
-    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
-    const { fixture } = basicSetup(initial);
-    const body = bodyOf(fixture);
-    const groupAnd = createFilterGroup('and');
-    const groupOr = createFilterGroup('or');
-    const a = body.logicToggleContext(groupAnd, []);
-    const b = body.logicToggleContext(groupAnd, []);
-    const c = body.logicToggleContext(groupOr, []);
-    expect(b).toBe(a);
-    expect(c).not.toBe(a);
-  });
-});
-
-describe('CngxFilterBuilderBody — cache eviction on mutation', () => {
-  it('clears slot-context caches when a remove-filter mutation lands', () => {
+describe('CngxFilterBuilderBody — identity-keyed template caches evict on remove', () => {
+  it('clears group/expression template caches when a remove-filter mutation lands', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture, presenter } = basicSetup(initial);
     const body = bodyOf(fixture);
-    body.addFilterButtonContext([0]);
-    body.logicToggleContext(createFilterGroup('and'), []);
-    expect(body.addFilterButtonContextCache.size).toBeGreaterThan(0);
+    body.groupTemplateContext(createFilterGroup('and'), []);
+    body.expressionTemplateContext(createFilterExpression('name', 'eq', 'x'), [0]);
+    expect(body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size).toBeGreaterThan(0);
 
     presenter.removeNode([0]);
     fixture.detectChanges();
     TestBed.flushEffects();
 
-    expect(body.addFilterButtonContextCache.size).toBe(0);
-    expect(body.logicToggleContextCache.size).toBe(0);
+    expect(body.groupTemplateContextCache.size).toBe(0);
+    expect(body.expressionTemplateContextCache.size).toBe(0);
   });
 });
 
 describe('CngxFilterBuilderBody — cache teardown on destroy', () => {
-  it('clears all slot-context caches when the body is destroyed', () => {
+  it('clears identity-keyed template caches when the body is destroyed', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
     const { fixture } = basicSetup(initial);
     const body = bodyOf(fixture);
-    body.addFilterButtonContext([0]);
-    body.removeButtonContext([0], 'Remove');
-    body.logicToggleContext(createFilterGroup('and'), []);
-    expect(body.addFilterButtonContextCache.size).toBeGreaterThan(0);
+    body.groupTemplateContext(createFilterGroup('and'), []);
+    body.expressionTemplateContext(createFilterExpression('name', 'eq', 'x'), [0]);
+    expect(body.groupTemplateContextCache.size + body.expressionTemplateContextCache.size).toBeGreaterThan(0);
 
     fixture.destroy();
-    expect(body.addFilterButtonContextCache.size).toBe(0);
-    expect(body.addGroupButtonContextCache.size).toBe(0);
-    expect(body.removeButtonContextCache.size).toBe(0);
-    expect(body.logicToggleContextCache.size).toBe(0);
-    expect(body.negationToggleContextCache.size).toBe(0);
+
     expect(body.groupTemplateContextCache.size).toBe(0);
     expect(body.expressionTemplateContextCache.size).toBe(0);
   });
