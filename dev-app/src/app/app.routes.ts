@@ -507,6 +507,11 @@ export const routes: Routes = [
           import('./demos/forms/filter-builder-demo/filter-builder-demo.component').then((m) => m.FilterBuilderDemoComponent),
       },
       {
+        path: 'filter-builder-bridge',
+        loadComponent: () =>
+          import('./demos/forms/filter-builder-bridge-demo/filter-builder-bridge-demo.component').then((m) => m.FilterBuilderBridgeDemoComponent),
+      },
+      {
         path: 'form-primitives',
         loadComponent: () =>
           import('./demos/forms/form-primitives-demo/form-primitives-demo.component').then((m) => m.FormPrimitivesDemoComponent),
