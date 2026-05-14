@@ -2,7 +2,6 @@ import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   DestroyRef,
   effect,
   inject,
@@ -19,6 +18,7 @@ import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type {
   CngxFilterBuilderAddFilterButtonContext as AddFilterButtonCtx,
   CngxFilterBuilderAddGroupButtonContext as AddGroupButtonCtx,
+  CngxFilterBuilderEmptyContext as EmptyCtx,
   CngxFilterBuilderExpressionTemplateContext as ExpressionTemplateCtx,
   CngxFilterBuilderGroupTemplateContext as GroupTemplateCtx,
   CngxFilterBuilderLogicToggleContext as LogicToggleCtx,
@@ -85,13 +85,10 @@ export class CngxFilterBuilderBody {
   protected readonly isNativeEditor = isNativeEditor;
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
-  protected readonly emptyContext = computed(
-    () => ({
-      addFilter: () => this.addFilterAt(this.rootPath),
-      addGroup: () => this.addGroupAt(this.rootPath),
-    }),
-    { equal: () => true },
-  );
+  protected readonly emptyContext: EmptyCtx = {
+    addFilter: () => this.addFilterAt(this.rootPath),
+    addGroup: () => this.addGroupAt(this.rootPath),
+  };
 
   private readonly groupTemplateContextCache = new Map<string, GroupTemplateCtx>();
   private readonly expressionTemplateContextCache = new Map<string, ExpressionTemplateCtx>();

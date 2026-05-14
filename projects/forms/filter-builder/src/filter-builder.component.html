@@ -1,10 +1,10 @@
 @let status = presenter.state.status();
 @if (status === 'loading') {
   @if (templates.loading(); as loadingTpl) {
-    <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext()"></ng-container>
+    <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext"></ng-container>
   } @else {
     <div class="cngx-filter-builder__loading" role="status" [attr.aria-label]="config.i18n.loading">
-      @for (_ of skeletonRows(); track $index) {
+      @for (_ of skeletonRows; track $index) {
         <p class="cngx-filter-builder__skeleton-row" aria-hidden="true"></p>
       }
     </div>

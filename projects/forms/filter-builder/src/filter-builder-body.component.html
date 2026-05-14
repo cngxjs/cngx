@@ -1,6 +1,6 @@
 @if (host.isEmpty()) {
   @if (templates().empty(); as emptyTpl) {
-    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext()"></ng-container>
+    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext"></ng-container>
   } @else {
     <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
     <div class="cngx-filter-builder__actions">

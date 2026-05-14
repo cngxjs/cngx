@@ -7,6 +7,8 @@ import {
   inject,
 } from '@angular/core';
 
+import type { CngxFilterBuilderLoadingContext } from './filter-builder-slots';
+
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import type {
   CngxFilterBuilderErrorContext as ErrorCtx,
@@ -91,14 +93,13 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
   });
 
-  protected readonly loadingContext = computed(
-    () => ({ skeletonCount: this.config.skeletonCount }),
-    { equal: (a, b) => a.skeletonCount === b.skeletonCount },
-  );
+  protected readonly loadingContext: CngxFilterBuilderLoadingContext = {
+    skeletonCount: this.config.skeletonCount,
+  };
 
-  protected readonly skeletonRows = computed<readonly null[]>(
-    () => Array.from({ length: this.config.skeletonCount }, () => null),
-    { equal: (a, b) => a.length === b.length },
+  protected readonly skeletonRows: readonly null[] = Array.from(
+    { length: this.config.skeletonCount },
+    () => null,
   );
 
   protected readonly errorSlotContext = computed<ErrorCtx>(
