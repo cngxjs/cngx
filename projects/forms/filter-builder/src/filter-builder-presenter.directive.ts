@@ -13,7 +13,7 @@ import {
   type CngxStateful,
   nextUid,
 } from '@cngx/core/utils';
-import { CNGX_FORM_FIELD_CONTROL, type CngxFormFieldControl } from '@cngx/forms/field';
+import { type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
   FilterExpression,
@@ -53,7 +53,6 @@ import { CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY } from './filter-builder-announce
   providers: [
     { provide: CNGX_FILTER_BUILDER_HOST, useExisting: CngxFilterBuilderPresenter },
     { provide: CNGX_STATEFUL, useExisting: CngxFilterBuilderPresenter },
-    { provide: CNGX_FORM_FIELD_CONTROL, useExisting: CngxFilterBuilderPresenter },
   ],
 })
 export class CngxFilterBuilderPresenter<TValue = unknown>

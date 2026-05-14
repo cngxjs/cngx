@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
@@ -23,6 +24,20 @@ class Host {
   readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
   value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
   readonly directive = viewChild.required(CngxFilterBuilderPresenter);
+}
+
+@Component({
+  template: `<div
+    cngxFilterBuilderPresenter
+    cngxFilterBuilderFormFieldControl
+    [fields]="fields()"
+    [(value)]="value"
+  ></div>`,
+  imports: [CngxFilterBuilderPresenter, CngxFilterBuilderFormFieldControl],
+})
+class HostWithFormField {
+  readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
+  value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
 }
 
 function setup(overrides: Partial<Host> = {}): {
@@ -73,15 +88,9 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(directive.tree()).toEqual(next);
   });
 
-  it('resolves CNGX_FILTER_BUILDER_HOST / CNGX_STATEFUL / CNGX_FORM_FIELD_CONTROL to the same instance', () => {
-    const { directive } = setup();
-    const injector = directive['core'] // throwaway access to confirm directive is mounted
-      ? null
-      : null;
-    void injector;
-
+  it('resolves CNGX_FILTER_BUILDER_HOST / CNGX_STATEFUL to the same instance; does NOT default-provide CNGX_FORM_FIELD_CONTROL', () => {
     const hostToken = TestBed.inject(CNGX_FILTER_BUILDER_HOST, undefined, { optional: true });
-    expect(hostToken).toBeNull(); // root injector cannot see the directive-scoped providers
+    expect(hostToken).toBeNull();
 
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
@@ -90,6 +99,16 @@ describe('CngxFilterBuilderPresenter', () => {
 
     expect(inner.get(CNGX_FILTER_BUILDER_HOST)).toBe(inner.get(CngxFilterBuilderPresenter));
     expect(inner.get(CNGX_STATEFUL)).toBe(inner.get(CngxFilterBuilderPresenter));
+    expect(inner.get(CNGX_FORM_FIELD_CONTROL, undefined, { optional: true })).toBeNull();
+  });
+
+  it('exposes the presenter as CNGX_FORM_FIELD_CONTROL when CngxFilterBuilderFormFieldControl is applied', () => {
+    TestBed.resetTestingModule();
+    const fixture = TestBed.createComponent(HostWithFormField);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = fixture.debugElement.children[0].injector;
+
     expect(inner.get(CNGX_FORM_FIELD_CONTROL)).toBe(inner.get(CngxFilterBuilderPresenter));
   });
 
