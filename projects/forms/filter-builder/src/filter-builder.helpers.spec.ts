@@ -304,6 +304,39 @@ describe('evaluateExpression — every default operator', () => {
       expect(evaluateExpression(createFilterExpression('nullValue', 'gt', 0), item, nullField)).toBe(false);
       expect(evaluateExpression(createFilterExpression('nullValue', 'lt', 0), item, nullField)).toBe(false);
     });
+
+    it('expression with undefined value is treated as no-op for ordinary operators', () => {
+      expect(evaluateExpression(createFilterExpression('name', 'eq'), item, FIELD_NAME)).toBe(true);
+      expect(evaluateExpression(createFilterExpression('name', 'contains'), item, FIELD_NAME)).toBe(true);
+      expect(evaluateExpression(createFilterExpression('age', 'gt'), item, FIELD_AGE)).toBe(true);
+    });
+
+    it('isEmpty / isNotEmpty remain active when expression value is undefined', () => {
+      const emptyField: FilterFieldDef = { key: 'empty', label: '', editorType: 'string' };
+      expect(evaluateExpression(createFilterExpression('empty', 'isEmpty'), item, emptyField)).toBe(true);
+      expect(evaluateExpression(createFilterExpression('name', 'isNotEmpty'), item, FIELD_NAME)).toBe(true);
+    });
+  });
+});
+
+describe('toFilterPredicate — incomplete expressions are skipped', () => {
+  it('and-group: an expression with undefined value does not exclude items', () => {
+    const tree = createFilterGroup('and', [
+      createFilterExpression('name', 'contains'),
+      createFilterExpression('age', 'eq', 30),
+    ]);
+    const predicate = toFilterPredicate(tree, FIELDS)!;
+    expect(predicate({ name: 'whatever', age: 30 })).toBe(true);
+    expect(predicate({ name: 'whatever', age: 31 })).toBe(false);
+  });
+
+  it('tree with only incomplete expressions accepts every item', () => {
+    const tree = createFilterGroup('and', [
+      createFilterExpression('name', 'eq'),
+      createFilterExpression('age', 'gt'),
+    ]);
+    const predicate = toFilterPredicate(tree, FIELDS)!;
+    expect(predicate({ name: 'alice', age: 25 })).toBe(true);
   });
 });
 

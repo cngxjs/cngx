@@ -139,6 +139,18 @@ export function evaluateExpression<TItem>(
   if (!fieldDef) {
     return false;
   }
+  // Expressions that have not been filled in yet (value === undefined) are
+  // treated as no-ops: the user picked a field and an operator but did not
+  // type a value yet, so the row should not exclude every item. The
+  // `isEmpty` / `isNotEmpty` family is exempt — they target the item value,
+  // not the expression target, so undefined is still a valid query.
+  if (
+    expr.value === undefined &&
+    expr.operator !== 'isEmpty' &&
+    expr.operator !== 'isNotEmpty'
+  ) {
+    return true;
+  }
   const record = item as Record<string, unknown>;
   const itemValue: unknown = record[fieldDef.key];
   const targetValue: unknown = expr.value;
