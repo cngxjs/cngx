@@ -1,0 +1,137 @@
+@if (host.isEmpty()) {
+  @if (templates().empty(); as emptyTpl) {
+    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext"></ng-container>
+  } @else {
+    <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
+    <div class="cngx-filter-builder__actions">
+      <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path: rootPath }"></ng-container>
+      <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path: rootPath }"></ng-container>
+    </div>
+  }
+} @else if (templates().groupTemplate(); as customRootGroupTpl) {
+  <ng-container
+    *ngTemplateOutlet="customRootGroupTpl; context: groupTemplateContext(host.tree(), rootPath)"
+  ></ng-container>
+} @else {
+  <ng-container
+    *ngTemplateOutlet="groupTpl; context: { $implicit: host.tree(), path: rootPath }"
+  ></ng-container>
+}
+
+<ng-template #addFilterButtonTpl let-path="path">
+  @if (templates().addFilterButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: addFilterButtonContext(path)"></ng-container>
+  } @else {
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-filter"
+      (click)="addFilterAt(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addFilter }}</span>
+      {{ config.i18n.addFilter }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #addGroupButtonTpl let-path="path">
+  @if (templates().addGroupButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: addGroupButtonContext(path)"></ng-container>
+  } @else {
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-group"
+      (click)="addGroupAt(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addGroup }}</span>
+      {{ config.i18n.addGroup }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #removeButtonTpl let-path="path" let-label="label">
+  @if (templates().removeButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: removeButtonContext(path, label)"></ng-container>
+  } @else {
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+      (click)="host.removeNode(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
+      {{ label }}
+    </button>
+  }
+</ng-template>
+
+<ng-template #logicToggleTpl let-group="group" let-path="path">
+  @if (templates().logicToggle(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
+  } @else {
+    <cngx-select
+      class="cngx-filter-builder__logic-select"
+      [options]="logicSelectOptions()"
+      [value]="group.logic"
+      (valueChange)="setLogic(path, $event)"
+    ></cngx-select>
+  }
+</ng-template>
+
+<ng-template #groupTpl let-group let-path="path">
+  <div class="cngx-filter-builder__group" [cngxFilterGroup]="path">
+    <div class="cngx-filter-builder__logic-toggle">
+      <ng-container *ngTemplateOutlet="logicToggleTpl; context: { group, path }"></ng-container>
+      @if (negationEnabled) {
+        @if (templates().negationToggle(); as negTpl) {
+          <ng-container
+            *ngTemplateOutlet="negTpl; context: negationToggleContext(group, path)"
+          ></ng-container>
+        } @else {
+          <label>
+            <input
+              type="checkbox"
+              [checked]="group.negated"
+              (change)="host.toggleNegated(path)"
+            />
+            <span aria-hidden="true">{{ glyphs.negate }}</span> {{ config.i18n.negate }}
+          </label>
+        }
+      }
+    </div>
+
+    @for (child of group.filters; track child.id; let i = $index) {
+      @let cp = childPath(path, child, i);
+      @switch (child.type) {
+        @case ('group') {
+          @if (templates().groupTemplate(); as customGroupTpl) {
+            <ng-container
+              *ngTemplateOutlet="customGroupTpl; context: groupTemplateContext(child, cp)"
+            ></ng-container>
+          } @else {
+            <ng-container
+              *ngTemplateOutlet="groupTpl; context: { $implicit: child, path: cp }"
+            ></ng-container>
+          }
+        }
+        @case ('expression') {
+          @if (templates().expressionTemplate(); as customExprTpl) {
+            <ng-container
+              *ngTemplateOutlet="customExprTpl; context: expressionTemplateContext(child, cp)"
+            ></ng-container>
+          } @else {
+            <cngx-filter-expression-row [path]="cp" [templates]="templates()" />
+          }
+        }
+      }
+    }
+
+    <div class="cngx-filter-builder__actions">
+      <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path }"></ng-container>
+      <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path }"></ng-container>
+      @if (path.length > 0) {
+        <ng-container
+          *ngTemplateOutlet="removeButtonTpl; context: { path, label: config.i18n.removeGroup }"
+        ></ng-container>
+      }
+    </div>
+  </div>
+</ng-template>

@@ -13,6 +13,7 @@
     "controls/**/*.spec.ts",
     "field/**/*.spec.ts",
     "input/**/*.spec.ts",
+    "filter-builder/**/*.spec.ts",
     "select/**/*.spec.ts"
   ]
 }

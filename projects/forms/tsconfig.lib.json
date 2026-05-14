@@ -22,6 +22,6 @@
       "@cngx/forms/field": ["projects/forms/field/public-api.ts"]
     }
   },
-  "include": ["*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts", "select/**/*.ts"],
+  "include": ["*.ts", "controls/**/*.ts", "validators/**/*.ts", "field/**/*.ts", "input/**/*.ts", "filter-builder/**/*.ts", "select/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/examples/**"]
 }

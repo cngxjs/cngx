@@ -1,0 +1,259 @@
+import { Directive, inject, TemplateRef } from '@angular/core';
+
+import type {
+  FilterExpression,
+  FilterFieldDef,
+  FilterGroup,
+  FilterLogic,
+} from './filter-builder.types';
+
+/**
+ * Slot-directive bundle for `<cngx-filter-builder>` (Phase 5). Each
+ * directive is a `<ng-template>`-only marker; the component locates them
+ * via `contentChild` and falls through to
+ * `CNGX_FILTER_BUILDER_CONFIG.templates.<key>` and finally to the default
+ * rendering when neither is present (three-stage cascade,
+ * `architecture-summary.md` slot system).
+ *
+ * Each context interface is the snapshot value passed at render time —
+ * not signals. The component re-stamps slot outlets on every relevant
+ * state change via `*ngTemplateOutlet`-with-context.
+ */
+
+export interface CngxFilterBuilderLoadingContext {
+  readonly skeletonCount: number;
+}
+
+export interface CngxFilterBuilderErrorContext {
+  readonly error: unknown;
+}
+
+export interface CngxFilterBuilderEmptyContext {
+  readonly addFilter: () => void;
+  readonly addGroup: () => void;
+}
+
+export interface CngxFilterBuilderExpressionTemplateContext {
+  readonly expression: FilterExpression;
+  readonly fieldDef: FilterFieldDef | undefined;
+  readonly availableOperators: readonly string[];
+  readonly value: unknown;
+  readonly setField: (key: string) => void;
+  readonly setOperator: (operator: string) => void;
+  readonly setValue: (value: unknown) => void;
+  readonly remove: () => void;
+}
+
+export interface CngxFilterBuilderGroupTemplateContext {
+  readonly group: FilterGroup;
+  readonly logic: FilterLogic;
+  readonly isRoot: boolean;
+  readonly setLogic: (logic: FilterLogic) => void;
+  readonly toggleNegated: () => void;
+  readonly addFilter: () => void;
+  readonly addGroup: () => void;
+  readonly remove: () => void;
+}
+
+export interface CngxFilterBuilderAddFilterButtonContext {
+  readonly add: () => void;
+  readonly label: string;
+  readonly disabled: boolean;
+}
+
+export interface CngxFilterBuilderAddGroupButtonContext {
+  readonly add: () => void;
+  readonly label: string;
+  readonly disabled: boolean;
+}
+
+export interface CngxFilterBuilderRemoveButtonContext {
+  readonly remove: () => void;
+  readonly label: string;
+}
+
+export interface CngxFilterBuilderLogicToggleContext {
+  readonly logic: FilterLogic;
+  readonly options: readonly FilterLogic[];
+  readonly setLogic: (logic: FilterLogic) => void;
+}
+
+export interface CngxFilterBuilderNegationToggleContext {
+  readonly negated: boolean;
+  readonly toggle: () => void;
+  readonly label: string;
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderLoading]',
+  exportAs: 'cngxFilterBuilderLoading',
+  standalone: true,
+})
+export class CngxFilterBuilderLoading {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderLoadingContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderLoading,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderLoadingContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderError]',
+  exportAs: 'cngxFilterBuilderError',
+  standalone: true,
+})
+export class CngxFilterBuilderError {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderErrorContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderError,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderErrorContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderEmpty]',
+  exportAs: 'cngxFilterBuilderEmpty',
+  standalone: true,
+})
+export class CngxFilterBuilderEmpty {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderEmptyContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderEmpty,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderEmptyContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderExpressionTemplate]',
+  exportAs: 'cngxFilterBuilderExpressionTemplate',
+  standalone: true,
+})
+export class CngxFilterBuilderExpressionTemplate {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderExpressionTemplateContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderExpressionTemplate,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderExpressionTemplateContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderGroupTemplate]',
+  exportAs: 'cngxFilterBuilderGroupTemplate',
+  standalone: true,
+})
+export class CngxFilterBuilderGroupTemplate {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderGroupTemplateContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderGroupTemplate,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderGroupTemplateContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderAddFilterButton]',
+  exportAs: 'cngxFilterBuilderAddFilterButton',
+  standalone: true,
+})
+export class CngxFilterBuilderAddFilterButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderAddFilterButtonContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderAddFilterButton,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderAddFilterButtonContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderAddGroupButton]',
+  exportAs: 'cngxFilterBuilderAddGroupButton',
+  standalone: true,
+})
+export class CngxFilterBuilderAddGroupButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderAddGroupButtonContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderAddGroupButton,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderAddGroupButtonContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderRemoveButton]',
+  exportAs: 'cngxFilterBuilderRemoveButton',
+  standalone: true,
+})
+export class CngxFilterBuilderRemoveButton {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderRemoveButtonContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderRemoveButton,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderRemoveButtonContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderLogicToggle]',
+  exportAs: 'cngxFilterBuilderLogicToggle',
+  standalone: true,
+})
+export class CngxFilterBuilderLogicToggle {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderLogicToggleContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderLogicToggle,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderLogicToggleContext {
+    return true;
+  }
+}
+
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderNegationToggle]',
+  exportAs: 'cngxFilterBuilderNegationToggle',
+  standalone: true,
+})
+export class CngxFilterBuilderNegationToggle {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderNegationToggleContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderNegationToggle,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderNegationToggleContext {
+    return true;
+  }
+}
+
+/** Lookup-style template registry — used by `CngxFilterBuilderConfig.templates`. */
+export interface CngxFilterBuilderTemplates {
+  readonly loading?: TemplateRef<CngxFilterBuilderLoadingContext> | null;
+  readonly error?: TemplateRef<CngxFilterBuilderErrorContext> | null;
+  readonly empty?: TemplateRef<CngxFilterBuilderEmptyContext> | null;
+  readonly expressionTemplate?: TemplateRef<CngxFilterBuilderExpressionTemplateContext> | null;
+  readonly groupTemplate?: TemplateRef<CngxFilterBuilderGroupTemplateContext> | null;
+  readonly addFilterButton?: TemplateRef<CngxFilterBuilderAddFilterButtonContext> | null;
+  readonly addGroupButton?: TemplateRef<CngxFilterBuilderAddGroupButtonContext> | null;
+  readonly removeButton?: TemplateRef<CngxFilterBuilderRemoveButtonContext> | null;
+  readonly logicToggle?: TemplateRef<CngxFilterBuilderLogicToggleContext> | null;
+  readonly negationToggle?: TemplateRef<CngxFilterBuilderNegationToggleContext> | null;
+}
