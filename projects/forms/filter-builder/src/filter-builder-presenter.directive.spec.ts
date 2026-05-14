@@ -145,4 +145,29 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(focused.set).toBeUndefined();
     expect(errorState.set).toBeUndefined();
   });
+
+  it('errorState reflects incomplete-expression count derived from tree()', () => {
+    const { fixture, directive } = setup();
+    expect(directive.errorState()).toBe(false);
+
+    directive.addExpression([], { type: 'expression', field: 'name', operator: 'eq', value: '' });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.errorState()).toBe(true);
+
+    directive.setValue([0], 'foo');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.errorState()).toBe(false);
+
+    directive.addGroup([], {
+      type: 'group',
+      logic: 'and',
+      negated: false,
+      filters: [{ type: 'expression', field: 'age', operator: 'gt', value: null }],
+    });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.errorState()).toBe(true);
+  });
 });

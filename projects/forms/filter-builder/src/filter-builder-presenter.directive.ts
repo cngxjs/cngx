@@ -1,4 +1,5 @@
 import {
+  computed,
   Directive,
   inject,
   input,
@@ -110,8 +111,14 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly disabled: Signal<boolean> = signal(false).asReadonly();
   // @todo(phase-6) drive from focusin/focusout host bindings or the first incomplete expression's focus state
   readonly focused: Signal<boolean> = signal(false).asReadonly();
-  // @todo(phase-6) derive from incomplete-expression count + the field's touched flag
-  readonly errorState: Signal<boolean> = signal(false).asReadonly();
+  /**
+   * `true` when at least one expression in the tree has an empty value
+   * (`null`, `undefined`, or empty string). Pure intrinsic-validity
+   * derivation; `touched` coupling deferred per accepted-debt §12.
+   */
+  readonly errorState: Signal<boolean> = computed(() =>
+    countIncompleteExpressions(this.tree()) > 0,
+  );
 
   /** Implements `CngxStateful.state` — forwards `[cngxFilterBuilderState]` when bound, else an idle slot. */
   get state(): CngxAsyncState<unknown> {
@@ -157,4 +164,23 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined {
     return this.core.getFieldDef(fieldKey);
   }
+}
+
+function isExpressionIncomplete(expression: FilterExpression): boolean {
+  const value = expression.value;
+  return value === null || value === undefined || value === '';
+}
+
+function countIncompleteExpressions(group: FilterGroup): number {
+  let count = 0;
+  for (const child of group.filters) {
+    if (child.type === 'expression') {
+      if (isExpressionIncomplete(child)) {
+        count += 1;
+      }
+    } else {
+      count += countIncompleteExpressions(child);
+    }
+  }
+  return count;
 }
