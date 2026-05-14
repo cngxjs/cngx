@@ -9,7 +9,7 @@ import {
   input,
   untracked,
 } from '@angular/core';
-import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect } from '@cngx/forms/select';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -222,7 +222,22 @@ export class CngxFilterBuilderBody {
 
   protected readonly logicOptions = this.config.logicOptions;
 
-  protected readonly logicSelectOptions = computed<CngxSelectOptionsInput<FilterLogic>>(() =>
-    this.logicOptions.map((option) => ({ value: option, label: option.toUpperCase() })),
-  );
+  protected readonly logicSelectOptions = computed<
+    readonly { readonly value: FilterLogic; readonly label: string }[]
+  >(() => this.logicOptions.map((option) => ({ value: option, label: option.toUpperCase() })), {
+    equal: (a, b) => {
+      if (a === b) {
+        return true;
+      }
+      if (a.length !== b.length) {
+        return false;
+      }
+      for (let i = 0; i < a.length; i++) {
+        if (a[i].value !== b[i].value || a[i].label !== b[i].label) {
+          return false;
+        }
+      }
+      return true;
+    },
+  });
 }
