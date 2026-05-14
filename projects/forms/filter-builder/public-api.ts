@@ -25,6 +25,7 @@ export {
   withLogicOptions,
   withMaxNestingDepth,
   withNegation,
+  withSkeletonCount,
   withTemplates,
   type CngxFilterBuilderAnnouncementFormatters,
   type CngxFilterBuilderConfig,

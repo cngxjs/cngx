@@ -100,7 +100,7 @@ export class CngxFilterBuilder {
   }));
 
   protected readonly loadingContext = computed(() => ({
-    skeletonCount: 3,
+    skeletonCount: this.config.skeletonCount,
   }));
 
   protected readonly errorSlotContext = computed<ErrorCtx>(() => ({

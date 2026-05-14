@@ -86,6 +86,7 @@ export interface CngxFilterBuilderConfig {
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
   readonly logicOptions: readonly FilterLogic[];
   readonly negationEnabled: boolean;
+  readonly skeletonCount: number;
 }
 
 const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
@@ -157,6 +158,7 @@ export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.free
   defaultOperators: DEFAULT_OPERATORS,
   logicOptions: Object.freeze(['and', 'or']) as readonly FilterLogic[],
   negationEnabled: false,
+  skeletonCount: 3,
 }) as CngxFilterBuilderConfig;
 
 export const CNGX_FILTER_BUILDER_CONFIG = new InjectionToken<CngxFilterBuilderConfig>(
@@ -211,6 +213,10 @@ export function withLogicOptions(
 
 export function withNegation(enabled: boolean): CngxFilterBuilderConfigFeature {
   return feature((config) => ({ ...config, negationEnabled: enabled }));
+}
+
+export function withSkeletonCount(count: number): CngxFilterBuilderConfigFeature {
+  return feature((config) => ({ ...config, skeletonCount: count }));
 }
 
 export function withTemplates(
