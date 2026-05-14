@@ -37,7 +37,21 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
   setOperator(path: readonly number[], operator: string): void;
   setValue(path: readonly number[], value: unknown): void;
 
+  /**
+   * Resolve a node at `path` against the current `tree()`. Reads `tree()`
+   * internally, so callers inside a reactive context (component template,
+   * `computed()`, `effect()`) auto-track tree mutations — no explicit
+   * `tree()` read needed. The method shape is non-Signal so call-sites
+   * read naturally as `host.getNodeAtPath(path)` rather than
+   * `host.getNodeAtPath(path)()`.
+   */
   getNodeAtPath(path: readonly number[]): FilterNode | null;
+
+  /**
+   * Resolve a field definition by key against the current `fieldMap()`.
+   * Same reactive-auto-track contract as {@link getNodeAtPath} — reads
+   * the underlying signal internally.
+   */
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined;
 }
 
