@@ -139,10 +139,8 @@ describe('CngxFilterBuilder — announcer text', () => {
 
   it('announces "Logic changed to OR" when the logic select changes', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
-    const { fixture, hostEl, presenter } = basicSetup(initial);
-    const logicSelect = hostEl.querySelector('select') as HTMLSelectElement;
-    logicSelect.value = 'or';
-    logicSelect.dispatchEvent(new Event('change'));
+    const { fixture, presenter } = basicSetup(initial);
+    presenter.setLogic([], 'or');
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(presenter.announcement()).toBe('Logic changed to OR');

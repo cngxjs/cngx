@@ -67,15 +67,12 @@
   @if (templates().logicToggle(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
   } @else {
-    <select
+    <cngx-select
       class="cngx-filter-builder__logic-select"
+      [options]="logicSelectOptions()"
       [value]="group.logic"
-      (change)="setLogicFromEvent(path, $event)"
-    >
-      @for (option of logicOptions; track option) {
-        <option [value]="option">{{ option.toUpperCase() }}</option>
-      }
-    </select>
+      (valueChange)="setLogic(path, $event)"
+    ></cngx-select>
   }
 </ng-template>
 

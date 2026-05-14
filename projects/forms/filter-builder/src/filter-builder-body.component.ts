@@ -2,12 +2,14 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
   input,
   untracked,
 } from '@angular/core';
+import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -47,7 +49,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-builder-body',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow],
+  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow, CngxSelect],
   templateUrl: './filter-builder-body.component.html',
 })
 export class CngxFilterBuilderBody {
@@ -209,12 +211,18 @@ export class CngxFilterBuilderBody {
     this.host.addGroup(path, createFilterGroup());
   }
 
-  protected setLogicFromEvent(path: readonly number[], event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.host.setLogic(path, target.value as FilterLogic);
+  protected setLogic(path: readonly number[], next: FilterLogic | undefined): void {
+    if (next === undefined) {
+      return;
+    }
+    this.host.setLogic(path, next);
   }
 
   protected readonly negationEnabled = this.config.negationEnabled;
 
   protected readonly logicOptions = this.config.logicOptions;
+
+  protected readonly logicSelectOptions = computed<CngxSelectOptionsInput<FilterLogic>>(() =>
+    this.logicOptions.map((option) => ({ value: option, label: option.toUpperCase() })),
+  );
 }
