@@ -97,14 +97,20 @@ export class CngxFilterBuilder {
   protected readonly logicOptions = computed(() => this.config.logicOptions);
   protected readonly negationEnabled = computed(() => this.config.negationEnabled);
 
-  protected readonly emptyContext = computed(() => ({
-    addFilter: () => this.addFilterAt([]),
-    addGroup: () => this.addGroupAt([]),
-  }));
+  protected readonly emptyContext = computed(
+    () => ({
+      addFilter: () => this.addFilterAt([]),
+      addGroup: () => this.addGroupAt([]),
+    }),
+    { equal: () => true },
+  );
 
-  protected readonly loadingContext = computed(() => ({
-    skeletonCount: 3,
-  }));
+  protected readonly loadingContext = computed(
+    () => ({
+      skeletonCount: 3,
+    }),
+    { equal: () => true },
+  );
 
   protected readonly errorSlotContext = computed<ErrorCtx>(() => ({
     error: this.presenter.state.error(),

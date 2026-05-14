@@ -222,6 +222,16 @@ describe('CngxFilterBuilder — slot-context reference stability', () => {
   });
 });
 
+describe('CngxFilterBuilder — emptyContext stability', () => {
+  it('emptyContext returns the same reference across reads', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      readonly emptyContext: () => unknown;
+    };
+    expect(builder.emptyContext()).toBe(builder.emptyContext());
+  });
+});
+
 describe('CngxFilterBuilder — child path stability', () => {
   it('childPath returns the same reference when (parent, child, index) is unchanged', () => {
     const { fixture } = basicSetup();
