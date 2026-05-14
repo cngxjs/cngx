@@ -145,6 +145,42 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'age');
   });
 
+  it('keeps the carry-over operator when the new field still supports it', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture, host } = setup(expression);
+    const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
+      .componentInstance as CngxSelect<string>;
+    fieldSelect.value.set('age');
+    // 'eq' is in number's operator set, so the operator/value stay.
+    expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'age');
+    expect(host.setOperatorSpy).not.toHaveBeenCalled();
+    expect(host.setValueSpy).not.toHaveBeenCalled();
+  });
+
+  it('resets operator + clears value when the carry-over operator is invalid for the new field', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'birth',
+      operator: 'lt',
+      value: '2006-01-14',
+    };
+    const { fixture, host } = setup(expression);
+    const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
+      .componentInstance as CngxSelect<string>;
+    fieldSelect.value.set('name');
+    // 'lt' is not in string's operator set → reset to string default + clear value.
+    expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'name');
+    expect(host.setOperatorSpy).toHaveBeenCalledWith([0], 'contains');
+    expect(host.setValueSpy).toHaveBeenCalledWith([0], undefined);
+  });
+
   it('emits setOperator via host when CngxSelect valueChange fires', () => {
     const expression: FilterExpression = {
       type: 'expression',

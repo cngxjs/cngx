@@ -183,10 +183,11 @@ export class CngxFilterExpressionRow {
 
   protected readonly operators = computed<readonly string[]>(() => {
     const expression = this.node();
-    if (!expression) {
-      return EMPTY_OPERATORS;
-    }
-    const def = this.fieldMap().get(expression.field);
+    return expression ? this.operatorsForField(expression.field) : EMPTY_OPERATORS;
+  });
+
+  private operatorsForField(fieldKey: string): readonly string[] {
+    const def = this.fieldMap().get(fieldKey);
     if (!def) {
       return EMPTY_OPERATORS;
     }
@@ -194,7 +195,7 @@ export class CngxFilterExpressionRow {
       return def.operators;
     }
     return this.config.defaultOperators[def.editorType] ?? EMPTY_OPERATORS;
-  });
+  }
 
   protected operatorLabel(op: string): string {
     return this.config.i18n.operators[op] ?? op;
@@ -225,19 +226,40 @@ export class CngxFilterExpressionRow {
     if (next === undefined) {
       return;
     }
+    const current = this.node();
+    const carriedOperator = current?.operator;
+    const newValidOperators = this.operatorsForField(next);
+    const operatorIsStillValid =
+      carriedOperator !== undefined && newValidOperators.includes(carriedOperator);
+    const defaultOperator = operatorIsStillValid && carriedOperator !== undefined
+      ? carriedOperator
+      : this.defaultOperatorFor(next);
+
     if (this.host) {
       this.host.setField(this.path(), next);
+      if (!operatorIsStillValid) {
+        // The carry-over operator is invalid for the new field's editor type
+        // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
+        // operator list). Reset to the new field's default and clear the
+        // value so the editor branch swaps to the matching native input.
+        this.host.setOperator(this.path(), defaultOperator);
+        this.host.setValue(this.path(), undefined);
+      }
       return;
     }
-    const current = this.value();
     if (!current) {
       // Standalone empty-state: seed a fresh expression with the chosen field
       // plus the field's default operator. Subsequent edits flow through the
       // normal mutator paths.
-      this.value.set(createFilterExpression(next, this.defaultOperatorFor(next)));
+      this.value.set(createFilterExpression(next, defaultOperator));
       return;
     }
-    this.value.set({ ...current, field: next });
+    this.value.set({
+      ...current,
+      field: next,
+      operator: defaultOperator,
+      value: operatorIsStillValid ? current.value : undefined,
+    });
   }
 
   private defaultOperatorFor(fieldKey: string): string {
