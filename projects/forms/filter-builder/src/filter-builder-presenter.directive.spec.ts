@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, signal, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
@@ -116,5 +116,15 @@ describe('CngxFilterBuilderPresenter', () => {
 
     expect(directive.empty()).toBe(false);
     expect(directive.expressionCount()).toBe(1);
+  });
+
+  it('exposes disabled/focused/errorState as read-only signals (no .set leak)', () => {
+    const { directive } = setup();
+    const disabled = directive.disabled as Signal<boolean> & { set?: unknown };
+    const focused = directive.focused as Signal<boolean> & { set?: unknown };
+    const errorState = directive.errorState as Signal<boolean> & { set?: unknown };
+    expect(disabled.set).toBeUndefined();
+    expect(focused.set).toBeUndefined();
+    expect(errorState.set).toBeUndefined();
   });
 });
