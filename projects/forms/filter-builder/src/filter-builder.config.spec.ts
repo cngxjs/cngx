@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CngxToggle } from '@cngx/common/interactive';
 import { describe, expect, it } from 'vitest';
+
+import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
 
 import {
   CNGX_FILTER_BUILDER_CONFIG,
@@ -74,7 +75,16 @@ describe('filter-builder.config', () => {
     });
 
     it('returns false for component classes', () => {
-      expect(isNativeEditor(CngxToggle)).toBe(false);
+      @Component({
+        selector: 'cngx-fixture-editor',
+        standalone: true,
+        changeDetection: ChangeDetectionStrategy.OnPush,
+        template: '',
+      })
+      class FixtureEditor implements CngxFilterEditorComponent<unknown> {
+        readonly value = model<unknown | null>(null);
+      }
+      expect(isNativeEditor(FixtureEditor)).toBe(false);
     });
   });
 

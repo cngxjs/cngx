@@ -7,6 +7,7 @@ import {
   type Type,
 } from '@angular/core';
 
+import type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
 import type { CngxFilterBuilderTemplates } from './filter-builder-slots';
 import { DEFAULT_OPERATORS } from './filter-builder.types';
 import type { FilterEditorType, FilterLogic } from './filter-builder.types';
@@ -28,10 +29,13 @@ export type CngxFilterNativeEditor =
 
 /**
  * Editor-registry value type. Either one of the three native sentinels, or
- * a consumer-supplied component class (e.g. `CngxInput`, `CngxNumericInput`,
+ * a consumer-supplied component class implementing
+ * {@link CngxFilterEditorComponent} (e.g. `CngxInput`, `CngxNumericInput`,
  * `CngxDatepickerInput`, or any structured custom editor).
  */
-export type CngxFilterEditor = Type<unknown> | CngxFilterNativeEditor;
+export type CngxFilterEditor =
+  | Type<CngxFilterEditorComponent<unknown>>
+  | CngxFilterNativeEditor;
 
 /** Narrowing helper for `CngxFilterEditor`. */
 export function isNativeEditor(value: CngxFilterEditor): value is CngxFilterNativeEditor {
