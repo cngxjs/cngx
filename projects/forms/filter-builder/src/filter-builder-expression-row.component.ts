@@ -6,6 +6,7 @@ import {
   inject,
   input,
 } from '@angular/core';
+import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 import { CngxFilterExpression } from './filter-builder-expression.directive';
@@ -42,7 +43,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-expression-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterExpression, CngxSelect],
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterExpression, CngxInput, CngxSelect],
   templateUrl: './filter-builder-expression-row.component.html',
   styleUrl: './filter-builder-expression-row.component.css',
 })

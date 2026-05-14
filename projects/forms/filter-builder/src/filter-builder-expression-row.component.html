@@ -18,18 +18,21 @@
     @let resolvedEditor = editor();
     @if (resolvedEditor === 'native:string') {
       <input
+        cngxInput
         type="text"
         [value]="expression.value ?? ''"
         (input)="handleStringValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:number') {
       <input
+        cngxInput
         type="number"
         [value]="expression.value ?? ''"
         (input)="handleNumberValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:date') {
       <input
+        cngxInput
         type="date"
         [value]="expression.value ?? ''"
         (input)="handleStringValueInput($event)"
