@@ -340,13 +340,11 @@ describe('CngxFilterBuilderBody — cache teardown on destroy', () => {
   });
 });
 
-describe('CngxFilterBuilder — emptyContext stability', () => {
-  it('emptyContext returns the same reference across reads', () => {
+describe('CngxFilterBuilderBody — emptyContext stability', () => {
+  it('emptyContext returns the same reference across reads (no-dep computed)', () => {
     const { fixture } = basicSetup();
-    const builder = fixture.componentInstance.builder() as unknown as {
-      readonly emptyContext: () => unknown;
-    };
-    expect(builder.emptyContext()).toBe(builder.emptyContext());
+    const body = bodyOf(fixture) as unknown as { readonly emptyContext: () => unknown };
+    expect(body.emptyContext()).toBe(body.emptyContext());
   });
 });
 

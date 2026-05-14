@@ -25,6 +25,7 @@ export interface CngxFilterBuilderHost<TValue = unknown> {
   readonly tree: Signal<FilterGroup>;
   readonly fields: Signal<readonly FilterFieldDef<TValue>[]>;
   readonly fieldMap: Signal<ReadonlyMap<string, FilterFieldDef<TValue>>>;
+  readonly isEmpty: Signal<boolean>;
   readonly lastMutation: Signal<FilterMutationEvent | null>;
 
   addExpression(path: readonly number[], expression: FilterExpression): void;

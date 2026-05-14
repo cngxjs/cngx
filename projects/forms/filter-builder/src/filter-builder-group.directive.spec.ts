@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -13,6 +13,7 @@ function buildMockHost(initial: FilterGroup): CngxFilterBuilderHost {
   const fields = signal<readonly FilterFieldDef[]>([FIELD]);
   const fieldMap = signal<ReadonlyMap<string, FilterFieldDef>>(new Map([[FIELD.key, FIELD]]));
   const lastMutation = signal(null);
+  const isEmpty = computed(() => tree().filters.length === 0);
 
   function walk(root: FilterGroup, path: readonly number[]): FilterNode | null {
     let current: FilterNode = root;
@@ -33,6 +34,7 @@ function buildMockHost(initial: FilterGroup): CngxFilterBuilderHost {
     tree,
     fields,
     fieldMap,
+    isEmpty,
     lastMutation,
     addExpression: () => undefined,
     addGroup: () => undefined,

@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, computed, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -22,6 +22,7 @@ function buildMockHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[
     new Map(fieldList.map((def) => [def.key, def])),
   );
   const lastMutation = signal(null);
+  const isEmpty = computed(() => tree().filters.length === 0);
 
   function walk(root: FilterGroup, path: readonly number[]): FilterNode | null {
     let current: FilterNode = root;
@@ -42,6 +43,7 @@ function buildMockHost(initial: FilterGroup, fieldList: readonly FilterFieldDef[
     tree,
     fields,
     fieldMap,
+    isEmpty,
     lastMutation,
     addExpression: () => undefined,
     addGroup: () => undefined,

@@ -1,4 +1,14 @@
-@if (templates().groupTemplate(); as customRootGroupTpl) {
+@if (host.isEmpty()) {
+  @if (templates().empty(); as emptyTpl) {
+    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext()"></ng-container>
+  } @else {
+    <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
+    <div class="cngx-filter-builder__actions">
+      <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path: rootPath }"></ng-container>
+      <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path: rootPath }"></ng-container>
+    </div>
+  }
+} @else if (templates().groupTemplate(); as customRootGroupTpl) {
   <ng-container
     *ngTemplateOutlet="customRootGroupTpl; context: groupTemplateContext(host.tree(), rootPath)"
   ></ng-container>

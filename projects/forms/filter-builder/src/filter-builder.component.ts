@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
-import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import type {
   CngxFilterBuilderErrorContext as ErrorCtx,
 } from './filter-builder-slots';
@@ -27,7 +26,6 @@ import {
 import { injectFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { CngxFilterBuilderBody } from './filter-builder-body.component';
-import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 
 /**
  * Recursive query-builder component. Brain lives entirely in
@@ -60,7 +58,6 @@ import { createFilterExpression, createFilterGroup } from './filter-builder.help
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
   protected readonly config = injectFilterBuilderConfig();
-  protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
   protected readonly ariaBusy = computed<'true' | null>(() =>
     this.presenter.state.status() === 'loading' ? 'true' : null,
@@ -94,11 +91,6 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
   });
 
-  protected readonly emptyContext = computed(() => ({
-    addFilter: () => this.addFilterAt([]),
-    addGroup: () => this.addGroupAt([]),
-  }));
-
   protected readonly loadingContext = computed(() => ({
     skeletonCount: this.config.skeletonCount,
   }));
@@ -107,29 +99,4 @@ export class CngxFilterBuilder {
     () => ({ error: this.presenter.state.error() }),
     { equal: (a, b) => a.error === b.error },
   );
-
-  protected readonly rootAddFilterContext = computed(() => ({
-    add: () => this.addFilterAt([]),
-    label: this.config.i18n.addFilter,
-    disabled: false,
-  }));
-
-  protected readonly rootAddGroupContext = computed(() => ({
-    add: () => this.addGroupAt([]),
-    label: this.config.i18n.addGroup,
-    disabled: false,
-  }));
-
-  protected addFilterAt(path: readonly number[]): void {
-    const first = this.presenter.fields()[0];
-    if (!first) {
-      return;
-    }
-    const operator = first.operators?.[0] ?? this.config.defaultOperators[first.editorType]?.[0] ?? 'eq';
-    this.presenter.addExpression(path, createFilterExpression(first.key, operator));
-  }
-
-  protected addGroupAt(path: readonly number[]): void {
-    this.presenter.addGroup(path, createFilterGroup());
-  }
 }

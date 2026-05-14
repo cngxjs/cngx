@@ -11,24 +11,6 @@
   } @else {
     <p class="cngx-filter-builder__error" role="alert">{{ config.i18n.error }}</p>
   }
-} @else if (presenter.isEmpty()) {
-  @if (templates.empty(); as emptyTpl) {
-    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext()"></ng-container>
-  } @else {
-    <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
-    <div class="cngx-filter-builder__actions">
-      @if (templates.addFilterButton(); as addFilterTpl) {
-        <ng-container *ngTemplateOutlet="addFilterTpl; context: rootAddFilterContext()"></ng-container>
-      } @else {
-        <button type="button" (click)="addFilterAt([])"><span aria-hidden="true">{{ glyphs.addFilter }}</span> {{ config.i18n.addFilter }}</button>
-      }
-      @if (templates.addGroupButton(); as addGroupTpl) {
-        <ng-container *ngTemplateOutlet="addGroupTpl; context: rootAddGroupContext()"></ng-container>
-      } @else {
-        <button type="button" (click)="addGroupAt([])"><span aria-hidden="true">{{ glyphs.addGroup }}</span> {{ config.i18n.addGroup }}</button>
-      }
-    </div>
-  }
 } @else {
   <cngx-filter-builder-body [templates]="templates"></cngx-filter-builder-body>
 }

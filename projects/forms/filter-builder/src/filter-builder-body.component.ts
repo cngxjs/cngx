@@ -2,6 +2,7 @@ import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
   inject,
@@ -88,6 +89,11 @@ export class CngxFilterBuilderBody {
 
   protected readonly isNativeEditor = isNativeEditor;
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
+
+  protected readonly emptyContext = computed(() => ({
+    addFilter: () => this.addFilterAt(this.rootPath),
+    addGroup: () => this.addGroupAt(this.rootPath),
+  }));
 
   private readonly addFilterButtonContextCache = new Map<string, AddFilterButtonCtx>();
   private readonly addGroupButtonContextCache = new Map<string, AddGroupButtonCtx>();
