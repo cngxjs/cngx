@@ -145,6 +145,28 @@ describe('CngxFilterGroup', () => {
     expect(directive.node()).toBe(directive.node());
   });
 
+  it('reflects path length on the --cngx-filter-builder-depth host style', () => {
+    const tree: FilterGroup = {
+      type: 'group',
+      id: 'root',
+      logic: 'and',
+      negated: false,
+      filters: [
+        {
+          type: 'group',
+          id: 'g1',
+          logic: 'and',
+          negated: false,
+          filters: [{ type: 'group', id: 'g2', logic: 'or', negated: false, filters: [] }],
+        },
+      ],
+    };
+    const { fixture, directive } = setup(tree, [0, 0]);
+    expect(directive.depth()).toBe(2);
+    const host = fixture.nativeElement.querySelector('div') as HTMLElement;
+    expect(host.style.getPropertyValue('--cngx-filter-builder-depth')).toBe('2');
+  });
+
   it('children returns the shared empty array when node is null', () => {
     const tree: FilterGroup = {
       type: 'group',

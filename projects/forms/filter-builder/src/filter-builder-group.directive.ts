@@ -27,6 +27,7 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
     '[attr.aria-label]': 'groupLabel()',
     '[class.cngx-filter-group-root]': 'isRoot()',
     '[class.cngx-filter-group-negated]': 'negated()',
+    '[style.--cngx-filter-builder-depth]': 'depth()',
   },
 })
 export class CngxFilterGroup {
@@ -54,6 +55,7 @@ export class CngxFilterGroup {
   );
   readonly childCount = computed(() => this.children().length);
   readonly isRoot = computed(() => this.path().length === 0);
+  readonly depth = computed(() => this.path().length);
 
   readonly groupLabel = computed(() =>
     this.config.i18n.groupLabel({

@@ -247,18 +247,24 @@ Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when
 
 All values are routed through `var(--cngx-*, fallback)`. Material variants default to `--mat-sys-*`.
 
-| Variable                                            | Default                                                   |
-| --------------------------------------------------- | --------------------------------------------------------- |
-| `--cngx-filter-builder-padding`                     | `0.5rem`                                                  |
-| `--cngx-filter-builder-bg`                          | `transparent`                                             |
-| `--cngx-filter-builder-fg`                          | `inherit`                                                 |
-| `--cngx-filter-builder-gap`                         | `0.5rem`                                                  |
-| `--cngx-filter-builder-group-padding`               | `0.5rem`                                                  |
-| `--cngx-filter-builder-group-border`                | `1px solid var(--mat-sys-outline-variant, #ddd)`          |
-| `--cngx-filter-builder-radius`                      | `0.375rem`                                                |
-| `--cngx-filter-builder-negated-border-style`        | `dashed`                                                  |
-| `--cngx-filter-builder-empty-padding`               | `0.75rem`                                                 |
-| `--cngx-filter-builder-empty-fg`                    | `var(--mat-sys-on-surface-variant, #666)`                 |
-| `--cngx-filter-builder-skeleton-row-height`         | `2rem`                                                    |
-| `--cngx-filter-builder-skeleton-bg`                 | `var(--mat-sys-surface-variant, #eee)`                    |
-| `--cngx-filter-builder-skeleton-opacity`            | `0.5`                                                     |
+| Variable | Default |
+|-|-|
+| `--cngx-filter-builder-padding` | `0.5rem` |
+| `--cngx-filter-builder-bg` | `transparent` |
+| `--cngx-filter-builder-fg` | `inherit` |
+| `--cngx-filter-builder-gap` | `0.5rem` |
+| `--cngx-filter-builder-group-padding` | `0.5rem` |
+| `--cngx-filter-builder-group-border` | `1px solid var(--mat-sys-outline-variant, #ddd)` |
+| `--cngx-filter-builder-radius` | `0.375rem` |
+| `--cngx-filter-builder-negated-border-style` | `dashed` |
+| `--cngx-filter-builder-indent` | `1.25rem` |
+| `--cngx-filter-builder-rail` | `2px solid var(--mat-sys-outline-variant, #ddd)` |
+| `--cngx-filter-builder-empty-padding` | `0.75rem` |
+| `--cngx-filter-builder-empty-fg` | `var(--mat-sys-on-surface-variant, #666)` |
+| `--cngx-filter-builder-error-padding` | `0.75rem` |
+| `--cngx-filter-builder-error-fg` | `var(--mat-sys-error, #b3261e)` |
+| `--cngx-filter-builder-skeleton-row-height` | `2rem` |
+| `--cngx-filter-builder-skeleton-bg` | `var(--mat-sys-surface-variant, #eee)` |
+| `--cngx-filter-builder-skeleton-opacity` | `0.5` |
+
+Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
