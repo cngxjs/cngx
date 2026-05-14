@@ -3,7 +3,11 @@
   @if (templates.loading(); as loadingTpl) {
     <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext()"></ng-container>
   } @else {
-    <p class="cngx-filter-builder__loading">{{ config.i18n.loading }}</p>
+    <div class="cngx-filter-builder__loading" role="status" [attr.aria-label]="config.i18n.loading">
+      @for (_ of skeletonRows(); track $index) {
+        <p class="cngx-filter-builder__skeleton-row" aria-hidden="true"></p>
+      }
+    </div>
   }
 } @else if (status === 'error') {
   @if (templates.error(); as errorTpl) {

@@ -96,6 +96,11 @@ export class CngxFilterBuilder {
     { equal: (a, b) => a.skeletonCount === b.skeletonCount },
   );
 
+  protected readonly skeletonRows = computed<readonly null[]>(
+    () => Array.from({ length: this.config.skeletonCount }, () => null),
+    { equal: (a, b) => a.length === b.length },
+  );
+
   protected readonly errorSlotContext = computed<ErrorCtx>(
     () => ({ error: this.presenter.state.error() }),
     { equal: (a, b) => a.error === b.error },

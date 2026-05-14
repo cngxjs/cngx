@@ -22,7 +22,7 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { createManualState } from '@cngx/common/data';
-import { provideFilterBuilderConfig, withNegation } from './filter-builder.config';
+import { provideFilterBuilderConfig, withNegation, withSkeletonCount } from './filter-builder.config';
 
 function createLoadingState() {
   const state = createManualState<unknown>();
@@ -545,7 +545,7 @@ describe('CngxFilterBuilder — loading slot', () => {
     expect(el.textContent).not.toContain('No filters defined');
   });
 
-  it('renders the default loading text when no slot is supplied', () => {
+  it('renders skeletonCount placeholder rows when no slot is supplied', () => {
     @Component({
       template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
       imports: [CngxFilterBuilder],
@@ -558,7 +558,33 @@ describe('CngxFilterBuilder — loading slot', () => {
     const fixture = TestBed.createComponent(Host);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Loading filters');
+    const el = fixture.nativeElement as HTMLElement;
+    const wrapper = el.querySelector('.cngx-filter-builder__loading');
+    expect(wrapper).toBeTruthy();
+    expect(wrapper?.getAttribute('role')).toBe('status');
+    expect(wrapper?.getAttribute('aria-label')).toBe('Loading filters');
+    expect(el.querySelectorAll('.cngx-filter-builder__skeleton-row').length).toBe(3);
+  });
+
+  it('honours withSkeletonCount config override', () => {
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
+      imports: [CngxFilterBuilder],
+    })
+    class Host {
+      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+      value: FilterGroup = createEmptyFilterRoot();
+      readonly state = createLoadingState();
+    }
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withSkeletonCount(7))],
+    });
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-filter-builder__skeleton-row').length,
+    ).toBe(7);
   });
 });
 
