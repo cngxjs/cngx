@@ -161,6 +161,10 @@ function evaluateGroup<TItem>(
     case 'xor':
       combined = results.length >= 2 && results.filter((r) => r).length === 1;
       break;
+    default: {
+      const _exhaustive: never = group.logic;
+      throw new Error(`Unhandled FilterLogic variant: ${_exhaustive as string}`);
+    }
   }
 
   return group.negated ? !combined : combined;

@@ -130,6 +130,17 @@ describe('toFilterPredicate — logic operators', () => {
     const treeZero = createFilterGroup('xor', []);
     expect(toFilterPredicate(treeZero, FIELDS)!({})).toBe(false);
   });
+
+  it('throws on unknown FilterLogic at runtime (exhaustiveness guard)', () => {
+    const tree = {
+      type: 'group' as const,
+      logic: 'rogue' as unknown as 'and',
+      negated: false,
+      filters: [exprEq('name', 'alice')],
+    };
+    const predicate = toFilterPredicate(tree, FIELDS)!;
+    expect(() => predicate({ name: 'alice' })).toThrow(/Unhandled FilterLogic variant: rogue/);
+  });
 });
 
 describe('toFilterPredicate — negated modifier (no nand/nor operator)', () => {
