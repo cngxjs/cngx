@@ -167,6 +167,14 @@ describe('CngxFilterBuilder — announcer text', () => {
   });
 });
 
+describe('CngxFilterBuilder — decorative glyphs hidden from AT', () => {
+  it('wraps the empty-state add button glyphs in aria-hidden spans', () => {
+    const { hostEl } = basicSetup();
+    const spans = hostEl.querySelectorAll('button > span[aria-hidden="true"]');
+    expect(spans.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
 describe('CngxFilterBuilder — host aria-busy / aria-disabled', () => {
   it('reflects aria-busy="true" on the component host when state.status is loading', () => {
     const state = createManualState<unknown>();

@@ -3,7 +3,7 @@
   @if (templates.loading(); as loadingTpl) {
     <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext()"></ng-container>
   } @else {
-    <p class="cngx-filter-builder__loading" aria-busy="true">{{ config.i18n.loading }}</p>
+    <p class="cngx-filter-builder__loading">{{ config.i18n.loading }}</p>
   }
 } @else if (status === 'error') {
   @if (templates.error(); as errorTpl) {
@@ -20,12 +20,12 @@
       @if (templates.addFilterButton(); as addFilterTpl) {
         <ng-container *ngTemplateOutlet="addFilterTpl; context: rootAddFilterContext()"></ng-container>
       } @else {
-        <button type="button" (click)="addFilterAt([])">{{ glyphs.addFilter }} {{ config.i18n.addFilter }}</button>
+        <button type="button" (click)="addFilterAt([])"><span aria-hidden="true">{{ glyphs.addFilter }}</span> {{ config.i18n.addFilter }}</button>
       }
       @if (templates.addGroupButton(); as addGroupTpl) {
         <ng-container *ngTemplateOutlet="addGroupTpl; context: rootAddGroupContext()"></ng-container>
       } @else {
-        <button type="button" (click)="addGroupAt([])">{{ glyphs.addGroup }} {{ config.i18n.addGroup }}</button>
+        <button type="button" (click)="addGroupAt([])"><span aria-hidden="true">{{ glyphs.addGroup }}</span> {{ config.i18n.addGroup }}</button>
       }
     </div>
   }
