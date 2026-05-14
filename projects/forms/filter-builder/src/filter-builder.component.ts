@@ -103,9 +103,10 @@ export class CngxFilterBuilder {
     skeletonCount: this.config.skeletonCount,
   }));
 
-  protected readonly errorSlotContext = computed<ErrorCtx>(() => ({
-    error: this.presenter.state.error(),
-  }));
+  protected readonly errorSlotContext = computed<ErrorCtx>(
+    () => ({ error: this.presenter.state.error() }),
+    { equal: (a, b) => a.error === b.error },
+  );
 
   protected readonly rootAddFilterContext = computed(() => ({
     add: () => this.addFilterAt([]),

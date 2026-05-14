@@ -175,6 +175,27 @@ describe('CngxFilterBuilder — decorative glyphs hidden from AT', () => {
   });
 });
 
+describe('CngxFilterBuilder — errorSlotContext reference stability', () => {
+  it('returns the same context reference across reads when state.error is unchanged', () => {
+    const errorState = createErrorState('boom');
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
+      imports: [CngxFilterBuilder],
+    })
+    class Host {
+      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+      value: FilterGroup = createEmptyFilterRoot();
+      readonly state = errorState;
+      readonly builder = viewChild.required(CngxFilterBuilder);
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const builder = fixture.componentInstance.builder() as unknown as { errorSlotContext: () => unknown };
+    expect(builder.errorSlotContext()).toBe(builder.errorSlotContext());
+  });
+});
+
 describe('CngxFilterBuilder — host aria-busy / aria-disabled', () => {
   it('reflects aria-busy="true" on the component host when state.status is loading', () => {
     const state = createManualState<unknown>();
