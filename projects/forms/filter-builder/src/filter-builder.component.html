@@ -74,14 +74,20 @@
     <div class="cngx-filter-builder__logic-toggle">
       <ng-container *ngTemplateOutlet="logicToggleTpl; context: { group, path }"></ng-container>
       @if (negationEnabled()) {
-        <label>
-          <input
-            type="checkbox"
-            [checked]="group.negated"
-            (change)="presenter.toggleNegated(path)"
-          />
-          {{ config.i18n.negate }}
-        </label>
+        @if (templates.negationToggle(); as negTpl) {
+          <ng-container
+            *ngTemplateOutlet="negTpl; context: negationToggleContext(group, path)"
+          ></ng-container>
+        } @else {
+          <label>
+            <input
+              type="checkbox"
+              [checked]="group.negated"
+              (change)="presenter.toggleNegated(path)"
+            />
+            {{ config.i18n.negate }}
+          </label>
+        }
       }
     </div>
 

@@ -79,6 +79,12 @@ export interface CngxFilterBuilderLogicToggleContext {
   readonly setLogic: (logic: FilterLogic) => void;
 }
 
+export interface CngxFilterBuilderNegationToggleContext {
+  readonly negated: boolean;
+  readonly toggle: () => void;
+  readonly label: string;
+}
+
 @Directive({
   selector: 'ng-template[cngxFilterBuilderLoading]',
   exportAs: 'cngxFilterBuilderLoading',
@@ -223,6 +229,22 @@ export class CngxFilterBuilderLogicToggle {
   }
 }
 
+@Directive({
+  selector: 'ng-template[cngxFilterBuilderNegationToggle]',
+  exportAs: 'cngxFilterBuilderNegationToggle',
+  standalone: true,
+})
+export class CngxFilterBuilderNegationToggle {
+  readonly templateRef = inject<TemplateRef<CngxFilterBuilderNegationToggleContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: CngxFilterBuilderNegationToggle,
+    _ctx: unknown,
+  ): _ctx is CngxFilterBuilderNegationToggleContext {
+    return true;
+  }
+}
+
 /** Lookup-style template registry — used by `CngxFilterBuilderConfig.templates`. */
 export interface CngxFilterBuilderTemplates {
   readonly loading?: TemplateRef<CngxFilterBuilderLoadingContext> | null;
@@ -234,4 +256,5 @@ export interface CngxFilterBuilderTemplates {
   readonly addGroupButton?: TemplateRef<CngxFilterBuilderAddGroupButtonContext> | null;
   readonly removeButton?: TemplateRef<CngxFilterBuilderRemoveButtonContext> | null;
   readonly logicToggle?: TemplateRef<CngxFilterBuilderLogicToggleContext> | null;
+  readonly negationToggle?: TemplateRef<CngxFilterBuilderNegationToggleContext> | null;
 }

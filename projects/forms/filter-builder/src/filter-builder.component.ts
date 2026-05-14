@@ -20,6 +20,7 @@ import type {
   CngxFilterBuilderExpressionTemplateContext as ExpressionTemplateCtx,
   CngxFilterBuilderGroupTemplateContext as GroupTemplateCtx,
   CngxFilterBuilderLogicToggleContext as LogicToggleCtx,
+  CngxFilterBuilderNegationToggleContext as NegationToggleCtx,
   CngxFilterBuilderRemoveButtonContext as RemoveButtonCtx,
 } from './filter-builder-slots';
 import {
@@ -31,6 +32,7 @@ import {
   CngxFilterBuilderGroupTemplate,
   CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
+  CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
 } from './filter-builder-slots';
 import { injectFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
@@ -79,6 +81,7 @@ export class CngxFilterBuilder {
       this.addGroupButtonContextCache.clear();
       this.removeButtonContextCache.clear();
       this.logicToggleContextCache.clear();
+      this.negationToggleContextCache.clear();
       this.groupTemplateContextCache.clear();
       this.expressionTemplateContextCache.clear();
     });
@@ -93,6 +96,7 @@ export class CngxFilterBuilder {
   protected readonly addGroupButtonSlot = contentChild(CngxFilterBuilderAddGroupButton);
   protected readonly removeButtonSlot = contentChild(CngxFilterBuilderRemoveButton);
   protected readonly logicToggleSlot = contentChild(CngxFilterBuilderLogicToggle);
+  protected readonly negationToggleSlot = contentChild(CngxFilterBuilderNegationToggle);
 
   protected readonly templates = injectFilterBuilderTemplateRegistry({
     loading: this.loadingSlot,
@@ -104,6 +108,7 @@ export class CngxFilterBuilder {
     addGroupButton: this.addGroupButtonSlot,
     removeButton: this.removeButtonSlot,
     logicToggle: this.logicToggleSlot,
+    negationToggle: this.negationToggleSlot,
   });
 
   protected readonly logicOptions = computed(() => this.config.logicOptions);
@@ -227,6 +232,22 @@ export class CngxFilterBuilder {
         setLogic: (logic) => this.presenter.setLogic(path, logic),
       };
       this.logicToggleContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  private readonly negationToggleContextCache = new Map<string, NegationToggleCtx>();
+
+  protected negationToggleContext(group: FilterGroup, path: readonly number[]): NegationToggleCtx {
+    const key = `${path.join('.')}|${group.negated ? '1' : '0'}`;
+    let ctx = this.negationToggleContextCache.get(key);
+    if (ctx === undefined) {
+      ctx = {
+        negated: group.negated,
+        toggle: () => this.presenter.toggleNegated(path),
+        label: this.config.i18n.negate,
+      };
+      this.negationToggleContextCache.set(key, ctx);
     }
     return ctx;
   }

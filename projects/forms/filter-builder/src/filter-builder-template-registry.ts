@@ -18,6 +18,8 @@ import {
   type CngxFilterBuilderLoadingContext,
   type CngxFilterBuilderLogicToggle,
   type CngxFilterBuilderLogicToggleContext,
+  type CngxFilterBuilderNegationToggle,
+  type CngxFilterBuilderNegationToggleContext,
   type CngxFilterBuilderRemoveButton,
   type CngxFilterBuilderRemoveButtonContext,
   type CngxFilterBuilderTemplates,
@@ -41,6 +43,7 @@ export interface CngxFilterBuilderTemplateRegistryQueries {
   readonly addGroupButton: Signal<CngxFilterBuilderAddGroupButton | undefined>;
   readonly removeButton: Signal<CngxFilterBuilderRemoveButton | undefined>;
   readonly logicToggle: Signal<CngxFilterBuilderLogicToggle | undefined>;
+  readonly negationToggle: Signal<CngxFilterBuilderNegationToggle | undefined>;
 }
 
 /**
@@ -57,6 +60,7 @@ export interface CngxFilterBuilderTemplateRegistry {
   readonly addGroupButton: Signal<TemplateRef<CngxFilterBuilderAddGroupButtonContext> | null>;
   readonly removeButton: Signal<TemplateRef<CngxFilterBuilderRemoveButtonContext> | null>;
   readonly logicToggle: Signal<TemplateRef<CngxFilterBuilderLogicToggleContext> | null>;
+  readonly negationToggle: Signal<TemplateRef<CngxFilterBuilderNegationToggleContext> | null>;
 }
 
 /** Factory signature carried by `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY`. */
@@ -106,6 +110,7 @@ export function createFilterBuilderTemplateRegistry(
     addGroupButton: resolveTemplate(queries.addGroupButton, 'addGroupButton', config),
     removeButton: resolveTemplate(queries.removeButton, 'removeButton', config),
     logicToggle: resolveTemplate(queries.logicToggle, 'logicToggle', config),
+    negationToggle: resolveTemplate(queries.negationToggle, 'negationToggle', config),
   };
 }
 

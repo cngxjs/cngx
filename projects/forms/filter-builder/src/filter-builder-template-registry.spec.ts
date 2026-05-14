@@ -29,6 +29,7 @@ function emptyQueries(): CngxFilterBuilderTemplateRegistryQueries {
     addGroupButton: signal(undefined),
     removeButton: signal(undefined),
     logicToggle: signal(undefined),
+    negationToggle: signal(undefined),
   };
 }
 

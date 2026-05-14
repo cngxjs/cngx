@@ -44,6 +44,7 @@ export {
   CngxFilterBuilderGroupTemplate,
   CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
+  CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
   type CngxFilterBuilderAddFilterButtonContext,
   type CngxFilterBuilderAddGroupButtonContext,
@@ -53,6 +54,7 @@ export {
   type CngxFilterBuilderGroupTemplateContext,
   type CngxFilterBuilderLoadingContext,
   type CngxFilterBuilderLogicToggleContext,
+  type CngxFilterBuilderNegationToggleContext,
   type CngxFilterBuilderRemoveButtonContext,
 } from './src/filter-builder-slots';
 export {

@@ -12,12 +12,14 @@ import {
   CngxFilterBuilderGroupTemplate,
   CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
+  CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
 } from './filter-builder-slots';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { createManualState } from '@cngx/common/data';
+import { provideFilterBuilderConfig, withNegation } from './filter-builder.config';
 
 function createLoadingState() {
   const state = createManualState<unknown>();
@@ -435,6 +437,37 @@ class LogicToggleSlotHost {
   readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
   value: FilterGroup = createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')]);
 }
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderNegationToggle let-negated="negated" let-label="label" let-toggle="toggle">
+        <button type="button" data-custom-neg [attr.data-negated]="negated" (click)="toggle()">{{ label }} (custom)</button>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderNegationToggle],
+})
+class NegationToggleSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = { ...createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]), negated: true };
+}
+
+describe('CngxFilterBuilder — negation toggle slot', () => {
+  it('renders the consumer-supplied negationToggle template when withNegation is enabled', () => {
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withNegation(true))],
+    });
+    const fixture = TestBed.createComponent(NegationToggleSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const custom = el.querySelector('[data-custom-neg]');
+    expect(custom).toBeTruthy();
+    expect(custom?.getAttribute('data-negated')).toBe('true');
+    expect(custom?.textContent).toContain('Negate');
+  });
+});
 
 describe('CngxFilterBuilder — logic toggle slot', () => {
   it('renders the consumer-supplied logicToggle template with the current logic in context', () => {
