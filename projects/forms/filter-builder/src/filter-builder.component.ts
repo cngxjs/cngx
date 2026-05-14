@@ -94,42 +94,30 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
   });
 
-  protected readonly emptyContext = computed(
-    () => ({
-      addFilter: () => this.addFilterAt([]),
-      addGroup: () => this.addGroupAt([]),
-    }),
-    { equal: () => true },
-  );
+  protected readonly emptyContext = computed(() => ({
+    addFilter: () => this.addFilterAt([]),
+    addGroup: () => this.addGroupAt([]),
+  }));
 
-  protected readonly loadingContext = computed(
-    () => ({
-      skeletonCount: 3,
-    }),
-    { equal: () => true },
-  );
+  protected readonly loadingContext = computed(() => ({
+    skeletonCount: 3,
+  }));
 
   protected readonly errorSlotContext = computed<ErrorCtx>(() => ({
     error: this.presenter.state.error(),
   }));
 
-  protected readonly rootAddFilterContext = computed(
-    () => ({
-      add: () => this.addFilterAt([]),
-      label: this.config.i18n.addFilter,
-      disabled: false,
-    }),
-    { equal: () => true },
-  );
+  protected readonly rootAddFilterContext = computed(() => ({
+    add: () => this.addFilterAt([]),
+    label: this.config.i18n.addFilter,
+    disabled: false,
+  }));
 
-  protected readonly rootAddGroupContext = computed(
-    () => ({
-      add: () => this.addGroupAt([]),
-      label: this.config.i18n.addGroup,
-      disabled: false,
-    }),
-    { equal: () => true },
-  );
+  protected readonly rootAddGroupContext = computed(() => ({
+    add: () => this.addGroupAt([]),
+    label: this.config.i18n.addGroup,
+    disabled: false,
+  }));
 
   protected addFilterAt(path: readonly number[]): void {
     const first = this.presenter.fields()[0];
