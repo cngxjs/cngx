@@ -32,7 +32,7 @@ import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   type CngxFilterBuilderState,
 } from './filter-builder-state';
-import { CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY } from './filter-builder-announcer';
+import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer';
 
 /**
  * Thin presenter directive. Instantiates `createFilterBuilderState` against
@@ -96,7 +96,7 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * the presenter. Default formatter resolves `fieldKey` through `fieldMap`
    * to surface human-readable labels.
    */
-  private readonly announcerFactory = inject(CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY);
+  private readonly announcerFactory = injectFilterBuilderAnnouncerFactory();
   private readonly announcer = this.announcerFactory<TValue>({
     lastMutation: this.lastMutation,
     fieldMap: this.fieldMap,
