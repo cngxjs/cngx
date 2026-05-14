@@ -42,6 +42,12 @@ export const CNGX_FILTER_EDITORS = new InjectionToken<ReadonlyMap<string, CngxFi
  * `inject(CNGX_FILTER_EDITORS)`. Exists so consumers can read editors
  * without importing the token directly when they already inject other
  * filter-builder helpers (e.g. inside a slot directive context).
+ *
+ * **Snapshot semantics.** The returned `ReadonlyMap` is captured at
+ * injection time. Runtime swaps of `CNGX_FILTER_EDITORS` in nested DI
+ * scopes are NOT observed by an already-injected consumer. If a
+ * consumer needs reactive editor swap behaviour, re-`inject()` the
+ * token at the swap-boundary's injector instead of cached references.
  */
 export function injectFilterEditors(): ReadonlyMap<string, CngxFilterEditor> {
   return inject(CNGX_FILTER_EDITORS);
