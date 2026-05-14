@@ -16,6 +16,8 @@ import type {
   CngxFilterBuilderAddFilterButtonContext as AddFilterButtonCtx,
   CngxFilterBuilderAddGroupButtonContext as AddGroupButtonCtx,
   CngxFilterBuilderErrorContext as ErrorCtx,
+  CngxFilterBuilderExpressionTemplateContext as ExpressionTemplateCtx,
+  CngxFilterBuilderGroupTemplateContext as GroupTemplateCtx,
   CngxFilterBuilderLogicToggleContext as LogicToggleCtx,
   CngxFilterBuilderRemoveButtonContext as RemoveButtonCtx,
 } from './filter-builder-slots';
@@ -36,7 +38,7 @@ import { CngxFilterGroup } from './filter-builder-group.directive';
 import { CngxFilterExpression } from './filter-builder-expression.directive';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
-import type { FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
+import type { FilterExpression, FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
 
 /**
  * Recursive query-builder component. Brain lives entirely in
@@ -148,6 +150,51 @@ export class CngxFilterBuilder {
     if (ctx === undefined) {
       ctx = { remove: () => this.presenter.removeNode(path), label };
       this.removeButtonContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  private readonly groupTemplateContextCache = new Map<string, GroupTemplateCtx>();
+  private readonly expressionTemplateContextCache = new Map<string, ExpressionTemplateCtx>();
+
+  protected groupTemplateContext(group: FilterGroup, path: readonly number[]): GroupTemplateCtx {
+    const key = path.join('.');
+    let ctx = this.groupTemplateContextCache.get(key);
+    if (ctx === undefined || ctx.group !== group) {
+      ctx = {
+        group,
+        logic: group.logic,
+        isRoot: path.length === 0,
+        setLogic: (l) => this.presenter.setLogic(path, l),
+        toggleNegated: () => this.presenter.toggleNegated(path),
+        addFilter: () => this.addFilterAt(path),
+        addGroup: () => this.addGroupAt(path),
+        remove: () => this.presenter.removeNode(path),
+      };
+      this.groupTemplateContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  protected expressionTemplateContext(
+    expression: FilterExpression,
+    path: readonly number[],
+  ): ExpressionTemplateCtx {
+    const key = path.join('.');
+    let ctx = this.expressionTemplateContextCache.get(key);
+    if (ctx === undefined || ctx.expression !== expression) {
+      const fieldDef = this.presenter.fieldMap().get(expression.field);
+      ctx = {
+        expression,
+        fieldDef,
+        availableOperators: this.operatorsForField(expression.field),
+        value: expression.value,
+        setField: (k) => this.presenter.setField(path, k),
+        setOperator: (op) => this.presenter.setOperator(path, op),
+        setValue: (v) => this.presenter.setValue(path, v),
+        remove: () => this.presenter.removeNode(path),
+      };
+      this.expressionTemplateContextCache.set(key, ctx);
     }
     return ctx;
   }

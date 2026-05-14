@@ -8,6 +8,8 @@ import {
   CngxFilterBuilderAddGroupButton,
   CngxFilterBuilderEmpty,
   CngxFilterBuilderError,
+  CngxFilterBuilderExpressionTemplate,
+  CngxFilterBuilderGroupTemplate,
   CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
   CngxFilterBuilderRemoveButton,
@@ -244,6 +246,63 @@ describe('CngxFilterBuilder — child path stability', () => {
     const b = builder.childPath(builder.rootPath, child, 1);
     expect(b).not.toBe(a);
     expect([...b]).toEqual([1]);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderGroupTemplate let-group="group" let-isRoot="isRoot">
+        <div data-custom-group [attr.data-is-root]="isRoot">CUSTOM GROUP: {{ group.logic }}</div>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderGroupTemplate],
+})
+class GroupTemplateSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+}
+
+describe('CngxFilterBuilder — group template slot', () => {
+  it('replaces the default recursive group body when supplied', () => {
+    const fixture = TestBed.createComponent(GroupTemplateSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const custom = el.querySelector('[data-custom-group]');
+    expect(custom).toBeTruthy();
+    expect(custom?.getAttribute('data-is-root')).toBe('true');
+    expect(custom?.textContent).toContain('and');
+    expect(el.querySelector('.cngx-filter-builder__group')).toBeNull();
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderExpressionTemplate let-expression="expression" let-fieldDef="fieldDef">
+        <span data-custom-expr>{{ fieldDef?.label }}: {{ expression.value }}</span>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderExpressionTemplate],
+})
+class ExpressionTemplateSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'foo')]);
+}
+
+describe('CngxFilterBuilder — expression template slot', () => {
+  it('replaces the default expression rendering when supplied', () => {
+    const fixture = TestBed.createComponent(ExpressionTemplateSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const custom = el.querySelector('[data-custom-expr]');
+    expect(custom).toBeTruthy();
+    expect(custom?.textContent).toContain('Name: foo');
+    expect(el.querySelector('.cngx-filter-builder__expression')).toBeNull();
   });
 });
 

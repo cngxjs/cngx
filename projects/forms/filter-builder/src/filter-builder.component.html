@@ -22,7 +22,13 @@
     </div>
   }
 } @else {
-  <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: rootPath }"></ng-container>
+  @if (templates.groupTemplate(); as customGroupTpl) {
+    <ng-container
+      *ngTemplateOutlet="customGroupTpl; context: groupTemplateContext(presenter.tree(), rootPath)"
+    ></ng-container>
+  } @else {
+    <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: rootPath }"></ng-container>
+  }
 }
 
 <span aria-live="polite" class="cngx-filter-builder__sr">{{ presenter.announcement() }}</span>
@@ -80,16 +86,29 @@
     </div>
 
     @for (child of group.filters; track child; let i = $index) {
+      @let cp = childPath(path, child, i);
       @switch (child.type) {
         @case ('group') {
-          <ng-container
-            *ngTemplateOutlet="groupTpl; context: { $implicit: child, path: childPath(path, child, i) }"
-          ></ng-container>
+          @if (templates.groupTemplate(); as customGroupTpl) {
+            <ng-container
+              *ngTemplateOutlet="customGroupTpl; context: groupTemplateContext(child, cp)"
+            ></ng-container>
+          } @else {
+            <ng-container
+              *ngTemplateOutlet="groupTpl; context: { $implicit: child, path: cp }"
+            ></ng-container>
+          }
         }
         @case ('expression') {
-          <ng-container
-            *ngTemplateOutlet="expressionTpl; context: { $implicit: child, path: childPath(path, child, i) }"
-          ></ng-container>
+          @if (templates.expressionTemplate(); as customExprTpl) {
+            <ng-container
+              *ngTemplateOutlet="customExprTpl; context: expressionTemplateContext(child, cp)"
+            ></ng-container>
+          } @else {
+            <ng-container
+              *ngTemplateOutlet="expressionTpl; context: { $implicit: child, path: cp }"
+            ></ng-container>
+          }
         }
       }
     }
