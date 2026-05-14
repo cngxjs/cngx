@@ -502,6 +502,11 @@ export const routes: Routes = [
           import('./demos/forms/file-drop-demo/file-drop-demo.component').then((m) => m.FileDropDemoComponent),
       },
       {
+        path: 'filter-builder',
+        loadComponent: () =>
+          import('./demos/forms/filter-builder-demo/filter-builder-demo.component').then((m) => m.FilterBuilderDemoComponent),
+      },
+      {
         path: 'form-primitives',
         loadComponent: () =>
           import('./demos/forms/form-primitives-demo/form-primitives-demo.component').then((m) => m.FormPrimitivesDemoComponent),
