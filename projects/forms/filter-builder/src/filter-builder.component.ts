@@ -91,9 +91,10 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
   });
 
-  protected readonly loadingContext = computed(() => ({
-    skeletonCount: this.config.skeletonCount,
-  }));
+  protected readonly loadingContext = computed(
+    () => ({ skeletonCount: this.config.skeletonCount }),
+    { equal: (a, b) => a.skeletonCount === b.skeletonCount },
+  );
 
   protected readonly errorSlotContext = computed<ErrorCtx>(
     () => ({ error: this.presenter.state.error() }),
