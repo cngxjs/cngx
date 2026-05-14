@@ -221,6 +221,38 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     expect(input).not.toBeNull();
   });
 
+  it('emits setValue with the picked ISO date on date-input change event', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'birth',
+      operator: 'lt',
+      value: undefined,
+    };
+    const { fixture, host } = setup(expression);
+    const input = fixture.debugElement.query(By.css('input[type="date"]'))
+      .nativeElement as HTMLInputElement;
+    input.value = '2006-01-14';
+    input.dispatchEvent(new Event('change'));
+    expect(host.setValueSpy).toHaveBeenCalledWith([0], '2006-01-14');
+  });
+
+  it('emits setValue with null when the date input is cleared', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'birth',
+      operator: 'lt',
+      value: '2006-01-14',
+    };
+    const { fixture, host } = setup(expression);
+    const input = fixture.debugElement.query(By.css('input[type="date"]'))
+      .nativeElement as HTMLInputElement;
+    input.value = '';
+    input.dispatchEvent(new Event('change'));
+    expect(host.setValueSpy).toHaveBeenCalledWith([0], null);
+  });
+
   it('renders a cngx-toggle for boolean editor type and emits setValue on toggle change', () => {
     const expression: FilterExpression = {
       type: 'expression',

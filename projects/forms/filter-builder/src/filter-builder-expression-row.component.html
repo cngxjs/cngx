@@ -51,7 +51,8 @@
         cngxInput
         type="date"
         [value]="expression.value ?? ''"
-        (input)="handleStringValueInput($event)"
+        (input)="handleDateValueInput($event)"
+        (change)="handleDateValueInput($event)"
       />
     } @else if (resolvedEditor === 'native:boolean') {
       <cngx-toggle

@@ -275,6 +275,16 @@ export class CngxFilterExpressionRow {
     this.writeValue(raw === '' ? null : Number(raw));
   }
 
+  protected handleDateValueInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const raw = target.value;
+    // Native <input type="date"> fires `change` reliably on calendar-pick
+    // and `input` reliably on direct keyboard editing; binding both covers
+    // the cross-browser delta. The handler is idempotent — writeValue
+    // short-circuits when the value is unchanged at the host level.
+    this.writeValue(raw === '' ? null : raw);
+  }
+
   protected handleBooleanValueChange(next: boolean): void {
     this.writeValue(next);
   }
