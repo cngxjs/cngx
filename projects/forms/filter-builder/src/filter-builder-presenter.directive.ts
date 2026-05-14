@@ -1,8 +1,10 @@
 import {
+  afterNextRender,
   computed,
   Directive,
   inject,
   input,
+  isDevMode,
   model,
   signal,
   type Signal,
@@ -125,6 +127,25 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     return this.stateInput() ?? this.idleState;
   }
 
+  constructor() {
+    afterNextRender(() => {
+      if (!isDevMode()) {
+        return;
+      }
+      if (this.fields().length === 0) {
+        console.warn('[CngxFilterBuilder] no fields provided — empty-state branch will always render.');
+      }
+      const fieldKeys = new Set(this.fields().map((f) => f.key));
+      const unknown = new Set<string>();
+      collectExpressionFieldKeys(this.tree(), fieldKeys, unknown);
+      if (unknown.size > 0) {
+        console.warn(
+          `[CngxFilterBuilder] value() references unknown field key(s): ${[...unknown].join(', ')}`,
+        );
+      }
+    });
+  }
+
   addExpression(path: readonly number[], expression: FilterExpression): void {
     this.core.addExpression(path, expression);
   }
@@ -183,4 +204,20 @@ function countIncompleteExpressions(group: FilterGroup): number {
     }
   }
   return count;
+}
+
+function collectExpressionFieldKeys(
+  group: FilterGroup,
+  knownKeys: ReadonlySet<string>,
+  unknown: Set<string>,
+): void {
+  for (const child of group.filters) {
+    if (child.type === 'expression') {
+      if (!knownKeys.has(child.field)) {
+        unknown.add(child.field);
+      }
+    } else {
+      collectExpressionFieldKeys(child, knownKeys, unknown);
+    }
+  }
 }

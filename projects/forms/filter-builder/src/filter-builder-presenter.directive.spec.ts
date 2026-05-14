@@ -1,8 +1,8 @@
-import { Component, signal, viewChild, type Signal } from '@angular/core';
+import { ApplicationRef, Component, signal, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
 import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
@@ -169,5 +169,56 @@ describe('CngxFilterBuilderPresenter', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(directive.errorState()).toBe(true);
+  });
+});
+
+describe('CngxFilterBuilderPresenter — dev-mode guards', () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('warns when fields() is empty after first render', async () => {
+    @Component({
+      template: `<div cngxFilterBuilderPresenter [fields]="fields()" [(value)]="value"></div>`,
+      imports: [CngxFilterBuilderPresenter],
+    })
+    class EmptyFieldsHost {
+      readonly fields = signal<readonly FilterFieldDef[]>([]);
+      value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+    }
+    const fixture = TestBed.createComponent(EmptyFieldsHost);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('no fields provided'),
+    );
+  });
+
+  it('warns when value() references unknown field keys', async () => {
+    @Component({
+      template: `<div cngxFilterBuilderPresenter [fields]="fields()" [(value)]="value"></div>`,
+      imports: [CngxFilterBuilderPresenter],
+    })
+    class UnknownFieldHost {
+      readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
+      value: FilterGroup = {
+        type: 'group',
+        logic: 'and',
+        negated: false,
+        filters: [{ type: 'expression', field: 'bogus', operator: 'eq', value: 'x' }],
+      };
+    }
+    const fixture = TestBed.createComponent(UnknownFieldHost);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('unknown field key(s): bogus'),
+    );
   });
 });
