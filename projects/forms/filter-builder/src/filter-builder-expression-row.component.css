@@ -1,4 +1,4 @@
-:host {
+cngx-filter-expression-row {
   display: contents;
 }
 
@@ -7,4 +7,8 @@
   flex-wrap: wrap;
   gap: var(--cngx-filter-builder-gap, 0.5rem);
   align-items: center;
+}
+
+.cngx-filter-builder__expression--empty {
+  opacity: var(--cngx-filter-builder-empty-row-opacity, 0.85);
 }

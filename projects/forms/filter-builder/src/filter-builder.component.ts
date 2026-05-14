@@ -5,6 +5,7 @@ import {
   computed,
   contentChild,
   inject,
+  ViewEncapsulation,
 } from '@angular/core';
 
 import type { CngxFilterBuilderLoadingContext } from './filter-builder-slots';
@@ -56,6 +57,7 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
   imports: [NgTemplateOutlet, CngxFilterBuilderBody],
   templateUrl: './filter-builder.component.html',
   styleUrl: './filter-builder.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);

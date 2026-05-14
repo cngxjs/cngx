@@ -6,6 +6,7 @@ import {
   inject,
   input,
   model,
+  ViewEncapsulation,
 } from '@angular/core';
 import { CngxInput } from '@cngx/forms/input';
 import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
@@ -52,6 +53,7 @@ const EMPTY_PATH: readonly number[] = Object.freeze([]) as readonly number[];
   imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect],
   templateUrl: './filter-builder-expression-row.component.html',
   styleUrl: './filter-builder-expression-row.component.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterExpressionRow {
   private readonly host = inject(CNGX_FILTER_BUILDER_HOST, { optional: true });
