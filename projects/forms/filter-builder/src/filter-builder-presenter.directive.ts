@@ -1,5 +1,4 @@
 import {
-  computed,
   Directive,
   inject,
   input,
@@ -33,19 +32,7 @@ import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   type CngxFilterBuilderState,
 } from './filter-builder-state';
-
-function renderValueForAnnouncement(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  if (typeof value === 'string') {
-    return `"${value}"`;
-  }
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return String(value);
-  }
-  return '';
-}
+import { CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY } from './filter-builder-announcer';
 
 /**
  * Thin presenter directive. Instantiates `createFilterBuilderState` against
@@ -105,50 +92,19 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly expressionCount = this.core.expressionCount;
 
   /**
-   * Live-region announcement text. Phase 5 ships a synchronous formatter
-   * driven directly from `lastMutation` + `fieldMap`; Phase 6 lifts the
-   * formatter into a swappable factory token (`CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY`)
-   * with i18n hooks. Format strings stay stable across the migration.
+   * Live-region announcement text. Built via the swappable
+   * `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` token — consumers override
+   * the factory for locale, telemetry, or test doubles without touching
+   * the presenter. Default formatter resolves `fieldKey` through `fieldMap`
+   * to surface human-readable labels.
    */
-  readonly announcement: Signal<string> = computed(() => {
-    const event = this.lastMutation();
-    if (!event) {
-      return '';
-    }
-    const ctx = event.context;
-    const i18n = this.config.i18n;
-    switch (event.kind) {
-      case 'add-filter': {
-        const label = ctx?.fieldKey ?? '';
-        return `Filter added: ${label}`;
-      }
-      case 'remove-filter': {
-        const field = ctx?.fieldKey ?? '';
-        const op = ctx?.operator ?? '';
-        const value = ctx?.value;
-        const rendered = renderValueForAnnouncement(value);
-        return `Filter removed: ${field} ${op} ${rendered}`.trim();
-      }
-      case 'add-group':
-        return `${i18n.addGroup} added`;
-      case 'remove-group':
-        return `${i18n.removeGroup}d`;
-      case 'set-logic':
-        return `Logic changed to ${ctx?.logic?.toUpperCase() ?? ''}`;
-      case 'toggle-negated':
-        return ctx?.negated ? 'Group negated' : 'Group un-negated';
-      case 'set-field':
-        return `Field changed to ${ctx?.fieldKey ?? ''}`;
-      case 'set-operator':
-        return `Operator changed to ${ctx?.operator ?? ''}`;
-      case 'set-value':
-        return 'Value changed';
-      case 'clear':
-        return 'Filters cleared';
-      default:
-        return '';
-    }
+  private readonly announcerFactory = inject(CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY);
+  private readonly announcer = this.announcerFactory<TValue>({
+    lastMutation: this.lastMutation,
+    fieldMap: this.fieldMap,
+    i18n: this.config.i18n,
   });
+  readonly announcement: Signal<string> = this.announcer.announcement;
 
   readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-')).asReadonly();
   readonly empty: Signal<boolean> = this.core.isEmpty;

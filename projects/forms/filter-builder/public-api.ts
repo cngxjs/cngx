@@ -27,6 +27,7 @@ export {
   withMaxNestingDepth,
   withNegation,
   withTemplates,
+  type CngxFilterBuilderAnnouncementFormatters,
   type CngxFilterBuilderConfig,
   type CngxFilterBuilderConfigFeature,
   type CngxFilterBuilderI18n,
@@ -63,6 +64,14 @@ export {
   type CngxFilterBuilderTemplateRegistryFactory,
   type CngxFilterBuilderTemplateRegistryQueries,
 } from './src/filter-builder-template-registry';
+export {
+  CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY,
+  createFilterBuilderAnnouncer,
+  injectFilterBuilderAnnouncerFactory,
+  type CngxFilterBuilderAnnouncer,
+  type CngxFilterBuilderAnnouncerFactory,
+  type CngxFilterBuilderAnnouncerSources,
+} from './src/filter-builder-announcer';
 export { CngxFilterBuilder } from './src/filter-builder.component';
 export {
   createEmptyFilterRoot,

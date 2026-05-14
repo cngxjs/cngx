@@ -121,7 +121,7 @@ describe('CngxFilterBuilder — recursive tree rendering', () => {
 });
 
 describe('CngxFilterBuilder — announcer text', () => {
-  it('announces "Filter added: name" when add filter button is clicked', () => {
+  it('announces "Filter added: Name" when add filter button is clicked', () => {
     const { fixture, hostEl, presenter } = basicSetup();
     const addButton = Array.from(hostEl.querySelectorAll('button')).find(
       (b) => b.textContent?.trim() === 'Add filter',
@@ -129,7 +129,7 @@ describe('CngxFilterBuilder — announcer text', () => {
     addButton.click();
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Filter added: name');
+    expect(presenter.announcement()).toBe('Filter added: Name');
   });
 
   it('announces "Logic changed to OR" when the logic select changes', () => {
@@ -143,13 +143,13 @@ describe('CngxFilterBuilder — announcer text', () => {
     expect(presenter.announcement()).toBe('Logic changed to OR');
   });
 
-  it('announces "Filter removed: name eq \\"foo\\"" on remove', () => {
+  it('announces "Filter removed: Name eq \\"foo\\"" on remove', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'foo')]);
     const { fixture, presenter } = basicSetup(initial);
     presenter.removeNode([0]);
     fixture.detectChanges();
     TestBed.flushEffects();
-    expect(presenter.announcement()).toBe('Filter removed: name eq "foo"');
+    expect(presenter.announcement()).toBe('Filter removed: Name eq "foo"');
   });
 
   it('announces "Group negated" on toggleNegated', () => {

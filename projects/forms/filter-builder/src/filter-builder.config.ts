@@ -46,6 +46,20 @@ export interface CngxFilterBuilderExpressionLabelContext {
   readonly operator: string;
 }
 
+export interface CngxFilterBuilderAnnouncementFormatters {
+  readonly filterAdded: (args: { fieldLabel: string }) => string;
+  readonly filterRemoved: (args: { fieldLabel: string; operator: string; value: string }) => string;
+  readonly groupAdded: () => string;
+  readonly groupRemoved: () => string;
+  readonly logicChanged: (args: { logic: FilterLogic }) => string;
+  readonly groupNegated: () => string;
+  readonly groupUnnegated: () => string;
+  readonly fieldChanged: (args: { fieldLabel: string }) => string;
+  readonly operatorChanged: (args: { operator: string }) => string;
+  readonly valueChanged: (args: { value: string }) => string;
+  readonly filtersCleared: () => string;
+}
+
 export interface CngxFilterBuilderI18n {
   readonly addFilter: string;
   readonly addGroup: string;
@@ -63,6 +77,7 @@ export interface CngxFilterBuilderI18n {
   readonly groupLabel: (ctx: CngxFilterBuilderGroupLabelContext) => string;
   readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
   readonly unboundFilterLabel: string;
+  readonly announcement: CngxFilterBuilderAnnouncementFormatters;
 }
 
 export interface CngxFilterBuilderConfig {
@@ -112,6 +127,28 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
     return `Filter: ${fieldLabel} ${op}`;
   },
   unboundFilterLabel: 'Unbound filter',
+  announcement: Object.freeze({
+    filterAdded: ({ fieldLabel }: { fieldLabel: string }) => `Filter added: ${fieldLabel}`,
+    filterRemoved: ({
+      fieldLabel,
+      operator,
+      value,
+    }: {
+      fieldLabel: string;
+      operator: string;
+      value: string;
+    }) => `Filter removed: ${fieldLabel} ${operator} ${value}`.trim().replace(/\s+/g, ' '),
+    groupAdded: () => 'Filter group added',
+    groupRemoved: () => 'Filter group removed',
+    logicChanged: ({ logic }: { logic: FilterLogic }) => `Logic changed to ${logic.toUpperCase()}`,
+    groupNegated: () => 'Group negated',
+    groupUnnegated: () => 'Group un-negated',
+    fieldChanged: ({ fieldLabel }: { fieldLabel: string }) => `Field changed to ${fieldLabel}`,
+    operatorChanged: ({ operator }: { operator: string }) => `Operator changed to ${operator}`,
+    valueChanged: ({ value }: { value: string }) =>
+      value ? `Value changed to ${value}` : 'Value changed',
+    filtersCleared: () => 'Filters cleared',
+  }) as CngxFilterBuilderAnnouncementFormatters,
 }) as CngxFilterBuilderI18n;
 
 function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
