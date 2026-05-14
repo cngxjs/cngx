@@ -3,9 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   input,
   model,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxInput } from '@cngx/forms/input';
@@ -99,13 +101,45 @@ export class CngxFilterExpressionRow {
   protected readonly standalone = computed(() => this.host === null);
 
   /**
-   * Empty-state branch for standalone mode: when `[(value)]` is null but
-   * fields are available, render only the field picker so consumers can
-   * start a filter without having to seed an expression themselves.
+   * Empty-state branch for standalone mode: when `[(value)]` is null and
+   * MORE THAN ONE field is available, render only the field picker so
+   * consumers can start a filter without having to seed an expression
+   * themselves. Single-field standalone mode skips this entirely — the
+   * row auto-seeds the only field via the constructor effect below
+   * because a one-option field-picker is dead UX (the field is implicit
+   * from the consumer's column-header / single-purpose row context).
    */
   protected readonly showEmptyFieldPicker = computed(
-    () => this.standalone() && this.value() === null && this.fields().length > 0,
+    () => this.standalone() && this.value() === null && this.fields().length > 1,
   );
+
+  constructor() {
+    // Auto-seed single-field standalone rows. The consumer mounted a row
+    // pinned to one field (table-column header pattern); a field-picker
+    // would be redundant. As soon as `value` is null AND fields has exactly
+    // one entry, materialise a fresh expression so the operator + value
+    // editors render directly. `untracked` shields the write from feeding
+    // back into the effect's dependency graph.
+    effect(() => {
+      if (this.host) {
+        return;
+      }
+      if (this.value() !== null) {
+        return;
+      }
+      const fs = this.fieldsInput();
+      if (fs.length !== 1) {
+        return;
+      }
+      const only = fs[0];
+      if (!only) {
+        return;
+      }
+      untracked(() => {
+        this.value.set(createFilterExpression(only.key, this.defaultOperatorFor(only.key)));
+      });
+    });
+  }
 
   protected readonly node = computed<FilterExpression | null>(() => {
     if (this.host) {

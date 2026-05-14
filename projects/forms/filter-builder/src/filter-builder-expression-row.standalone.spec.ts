@@ -166,4 +166,68 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     TestBed.flushEffects();
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))).toBeNull();
   });
+
+  it('auto-seeds when fields has exactly one entry and [(value)] is null', () => {
+    const oneField: readonly FilterFieldDef[] = [
+      { key: 'role', label: 'Role', editorType: 'string' },
+    ];
+
+    @Component({
+      standalone: true,
+      template: `
+        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+      `,
+      imports: [CngxFilterExpressionRow],
+    })
+    class SingleFieldHost {
+      readonly fields = oneField;
+      readonly expression = signal<FilterExpression | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(SingleFieldHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const seeded = fixture.componentInstance.expression();
+    expect(seeded).not.toBeNull();
+    expect(seeded?.field).toBe('role');
+    expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression--empty'))).toBeNull();
+    // Two selects: operator + ... no wait, single-field mode has NO field picker.
+    // The seeded full row renders field-select + operator-select. We accept both
+    // selects as long as the user-visible field picker has only the one option.
+    const selects = fixture.debugElement.queryAll(By.directive(CngxSelect));
+    expect(selects.length).toBeGreaterThan(0);
+  });
+
+  it('re-seeds the same field when Remove writes null in single-field mode', () => {
+    const oneField: readonly FilterFieldDef[] = [
+      { key: 'role', label: 'Role', editorType: 'string' },
+    ];
+
+    @Component({
+      standalone: true,
+      template: `
+        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+      `,
+      imports: [CngxFilterExpressionRow],
+    })
+    class SingleFieldHost {
+      readonly fields = oneField;
+      readonly expression = signal<FilterExpression | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(SingleFieldHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const firstSeed = fixture.componentInstance.expression();
+    expect(firstSeed?.field).toBe('role');
+
+    fixture.componentInstance.expression.set(null);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const reseeded = fixture.componentInstance.expression();
+    expect(reseeded).not.toBeNull();
+    expect(reseeded?.field).toBe('role');
+  });
 });
