@@ -200,6 +200,18 @@ function evaluateGroup<TItem>(
   item: TItem,
   fieldMap: ReadonlyMap<string, FilterFieldDef>,
 ): boolean {
+  // Empty group = no constraint. Pure boolean logic would return
+  // `OR(∅) = false`, `XOR(∅) = false`, `AND(∅) = true` — but in a
+  // filter-UX context an empty group means "the user defined no filter
+  // here", which should accept every item regardless of the dormant
+  // `logic` flag. Bypasses the switch so the group's `negated` flag also
+  // collapses to neutral (otherwise `negated + OR(∅)` would invert
+  // false→true and surface a "reject everything" filter the user never
+  // expressed).
+  if (group.filters.length === 0) {
+    return true;
+  }
+
   const results: boolean[] = [];
   for (const child of group.filters) {
     if (child.type === 'group') {

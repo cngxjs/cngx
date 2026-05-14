@@ -163,12 +163,23 @@ describe('toFilterPredicate — logic operators', () => {
     expect(predicate({ name: 'z' })).toBe(false);
   });
 
-  it('xor at n<2 returns false', () => {
+  it('xor at n=1 returns false', () => {
     const treeOne = createFilterGroup('xor', [exprEq('name', 'alice')]);
     expect(toFilterPredicate(treeOne, FIELDS)!({ name: 'alice' })).toBe(false);
+  });
 
-    const treeZero = createFilterGroup('xor', []);
-    expect(toFilterPredicate(treeZero, FIELDS)!({})).toBe(false);
+  it('empty groups accept every item regardless of logic (no-constraint semantics)', () => {
+    const andEmpty = createFilterGroup('and', []);
+    const orEmpty = createFilterGroup('or', []);
+    const xorEmpty = createFilterGroup('xor', []);
+    expect(toFilterPredicate(andEmpty, FIELDS)!({})).toBe(true);
+    expect(toFilterPredicate(orEmpty, FIELDS)!({})).toBe(true);
+    expect(toFilterPredicate(xorEmpty, FIELDS)!({})).toBe(true);
+  });
+
+  it('empty groups remain neutral even when negated (no inverted "reject all")', () => {
+    const negatedEmptyOr = createFilterGroup('or', [], { negated: true });
+    expect(toFilterPredicate(negatedEmptyOr, FIELDS)!({})).toBe(true);
   });
 
   it('throws on unknown FilterLogic at runtime (exhaustiveness guard)', () => {
