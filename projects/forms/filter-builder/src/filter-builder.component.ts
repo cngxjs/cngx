@@ -48,6 +48,10 @@ import { createFilterExpression, createFilterGroup } from './filter-builder.help
       outputs: ['valueChange'],
     },
   ],
+  host: {
+    '[attr.aria-busy]': 'ariaBusy()',
+    '[attr.aria-disabled]': 'ariaDisabled()',
+  },
   imports: [NgTemplateOutlet, CngxFilterBuilderBody],
   templateUrl: './filter-builder.component.html',
   styleUrl: './filter-builder.component.css',
@@ -55,6 +59,14 @@ import { createFilterExpression, createFilterGroup } from './filter-builder.help
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
   protected readonly config = injectFilterBuilderConfig();
+
+  protected readonly ariaBusy = computed<'true' | null>(() =>
+    this.presenter.state.status() === 'loading' ? 'true' : null,
+  );
+
+  protected readonly ariaDisabled = computed<'true' | null>(() =>
+    this.presenter.disabled() ? 'true' : null,
+  );
 
   protected readonly loadingSlot = contentChild(CngxFilterBuilderLoading);
   protected readonly errorSlot = contentChild(CngxFilterBuilderError);

@@ -167,6 +167,33 @@ describe('CngxFilterBuilder — announcer text', () => {
   });
 });
 
+describe('CngxFilterBuilder — host aria-busy / aria-disabled', () => {
+  it('reflects aria-busy="true" on the component host when state.status is loading', () => {
+    const state = createManualState<unknown>();
+    state.set('loading');
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
+      imports: [CngxFilterBuilder],
+    })
+    class Host {
+      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+      value: FilterGroup = createEmptyFilterRoot();
+      readonly state = state;
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const hostEl = (fixture.nativeElement as HTMLElement).querySelector('cngx-filter-builder');
+    expect(hostEl?.getAttribute('aria-busy')).toBe('true');
+  });
+
+  it('omits aria-busy when state.status is idle', () => {
+    const { hostEl } = basicSetup();
+    const host = hostEl.querySelector('cngx-filter-builder');
+    expect(host?.getAttribute('aria-busy')).toBeNull();
+  });
+});
+
 describe('CngxFilterBuilder — ARIA labels reactive', () => {
   it('updates group aria-label when logic changes', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
