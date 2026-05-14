@@ -272,6 +272,24 @@ describe('CngxFilterBuilder — slot-context reference stability', () => {
   });
 });
 
+describe('CngxFilterBuilderBody — cache eviction on mutation', () => {
+  it('clears slot-context caches when a remove-filter mutation lands', () => {
+    const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+    const { fixture, presenter } = basicSetup(initial);
+    const body = bodyOf(fixture);
+    body.addFilterButtonContext([0]);
+    body.logicToggleContext(createFilterGroup('and'), []);
+    expect(body.addFilterButtonContextCache.size).toBeGreaterThan(0);
+
+    presenter.removeNode([0]);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    expect(body.addFilterButtonContextCache.size).toBe(0);
+    expect(body.logicToggleContextCache.size).toBe(0);
+  });
+});
+
 describe('CngxFilterBuilderBody — cache teardown on destroy', () => {
   it('clears all slot-context caches when the body is destroyed', () => {
     const initial = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);

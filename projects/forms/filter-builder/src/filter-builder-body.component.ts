@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
+  effect,
   inject,
   input,
+  untracked,
 } from '@angular/core';
 
 import {
@@ -60,15 +62,28 @@ export class CngxFilterBuilderBody {
   protected readonly rootPath: readonly number[] = Object.freeze([]);
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => {
-      this.addFilterButtonContextCache.clear();
-      this.addGroupButtonContextCache.clear();
-      this.removeButtonContextCache.clear();
-      this.logicToggleContextCache.clear();
-      this.negationToggleContextCache.clear();
-      this.groupTemplateContextCache.clear();
-      this.expressionTemplateContextCache.clear();
+    inject(DestroyRef).onDestroy(() => this.clearAllCaches());
+
+    effect(() => {
+      const event = this.host.lastMutation();
+      if (
+        event?.kind === 'remove-filter' ||
+        event?.kind === 'remove-group' ||
+        event?.kind === 'clear'
+      ) {
+        untracked(() => this.clearAllCaches());
+      }
     });
+  }
+
+  private clearAllCaches(): void {
+    this.addFilterButtonContextCache.clear();
+    this.addGroupButtonContextCache.clear();
+    this.removeButtonContextCache.clear();
+    this.logicToggleContextCache.clear();
+    this.negationToggleContextCache.clear();
+    this.groupTemplateContextCache.clear();
+    this.expressionTemplateContextCache.clear();
   }
 
   protected readonly isNativeEditor = isNativeEditor;
