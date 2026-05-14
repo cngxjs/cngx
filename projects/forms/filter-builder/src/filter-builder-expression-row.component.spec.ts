@@ -332,6 +332,30 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     expect(host.removeNodeSpy).toHaveBeenCalledWith([0]);
   });
 
+  it('returns reference-equal fieldOptions / operatorOptions / node / editor / operators when upstream is unchanged', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e1',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const row = fixture.componentInstance.row() as unknown as {
+      readonly fieldOptions: Signal<unknown>;
+      readonly operatorOptions: Signal<unknown>;
+      readonly node: Signal<unknown>;
+      readonly editor: Signal<unknown>;
+      readonly operators: Signal<unknown>;
+    };
+    TestBed.flushEffects();
+    expect(row.fieldOptions()).toBe(row.fieldOptions());
+    expect(row.operatorOptions()).toBe(row.operatorOptions());
+    expect(row.node()).toBe(row.node());
+    expect(row.editor()).toBe(row.editor());
+    expect(row.operators()).toBe(row.operators());
+  });
+
   it('renders nothing when path resolves to a non-expression node', () => {
     const tree: FilterGroup = {
       type: 'group',

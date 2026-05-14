@@ -74,6 +74,39 @@ describe('createFilterBuilderAnnouncer', () => {
     expect(negated.announcement()).toBe('Group negated');
     expect(unnegated.announcement()).toBe('Group un-negated');
   });
+
+  it('does NOT re-run when only fieldMap mutates (untracked)', () => {
+    const lastMutation = signal<FilterMutationEvent | null>({
+      kind: 'add-filter',
+      path: [0],
+      context: { fieldKey: 'name' },
+    });
+    let fieldMapReads = 0;
+    const fieldMapStore = signal<ReadonlyMap<string, FilterFieldDef>>(FIELDS);
+    const fieldMap = ((): ReadonlyMap<string, FilterFieldDef> => {
+      fieldMapReads++;
+      return fieldMapStore();
+    }) as unknown as typeof fieldMapStore;
+
+    const announcer = createFilterBuilderAnnouncer({
+      lastMutation,
+      fieldMap,
+      i18n: CNGX_FILTER_BUILDER_DEFAULTS.i18n,
+    });
+
+    expect(announcer.announcement()).toBe('Filter added: First name');
+    const readsAfterFirstAnnouncement = fieldMapReads;
+
+    fieldMapStore.set(
+      new Map([
+        ['name', { key: 'name', label: 'First name', editorType: 'string' }],
+        ['age', { key: 'age', label: 'Years', editorType: 'number' }],
+      ]),
+    );
+
+    expect(announcer.announcement()).toBe('Filter added: First name');
+    expect(fieldMapReads).toBe(readsAfterFirstAnnouncement);
+  });
 });
 
 describe('CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY', () => {

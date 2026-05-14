@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { CngxToggle } from '@cngx/common/interactive';
 import { CngxInput } from '@cngx/forms/input';
-import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
+import { CngxSelect } from '@cngx/forms/select';
 
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import {
@@ -32,6 +32,41 @@ import type {
 
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
 const EMPTY_PATH: readonly number[] = Object.freeze([]) as readonly number[];
+
+function equalOptionList<T>(
+  a: readonly { value: T; label: string }[],
+  b: readonly { value: T; label: string }[],
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    const aa = a[i];
+    const bb = b[i];
+    if (aa.value !== bb.value || aa.label !== bb.label) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function equalStringList(a: readonly string[], b: readonly string[]): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Expression-row sub-component. Dual-mode: **embedded** (inside the
@@ -96,7 +131,10 @@ export class CngxFilterExpressionRow {
    */
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
-  protected readonly removeButtonTemplate = computed(() => this.templates()?.removeButton() ?? null);
+  protected readonly removeButtonTemplate = computed(
+    () => this.templates()?.removeButton() ?? null,
+    { equal: (a, b) => a === b },
+  );
 
   /** `true` when no `CNGX_FILTER_BUILDER_HOST` is provided — standalone mode. */
   protected readonly standalone = computed(() => this.host === null);
@@ -142,49 +180,64 @@ export class CngxFilterExpressionRow {
     });
   }
 
-  protected readonly node = computed<FilterExpression | null>(() => {
-    if (this.host) {
-      const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
-      return resolved?.type === 'expression' ? resolved : null;
-    }
-    return this.value();
-  });
-
-  protected readonly fields = computed<readonly FilterFieldDef[]>(() =>
-    this.host ? this.host.fields() : this.fieldsInput(),
+  protected readonly node = computed<FilterExpression | null>(
+    () => {
+      if (this.host) {
+        const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
+        return resolved?.type === 'expression' ? resolved : null;
+      }
+      return this.value();
+    },
+    { equal: (a, b) => a === b },
   );
 
-  private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(() => {
-    if (this.host) {
-      return this.host.fieldMap();
-    }
-    return new Map(this.fieldsInput().map((field) => [field.key, field]));
-  });
-
-  protected readonly fieldOptions = computed<CngxSelectOptionsInput<string>>(() =>
-    this.fields().map((field) => ({ value: field.key, label: field.label })),
+  protected readonly fields = computed<readonly FilterFieldDef[]>(
+    () => (this.host ? this.host.fields() : this.fieldsInput()),
+    { equal: (a, b) => a === b },
   );
 
-  protected readonly operatorOptions = computed<CngxSelectOptionsInput<string>>(() =>
-    this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })),
+  private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
+    () => {
+      if (this.host) {
+        return this.host.fieldMap();
+      }
+      return new Map(this.fieldsInput().map((field) => [field.key, field]));
+    },
+    { equal: (a, b) => a === b },
   );
 
-  protected readonly editor = computed<CngxFilterEditor | undefined>(() => {
-    const expression = this.node();
-    if (!expression) {
-      return undefined;
-    }
-    const fieldDef = this.fieldMap().get(expression.field);
-    if (!fieldDef) {
-      return undefined;
-    }
-    return this.editors.get(fieldDef.editorType);
-  });
+  protected readonly fieldOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
+    () => this.fields().map((field) => ({ value: field.key, label: field.label })),
+    { equal: equalOptionList },
+  );
 
-  protected readonly operators = computed<readonly string[]>(() => {
-    const expression = this.node();
-    return expression ? this.operatorsForField(expression.field) : EMPTY_OPERATORS;
-  });
+  protected readonly operatorOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
+    () => this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })),
+    { equal: equalOptionList },
+  );
+
+  protected readonly editor = computed<CngxFilterEditor | undefined>(
+    () => {
+      const expression = this.node();
+      if (!expression) {
+        return undefined;
+      }
+      const fieldDef = this.fieldMap().get(expression.field);
+      if (!fieldDef) {
+        return undefined;
+      }
+      return this.editors.get(fieldDef.editorType);
+    },
+    { equal: (a, b) => a === b },
+  );
+
+  protected readonly operators = computed<readonly string[]>(
+    () => {
+      const expression = this.node();
+      return expression ? this.operatorsForField(expression.field) : EMPTY_OPERATORS;
+    },
+    { equal: equalStringList },
+  );
 
   private operatorsForField(fieldKey: string): readonly string[] {
     const def = this.fieldMap().get(fieldKey);

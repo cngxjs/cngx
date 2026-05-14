@@ -1,4 +1,4 @@
-import { computed, inject, InjectionToken, type Signal } from '@angular/core';
+import { computed, inject, InjectionToken, untracked, type Signal } from '@angular/core';
 
 import type { CngxFilterBuilderI18n } from './filter-builder.config';
 import type { FilterMutationEvent } from './filter-builder-state';
@@ -50,7 +50,7 @@ export function createFilterBuilderAnnouncer<TValue>(
     const announce = sources.i18n.announcement;
 
     const fieldLabel = ctx?.fieldKey
-      ? sources.fieldMap().get(ctx.fieldKey)?.label ?? ctx.fieldKey
+      ? untracked(() => sources.fieldMap().get(ctx.fieldKey!)?.label) ?? ctx.fieldKey
       : '';
 
     switch (event.kind) {
