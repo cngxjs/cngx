@@ -39,9 +39,12 @@ test.describe('CngxFilterBuilder demo — golden path', () => {
     await builder.getByRole('button', { name: 'Add filter' }).first().click();
 
     const expression = builder.locator('.cngx-filter-builder__expression').first();
-    const selects = expression.locator('select');
-    await selects.nth(0).selectOption('age');
-    await selects.nth(1).selectOption('gt');
+    const fieldTrigger = expression.locator('cngx-select.cngx-filter-builder__field-select [role="combobox"]');
+    await fieldTrigger.click();
+    await page.getByRole('option', { name: 'Age' }).click();
+    const operatorTrigger = expression.locator('cngx-select.cngx-filter-builder__operator-select [role="combobox"]');
+    await operatorTrigger.click();
+    await page.getByRole('option', { name: 'Greater than', exact: true }).click();
     const numberInput = expression.locator('input[type="number"]');
     await numberInput.fill('30');
 
@@ -120,8 +123,12 @@ test.describe('CngxFilterBuilder bridge — toFilterPredicate integration', () =
     await builder.getByRole('button', { name: 'Add filter' }).first().click();
 
     const expression = builder.locator('.cngx-filter-builder__expression').first();
-    await expression.locator('select').nth(0).selectOption('role');
-    await expression.locator('select').nth(1).selectOption('eq');
+    const fieldTrigger = expression.locator('cngx-select.cngx-filter-builder__field-select [role="combobox"]');
+    await fieldTrigger.click();
+    await page.getByRole('option', { name: 'Role' }).click();
+    const operatorTrigger = expression.locator('cngx-select.cngx-filter-builder__operator-select [role="combobox"]');
+    await operatorTrigger.click();
+    await page.getByRole('option', { name: 'Equals', exact: true }).click();
     await expression.locator('input[type="text"]').fill('Engineer');
 
     await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();

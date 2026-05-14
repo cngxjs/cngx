@@ -1,17 +1,19 @@
 @let expression = node();
 @if (expression) {
   <div class="cngx-filter-builder__expression" [cngxFilterExpression]="path()">
-    <select [value]="expression.field" (change)="handleFieldChange($event)">
-      @for (field of fields(); track field.key) {
-        <option [value]="field.key">{{ field.label }}</option>
-      }
-    </select>
+    <cngx-select
+      class="cngx-filter-builder__field-select"
+      [options]="fieldOptions()"
+      [value]="expression.field"
+      (valueChange)="handleFieldChange($event)"
+    ></cngx-select>
 
-    <select [value]="expression.operator" (change)="handleOperatorChange($event)">
-      @for (op of operators(); track op) {
-        <option [value]="op">{{ operatorLabel(op) }}</option>
-      }
-    </select>
+    <cngx-select
+      class="cngx-filter-builder__operator-select"
+      [options]="operatorOptions()"
+      [value]="expression.operator"
+      (valueChange)="handleOperatorChange($event)"
+    ></cngx-select>
 
     @let resolvedEditor = editor();
     @if (resolvedEditor === 'native:string') {

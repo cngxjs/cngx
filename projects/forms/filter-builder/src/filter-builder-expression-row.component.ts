@@ -6,6 +6,7 @@ import {
   inject,
   input,
 } from '@angular/core';
+import { CngxSelect, type CngxSelectOptionsInput } from '@cngx/forms/select';
 
 import { CngxFilterExpression } from './filter-builder-expression.directive';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
@@ -41,7 +42,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-expression-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterExpression],
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterExpression, CngxSelect],
   templateUrl: './filter-builder-expression-row.component.html',
   styleUrl: './filter-builder-expression-row.component.css',
 })
@@ -71,6 +72,14 @@ export class CngxFilterExpressionRow {
   });
 
   protected readonly fields = computed<readonly FilterFieldDef[]>(() => this.host.fields());
+
+  protected readonly fieldOptions = computed<CngxSelectOptionsInput<string>>(() =>
+    this.fields().map((field) => ({ value: field.key, label: field.label })),
+  );
+
+  protected readonly operatorOptions = computed<CngxSelectOptionsInput<string>>(() =>
+    this.operators().map((op) => ({ value: op, label: this.operatorLabel(op) })),
+  );
 
   protected readonly editor = computed<CngxFilterEditor | undefined>(() => {
     const expression = this.node();
@@ -103,14 +112,18 @@ export class CngxFilterExpressionRow {
     return this.config.i18n.operators[op] ?? op;
   }
 
-  protected handleFieldChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.host.setField(this.path(), target.value);
+  protected handleFieldChange(value: string | undefined): void {
+    if (value === undefined) {
+      return;
+    }
+    this.host.setField(this.path(), value);
   }
 
-  protected handleOperatorChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.host.setOperator(this.path(), target.value);
+  protected handleOperatorChange(value: string | undefined): void {
+    if (value === undefined) {
+      return;
+    }
+    this.host.setOperator(this.path(), value);
   }
 
   protected handleStringValueInput(event: Event): void {

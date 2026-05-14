@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { describe, expect, it, vi } from 'vitest';
 
+import { CngxSelect } from '@cngx/forms/select';
+
 import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 import { CNGX_FILTER_BUILDER_HOST, type CngxFilterBuilderHost } from './filter-builder-host.token';
 import type {
@@ -110,7 +112,7 @@ function setup(
 }
 
 describe('CngxFilterExpressionRow — embedded mode', () => {
-  it('renders the field select with one option per host.fields()', () => {
+  it('renders one CngxSelect each for field and operator with the right options', () => {
     const expression: FilterExpression = {
       type: 'expression',
       id: 'e1',
@@ -119,12 +121,15 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
       value: 'foo',
     };
     const { fixture } = setup(expression);
-    const fieldSelect = fixture.debugElement.queryAll(By.css('select'))[0];
-    const options = fieldSelect.queryAll(By.css('option'));
-    expect(options).toHaveLength(3);
+    const selects = fixture.debugElement.queryAll(By.directive(CngxSelect));
+    expect(selects).toHaveLength(2);
+    const fieldSelect = selects[0].componentInstance as CngxSelect<string>;
+    const operatorSelect = selects[1].componentInstance as CngxSelect<string>;
+    expect(fieldSelect.options()).toHaveLength(3);
+    expect(operatorSelect.options().length).toBeGreaterThan(0);
   });
 
-  it('emits setField via host on field-select change', () => {
+  it('emits setField via host when CngxSelect valueChange fires', () => {
     const expression: FilterExpression = {
       type: 'expression',
       id: 'e1',
@@ -133,14 +138,13 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
       value: 'foo',
     };
     const { fixture, host } = setup(expression);
-    const fieldSelect = fixture.debugElement.queryAll(By.css('select'))[0]
-      .nativeElement as HTMLSelectElement;
-    fieldSelect.value = 'age';
-    fieldSelect.dispatchEvent(new Event('change'));
+    const fieldSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[0]
+      .componentInstance as CngxSelect<string>;
+    fieldSelect.value.set('age');
     expect(host.setFieldSpy).toHaveBeenCalledWith([0], 'age');
   });
 
-  it('emits setOperator via host on operator-select change', () => {
+  it('emits setOperator via host when CngxSelect valueChange fires', () => {
     const expression: FilterExpression = {
       type: 'expression',
       id: 'e1',
@@ -149,10 +153,9 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
       value: 'foo',
     };
     const { fixture, host } = setup(expression);
-    const operatorSelect = fixture.debugElement.queryAll(By.css('select'))[1]
-      .nativeElement as HTMLSelectElement;
-    operatorSelect.value = 'contains';
-    operatorSelect.dispatchEvent(new Event('change'));
+    const operatorSelect = fixture.debugElement.queryAll(By.directive(CngxSelect))[1]
+      .componentInstance as CngxSelect<string>;
+    operatorSelect.value.set('contains');
     expect(host.setOperatorSpy).toHaveBeenCalledWith([0], 'contains');
   });
 
