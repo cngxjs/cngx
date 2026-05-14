@@ -23,6 +23,7 @@ export {
 export { CngxFilterBuilderPresenter } from './src/filter-builder-presenter.directive';
 export { CngxFilterGroup } from './src/filter-builder-group.directive';
 export { CngxFilterExpression } from './src/filter-builder-expression.directive';
+export { CngxFilterExpressionRow } from './src/filter-builder-expression-row.component';
 export {
   CNGX_FILTER_BUILDER_CONFIG,
   injectFilterBuilderConfig,

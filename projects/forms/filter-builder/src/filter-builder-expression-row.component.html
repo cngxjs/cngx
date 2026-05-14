@@ -1,6 +1,11 @@
 @let expression = node();
 @if (expression) {
-  <div class="cngx-filter-builder__expression" [cngxFilterExpression]="path()">
+  <div
+    class="cngx-filter-builder__expression"
+    role="group"
+    [attr.aria-label]="ariaLabel()"
+    [class.cngx-filter-expression-incomplete]="isIncomplete()"
+  >
     <cngx-select
       class="cngx-filter-builder__field-select"
       [options]="fieldOptions()"
