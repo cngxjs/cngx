@@ -208,10 +208,8 @@ export class CngxFilterExpressionRow {
     if (!def) {
       return 'eq';
     }
-    if (def.operators && def.operators.length > 0) {
-      return def.operators[0]!;
-    }
-    return this.config.defaultOperators[def.editorType]?.[0] ?? 'eq';
+    const first = def.operators?.[0] ?? this.config.defaultOperators[def.editorType]?.[0];
+    return first ?? 'eq';
   }
 
   protected handleOperatorChange(next: string | undefined): void {
