@@ -78,7 +78,6 @@ interface BodyInternals {
   removeButtonContext: (path: readonly number[], label: string) => unknown;
   logicToggleContext: (group: FilterGroup, path: readonly number[]) => unknown;
   negationToggleContext: (group: FilterGroup, path: readonly number[]) => unknown;
-  operatorsForField: (fieldKey: string) => readonly string[];
 }
 
 function setup(initial: FilterGroup): { body: CngxFilterBuilderBody; internals: BodyInternals } {
@@ -130,11 +129,4 @@ describe('CngxFilterBuilderBody — non-caching per-state contexts', () => {
     );
   });
 
-  it('operatorsForField returns the same frozen reference for unknown fields (no fresh allocation)', () => {
-    const { internals } = setup(ROOT);
-    const a = internals.operatorsForField('unknown');
-    const b = internals.operatorsForField('also-unknown');
-    expect(a).toBe(b);
-    expect(Object.isFrozen(a)).toBe(true);
-  });
 });

@@ -1,4 +1,4 @@
-import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,11 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 
-import {
-  injectFilterBuilderConfig,
-  isNativeEditor,
-  type CngxFilterEditor,
-} from './filter-builder.config';
+import { injectFilterBuilderConfig } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type {
   CngxFilterBuilderAddFilterButtonContext as AddFilterButtonCtx,
@@ -27,11 +23,9 @@ import type {
 } from './filter-builder-slots';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterGroup } from './filter-builder-group.directive';
-import { CngxFilterExpression } from './filter-builder-expression.directive';
 import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
-import { injectFilterEditors } from './filter-builder.tokens';
 import type { FilterExpression, FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
 
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
@@ -53,19 +47,12 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-builder-body',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgComponentOutlet,
-    NgTemplateOutlet,
-    CngxFilterGroup,
-    CngxFilterExpression,
-    CngxFilterExpressionRow,
-  ],
+  imports: [NgTemplateOutlet, CngxFilterGroup, CngxFilterExpressionRow],
   templateUrl: './filter-builder-body.component.html',
 })
 export class CngxFilterBuilderBody {
   protected readonly host = inject(CNGX_FILTER_BUILDER_HOST);
   protected readonly config = injectFilterBuilderConfig();
-  protected readonly editors = injectFilterEditors();
 
   readonly templates = input.required<CngxFilterBuilderTemplateRegistry>();
 
@@ -91,7 +78,6 @@ export class CngxFilterBuilderBody {
     this.expressionTemplateContextCache.clear();
   }
 
-  protected readonly isNativeEditor = isNativeEditor;
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
   protected readonly emptyContext: EmptyCtx = {
@@ -173,7 +159,7 @@ export class CngxFilterBuilderBody {
       ctx = {
         expression,
         fieldDef,
-        availableOperators: this.operatorsForField(expression.field),
+        availableOperators: this.operatorsForExpression(expression.field),
         value: expression.value,
         setField: (k) => this.host.setField(path, k),
         setOperator: (op) => this.host.setOperator(path, op),
@@ -199,12 +185,7 @@ export class CngxFilterBuilderBody {
     return path;
   }
 
-  protected operatorLabel(op: string): string {
-    const map: Readonly<Record<string, string | undefined>> = this.config.i18n.operators;
-    return map[op] ?? op;
-  }
-
-  protected operatorsForField(fieldKey: string): readonly string[] {
+  private operatorsForExpression(fieldKey: string): readonly string[] {
     const def = this.host.fieldMap().get(fieldKey);
     if (!def) {
       return EMPTY_OPERATORS;
@@ -213,14 +194,6 @@ export class CngxFilterBuilderBody {
       return def.operators;
     }
     return this.config.defaultOperators[def.editorType] ?? EMPTY_OPERATORS;
-  }
-
-  protected editorForField(fieldKey: string): CngxFilterEditor | undefined {
-    const def = this.host.fieldMap().get(fieldKey);
-    if (!def) {
-      return undefined;
-    }
-    return this.editors.get(def.editorType);
   }
 
   protected addFilterAt(path: readonly number[]): void {
@@ -234,27 +207,6 @@ export class CngxFilterBuilderBody {
 
   protected addGroupAt(path: readonly number[]): void {
     this.host.addGroup(path, createFilterGroup());
-  }
-
-  protected setFieldFromEvent(path: readonly number[], event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.host.setField(path, target.value);
-  }
-
-  protected setOperatorFromEvent(path: readonly number[], event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.host.setOperator(path, target.value);
-  }
-
-  protected setStringValueFromEvent(path: readonly number[], event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.host.setValue(path, target.value);
-  }
-
-  protected setNumberValueFromEvent(path: readonly number[], event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const raw = target.value;
-    this.host.setValue(path, raw === '' ? null : Number(raw));
   }
 
   protected setLogicFromEvent(path: readonly number[], event: Event): void {
