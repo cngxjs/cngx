@@ -1,3 +1,4 @@
+import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -20,16 +21,17 @@ import {
 import { injectFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { CngxFilterBuilderValueEditor } from './filter-builder-value-editor.slot';
-import { CngxFilterBuilderBody } from './filter-builder-body.component';
+import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
 
 /**
  * Recursive query-builder component. Brain lives entirely in
  * `CngxFilterBuilderPresenter` (host directive). This component is the
- * thin render shell: hosts the slot contentChildren and mounts the body.
- * State-driven UI (loading / error / refreshing) is the consumer's
- * concern — wrap with `<cngx-async-container [state]>`. The live-region
- * announcer is bound here so AT updates stay outside the body's
- * recursive render path.
+ * thin render shell: hosts the slot contentChildren and mounts the body
+ * resolved through `CNGX_FILTER_BUILDER_BODY_HOST` (default
+ * `CngxFilterBuilderBody`). State-driven UI (loading / error /
+ * refreshing) is the consumer's concern — wrap with
+ * `<cngx-async-container [state]>`. The live-region announcer is bound
+ * here so AT updates stay outside the body's recursive render path.
  */
 @Component({
   selector: 'cngx-filter-builder',
@@ -46,13 +48,14 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
   host: {
     '[attr.aria-disabled]': 'ariaDisabled()',
   },
-  imports: [CngxFilterBuilderBody],
+  imports: [NgComponentOutlet],
   templateUrl: './filter-builder.component.html',
   styleUrl: './filter-builder.component.css',
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
+  protected readonly bodyType = inject(CNGX_FILTER_BUILDER_BODY_HOST);
 
   protected readonly ariaDisabled = computed<'true' | null>(() =>
     this.presenter.disabled() ? 'true' : null,
@@ -79,4 +82,6 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
     valueEditor: this.valueEditorSlot,
   });
+
+  protected readonly bodyInputs = computed(() => ({ templates: this.templates }));
 }

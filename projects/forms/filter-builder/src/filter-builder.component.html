@@ -1,2 +1,2 @@
-<cngx-filter-builder-body [templates]="templates"></cngx-filter-builder-body>
+<ng-container *ngComponentOutlet="bodyType; inputs: bodyInputs()"></ng-container>
 <span aria-live="polite" class="cngx-filter-builder__sr">{{ presenter.announcement() }}</span>

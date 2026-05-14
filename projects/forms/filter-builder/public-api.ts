@@ -87,6 +87,7 @@ export {
   type CngxFilterBuilderAnnouncerSources,
 } from './src/filter-builder-announcer';
 export { CngxFilterBuilder } from './src/filter-builder.component';
+export { CNGX_FILTER_BUILDER_BODY_HOST } from './src/filter-builder-body.host';
 export {
   createEmptyFilterRoot,
   createFilterExpression,

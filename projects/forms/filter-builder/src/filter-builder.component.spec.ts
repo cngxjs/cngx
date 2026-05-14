@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 
 import { CngxFilterBuilder } from './filter-builder.component';
 import { CngxFilterBuilderBody } from './filter-builder-body.component';
+import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
 import {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
@@ -17,6 +18,7 @@ import {
   CngxFilterBuilderRemoveButton,
 } from './filter-builder-slots';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { provideFilterBuilderConfig, withNegation } from './filter-builder.config';
@@ -111,9 +113,33 @@ describe('CngxFilterBuilder — recursive tree rendering', () => {
 });
 
 describe('CngxFilterBuilder — body mount', () => {
-  it('mounts CngxFilterBuilderBody as the only render stage', () => {
+  it('mounts CngxFilterBuilderBody as the default body resolved through CNGX_FILTER_BUILDER_BODY_HOST', () => {
     const { fixture } = basicSetup();
+    expect(TestBed.inject(CNGX_FILTER_BUILDER_BODY_HOST)).toBe(CngxFilterBuilderBody);
     expect(fixture.debugElement.query(By.directive(CngxFilterBuilderBody))).not.toBeNull();
+  });
+
+  it('renders the swap-token override component in place of the default body', () => {
+    @Component({
+      selector: 'cngx-stub-filter-body',
+      standalone: true,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      template: `<div data-stub-body>stub-body</div>`,
+    })
+    class StubFilterBody {
+      readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
+    }
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: CNGX_FILTER_BUILDER_BODY_HOST, useValue: StubFilterBody }],
+    });
+    const fixture = TestBed.createComponent(BasicHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-stub-body]')).toBeTruthy();
+    expect(fixture.debugElement.query(By.directive(CngxFilterBuilderBody))).toBeNull();
   });
 });
 
