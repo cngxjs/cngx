@@ -18,6 +18,7 @@ import {
 } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
+import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type {
   FilterExpression,
@@ -91,6 +92,18 @@ export class CngxFilterExpressionRow {
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
   protected readonly removeButtonTemplate = computed(() => this.templates()?.removeButton() ?? null);
+
+  /** `true` when no `CNGX_FILTER_BUILDER_HOST` is provided — standalone mode. */
+  protected readonly standalone = computed(() => this.host === null);
+
+  /**
+   * Empty-state branch for standalone mode: when `[(value)]` is null but
+   * fields are available, render only the field picker so consumers can
+   * start a filter without having to seed an expression themselves.
+   */
+  protected readonly showEmptyFieldPicker = computed(
+    () => this.standalone() && this.value() === null && this.fields().length > 0,
+  );
 
   protected readonly node = computed<FilterExpression | null>(() => {
     if (this.host) {
@@ -181,9 +194,24 @@ export class CngxFilterExpressionRow {
     }
     const current = this.value();
     if (!current) {
+      // Standalone empty-state: seed a fresh expression with the chosen field
+      // plus the field's default operator. Subsequent edits flow through the
+      // normal mutator paths.
+      this.value.set(createFilterExpression(next, this.defaultOperatorFor(next)));
       return;
     }
     this.value.set({ ...current, field: next });
+  }
+
+  private defaultOperatorFor(fieldKey: string): string {
+    const def = this.fieldMap().get(fieldKey);
+    if (!def) {
+      return 'eq';
+    }
+    if (def.operators && def.operators.length > 0) {
+      return def.operators[0]!;
+    }
+    return this.config.defaultOperators[def.editorType]?.[0] ?? 'eq';
   }
 
   protected handleOperatorChange(next: string | undefined): void {

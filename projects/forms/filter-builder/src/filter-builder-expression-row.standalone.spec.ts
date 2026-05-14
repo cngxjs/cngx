@@ -96,7 +96,7 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     expect(fixture.componentInstance.expression()).toBeNull();
   });
 
-  it('renders nothing when [(value)] is null', () => {
+  it('renders an empty-state field picker when [(value)] is null and fields are available', () => {
     @Component({
       standalone: true,
       template: `
@@ -110,6 +110,58 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     }
 
     const fixture = TestBed.createComponent(NullHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const emptyHolder = fixture.debugElement.query(
+      By.css('.cngx-filter-builder__expression--empty'),
+    );
+    expect(emptyHolder).not.toBeNull();
+    expect(emptyHolder.queryAll(By.directive(CngxSelect))).toHaveLength(1);
+  });
+
+  it('seeds a fresh expression with the chosen field plus default operator when the empty-state field-picker fires', () => {
+    @Component({
+      standalone: true,
+      template: `
+        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+      `,
+      imports: [CngxFilterExpressionRow],
+    })
+    class NullHost {
+      readonly fields = FIELDS;
+      readonly expression = signal<FilterExpression | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(NullHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const fieldSelect = fixture.debugElement.query(By.directive(CngxSelect))
+      .componentInstance as CngxSelect<string>;
+    fieldSelect.value.set('age');
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const seeded = fixture.componentInstance.expression();
+    expect(seeded).not.toBeNull();
+    expect(seeded?.field).toBe('age');
+    expect(seeded?.operator).toBeTruthy();
+    expect(seeded?.value).toBeUndefined();
+  });
+
+  it('renders nothing when [(value)] is null and no fields are provided', () => {
+    @Component({
+      standalone: true,
+      template: `
+        <cngx-filter-expression-row [fields]="[]" [(value)]="expression"></cngx-filter-expression-row>
+      `,
+      imports: [CngxFilterExpressionRow],
+    })
+    class NoFieldsHost {
+      readonly expression = signal<FilterExpression | null>(null);
+    }
+
+    const fixture = TestBed.createComponent(NoFieldsHost);
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))).toBeNull();

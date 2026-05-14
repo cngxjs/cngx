@@ -1,4 +1,15 @@
 @let expression = node();
+@if (!expression && showEmptyFieldPicker()) {
+  <div class="cngx-filter-builder__expression cngx-filter-builder__expression--empty">
+    <cngx-select
+      class="cngx-filter-builder__field-select"
+      [options]="fieldOptions()"
+      [placeholder]="config.i18n.addFilter"
+      [value]="undefined"
+      (valueChange)="handleFieldChange($event)"
+    ></cngx-select>
+  </div>
+}
 @if (expression) {
   <div
     class="cngx-filter-builder__expression"
