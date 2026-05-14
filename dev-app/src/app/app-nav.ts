@@ -120,6 +120,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'File Drop', path: 'forms/file-drop' },
       { label: 'Filter Builder Bridge', path: 'forms/filter-builder-bridge' },
       { label: 'Filter Builder', path: 'forms/filter-builder' },
+      { label: 'Filter Expression Row', path: 'forms/filter-expression-row' },
       { label: 'Form Primitives', path: 'forms/form-primitives' },
       { label: 'Input', path: 'forms/input' },
       { label: 'Listbox Forms', path: 'forms/listbox-forms' },
