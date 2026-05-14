@@ -11,7 +11,6 @@ import {
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
   withDefaultOperators,
-  withEditors,
   withFilterBuilderI18n,
   withLogicOptions,
   withMaxNestingDepth,
@@ -23,7 +22,7 @@ import {
 @Component({ template: '' })
 class TokenProbe {
   readonly config: CngxFilterBuilderConfig = injectFilterBuilderConfig();
-  readonly editors = inject(CNGX_FILTER_BUILDER_CONFIG).editors;
+  readonly resolvedConfig = inject(CNGX_FILTER_BUILDER_CONFIG);
 }
 
 function setupRoot(...providers: ReturnType<typeof provideFilterBuilderConfig>[]): TokenProbe {
@@ -53,14 +52,6 @@ describe('filter-builder.config', () => {
       expect(operators).not.toHaveProperty('nor');
     });
 
-    it('default editors map covers the four builtin keys', () => {
-      const editors = CNGX_FILTER_BUILDER_DEFAULTS.editors;
-      expect(editors.get('string')).toBe('native:string');
-      expect(editors.get('number')).toBe('native:number');
-      expect(editors.get('date')).toBe('native:date');
-      expect(editors.get('boolean')).toBe(CngxToggle);
-    });
-
     it('logicOptions defaults to and / or', () => {
       expect(CNGX_FILTER_BUILDER_DEFAULTS.logicOptions).toEqual(['and', 'or']);
     });
@@ -83,14 +74,6 @@ describe('filter-builder.config', () => {
   });
 
   describe('provideFilterBuilderConfig + features', () => {
-    it('withEditors merges into the default registry without clobbering siblings', () => {
-      class FakeEditor {}
-      const probe = setupRoot(provideFilterBuilderConfig(withEditors({ string: FakeEditor })));
-      expect(probe.config.editors.get('string')).toBe(FakeEditor);
-      expect(probe.config.editors.get('number')).toBe('native:number');
-      expect(probe.config.editors.get('boolean')).toBe(CngxToggle);
-    });
-
     it('withFilterBuilderI18n deep-merges operator labels across stacked calls', () => {
       const probe = setupRoot(
         provideFilterBuilderConfig(

@@ -21,7 +21,6 @@ export {
   provideFilterBuilderConfig,
   provideFilterBuilderConfigAt,
   withDefaultOperators,
-  withEditors,
   withFilterBuilderI18n,
   withLogicOptions,
   withMaxNestingDepth,

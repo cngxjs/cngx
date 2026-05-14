@@ -166,7 +166,7 @@ export class CngxFilterBuilder {
   protected groupTemplateContext(group: FilterGroup, path: readonly number[]): GroupTemplateCtx {
     const key = path.join('.');
     let ctx = this.groupTemplateContextCache.get(key);
-    if (ctx === undefined || ctx.group !== group) {
+    if (ctx?.group !== group) {
       ctx = {
         group,
         logic: group.logic,
@@ -188,7 +188,7 @@ export class CngxFilterBuilder {
   ): ExpressionTemplateCtx {
     const key = path.join('.');
     let ctx = this.expressionTemplateContextCache.get(key);
-    if (ctx === undefined || ctx.expression !== expression) {
+    if (ctx?.expression !== expression) {
       const fieldDef = this.presenter.fieldMap().get(expression.field);
       ctx = {
         expression,
@@ -258,10 +258,10 @@ export class CngxFilterBuilder {
     index: number,
   ): readonly number[] {
     const entry = this.pathCache.get(child);
-    if (entry && entry.parent === parent && entry.index === index) {
+    if (entry?.parent === parent && entry?.index === index) {
       return entry.path;
     }
-    const path = Object.freeze([...parent, index]) as readonly number[];
+    const path = Object.freeze([...parent, index]);
     this.pathCache.set(child, { parent, index, path });
     return path;
   }

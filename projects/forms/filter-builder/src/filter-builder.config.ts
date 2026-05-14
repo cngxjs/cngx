@@ -6,7 +6,6 @@ import {
   type Provider,
   type Type,
 } from '@angular/core';
-import { CngxToggle } from '@cngx/common/interactive';
 
 import type { CngxFilterBuilderTemplates } from './filter-builder-slots';
 import { DEFAULT_OPERATORS } from './filter-builder.types';
@@ -83,7 +82,6 @@ export interface CngxFilterBuilderI18n {
 export interface CngxFilterBuilderConfig {
   readonly templates: CngxFilterBuilderTemplates;
   readonly i18n: CngxFilterBuilderI18n;
-  readonly editors: ReadonlyMap<string, CngxFilterEditor>;
   readonly maxNestingDepth: number;
   readonly defaultOperators: Readonly<Record<FilterEditorType, readonly string[]>>;
   readonly logicOptions: readonly FilterLogic[];
@@ -151,20 +149,10 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   }) as CngxFilterBuilderAnnouncementFormatters,
 }) as CngxFilterBuilderI18n;
 
-function buildDefaultEditors(): ReadonlyMap<string, CngxFilterEditor> {
-  const map = new Map<string, CngxFilterEditor>();
-  map.set('string', 'native:string');
-  map.set('number', 'native:number');
-  map.set('date', 'native:date');
-  map.set('boolean', CngxToggle);
-  return map;
-}
-
 /** @internal Library defaults. English per `feedback_en_default_locale`. */
 export const CNGX_FILTER_BUILDER_DEFAULTS: CngxFilterBuilderConfig = Object.freeze({
   templates: Object.freeze({}),
   i18n: DEFAULT_I18N,
-  editors: buildDefaultEditors(),
   maxNestingDepth: 8,
   defaultOperators: DEFAULT_OPERATORS,
   logicOptions: Object.freeze(['and', 'or']) as readonly FilterLogic[],
@@ -187,18 +175,6 @@ function feature(
   apply: (config: CngxFilterBuilderConfig) => CngxFilterBuilderConfig,
 ): CngxFilterBuilderConfigFeature {
   return { [FILTER_BUILDER_FEATURE_BRAND]: true, apply };
-}
-
-export function withEditors(
-  editors: Readonly<Record<string, CngxFilterEditor>>,
-): CngxFilterBuilderConfigFeature {
-  return feature((config) => {
-    const next = new Map(config.editors);
-    for (const [key, value] of Object.entries(editors)) {
-      next.set(key, value);
-    }
-    return { ...config, editors: next };
-  });
 }
 
 export function withFilterBuilderI18n(
