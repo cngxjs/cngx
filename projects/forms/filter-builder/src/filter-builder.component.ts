@@ -7,8 +7,18 @@ import {
   inject,
 } from '@angular/core';
 
-import { isNativeEditor, type CngxFilterEditor } from './filter-builder.config';
-import { injectFilterBuilderConfig } from './filter-builder.config';
+import {
+  injectFilterBuilderConfig,
+  isNativeEditor,
+  type CngxFilterEditor,
+} from './filter-builder.config';
+import type {
+  CngxFilterBuilderAddFilterButtonContext as AddFilterButtonCtx,
+  CngxFilterBuilderAddGroupButtonContext as AddGroupButtonCtx,
+  CngxFilterBuilderErrorContext as ErrorCtx,
+  CngxFilterBuilderLogicToggleContext as LogicToggleCtx,
+  CngxFilterBuilderRemoveButtonContext as RemoveButtonCtx,
+} from './filter-builder-slots';
 import {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
@@ -26,7 +36,7 @@ import { CngxFilterGroup } from './filter-builder-group.directive';
 import { CngxFilterExpression } from './filter-builder-expression.directive';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
-import type { FilterLogic, FilterNode } from './filter-builder.types';
+import type { FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
 
 /**
  * Recursive query-builder component. Brain lives entirely in
@@ -89,6 +99,72 @@ export class CngxFilterBuilder {
     addFilter: () => this.addFilterAt([]),
     addGroup: () => this.addGroupAt([]),
   }));
+
+  protected readonly loadingContext = computed(() => ({
+    skeletonCount: 3,
+  }));
+
+  protected readonly errorSlotContext = computed<ErrorCtx>(() => ({
+    error: this.presenter.state.error(),
+    retry: () => undefined,
+  }));
+
+  private readonly addFilterButtonContextCache = new Map<string, AddFilterButtonCtx>();
+  private readonly addGroupButtonContextCache = new Map<string, AddGroupButtonCtx>();
+  private readonly removeButtonContextCache = new Map<string, RemoveButtonCtx>();
+  private readonly logicToggleContextCache = new Map<string, LogicToggleCtx>();
+
+  protected addFilterButtonContext(path: readonly number[]): AddFilterButtonCtx {
+    const key = path.join('.');
+    let ctx = this.addFilterButtonContextCache.get(key);
+    if (ctx === undefined) {
+      ctx = {
+        add: () => this.addFilterAt(path),
+        label: this.config.i18n.addFilter,
+        disabled: false,
+      };
+      this.addFilterButtonContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  protected addGroupButtonContext(path: readonly number[]): AddGroupButtonCtx {
+    const key = path.join('.');
+    let ctx = this.addGroupButtonContextCache.get(key);
+    if (ctx === undefined) {
+      ctx = {
+        add: () => this.addGroupAt(path),
+        label: this.config.i18n.addGroup,
+        disabled: false,
+      };
+      this.addGroupButtonContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  protected removeButtonContext(path: readonly number[], label: string): RemoveButtonCtx {
+    const key = `${path.join('.')}|${label}`;
+    let ctx = this.removeButtonContextCache.get(key);
+    if (ctx === undefined) {
+      ctx = { remove: () => this.presenter.removeNode(path), label };
+      this.removeButtonContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
+
+  protected logicToggleContext(group: FilterGroup, path: readonly number[]): LogicToggleCtx {
+    const key = `${path.join('.')}|${group.logic}`;
+    let ctx = this.logicToggleContextCache.get(key);
+    if (ctx === undefined) {
+      ctx = {
+        logic: group.logic,
+        options: this.config.logicOptions,
+        setLogic: (logic) => this.presenter.setLogic(path, logic),
+      };
+      this.logicToggleContextCache.set(key, ctx);
+    }
+    return ctx;
+  }
 
   protected operatorLabel(op: string): string {
     const map: Readonly<Record<string, string | undefined>> = this.config.i18n.operators;

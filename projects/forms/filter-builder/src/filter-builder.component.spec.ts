@@ -3,10 +3,31 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import { CngxFilterBuilder } from './filter-builder.component';
-import { CngxFilterBuilderEmpty } from './filter-builder-slots';
+import {
+  CngxFilterBuilderAddFilterButton,
+  CngxFilterBuilderAddGroupButton,
+  CngxFilterBuilderEmpty,
+  CngxFilterBuilderError,
+  CngxFilterBuilderLoading,
+  CngxFilterBuilderLogicToggle,
+  CngxFilterBuilderRemoveButton,
+} from './filter-builder-slots';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
+import { createManualState } from '@cngx/common/data';
+
+function createLoadingState() {
+  const state = createManualState<unknown>();
+  state.set('loading');
+  return state;
+}
+
+function createErrorState(err: unknown) {
+  const state = createManualState<unknown>();
+  state.setError(err);
+  return state;
+}
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -161,6 +182,44 @@ describe('CngxFilterBuilder — ARIA labels reactive', () => {
   });
 });
 
+describe('CngxFilterBuilder — slot-context reference stability', () => {
+  it('addFilterButtonContext returns the same reference for content-equal paths', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      addFilterButtonContext(path: readonly number[]): unknown;
+    };
+    const a = builder.addFilterButtonContext([0, 1]);
+    const b = builder.addFilterButtonContext([0, 1]);
+    expect(b).toBe(a);
+  });
+
+  it('removeButtonContext caches by (path, label) tuple', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      removeButtonContext(path: readonly number[], label: string): unknown;
+    };
+    const a = builder.removeButtonContext([0], 'Remove');
+    const b = builder.removeButtonContext([0], 'Remove');
+    const c = builder.removeButtonContext([0], 'Different');
+    expect(b).toBe(a);
+    expect(c).not.toBe(a);
+  });
+
+  it('logicToggleContext rebuilds when group.logic changes', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      logicToggleContext(group: FilterGroup, path: readonly number[]): unknown;
+    };
+    const groupAnd = createFilterGroup('and');
+    const groupOr = createFilterGroup('or');
+    const a = builder.logicToggleContext(groupAnd, []);
+    const b = builder.logicToggleContext(groupAnd, []);
+    const c = builder.logicToggleContext(groupOr, []);
+    expect(b).toBe(a);
+    expect(c).not.toBe(a);
+  });
+});
+
 describe('CngxFilterBuilder — two-way binding', () => {
   it('flows mutator writes back into the consumer value model', () => {
     const { fixture, host, presenter } = basicSetup();
@@ -168,5 +227,177 @@ describe('CngxFilterBuilder — two-way binding', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(host.value.filters).toHaveLength(1);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderAddFilterButton let-add="add" let-label="label">
+        <button type="button" data-custom-add-filter (click)="add()">{{ label }} (custom)</button>
+      </ng-template>
+      <ng-template cngxFilterBuilderAddGroupButton let-add="add" let-label="label">
+        <button type="button" data-custom-add-group (click)="add()">{{ label }} (custom)</button>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderAddFilterButton, CngxFilterBuilderAddGroupButton],
+})
+class AddButtonSlotsHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createEmptyFilterRoot();
+}
+
+describe('CngxFilterBuilder — action button slots', () => {
+  it('renders the consumer-supplied addFilterButton and addGroupButton in the empty fallback', () => {
+    const fixture = TestBed.createComponent(AddButtonSlotsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-custom-add-filter]')).toBeTruthy();
+    expect(el.querySelector('[data-custom-add-group]')).toBeTruthy();
+  });
+
+  it('still invokes addExpression when the custom add-filter button is clicked', () => {
+    const fixture = TestBed.createComponent(AddButtonSlotsHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const btn = el.querySelector('[data-custom-add-filter]') as HTMLButtonElement;
+    btn.click();
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(fixture.componentInstance.value.filters).toHaveLength(1);
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderRemoveButton let-remove="remove" let-label="label">
+        <button type="button" data-custom-remove (click)="remove()">{{ label }} (custom)</button>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderRemoveButton],
+})
+class RemoveButtonSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createFilterGroup('and', [createFilterExpression('name', 'eq', 'x')]);
+}
+
+describe('CngxFilterBuilder — remove button slot', () => {
+  it('renders the consumer-supplied removeButton on each expression', () => {
+    const fixture = TestBed.createComponent(RemoveButtonSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-custom-remove]')).toBeTruthy();
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder [fields]="fields()" [(value)]="value">
+      <ng-template cngxFilterBuilderLogicToggle let-logic="logic">
+        <span data-custom-logic-toggle>{{ logic }}</span>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderLogicToggle],
+})
+class LogicToggleSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createFilterGroup('or', [createFilterExpression('name', 'eq', 'x')]);
+}
+
+describe('CngxFilterBuilder — logic toggle slot', () => {
+  it('renders the consumer-supplied logicToggle template with the current logic in context', () => {
+    const fixture = TestBed.createComponent(LogicToggleSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const custom = el.querySelector('[data-custom-logic-toggle]');
+    expect(custom).toBeTruthy();
+    expect(custom?.textContent?.trim()).toBe('or');
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder
+      [fields]="fields()"
+      [(value)]="value"
+      [cngxFilterBuilderState]="loadingState"
+    >
+      <ng-template cngxFilterBuilderLoading>
+        <span data-custom-loading>loading-custom</span>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderLoading],
+})
+class LoadingSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createEmptyFilterRoot();
+  readonly loadingState = createLoadingState();
+}
+
+describe('CngxFilterBuilder — loading slot', () => {
+  it('renders the consumer-supplied loading template when state.status is loading', () => {
+    const fixture = TestBed.createComponent(LoadingSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-custom-loading]')).toBeTruthy();
+    expect(el.textContent).not.toContain('No filters defined');
+  });
+
+  it('renders the default loading text when no slot is supplied', () => {
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
+      imports: [CngxFilterBuilder],
+    })
+    class Host {
+      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+      value: FilterGroup = createEmptyFilterRoot();
+      readonly state = createLoadingState();
+    }
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Loading filters');
+  });
+});
+
+@Component({
+  template: `
+    <cngx-filter-builder
+      [fields]="fields()"
+      [(value)]="value"
+      [cngxFilterBuilderState]="errorState"
+    >
+      <ng-template cngxFilterBuilderError let-error="error">
+        <span data-custom-error>error-custom: {{ error }}</span>
+      </ng-template>
+    </cngx-filter-builder>
+  `,
+  imports: [CngxFilterBuilder, CngxFilterBuilderError],
+})
+class ErrorSlotHost {
+  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
+  value: FilterGroup = createEmptyFilterRoot();
+  readonly errorState = createErrorState('boom');
+}
+
+describe('CngxFilterBuilder — error slot', () => {
+  it('renders the consumer-supplied error template with the error in context', () => {
+    const fixture = TestBed.createComponent(ErrorSlotHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const el = fixture.nativeElement as HTMLElement;
+    const custom = el.querySelector('[data-custom-error]');
+    expect(custom).toBeTruthy();
+    expect(custom?.textContent).toContain('boom');
   });
 });

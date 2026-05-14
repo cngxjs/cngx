@@ -1,34 +1,72 @@
-@if (presenter.isEmpty()) {
+@let status = presenter.state.status();
+@if (status === 'loading') {
+  @if (templates.loading(); as loadingTpl) {
+    <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext()"></ng-container>
+  } @else {
+    <p class="cngx-filter-builder__loading" aria-busy="true">{{ config.i18n.loading }}</p>
+  }
+} @else if (status === 'error') {
+  @if (templates.error(); as errorTpl) {
+    <ng-container *ngTemplateOutlet="errorTpl; context: errorSlotContext()"></ng-container>
+  } @else {
+    <p class="cngx-filter-builder__error" role="alert">{{ config.i18n.error }}</p>
+  }
+} @else if (presenter.isEmpty()) {
   @if (templates.empty(); as emptyTpl) {
-    <ng-container
-      *ngTemplateOutlet="emptyTpl; context: emptyContext()"
-    ></ng-container>
+    <ng-container *ngTemplateOutlet="emptyTpl; context: emptyContext()"></ng-container>
   } @else {
     <p class="cngx-filter-builder__empty">{{ config.i18n.emptyState }}</p>
     <div class="cngx-filter-builder__actions">
-      <button type="button" (click)="addFilterAt([])">{{ config.i18n.addFilter }}</button>
-      <button type="button" (click)="addGroupAt([])">{{ config.i18n.addGroup }}</button>
+      <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path: [] }"></ng-container>
+      <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path: [] }"></ng-container>
     </div>
   }
 } @else {
-  <ng-container
-    *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: [] }"
-  ></ng-container>
+  <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: [] }"></ng-container>
 }
 
 <span aria-live="polite" class="cngx-filter-builder__sr">{{ presenter.announcement() }}</span>
 
+<ng-template #addFilterButtonTpl let-path="path">
+  @if (templates.addFilterButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: addFilterButtonContext(path)"></ng-container>
+  } @else {
+    <button type="button" (click)="addFilterAt(path)">{{ config.i18n.addFilter }}</button>
+  }
+</ng-template>
+
+<ng-template #addGroupButtonTpl let-path="path">
+  @if (templates.addGroupButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: addGroupButtonContext(path)"></ng-container>
+  } @else {
+    <button type="button" (click)="addGroupAt(path)">{{ config.i18n.addGroup }}</button>
+  }
+</ng-template>
+
+<ng-template #removeButtonTpl let-path="path" let-label="label">
+  @if (templates.removeButton(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: removeButtonContext(path, label)"></ng-container>
+  } @else {
+    <button type="button" (click)="presenter.removeNode(path)">{{ label }}</button>
+  }
+</ng-template>
+
+<ng-template #logicToggleTpl let-group="group" let-path="path">
+  @if (templates.logicToggle(); as tpl) {
+    <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
+  } @else {
+    <select [value]="group.logic" (change)="setLogicFromEvent(path, $event)">
+      @for (option of logicOptions(); track option) {
+        <option [value]="option">{{ option.toUpperCase() }}</option>
+      }
+    </select>
+  }
+</ng-template>
+
 <ng-template #groupTpl let-group let-path="path">
-  <div
-    class="cngx-filter-builder__group"
-    [cngxFilterGroup]="path"
-  >
+  <div class="cngx-filter-builder__group" [cngxFilterGroup]="path">
     <div class="cngx-filter-builder__logic-toggle">
-      <select [value]="group.logic" (change)="setLogicFromEvent(path, $event)">
-        @for (option of logicOptions(); track option) {
-          <option [value]="option">{{ option.toUpperCase() }}</option>
-        }
-      </select>
+      <ng-container *ngTemplateOutlet="logicToggleTpl; context: { group, path }"></ng-container>
       @if (negationEnabled()) {
         <label>
           <input
@@ -57,22 +95,19 @@
     }
 
     <div class="cngx-filter-builder__actions">
-      <button type="button" (click)="addFilterAt(path)">{{ config.i18n.addFilter }}</button>
-      <button type="button" (click)="addGroupAt(path)">{{ config.i18n.addGroup }}</button>
+      <ng-container *ngTemplateOutlet="addFilterButtonTpl; context: { path }"></ng-container>
+      <ng-container *ngTemplateOutlet="addGroupButtonTpl; context: { path }"></ng-container>
       @if (path.length > 0) {
-        <button type="button" (click)="presenter.removeNode(path)">
-          {{ config.i18n.removeGroup }}
-        </button>
+        <ng-container
+          *ngTemplateOutlet="removeButtonTpl; context: { path, label: config.i18n.removeGroup }"
+        ></ng-container>
       }
     </div>
   </div>
 </ng-template>
 
 <ng-template #expressionTpl let-expr let-path="path">
-  <div
-    class="cngx-filter-builder__expression"
-    [cngxFilterExpression]="path"
-  >
+  <div class="cngx-filter-builder__expression" [cngxFilterExpression]="path">
     <select [value]="expr.field" (change)="setFieldFromEvent(path, $event)">
       @for (field of presenter.fields(); track field.key) {
         <option [value]="field.key">{{ field.label }}</option>
@@ -108,8 +143,8 @@
       <ng-container *ngComponentOutlet="editor"></ng-container>
     }
 
-    <button type="button" (click)="presenter.removeNode(path)">
-      {{ config.i18n.removeFilter }}
-    </button>
+    <ng-container
+      *ngTemplateOutlet="removeButtonTpl; context: { path, label: config.i18n.removeFilter }"
+    ></ng-container>
   </div>
 </ng-template>

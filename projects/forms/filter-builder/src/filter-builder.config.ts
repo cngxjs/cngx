@@ -56,6 +56,9 @@ export interface CngxFilterBuilderI18n {
   readonly xor: string;
   readonly negate: string;
   readonly emptyState: string;
+  readonly loading: string;
+  readonly error: string;
+  readonly retry: string;
   readonly operators: Readonly<Record<string, string>>;
   readonly groupLabel: (ctx: CngxFilterBuilderGroupLabelContext) => string;
   readonly expressionLabel: (ctx: CngxFilterBuilderExpressionLabelContext) => string;
@@ -82,6 +85,9 @@ const DEFAULT_I18N: CngxFilterBuilderI18n = Object.freeze({
   xor: 'XOR',
   negate: 'Negate',
   emptyState: 'No filters defined',
+  loading: 'Loading filters',
+  error: 'Could not load filters',
+  retry: 'Retry',
   operators: Object.freeze({
     contains: 'Contains',
     eq: 'Equals',
