@@ -24,6 +24,10 @@ import {
   type CngxFilterBuilderRemoveButtonContext,
   type CngxFilterBuilderTemplates,
 } from './filter-builder-slots';
+import type {
+  CngxFilterBuilderValueEditor,
+  CngxFilterBuilderValueEditorContext,
+} from './filter-builder-value-editor.slot';
 
 interface TemplateRefHolder<Ctx> {
   readonly templateRef: TemplateRef<Ctx>;
@@ -44,6 +48,7 @@ export interface CngxFilterBuilderTemplateRegistryQueries {
   readonly removeButton: Signal<CngxFilterBuilderRemoveButton | undefined>;
   readonly logicToggle: Signal<CngxFilterBuilderLogicToggle | undefined>;
   readonly negationToggle: Signal<CngxFilterBuilderNegationToggle | undefined>;
+  readonly valueEditor: Signal<CngxFilterBuilderValueEditor | undefined>;
 }
 
 /**
@@ -61,6 +66,7 @@ export interface CngxFilterBuilderTemplateRegistry {
   readonly removeButton: Signal<TemplateRef<CngxFilterBuilderRemoveButtonContext> | null>;
   readonly logicToggle: Signal<TemplateRef<CngxFilterBuilderLogicToggleContext> | null>;
   readonly negationToggle: Signal<TemplateRef<CngxFilterBuilderNegationToggleContext> | null>;
+  readonly valueEditor: Signal<TemplateRef<CngxFilterBuilderValueEditorContext<unknown>> | null>;
 }
 
 /** Factory signature carried by `CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY`. */
@@ -111,6 +117,7 @@ export function createFilterBuilderTemplateRegistry(
     removeButton: resolveTemplate(queries.removeButton, 'removeButton', config),
     logicToggle: resolveTemplate(queries.logicToggle, 'logicToggle', config),
     negationToggle: resolveTemplate(queries.negationToggle, 'negationToggle', config),
+    valueEditor: resolveTemplate(queries.valueEditor, 'valueEditor', config),
   };
 }
 

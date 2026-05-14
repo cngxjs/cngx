@@ -32,7 +32,10 @@
     ></cngx-select>
 
     @let resolvedEditor = editor();
-    @if (resolvedEditor === 'native:string') {
+    @let valueEditorTpl = valueEditorTemplate();
+    @if (valueEditorTpl && valueEditorContext(); as ctx) {
+      <ng-container *ngTemplateOutlet="valueEditorTpl; context: ctx"></ng-container>
+    } @else if (resolvedEditor === 'native:string') {
       <input
         cngxInput
         type="text"

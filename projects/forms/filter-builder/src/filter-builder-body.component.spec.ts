@@ -61,6 +61,7 @@ const EMPTY_REGISTRY: CngxFilterBuilderTemplateRegistry = {
   removeButton: signal(null),
   logicToggle: signal(null),
   negationToggle: signal(null),
+  valueEditor: signal(null),
 };
 
 @Component({

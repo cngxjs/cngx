@@ -1,4 +1,4 @@
-import { Component, viewChild } from '@angular/core';
+import { Injector, runInInjectionContext, signal, Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -22,6 +22,19 @@ import {
   type CngxFilterBuilderLogicToggleContext,
   type CngxFilterBuilderRemoveButtonContext,
 } from './filter-builder-slots';
+import {
+  CngxFilterBuilderValueEditor,
+  type CngxFilterBuilderValueEditorContext,
+} from './filter-builder-value-editor.slot';
+import {
+  createFilterBuilderTemplateRegistry,
+  type CngxFilterBuilderTemplateRegistryQueries,
+} from './filter-builder-template-registry';
+import {
+  provideFilterBuilderConfig,
+  withTemplates,
+} from './filter-builder.config';
+import type { TemplateRef } from '@angular/core';
 
 @Component({
   template: `
@@ -102,6 +115,39 @@ describe('filter-builder slot directives', () => {
     expect(CngxFilterBuilderLogicToggle.ngTemplateContextGuard(null as unknown as CngxFilterBuilderLogicToggle, {})).toBe(true);
   });
 
+  it('valueEditor directive mounts on its ng-template selector', () => {
+    @Component({
+      template: `<ng-template cngxFilterBuilderValueEditor>value-editor</ng-template>`,
+      imports: [CngxFilterBuilderValueEditor],
+    })
+    class ValueEditorHost {
+      readonly valueEditor = viewChild.required(CngxFilterBuilderValueEditor);
+    }
+
+    const fixture = TestBed.createComponent(ValueEditorHost);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.valueEditor()).toBeTruthy();
+    expect(fixture.componentInstance.valueEditor().templateRef).toBeTruthy();
+    expect(
+      CngxFilterBuilderValueEditor.ngTemplateContextGuard(
+        null as unknown as CngxFilterBuilderValueEditor,
+        {},
+      ),
+    ).toBe(true);
+  });
+
+  it('valueEditor context interface is structurally well-formed', () => {
+    const context: CngxFilterBuilderValueEditorContext<string> = {
+      value: 'foo',
+      fieldDef: { key: 'name', label: 'Name', editorType: 'string' },
+      setValue: () => undefined,
+      expression: { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'foo' },
+    };
+    expect(context.value).toBe('foo');
+    expect(context.fieldDef.key).toBe('name');
+    expect(context.expression.id).toBe('e1');
+  });
+
   it('context interfaces are structurally well-formed', () => {
     const loading: CngxFilterBuilderLoadingContext = { skeletonCount: 3 };
     const error: CngxFilterBuilderErrorContext = { error: new Error() };
@@ -146,5 +192,87 @@ describe('filter-builder slot directives', () => {
       setLogic: () => undefined,
     };
     expect([loading, error, empty, expression, group, addFilter, addGroup, remove, logicToggle]).toHaveLength(9);
+  });
+});
+
+function fakeTemplate<Ctx>(): TemplateRef<Ctx> {
+  return { elementRef: undefined } as unknown as TemplateRef<Ctx>;
+}
+
+function emptyQueriesWithValueEditor(): CngxFilterBuilderTemplateRegistryQueries {
+  return {
+    loading: signal(undefined),
+    error: signal(undefined),
+    empty: signal(undefined),
+    expressionTemplate: signal(undefined),
+    groupTemplate: signal(undefined),
+    addFilterButton: signal(undefined),
+    addGroupButton: signal(undefined),
+    removeButton: signal(undefined),
+    logicToggle: signal(undefined),
+    negationToggle: signal(undefined),
+    valueEditor: signal(undefined),
+  };
+}
+
+describe('cngxFilterBuilderValueEditor — 3-stage cascade resolution', () => {
+  it('returns the directive templateRef when contentChild resolves', () => {
+    TestBed.configureTestingModule({});
+    const injector = TestBed.inject(Injector);
+    const directiveTpl = fakeTemplate<CngxFilterBuilderValueEditorContext<unknown>>();
+    const directive = {
+      templateRef: directiveTpl,
+    } as unknown as CngxFilterBuilderValueEditor;
+
+    runInInjectionContext(injector, () => {
+      const registry = createFilterBuilderTemplateRegistry({
+        ...emptyQueriesWithValueEditor(),
+        valueEditor: signal(directive),
+      });
+      expect(registry.valueEditor()).toBe(directiveTpl);
+    });
+  });
+
+  it('falls through to CONFIG.templates.valueEditor when contentChild is undefined', () => {
+    const configTpl = fakeTemplate<CngxFilterBuilderValueEditorContext<unknown>>();
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withTemplates({ valueEditor: configTpl }))],
+    });
+    const injector = TestBed.inject(Injector);
+
+    runInInjectionContext(injector, () => {
+      const registry = createFilterBuilderTemplateRegistry(emptyQueriesWithValueEditor());
+      expect(registry.valueEditor()).toBe(configTpl);
+    });
+  });
+
+  it('returns null when neither contentChild nor CONFIG.templates provide a ref', () => {
+    TestBed.configureTestingModule({});
+    const injector = TestBed.inject(Injector);
+
+    runInInjectionContext(injector, () => {
+      const registry = createFilterBuilderTemplateRegistry(emptyQueriesWithValueEditor());
+      expect(registry.valueEditor()).toBeNull();
+    });
+  });
+
+  it('instance contentChild wins over CONFIG.templates when both are set', () => {
+    const configTpl = fakeTemplate<CngxFilterBuilderValueEditorContext<unknown>>();
+    const directiveTpl = fakeTemplate<CngxFilterBuilderValueEditorContext<unknown>>();
+    TestBed.configureTestingModule({
+      providers: [provideFilterBuilderConfig(withTemplates({ valueEditor: configTpl }))],
+    });
+    const injector = TestBed.inject(Injector);
+
+    runInInjectionContext(injector, () => {
+      const directive = {
+        templateRef: directiveTpl,
+      } as unknown as CngxFilterBuilderValueEditor;
+      const registry = createFilterBuilderTemplateRegistry({
+        ...emptyQueriesWithValueEditor(),
+        valueEditor: signal(directive),
+      });
+      expect(registry.valueEditor()).toBe(directiveTpl);
+    });
   });
 });

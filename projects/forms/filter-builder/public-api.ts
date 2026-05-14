@@ -46,6 +46,11 @@ export {
   type CngxFilterNativeEditor,
 } from './src/filter-builder.config';
 export { CNGX_FILTER_EDITORS, injectFilterEditors } from './src/filter-builder.tokens';
+export type { CngxFilterEditorComponent } from './src/filter-builder-editor.contract';
+export {
+  CngxFilterBuilderValueEditor,
+  type CngxFilterBuilderValueEditorContext,
+} from './src/filter-builder-value-editor.slot';
 export { CngxFilterBuilderFormFieldControl } from './src/filter-builder-form-field-control.directive';
 export {
   CngxFilterBuilderAddFilterButton,

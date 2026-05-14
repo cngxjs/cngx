@@ -22,6 +22,7 @@ import {
 } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
+import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
 import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type {
@@ -135,6 +136,28 @@ export class CngxFilterExpressionRow {
     () => this.templates()?.removeButton() ?? null,
     { equal: (a, b) => a === b },
   );
+
+  protected readonly valueEditorTemplate = computed(
+    () => this.templates()?.valueEditor() ?? null,
+    { equal: (a, b) => a === b },
+  );
+
+  protected valueEditorContext(): CngxFilterBuilderValueEditorContext<unknown> | null {
+    const expression = this.node();
+    if (!expression) {
+      return null;
+    }
+    const fieldDef = this.fieldMap().get(expression.field);
+    if (!fieldDef) {
+      return null;
+    }
+    return {
+      value: expression.value,
+      fieldDef,
+      setValue: (v: unknown) => this.writeValue(v),
+      expression,
+    };
+  }
 
   /** `true` when no `CNGX_FILTER_BUILDER_HOST` is provided — standalone mode. */
   protected readonly standalone = computed(() => this.host === null);
