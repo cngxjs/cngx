@@ -192,12 +192,25 @@ export class CngxFilterBuilder {
     return this.editors.get(def.editorType);
   }
 
-  protected childPath(parent: readonly number[], index: number): readonly number[] {
-    return [...parent, index];
-  }
+  protected readonly rootPath: readonly number[] = Object.freeze([]);
 
-  protected trackNode(_index: number, node: FilterNode): string {
-    return `${node.type}:${_index}`;
+  private readonly pathCache = new WeakMap<
+    FilterNode,
+    { parent: readonly number[]; index: number; path: readonly number[] }
+  >();
+
+  protected childPath(
+    parent: readonly number[],
+    child: FilterNode,
+    index: number,
+  ): readonly number[] {
+    const entry = this.pathCache.get(child);
+    if (entry && entry.parent === parent && entry.index === index) {
+      return entry.path;
+    }
+    const path = Object.freeze([...parent, index]) as readonly number[];
+    this.pathCache.set(child, { parent, index, path });
+    return path;
   }
 
   protected addFilterAt(path: readonly number[]): void {

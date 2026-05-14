@@ -22,7 +22,7 @@
     </div>
   }
 } @else {
-  <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: [] }"></ng-container>
+  <ng-container *ngTemplateOutlet="groupTpl; context: { $implicit: presenter.tree(), path: rootPath }"></ng-container>
 }
 
 <span aria-live="polite" class="cngx-filter-builder__sr">{{ presenter.announcement() }}</span>
@@ -79,16 +79,16 @@
       }
     </div>
 
-    @for (child of group.filters; track trackNode($index, child); let i = $index) {
+    @for (child of group.filters; track child; let i = $index) {
       @switch (child.type) {
         @case ('group') {
           <ng-container
-            *ngTemplateOutlet="groupTpl; context: { $implicit: child, path: childPath(path, i) }"
+            *ngTemplateOutlet="groupTpl; context: { $implicit: child, path: childPath(path, child, i) }"
           ></ng-container>
         }
         @case ('expression') {
           <ng-container
-            *ngTemplateOutlet="expressionTpl; context: { $implicit: child, path: childPath(path, i) }"
+            *ngTemplateOutlet="expressionTpl; context: { $implicit: child, path: childPath(path, child, i) }"
           ></ng-container>
         }
       }

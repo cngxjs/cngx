@@ -220,6 +220,33 @@ describe('CngxFilterBuilder — slot-context reference stability', () => {
   });
 });
 
+describe('CngxFilterBuilder — child path stability', () => {
+  it('childPath returns the same reference when (parent, child, index) is unchanged', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      childPath(parent: readonly number[], child: FilterGroup, index: number): readonly number[];
+      readonly rootPath: readonly number[];
+    };
+    const child = createFilterGroup('and');
+    const a = builder.childPath(builder.rootPath, child, 0);
+    const b = builder.childPath(builder.rootPath, child, 0);
+    expect(b).toBe(a);
+  });
+
+  it('childPath rebuilds when index changes', () => {
+    const { fixture } = basicSetup();
+    const builder = fixture.componentInstance.builder() as unknown as {
+      childPath(parent: readonly number[], child: FilterGroup, index: number): readonly number[];
+      readonly rootPath: readonly number[];
+    };
+    const child = createFilterGroup('and');
+    const a = builder.childPath(builder.rootPath, child, 0);
+    const b = builder.childPath(builder.rootPath, child, 1);
+    expect(b).not.toBe(a);
+    expect([...b]).toEqual([1]);
+  });
+});
+
 describe('CngxFilterBuilder — two-way binding', () => {
   it('flows mutator writes back into the consumer value model', () => {
     const { fixture, host, presenter } = basicSetup();
