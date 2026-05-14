@@ -26,7 +26,6 @@ export interface CngxFilterBuilderLoadingContext {
 
 export interface CngxFilterBuilderErrorContext {
   readonly error: unknown;
-  readonly retry: () => void;
 }
 
 export interface CngxFilterBuilderEmptyContext {

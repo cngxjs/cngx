@@ -109,7 +109,6 @@ export class CngxFilterBuilder {
 
   protected readonly errorSlotContext = computed<ErrorCtx>(() => ({
     error: this.presenter.state.error(),
-    retry: () => undefined,
   }));
 
   protected readonly rootAddFilterContext = computed(

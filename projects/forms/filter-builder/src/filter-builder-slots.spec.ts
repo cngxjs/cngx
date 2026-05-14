@@ -104,7 +104,7 @@ describe('filter-builder slot directives', () => {
 
   it('context interfaces are structurally well-formed', () => {
     const loading: CngxFilterBuilderLoadingContext = { skeletonCount: 3 };
-    const error: CngxFilterBuilderErrorContext = { error: new Error(), retry: () => undefined };
+    const error: CngxFilterBuilderErrorContext = { error: new Error() };
     const empty: CngxFilterBuilderEmptyContext = { addFilter: () => undefined, addGroup: () => undefined };
     const expression: CngxFilterBuilderExpressionTemplateContext = {
       expression: { type: 'expression', field: 'name', operator: 'eq', value: 'x' },
