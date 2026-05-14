@@ -96,9 +96,7 @@
               *ngTemplateOutlet="customExprTpl; context: expressionTemplateContext(child, cp)"
             ></ng-container>
           } @else {
-            <ng-container
-              *ngTemplateOutlet="expressionTpl; context: { $implicit: child, path: cp }"
-            ></ng-container>
+            <cngx-filter-expression-row [path]="cp" [templates]="templates()" />
           }
         }
       }

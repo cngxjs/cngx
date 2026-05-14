@@ -28,6 +28,7 @@ import type {
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterGroup } from './filter-builder-group.directive';
 import { CngxFilterExpression } from './filter-builder-expression.directive';
+import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
 import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
@@ -52,7 +53,13 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-builder-body',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterGroup, CngxFilterExpression],
+  imports: [
+    NgComponentOutlet,
+    NgTemplateOutlet,
+    CngxFilterGroup,
+    CngxFilterExpression,
+    CngxFilterExpressionRow,
+  ],
   templateUrl: './filter-builder-body.component.html',
 })
 export class CngxFilterBuilderBody {

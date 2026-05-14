@@ -1,4 +1,4 @@
-import { NgComponentOutlet } from '@angular/common';
+import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,6 +15,7 @@ import {
   type CngxFilterEditor,
 } from './filter-builder.config';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
+import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type {
   FilterExpression,
@@ -40,7 +41,7 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
   selector: 'cngx-filter-expression-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, CngxFilterExpression],
+  imports: [NgComponentOutlet, NgTemplateOutlet, CngxFilterExpression],
   templateUrl: './filter-builder-expression-row.component.html',
   styleUrl: './filter-builder-expression-row.component.css',
 })
@@ -52,6 +53,17 @@ export class CngxFilterExpressionRow {
   protected readonly isNativeEditor = isNativeEditor;
 
   readonly path = input.required<readonly number[]>();
+
+  /**
+   * Slot registry passed down from the parent `CngxFilterBuilder`. When the
+   * registry's `removeButton` resolves to a `TemplateRef`, the row renders
+   * the consumer-supplied button; otherwise it falls back to the default
+   * `<button>` element. Standalone-mode consumers (Phase 5) leave this
+   * unset.
+   */
+  readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
+
+  protected readonly removeButtonTemplate = computed(() => this.templates()?.removeButton() ?? null);
 
   protected readonly node = computed<FilterExpression | null>(() => {
     const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
@@ -114,5 +126,13 @@ export class CngxFilterExpressionRow {
 
   protected handleRemove(): void {
     this.host.removeNode(this.path());
+  }
+
+  protected removeButtonContext(): { path: readonly number[]; label: string; remove: () => void } {
+    return {
+      path: this.path(),
+      label: this.config.i18n.removeFilter,
+      remove: () => this.handleRemove(),
+    };
   }
 }

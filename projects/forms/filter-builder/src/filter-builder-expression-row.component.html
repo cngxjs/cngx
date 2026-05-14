@@ -36,8 +36,12 @@
       <ng-container *ngComponentOutlet="resolvedEditor"></ng-container>
     }
 
-    <button type="button" (click)="handleRemove()">
-      <span aria-hidden="true">{{ glyphs.remove }}</span> {{ config.i18n.removeFilter }}
-    </button>
+    @if (removeButtonTemplate(); as removeTpl) {
+      <ng-container *ngTemplateOutlet="removeTpl; context: removeButtonContext()"></ng-container>
+    } @else {
+      <button type="button" (click)="handleRemove()">
+        <span aria-hidden="true">{{ glyphs.remove }}</span> {{ config.i18n.removeFilter }}
+      </button>
+    }
   </div>
 }
