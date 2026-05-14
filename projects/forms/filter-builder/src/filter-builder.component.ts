@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 
 import { injectFilterBuilderConfig } from './filter-builder.config';
+import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import type {
   CngxFilterBuilderErrorContext as ErrorCtx,
 } from './filter-builder-slots';
@@ -59,6 +60,7 @@ import { createFilterExpression, createFilterGroup } from './filter-builder.help
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
   protected readonly config = injectFilterBuilderConfig();
+  protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
   protected readonly ariaBusy = computed<'true' | null>(() =>
     this.presenter.state.status() === 'loading' ? 'true' : null,

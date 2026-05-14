@@ -25,6 +25,7 @@ import type {
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterGroup } from './filter-builder-group.directive';
 import { CngxFilterExpression } from './filter-builder-expression.directive';
+import { CNGX_FILTER_BUILDER_GLYPHS } from './filter-builder.glyphs';
 import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type { FilterExpression, FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
@@ -71,6 +72,7 @@ export class CngxFilterBuilderBody {
   }
 
   protected readonly isNativeEditor = isNativeEditor;
+  protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
 
   private readonly addFilterButtonContextCache = new Map<string, AddFilterButtonCtx>();
   private readonly addGroupButtonContextCache = new Map<string, AddGroupButtonCtx>();

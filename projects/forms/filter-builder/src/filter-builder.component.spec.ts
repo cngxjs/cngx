@@ -80,8 +80,8 @@ describe('CngxFilterBuilder — empty state', () => {
   it('shows Add filter and Add group buttons in the empty fallback', () => {
     const { hostEl } = basicSetup();
     const buttons = Array.from(hostEl.querySelectorAll('button')).map((b) => b.textContent?.trim());
-    expect(buttons).toContain('Add filter');
-    expect(buttons).toContain('Add group');
+    expect(buttons?.some((b) => b?.includes('Add filter'))).toBe(true);
+    expect(buttons?.some((b) => b?.includes('Add group'))).toBe(true);
   });
 });
 
@@ -129,7 +129,7 @@ describe('CngxFilterBuilder — announcer text', () => {
   it('announces "Filter added: Name" when add filter button is clicked', () => {
     const { fixture, hostEl, presenter } = basicSetup();
     const addButton = Array.from(hostEl.querySelectorAll('button')).find(
-      (b) => b.textContent?.trim() === 'Add filter',
+      (b) => b.textContent?.includes('Add filter'),
     ) as HTMLButtonElement;
     addButton.click();
     fixture.detectChanges();

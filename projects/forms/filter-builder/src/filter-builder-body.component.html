@@ -12,7 +12,7 @@
   @if (templates().addFilterButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: addFilterButtonContext(path)"></ng-container>
   } @else {
-    <button type="button" (click)="addFilterAt(path)">{{ config.i18n.addFilter }}</button>
+    <button type="button" (click)="addFilterAt(path)">{{ glyphs.addFilter }} {{ config.i18n.addFilter }}</button>
   }
 </ng-template>
 
@@ -20,7 +20,7 @@
   @if (templates().addGroupButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: addGroupButtonContext(path)"></ng-container>
   } @else {
-    <button type="button" (click)="addGroupAt(path)">{{ config.i18n.addGroup }}</button>
+    <button type="button" (click)="addGroupAt(path)">{{ glyphs.addGroup }} {{ config.i18n.addGroup }}</button>
   }
 </ng-template>
 
@@ -28,7 +28,7 @@
   @if (templates().removeButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: removeButtonContext(path, label)"></ng-container>
   } @else {
-    <button type="button" (click)="host.removeNode(path)">{{ label }}</button>
+    <button type="button" (click)="host.removeNode(path)">{{ glyphs.remove }} {{ label }}</button>
   }
 </ng-template>
 
@@ -60,7 +60,7 @@
               [checked]="group.negated"
               (change)="host.toggleNegated(path)"
             />
-            {{ config.i18n.negate }}
+            <span aria-hidden="true">{{ glyphs.negate }}</span> {{ config.i18n.negate }}
           </label>
         }
       }
