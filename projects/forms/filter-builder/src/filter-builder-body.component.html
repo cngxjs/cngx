@@ -22,7 +22,14 @@
   @if (templates().addFilterButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: addFilterButtonContext(path)"></ng-container>
   } @else {
-    <button type="button" (click)="addFilterAt(path)"><span aria-hidden="true">{{ glyphs.addFilter }}</span> {{ config.i18n.addFilter }}</button>
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-filter"
+      (click)="addFilterAt(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addFilter }}</span>
+      {{ config.i18n.addFilter }}
+    </button>
   }
 </ng-template>
 
@@ -30,7 +37,14 @@
   @if (templates().addGroupButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: addGroupButtonContext(path)"></ng-container>
   } @else {
-    <button type="button" (click)="addGroupAt(path)"><span aria-hidden="true">{{ glyphs.addGroup }}</span> {{ config.i18n.addGroup }}</button>
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--add-group"
+      (click)="addGroupAt(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.addGroup }}</span>
+      {{ config.i18n.addGroup }}
+    </button>
   }
 </ng-template>
 
@@ -38,7 +52,14 @@
   @if (templates().removeButton(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: removeButtonContext(path, label)"></ng-container>
   } @else {
-    <button type="button" (click)="host.removeNode(path)"><span aria-hidden="true">{{ glyphs.remove }}</span> {{ label }}</button>
+    <button
+      type="button"
+      class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+      (click)="host.removeNode(path)"
+    >
+      <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
+      {{ label }}
+    </button>
   }
 </ng-template>
 
@@ -46,7 +67,11 @@
   @if (templates().logicToggle(); as tpl) {
     <ng-container *ngTemplateOutlet="tpl; context: logicToggleContext(group, path)"></ng-container>
   } @else {
-    <select [value]="group.logic" (change)="setLogicFromEvent(path, $event)">
+    <select
+      class="cngx-filter-builder__logic-select"
+      [value]="group.logic"
+      (change)="setLogicFromEvent(path, $event)"
+    >
       @for (option of logicOptions; track option) {
         <option [value]="option">{{ option.toUpperCase() }}</option>
       }

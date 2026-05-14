@@ -60,8 +60,13 @@
     @if (removeButtonTemplate(); as removeTpl) {
       <ng-container *ngTemplateOutlet="removeTpl; context: removeButtonContext()"></ng-container>
     } @else {
-      <button type="button" (click)="handleRemove()">
-        <span aria-hidden="true">{{ glyphs.remove }}</span> {{ config.i18n.removeFilter }}
+      <button
+        type="button"
+        class="cngx-filter-builder__action-button cngx-filter-builder__action-button--remove"
+        (click)="handleRemove()"
+      >
+        <span aria-hidden="true" class="cngx-filter-builder__action-glyph">{{ glyphs.remove }}</span>
+        {{ config.i18n.removeFilter }}
       </button>
     }
   </div>
