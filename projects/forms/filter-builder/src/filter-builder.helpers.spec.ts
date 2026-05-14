@@ -5,6 +5,7 @@ import {
   createEmptyFilterRoot,
   createFilterExpression,
   createFilterGroup,
+  ensureFilterTreeIds,
   evaluateExpression,
   toFilterPredicate,
 } from './filter-builder.helpers';
@@ -20,9 +21,13 @@ const exprEq = (field: string, value: unknown): FilterExpression =>
   createFilterExpression(field, 'eq', value);
 
 describe('createFilterGroup', () => {
-  it('defaults to and / non-negated / empty filters', () => {
+  it('defaults to and / non-negated / empty filters with an auto-generated id', () => {
     const g = createFilterGroup();
-    expect(g).toEqual({ type: 'group', logic: 'and', negated: false, filters: [] });
+    expect(g.type).toBe('group');
+    expect(g.logic).toBe('and');
+    expect(g.negated).toBe(false);
+    expect(g.filters).toEqual([]);
+    expect(g.id).toMatch(/^cngx-filter-/);
   });
 
   it('accepts logic, filters, and negation options', () => {
@@ -31,17 +36,52 @@ describe('createFilterGroup', () => {
     expect(g.negated).toBe(true);
     expect(g.filters).toHaveLength(1);
   });
+
+  it('emits a fresh id on every call', () => {
+    expect(createFilterGroup().id).not.toBe(createFilterGroup().id);
+  });
 });
 
 describe('createFilterExpression', () => {
-  it('builds a discriminated-union expression node', () => {
+  it('builds a discriminated-union expression node with an auto-generated id', () => {
     const e = createFilterExpression('name', 'contains', 'foo');
-    expect(e).toEqual({ type: 'expression', field: 'name', operator: 'contains', value: 'foo' });
+    expect(e.type).toBe('expression');
+    expect(e.field).toBe('name');
+    expect(e.operator).toBe('contains');
+    expect(e.value).toBe('foo');
+    expect(e.id).toMatch(/^cngx-filter-/);
   });
 
   it('omits value when not supplied', () => {
     const e = createFilterExpression('name', 'isEmpty');
     expect(e.value).toBeUndefined();
+  });
+
+  it('emits a fresh id on every call', () => {
+    expect(createFilterExpression('a', 'eq').id).not.toBe(createFilterExpression('a', 'eq').id);
+  });
+});
+
+describe('ensureFilterTreeIds', () => {
+  it('returns the same reference when every node already has an id', () => {
+    const tree = createFilterGroup('and', [createFilterExpression('name', 'eq', 'foo')]);
+    expect(ensureFilterTreeIds(tree)).toBe(tree);
+  });
+
+  it('assigns ids to nodes that are missing them', () => {
+    const stale = {
+      type: 'group',
+      id: '',
+      logic: 'and',
+      negated: false,
+      filters: [
+        { type: 'expression', id: '', field: 'name', operator: 'eq', value: 'x' } as FilterExpression,
+      ],
+    } as unknown as FilterGroup;
+    const normalised = ensureFilterTreeIds(stale);
+    expect(normalised).not.toBe(stale);
+    expect(normalised.id).toMatch(/^cngx-filter-/);
+    expect(normalised.filters[0]?.id).toMatch(/^cngx-filter-/);
   });
 });
 
@@ -134,6 +174,7 @@ describe('toFilterPredicate — logic operators', () => {
   it('throws on unknown FilterLogic at runtime (exhaustiveness guard)', () => {
     const tree = {
       type: 'group' as const,
+      id: 'rogue-root',
       logic: 'rogue' as unknown as 'and',
       negated: false,
       filters: [exprEq('name', 'alice')],

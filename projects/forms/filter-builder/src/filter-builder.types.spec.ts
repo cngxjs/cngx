@@ -32,6 +32,7 @@ describe('filter-builder.types', () => {
     it('narrows on type=group', () => {
       const tree: FilterNode = {
         type: 'group',
+        id: 'g',
         logic: 'and',
         negated: false,
         filters: [],
@@ -49,6 +50,7 @@ describe('filter-builder.types', () => {
     it('narrows on type=expression', () => {
       const node: FilterNode = {
         type: 'expression',
+        id: 'e',
         field: 'name',
         operator: 'contains',
         value: 'foo',
@@ -78,8 +80,8 @@ describe('filter-builder.types', () => {
         }
       };
 
-      const g: FilterNode = { type: 'group', logic: 'or', negated: true, filters: [] };
-      const e: FilterNode = { type: 'expression', field: 'a', operator: 'eq', value: 1 };
+      const g: FilterNode = { type: 'group', id: 'g', logic: 'or', negated: true, filters: [] };
+      const e: FilterNode = { type: 'expression', id: 'e', field: 'a', operator: 'eq', value: 1 };
       expect(classify(g)).toBe('g');
       expect(classify(e)).toBe('e');
     });

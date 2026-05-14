@@ -42,12 +42,30 @@ test.describe('CngxFilterBuilder demo — golden path', () => {
     const selects = expression.locator('select');
     await selects.nth(0).selectOption('age');
     await selects.nth(1).selectOption('gt');
-    await expression.locator('input[type="number"]').fill('30');
+    const numberInput = expression.locator('input[type="number"]');
+    await numberInput.fill('30');
 
     const jsonPanel = section.locator('pre.code-block').first();
     await expect(jsonPanel).toContainText('"field": "age"');
     await expect(jsonPanel).toContainText('"operator": "gt"');
     await expect(jsonPanel).toContainText('"value": 30');
+  });
+
+  test('typing into a value input keeps focus and cursor across keystrokes', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Basic — two-way binding');
+    const builder = section.locator('cngx-filter-builder').first();
+    await builder.getByRole('button', { name: 'Add filter' }).first().click();
+
+    const expression = builder.locator('.cngx-filter-builder__expression').first();
+    const input = expression.locator('input[type="text"]');
+    await input.click();
+    await input.pressSequentially('foobar', { delay: 20 });
+
+    await expect(input).toBeFocused();
+    const selectionStart = await input.evaluate((el) => (el as HTMLInputElement).selectionStart);
+    expect(selectionStart).toBe(6);
+    await expect(input).toHaveValue('foobar');
   });
 
   test('Add group nests a child group with its own Add filter button', async ({ page }) => {

@@ -2,11 +2,13 @@ import {
   afterNextRender,
   computed,
   Directive,
+  effect,
   inject,
   input,
   isDevMode,
   model,
   signal,
+  untracked,
   type Signal,
 } from '@angular/core';
 import { createManualState } from '@cngx/common/data';
@@ -30,7 +32,7 @@ import {
   CNGX_FILTER_BUILDER_HOST,
   type CngxFilterBuilderHost,
 } from './filter-builder-host.token';
-import { EMPTY_ROOT } from './filter-builder.helpers';
+import { EMPTY_ROOT, ensureFilterTreeIds } from './filter-builder.helpers';
 import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   type CngxFilterBuilderState,
@@ -128,6 +130,18 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   }
 
   constructor() {
+    // Normalise consumer-supplied trees so every node carries a stable id.
+    // `ensureFilterTreeIds` short-circuits to the same reference when the
+    // tree is already normalised, so the write-back only fires once per
+    // foreign value and the effect re-runs without writing.
+    effect(() => {
+      const current = this.value();
+      const normalised = ensureFilterTreeIds(current);
+      if (normalised !== current) {
+        untracked(() => this.value.set(normalised));
+      }
+    });
+
     afterNextRender(() => {
       if (!isDevMode()) {
         return;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FilterExpression, FilterGroup, FilterNode } from './filter-builder.types';
+import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import {
   appendAtPath,
   filterTreeEqual,
@@ -9,18 +10,14 @@ import {
   updateAtPath,
 } from './filter-builder.utils';
 
-const expr = (field: string, operator = 'eq', value: unknown = null): FilterExpression => ({
-  type: 'expression',
-  field,
-  operator,
-  value,
-});
+const expr = (field: string, operator = 'eq', value: unknown = null): FilterExpression =>
+  createFilterExpression(field, operator, value);
 
 const group = (
   filters: readonly FilterNode[] = [],
   logic: FilterGroup['logic'] = 'and',
   negated = false,
-): FilterGroup => ({ type: 'group', logic, negated, filters });
+): FilterGroup => createFilterGroup(logic, filters, { negated });
 
 describe('filter-builder.utils', () => {
   describe('getNodeAtPath', () => {

@@ -94,7 +94,7 @@ function setup(initial: FilterGroup): { body: CngxFilterBuilderBody; internals: 
 }
 
 describe('CngxFilterBuilderBody — non-caching per-state contexts', () => {
-  const ROOT: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+  const ROOT: FilterGroup = { type: 'group', id: 'root', logic: 'and', negated: false, filters: [] };
   const PATH: readonly number[] = [0];
 
   it('addFilterButtonContext returns a fresh object on every call', () => {
@@ -116,7 +116,7 @@ describe('CngxFilterBuilderBody — non-caching per-state contexts', () => {
 
   it('logicToggleContext returns a fresh object on every call', () => {
     const { internals } = setup(ROOT);
-    const group: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+    const group: FilterGroup = { type: 'group', id: 'g', logic: 'and', negated: false, filters: [] };
     expect(internals.logicToggleContext(group, PATH)).not.toBe(
       internals.logicToggleContext(group, PATH),
     );
@@ -124,7 +124,7 @@ describe('CngxFilterBuilderBody — non-caching per-state contexts', () => {
 
   it('negationToggleContext returns a fresh object on every call', () => {
     const { internals } = setup(ROOT);
-    const group: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+    const group: FilterGroup = { type: 'group', id: 'g', logic: 'and', negated: false, filters: [] };
     expect(internals.negationToggleContext(group, PATH)).not.toBe(
       internals.negationToggleContext(group, PATH),
     );

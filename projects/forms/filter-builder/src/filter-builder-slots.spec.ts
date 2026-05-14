@@ -107,7 +107,7 @@ describe('filter-builder slot directives', () => {
     const error: CngxFilterBuilderErrorContext = { error: new Error() };
     const empty: CngxFilterBuilderEmptyContext = { addFilter: () => undefined, addGroup: () => undefined };
     const expression: CngxFilterBuilderExpressionTemplateContext = {
-      expression: { type: 'expression', field: 'name', operator: 'eq', value: 'x' },
+      expression: { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' },
       fieldDef: { key: 'name', label: 'Name', editorType: 'string' },
       availableOperators: ['eq'],
       value: 'x',
@@ -117,7 +117,7 @@ describe('filter-builder slot directives', () => {
       remove: () => undefined,
     };
     const group: CngxFilterBuilderGroupTemplateContext = {
-      group: { type: 'group', logic: 'and', negated: false, filters: [] },
+      group: { type: 'group', id: 'g1', logic: 'and', negated: false, filters: [] },
       logic: 'and',
       isRoot: true,
       setLogic: () => undefined,

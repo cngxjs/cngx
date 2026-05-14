@@ -76,7 +76,7 @@
       }
     </div>
 
-    @for (child of group.filters; track child; let i = $index) {
+    @for (child of group.filters; track child.id; let i = $index) {
       @let cp = childPath(path, child, i);
       @switch (child.type) {
         @case ('group') {

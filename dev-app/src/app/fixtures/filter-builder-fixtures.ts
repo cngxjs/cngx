@@ -1,4 +1,9 @@
-import type { FilterFieldDef, FilterGroup } from '@cngx/forms/filter-builder';
+import {
+  createFilterExpression,
+  createFilterGroup,
+  type FilterFieldDef,
+  type FilterGroup,
+} from '@cngx/forms/filter-builder';
 
 export interface FilterBuilderPerson {
   readonly name: string;
@@ -27,12 +32,7 @@ export const FILTER_BUILDER_PEOPLE: readonly FilterBuilderPerson[] = [
   { name: 'Helen Kim', age: 38, active: true, birthday: '1987-12-04', role: 'Manager' },
 ];
 
-export const FILTER_BUILDER_SEED: FilterGroup = {
-  type: 'group',
-  logic: 'and',
-  negated: false,
-  filters: [
-    { type: 'expression', field: 'role', operator: 'eq', value: 'Engineer' },
-    { type: 'expression', field: 'active', operator: 'eq', value: true },
-  ],
-};
+export const FILTER_BUILDER_SEED: FilterGroup = createFilterGroup('and', [
+  createFilterExpression('role', 'eq', 'Engineer'),
+  createFilterExpression('active', 'eq', true),
+]);

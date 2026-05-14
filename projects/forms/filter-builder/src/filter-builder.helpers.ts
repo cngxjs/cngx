@@ -1,3 +1,5 @@
+import { nextUid } from '@cngx/core/utils';
+
 import type {
   FilterExpression,
   FilterFieldDef,
@@ -17,9 +19,13 @@ import type {
  * import this back from here so a single canonical instance is reused —
  * keeps `filter-builder.helpers.ts` Angular-free (no transitive import of
  * `@angular/core` through `filter-builder-state.ts`).
+ *
+ * The root carries a fixed sentinel id so it is recognisable on inspection;
+ * `ensureFilterTreeIds` short-circuits on it.
  */
 export const EMPTY_ROOT: FilterGroup = Object.freeze({
   type: 'group',
+  id: 'cngx-filter-root-empty',
   logic: 'and',
   negated: false,
   filters: Object.freeze([]),
@@ -36,6 +42,7 @@ export function createFilterGroup(
 ): FilterGroup {
   return {
     type: 'group',
+    id: nextUid('cngx-filter-'),
     logic,
     negated: opts.negated ?? false,
     filters,
@@ -49,10 +56,50 @@ export function createFilterExpression<TValue = unknown>(
 ): FilterExpression<TValue> {
   return {
     type: 'expression',
+    id: nextUid('cngx-filter-'),
     field,
     operator,
     value,
   };
+}
+
+/**
+ * Normalises a tree by assigning a stable id to every node missing one.
+ * Identity-preserving short-circuit — when every node already carries an id,
+ * the same `tree` reference is returned. Consumers who hand-construct trees
+ * (deserialised JSON, presets, persisted snapshots) run this once at the
+ * boundary; the presenter already invokes it on initial read and on every
+ * external write through `value`.
+ */
+export function ensureFilterTreeIds(tree: FilterGroup): FilterGroup {
+  return normaliseGroupIds(tree);
+}
+
+function normaliseGroupIds(group: FilterGroup): FilterGroup {
+  const nextFilters: FilterNode[] = [];
+  let childrenChanged = false;
+  for (const child of group.filters) {
+    const nextChild = child.type === 'group' ? normaliseGroupIds(child) : normaliseExpressionId(child);
+    if (nextChild !== child) {
+      childrenChanged = true;
+    }
+    nextFilters.push(nextChild);
+  }
+  if (group.id && !childrenChanged) {
+    return group;
+  }
+  return {
+    ...group,
+    id: group.id || nextUid('cngx-filter-'),
+    filters: childrenChanged ? nextFilters : group.filters,
+  };
+}
+
+function normaliseExpressionId(expression: FilterExpression): FilterExpression {
+  if (expression.id) {
+    return expression;
+  }
+  return { ...expression, id: nextUid('cngx-filter-') };
 }
 
 /**

@@ -86,9 +86,10 @@ describe('CngxFilterExpression', () => {
   it('reads the expression node from the host', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'name', operator: 'contains', value: 'foo' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.node()?.field).toBe('name');
@@ -98,9 +99,10 @@ describe('CngxFilterExpression', () => {
   it('returns the field-defined operator list when present', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'tags', operator: 'hasAny', value: [] }],
+      filters: [{ type: 'expression', id: 'e1', field: 'tags', operator: 'hasAny', value: [] }],
     };
     const { directive } = setup(tree, [FIELD_CUSTOM]);
     expect(directive.availableOperators()).toEqual(['hasAny', 'hasAll']);
@@ -109,9 +111,10 @@ describe('CngxFilterExpression', () => {
   it('falls back to DEFAULT_OPERATORS by editor type', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'age', operator: 'eq', value: 30 }],
+      filters: [{ type: 'expression', id: 'e1', field: 'age', operator: 'eq', value: 30 }],
     };
     const { directive } = setup(tree, [FIELD_AGE]);
     expect(directive.availableOperators()).toContain('gt');
@@ -121,9 +124,10 @@ describe('CngxFilterExpression', () => {
   it('flags incomplete when field or operator missing', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: '', operator: '', value: null }],
+      filters: [{ type: 'expression', id: 'e1', field: '', operator: '', value: null }],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.isIncomplete()).toBe(true);
@@ -132,9 +136,10 @@ describe('CngxFilterExpression', () => {
   it('builds expressionLabel from the field def label', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'name', operator: 'contains', value: 'foo' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'contains', value: 'foo' }],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.expressionLabel()).toBe('Filter: Name contains');
@@ -143,9 +148,10 @@ describe('CngxFilterExpression', () => {
   it('returns null node when path addresses a group instead of an expression', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'group', logic: 'or', negated: false, filters: [] }],
+      filters: [{ type: 'group', id: 'g1', logic: 'or', negated: false, filters: [] }],
     };
     const { directive } = setup(tree, [FIELD_NAME], [0]);
     expect(directive.node()).toBeNull();
@@ -156,9 +162,10 @@ describe('CngxFilterExpression', () => {
   it('availableOperators returns the shared empty array when fieldDef is undefined', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'missing-key', operator: 'eq', value: null }],
+      filters: [{ type: 'expression', id: 'e1', field: 'missing-key', operator: 'eq', value: null }],
     };
     const { directive } = setup(tree, []);
     const a = directive.availableOperators();
@@ -170,9 +177,10 @@ describe('CngxFilterExpression', () => {
   it('node identity is stable across re-reads when tree unchanged', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' }],
     };
     const { directive } = setup(tree, [FIELD_NAME]);
     expect(directive.node()).toBe(directive.node());

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 
 import type { FilterExpression, FilterFieldDef, FilterGroup } from './filter-builder.types';
+import { createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   createFilterBuilderState,
@@ -13,18 +14,14 @@ import {
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
 
-const expr = (field = 'name', operator = 'eq', value: unknown = null): FilterExpression => ({
-  type: 'expression',
-  field,
-  operator,
-  value,
-});
+const expr = (field = 'name', operator = 'eq', value: unknown = null): FilterExpression =>
+  createFilterExpression(field, operator, value);
 
 const group = (
   filters: readonly (FilterGroup | FilterExpression)[] = [],
   logic: FilterGroup['logic'] = 'and',
   negated = false,
-): FilterGroup => ({ type: 'group', logic, negated, filters });
+): FilterGroup => createFilterGroup(logic, filters, { negated });
 
 function build(
   initial: FilterGroup,

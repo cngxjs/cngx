@@ -22,7 +22,7 @@ const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'numbe
 })
 class Host {
   readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
-  value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+  value: FilterGroup = { type: 'group', id: 'host-root', logic: 'and', negated: false, filters: [] };
   readonly directive = viewChild.required(CngxFilterBuilderPresenter);
 }
 
@@ -37,7 +37,7 @@ class Host {
 })
 class HostWithFormField {
   readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
-  value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+  value: FilterGroup = { type: 'group', id: 'host-root', logic: 'and', negated: false, filters: [] };
 }
 
 function setup(overrides: Partial<Host> = {}): {
@@ -76,6 +76,7 @@ describe('CngxFilterBuilderPresenter', () => {
     const { fixture, directive } = setup();
     const next: FilterGroup = {
       type: 'group',
+      id: 'next-root',
       logic: 'or',
       negated: true,
       filters: [],
@@ -129,7 +130,7 @@ describe('CngxFilterBuilderPresenter', () => {
     const { fixture, directive } = setup();
     expect(directive.empty()).toBe(true);
 
-    directive.addExpression([], { type: 'expression', field: 'name', operator: 'eq', value: 'x' });
+    directive.addExpression([], { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' });
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -150,7 +151,7 @@ describe('CngxFilterBuilderPresenter', () => {
     const { fixture, directive } = setup();
     expect(directive.errorState()).toBe(false);
 
-    directive.addExpression([], { type: 'expression', field: 'name', operator: 'eq', value: '' });
+    directive.addExpression([], { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: '' });
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(directive.errorState()).toBe(true);
@@ -162,9 +163,10 @@ describe('CngxFilterBuilderPresenter', () => {
 
     directive.addGroup([], {
       type: 'group',
+      id: 'g1',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'age', operator: 'gt', value: null }],
+      filters: [{ type: 'expression', id: 'e2', field: 'age', operator: 'gt', value: null }],
     });
     fixture.detectChanges();
     TestBed.flushEffects();
@@ -190,7 +192,7 @@ describe('CngxFilterBuilderPresenter — dev-mode guards', () => {
     })
     class EmptyFieldsHost {
       readonly fields = signal<readonly FilterFieldDef[]>([]);
-      value: FilterGroup = { type: 'group', logic: 'and', negated: false, filters: [] };
+      value: FilterGroup = { type: 'group', id: 'host-root', logic: 'and', negated: false, filters: [] };
     }
     const fixture = TestBed.createComponent(EmptyFieldsHost);
     fixture.detectChanges();
@@ -209,9 +211,10 @@ describe('CngxFilterBuilderPresenter — dev-mode guards', () => {
       readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME]);
       value: FilterGroup = {
         type: 'group',
+        id: 'unknown-root',
         logic: 'and',
         negated: false,
-        filters: [{ type: 'expression', field: 'bogus', operator: 'eq', value: 'x' }],
+        filters: [{ type: 'expression', id: 'e1', field: 'bogus', operator: 'eq', value: 'x' }],
       };
     }
     const fixture = TestBed.createComponent(UnknownFieldHost);

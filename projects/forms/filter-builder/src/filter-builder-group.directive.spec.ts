@@ -81,7 +81,7 @@ function setup(initial: FilterGroup, path: readonly number[] = []): {
 
 describe('CngxFilterGroup', () => {
   it('resolves the host via the DI token', () => {
-    const { directive } = setup({ type: 'group', logic: 'and', negated: false, filters: [] });
+    const { directive } = setup({ type: 'group', id: 'root', logic: 'and', negated: false, filters: [] });
     expect(directive).toBeTruthy();
     expect(directive.isRoot()).toBe(true);
   });
@@ -89,9 +89,10 @@ describe('CngxFilterGroup', () => {
   it('exposes logic, negated, children, childCount from the host tree', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'g1',
       logic: 'or',
       negated: true,
-      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' }],
     };
     const { directive } = setup(tree);
     expect(directive.logic()).toBe('or');
@@ -103,9 +104,10 @@ describe('CngxFilterGroup', () => {
   it('rebuilds groupLabel when path changes', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'group', logic: 'or', negated: true, filters: [] }],
+      filters: [{ type: 'group', id: 'g1', logic: 'or', negated: true, filters: [] }],
     };
     const { fixture, host, directive } = setup(tree, []);
     expect(directive.groupLabel()).toBe('Root filter group (AND)');
@@ -120,9 +122,10 @@ describe('CngxFilterGroup', () => {
   it('reflects null safely when the path addresses an expression', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' }],
     };
     const { directive } = setup(tree, [0]);
     expect(directive.node()).toBeNull();
@@ -133,6 +136,7 @@ describe('CngxFilterGroup', () => {
   it('node identity is stable across re-reads when tree unchanged', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
       filters: [],
@@ -144,9 +148,10 @@ describe('CngxFilterGroup', () => {
   it('children returns the shared empty array when node is null', () => {
     const tree: FilterGroup = {
       type: 'group',
+      id: 'root',
       logic: 'and',
       negated: false,
-      filters: [{ type: 'expression', field: 'name', operator: 'eq', value: 'x' }],
+      filters: [{ type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' }],
     };
     const { directive } = setup(tree, [0]);
     const a = directive.children();

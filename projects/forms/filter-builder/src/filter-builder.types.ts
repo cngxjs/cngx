@@ -41,6 +41,15 @@ export interface FilterFieldDef<TValue = unknown> {
 
 export interface FilterExpression<TValue = unknown> {
   readonly type: 'expression';
+  /**
+   * Stable identity used by Angular's `@for` track expression in the builder's
+   * recursive renderer. Survives content edits (`setField`/`setOperator`/`setValue`)
+   * so focused inputs do not lose focus when ancestor groups re-emit fresh
+   * references through the path-update mutators. Factories
+   * (`createFilterExpression`) auto-populate; consumer-constructed trees
+   * normalise via `ensureFilterTreeIds`.
+   */
+  readonly id: string;
   readonly field: string;
   readonly operator: string;
   readonly value?: TValue;
@@ -48,6 +57,11 @@ export interface FilterExpression<TValue = unknown> {
 
 export interface FilterGroup {
   readonly type: 'group';
+  /**
+   * Stable identity used by Angular's `@for` track expression in the builder's
+   * recursive renderer. See {@link FilterExpression.id} for the full contract.
+   */
+  readonly id: string;
   readonly logic: FilterLogic;
   readonly negated: boolean;
   readonly filters: readonly FilterNode[];
