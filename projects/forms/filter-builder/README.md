@@ -268,3 +268,60 @@ All values are routed through `var(--cngx-*, fallback)`. Material variants defau
 | `--cngx-filter-builder-skeleton-opacity` | `0.5` |
 
 Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
+
+## Standalone filter rows
+
+`CngxFilterExpressionRow` is the same component the builder mounts internally — exported as a public surface so a single filter row can live outside the recursive tree. Typical use cases: a table-column header that filters one column, a side-panel quick filter, or any place where a full builder tree is overkill.
+
+Pass `[fields]` (a one-element array for the column it filters) and a writable `[(value)]` binding. The row owns its `FilterExpression | null` directly — no presenter, no host token. The Remove button writes `null`; subsequent edits are no-ops until the consumer seeds a fresh expression.
+
+```typescript
+import { Component, computed, signal } from '@angular/core';
+import {
+  CngxFilterExpressionRow,
+  createFilterGroup,
+  toFilterPredicate,
+  type FilterExpression,
+  type FilterFieldDef,
+} from '@cngx/forms/filter-builder';
+
+const NAME_FIELD: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
+const PEOPLE = [/* ... */];
+
+@Component({
+  selector: 'app-people-table',
+  template: `
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Name
+            <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of filtered(); track p.name) {
+          <tr><td>{{ p.name }}</td></tr>
+        }
+      </tbody>
+    </table>
+  `,
+  imports: [CngxFilterExpressionRow],
+})
+export class PeopleTable {
+  readonly nameField = NAME_FIELD;
+  readonly nameFilter = signal<FilterExpression | null>(null);
+
+  readonly filtered = computed(() => {
+    const f = this.nameFilter();
+    if (!f) return PEOPLE;
+    const predicate = toFilterPredicate(createFilterGroup('and', [f]), [this.nameField]);
+    return predicate ? PEOPLE.filter(predicate) : PEOPLE;
+  });
+}
+```
+
+A live demo wiring two standalone rows into a filtered table lives at `/#/forms/filter-expression-row`.
+
+The row picks **embedded** mode automatically when mounted inside `<cngx-filter-builder>` (the host token is provided by the presenter); switching to standalone mode is silent — drop the row outside the builder and the optional-host code path takes over.
