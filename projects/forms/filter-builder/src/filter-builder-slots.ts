@@ -1,5 +1,6 @@
 import { Directive, inject, TemplateRef } from '@angular/core';
 
+import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
 import type {
   FilterExpression,
   FilterFieldDef,
@@ -256,4 +257,5 @@ export interface CngxFilterBuilderTemplates {
   readonly removeButton?: TemplateRef<CngxFilterBuilderRemoveButtonContext> | null;
   readonly logicToggle?: TemplateRef<CngxFilterBuilderLogicToggleContext> | null;
   readonly negationToggle?: TemplateRef<CngxFilterBuilderNegationToggleContext> | null;
+  readonly valueEditor?: TemplateRef<CngxFilterBuilderValueEditorContext<unknown>> | null;
 }

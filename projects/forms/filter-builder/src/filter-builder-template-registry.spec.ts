@@ -30,6 +30,7 @@ function emptyQueries(): CngxFilterBuilderTemplateRegistryQueries {
     removeButton: signal(undefined),
     logicToggle: signal(undefined),
     negationToggle: signal(undefined),
+    valueEditor: signal(undefined),
   };
 }
 

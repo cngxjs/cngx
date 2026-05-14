@@ -28,6 +28,7 @@ import {
 } from './filter-builder-slots';
 import { injectFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+import { CngxFilterBuilderValueEditor } from './filter-builder-value-editor.slot';
 import { CngxFilterBuilderBody } from './filter-builder-body.component';
 
 /**
@@ -81,6 +82,7 @@ export class CngxFilterBuilder {
   protected readonly removeButtonSlot = contentChild(CngxFilterBuilderRemoveButton);
   protected readonly logicToggleSlot = contentChild(CngxFilterBuilderLogicToggle);
   protected readonly negationToggleSlot = contentChild(CngxFilterBuilderNegationToggle);
+  protected readonly valueEditorSlot = contentChild(CngxFilterBuilderValueEditor);
 
   protected readonly templates = injectFilterBuilderTemplateRegistry({
     loading: this.loadingSlot,
@@ -93,6 +95,7 @@ export class CngxFilterBuilder {
     removeButton: this.removeButtonSlot,
     logicToggle: this.logicToggleSlot,
     negationToggle: this.negationToggleSlot,
+    valueEditor: this.valueEditorSlot,
   });
 
   protected readonly loadingContext: CngxFilterBuilderLoadingContext = {
