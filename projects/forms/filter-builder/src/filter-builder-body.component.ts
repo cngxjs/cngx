@@ -33,6 +33,8 @@ import { createFilterExpression, createFilterGroup } from './filter-builder.help
 import { injectFilterEditors } from './filter-builder.tokens';
 import type { FilterExpression, FilterGroup, FilterLogic, FilterNode } from './filter-builder.types';
 
+const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
+
 /**
  * Recursive renderer for `<cngx-filter-builder>`. Owns the slot-cascade
  * machinery for every per-row visible region (`addFilterButton`,
@@ -198,12 +200,12 @@ export class CngxFilterBuilderBody {
   protected operatorsForField(fieldKey: string): readonly string[] {
     const def = this.host.fieldMap().get(fieldKey);
     if (!def) {
-      return [];
+      return EMPTY_OPERATORS;
     }
     if (def.operators && def.operators.length > 0) {
       return def.operators;
     }
-    return this.config.defaultOperators[def.editorType] ?? [];
+    return this.config.defaultOperators[def.editorType] ?? EMPTY_OPERATORS;
   }
 
   protected editorForField(fieldKey: string): CngxFilterEditor | undefined {
