@@ -1,4 +1,3 @@
-import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,20 +7,12 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import type { CngxFilterBuilderLoadingContext } from './filter-builder-slots';
-
-import { injectFilterBuilderConfig } from './filter-builder.config';
-import type {
-  CngxFilterBuilderErrorContext as ErrorCtx,
-} from './filter-builder-slots';
 import {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
   CngxFilterBuilderEmpty,
-  CngxFilterBuilderError,
   CngxFilterBuilderExpressionTemplate,
   CngxFilterBuilderGroupTemplate,
-  CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
   CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
@@ -34,10 +25,11 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
 /**
  * Recursive query-builder component. Brain lives entirely in
  * `CngxFilterBuilderPresenter` (host directive). This component is the
- * thin state-branch shell: chooses between `loading` / `error` / `empty`
- * / content branches; the recursive body lives in `CngxFilterBuilderBody`
- * (internal sub-component). The live-region announcer is bound here so
- * AT updates stay outside the conditional branches.
+ * thin render shell: hosts the slot contentChildren and mounts the body.
+ * State-driven UI (loading / error / refreshing) is the consumer's
+ * concern — wrap with `<cngx-async-container [state]>`. The live-region
+ * announcer is bound here so AT updates stay outside the body's
+ * recursive render path.
  */
 @Component({
   selector: 'cngx-filter-builder',
@@ -47,33 +39,25 @@ import { CngxFilterBuilderBody } from './filter-builder-body.component';
   hostDirectives: [
     {
       directive: CngxFilterBuilderPresenter,
-      inputs: ['fields', 'value', 'cngxFilterBuilderState'],
+      inputs: ['fields', 'value'],
       outputs: ['valueChange'],
     },
   ],
   host: {
-    '[attr.aria-busy]': 'ariaBusy()',
     '[attr.aria-disabled]': 'ariaDisabled()',
   },
-  imports: [NgTemplateOutlet, CngxFilterBuilderBody],
+  imports: [CngxFilterBuilderBody],
   templateUrl: './filter-builder.component.html',
   styleUrl: './filter-builder.component.css',
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterBuilder {
   protected readonly presenter = inject(CngxFilterBuilderPresenter);
-  protected readonly config = injectFilterBuilderConfig();
-
-  protected readonly ariaBusy = computed<'true' | null>(() =>
-    this.presenter.state.status() === 'loading' ? 'true' : null,
-  );
 
   protected readonly ariaDisabled = computed<'true' | null>(() =>
     this.presenter.disabled() ? 'true' : null,
   );
 
-  protected readonly loadingSlot = contentChild(CngxFilterBuilderLoading);
-  protected readonly errorSlot = contentChild(CngxFilterBuilderError);
   protected readonly emptySlot = contentChild(CngxFilterBuilderEmpty);
   protected readonly expressionTemplateSlot = contentChild(CngxFilterBuilderExpressionTemplate);
   protected readonly groupTemplateSlot = contentChild(CngxFilterBuilderGroupTemplate);
@@ -85,8 +69,6 @@ export class CngxFilterBuilder {
   protected readonly valueEditorSlot = contentChild(CngxFilterBuilderValueEditor);
 
   protected readonly templates = injectFilterBuilderTemplateRegistry({
-    loading: this.loadingSlot,
-    error: this.errorSlot,
     empty: this.emptySlot,
     expressionTemplate: this.expressionTemplateSlot,
     groupTemplate: this.groupTemplateSlot,
@@ -97,18 +79,4 @@ export class CngxFilterBuilder {
     negationToggle: this.negationToggleSlot,
     valueEditor: this.valueEditorSlot,
   });
-
-  protected readonly loadingContext: CngxFilterBuilderLoadingContext = {
-    skeletonCount: this.config.skeletonCount,
-  };
-
-  protected readonly skeletonRows: readonly null[] = Array.from(
-    { length: this.config.skeletonCount },
-    () => null,
-  );
-
-  protected readonly errorSlotContext = computed<ErrorCtx>(
-    () => ({ error: this.presenter.state.error() }),
-    { equal: (a, b) => a.error === b.error },
-  );
 }

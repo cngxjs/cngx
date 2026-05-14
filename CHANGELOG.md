@@ -1,3 +1,9 @@
+# Unreleased
+
+### BREAKING CHANGES
+
+* **forms/filter-builder:** removed `[cngxFilterBuilderState]` input and in-shell loading/error branches; wrap with `<cngx-async-container [state]>` for state-driven UI.
+
 # 0.0.0 (2026-03-17)
 
 

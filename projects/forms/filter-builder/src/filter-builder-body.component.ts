@@ -39,11 +39,11 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * `expressionTemplate`, `groupTemplate`) plus path-keyed context caches.
  *
  * Internal — not exported through `public-api.ts`. The host component
- * (`CngxFilterBuilder`) wires this body inside its state-branch shell
- * (`loading` / `error` / `empty` / content). A consumer who needs to
- * eject the skin replaces the whole `CngxFilterBuilder` for now; a
- * future `CNGX_FILTER_BUILDER_BODY_HOST` token lifts this body behind
- * a swappable factory without changing the public surface.
+ * (`CngxFilterBuilder`) mounts this body directly; state-driven UI
+ * (loading / error / refreshing) is the consumer's concern (wrap with
+ * `<cngx-async-container [state]>`). The body lifts behind
+ * `CNGX_FILTER_BUILDER_BODY_HOST` so consumers can swap the recursive
+ * renderer without forking the shell.
  */
 @Component({
   selector: 'cngx-filter-builder-body',

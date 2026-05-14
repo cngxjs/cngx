@@ -6,19 +6,15 @@ import {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
   CngxFilterBuilderEmpty,
-  CngxFilterBuilderError,
   CngxFilterBuilderExpressionTemplate,
   CngxFilterBuilderGroupTemplate,
-  CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
   CngxFilterBuilderRemoveButton,
   type CngxFilterBuilderAddFilterButtonContext,
   type CngxFilterBuilderAddGroupButtonContext,
   type CngxFilterBuilderEmptyContext,
-  type CngxFilterBuilderErrorContext,
   type CngxFilterBuilderExpressionTemplateContext,
   type CngxFilterBuilderGroupTemplateContext,
-  type CngxFilterBuilderLoadingContext,
   type CngxFilterBuilderLogicToggleContext,
   type CngxFilterBuilderRemoveButtonContext,
 } from './filter-builder-slots';
@@ -38,8 +34,6 @@ import type { TemplateRef } from '@angular/core';
 
 @Component({
   template: `
-    <ng-template cngxFilterBuilderLoading>loading</ng-template>
-    <ng-template cngxFilterBuilderError>error</ng-template>
     <ng-template cngxFilterBuilderEmpty>empty</ng-template>
     <ng-template cngxFilterBuilderExpressionTemplate>expr</ng-template>
     <ng-template cngxFilterBuilderGroupTemplate>group</ng-template>
@@ -49,8 +43,6 @@ import type { TemplateRef } from '@angular/core';
     <ng-template cngxFilterBuilderLogicToggle>logic</ng-template>
   `,
   imports: [
-    CngxFilterBuilderLoading,
-    CngxFilterBuilderError,
     CngxFilterBuilderEmpty,
     CngxFilterBuilderExpressionTemplate,
     CngxFilterBuilderGroupTemplate,
@@ -61,8 +53,6 @@ import type { TemplateRef } from '@angular/core';
   ],
 })
 class SlotHost {
-  readonly loading = viewChild.required(CngxFilterBuilderLoading);
-  readonly error = viewChild.required(CngxFilterBuilderError);
   readonly empty = viewChild.required(CngxFilterBuilderEmpty);
   readonly expressionTemplate = viewChild.required(CngxFilterBuilderExpressionTemplate);
   readonly groupTemplate = viewChild.required(CngxFilterBuilderGroupTemplate);
@@ -73,12 +63,10 @@ class SlotHost {
 }
 
 describe('filter-builder slot directives', () => {
-  it('all 9 directives mount on ng-template selectors and expose viewChild handles', () => {
+  it('all 7 directives mount on ng-template selectors and expose viewChild handles', () => {
     const fixture = TestBed.createComponent(SlotHost);
     fixture.detectChanges();
     const host = fixture.componentInstance;
-    expect(host.loading()).toBeTruthy();
-    expect(host.error()).toBeTruthy();
     expect(host.empty()).toBeTruthy();
     expect(host.expressionTemplate()).toBeTruthy();
     expect(host.groupTemplate()).toBeTruthy();
@@ -92,8 +80,6 @@ describe('filter-builder slot directives', () => {
     const fixture = TestBed.createComponent(SlotHost);
     fixture.detectChanges();
     const host = fixture.componentInstance;
-    expect(host.loading().templateRef).toBeTruthy();
-    expect(host.error().templateRef).toBeTruthy();
     expect(host.empty().templateRef).toBeTruthy();
     expect(host.expressionTemplate().templateRef).toBeTruthy();
     expect(host.groupTemplate().templateRef).toBeTruthy();
@@ -104,8 +90,6 @@ describe('filter-builder slot directives', () => {
   });
 
   it('ngTemplateContextGuard returns true for every slot directive', () => {
-    expect(CngxFilterBuilderLoading.ngTemplateContextGuard(null as unknown as CngxFilterBuilderLoading, {})).toBe(true);
-    expect(CngxFilterBuilderError.ngTemplateContextGuard(null as unknown as CngxFilterBuilderError, {})).toBe(true);
     expect(CngxFilterBuilderEmpty.ngTemplateContextGuard(null as unknown as CngxFilterBuilderEmpty, {})).toBe(true);
     expect(CngxFilterBuilderExpressionTemplate.ngTemplateContextGuard(null as unknown as CngxFilterBuilderExpressionTemplate, {})).toBe(true);
     expect(CngxFilterBuilderGroupTemplate.ngTemplateContextGuard(null as unknown as CngxFilterBuilderGroupTemplate, {})).toBe(true);
@@ -149,8 +133,6 @@ describe('filter-builder slot directives', () => {
   });
 
   it('context interfaces are structurally well-formed', () => {
-    const loading: CngxFilterBuilderLoadingContext = { skeletonCount: 3 };
-    const error: CngxFilterBuilderErrorContext = { error: new Error() };
     const empty: CngxFilterBuilderEmptyContext = { addFilter: () => undefined, addGroup: () => undefined };
     const expression: CngxFilterBuilderExpressionTemplateContext = {
       expression: { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'x' },
@@ -191,7 +173,7 @@ describe('filter-builder slot directives', () => {
       options: ['and', 'or'],
       setLogic: () => undefined,
     };
-    expect([loading, error, empty, expression, group, addFilter, addGroup, remove, logicToggle]).toHaveLength(9);
+    expect([empty, expression, group, addFilter, addGroup, remove, logicToggle]).toHaveLength(7);
   });
 });
 
@@ -201,8 +183,6 @@ function fakeTemplate<Ctx>(): TemplateRef<Ctx> {
 
 function emptyQueriesWithValueEditor(): CngxFilterBuilderTemplateRegistryQueries {
   return {
-    loading: signal(undefined),
-    error: signal(undefined),
     empty: signal(undefined),
     expressionTemplate: signal(undefined),
     groupTemplate: signal(undefined),

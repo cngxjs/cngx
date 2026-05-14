@@ -11,13 +11,7 @@ import {
   untracked,
   type Signal,
 } from '@angular/core';
-import { createManualState } from '@cngx/common/data';
-import {
-  CNGX_STATEFUL,
-  type CngxAsyncState,
-  type CngxStateful,
-  nextUid,
-} from '@cngx/core/utils';
+import { nextUid } from '@cngx/core/utils';
 import { type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
@@ -42,9 +36,8 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
 /**
  * Thin presenter directive. Instantiates `createFilterBuilderState` against
  * its own `model<FilterGroup>` so two-way `[(value)]` binding writes through
- * mutators. Provides three tokens via `useExisting` so the recursive
- * context atoms, transition bridges, and `cngx-form-field` host all bind
- * against one source of truth.
+ * mutators. Provides `CNGX_FILTER_BUILDER_HOST` via `useExisting` so the
+ * recursive context atoms bind against one source of truth.
  *
  * The `CngxFormFieldControl` surface ships minimal scalars here
  * (id/empty/disabled/focused/errorState); Phase 6 wires error derivation,
@@ -57,29 +50,15 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
   standalone: true,
   providers: [
     { provide: CNGX_FILTER_BUILDER_HOST, useExisting: CngxFilterBuilderPresenter },
-    { provide: CNGX_STATEFUL, useExisting: CngxFilterBuilderPresenter },
   ],
 })
 export class CngxFilterBuilderPresenter<TValue = unknown>
-  implements
-    CngxFilterBuilderHost<TValue>,
-    CngxStateful<unknown>,
-    CngxFormFieldControl
+  implements CngxFilterBuilderHost<TValue>, CngxFormFieldControl
 {
   readonly fields = input.required<readonly FilterFieldDef<TValue>[]>();
 
   readonly value = model<FilterGroup>(EMPTY_ROOT);
 
-  readonly stateInput = input<
-    CngxAsyncState<unknown> | undefined,
-    CngxAsyncState<unknown> | '' | undefined
-  >(undefined, {
-    alias: 'cngxFilterBuilderState',
-    transform: (v): CngxAsyncState<unknown> | undefined =>
-      typeof v === 'string' ? undefined : v,
-  });
-
-  private readonly idleState: CngxAsyncState<unknown> = createManualState<unknown>();
   private readonly config = injectFilterBuilderConfig();
 
   private readonly stateFactory = inject(CNGX_FILTER_BUILDER_STATE_FACTORY);
@@ -123,11 +102,6 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly errorState: Signal<boolean> = computed(() =>
     countIncompleteExpressions(this.tree()) > 0,
   );
-
-  /** Implements `CngxStateful.state` — forwards `[cngxFilterBuilderState]` when bound, else an idle slot. */
-  get state(): CngxAsyncState<unknown> {
-    return this.stateInput() ?? this.idleState;
-  }
 
   constructor() {
     // Normalise consumer-supplied trees so every node carries a stable id.

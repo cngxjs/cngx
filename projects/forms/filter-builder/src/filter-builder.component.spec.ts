@@ -10,10 +10,8 @@ import {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
   CngxFilterBuilderEmpty,
-  CngxFilterBuilderError,
   CngxFilterBuilderExpressionTemplate,
   CngxFilterBuilderGroupTemplate,
-  CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
   CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
@@ -21,20 +19,7 @@ import {
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 import { createEmptyFilterRoot, createFilterExpression, createFilterGroup } from './filter-builder.helpers';
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
-import { createManualState } from '@cngx/common/data';
-import { provideFilterBuilderConfig, withNegation, withSkeletonCount } from './filter-builder.config';
-
-function createLoadingState() {
-  const state = createManualState<unknown>();
-  state.set('loading');
-  return state;
-}
-
-function createErrorState(err: unknown) {
-  const state = createManualState<unknown>();
-  state.setError(err);
-  return state;
-}
+import { provideFilterBuilderConfig, withNegation } from './filter-builder.config';
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -125,6 +110,13 @@ describe('CngxFilterBuilder — recursive tree rendering', () => {
   });
 });
 
+describe('CngxFilterBuilder — body mount', () => {
+  it('mounts CngxFilterBuilderBody as the only render stage', () => {
+    const { fixture } = basicSetup();
+    expect(fixture.debugElement.query(By.directive(CngxFilterBuilderBody))).not.toBeNull();
+  });
+});
+
 describe('CngxFilterBuilder — announcer text', () => {
   it('announces "Filter added: Name" when add filter button is clicked', () => {
     const { fixture, hostEl, presenter } = basicSetup();
@@ -170,54 +162,6 @@ describe('CngxFilterBuilder — decorative glyphs hidden from AT', () => {
     const { hostEl } = basicSetup();
     const spans = hostEl.querySelectorAll('button > span[aria-hidden="true"]');
     expect(spans.length).toBeGreaterThanOrEqual(2);
-  });
-});
-
-describe('CngxFilterBuilder — errorSlotContext reference stability', () => {
-  it('returns the same context reference across reads when state.error is unchanged', () => {
-    const errorState = createErrorState('boom');
-    @Component({
-      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
-      imports: [CngxFilterBuilder],
-    })
-    class Host {
-      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-      value: FilterGroup = createEmptyFilterRoot();
-      readonly state = errorState;
-      readonly builder = viewChild.required(CngxFilterBuilder);
-    }
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    const builder = fixture.componentInstance.builder() as unknown as { errorSlotContext: () => unknown };
-    expect(builder.errorSlotContext()).toBe(builder.errorSlotContext());
-  });
-});
-
-describe('CngxFilterBuilder — host aria-busy / aria-disabled', () => {
-  it('reflects aria-busy="true" on the component host when state.status is loading', () => {
-    const state = createManualState<unknown>();
-    state.set('loading');
-    @Component({
-      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
-      imports: [CngxFilterBuilder],
-    })
-    class Host {
-      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-      value: FilterGroup = createEmptyFilterRoot();
-      readonly state = state;
-    }
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    const hostEl = (fixture.nativeElement as HTMLElement).querySelector('cngx-filter-builder');
-    expect(hostEl?.getAttribute('aria-busy')).toBe('true');
-  });
-
-  it('omits aria-busy when state.status is idle', () => {
-    const { hostEl } = basicSetup();
-    const host = hostEl.querySelector('cngx-filter-builder');
-    expect(host?.getAttribute('aria-busy')).toBeNull();
   });
 });
 
@@ -510,110 +454,5 @@ describe('CngxFilterBuilder — logic toggle slot', () => {
     const custom = el.querySelector('[data-custom-logic-toggle]');
     expect(custom).toBeTruthy();
     expect(custom?.textContent?.trim()).toBe('or');
-  });
-});
-
-@Component({
-  template: `
-    <cngx-filter-builder
-      [fields]="fields()"
-      [(value)]="value"
-      [cngxFilterBuilderState]="loadingState"
-    >
-      <ng-template cngxFilterBuilderLoading>
-        <span data-custom-loading>loading-custom</span>
-      </ng-template>
-    </cngx-filter-builder>
-  `,
-  imports: [CngxFilterBuilder, CngxFilterBuilderLoading],
-})
-class LoadingSlotHost {
-  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-  value: FilterGroup = createEmptyFilterRoot();
-  readonly loadingState = createLoadingState();
-}
-
-describe('CngxFilterBuilder — loading slot', () => {
-  it('renders the consumer-supplied loading template when state.status is loading', () => {
-    const fixture = TestBed.createComponent(LoadingSlotHost);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('[data-custom-loading]')).toBeTruthy();
-    expect(el.textContent).not.toContain('No filters defined');
-  });
-
-  it('renders skeletonCount placeholder rows when no slot is supplied', () => {
-    @Component({
-      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
-      imports: [CngxFilterBuilder],
-    })
-    class Host {
-      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-      value: FilterGroup = createEmptyFilterRoot();
-      readonly state = createLoadingState();
-    }
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    const el = fixture.nativeElement as HTMLElement;
-    const wrapper = el.querySelector('.cngx-filter-builder__loading');
-    expect(wrapper).toBeTruthy();
-    expect(wrapper?.getAttribute('role')).toBe('status');
-    expect(wrapper?.getAttribute('aria-label')).toBe('Loading filters');
-    expect(el.querySelectorAll('.cngx-filter-builder__skeleton-row').length).toBe(3);
-  });
-
-  it('honours withSkeletonCount config override', () => {
-    @Component({
-      template: `<cngx-filter-builder [fields]="fields()" [(value)]="value" [cngxFilterBuilderState]="state"></cngx-filter-builder>`,
-      imports: [CngxFilterBuilder],
-    })
-    class Host {
-      readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-      value: FilterGroup = createEmptyFilterRoot();
-      readonly state = createLoadingState();
-    }
-    TestBed.configureTestingModule({
-      providers: [provideFilterBuilderConfig(withSkeletonCount(7))],
-    });
-    const fixture = TestBed.createComponent(Host);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    expect(
-      (fixture.nativeElement as HTMLElement).querySelectorAll('.cngx-filter-builder__skeleton-row').length,
-    ).toBe(7);
-  });
-});
-
-@Component({
-  template: `
-    <cngx-filter-builder
-      [fields]="fields()"
-      [(value)]="value"
-      [cngxFilterBuilderState]="errorState"
-    >
-      <ng-template cngxFilterBuilderError let-error="error">
-        <span data-custom-error>error-custom: {{ error }}</span>
-      </ng-template>
-    </cngx-filter-builder>
-  `,
-  imports: [CngxFilterBuilder, CngxFilterBuilderError],
-})
-class ErrorSlotHost {
-  readonly fields = signal<readonly FilterFieldDef[]>(FIELDS);
-  value: FilterGroup = createEmptyFilterRoot();
-  readonly errorState = createErrorState('boom');
-}
-
-describe('CngxFilterBuilder — error slot', () => {
-  it('renders the consumer-supplied error template with the error in context', () => {
-    const fixture = TestBed.createComponent(ErrorSlotHost);
-    fixture.detectChanges();
-    TestBed.flushEffects();
-    const el = fixture.nativeElement as HTMLElement;
-    const custom = el.querySelector('[data-custom-error]');
-    expect(custom).toBeTruthy();
-    expect(custom?.textContent).toContain('boom');
   });
 });

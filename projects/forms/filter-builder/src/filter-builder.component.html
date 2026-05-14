@@ -1,22 +1,2 @@
-@let status = presenter.state.status();
-@if (status === 'loading') {
-  @if (templates.loading(); as loadingTpl) {
-    <ng-container *ngTemplateOutlet="loadingTpl; context: loadingContext"></ng-container>
-  } @else {
-    <div class="cngx-filter-builder__loading" role="status" [attr.aria-label]="config.i18n.loading">
-      @for (_ of skeletonRows; track $index) {
-        <p class="cngx-filter-builder__skeleton-row" aria-hidden="true"></p>
-      }
-    </div>
-  }
-} @else if (status === 'error') {
-  @if (templates.error(); as errorTpl) {
-    <ng-container *ngTemplateOutlet="errorTpl; context: errorSlotContext()"></ng-container>
-  } @else {
-    <p class="cngx-filter-builder__error" role="alert">{{ config.i18n.error }}</p>
-  }
-} @else {
-  <cngx-filter-builder-body [templates]="templates"></cngx-filter-builder-body>
-}
-
+<cngx-filter-builder-body [templates]="templates"></cngx-filter-builder-body>
 <span aria-live="polite" class="cngx-filter-builder__sr">{{ presenter.announcement() }}</span>
