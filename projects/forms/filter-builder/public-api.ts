@@ -2,6 +2,15 @@
 // .internal/architektur/plans/filter-builder-plan.md.
 
 export {
+  DEFAULT_OPERATORS,
+  type FilterExpression,
+  type FilterFieldDef,
+  type FilterGroup,
+  type FilterLogic,
+  type FilterNode,
+  type FilterEditorType,
+} from './src/filter-builder.types';
+export {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   createFilterBuilderState,
   type CngxFilterBuilderState,
