@@ -7,6 +7,21 @@ orthogonal `negated: boolean`, and a `predicate` signal on the
 presenter that bridges into `CngxFilter` or any consumer-side filtered
 list.
 
+## When to reach for which surface
+
+| Surface | Use when |
+|-|-|
+| `<cngx-filter-builder>` | The user assembles a multi-expression query with `and` / `or` / `xor` nesting — saved-filter presets, advanced search panels, report builders. Output is a serialisable `FilterGroup`. |
+| `<cngx-filter-row>` | One ad-hoc expression. Top-of-table quick filter, side-panel filter, anywhere a full builder tree is overkill but the user still picks the field. |
+| `toFilterPredicate(tree, fields)` | Library-free conversion of any `FilterGroup` into an item predicate. Use when you hold the tree in your own signal (preset preview, server-trip serialisation) and never mount the builder. |
+| `presenter.predicate()` | The same predicate when the builder *is* mounted. Already null-on-empty + NG0950-defensive; prefer over re-deriving via `toFilterPredicate`. |
+
+Not in scope: a per-column-header filter with one fixed field per
+column (clear-value semantics, no field picker, predicate writes
+directly into a parent `CngxFilter`). That is a separate artifact
+tracked for the table sprint — neither `CngxFilterRow` nor
+`CngxFilterExpressionRow` is the right primitive for that UX.
+
 ## Basic usage
 
 ```typescript
@@ -44,7 +59,11 @@ Drive the tree from a parent signal (no two-way binding):
 
 ```typescript
 @Component({
-  template: `<cngx-filter-builder [fields]="fields()" [value]="tree()" (valueChange)="handleChange($event)" />`,
+  template: `<cngx-filter-builder
+    [fields]="fields()"
+    [value]="tree()"
+    (valueChange)="handleChange($event)"
+  />`,
   imports: [CngxFilterBuilder],
 })
 export class ControlledFilter {
@@ -84,13 +103,14 @@ export class AsyncFilter {
 }
 ```
 
-`CngxAsyncContainer` covers every `AsyncStatus` (`idle` / `loading` /
-`pending` / `refreshing` / `success` / `error`) — skeleton, refresh
-overlay, error template, reactive `aria-busy`. The builder stays a
-decorative tree renderer; the wrap absorbs every state transition,
-including refreshing the field catalogue and error recovery. State
-producers: `injectAsyncState`, `fromHttpResource`, `createManualState`,
-`buildAsyncStateView`.
+`CngxAsyncContainer` handles every `AsyncStatus` (`idle` / `loading` /
+`pending` / `refreshing` / `success` / `error`) with consistent skeleton
+/ overlay / error semantics and reactive ARIA, so the builder stays a
+pure decorative tree renderer. Producers: `injectAsyncState`,
+`fromHttpResource`, `createManualState`, `buildAsyncStateView`. The
+same wrap idiom covers refreshing (e.g. while re-fetching the field
+catalogue) and error recovery without re-implementing the state machine
+inside the builder.
 
 ## Custom editors
 
@@ -126,9 +146,7 @@ bootstrapApplication(AppComponent, {
   providers: [
     {
       provide: CNGX_FILTER_EDITORS,
-      useValue: new Map<string, CngxFilterEditor>([
-        ['country', CountryPickerEditor],
-      ]),
+      useValue: new Map<string, CngxFilterEditor>([['country', CountryPickerEditor]]),
     },
   ],
 });
@@ -155,7 +173,9 @@ import { CngxFilterBuilder, CngxFilterBuilderPresenter } from '@cngx/forms/filte
 @Component({
   template: `
     <cngx-filter-builder [fields]="fields()" [(value)]="tree" />
-    <table [cngxFilter]="null">...</table>
+    <table [cngxFilter]="null">
+      ...
+    </table>
   `,
   imports: [CngxFilter, CngxFilterBuilder],
 })
@@ -201,7 +221,7 @@ readonly filtered = computed(() => {
 });
 ```
 
-When the builder *is* mounted, prefer `presenter.predicate()` — it
+When the builder _is_ mounted, prefer `presenter.predicate()` — it
 already encodes the empty-tree → `null` semantic and shields against
 the early-read NG0950 race when an effect resolves the presenter
 before the host-directive `fields` input has propagated.
@@ -217,24 +237,19 @@ the first incomplete expression's first focusable element.
 
 ```typescript
 import { CngxFormField } from '@cngx/forms/field';
-import {
-  CngxFilterBuilder,
-  CngxFilterBuilderFormFieldControl,
-} from '@cngx/forms/filter-builder';
+import { CngxFilterBuilder, CngxFilterBuilderFormFieldControl } from '@cngx/forms/filter-builder';
 
 @Component({
   template: `
     <cngx-form-field [field]="filterField">
-      <cngx-filter-builder
-        cngxFilterBuilderFormFieldControl
-        [fields]="fields()"
-        [(value)]="tree"
-      />
+      <cngx-filter-builder cngxFilterBuilderFormFieldControl [fields]="fields()" [(value)]="tree" />
     </cngx-form-field>
   `,
   imports: [CngxFormField, CngxFilterBuilder, CngxFilterBuilderFormFieldControl],
 })
-export class FormFieldDriven { /* filterField: Field<FilterGroup> */ }
+export class FormFieldDriven {
+  /* filterField: Field<FilterGroup> */
+}
 ```
 
 Listeners stay on the directive, not on the presenter — consumers
@@ -244,11 +259,11 @@ Forms, wrap the `FormControl` with `adaptFormControl()` from
 
 ## Operator semantics
 
-| Operator | Semantic |
-|-|-|
-| `and` | Every direct child evaluates to `true`. Empty group → `true`. |
-| `or` | At least one direct child evaluates to `true`. Empty group → `false`. |
-| `xor` | Exactly one direct child evaluates to `true` (n ≥ 2 required). |
+| Operator | Semantic                                                              |
+| -------- | --------------------------------------------------------------------- |
+| `and`    | Every direct child evaluates to `true`. Empty group → `true`.         |
+| `or`     | At least one direct child evaluates to `true`. Empty group → `false`. |
+| `xor`    | Exactly one direct child evaluates to `true` (n ≥ 2 required).        |
 
 `negated: boolean` on a group flips the result of the logic combinator
 — `negated: true` over `and` denotes the rejected `nand`; over `or`
@@ -262,14 +277,14 @@ desired arity to express XOR over more children.
 `provideFilterBuilderConfig(...)` (root) or `provideFilterBuilderConfigAt(...)`
 (scoped) compose the config from `with*` features:
 
-| Feature | Purpose |
-|-|-|
-| `withNegation(boolean)` | Show the per-group "Negate" toggle (default: `false`). |
-| `withLogicOptions(readonly[])` | Constrain logic toggle options (default: `['and', 'or']`). |
-| `withMaxNestingDepth(number)` | Cap nested-group depth (`Infinity` by default). |
-| `withDefaultOperators(...)` | Override per-`editorType` default operator list. |
-| `withFilterBuilderI18n(partial)` | Override labels, operator names, announcement formatters. |
-| `withTemplates(partial)` | Provide default slot templates as a fallback below `contentChild`. |
+| Feature                          | Purpose                                                            |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `withNegation(boolean)`          | Show the per-group "Negate" toggle (default: `false`).             |
+| `withLogicOptions(readonly[])`   | Constrain logic toggle options (default: `['and', 'or']`).         |
+| `withMaxNestingDepth(number)`    | Cap nested-group depth (`Infinity` by default).                    |
+| `withDefaultOperators(...)`      | Override per-`editorType` default operator list.                   |
+| `withFilterBuilderI18n(partial)` | Override labels, operator names, announcement formatters.          |
+| `withTemplates(partial)`         | Provide default slot templates as a fallback below `contentChild`. |
 
 Resolution priority: per-instance input → `provideFilterBuilderConfigAt`
 → `provideFilterBuilderConfig` → library defaults (English).
@@ -279,29 +294,29 @@ Resolution priority: per-instance input → `provideFilterBuilderConfigAt`
 Every visible region is overrideable. Each slot directive comes with a
 typed context interface:
 
-| Directive | Context type |
-|-|-|
-| `cngxFilterBuilderEmpty` | `{ addFilter, addGroup }` |
-| `cngxFilterBuilderAddFilterButton` | `{ add, label, disabled }` |
-| `cngxFilterBuilderAddGroupButton` | `{ add, label, disabled }` |
-| `cngxFilterBuilderRemoveButton` | `{ remove, label }` |
-| `cngxFilterBuilderLogicToggle` | `{ logic, options, setLogic }` |
-| `cngxFilterBuilderNegationToggle` | `{ negated, toggle, label }` |
-| `cngxFilterBuilderGroupTemplate` | `{ group, logic, isRoot, setLogic, toggleNegated, addFilter, addGroup, remove }` |
+| Directive                             | Context type                                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `cngxFilterBuilderEmpty`              | `{ addFilter, addGroup }`                                                                      |
+| `cngxFilterBuilderAddFilterButton`    | `{ add, label, disabled }`                                                                     |
+| `cngxFilterBuilderAddGroupButton`     | `{ add, label, disabled }`                                                                     |
+| `cngxFilterBuilderRemoveButton`       | `{ remove, label }`                                                                            |
+| `cngxFilterBuilderLogicToggle`        | `{ logic, options, setLogic }`                                                                 |
+| `cngxFilterBuilderNegationToggle`     | `{ negated, toggle, label }`                                                                   |
+| `cngxFilterBuilderGroupTemplate`      | `{ group, logic, isRoot, setLogic, toggleNegated, addFilter, addGroup, remove }`               |
 | `cngxFilterBuilderExpressionTemplate` | `{ expression, fieldDef, availableOperators, value, setField, setOperator, setValue, remove }` |
-| `cngxFilterBuilderValueEditor` | `{ value, fieldDef, setValue, expression }` |
+| `cngxFilterBuilderValueEditor`        | `{ value, fieldDef, setValue, expression }`                                                    |
 
 Three-stage cascade: `contentChild` directive → `CNGX_FILTER_BUILDER_CONFIG.templates.<key>` → null (renders the default).
 
 ## ARIA model
 
-| Element | Role / Attributes |
-|-|-|
-| `<cngx-filter-builder>` (host) | `[attr.aria-disabled]="disabled"` |
-| `.cngx-filter-builder__group` (every group) | `role="group"`, `aria-label="Group: <logic> (<n> filters)"` |
-| `.cngx-filter-builder__expression` (each) | `role="group"`, `aria-label="Filter: <field-label> <operator>"` |
-| Decorative glyphs in default buttons | `aria-hidden="true"` (decorative) |
-| Live region (always in DOM) | `aria-live="polite"`; mutation announcements via `CngxFilterBuilderAnnouncer` |
+| Element                                     | Role / Attributes                                                             |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| `<cngx-filter-builder>` (host)              | `[attr.aria-disabled]="disabled"`                                             |
+| `.cngx-filter-builder__group` (every group) | `role="group"`, `aria-label="Group: <logic> (<n> filters)"`                   |
+| `.cngx-filter-builder__expression` (each)   | `role="group"`, `aria-label="Filter: <field-label> <operator>"`               |
+| Decorative glyphs in default buttons        | `aria-hidden="true"` (decorative)                                             |
+| Live region (always in DOM)                 | `aria-live="polite"`; mutation announcements via `CngxFilterBuilderAnnouncer` |
 
 Loading / refreshing / error ARIA (`aria-busy`, `role="alert"`,
 skeleton placeholders) lives on the consumer's `<cngx-async-container>`
@@ -315,21 +330,21 @@ Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when
 
 All values are routed through `var(--cngx-*, fallback)`. Material variants default to `--mat-sys-*`.
 
-| Variable | Default |
-|-|-|
-| `--cngx-filter-builder-padding` | `0.5rem` |
-| `--cngx-filter-builder-bg` | `transparent` |
-| `--cngx-filter-builder-fg` | `inherit` |
-| `--cngx-filter-builder-gap` | `0.5rem` |
-| `--cngx-filter-builder-group-padding` | `0.5rem` |
-| `--cngx-filter-builder-group-border` | `1px solid var(--mat-sys-outline-variant, #ddd)` |
-| `--cngx-filter-builder-radius` | `0.375rem` |
-| `--cngx-filter-builder-negated-border-style` | `dashed` |
-| `--cngx-filter-builder-indent` | `1.25rem` |
-| `--cngx-filter-builder-rail` | `2px solid var(--mat-sys-outline-variant, #ddd)` |
-| `--cngx-filter-builder-empty-padding` | `0.75rem` |
-| `--cngx-filter-builder-empty-fg` | `var(--mat-sys-on-surface-variant, #666)` |
-| `--cngx-filter-builder-error-fg` | `var(--mat-sys-error, #b3261e)` (remove-action fallback) |
+| Variable                                     | Default                                                  |
+| -------------------------------------------- | -------------------------------------------------------- |
+| `--cngx-filter-builder-padding`              | `0.5rem`                                                 |
+| `--cngx-filter-builder-bg`                   | `transparent`                                            |
+| `--cngx-filter-builder-fg`                   | `inherit`                                                |
+| `--cngx-filter-builder-gap`                  | `0.5rem`                                                 |
+| `--cngx-filter-builder-group-padding`        | `0.5rem`                                                 |
+| `--cngx-filter-builder-group-border`         | `1px solid var(--mat-sys-outline-variant, #ddd)`         |
+| `--cngx-filter-builder-radius`               | `0.375rem`                                               |
+| `--cngx-filter-builder-negated-border-style` | `dashed`                                                 |
+| `--cngx-filter-builder-indent`               | `1.25rem`                                                |
+| `--cngx-filter-builder-rail`                 | `2px solid var(--mat-sys-outline-variant, #ddd)`         |
+| `--cngx-filter-builder-empty-padding`        | `0.75rem`                                                |
+| `--cngx-filter-builder-empty-fg`             | `var(--mat-sys-on-surface-variant, #666)`                |
+| `--cngx-filter-builder-error-fg`             | `var(--mat-sys-error, #b3261e)` (remove-action fallback) |
 
 Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
 
@@ -361,7 +376,9 @@ const FIELDS: readonly FilterFieldDef[] = [
   { key: 'role', label: 'Role', editorType: 'string' },
   { key: 'age', label: 'Age', editorType: 'number' },
 ];
-const PEOPLE = [/* ... */];
+const PEOPLE = [
+  /* ... */
+];
 
 @Component({
   selector: 'app-people-list',
