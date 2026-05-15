@@ -116,10 +116,21 @@ export class CngxFilterRow {
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
 
+  /** Two-way bound expression. `null` shows the empty-state field-picker. */
   readonly value = model<FilterExpression | null>(null);
 
+  /**
+   * Field list the row offers in its picker. Single-entry arrays trigger
+   * the auto-seed branch and skip the picker entirely (one option = no
+   * choice).
+   */
   readonly fields = input.required<readonly FilterFieldDef[]>();
 
+  /**
+   * Optional consumer-supplied template registry, e.g. from a parent
+   * `<cngx-filter-builder>` so the standalone row reuses the host's
+   * `removeButton` / `valueEditor` overrides.
+   */
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
   protected readonly removeButtonTemplate = computed(

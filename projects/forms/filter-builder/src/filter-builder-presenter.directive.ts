@@ -87,7 +87,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   });
   readonly announcement: Signal<string> = this.announcer.announcement;
 
+  /** `CngxFormFieldControl` id — stable per-instance, generated once. */
   readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-')).asReadonly();
+
+  /** `CngxFormFieldControl` empty — true while the tree carries no expressions. */
   readonly empty: Signal<boolean> = this.core.isEmpty;
 
   /**
@@ -101,6 +104,11 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
+  /**
+   * `CngxFormFieldControl` disabled — mirrors the ambient form-field
+   * presenter when the opt-in `CngxFilterBuilderFormFieldControl` is
+   * applied; `false` otherwise.
+   */
   readonly disabled: Signal<boolean> = computed(
     () => this.formField?.disabled() ?? false,
   );
@@ -111,6 +119,12 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    */
   private readonly focusedState = signal(false);
   readonly focused: Signal<boolean> = this.focusedState.asReadonly();
+
+  /**
+   * @internal Write surface for the `focused` signal, called by the
+   * `CngxFilterBuilderFormFieldControl` directive's host listeners. Not
+   * a consumer API — flip the input the directive owns instead.
+   */
   setFocused(next: boolean): void {
     this.focusedState.set(next);
   }
