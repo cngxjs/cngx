@@ -1,6 +1,33 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ROUTES_META, type RouteMeta } from '../_routes-meta';
+
+const STORAGE_KEY = 'cngx-examples-tree-open';
+
+function loadOpenSet(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null as unknown as Set<string>;
+    const arr = JSON.parse(raw) as unknown;
+    return Array.isArray(arr) ? new Set(arr.filter((x): x is string => typeof x === 'string')) : (null as unknown as Set<string>);
+  } catch {
+    return null as unknown as Set<string>;
+  }
+}
+
+function saveOpenSet(set: ReadonlySet<string>): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+  } catch {
+    /* quota / private mode — ignore */
+  }
+}
 
 interface DemoNode {
   demo: string;
@@ -68,6 +95,9 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
         [value]="term()"
         (input)="setTerm(search.value)"
       />
+      <button type="button" class="toggle-all" (click)="toggleAll()">
+        {{ allOpen() ? 'Collapse all' : 'Expand all' }}
+      </button>
       <span class="meta">{{ routesMatched() }} of {{ totalRoutes }} entries</span>
     </div>
 
@@ -86,7 +116,11 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
     }
 
     @for (lib of tree(); track lib.lib) {
-      <details open>
+      @let libKey = 'lib:' + lib.lib;
+      <details
+        [attr.open]="isOpen(libKey) ? '' : null"
+        (toggle)="onToggle(libKey, $event)"
+      >
         <summary class="row lvl-0">
           <span class="ico">[DIR]</span>
           <span class="name">&#64;cngx/{{ lib.lib }}/</span>
@@ -94,7 +128,11 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
         </summary>
 
         @for (cat of lib.categories; track cat.category) {
-          <details [attr.open]="autoOpen() ? '' : null">
+          @let catKey = 'cat:' + lib.lib + '/' + cat.category;
+          <details
+            [attr.open]="isOpen(catKey) ? '' : null"
+            (toggle)="onToggle(catKey, $event)"
+          >
             <summary class="row lvl-1">
               <span class="ico">[DIR]</span>
               <span class="name">{{ cat.category || '_uncategorised' }}/</span>
@@ -102,7 +140,11 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
             </summary>
 
             @for (demo of cat.demos; track demo.demo) {
-              <details [attr.open]="autoOpen() ? '' : null">
+              @let demoKey = 'demo:' + lib.lib + '/' + cat.category + '/' + demo.demo;
+              <details
+                [attr.open]="isOpen(demoKey) ? '' : null"
+                (toggle)="onToggle(demoKey, $event)"
+              >
                 <summary class="row lvl-2">
                   <span class="ico">[DIR]</span>
                   <span class="name">{{ demo.demo }}/</span>
@@ -168,6 +210,19 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
         outline-offset: 1px;
       }
       .filter-row .meta { color: #555; font-size: 0.8125rem; }
+      .filter-row .toggle-all {
+        padding: 2px 10px;
+        font: inherit;
+        font-size: 0.8125rem;
+        color: #000;
+        background: #f4f4f4;
+        border: 1px solid #888;
+        border-radius: 0;
+        cursor: pointer;
+      }
+      .filter-row .toggle-all:hover { background: #e8e8e8; }
+      .filter-row .toggle-all:active { background: #ddd; }
+      .filter-row .toggle-all:focus-visible { outline: 1px dotted #000; outline-offset: 1px; }
       hr {
         border: none;
         border-top: 1px solid #888;
@@ -258,6 +313,57 @@ export class HomeComponent {
   protected readonly tree = computed(() => buildTree(this.filtered()));
   protected readonly routesMatched = computed(() => this.filtered().length);
   protected readonly autoOpen = computed(() => this.term().trim().length > 0);
+
+  /** Every collapsible node key in the *unfiltered* tree. Used by toggle-all. */
+  private readonly allKeys = computed<readonly string[]>(() => {
+    const keys: string[] = [];
+    for (const lib of buildTree(ROUTES_META)) {
+      keys.push('lib:' + lib.lib);
+      for (const cat of lib.categories) {
+        keys.push('cat:' + lib.lib + '/' + cat.category);
+        for (const demo of cat.demos) {
+          keys.push('demo:' + lib.lib + '/' + cat.category + '/' + demo.demo);
+        }
+      }
+    }
+    return keys;
+  });
+
+  private readonly persistedOpen = signal<Set<string>>(
+    loadOpenSet() ?? new Set(buildTree(ROUTES_META).map((l) => 'lib:' + l.lib)),
+  );
+
+  protected readonly allOpen = computed(() => {
+    const open = this.persistedOpen();
+    return this.allKeys().every((k) => open.has(k));
+  });
+
+  constructor() {
+    effect(() => saveOpenSet(this.persistedOpen()));
+  }
+
+  protected isOpen(key: string): boolean {
+    return this.autoOpen() || this.persistedOpen().has(key);
+  }
+
+  protected onToggle(key: string, event: Event): void {
+    if (this.autoOpen()) return;
+    const open = (event.target as HTMLDetailsElement).open;
+    this.persistedOpen.update((set) => {
+      const next = new Set(set);
+      if (open) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  }
+
+  protected toggleAll(): void {
+    if (this.allOpen()) {
+      this.persistedOpen.set(new Set());
+    } else {
+      this.persistedOpen.set(new Set(this.allKeys()));
+    }
+  }
 
   protected setTerm(value: string): void {
     this.term.set(value);
