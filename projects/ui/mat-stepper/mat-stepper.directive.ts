@@ -39,6 +39,7 @@ import {
  * Topology mirrors `[cngxMatTabs]`: Material is the host, cngx is
  * the instrumentation layer. `stepper-accepted-debt §1`'s blocker
  * applies to adoption, not this direction.
+ * @example-url http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper
  */
 @Directive({
   selector: '[cngxMatStepper]',

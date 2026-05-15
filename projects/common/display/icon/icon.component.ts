@@ -6,6 +6,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  *
  * Decorative by default (`aria-hidden="true"`); set `label` to make it
  * informative (`role="img"`, `aria-label`).
+ * @example-url http://localhost:4200/icon/decorative-vs-informative
+ * @example-url http://localhost:4200/icon/sizes
  */
 @Component({
   selector: 'cngx-icon, [cngxIcon]',

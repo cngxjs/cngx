@@ -15,6 +15,8 @@ const TWO_PI = Math.PI * 2;
  * background ring + a foreground arc whose length is proportional to
  * `value / max`. Host carries `role="meter"`; the optional `[label]`
  * input renders an SR-only label inside the ring's centre.
+ * @example-url http://localhost:4200/donut/async-state-machine
+ * @example-url http://localhost:4200/donut/score-gauges
  */
 @Component({
   selector: 'cngx-donut',

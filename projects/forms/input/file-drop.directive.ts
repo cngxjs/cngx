@@ -38,6 +38,7 @@ export interface FileRejection {
  *   }
  * </div>
  * ```
+ * @example-url http://localhost:4200/file-drop/image-upload
  */
 @Directive({
   selector: '[cngxFileDrop]',

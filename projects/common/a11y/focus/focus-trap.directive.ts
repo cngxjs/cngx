@@ -29,6 +29,8 @@ import { computed, DestroyRef, Directive, effect, ElementRef, inject, input } fr
  *   <a href="/settings">Settings</a>
  * </nav>
  * ```
+ * @example-url http://localhost:4200/focus-trap/modal-dialog
+ * @example-url http://localhost:4200/focus-trap/slide-out-drawer
  */
 @Directive({
   selector: '[cngxFocusTrap]',

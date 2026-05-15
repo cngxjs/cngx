@@ -17,6 +17,7 @@ import { injectMenuConfig } from './menu-config';
  * Checkable menu item (`role="menuitemcheckbox"`). Activation toggles
  * `checked` and emits `checkedChange`. Unlike `CngxMenuItem`, the item
  * carries its own selection state.
+ * @example-url http://localhost:4200/menu-checkable/text-formatting-menu
  */
 @Directive({
   selector: '[cngxMenuItemCheckbox]',

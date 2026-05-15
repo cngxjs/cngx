@@ -26,6 +26,8 @@ import { CNGX_STEPPER_HOST } from './stepper-host.token';
  *
  * `Router` is optional — without `@angular/router` the directive
  * dev-warns once and becomes a no-op.
+ * @example-url http://localhost:4200/mat-stepper-router-sync/deep-linking-against-material
+ * @example-url http://localhost:4200/stepper-router-sync/deep-linking-with-fragment-queryparam-modes
  */
 @Directive({
   selector: '[cngxStepperRouterSync]',

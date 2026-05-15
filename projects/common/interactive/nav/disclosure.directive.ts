@@ -42,6 +42,9 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  *   <a href="/security">Security</a>
  * </div>
  * ```
+ * @example-url http://localhost:4200/disclosure/basic-uncontrolled
+ * @example-url http://localhost:4200/disclosure/controlled-mode
+ * @example-url http://localhost:4200/disclosure/faq-accordion
  */
 @Directive({
   selector: '[cngxDisclosure]',

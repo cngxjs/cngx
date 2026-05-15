@@ -32,6 +32,8 @@ import {
  *   </header>
  * </cngx-card>
  * ```
+ * @example-url http://localhost:4200/trend/composed-with-metric-in-a-card
+ * @example-url http://localhost:4200/trend/trend-directions
  */
 @Component({
   selector: 'cngx-trend',

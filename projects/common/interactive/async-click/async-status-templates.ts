@@ -9,6 +9,9 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  * ```html
  * <ng-template cngxPending>Saving...</ng-template>
  * ```
+ * @example-url http://localhost:4200/async-button/random-outcome
+ * @example-url http://localhost:4200/async-button/string-labels
+ * @example-url http://localhost:4200/async-button/template-slots
  */
 @Directive({ selector: 'ng-template[cngxPending]', standalone: true })
 export class CngxPending {
@@ -21,6 +24,9 @@ export class CngxPending {
  * ```html
  * <ng-template cngxSucceeded>Saved!</ng-template>
  * ```
+ * @example-url http://localhost:4200/async-button/random-outcome
+ * @example-url http://localhost:4200/async-button/string-labels
+ * @example-url http://localhost:4200/async-button/template-slots
  */
 @Directive({ selector: 'ng-template[cngxSucceeded]', standalone: true })
 export class CngxSucceeded {
@@ -34,6 +40,9 @@ export class CngxSucceeded {
  * ```html
  * <ng-template cngxFailed let-err>Failed: {{ err }}</ng-template>
  * ```
+ * @example-url http://localhost:4200/async-button/random-outcome
+ * @example-url http://localhost:4200/async-button/string-labels
+ * @example-url http://localhost:4200/async-button/template-slots
  */
 @Directive({ selector: 'ng-template[cngxFailed]', standalone: true })
 export class CngxFailed {

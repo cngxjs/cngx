@@ -50,6 +50,10 @@ import {
  * the `<div role="radio">` host does not participate in HTML
  * form submission, so the attribute carries no functional
  * weight.
+ * @example-url http://localhost:4200/radio/basic-vertical-group
+ * @example-url http://localhost:4200/radio/custom-dot-glyph
+ * @example-url http://localhost:4200/radio/disabled-group-cascades-per-radio-overrides
+ * @example-url http://localhost:4200/radio/orientation-horizontal
  */
 @Component({
   selector: 'cngx-radio, [cngxRadio]',

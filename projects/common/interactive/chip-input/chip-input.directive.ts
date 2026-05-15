@@ -66,6 +66,8 @@ import { firstValueFrom, isObservable, type Observable } from 'rxjs';
  * />
  * <cngx-toast-on />
  * ```
+ * @example-url http://localhost:4200/chip-input/async-validation-with-supersede-semantics
+ * @example-url http://localhost:4200/chip-input/synchronous-tokenization
  */
 @Directive({
   selector: 'input[cngxChipInput]',

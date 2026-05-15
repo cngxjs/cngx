@@ -44,6 +44,8 @@ import type { CngxFormFieldControl } from './models';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
+ * @example-url http://localhost:4200/material/mat-select-via-cngxbindfield-reactive-forms
+ * @example-url http://localhost:4200/material/matinput-via-cngxbindfield
  */
 @Directive({
   selector: '[cngxBindField]',

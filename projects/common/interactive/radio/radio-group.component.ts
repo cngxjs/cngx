@@ -65,6 +65,10 @@ import {
  *   <cngx-radio value="invoice" disabled>Invoice</cngx-radio>
  * </cngx-radio-group>
  * ```
+ * @example-url http://localhost:4200/radio/basic-vertical-group
+ * @example-url http://localhost:4200/radio/custom-dot-glyph
+ * @example-url http://localhost:4200/radio/disabled-group-cascades-per-radio-overrides
+ * @example-url http://localhost:4200/radio/orientation-horizontal
  */
 @Component({
   selector: 'cngx-radio-group, [cngxRadioGroup]',

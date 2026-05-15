@@ -43,6 +43,8 @@ import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer'
  * disabled / focused / errorState scalars derive from the ambient
  * `CngxFormFieldPresenter` when the opt-in
  * `CngxFilterBuilderFormFieldControl` directive is applied.
+ * @example-url http://localhost:4200/filter-builder/basic-two-way-binding-json-inspection
+ * @example-url http://localhost:4200/filter-builder/seeded-tree-and-or-composition
  */
 @Directive({
   selector: '[cngxFilterBuilderPresenter]',

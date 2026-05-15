@@ -56,6 +56,9 @@ export type PopoverActionVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
  *   }
  * </cngx-popover-action>
  * ```
+ * @example-url http://localhost:4200/popover-panel/content-states
+ * @example-url http://localhost:4200/popover-panel/variants
+ * @example-url http://localhost:4200/popover-panel/with-footer-actions
  */
 @Component({
   selector: 'cngx-popover-action',

@@ -30,6 +30,9 @@ export type CngxBadgePosition =
  * - Numeric values (capped by `max` with "N+" fallback)
  * - String values (rendered verbatim)
  * - Boolean `true` (dot mode, no text)
+ * @example-url http://localhost:4200/badge/colors-and-dot-mode
+ * @example-url http://localhost:4200/badge/counts-with-overflow
+ * @example-url http://localhost:4200/badge/inline-and-hidden
  */
 @Directive({
   selector: '[cngxBadge]',

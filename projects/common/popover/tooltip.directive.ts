@@ -41,6 +41,12 @@ const FOCUS_DEBOUNCE_MS = 50;
  *   Save
  * </button>
  * ```
+ * @example-url http://localhost:4200/tooltip/basic-tooltip
+ * @example-url http://localhost:4200/tooltip/custom-delay
+ * @example-url http://localhost:4200/tooltip/disabled-state
+ * @example-url http://localhost:4200/tooltip/keyboard-navigation
+ * @example-url http://localhost:4200/tooltip/placement
+ * @example-url http://localhost:4200/tooltip/programmatic-control
  */
 @Directive({
   selector: '[cngxTooltip]',

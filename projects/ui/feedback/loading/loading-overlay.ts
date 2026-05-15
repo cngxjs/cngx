@@ -47,6 +47,7 @@ import { createVisibilityTimer } from './visibility-timer';
  *   <cngx-async-container [state]="query">...</cngx-async-container>
  * </cngx-loading-overlay>
  * ```
+ * @example-url http://localhost:4200/loading-overlay/overlay-with-form
  */
 @Component({
   selector: 'cngx-loading-overlay',

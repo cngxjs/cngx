@@ -28,6 +28,7 @@ import {
  * `aggregatedStatus` rolls up child states: `error` if any errored,
  * `success` if all are success, `pending` if any is pending or busy,
  * otherwise `idle`.
+ * @example-url http://localhost:4200/stepper-hierarchical/group-nested-steps-trailing-root-step
  */
 @Directive({
   selector: '[cngxStepGroup]',

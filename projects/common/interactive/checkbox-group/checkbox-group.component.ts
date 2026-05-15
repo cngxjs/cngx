@@ -82,6 +82,8 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   >{{ opt }}</cngx-checkbox>
  * </cngx-checkbox-group>
  * ```
+ * @example-url http://localhost:4200/checkbox-group/basic-select-all-master-projected-leaves
+ * @example-url http://localhost:4200/checkbox-group/disabled-cascade
  */
 @Component({
   selector: 'cngx-checkbox-group, [cngxCheckboxGroup]',

@@ -5,6 +5,7 @@ import { Directive } from '@angular/core';
  * Applies the BEM class `cngx-menu-item__icon` to the host element. Pure
  * presentational hook — no inputs, no behaviour. Consumers style the
  * position via the BEM selector.
+ * @example-url http://localhost:4200/menu/action-menu-with-separator
  */
 @Directive({
   selector: '[cngxMenuItemIcon]',
@@ -17,6 +18,7 @@ export class CngxMenuItemIcon {}
 /**
  * Marker directive for the primary label position inside a
  * `[cngxMenuItem]`. Applies `cngx-menu-item__label`.
+ * @example-url http://localhost:4200/menu/action-menu-with-separator
  */
 @Directive({
   selector: '[cngxMenuItemLabel]',
@@ -30,6 +32,7 @@ export class CngxMenuItemLabel {}
  * Marker directive for a trailing detail slot inside a `[cngxMenuItem]`
  * — secondary text or a status pill that sits between the label and the
  * keyboard-shortcut hint. Applies `cngx-menu-item__suffix`.
+ * @example-url http://localhost:4200/menu/action-menu-with-separator
  */
 @Directive({
   selector: '[cngxMenuItemSuffix]',
@@ -43,6 +46,7 @@ export class CngxMenuItemSuffix {}
  * Marker directive for the keyboard-shortcut hint position inside a
  * `[cngxMenuItem]`. Applies `cngx-menu-item__kbd`. Typically placed on
  * a `<kbd>` element rendering text like `⌘X`.
+ * @example-url http://localhost:4200/menu/action-menu-with-separator
  */
 @Directive({
   selector: '[cngxMenuItemKbd]',

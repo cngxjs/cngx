@@ -27,6 +27,8 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * ```html
  * <button cngxRipple [rippleDisabled]="isReducedMotion()">Click</button>
  * ```
+ * @example-url http://localhost:4200/ripple/button-ripples
+ * @example-url http://localhost:4200/ripple/card-with-ripple
  */
 @Directive({
   selector: '[cngxRipple]',

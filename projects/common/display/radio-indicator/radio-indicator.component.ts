@@ -34,6 +34,11 @@ import { ChangeDetectionStrategy, Component, input, type TemplateRef } from '@an
  * - Accessibility announcements — `aria-hidden="true"` unconditionally.
  *   Selection is announced via the row's `role="radio"` /
  *   `aria-checked` ARIA, never by this decoration.
+ * @example-url http://localhost:4200/radio-indicator/custom-dotglyph
+ * @example-url http://localhost:4200/radio-indicator/default-unchecked-vs-checked
+ * @example-url http://localhost:4200/radio-indicator/disabled
+ * @example-url http://localhost:4200/radio-indicator/sizes
+ * @example-url http://localhost:4200/radio-indicator/theming-via-css-custom-properties
  */
 @Component({
   selector: 'cngx-radio-indicator',

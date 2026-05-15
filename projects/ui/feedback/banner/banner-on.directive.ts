@@ -29,6 +29,7 @@ import { CngxBanner } from './banner.service';
  *   bannerError="You are offline. Changes will sync when reconnected.">
  * </div>
  * ```
+ * @example-url http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper
  */
 @Directive({
   selector: '[cngxBannerOn]',

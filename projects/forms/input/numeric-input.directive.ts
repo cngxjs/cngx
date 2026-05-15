@@ -82,6 +82,9 @@ function isAllowedChar(
  * <!-- Integer-only -->
  * <input cngxNumericInput [decimals]="0" [allowNegative]="false" />
  * ```
+ * @example-url http://localhost:4200/numeric/basic-numeric-input
+ * @example-url http://localhost:4200/numeric/locale-formatting
+ * @example-url http://localhost:4200/numeric/min-max-step-decimals
  */
 @Directive({
   selector: 'input[cngxNumericInput]',

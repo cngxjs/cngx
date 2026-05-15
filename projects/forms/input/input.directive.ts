@@ -18,6 +18,9 @@ import {
  * ```html
  * <input cngxInput placeholder="max@example.com" />
  * ```
+ * @example-url http://localhost:4200/input/character-counter
+ * @example-url http://localhost:4200/input/password-visibility-toggle
+ * @example-url http://localhost:4200/input/smart-autocomplete-and-spellcheck
  */
 @Directive({
   selector: 'input[cngxInput], textarea[cngxInput], select[cngxInput]',

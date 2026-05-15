@@ -52,6 +52,7 @@ import {
  *      (loadMore)="loadMore()">
  * </div>
  * ```
+ * @example-url http://localhost:4200/infinite-scroll/scrollable-list
  */
 @Directive({
   selector: '[cngxInfiniteScroll]',

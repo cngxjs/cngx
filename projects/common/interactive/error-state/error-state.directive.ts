@@ -21,6 +21,8 @@ import { computed, Directive, input } from '@angular/core';
  * />
  * <span id="email-error" role="alert">Please enter a valid email.</span>
  * ```
+ * @example-url http://localhost:4200/error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage
+ * @example-url http://localhost:4200/error-state/without-message-id-class-hook-aria-invalid-only
  */
 @Directive({
   selector: '[cngxErrorState]',

@@ -26,6 +26,8 @@ import { fromEvent, filter, switchMap, takeUntil, timer, tap, merge } from 'rxjs
  *   Hold for action
  * </div>
  * ```
+ * @example-url http://localhost:4200/long-press/custom-threshold
+ * @example-url http://localhost:4200/long-press/long-press-with-visual-feedback
  */
 @Directive({
   selector: '[cngxLongPress]',

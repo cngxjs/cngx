@@ -69,6 +69,8 @@ import {
  *   }
  * </cngx-multi-chip-group>
  * ```
+ * @example-url http://localhost:4200/chip-group/basic-pick-exactly-one-size
+ * @example-url http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count
  */
 @Directive({
   selector: '[cngxChipInGroup]',

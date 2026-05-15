@@ -48,6 +48,10 @@ import {
  *   <p>Loaded content here</p>
  * </cngx-skeleton>
  * ```
+ * @example-url http://localhost:4200/layout-skeleton/basic-skeleton
+ * @example-url http://localhost:4200/layout-skeleton/skeleton-container
+ * @example-url http://localhost:4200/ui-skeleton/card-skeleton
+ * @example-url http://localhost:4200/ui-skeleton/template-context
  */
 @Component({
   selector: 'cngx-skeleton',

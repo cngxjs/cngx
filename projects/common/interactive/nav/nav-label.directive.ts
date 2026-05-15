@@ -16,6 +16,9 @@ import { Directive, input } from '@angular/core';
  * ```html
  * <span cngxNavLabel [heading]="true" [level]="3">Settings</span>
  * ```
+ * @example-url http://localhost:4200/nav/nav-badge-counts-and-dots
+ * @example-url http://localhost:4200/nav/nav-group-accordion-sections
+ * @example-url http://localhost:4200/nav/nav-links-active-state-depth
  */
 @Directive({
   selector: '[cngxNavLabel]',

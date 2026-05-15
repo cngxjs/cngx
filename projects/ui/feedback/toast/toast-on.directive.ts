@@ -42,6 +42,7 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
+ * @example-url http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper
  */
 @Directive({
   selector: '[cngxToastOn]',

@@ -57,6 +57,9 @@ import {
  *   <button cngxButtonToggle value="table">Table</button>
  * </cngx-button-toggle-group>
  * ```
+ * @example-url http://localhost:4200/button-toggle-group/basic-view-switcher
+ * @example-url http://localhost:4200/button-toggle-group/disabled-group-cascade-vs-per-toggle
+ * @example-url http://localhost:4200/button-toggle-group/vertical-orientation
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',

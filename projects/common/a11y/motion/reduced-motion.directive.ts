@@ -25,6 +25,8 @@ import { DestroyRef, Directive, inject, signal, type Signal } from '@angular/cor
  * readonly rm = viewChild(CngxReducedMotion);
  * readonly duration = computed(() => this.rm()?.prefersReducedMotion() ? 0 : 300);
  * ```
+ * @example-url http://localhost:4200/reduced-motion/animation-toggle
+ * @example-url http://localhost:4200/reduced-motion/toast-notifications-motion-aware
  */
 @Directive({
   selector: '[cngxReducedMotion]',

@@ -33,6 +33,8 @@ import {
  *   <cngx-metric cngxCardBody [value]="75" unit="bpm" />
  * </cngx-card>
  * ```
+ * @example-url http://localhost:4200/metric/inside-a-card
+ * @example-url http://localhost:4200/metric/standalone-metrics
  */
 @Component({
   selector: 'cngx-metric',

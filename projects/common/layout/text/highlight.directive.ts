@@ -33,6 +33,8 @@ import {
  *   CamelCase matters here.
  * </p>
  * ```
+ * @example-url http://localhost:4200/highlight/live-search-highlighting
+ * @example-url http://localhost:4200/highlight/multiple-paragraphs
  */
 @Directive({
   selector: '[cngxHighlight]',

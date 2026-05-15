@@ -27,6 +27,11 @@ import {
  *         label="Email already in use"></span>
  * </fieldset>
  * ```
+ * @example-url http://localhost:4200/error-aggregator/cngx-card-host-no-scope-errors-visible-immediately
+ * @example-url http://localhost:4200/error-aggregator/cngx-popover-panel-host
+ * @example-url http://localhost:4200/error-aggregator/material-mat-tab-label-with-error-count-badge
+ * @example-url http://localhost:4200/error-aggregator/native-form-scope-reveal-on-submit
+ * @example-url http://localhost:4200/tab-error-aggregation/per-tab-error-badges
  */
 @Directive({
   selector: '[cngxErrorSource]',

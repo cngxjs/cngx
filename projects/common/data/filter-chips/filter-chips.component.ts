@@ -50,6 +50,8 @@ export interface CngxFilterChipContext<TItem = unknown, TValue = unknown> {
  * `<ng-template cngxFilterChip>` to project decoration; the bridge
  * wraps that decoration in `cngxChipInGroup`-bound chip wrappers
  * automatically. Absence falls back to the default text-only label.
+ * @example-url http://localhost:4200/filter-chips/custom-chip-decoration-via-cngxfilterchip
+ * @example-url http://localhost:4200/filter-chips/multi-role-filter-wired-to-a-list
  */
 @Directive({
   selector: 'ng-template[cngxFilterChip]',
@@ -126,6 +128,8 @@ export class CngxFilterChip<TItem = unknown, TValue = unknown> {
  *   }
  * </ng-container>
  * ```
+ * @example-url http://localhost:4200/filter-chips/custom-chip-decoration-via-cngxfilterchip
+ * @example-url http://localhost:4200/filter-chips/multi-role-filter-wired-to-a-list
  */
 @Component({
   selector: 'cngx-filter-chips',

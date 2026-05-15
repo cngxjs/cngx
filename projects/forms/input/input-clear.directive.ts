@@ -14,6 +14,9 @@ import { fromEvent } from 'rxjs';
  *   @if (clr.hasValue()) { Clear }
  * </button>
  * ```
+ * @example-url http://localhost:4200/utilities/copy-to-clipboard
+ * @example-url http://localhost:4200/utilities/input-clear
+ * @example-url http://localhost:4200/utilities/input-format
  */
 @Directive({
   selector: '[cngxInputClear]',

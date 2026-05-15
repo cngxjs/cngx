@@ -36,6 +36,9 @@ import { CngxSidenav } from './sidenav';
  *   </cngx-sidenav>
  * </cngx-sidenav-layout>
  * ```
+ * @example-url http://localhost:4200/sidenav/dual-sidebar-master-detail
+ * @example-url http://localhost:4200/sidenav/full-navigation-sidebar
+ * @example-url http://localhost:4200/sidenav/material-theming-light-vs-dark
  */
 @Component({
   selector: 'cngx-sidenav-layout',

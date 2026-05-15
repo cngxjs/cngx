@@ -12,6 +12,9 @@ import { computed, Directive, ElementRef, inject, signal } from '@angular/core';
  *   {{ pwd.visible() ? 'Hide' : 'Show' }}
  * </button>
  * ```
+ * @example-url http://localhost:4200/input/character-counter
+ * @example-url http://localhost:4200/input/password-visibility-toggle
+ * @example-url http://localhost:4200/input/smart-autocomplete-and-spellcheck
  */
 @Directive({
   selector: 'input[cngxPasswordToggle]',
