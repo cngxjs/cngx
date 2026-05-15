@@ -129,6 +129,51 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(inner.get(CNGX_FORM_FIELD_CONTROL)).toBe(inner.get(CngxFilterBuilderPresenter));
   });
 
+  it('focused toggles on focusin/focusout when CngxFilterBuilderFormFieldControl is applied', () => {
+    TestBed.resetTestingModule();
+    const fixture = TestBed.createComponent(HostWithFormField);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = fixture.debugElement.children[0].injector;
+    const presenter = inner.get(CngxFilterBuilderPresenter);
+    const hostEl = fixture.debugElement.children[0].nativeElement as HTMLElement;
+
+    expect(presenter.focused()).toBe(false);
+
+    hostEl.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.focused()).toBe(true);
+
+    hostEl.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.focused()).toBe(false);
+  });
+
+  it('focused stays true when focus moves between descendants of the form-field-control host', () => {
+    TestBed.resetTestingModule();
+    const fixture = TestBed.createComponent(HostWithFormField);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    const inner = fixture.debugElement.children[0].injector;
+    const presenter = inner.get(CngxFilterBuilderPresenter);
+    const hostEl = fixture.debugElement.children[0].nativeElement as HTMLElement;
+
+    const sibling = document.createElement('button');
+    hostEl.appendChild(sibling);
+
+    hostEl.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.focused()).toBe(true);
+
+    hostEl.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: sibling }));
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(presenter.focused()).toBe(true);
+  });
+
   it('does not implement CngxStateful — no `state` property leaks onto the presenter', () => {
     const { directive } = setup();
     expect(directive).not.toHaveProperty('state');
