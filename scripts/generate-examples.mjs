@@ -534,6 +534,9 @@ function emitRoutesMetaSource(routes) {
     path: r.path,
     lib: r.lib,
     category: r.category,
+    demoSlug: r.demoSlug,
+    sectionSlug: r.sectionSlug,
+    flatDemo: r.flatDemo,
     demo: r.demoTitle,
     section: r.sectionTitle,
     apiComponents: r.apiComponents,
@@ -543,6 +546,9 @@ export interface RouteMeta {
   path: string;
   lib: string;
   category: string;
+  demoSlug: string;
+  sectionSlug: string;
+  flatDemo: boolean;
   demo: string;
   section: string;
   apiComponents: string[];
@@ -595,11 +601,18 @@ async function main() {
 
     const demoSlug = folderLeaf.replace(/-demo$/, '');
     const parts = demoFolder.split('/');
+    // Collapse a redundant `category/category-demo` nesting (common/card/card-demo,
+    // common/popover/popover-demo) so sections live directly under the category.
+    // Detection: a 3-segment path whose category segment matches the demo slug.
+    const isFlatDemo = parts.length === 3 && parts[1] === demoSlug;
     // Feature dir mirrors the dev-app demo path:
     //   common/a11y/active-descendant-demo → features/common/a11y/active-descendant/
+    //   common/card/card-demo              → features/common/card/        (flat)
     //   forms/select-demo                  → features/forms/select/
     //   data-display/treetable-demo        → features/data-display/treetable/
-    const pathSegments = [...parts.slice(0, -1), demoSlug];
+    const pathSegments = isFlatDemo
+      ? [parts[0], parts[1]]
+      : [...parts.slice(0, -1), demoSlug];
     const demoPath = pathSegments.join('/');
     const featureDir = join(FEATURES_DIR, ...pathSegments);
     const featureImportPath = './features/' + demoPath;
@@ -674,6 +687,7 @@ async function main() {
         className,
         lib,
         category,
+        flatDemo: isFlatDemo,
         demoTitle: story.title,
         sectionTitle: section.title,
         apiComponents: story.apiComponents ?? [],

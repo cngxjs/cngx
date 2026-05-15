@@ -5,6 +5,7 @@ import {
   effect,
   signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ROUTES_META, type RouteMeta } from '../_routes-meta';
 
@@ -29,57 +30,85 @@ function saveOpenSet(set: ReadonlySet<string>): void {
   }
 }
 
-interface DemoNode {
-  demo: string;
-  sections: RouteMeta[];
-}
-interface CategoryNode {
-  category: string;
-  demos: DemoNode[];
-  totalRoutes: number;
-}
-interface LibNode {
-  lib: string;
-  categories: CategoryNode[];
-  totalRoutes: number;
+/**
+ * Generic path-driven tree node. Internal nodes are folders (have children);
+ * leaf nodes carry a `route` reference. Every level uses the same `name` =
+ * filesystem-style slug, so `_uncategorised` buckets disappear automatically
+ * and flatDemo collapses (card/card → card) fall out of the path layout.
+ */
+interface TreeNode {
+  /** Slug segment for this level — matches the filesystem name. */
+  name: string;
+  /** Accumulated key for localStorage persistence. */
+  key: string;
+  children: TreeNode[];
+  /** Leaf only: the originating route. */
+  route?: RouteMeta;
+  /** Folder only: total leaf count under this subtree. */
+  leafCount: number;
+  /** Distance from the root, starting at 0 for the lib level. */
+  depth: number;
 }
 
-function buildTree(routes: readonly RouteMeta[]): LibNode[] {
-  const libs = new Map<string, Map<string, Map<string, RouteMeta[]>>>();
-  for (const r of routes) {
-    const lib = r.lib || 'misc';
-    const category = r.category || '';
-    if (!libs.has(lib)) libs.set(lib, new Map());
-    const cats = libs.get(lib)!;
-    if (!cats.has(category)) cats.set(category, new Map());
-    const demos = cats.get(category)!;
-    if (!demos.has(r.demo)) demos.set(r.demo, []);
-    demos.get(r.demo)!.push(r);
+function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
+  const root = new Map<string, TreeNode>();
+
+  function getOrCreate(map: Map<string, TreeNode>, name: string, key: string, depth: number): TreeNode {
+    let node = map.get(name);
+    if (!node) {
+      node = { name, key, children: [], leafCount: 0, depth };
+      map.set(name, node);
+    }
+    return node;
   }
-  return [...libs.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([lib, cats]) => {
-      const categories: CategoryNode[] = [...cats.entries()]
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([category, demos]) => {
-          const demosArr: DemoNode[] = [...demos.entries()]
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([demo, sections]) => ({
-              demo,
-              sections: [...sections].sort((a, b) => a.section.localeCompare(b.section)),
-            }));
-          const totalRoutes = demosArr.reduce((n, d) => n + d.sections.length, 0);
-          return { category, demos: demosArr, totalRoutes };
-        });
-      const totalRoutes = categories.reduce((n, c) => n + c.totalRoutes, 0);
-      return { lib, categories, totalRoutes };
-    });
+
+  for (const r of routes) {
+    const segments = r.path.split('/');
+    let parentMap = root;
+    let parentKey = '';
+    for (let i = 0; i < segments.length; i++) {
+      const name = segments[i];
+      const key = parentKey === '' ? name : parentKey + '/' + name;
+      const isLeaf = i === segments.length - 1;
+      const childMap = i === 0 ? parentMap : (parentMap as unknown as Map<string, TreeNode>);
+      const node = getOrCreate(childMap, name, key, i);
+      if (isLeaf) {
+        node.route = r;
+      } else if (!(node as unknown as { _map?: Map<string, TreeNode> })._map) {
+        // Stash a working child map on the node so we can find/insert children
+        // efficiently during construction. Stripped before return.
+        Object.assign(node, { _map: new Map<string, TreeNode>() });
+      }
+      const map = (node as unknown as { _map?: Map<string, TreeNode> })._map;
+      parentMap = (map ?? parentMap) as Map<string, TreeNode>;
+      parentKey = key;
+    }
+  }
+
+  // Drain the working maps into ordered `children` arrays + compute leafCount.
+  function finalize(node: TreeNode): number {
+    const map = (node as unknown as { _map?: Map<string, TreeNode> })._map;
+    if (map) {
+      node.children = [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+      delete (node as unknown as { _map?: Map<string, TreeNode> })._map;
+    }
+    if (node.route) {
+      node.leafCount = 1;
+    } else {
+      node.leafCount = node.children.reduce((n, c) => n + finalize(c), 0);
+    }
+    return node.leafCount;
+  }
+
+  const tops = [...root.values()].sort((a, b) => a.name.localeCompare(b.name));
+  for (const t of tops) finalize(t);
+  return tops;
 }
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [NgTemplateOutlet, RouterLink],
   template: `
     <h1>Index of /cngx-examples</h1>
 
@@ -115,56 +144,35 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
       <div class="row"><span class="ico">[ ]</span><span class="name empty">No matches.</span></div>
     }
 
-    @for (lib of tree(); track lib.lib) {
-      @let libKey = 'lib:' + lib.lib;
-      <details
-        [attr.open]="isOpen(libKey) ? '' : null"
-        (toggle)="onToggle(libKey, $event)"
-      >
-        <summary class="row lvl-0">
-          <span class="ico">[DIR]</span>
-          <span class="name">&#64;cngx/{{ lib.lib }}/</span>
-          <span class="size">{{ lib.totalRoutes }}</span>
-        </summary>
-
-        @for (cat of lib.categories; track cat.category) {
-          @let catKey = 'cat:' + lib.lib + '/' + cat.category;
-          <details
-            [attr.open]="isOpen(catKey) ? '' : null"
-            (toggle)="onToggle(catKey, $event)"
-          >
-            <summary class="row lvl-1">
-              <span class="ico">[DIR]</span>
-              <span class="name">{{ cat.category || '_uncategorised' }}/</span>
-              <span class="size">{{ cat.totalRoutes }}</span>
-            </summary>
-
-            @for (demo of cat.demos; track demo.demo) {
-              @let demoKey = 'demo:' + lib.lib + '/' + cat.category + '/' + demo.demo;
-              <details
-                [attr.open]="isOpen(demoKey) ? '' : null"
-                (toggle)="onToggle(demoKey, $event)"
-              >
-                <summary class="row lvl-2">
-                  <span class="ico">[DIR]</span>
-                  <span class="name">{{ demo.demo }}/</span>
-                  <span class="size">{{ demo.sections.length }}</span>
-                </summary>
-                @for (sec of demo.sections; track sec.path) {
-                  <div class="row lvl-3">
-                    <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
-                    <span class="name">
-                      <a [routerLink]="['/', ...sec.path.split('/')]">{{ sec.section }}</a>
-                    </span>
-                    <span class="size">—</span>
-                  </div>
-                }
-              </details>
-            }
-          </details>
-        }
-      </details>
+    @for (top of tree(); track top.key) {
+      <ng-container *ngTemplateOutlet="node; context: { $implicit: top }" />
     }
+
+    <ng-template #node let-n>
+      @if (n.route) {
+        <div class="row leaf" [style.padding-left.px]="56 + n.depth * 18">
+          <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
+          <span class="name">
+            <a [routerLink]="['/', ...n.route.path.split('/')]">{{ n.name }}</a>
+          </span>
+          <span class="size">—</span>
+        </div>
+      } @else {
+        <details
+          [attr.open]="isOpen(n.key) ? '' : null"
+          (toggle)="onToggle(n.key, $event)"
+        >
+          <summary class="row folder" [class.lvl-0]="n.depth === 0">
+            <span class="ico">[DIR]</span>
+            <span class="name" [style.padding-left.px]="n.depth * 18">{{ n.depth === 0 ? '&#64;cngx/' + n.name + '/' : n.name + '/' }}</span>
+            <span class="size">{{ n.leafCount }}</span>
+          </summary>
+          @for (child of n.children; track child.key) {
+            <ng-container *ngTemplateOutlet="node; context: { $implicit: child }" />
+          }
+        </details>
+      }
+    </ng-template>
 
     <hr />
     <address>cngx/examples · {{ totalRoutes }} routes</address>
@@ -255,11 +263,7 @@ function buildTree(routes: readonly RouteMeta[]): LibNode[] {
         font-size: 0.875rem;
       }
       .row .name.empty { color: #888; font-style: italic; }
-      .row.lvl-0 .name { font-weight: 700; }
-      .row.lvl-1 .name { padding-left: 18px; }
-      .row.lvl-2 .name { padding-left: 36px; font-weight: 600; }
-      .row.lvl-3 { grid-template-columns: 56px 1fr 100px; }
-      .row.lvl-3 .name { padding-left: 54px; }
+      .row.folder.lvl-0 .name { font-weight: 700; }
       details > summary {
         list-style: none;
         cursor: pointer;
@@ -317,20 +321,18 @@ export class HomeComponent {
   /** Every collapsible node key in the *unfiltered* tree. Used by toggle-all. */
   private readonly allKeys = computed<readonly string[]>(() => {
     const keys: string[] = [];
-    for (const lib of buildTree(ROUTES_META)) {
-      keys.push('lib:' + lib.lib);
-      for (const cat of lib.categories) {
-        keys.push('cat:' + lib.lib + '/' + cat.category);
-        for (const demo of cat.demos) {
-          keys.push('demo:' + lib.lib + '/' + cat.category + '/' + demo.demo);
-        }
+    const walk = (n: TreeNode) => {
+      if (!n.route) {
+        keys.push(n.key);
+        for (const c of n.children) walk(c);
       }
-    }
+    };
+    for (const t of buildTree(ROUTES_META)) walk(t);
     return keys;
   });
 
   private readonly persistedOpen = signal<Set<string>>(
-    loadOpenSet() ?? new Set(buildTree(ROUTES_META).map((l) => 'lib:' + l.lib)),
+    loadOpenSet() ?? new Set(buildTree(ROUTES_META).map((t) => t.key)),
   );
 
   protected readonly allOpen = computed(() => {
