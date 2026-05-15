@@ -7,15 +7,15 @@
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  --cngx-ex-bg: #ffffff;
-  --cngx-ex-text: #1f2937;
-  --cngx-ex-muted: #6b7280;
+  --cngx-ex-bg: var(--cngx-ex-surface);
+  --cngx-ex-text: var(--cngx-ex-text);
+  --cngx-ex-muted: var(--cngx-ex-muted);
   --cngx-ex-faint: #9ca3af;
-  --cngx-ex-border: #d1d5db;
-  --cngx-ex-surface: #ffffff;
-  --cngx-ex-surface-alt: #f9fafb;
+  --cngx-ex-border: var(--cngx-ex-border);
+  --cngx-ex-surface: var(--cngx-ex-surface);
+  --cngx-ex-surface-alt: var(--cngx-ex-surface-alt);
   --cngx-ex-highlight-bg: rgba(37, 99, 235, 0.12);
-  --cngx-ex-focus: #2563eb;
+  --cngx-ex-focus: var(--cngx-ex-focus);
   color: var(--cngx-ex-text);
 }
 @media (prefers-color-scheme: dark) {
@@ -77,23 +77,23 @@ body {
 // remains the focus; expand to inspect the underlying template / setup.
 .cngx-ex-code {
   margin-top: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cngx-ex-border);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--cngx-ex-surface);
 }
 .cngx-ex-code > summary {
   padding: 6px 10px;
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--cngx-ex-text);
   user-select: none;
 }
 .cngx-ex-code > summary:hover {
-  background: #f9fafb;
+  background: var(--cngx-ex-surface-alt);
 }
 .cngx-ex-code[open] > summary {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--cngx-ex-border);
 }
 .cngx-ex-code > pre {
   margin: 0;
@@ -102,8 +102,8 @@ body {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
   line-height: 1.55;
-  background: #fafafa;
-  color: #1f2937;
+  background: var(--cngx-ex-surface-alt);
+  color: var(--cngx-ex-text);
 }
 .cngx-ex-code > pre > code {
   font: inherit;
@@ -116,23 +116,23 @@ body {
 button {
   font: inherit;
   padding: 6px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cngx-ex-border);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--cngx-ex-surface);
   cursor: pointer;
 }
-button:hover { background: #f9fafb; }
-button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+button:hover { background: var(--cngx-ex-surface-alt); }
+button:focus-visible { outline: 2px solid var(--cngx-ex-focus); outline-offset: 2px; }
 
 input, textarea, select {
   font: inherit;
   padding: 6px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cngx-ex-border);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--cngx-ex-surface);
 }
 input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--cngx-ex-focus);
   outline-offset: 2px;
   border-color: transparent;
 }
@@ -142,10 +142,10 @@ kbd {
   padding: 1px 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cngx-ex-border);
   border-bottom-width: 2px;
   border-radius: 4px;
-  background: #f9fafb;
+  background: var(--cngx-ex-surface-alt);
   margin: 0 2px;
 }
 
@@ -157,7 +157,7 @@ dl {
   margin: 12px 0;
   font-size: 0.875rem;
 }
-dl > dt { color: #6b7280; }
+dl > dt { color: var(--cngx-ex-muted); }
 dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 
 // Event grid — technical layout used by story templates to show ARIA state.
@@ -177,7 +177,7 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 .event-label {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--cngx-ex-muted);
   min-width: 12rem;
 }
 .event-value {
@@ -223,7 +223,7 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 [role='tree'] {
   display: flex;
   flex-direction: column;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cngx-ex-border);
   border-radius: 6px;
   padding: 4px;
   outline: none;
@@ -231,7 +231,7 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 [role='listbox']:focus-visible,
 [role='menu']:focus-visible,
 [role='tree']:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--cngx-ex-focus);
   outline-offset: 2px;
 }
 
@@ -250,7 +250,7 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 .cngx-option--highlighted,
 [role='menuitem']:hover,
 [role='treeitem'][aria-selected='true'] {
-  background: rgba(37, 99, 235, 0.12);
+  background: var(--cngx-ex-highlight-bg);
 }
 .cngx-option--disabled,
 [aria-disabled='true'] {
@@ -264,12 +264,12 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
   flex-direction: column;
   gap: 2px;
   padding: 4px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--cngx-ex-border);
   border-radius: 6px;
   outline: none;
 }
 .cngx-ad-listbox:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--cngx-ex-focus);
   outline-offset: 2px;
 }
 .cngx-ad-option {
@@ -297,5 +297,5 @@ dl > dd { margin: 0; font-variant-numeric: tabular-nums; }
 // Live regions
 [aria-live] {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--cngx-ex-text);
 }

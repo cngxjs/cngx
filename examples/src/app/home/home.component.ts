@@ -23,7 +23,9 @@ const STORAGE_KEY = 'cngx-examples-tree-open';
 function loadOpenIds(): readonly string[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      return null;
+    }
     const arr = JSON.parse(raw) as unknown;
     return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : null;
   } catch {
@@ -189,14 +191,34 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
     <hr />
     <address>cngx/examples · {{ totalRoutes }} routes</address>
     <footer class="site-footer">
-      <a class="site-footer__link" href="https://github.com/cngxjs/cngx" target="_blank" rel="noopener noreferrer">
-        <svg class="site-footer__ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2 .37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      <a
+        class="site-footer__link"
+        href="https://github.com/cngxjs/cngx"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <svg
+          class="site-footer__ico"
+          viewBox="0 0 16 16"
+          width="14"
+          height="14"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            fill="currentColor"
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2 .37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+          />
         </svg>
         github.com/cngxjs/cngx
       </a>
       <span class="site-footer__sep">·</span>
-      <a class="site-footer__link" href="https://cngxjs.github.io/cngx/" target="_blank" rel="noopener noreferrer">
+      <a
+        class="site-footer__link"
+        href="https://cngxjs.github.io/cngx/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         Documentation
       </a>
       <span class="site-footer__sep">·</span>
@@ -399,10 +421,19 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         color: var(--col-link);
         text-decoration: underline;
       }
-      .site-footer__link:visited { color: var(--col-link-visited); }
-      .site-footer__link:hover { color: var(--col-link-hover); background: var(--col-link-hover-bg); }
-      .site-footer__ico { flex-shrink: 0; }
-      .site-footer__sep { color: var(--col-faint); }
+      .site-footer__link:visited {
+        color: var(--col-link-visited);
+      }
+      .site-footer__link:hover {
+        color: var(--col-link-hover);
+        background: var(--col-link-hover-bg);
+      }
+      .site-footer__ico {
+        flex-shrink: 0;
+      }
+      .site-footer__sep {
+        color: var(--col-faint);
+      }
       .site-footer__motto {
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.75rem;
@@ -418,7 +449,9 @@ export class HomeComponent {
 
   private readonly filtered = computed<readonly RouteMeta[]>(() => {
     const t = this.term().trim().toLowerCase();
-    if (!t) return ROUTES_META;
+    if (!t) {
+      return ROUTES_META;
+    }
     return ROUTES_META.filter((r) => {
       const haystack =
         `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
@@ -467,7 +500,9 @@ export class HomeComponent {
     const expanded = this.controller.expandedIds();
     // "All open" = every folder in the FULL (unfiltered) tree is expanded.
     for (const id of this.fullLeafCounts().keys()) {
-      if (!expanded.has(id)) return false;
+      if (!expanded.has(id)) {
+        return false;
+      }
     }
     return this.fullLeafCounts().size > 0;
   });
@@ -480,7 +515,9 @@ export class HomeComponent {
     effect(() => {
       const ids = this.controller.expandedIds();
       const filtering = this.term().trim().length > 0;
-      if (!filtering) untracked(() => saveOpenIds(ids));
+      if (!filtering) {
+        untracked(() => saveOpenIds(ids));
+      }
     });
 
     // Filter mode: snapshot the current expanded set, then expand everything
@@ -493,7 +530,9 @@ export class HomeComponent {
           this.controller.expandAll();
         } else if (!filtering && this.filterSnapshot !== null) {
           this.controller.collapseAll();
-          for (const id of this.filterSnapshot) this.controller.expand(id);
+          for (const id of this.filterSnapshot) {
+            this.controller.expand(id);
+          }
           this.filterSnapshot = null;
         }
       });
@@ -511,7 +550,9 @@ export class HomeComponent {
    */
   protected handleActivated(value: unknown): void {
     const v = value as NodeValue | null | undefined;
-    if (!v) return;
+    if (!v) {
+      return;
+    }
     if (v.route) {
       this.router.navigateByUrl('/' + v.route.path);
     } else {
@@ -520,7 +561,10 @@ export class HomeComponent {
   }
 
   protected toggleAll(): void {
-    if (this.allOpen()) this.controller.collapseAll();
-    else this.controller.expandAll();
+    if (this.allOpen()) {
+      this.controller.collapseAll();
+    } else {
+      this.controller.expandAll();
+    }
   }
 }
