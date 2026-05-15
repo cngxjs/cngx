@@ -69,6 +69,72 @@
     --cngx-code-text: #ff7b72;
     --cngx-pg-bar-bg: #1f1f1f;
     --cngx-pg-seg-bg: #2a2a2a;
+
+    // ── @cngx/ui/feedback — alert / banner / toast / loading ────────────
+    // Each component reads `var(--cngx-foo-bg, #lightfallback)` chains.
+    // Dark values here win over the inline light fallback so the components
+    // adapt without per-instance overrides.
+    --cngx-alert-color: #e6e6e6;
+    --cngx-alert-bg: #1a1a1a;
+    --cngx-alert-border-color: #555555;
+    --cngx-alert-info-bg: #1c242e;
+    --cngx-alert-info-border: #2d465a;
+    --cngx-alert-info-icon: #7bb5ff;
+    --cngx-alert-success-bg: #1c2e22;
+    --cngx-alert-success-border: #2d5a3d;
+    --cngx-alert-success-icon: #7fd99a;
+    --cngx-alert-warning-bg: #2e2a1c;
+    --cngx-alert-warning-border: #5a4a2d;
+    --cngx-alert-warning-icon: #ffd97b;
+    --cngx-alert-error-bg: #2e1c1c;
+    --cngx-alert-error-border: #5a2d2d;
+    --cngx-alert-error-icon: #ff7b72;
+    --cngx-alert-collapsed-hover-bg: #2a2a2a;
+    --cngx-alert-stack-overflow-bg: #1a1a1a;
+    --cngx-alert-stack-overflow-border: #555555;
+    --cngx-alert-stack-overflow-color: #e6e6e6;
+    --cngx-alert-stack-overflow-hover-bg: #2a2a2a;
+
+    --cngx-banner-bg: #1a1a1a;
+    --cngx-banner-color: #e6e6e6;
+    --cngx-banner-border-color: #555555;
+    --cngx-banner-accent: #79c0ff;
+    --cngx-banner-action-bg: transparent;
+    --cngx-banner-action-hover-bg: #2a2a2a;
+    --cngx-banner-info-bg: #1c242e;
+    --cngx-banner-info-border: #2d465a;
+    --cngx-banner-info-accent: #7bb5ff;
+    --cngx-banner-success-bg: #1c2e22;
+    --cngx-banner-success-border: #2d5a3d;
+    --cngx-banner-success-accent: #7fd99a;
+    --cngx-banner-warning-bg: #2e2a1c;
+    --cngx-banner-warning-border: #5a4a2d;
+    --cngx-banner-warning-accent: #ffd97b;
+    --cngx-banner-error-bg: #2e1c1c;
+    --cngx-banner-error-border: #5a2d2d;
+    --cngx-banner-error-accent: #ff7b72;
+
+    --cngx-toast-bg: #1a1a1a;
+    --cngx-toast-color: #e6e6e6;
+    --cngx-toast-title-color: #e6e6e6;
+    --cngx-toast-description-color: #aaaaaa;
+    --cngx-toast-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    --cngx-toast-info-accent: #7bb5ff;
+    --cngx-toast-success-accent: #7fd99a;
+    --cngx-toast-warning-accent: #ffd97b;
+    --cngx-toast-error-accent: #ff7b72;
+
+    --cngx-loading-indicator-track: #2a2a2a;
+    --cngx-loading-overlay-backdrop-bg: rgba(0, 0, 0, 0.6);
+    --cngx-progress-track-color: #2a2a2a;
+    --cngx-progress-color: #79c0ff;
+    --cngx-progress-label-color: #aaaaaa;
+    --cngx-spinner-color: #555555;
+    --cngx-spinner-active-color: #79c0ff;
+
+    --cngx-close-button-color: #aaaaaa;
+    --cngx-close-button-hover-bg: #2a2a2a;
+    --cngx-close-button-hover-color: #e6e6e6;
   }
 }
 
