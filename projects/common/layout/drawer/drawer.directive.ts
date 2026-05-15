@@ -29,6 +29,12 @@ export type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
  *   …
  * </div>
  * ```
+ * <example-url>http://localhost:4200/drawer/basic-scroll-lock-backdrop</example-url>
+ * <example-url>http://localhost:4200/drawer/controlled-mode</example-url>
+ * <example-url>http://localhost:4200/drawer/direction-all-four-sides</example-url>
+ * <example-url>http://localhost:4200/drawer/events-openedchange-closed</example-url>
+ * <example-url>http://localhost:4200/drawer/mode-over-push-side</example-url>
+ * <example-url>http://localhost:4200/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
   selector: '[cngxDrawer]',

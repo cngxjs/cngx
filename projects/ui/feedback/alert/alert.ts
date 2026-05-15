@@ -87,7 +87,14 @@ function createPausableTimer(): PausableTimer {
 }
 
 
-/** Content slot directive for custom alert icons. */
+/** Content slot directive for custom alert icons.
+ * <example-url>http://localhost:4200/alert/action-buttons</example-url>
+ * <example-url>http://localhost:4200/alert/auto-collapse</example-url>
+ * <example-url>http://localhost:4200/alert/boolean-trigger-when</example-url>
+ * <example-url>http://localhost:4200/alert/closable</example-url>
+ * <example-url>http://localhost:4200/alert/severities</example-url>
+ * <example-url>http://localhost:4200/alert/state-driven-visibility</example-url>
+*/
 @Directive({ selector: '[cngxAlertIcon]', standalone: true })
 export class CngxAlertIcon {
   readonly templateRef = inject(TemplateRef, { optional: true });
@@ -105,6 +112,12 @@ export class CngxAlertIcon {
  *   <button cngxAlertAction (click)="retry()">Retry</button>
  * </cngx-alert>
  * ```
+ * <example-url>http://localhost:4200/alert/action-buttons</example-url>
+ * <example-url>http://localhost:4200/alert/auto-collapse</example-url>
+ * <example-url>http://localhost:4200/alert/boolean-trigger-when</example-url>
+ * <example-url>http://localhost:4200/alert/closable</example-url>
+ * <example-url>http://localhost:4200/alert/severities</example-url>
+ * <example-url>http://localhost:4200/alert/state-driven-visibility</example-url>
  */
 @Directive({
   selector: 'button[cngxAlertAction], a[cngxAlertAction]',
@@ -159,6 +172,14 @@ export class CngxAlertAction {}
   template: `
     <div class="cngx-alert__icon">
       <ng-content select="[cngxAlertIcon]" />
+      /**
+       * <example-url>http://localhost:4200/alert/action-buttons</example-url>
+       * <example-url>http://localhost:4200/alert/auto-collapse</example-url>
+       * <example-url>http://localhost:4200/alert/boolean-trigger-when</example-url>
+       * <example-url>http://localhost:4200/alert/closable</example-url>
+       * <example-url>http://localhost:4200/alert/severities</example-url>
+       * <example-url>http://localhost:4200/alert/state-driven-visibility</example-url>
+       */
       @if (globalIcon(); as iconCmp) {
         @if (!customIcon()) {
           <ng-container *ngComponentOutlet="iconCmp" />

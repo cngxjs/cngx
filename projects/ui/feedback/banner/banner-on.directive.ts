@@ -29,7 +29,7 @@ import { CngxBanner } from './banner.service';
  *   bannerError="You are offline. Changes will sync when reconnected.">
  * </div>
  * ```
- * <example-url>http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper</example-url>
+ * <example-url>http://localhost:4200/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxBannerOn]',

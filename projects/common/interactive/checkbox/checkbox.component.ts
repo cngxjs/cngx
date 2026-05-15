@@ -63,6 +63,9 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * <example-url>http://localhost:4200/checkbox/custom-check-dash-glyphs</example-url>
  * <example-url>http://localhost:4200/checkbox/disabled</example-url>
  * <example-url>http://localhost:4200/checkbox/tri-state-select-all-pattern</example-url>
+ * <example-url>http://localhost:4200/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: 'cngx-checkbox, [cngxCheckbox]',

@@ -42,7 +42,12 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
- * <example-url>http://localhost:4200/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper</example-url>
+ * <example-url>http://localhost:4200/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * <example-url>http://localhost:4200/toast/custom-component-body</example-url>
+ * <example-url>http://localhost:4200/toast/declarative-cngx-toast</example-url>
+ * <example-url>http://localhost:4200/toast/programmatic-cngxtoaster</example-url>
+ * <example-url>http://localhost:4200/toast/state-bridge-cngxtoaston</example-url>
+ * <example-url>http://localhost:4200/toast/title-description</example-url>
  */
 @Directive({
   selector: '[cngxToastOn]',

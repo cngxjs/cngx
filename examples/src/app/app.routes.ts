@@ -28,6 +28,36 @@ export const routes: Routes = [
     data: { lib: 'ui', category: 'feedback', demo: "Alert Stack", section: "Overflow Collapse" },
   },
   {
+    path: 'alert/action-buttons',
+    loadComponent: () => import('./features/alert/action-buttons.component').then((m) => m.AlertActionButtons),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "Action Buttons" },
+  },
+  {
+    path: 'alert/auto-collapse',
+    loadComponent: () => import('./features/alert/auto-collapse.component').then((m) => m.AlertAutoCollapse),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "Auto-Collapse" },
+  },
+  {
+    path: 'alert/boolean-trigger-when',
+    loadComponent: () => import('./features/alert/boolean-trigger-when.component').then((m) => m.AlertBooleanTriggerWhen),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "Boolean Trigger ([when])" },
+  },
+  {
+    path: 'alert/closable',
+    loadComponent: () => import('./features/alert/closable.component').then((m) => m.AlertClosable),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "Closable" },
+  },
+  {
+    path: 'alert/severities',
+    loadComponent: () => import('./features/alert/severities.component').then((m) => m.AlertSeverities),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "Severities" },
+  },
+  {
+    path: 'alert/state-driven-visibility',
+    loadComponent: () => import('./features/alert/state-driven-visibility.component').then((m) => m.AlertStateDrivenVisibility),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert", section: "State-Driven Visibility" },
+  },
+  {
     path: 'aria-expanded/accordion-multiple-panels',
     loadComponent: () => import('./features/aria-expanded/accordion-multiple-panels.component').then((m) => m.AriaExpandedAccordionMultiplePanels),
     data: { lib: 'common', category: 'a11y', demo: "AriaExpanded", section: "Accordion — Multiple Panels" },
@@ -51,6 +81,36 @@ export const routes: Routes = [
     path: 'async-button/template-slots',
     loadComponent: () => import('./features/async-button/template-slots.component').then((m) => m.AsyncButtonTemplateSlots),
     data: { lib: 'ui', category: '', demo: "ActionButton", section: "Template Slots" },
+  },
+  {
+    path: 'async-container/cngx-async-container-full-control-toast',
+    loadComponent: () => import('./features/async-container/cngx-async-container-full-control-toast.component').then((m) => m.AsyncContainerCngxAsyncContainerFullControlToast),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "cngx-async-container — Full Control + Toast" },
+  },
+  {
+    path: 'async-container/cngxasync-one-line',
+    loadComponent: () => import('./features/async-container/cngxasync-one-line.component').then((m) => m.AsyncContainerCngxasyncOneLine),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "*cngxAsync — One Line" },
+  },
+  {
+    path: 'async-container/cngxasync-with-custom-templates',
+    loadComponent: () => import('./features/async-container/cngxasync-with-custom-templates.component').then((m) => m.AsyncContainerCngxasyncWithCustomTemplates),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "*cngxAsync — With Custom Templates" },
+  },
+  {
+    path: 'async-container/composition-overlay-container-toast',
+    loadComponent: () => import('./features/async-container/composition-overlay-container-toast.component').then((m) => m.AsyncContainerCompositionOverlayContainerToast),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "Composition — Overlay + Container + Toast" },
+  },
+  {
+    path: 'async-container/createasyncstate-mutation',
+    loadComponent: () => import('./features/async-container/createasyncstate-mutation.component').then((m) => m.AsyncContainerCreateasyncstateMutation),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "createAsyncState — Mutation" },
+  },
+  {
+    path: 'async-container/injectasyncstate-reactive-query',
+    loadComponent: () => import('./features/async-container/injectasyncstate-reactive-query.component').then((m) => m.AsyncContainerInjectasyncstateReactiveQuery),
+    data: { lib: 'ui', category: 'feedback', demo: "Async Container", section: "injectAsyncState — Reactive Query" },
   },
   {
     path: 'autofocus/conditional-focus',
@@ -108,6 +168,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'display', demo: "Badge", section: "Inline and hidden" },
   },
   {
+    path: 'banner/async-action',
+    loadComponent: () => import('./features/banner/async-action.component').then((m) => m.BannerAsyncAction),
+    data: { lib: 'ui', category: 'feedback', demo: "Banner", section: "Async Action" },
+  },
+  {
+    path: 'banner/dedup-update',
+    loadComponent: () => import('./features/banner/dedup-update.component').then((m) => m.BannerDedupUpdate),
+    data: { lib: 'ui', category: 'feedback', demo: "Banner", section: "Dedup + Update" },
+  },
+  {
+    path: 'banner/system-banners',
+    loadComponent: () => import('./features/banner/system-banners.component').then((m) => m.BannerSystemBanners),
+    data: { lib: 'ui', category: 'feedback', demo: "Banner", section: "System Banners" },
+  },
+  {
     path: 'bullet/async-state-machine',
     loadComponent: () => import('./features/bullet/async-state-machine.component').then((m) => m.BulletAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Bullet", section: "Async state machine" },
@@ -156,6 +231,66 @@ export const routes: Routes = [
     path: 'card-grid/empty-state-with-reason',
     loadComponent: () => import('./features/card-grid/empty-state-with-reason.component').then((m) => m.CardGridEmptyStateWithReason),
     data: { lib: 'common', category: 'card', demo: "Card Grid", section: "Empty State with Reason" },
+  },
+  {
+    path: 'card/action-card-with-selection',
+    loadComponent: () => import('./features/card/action-card-with-selection.component').then((m) => m.CardActionCardWithSelection),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Action Card with Selection" },
+  },
+  {
+    path: 'card/card-with-badge',
+    loadComponent: () => import('./features/card/card-with-badge.component').then((m) => m.CardCardWithBadge),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Card with Badge" },
+  },
+  {
+    path: 'card/card-with-disclosure-expand-collapse',
+    loadComponent: () => import('./features/card/card-with-disclosure-expand-collapse.component').then((m) => m.CardCardWithDisclosureExpandCollapse),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Card with Disclosure (Expand/Collapse)" },
+  },
+  {
+    path: 'card/card-with-expandable-text',
+    loadComponent: () => import('./features/card/card-with-expandable-text.component').then((m) => m.CardCardWithExpandableText),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Card with Expandable Text" },
+  },
+  {
+    path: 'card/card-with-image',
+    loadComponent: () => import('./features/card/card-with-image.component').then((m) => m.CardCardWithImage),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Card with Image" },
+  },
+  {
+    path: 'card/card-with-speak-badge',
+    loadComponent: () => import('./features/card/card-with-speak-badge.component').then((m) => m.CardCardWithSpeakBadge),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Card with Speak Badge" },
+  },
+  {
+    path: 'card/disabled-with-reason',
+    loadComponent: () => import('./features/card/disabled-with-reason.component').then((m) => m.CardDisabledWithReason),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Disabled with Reason" },
+  },
+  {
+    path: 'card/interactive-card-with-actions',
+    loadComponent: () => import('./features/card/interactive-card-with-actions.component').then((m) => m.CardInteractiveCardWithActions),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Interactive Card with Actions" },
+  },
+  {
+    path: 'card/loading-state',
+    loadComponent: () => import('./features/card/loading-state.component').then((m) => m.CardLoadingState),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Loading State" },
+  },
+  {
+    path: 'card/severity-accent',
+    loadComponent: () => import('./features/card/severity-accent.component').then((m) => m.CardSeverityAccent),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Severity Accent" },
+  },
+  {
+    path: 'card/skeleton-loading',
+    loadComponent: () => import('./features/card/skeleton-loading.component').then((m) => m.CardSkeletonLoading),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Skeleton Loading" },
+  },
+  {
+    path: 'card/title-subtitle-footer',
+    loadComponent: () => import('./features/card/title-subtitle-footer.component').then((m) => m.CardTitleSubtitleFooter),
+    data: { lib: 'common', category: 'card', demo: "Card", section: "Title + Subtitle + Footer" },
   },
   {
     path: 'checkbox-group/basic-select-all-master-projected-leaves',
@@ -253,6 +388,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Copy Text", section: "Copy URL with SR Announcement" },
   },
   {
+    path: 'data-source/datasource-cngxpaginate-manual-pipeline',
+    loadComponent: () => import('./features/data-source/datasource-cngxpaginate-manual-pipeline.component').then((m) => m.DataSourceDatasourceCngxpaginateManualPipeline),
+    data: { lib: 'common', category: 'data', demo: "DataSource", section: "DataSource + CngxPaginate — Manual Pipeline" },
+  },
+  {
+    path: 'data-source/signal-observable-bridge',
+    loadComponent: () => import('./features/data-source/signal-observable-bridge.component').then((m) => m.DataSourceSignalObservableBridge),
+    data: { lib: 'common', category: 'data', demo: "DataSource", section: "CngxDataSource — Signal → Observable Bridge" },
+  },
+  {
+    path: 'data-source/usage-pattern-consumer-wires-it-up',
+    loadComponent: () => import('./features/data-source/usage-pattern-consumer-wires-it-up.component').then((m) => m.DataSourceUsagePatternConsumerWiresItUp),
+    data: { lib: 'common', category: 'data', demo: "DataSource", section: "Usage Pattern — Consumer Wires It Up" },
+  },
+  {
     path: 'deviation-bar/async-state-machine',
     loadComponent: () => import('./features/deviation-bar/async-state-machine.component').then((m) => m.DeviationBarAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Async state machine" },
@@ -261,6 +411,56 @@ export const routes: Routes = [
     path: 'deviation-bar/variance-readings',
     loadComponent: () => import('./features/deviation-bar/variance-readings.component').then((m) => m.DeviationBarVarianceReadings),
     data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Variance readings" },
+  },
+  {
+    path: 'dialog/alert-dialog',
+    loadComponent: () => import('./features/dialog/alert-dialog.component').then((m) => m.DialogAlertDialog),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Alert Dialog" },
+  },
+  {
+    path: 'dialog/bottom-sheet',
+    loadComponent: () => import('./features/dialog/bottom-sheet.component').then((m) => m.DialogBottomSheet),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Bottom Sheet" },
+  },
+  {
+    path: 'dialog/cngxdialogopener-programmatic',
+    loadComponent: () => import('./features/dialog/cngxdialogopener-programmatic.component').then((m) => m.DialogCngxdialogopenerProgrammatic),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "CngxDialogOpener (Programmatic)" },
+  },
+  {
+    path: 'dialog/draggable-dialog',
+    loadComponent: () => import('./features/dialog/draggable-dialog.component').then((m) => m.DialogDraggableDialog),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Draggable Dialog" },
+  },
+  {
+    path: 'dialog/fully-declarative',
+    loadComponent: () => import('./features/dialog/fully-declarative.component').then((m) => m.DialogFullyDeclarative),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Fully Declarative" },
+  },
+  {
+    path: 'dialog/grid-snap-live-vs-release',
+    loadComponent: () => import('./features/dialog/grid-snap-live-vs-release.component').then((m) => m.DialogGridSnapLiveVsRelease),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Grid Snap — Live vs Release" },
+  },
+  {
+    path: 'dialog/nested-dialogs-cngxdialogstack',
+    loadComponent: () => import('./features/dialog/nested-dialogs-cngxdialogstack.component').then((m) => m.DialogNestedDialogsCngxdialogstack),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Nested Dialogs (CngxDialogStack)" },
+  },
+  {
+    path: 'dialog/non-modal-panel',
+    loadComponent: () => import('./features/dialog/non-modal-panel.component').then((m) => m.DialogNonModalPanel),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Non-Modal Panel" },
+  },
+  {
+    path: 'dialog/programmatic-control',
+    loadComponent: () => import('./features/dialog/programmatic-control.component').then((m) => m.DialogProgrammaticControl),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Programmatic Control" },
+  },
+  {
+    path: 'dialog/template-directives',
+    loadComponent: () => import('./features/dialog/template-directives.component').then((m) => m.DialogTemplateDirectives),
+    data: { lib: 'common', category: 'dialog', demo: "Dialog", section: "Template Directives" },
   },
   {
     path: 'disclosure/basic-uncontrolled',
@@ -296,6 +496,36 @@ export const routes: Routes = [
     path: 'donut/score-gauges',
     loadComponent: () => import('./features/donut/score-gauges.component').then((m) => m.DonutScoreGauges),
     data: { lib: 'common', category: 'chart', demo: "Donut", section: "Score gauges" },
+  },
+  {
+    path: 'drawer/basic-scroll-lock-backdrop',
+    loadComponent: () => import('./features/drawer/basic-scroll-lock-backdrop.component').then((m) => m.DrawerBasicScrollLockBackdrop),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Basic — Scroll Lock + Backdrop" },
+  },
+  {
+    path: 'drawer/controlled-mode',
+    loadComponent: () => import('./features/drawer/controlled-mode.component').then((m) => m.DrawerControlledMode),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Controlled Mode" },
+  },
+  {
+    path: 'drawer/direction-all-four-sides',
+    loadComponent: () => import('./features/drawer/direction-all-four-sides.component').then((m) => m.DrawerDirectionAllFourSides),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Direction — All Four Sides" },
+  },
+  {
+    path: 'drawer/events-openedchange-closed',
+    loadComponent: () => import('./features/drawer/events-openedchange-closed.component').then((m) => m.DrawerEventsOpenedchangeClosed),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Events — openedChange & closed" },
+  },
+  {
+    path: 'drawer/mode-over-push-side',
+    loadComponent: () => import('./features/drawer/mode-over-push-side.component').then((m) => m.DrawerModeOverPushSide),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Mode — Over / Push / Side" },
+  },
+  {
+    path: 'drawer/pattern-consumer-wiring',
+    loadComponent: () => import('./features/drawer/pattern-consumer-wiring.component').then((m) => m.DrawerPatternConsumerWiring),
+    data: { lib: 'common', category: 'layout', demo: "Drawer", section: "Pattern — Consumer Wiring" },
   },
   {
     path: 'empty-state/default-no-icon-projected',
@@ -438,6 +668,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "FocusVisible", section: "CngxFocusVisible — Keyboard vs Pointer" },
   },
   {
+    path: 'form-primitives/coming-in-a-follow-up',
+    loadComponent: () => import('./features/form-primitives/coming-in-a-follow-up.component').then((m) => m.FormPrimitivesComingInAFollowUp),
+    data: { lib: 'forms', category: 'field', demo: "Form Primitives — write the atom once, pick your forms style", section: "CngxChipInput — coming in a follow-up" },
+  },
+  {
+    path: 'form-primitives/reactive-forms-same-atom-just-bind-formcontrol',
+    loadComponent: () => import('./features/form-primitives/reactive-forms-same-atom-just-bind-formcontrol.component').then((m) => m.FormPrimitivesReactiveFormsSameAtomJustBindFormcontrol),
+    data: { lib: 'forms', category: 'field', demo: "Form Primitives — write the atom once, pick your forms style", section: "Reactive Forms — same atom, just bind [formControl]" },
+  },
+  {
+    path: 'form-primitives/signal-forms-drop-the-atom-into-cngx-form-field',
+    loadComponent: () => import('./features/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field.component').then((m) => m.FormPrimitivesSignalFormsDropTheAtomIntoCngxFormField),
+    data: { lib: 'forms', category: 'field', demo: "Form Primitives — write the atom once, pick your forms style", section: "Signal Forms — drop the atom into <cngx-form-field>" },
+  },
+  {
     path: 'highlight/live-search-highlighting',
     loadComponent: () => import('./features/highlight/live-search-highlighting.component').then((m) => m.HighlightLiveSearchHighlighting),
     data: { lib: 'common', category: 'layout', demo: "Highlight", section: "Live Search Highlighting" },
@@ -501,6 +746,26 @@ export const routes: Routes = [
     path: 'layout-skeleton/skeleton-container',
     loadComponent: () => import('./features/layout-skeleton/skeleton-container.component').then((m) => m.LayoutSkeletonSkeletonContainer),
     data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Skeleton Container" },
+  },
+  {
+    path: 'listbox-forms/material-mat-select-via-cngxbindfield',
+    loadComponent: () => import('./features/listbox-forms/material-mat-select-via-cngxbindfield.component').then((m) => m.ListboxFormsMaterialMatSelectViaCngxbindfield),
+    data: { lib: 'forms', category: 'field', demo: "Listbox Forms", section: "Material mat-select via CngxBindField" },
+  },
+  {
+    path: 'listbox-forms/reactive-forms-adapted-via-adaptformcontrol',
+    loadComponent: () => import('./features/listbox-forms/reactive-forms-adapted-via-adaptformcontrol.component').then((m) => m.ListboxFormsReactiveFormsAdaptedViaAdaptformcontrol),
+    data: { lib: 'forms', category: 'field', demo: "Listbox Forms", section: "Reactive Forms — adapted via adaptFormControl" },
+  },
+  {
+    path: 'listbox-forms/signal-forms-multi-select-min-2',
+    loadComponent: () => import('./features/listbox-forms/signal-forms-multi-select-min-2.component').then((m) => m.ListboxFormsSignalFormsMultiSelectMin2),
+    data: { lib: 'forms', category: 'field', demo: "Listbox Forms", section: "Signal Forms — multi select (min 2)" },
+  },
+  {
+    path: 'listbox-forms/signal-forms-single-select',
+    loadComponent: () => import('./features/listbox-forms/signal-forms-single-select.component').then((m) => m.ListboxFormsSignalFormsSingleSelect),
+    data: { lib: 'forms', category: 'field', demo: "Listbox Forms", section: "Signal Forms — single select" },
   },
   {
     path: 'listbox-search/command-palette',
@@ -571,36 +836,6 @@ export const routes: Routes = [
     path: 'mask/locale-presets',
     loadComponent: () => import('./features/mask/locale-presets.component').then((m) => m.MaskLocalePresets),
     data: { lib: 'forms', category: 'input', demo: "Input Mask", section: "Locale Presets" },
-  },
-  {
-    path: 'mat-paginator/headless-custom-pagination-controls',
-    loadComponent: () => import('./features/mat-paginator/headless-custom-pagination-controls.component').then((m) => m.MatPaginatorHeadlessCustomPaginationControls),
-    data: { lib: 'ui', category: '', demo: "MatPaginator", section: "Headless — Custom Pagination Controls" },
-  },
-  {
-    path: 'mat-paginator/material-paginator',
-    loadComponent: () => import('./features/mat-paginator/material-paginator.component').then((m) => m.MatPaginatorMaterialPaginator),
-    data: { lib: 'ui', category: '', demo: "MatPaginator", section: "CngxMatPaginator — Material Paginator" },
-  },
-  {
-    path: 'mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper',
-    loadComponent: () => import('./features/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper.component').then((m) => m.MatStepperInstrumentationVanillaMatStepperUpgradedByAddingCngxmatstepper),
-    data: { lib: 'ui', category: 'mat-stepper', demo: "Mat-stepper — instrumentation directive", section: "Vanilla <mat-stepper> upgraded by adding cngxMatStepper" },
-  },
-  {
-    path: 'mat-stepper-router-sync/deep-linking-against-material',
-    loadComponent: () => import('./features/mat-stepper-router-sync/deep-linking-against-material.component').then((m) => m.MatStepperRouterSyncDeepLinkingAgainstMaterial),
-    data: { lib: 'ui', category: 'mat-stepper', demo: "Mat-Stepper — router sync", section: "Deep-linking against Material" },
-  },
-  {
-    path: 'material/mat-select-via-cngxbindfield-reactive-forms',
-    loadComponent: () => import('./features/material/mat-select-via-cngxbindfield-reactive-forms.component').then((m) => m.MaterialMatSelectViaCngxbindfieldReactiveForms),
-    data: { lib: 'forms', category: 'field', demo: "Material Integration", section: "mat-select via CngxBindField + Reactive Forms" },
-  },
-  {
-    path: 'material/matinput-via-cngxbindfield',
-    loadComponent: () => import('./features/material/matinput-via-cngxbindfield.component').then((m) => m.MaterialMatinputViaCngxbindfield),
-    data: { lib: 'forms', category: 'field', demo: "Material Integration", section: "matInput via CngxBindField" },
   },
   {
     path: 'media-query/viewport-breakpoints',
@@ -773,6 +1008,41 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Pressable", section: "Tappable Card" },
   },
   {
+    path: 'primitives/async-state-machine-on-the-primitive',
+    loadComponent: () => import('./features/primitives/async-state-machine-on-the-primitive.component').then((m) => m.PrimitivesAsyncStateMachineOnThePrimitive),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Async state machine on the primitive" },
+  },
+  {
+    path: 'primitives/combo-bars-moving-average-line',
+    loadComponent: () => import('./features/primitives/combo-bars-moving-average-line.component').then((m) => m.PrimitivesComboBarsMovingAverageLine),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Combo: bars + moving-average line" },
+  },
+  {
+    path: 'primitives/line-area-threshold-band',
+    loadComponent: () => import('./features/primitives/line-area-threshold-band.component').then((m) => m.PrimitivesLineAreaThresholdBand),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Line + area + threshold + band" },
+  },
+  {
+    path: 'primitives/multi-series-line-axis-labels-legend',
+    loadComponent: () => import('./features/primitives/multi-series-line-axis-labels-legend.component').then((m) => m.PrimitivesMultiSeriesLineAxisLabelsLegend),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Multi-series line + axis labels + legend" },
+  },
+  {
+    path: 'primitives/responsive-fills-parent-width',
+    loadComponent: () => import('./features/primitives/responsive-fills-parent-width.component').then((m) => m.PrimitivesResponsiveFillsParentWidth),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Responsive (fills parent width)" },
+  },
+  {
+    path: 'primitives/scatter-with-performance-zones',
+    loadComponent: () => import('./features/primitives/scatter-with-performance-zones.component').then((m) => m.PrimitivesScatterWithPerformanceZones),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Scatter with performance zones" },
+  },
+  {
+    path: 'primitives/time-series-with-threshold-zones',
+    loadComponent: () => import('./features/primitives/time-series-with-threshold-zones.component').then((m) => m.PrimitivesTimeSeriesWithThresholdZones),
+    data: { lib: 'common', category: 'chart', demo: "Chart Primitives", section: "Time-series with threshold zones" },
+  },
+  {
     path: 'progress/circular-variant',
     loadComponent: () => import('./features/progress/circular-variant.component').then((m) => m.ProgressCircularVariant),
     data: { lib: 'ui', category: 'feedback', demo: "Progress", section: "Circular Variant" },
@@ -831,6 +1101,36 @@ export const routes: Routes = [
     path: 'radio/orientation-horizontal',
     loadComponent: () => import('./features/radio/orientation-horizontal.component').then((m) => m.RadioOrientationHorizontal),
     data: { lib: 'common', category: 'interactive', demo: "Radio group", section: "Orientation — horizontal" },
+  },
+  {
+    path: 'recycler/basic-list-fixed-item-height',
+    loadComponent: () => import('./features/recycler/basic-list-fixed-item-height.component').then((m) => m.RecyclerBasicListFixedItemHeight),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "Basic List — Fixed Item Height" },
+  },
+  {
+    path: 'recycler/content-visibility-css-only',
+    loadComponent: () => import('./features/recycler/content-visibility-css-only.component').then((m) => m.RecyclerContentVisibilityCssOnly),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "Content Visibility (CSS-only)" },
+  },
+  {
+    path: 'recycler/infinite-scroll-recycler',
+    loadComponent: () => import('./features/recycler/infinite-scroll-recycler.component').then((m) => m.RecyclerInfiniteScrollRecycler),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "Infinite Scroll + Recycler" },
+  },
+  {
+    path: 'recycler/scrolltoindex-deep-link',
+    loadComponent: () => import('./features/recycler/scrolltoindex-deep-link.component').then((m) => m.RecyclerScrolltoindexDeepLink),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "ScrollToIndex + Deep-Link" },
+  },
+  {
+    path: 'recycler/variable-heights-cngxmeasure',
+    loadComponent: () => import('./features/recycler/variable-heights-cngxmeasure.component').then((m) => m.RecyclerVariableHeightsCngxmeasure),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "Variable Heights — CngxMeasure" },
+  },
+  {
+    path: 'recycler/with-cngxasyncstate-skeleton-first-load',
+    loadComponent: () => import('./features/recycler/with-cngxasyncstate-skeleton-first-load.component').then((m) => m.RecyclerWithCngxasyncstateSkeletonFirstLoad),
+    data: { lib: 'common', category: 'data', demo: "Recycler — DOM Recycling", section: "With CngxAsyncState — Skeleton First Load" },
   },
   {
     path: 'reduced-motion/animation-toggle',
@@ -903,6 +1203,21 @@ export const routes: Routes = [
     data: { lib: 'ui', category: '', demo: "Sidenav", section: "Material Theming -- Light vs Dark" },
   },
   {
+    path: 'smart-data-source/auto-wired',
+    loadComponent: () => import('./features/smart-data-source/auto-wired.component').then((m) => m.SmartDataSourceAutoWired),
+    data: { lib: 'common', category: 'data', demo: "SmartDataSource", section: "CngxSmartDataSource — Auto-Wired" },
+  },
+  {
+    path: 'smart-data-source/how-it-works-hostdirectives-inject',
+    loadComponent: () => import('./features/smart-data-source/how-it-works-hostdirectives-inject.component').then((m) => m.SmartDataSourceHowItWorksHostdirectivesInject),
+    data: { lib: 'common', category: 'data', demo: "SmartDataSource", section: "How It Works — hostDirectives + inject()" },
+  },
+  {
+    path: 'smart-data-source/smartdatasource-cngxpaginate-hostdirective',
+    loadComponent: () => import('./features/smart-data-source/smartdatasource-cngxpaginate-hostdirective.component').then((m) => m.SmartDataSourceSmartdatasourceCngxpaginateHostdirective),
+    data: { lib: 'common', category: 'data', demo: "SmartDataSource", section: "SmartDataSource + CngxPaginate (hostDirective)" },
+  },
+  {
     path: 'sparkline/async-state-machine',
     loadComponent: () => import('./features/sparkline/async-state-machine.component').then((m) => m.SparklineAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "Async state machine" },
@@ -953,6 +1268,11 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Stacked Bar", section: "Proportional share strips" },
   },
   {
+    path: 'stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives',
+    loadComponent: () => import('./features/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives.component').then((m) => m.StepperCommitActionPessimisticOptimisticCommitsWithBridgeDirectives),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — async commitAction", section: "Pessimistic + optimistic commits with bridge directives" },
+  },
+  {
     path: 'stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot',
     loadComponent: () => import('./features/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot.component').then((m) => m.StepperCustomLabelsMixingCodeLabelCodeInputWithCodeCngxsteplabelCodeSlot),
     data: { lib: 'ui', category: 'stepper', demo: "Stepper — custom labels", section: "Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot" },
@@ -983,6 +1303,36 @@ export const routes: Routes = [
     data: { lib: 'ui', category: 'stepper', demo: "Stepper — router sync", section: "Deep-linking with fragment + queryParam modes" },
   },
   {
+    path: 'stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code.component').then((m) => m.StepperSlotOverridesCustomBusySpinnerViaCodeCngxstepbusyspinnerCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Custom busy-spinner via <code>*cngxStepBusySpinner</code>" },
+  },
+  {
+    path: 'stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code.component').then((m) => m.StepperSlotOverridesCustomErrorBadgeViaCodeCngxstepbadgeCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Custom error badge via <code>*cngxStepBadge</code>" },
+  },
+  {
+    path: 'stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code.component').then((m) => m.StepperSlotOverridesCustomGroupHeaderViaCodeCngxstepgroupheaderCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Custom group header via <code>*cngxStepGroupHeader</code>" },
+  },
+  {
+    path: 'stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code.component').then((m) => m.StepperSlotOverridesCustomIndicatorGlyphViaCodeCngxstepindicatorCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Custom indicator glyph via <code>*cngxStepIndicator</code>" },
+  },
+  {
+    path: 'stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code.component').then((m) => m.StepperSlotOverridesEmptyStatePlaceholderViaCodeCngxstepperemptyCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Empty-state placeholder via <code>*cngxStepperEmpty</code>" },
+  },
+  {
+    path: 'stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code',
+    loadComponent: () => import('./features/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code.component').then((m) => m.StepperSlotOverridesRejectionDecorationViaCodeCngxsteprejectionCode),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — slot overrides", section: "Rejection-decoration via <code>*cngxStepRejection</code>" },
+  },
+  {
     path: 'stepper-vertical/vertical-sidebar-layout',
     loadComponent: () => import('./features/stepper-vertical/vertical-sidebar-layout.component').then((m) => m.StepperVerticalVerticalSidebarLayout),
     data: { lib: 'ui', category: 'stepper', demo: "Stepper — vertical", section: "Vertical sidebar layout" },
@@ -996,6 +1346,11 @@ export const routes: Routes = [
     path: 'swipe-dismiss/directional-swipe',
     loadComponent: () => import('./features/swipe-dismiss/directional-swipe.component').then((m) => m.SwipeDismissDirectionalSwipe),
     data: { lib: 'common', category: 'interactive', demo: "SwipeDismiss", section: "CngxSwipeDismiss — Directional Swipe" },
+  },
+  {
+    path: 'tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives',
+    loadComponent: () => import('./features/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives.component').then((m) => m.TabCommitActionOptimisticPessimisticCommitsWithBridgeDirectives),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — async commitAction", section: "Optimistic + pessimistic commits with bridge directives" },
   },
   {
     path: 'tab-error-aggregation/per-tab-error-badges',
@@ -1016,6 +1371,111 @@ export const routes: Routes = [
     path: 'tab-overflow/8-tabs-in-a-narrow-container',
     loadComponent: () => import('./features/tab-overflow/8-tabs-in-a-narrow-container.component').then((m) => m.TabOverflow8TabsInANarrowContainer),
     data: { lib: 'ui', category: 'tabs', demo: "Tabs — overflow dropdown", section: "8 tabs in a narrow container" },
+  },
+  {
+    path: 'tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code',
+    loadComponent: () => import('./features/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code.component').then((m) => m.TabSlotOverridesCustomBusySpinnerViaCodeCngxtabbusyspinnerCode),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — slot overrides", section: "Custom busy-spinner via <code>*cngxTabBusySpinner</code>" },
+  },
+  {
+    path: 'tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code',
+    loadComponent: () => import('./features/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code.component').then((m) => m.TabSlotOverridesCustomErrorBadgeViaCodeCngxtaberrorbadgeCode),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — slot overrides", section: "Custom error badge via <code>*cngxTabErrorBadge</code>" },
+  },
+  {
+    path: 'tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code',
+    loadComponent: () => import('./features/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code.component').then((m) => m.TabSlotOverridesRejectionDecorationViaCodeCngxtabrejectioniconCode),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — slot overrides", section: "Rejection-decoration via <code>*cngxTabRejectionIcon</code>" },
+  },
+  {
+    path: 'tag/app-wide-defaults-via-providetagconfig',
+    loadComponent: () => import('./features/tag/app-wide-defaults-via-providetagconfig.component').then((m) => m.TagAppWideDefaultsViaProvidetagconfig),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "App-wide defaults via provideTagConfig" },
+  },
+  {
+    path: 'tag/color-palette',
+    loadComponent: () => import('./features/tag/color-palette.component').then((m) => m.TagColorPalette),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Color palette" },
+  },
+  {
+    path: 'tag/composition-with-cngxicon',
+    loadComponent: () => import('./features/tag/composition-with-cngxicon.component').then((m) => m.TagCompositionWithCngxicon),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Composition with CngxIcon" },
+  },
+  {
+    path: 'tag/density',
+    loadComponent: () => import('./features/tag/density.component').then((m) => m.TagDensity),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Density" },
+  },
+  {
+    path: 'tag/group-semantic-list',
+    loadComponent: () => import('./features/tag/group-semantic-list.component').then((m) => m.TagGroupSemanticList),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Group + semantic list" },
+  },
+  {
+    path: 'tag/group-with-header-accessory',
+    loadComponent: () => import('./features/tag/group-with-header-accessory.component').then((m) => m.TagGroupWithHeaderAccessory),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Group with header + accessory" },
+  },
+  {
+    path: 'tag/layout-only-alignment',
+    loadComponent: () => import('./features/tag/layout-only-alignment.component').then((m) => m.TagLayoutOnlyAlignment),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Layout-only — alignment" },
+  },
+  {
+    path: 'tag/layout-only-gap-variants',
+    loadComponent: () => import('./features/tag/layout-only-gap-variants.component').then((m) => m.TagLayoutOnlyGapVariants),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Layout-only — gap variants" },
+  },
+  {
+    path: 'tag/link-mode',
+    loadComponent: () => import('./features/tag/link-mode.component').then((m) => m.TagLinkMode),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Link mode" },
+  },
+  {
+    path: 'tag/slot-overrides-custom-label',
+    loadComponent: () => import('./features/tag/slot-overrides-custom-label.component').then((m) => m.TagSlotOverridesCustomLabel),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Slot overrides — custom label" },
+  },
+  {
+    path: 'tag/slot-overrides-prefix-label-suffix',
+    loadComponent: () => import('./features/tag/slot-overrides-prefix-label-suffix.component').then((m) => m.TagSlotOverridesPrefixLabelSuffix),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Slot overrides — prefix / label / suffix" },
+  },
+  {
+    path: 'tag/truncate-maxwidth',
+    loadComponent: () => import('./features/tag/truncate-maxwidth.component').then((m) => m.TagTruncateMaxwidth),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Truncate + maxWidth" },
+  },
+  {
+    path: 'tag/variant-matrix',
+    loadComponent: () => import('./features/tag/variant-matrix.component').then((m) => m.TagVariantMatrix),
+    data: { lib: 'common', category: 'display', demo: "Tag", section: "Variant matrix" },
+  },
+  {
+    path: 'toast/custom-component-body',
+    loadComponent: () => import('./features/toast/custom-component-body.component').then((m) => m.ToastCustomComponentBody),
+    data: { lib: 'ui', category: 'feedback', demo: "Toast", section: "Custom Component Body" },
+  },
+  {
+    path: 'toast/declarative-cngx-toast',
+    loadComponent: () => import('./features/toast/declarative-cngx-toast.component').then((m) => m.ToastDeclarativeCngxToast),
+    data: { lib: 'ui', category: 'feedback', demo: "Toast", section: "Declarative (<cngx-toast>)" },
+  },
+  {
+    path: 'toast/programmatic-cngxtoaster',
+    loadComponent: () => import('./features/toast/programmatic-cngxtoaster.component').then((m) => m.ToastProgrammaticCngxtoaster),
+    data: { lib: 'ui', category: 'feedback', demo: "Toast", section: "Programmatic (CngxToaster)" },
+  },
+  {
+    path: 'toast/state-bridge-cngxtoaston',
+    loadComponent: () => import('./features/toast/state-bridge-cngxtoaston.component').then((m) => m.ToastStateBridgeCngxtoaston),
+    data: { lib: 'ui', category: 'feedback', demo: "Toast", section: "State Bridge ([cngxToastOn])" },
+  },
+  {
+    path: 'toast/title-description',
+    loadComponent: () => import('./features/toast/title-description.component').then((m) => m.ToastTitleDescription),
+    data: { lib: 'ui', category: 'feedback', demo: "Toast", section: "Title + Description" },
   },
   {
     path: 'toggle/basic-two-way-binding',

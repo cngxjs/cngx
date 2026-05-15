@@ -85,6 +85,19 @@ export type CngxTagGroupAlign = 'start' | 'center' | 'end' | 'between';
  *   the right call until a future shared concern lands.
  * - Configuration cascade (`provideTagConfig`) — deferred (see
  *   `display-accepted-debt.md §1`).
+ * <example-url>http://localhost:4200/tag/app-wide-defaults-via-providetagconfig</example-url>
+ * <example-url>http://localhost:4200/tag/color-palette</example-url>
+ * <example-url>http://localhost:4200/tag/composition-with-cngxicon</example-url>
+ * <example-url>http://localhost:4200/tag/density</example-url>
+ * <example-url>http://localhost:4200/tag/group-semantic-list</example-url>
+ * <example-url>http://localhost:4200/tag/group-with-header-accessory</example-url>
+ * <example-url>http://localhost:4200/tag/layout-only-alignment</example-url>
+ * <example-url>http://localhost:4200/tag/layout-only-gap-variants</example-url>
+ * <example-url>http://localhost:4200/tag/link-mode</example-url>
+ * <example-url>http://localhost:4200/tag/slot-overrides-custom-label</example-url>
+ * <example-url>http://localhost:4200/tag/slot-overrides-prefix-label-suffix</example-url>
+ * <example-url>http://localhost:4200/tag/truncate-maxwidth</example-url>
+ * <example-url>http://localhost:4200/tag/variant-matrix</example-url>
  */
 @Component({
   selector: 'cngx-tag-group',

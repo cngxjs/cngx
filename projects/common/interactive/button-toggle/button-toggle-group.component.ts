@@ -60,6 +60,9 @@ import {
  * <example-url>http://localhost:4200/button-toggle-group/basic-view-switcher</example-url>
  * <example-url>http://localhost:4200/button-toggle-group/disabled-group-cascade-vs-per-toggle</example-url>
  * <example-url>http://localhost:4200/button-toggle-group/vertical-orientation</example-url>
+ * <example-url>http://localhost:4200/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: 'cngx-button-toggle-group, [cngxButtonToggleGroup]',

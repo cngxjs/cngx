@@ -23,6 +23,19 @@ import type { CngxTagGroupAccessoryContext } from './tag-group-slot.context';
  *   </ng-template>
  * </cngx-tag-group>
  * ```
+ * <example-url>http://localhost:4200/tag/app-wide-defaults-via-providetagconfig</example-url>
+ * <example-url>http://localhost:4200/tag/color-palette</example-url>
+ * <example-url>http://localhost:4200/tag/composition-with-cngxicon</example-url>
+ * <example-url>http://localhost:4200/tag/density</example-url>
+ * <example-url>http://localhost:4200/tag/group-semantic-list</example-url>
+ * <example-url>http://localhost:4200/tag/group-with-header-accessory</example-url>
+ * <example-url>http://localhost:4200/tag/layout-only-alignment</example-url>
+ * <example-url>http://localhost:4200/tag/layout-only-gap-variants</example-url>
+ * <example-url>http://localhost:4200/tag/link-mode</example-url>
+ * <example-url>http://localhost:4200/tag/slot-overrides-custom-label</example-url>
+ * <example-url>http://localhost:4200/tag/slot-overrides-prefix-label-suffix</example-url>
+ * <example-url>http://localhost:4200/tag/truncate-maxwidth</example-url>
+ * <example-url>http://localhost:4200/tag/variant-matrix</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTagGroupAccessory]',

@@ -91,7 +91,7 @@ export class CngxScrollSpy {
       .filter((el): el is HTMLElement => el !== null);
 
     if (elements.length === 0) {
-      return;
+      return undefined;
     }
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;

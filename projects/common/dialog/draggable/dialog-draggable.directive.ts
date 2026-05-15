@@ -34,6 +34,16 @@ import {
  *   transform: translate(var(--cngx-dialog-x, 0px), var(--cngx-dialog-y, 0px));
  * }
  * ```
+ * <example-url>http://localhost:4200/dialog/alert-dialog</example-url>
+ * <example-url>http://localhost:4200/dialog/bottom-sheet</example-url>
+ * <example-url>http://localhost:4200/dialog/cngxdialogopener-programmatic</example-url>
+ * <example-url>http://localhost:4200/dialog/draggable-dialog</example-url>
+ * <example-url>http://localhost:4200/dialog/fully-declarative</example-url>
+ * <example-url>http://localhost:4200/dialog/grid-snap-live-vs-release</example-url>
+ * <example-url>http://localhost:4200/dialog/nested-dialogs-cngxdialogstack</example-url>
+ * <example-url>http://localhost:4200/dialog/non-modal-panel</example-url>
+ * <example-url>http://localhost:4200/dialog/programmatic-control</example-url>
+ * <example-url>http://localhost:4200/dialog/template-directives</example-url>
  */
 @Directive({
   selector: '[cngxDialogDraggable]',

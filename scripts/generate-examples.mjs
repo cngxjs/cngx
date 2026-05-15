@@ -80,6 +80,36 @@ const KNOWN_ANGULAR_IMPORTS = new Map([
   ['RouterLink', '@angular/router'],
   ['RouterLinkActive', '@angular/router'],
   ['RouterOutlet', '@angular/router'],
+  // Material modules — used by sections that demo cngx-in-Material integration.
+  ['MatAutocompleteModule', '@angular/material/autocomplete'],
+  ['MatBadgeModule', '@angular/material/badge'],
+  ['MatButtonModule', '@angular/material/button'],
+  ['MatCardModule', '@angular/material/card'],
+  ['MatCheckboxModule', '@angular/material/checkbox'],
+  ['MatChipsModule', '@angular/material/chips'],
+  ['MatDialogModule', '@angular/material/dialog'],
+  ['MatDividerModule', '@angular/material/divider'],
+  ['MatExpansionModule', '@angular/material/expansion'],
+  ['MatFormFieldModule', '@angular/material/form-field'],
+  ['MatIconModule', '@angular/material/icon'],
+  ['MatInputModule', '@angular/material/input'],
+  ['MatListModule', '@angular/material/list'],
+  ['MatMenuModule', '@angular/material/menu'],
+  ['MatPaginatorModule', '@angular/material/paginator'],
+  ['MatProgressBarModule', '@angular/material/progress-bar'],
+  ['MatProgressSpinnerModule', '@angular/material/progress-spinner'],
+  ['MatRadioModule', '@angular/material/radio'],
+  ['MatRippleModule', '@angular/material/core'],
+  ['MatSelectModule', '@angular/material/select'],
+  ['MatSidenavModule', '@angular/material/sidenav'],
+  ['MatSlideToggleModule', '@angular/material/slide-toggle'],
+  ['MatSnackBarModule', '@angular/material/snack-bar'],
+  ['MatSortModule', '@angular/material/sort'],
+  ['MatStepperModule', '@angular/material/stepper'],
+  ['MatTableModule', '@angular/material/table'],
+  ['MatTabsModule', '@angular/material/tabs'],
+  ['MatToolbarModule', '@angular/material/toolbar'],
+  ['MatTooltipModule', '@angular/material/tooltip'],
 ]);
 
 async function buildPublicApiImportMap() {
@@ -126,9 +156,18 @@ async function loadStory(storyPath) {
  * "import { CngxFoo, type FooType } from '...'" → ['CngxFoo', 'FooType']
  */
 function importedSymbols(importLine) {
-  const m = importLine.match(/import\s*\{([^}]+)\}/);
+  // Match `import { … }` AND `import type { … }`.
+  const m = importLine.match(/import\s+(?:type\s+)?\{([^}]+)\}/);
   if (!m) return [];
-  return m[1].split(',').map((s) => s.trim().replace(/^type\s+/, '')).filter(Boolean);
+  // For `type X as Y` or `X as Y`, the local binding is `Y` — that's what
+  // the rest of the file references, so that's what we register.
+  return m[1]
+    .split(',')
+    .map((s) => {
+      const parts = s.trim().replace(/^type\s+/, '').split(/\s+as\s+/);
+      return (parts.length > 1 ? parts[1] : parts[0])?.trim();
+    })
+    .filter(Boolean);
 }
 
 /**
@@ -136,7 +175,11 @@ function importedSymbols(importLine) {
  * Returns the import block string + the set of identifiers available.
  */
 function buildImports(story, section, importMap) {
-  const setup = [story.setup ?? '', section.setup ?? ''].join('\n');
+  // Strip TS comments before auto-detecting Angular core symbols, otherwise
+  // a comment like `// viewChild on the ng-template` triggers a viewChild
+  // import that the actual code never uses (TS6133).
+  const setup =
+    stripCommentsForScan(story.setup) + '\n' + stripCommentsForScan(section.setup);
   const tpl = section.template ?? '';
   const usesSignal = /\bsignal\s*[<(]/.test(setup);
   const usesComputed = /\bcomputed\s*[<(]/.test(setup);
@@ -146,6 +189,8 @@ function buildImports(story, section, importMap) {
   const usesViewChild = /\bviewChild\b/.test(setup);
   const usesElementRef = /\bElementRef\b/.test(setup);
   const usesDestroyRef = /\bDestroyRef\b/.test(setup);
+  const usesUntracked = /\buntracked\s*\(/.test(setup);
+  const usesLinkedSignal = /\blinkedSignal\s*[<(]/.test(setup);
 
   const coreSymbols = [
     'ChangeDetectionStrategy',
@@ -156,15 +201,23 @@ function buildImports(story, section, importMap) {
     ...(usesEffect ? ['effect'] : []),
     ...(usesElementRef ? ['ElementRef'] : []),
     ...(usesInject ? ['inject'] : []),
+    ...(usesLinkedSignal ? ['linkedSignal'] : []),
     ...(usesSignal ? ['signal'] : []),
+    ...(usesUntracked ? ['untracked'] : []),
     ...(usesViewChild ? ['viewChild'] : []),
   ];
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
   // Build the haystack: every place a symbol might be referenced in the
-  // generated component (TS setup + template HTML).
-  const scanText = [story.setup ?? '', section.setup ?? '', section.template ?? ''].join('\n');
+  // generated component (TS setup + template HTML). Strip TS comments first
+  // so a section title in `// — CngxFoo standalone` doesn't count as a use.
+  const scanText =
+    stripCommentsForScan(story.setup) +
+    '\n' +
+    stripCommentsForScan(section.setup) +
+    '\n' +
+    (section.template ?? '');
   const explicitRefs = new Set([
     ...(section.imports ?? []),
     ...(story.hostDirectives ?? []),
@@ -187,7 +240,10 @@ function buildImports(story, section, importMap) {
       .map((s) => s.trim())
       .filter(Boolean)
       .filter((spec) => {
-        const id = spec.replace(/^type\s+/, '').split(/\s+as\s+/)[0].trim();
+        // Same alias-aware logic as importedSymbols: the local binding is
+        // either `as Y` (when aliased) or the symbol name itself.
+        const parts = spec.replace(/^type\s+/, '').split(/\s+as\s+/);
+        const id = (parts.length > 1 ? parts[1] : parts[0])?.trim();
         return isReferenced(id);
       });
     if (kept.length === 0) return null;
@@ -197,7 +253,11 @@ function buildImports(story, section, importMap) {
   /** Rewrite dev-app-relative paths to the examples app's layout. */
   function rewritePaths(line) {
     if (!line) return line;
-    // Any relative `../...fixtures[/...]` → '../../fixtures' (depth-agnostic).
+    // forms-only `../_fixtures/<file>` — keep the underscore-prefixed dir.
+    if (/'(?:\.\.\/)+_fixtures\//.test(line)) {
+      return line.replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, "'../../_fixtures/$1'");
+    }
+    // generic `../...fixtures[/...]` → '../../fixtures' (depth-agnostic).
     return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, "'../../fixtures'");
   }
 
@@ -215,8 +275,19 @@ function buildImports(story, section, importMap) {
   }
 
   // Resolve any referenced identifiers still missing via the public-api map.
+  // Walk both section.imports/hostDirectives (explicit) AND identifiers
+  // word-matched in the comment-stripped setup (type annotations like
+  // `filterRef: CngxFilter` that aren't in section.imports).
+  const candidates = new Set([
+    ...(section.imports ?? []),
+    ...(story.hostDirectives ?? []),
+  ]);
+  for (const m of setup.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)) {
+    candidates.add(m[1]);
+  }
+
   const extraByPkg = new Map();
-  for (const id of section.imports ?? []) {
+  for (const id of candidates) {
     if (coveredIds.has(id)) continue;
     const pkg = importMap.get(id);
     if (!pkg) continue;
@@ -233,6 +304,13 @@ function buildImports(story, section, importMap) {
 /** Escape a string for use as a TypeScript single-quoted literal. */
 function tsQuote(s) {
   return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'") + "'";
+}
+
+/** Remove TS line and block comments so a class name buried in a comment doesn't count as a reference. */
+function stripCommentsForScan(s) {
+  return String(s ?? '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/[^\n]*/g, '');
 }
 
 /** Escape a string for embedding inside a TypeScript backtick template literal. */
@@ -327,7 +405,10 @@ function emitComponentSource(meta, story, section, importMap) {
     .filter(Boolean)
     .join('\n\n');
 
-  // Component-decorator imports (template-level directives/components)
+  // Component-decorator imports — pass section.imports through verbatim.
+  // Selector→class mapping isn't reliable enough to filter safely
+  // (e.g. CngxSkeletonContainer drives the <cngx-skeleton> element), so
+  // any NG8113 'unused import' warnings are accepted as cosmetic noise.
   const tplImports = section.imports ?? [];
   const decoratorImports = tplImports.length > 0 ? `\n  imports: [${tplImports.join(', ')}],` : '';
 
@@ -387,7 +468,10 @@ function emitComponentSource(meta, story, section, importMap) {
     `    </details>`,
   ].join('\n');
 
-  const template = section.template.trim();
+  // Escape backticks and ${...} interpolations in the live template so
+  // the surrounding TS template literal stays valid when stories embed
+  // code snippets inside <pre><code> blocks.
+  const template = section.template.trim().replaceAll('`', '\\`').replaceAll('${', '\\${');
 
   return `${GEN_HEADER}
 // Source: dev-app/src/app/demos/${meta.demoFolder}/${meta.storyFileName}#section[${meta.sectionIndex}] "${section.title}"
@@ -533,10 +617,36 @@ async function main() {
       slugCounts.get(rawSlug) > 1
         ? `${parts.length >= 2 ? parts[parts.length - 2] : parts[0]}-${rawSlug}`
         : rawSlug;
+
+    // Copy any co-located helper files referenced by `from './<file>'` in
+    // moduleImports — e.g. toast-demo imports './sample-toast-body'.
+    const helperFiles = new Set();
+    for (const line of story.moduleImports ?? []) {
+      const m = line.match(/from\s+['"](\.\/[^'"]+)['"]/);
+      if (m) helperFiles.add(m[1]);
+    }
     approvedSlugs.add(demoSlug);
     const featureDir = join(FEATURES_DIR, demoSlug);
     await rm(featureDir, { recursive: true, force: true });
     await mkdir(featureDir, { recursive: true });
+
+    for (const rel of helperFiles) {
+      // Try resolving with and without `.ts` extension.
+      const candidates = [
+        join(demoDir, rel + '.ts'),
+        join(demoDir, rel),
+      ];
+      for (const candidate of candidates) {
+        try {
+          const content = await readFile(candidate, 'utf8');
+          const destName = rel.replace(/^\.\//, '') + (candidate.endsWith('.ts') ? '.ts' : '');
+          await writeFile(join(featureDir, destName), content);
+          break;
+        } catch {
+          /* try next */
+        }
+      }
+    }
 
     const lib = parts[0];
     const category = parts.length === 3 ? parts[1] : (story.navCategory ?? '');

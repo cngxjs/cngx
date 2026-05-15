@@ -644,7 +644,7 @@ export class CngxCombobox<T = unknown> implements CngxFormFieldControl {
       return null;
     }
     const matcher = this.effectiveMatchFn();
-    return (all) => filterSelectOptions(all, term, matcher);
+    return (all) => filterSelectOptions<T>(all, term, matcher);
   });
 
   /** @internal */

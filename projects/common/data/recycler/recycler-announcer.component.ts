@@ -13,6 +13,12 @@ import type { CngxRecycler } from './recycler';
  * ```html
  * <cngx-recycler-announcer [cngxRecyclerAnnouncer]="recycler" />
  * ```
+ * <example-url>http://localhost:4200/recycler/basic-list-fixed-item-height</example-url>
+ * <example-url>http://localhost:4200/recycler/content-visibility-css-only</example-url>
+ * <example-url>http://localhost:4200/recycler/infinite-scroll-recycler</example-url>
+ * <example-url>http://localhost:4200/recycler/scrolltoindex-deep-link</example-url>
+ * <example-url>http://localhost:4200/recycler/variable-heights-cngxmeasure</example-url>
+ * <example-url>http://localhost:4200/recycler/with-cngxasyncstate-skeleton-first-load</example-url>
  */
 @Component({
   selector: 'cngx-recycler-announcer',

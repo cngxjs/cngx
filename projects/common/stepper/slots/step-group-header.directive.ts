@@ -34,6 +34,12 @@ export interface CngxStepGroupHeaderContext {
  *   </ng-template>
  * </cngx-stepper>
  * ```
+ * <example-url>http://localhost:4200/stepper-slot-overrides/custom-busy-spinner-via-code-cngxstepbusyspinner-code</example-url>
+ * <example-url>http://localhost:4200/stepper-slot-overrides/custom-error-badge-via-code-cngxstepbadge-code</example-url>
+ * <example-url>http://localhost:4200/stepper-slot-overrides/custom-group-header-via-code-cngxstepgroupheader-code</example-url>
+ * <example-url>http://localhost:4200/stepper-slot-overrides/custom-indicator-glyph-via-code-cngxstepindicator-code</example-url>
+ * <example-url>http://localhost:4200/stepper-slot-overrides/empty-state-placeholder-via-code-cngxstepperempty-code</example-url>
+ * <example-url>http://localhost:4200/stepper-slot-overrides/rejection-decoration-via-code-cngxsteprejection-code</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxStepGroupHeader]',

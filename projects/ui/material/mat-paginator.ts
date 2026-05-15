@@ -21,8 +21,9 @@ import { type CngxPaginate } from '@cngx/common/data';
  * </div>
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
  * ```
- * <example-url>http://localhost:4200/mat-paginator/headless-custom-pagination-controls</example-url>
- * <example-url>http://localhost:4200/mat-paginator/material-paginator</example-url>
+ * <example-url>http://localhost:4200/data-source/datasource-cngxpaginate-manual-pipeline</example-url>
+ * <example-url>http://localhost:4200/data-source/signal-observable-bridge</example-url>
+ * <example-url>http://localhost:4200/data-source/usage-pattern-consumer-wires-it-up</example-url>
  * <example-url>http://localhost:4200/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
  * <example-url>http://localhost:4200/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  */

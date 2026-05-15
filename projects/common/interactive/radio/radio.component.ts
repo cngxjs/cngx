@@ -50,6 +50,9 @@ import {
  * the `<div role="radio">` host does not participate in HTML
  * form submission, so the attribute carries no functional
  * weight.
+ * <example-url>http://localhost:4200/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  * <example-url>http://localhost:4200/radio/basic-vertical-group</example-url>
  * <example-url>http://localhost:4200/radio/custom-dot-glyph</example-url>
  * <example-url>http://localhost:4200/radio/disabled-group-cascades-per-radio-overrides</example-url>

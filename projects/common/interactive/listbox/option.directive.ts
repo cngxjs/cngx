@@ -27,6 +27,10 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
  * Selection state (`isSelected`) is driven externally by the enclosing listbox.
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
+ * <example-url>http://localhost:4200/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/listbox-forms/signal-forms-single-select</example-url>
  * <example-url>http://localhost:4200/listbox-search/command-palette</example-url>
  * <example-url>http://localhost:4200/listbox-trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/listbox/multi-select</example-url>

@@ -89,6 +89,11 @@ export interface ToastState {
  * app-shell or route level.
  *
  * Manages the toast stack as a signal array. `CngxToastOutlet` reads it reactively.
+ * <example-url>http://localhost:4200/toast/custom-component-body</example-url>
+ * <example-url>http://localhost:4200/toast/declarative-cngx-toast</example-url>
+ * <example-url>http://localhost:4200/toast/programmatic-cngxtoaster</example-url>
+ * <example-url>http://localhost:4200/toast/state-bridge-cngxtoaston</example-url>
+ * <example-url>http://localhost:4200/toast/title-description</example-url>
  */
 @Injectable()
 export class CngxToaster {

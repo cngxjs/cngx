@@ -28,6 +28,11 @@ import { CngxToaster, type ToastRef } from './toast.service';
  * <cngx-toast severity="success" message="Item saved" [when]="saveState.status() === 'success'" />
  * <cngx-toast severity="error" message="Save failed" [when]="saveState.status() === 'error'" />
  * ```
+ * <example-url>http://localhost:4200/toast/custom-component-body</example-url>
+ * <example-url>http://localhost:4200/toast/declarative-cngx-toast</example-url>
+ * <example-url>http://localhost:4200/toast/programmatic-cngxtoaster</example-url>
+ * <example-url>http://localhost:4200/toast/state-bridge-cngxtoaston</example-url>
+ * <example-url>http://localhost:4200/toast/title-description</example-url>
  */
 @Component({
   selector: 'cngx-toast',

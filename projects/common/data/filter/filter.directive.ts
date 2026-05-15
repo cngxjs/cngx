@@ -32,6 +32,9 @@ import { computed, Directive, input, output, signal } from '@angular/core';
  * @typeParam T - The item type the predicate operates on.
  * <example-url>http://localhost:4200/filter-chips/custom-chip-decoration-via-cngxfilterchip</example-url>
  * <example-url>http://localhost:4200/filter-chips/multi-role-filter-wired-to-a-list</example-url>
+ * <example-url>http://localhost:4200/smart-data-source/auto-wired</example-url>
+ * <example-url>http://localhost:4200/smart-data-source/how-it-works-hostdirectives-inject</example-url>
+ * <example-url>http://localhost:4200/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  */
 @Directive({
   selector: '[cngxFilter]',
