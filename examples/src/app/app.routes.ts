@@ -78,6 +78,91 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Bullet", section: "Performance vs target" },
   },
   {
+    path: 'button-multi-toggle-group/basic-multi-filter-toolbar',
+    loadComponent: () => import('./features/button-multi-toggle-group/basic-multi-filter-toolbar.component').then((m) => m.ButtonMultiToggleGroupBasicMultiFilterToolbar),
+    data: { lib: 'common', category: 'interactive', demo: "Button toggle group (multi)", section: "Basic — multi-filter toolbar" },
+  },
+  {
+    path: 'button-multi-toggle-group/disabled-group-cascade-vs-per-toggle',
+    loadComponent: () => import('./features/button-multi-toggle-group/disabled-group-cascade-vs-per-toggle.component').then((m) => m.ButtonMultiToggleGroupDisabledGroupCascadeVsPerToggle),
+    data: { lib: 'common', category: 'interactive', demo: "Button toggle group (multi)", section: "Disabled — group cascade vs per-toggle" },
+  },
+  {
+    path: 'checkbox-group/basic-select-all-master-projected-leaves',
+    loadComponent: () => import('./features/checkbox-group/basic-select-all-master-projected-leaves.component').then((m) => m.CheckboxGroupBasicSelectAllMasterProjectedLeaves),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox group", section: "Basic — select-all master + projected leaves" },
+  },
+  {
+    path: 'checkbox-group/disabled-cascade',
+    loadComponent: () => import('./features/checkbox-group/disabled-cascade.component').then((m) => m.CheckboxGroupDisabledCascade),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox group", section: "Disabled cascade" },
+  },
+  {
+    path: 'chip-group/basic-pick-exactly-one-size',
+    loadComponent: () => import('./features/chip-group/basic-pick-exactly-one-size.component').then((m) => m.ChipGroupBasicPickExactlyOneSize),
+    data: { lib: 'common', category: 'interactive', demo: "Chip group (single-select)", section: "Basic — pick exactly one size" },
+  },
+  {
+    path: 'chip-input/async-validation-with-supersede-semantics',
+    loadComponent: () => import('./features/chip-input/async-validation-with-supersede-semantics.component').then((m) => m.ChipInputAsyncValidationWithSupersedeSemantics),
+    data: { lib: 'common', category: 'interactive', demo: "Chip input (tokenizing)", section: "Async validation with supersede semantics" },
+  },
+  {
+    path: 'chip-input/synchronous-tokenization',
+    loadComponent: () => import('./features/chip-input/synchronous-tokenization.component').then((m) => m.ChipInputSynchronousTokenization),
+    data: { lib: 'common', category: 'interactive', demo: "Chip input (tokenizing)", section: "Synchronous tokenization" },
+  },
+  {
+    path: 'chip-interaction/basic-toggle-on-click-space-or-enter',
+    loadComponent: () => import('./features/chip-interaction/basic-toggle-on-click-space-or-enter.component').then((m) => m.ChipInteractionBasicToggleOnClickSpaceOrEnter),
+    data: { lib: 'common', category: 'interactive', demo: "Chip interaction (standalone)", section: "Basic — toggle on click, Space, or Enter" },
+  },
+  {
+    path: 'chip-interaction/disabled-state',
+    loadComponent: () => import('./features/chip-interaction/disabled-state.component').then((m) => m.ChipInteractionDisabledState),
+    data: { lib: 'common', category: 'interactive', demo: "Chip interaction (standalone)", section: "Disabled state" },
+  },
+  {
+    path: 'chip-interaction/removable-with-removerequest-on-backspace-delete',
+    loadComponent: () => import('./features/chip-interaction/removable-with-removerequest-on-backspace-delete.component').then((m) => m.ChipInteractionRemovableWithRemoverequestOnBackspaceDelete),
+    data: { lib: 'common', category: 'interactive', demo: "Chip interaction (standalone)", section: "Removable with (removeRequest) on Backspace / Delete" },
+  },
+  {
+    path: 'click-outside/dropdown',
+    loadComponent: () => import('./features/click-outside/dropdown.component').then((m) => m.ClickOutsideDropdown),
+    data: { lib: 'common', category: 'interactive', demo: "ClickOutside", section: "CngxClickOutside — Dropdown" },
+  },
+  {
+    path: 'click-outside/enabled-toggle',
+    loadComponent: () => import('./features/click-outside/enabled-toggle.component').then((m) => m.ClickOutsideEnabledToggle),
+    data: { lib: 'common', category: 'interactive', demo: "ClickOutside", section: "CngxClickOutside — enabled toggle" },
+  },
+  {
+    path: 'context-menu/right-click-target-zone',
+    loadComponent: () => import('./features/context-menu/right-click-target-zone.component').then((m) => m.ContextMenuRightClickTargetZone),
+    data: { lib: 'common', category: 'interactive', demo: "Context Menu Trigger", section: "Right-click target zone" },
+  },
+  {
+    path: 'copy-block/api-key',
+    loadComponent: () => import('./features/copy-block/api-key.component').then((m) => m.CopyBlockApiKey),
+    data: { lib: 'common', category: 'interactive', demo: "Copy Block", section: "API Key" },
+  },
+  {
+    path: 'copy-block/code-snippet',
+    loadComponent: () => import('./features/copy-block/code-snippet.component').then((m) => m.CopyBlockCodeSnippet),
+    data: { lib: 'common', category: 'interactive', demo: "Copy Block", section: "Code Snippet" },
+  },
+  {
+    path: 'copy-text/copy-token',
+    loadComponent: () => import('./features/copy-text/copy-token.component').then((m) => m.CopyTextCopyToken),
+    data: { lib: 'common', category: 'interactive', demo: "Copy Text", section: "Copy Token" },
+  },
+  {
+    path: 'copy-text/copy-url-with-sr-announcement',
+    loadComponent: () => import('./features/copy-text/copy-url-with-sr-announcement.component').then((m) => m.CopyTextCopyUrlWithSrAnnouncement),
+    data: { lib: 'common', category: 'interactive', demo: "Copy Text", section: "Copy URL with SR Announcement" },
+  },
+  {
     path: 'deviation-bar/async-state-machine',
     loadComponent: () => import('./features/deviation-bar/async-state-machine.component').then((m) => m.DeviationBarAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Async state machine" },
@@ -86,6 +171,21 @@ export const routes: Routes = [
     path: 'deviation-bar/variance-readings',
     loadComponent: () => import('./features/deviation-bar/variance-readings.component').then((m) => m.DeviationBarVarianceReadings),
     data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Variance readings" },
+  },
+  {
+    path: 'disclosure/basic-uncontrolled',
+    loadComponent: () => import('./features/disclosure/basic-uncontrolled.component').then((m) => m.DisclosureBasicUncontrolled),
+    data: { lib: 'common', category: 'interactive', demo: "Disclosure", section: "Basic — Uncontrolled" },
+  },
+  {
+    path: 'disclosure/controlled-mode',
+    loadComponent: () => import('./features/disclosure/controlled-mode.component').then((m) => m.DisclosureControlledMode),
+    data: { lib: 'common', category: 'interactive', demo: "Disclosure", section: "Controlled Mode" },
+  },
+  {
+    path: 'disclosure/faq-accordion',
+    loadComponent: () => import('./features/disclosure/faq-accordion.component').then((m) => m.DisclosureFaqAccordion),
+    data: { lib: 'common', category: 'interactive', demo: "Disclosure", section: "FAQ Accordion" },
   },
   {
     path: 'divider/horizontal-vs-vertical',
@@ -106,6 +206,16 @@ export const routes: Routes = [
     path: 'donut/score-gauges',
     loadComponent: () => import('./features/donut/score-gauges.component').then((m) => m.DonutScoreGauges),
     data: { lib: 'common', category: 'chart', demo: "Donut", section: "Score gauges" },
+  },
+  {
+    path: 'error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
+    loadComponent: () => import('./features/error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage.component').then((m) => m.ErrorStateBasicBooleanFlagFlipsAriaInvalidAriaErrormessage),
+    data: { lib: 'common', category: 'interactive', demo: "Error State", section: "Basic — boolean flag flips aria-invalid + aria-errormessage" },
+  },
+  {
+    path: 'error-state/without-message-id-class-hook-aria-invalid-only',
+    loadComponent: () => import('./features/error-state/without-message-id-class-hook-aria-invalid-only.component').then((m) => m.ErrorStateWithoutMessageIdClassHookAriaInvalidOnly),
+    data: { lib: 'common', category: 'interactive', demo: "Error State", section: "Without message id — class hook + aria-invalid only" },
   },
   {
     path: 'expandable-text/auto-toggle',
@@ -183,6 +293,36 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "IntersectionObserver", section: "CngxIntersectionObserver — Scroll Sentinel" },
   },
   {
+    path: 'keyboard-shortcut/global-shortcut',
+    loadComponent: () => import('./features/keyboard-shortcut/global-shortcut.component').then((m) => m.KeyboardShortcutGlobalShortcut),
+    data: { lib: 'common', category: 'interactive', demo: "Keyboard Shortcut", section: "Global Shortcut" },
+  },
+  {
+    path: 'keyboard-shortcut/self-scoped-shortcut',
+    loadComponent: () => import('./features/keyboard-shortcut/self-scoped-shortcut.component').then((m) => m.KeyboardShortcutSelfScopedShortcut),
+    data: { lib: 'common', category: 'interactive', demo: "Keyboard Shortcut", section: "Self-Scoped Shortcut" },
+  },
+  {
+    path: 'listbox-search/command-palette',
+    loadComponent: () => import('./features/listbox-search/command-palette.component').then((m) => m.ListboxSearchCommandPalette),
+    data: { lib: 'common', category: 'interactive', demo: "Listbox Search", section: "Command palette" },
+  },
+  {
+    path: 'listbox-trigger/select-dropdown',
+    loadComponent: () => import('./features/listbox-trigger/select-dropdown.component').then((m) => m.ListboxTriggerSelectDropdown),
+    data: { lib: 'common', category: 'interactive', demo: "Listbox Trigger", section: "Select dropdown" },
+  },
+  {
+    path: 'listbox/multi-select',
+    loadComponent: () => import('./features/listbox/multi-select.component').then((m) => m.ListboxMultiSelect),
+    data: { lib: 'common', category: 'interactive', demo: "Listbox", section: "Multi-select" },
+  },
+  {
+    path: 'listbox/single-select',
+    loadComponent: () => import('./features/listbox/single-select.component').then((m) => m.ListboxSingleSelect),
+    data: { lib: 'common', category: 'interactive', demo: "Listbox", section: "Single select" },
+  },
+  {
     path: 'live-region/form-validation-assertive-error-announcements',
     loadComponent: () => import('./features/live-region/form-validation-assertive-error-announcements.component').then((m) => m.LiveRegionFormValidationAssertiveErrorAnnouncements),
     data: { lib: 'common', category: 'a11y', demo: "LiveRegion", section: "Form Validation — Assertive Error Announcements" },
@@ -193,9 +333,34 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "LiveRegion", section: "CngxLiveRegion — Polite vs Assertive" },
   },
   {
+    path: 'long-press/custom-threshold',
+    loadComponent: () => import('./features/long-press/custom-threshold.component').then((m) => m.LongPressCustomThreshold),
+    data: { lib: 'common', category: 'interactive', demo: "Long Press", section: "Custom Threshold" },
+  },
+  {
+    path: 'long-press/long-press-with-visual-feedback',
+    loadComponent: () => import('./features/long-press/long-press-with-visual-feedback.component').then((m) => m.LongPressLongPressWithVisualFeedback),
+    data: { lib: 'common', category: 'interactive', demo: "Long Press", section: "Long Press with Visual Feedback" },
+  },
+  {
     path: 'media-query/viewport-breakpoints',
     loadComponent: () => import('./features/media-query/viewport-breakpoints.component').then((m) => m.MediaQueryViewportBreakpoints),
     data: { lib: 'common', category: 'layout', demo: "MediaQuery", section: "CngxMediaQuery — Viewport Breakpoints" },
+  },
+  {
+    path: 'menu-checkable/text-formatting-menu',
+    loadComponent: () => import('./features/menu-checkable/text-formatting-menu.component').then((m) => m.MenuCheckableTextFormattingMenu),
+    data: { lib: 'common', category: 'interactive', demo: "Checkable Menu Items", section: "Text formatting menu" },
+  },
+  {
+    path: 'menu-submenu/two-level-submenu',
+    loadComponent: () => import('./features/menu-submenu/two-level-submenu.component').then((m) => m.MenuSubmenuTwoLevelSubmenu),
+    data: { lib: 'common', category: 'interactive', demo: "Menu Submenu", section: "Two-level submenu" },
+  },
+  {
+    path: 'menu-trigger/dropdown-menu',
+    loadComponent: () => import('./features/menu-trigger/dropdown-menu.component').then((m) => m.MenuTriggerDropdownMenu),
+    data: { lib: 'common', category: 'interactive', demo: "Menu Trigger", section: "Dropdown menu" },
   },
   {
     path: 'mini-area/async-state-machine',
@@ -218,6 +383,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Mini Bar", section: "Basic readings" },
   },
   {
+    path: 'multi-chip-group/multi-select-chips-with-selection-count',
+    loadComponent: () => import('./features/multi-chip-group/multi-select-chips-with-selection-count.component').then((m) => m.MultiChipGroupMultiSelectChipsWithSelectionCount),
+    data: { lib: 'common', category: 'interactive', demo: "Multi chip group (multi-select)", section: "Multi-select chips with selection count" },
+  },
+  {
+    path: 'option/flat-options-with-ad',
+    loadComponent: () => import('./features/option/flat-options-with-ad.component').then((m) => m.OptionFlatOptionsWithAd),
+    data: { lib: 'common', category: 'interactive', demo: "Option", section: "Flat options with AD" },
+  },
+  {
+    path: 'option/grouped-options',
+    loadComponent: () => import('./features/option/grouped-options.component').then((m) => m.OptionGroupedOptions),
+    data: { lib: 'common', category: 'interactive', demo: "Option", section: "Grouped options" },
+  },
+  {
     path: 'popover/click-popover',
     loadComponent: () => import('./features/popover/click-popover.component').then((m) => m.PopoverClickPopover),
     data: { lib: 'common', category: 'popover', demo: "Popover", section: "Click Popover" },
@@ -238,6 +418,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'popover', demo: "Popover", section: "Placement Variants" },
   },
   {
+    path: 'press-ripple/buttons-with-press-ripple',
+    loadComponent: () => import('./features/press-ripple/buttons-with-press-ripple.component').then((m) => m.PressRippleButtonsWithPressRipple),
+    data: { lib: 'common', category: 'interactive', demo: "Press + Ripple", section: "Buttons with Press + Ripple" },
+  },
+  {
+    path: 'pressable/press-feedback-on-buttons',
+    loadComponent: () => import('./features/pressable/press-feedback-on-buttons.component').then((m) => m.PressablePressFeedbackOnButtons),
+    data: { lib: 'common', category: 'interactive', demo: "Pressable", section: "Press Feedback on Buttons" },
+  },
+  {
+    path: 'pressable/tappable-card',
+    loadComponent: () => import('./features/pressable/tappable-card.component').then((m) => m.PressableTappableCard),
+    data: { lib: 'common', category: 'interactive', demo: "Pressable", section: "Tappable Card" },
+  },
+  {
     path: 'reduced-motion/animation-toggle',
     loadComponent: () => import('./features/reduced-motion/animation-toggle.component').then((m) => m.ReducedMotionAnimationToggle),
     data: { lib: 'common', category: 'a11y', demo: "ReducedMotion", section: "CngxReducedMotion — Animation Toggle" },
@@ -251,6 +446,26 @@ export const routes: Routes = [
     path: 'resize-observer/live-size',
     loadComponent: () => import('./features/resize-observer/live-size.component').then((m) => m.ResizeObserverLiveSize),
     data: { lib: 'common', category: 'layout', demo: "ResizeObserver", section: "CngxResizeObserver — Live Size" },
+  },
+  {
+    path: 'retry/optimistic-instant-like-toggle',
+    loadComponent: () => import('./features/retry/optimistic-instant-like-toggle.component').then((m) => m.RetryOptimisticInstantLikeToggle),
+    data: { lib: 'common', category: 'interactive', demo: "Retry + Optimistic", section: "optimistic() — Instant Like Toggle" },
+  },
+  {
+    path: 'retry/withretry-cngxasyncclick',
+    loadComponent: () => import('./features/retry/withretry-cngxasyncclick.component').then((m) => m.RetryWithretryCngxasyncclick),
+    data: { lib: 'common', category: 'interactive', demo: "Retry + Optimistic", section: "withRetry + CngxAsyncClick" },
+  },
+  {
+    path: 'ripple/button-ripples',
+    loadComponent: () => import('./features/ripple/button-ripples.component').then((m) => m.RippleButtonRipples),
+    data: { lib: 'common', category: 'interactive', demo: "Ripple", section: "Button Ripples" },
+  },
+  {
+    path: 'ripple/card-with-ripple',
+    loadComponent: () => import('./features/ripple/card-with-ripple.component').then((m) => m.RippleCardWithRipple),
+    data: { lib: 'common', category: 'interactive', demo: "Ripple", section: "Card with Ripple" },
   },
   {
     path: 'roving-tabindex/horizontal-toolbar',
@@ -298,6 +513,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "With area fill" },
   },
   {
+    path: 'speak/form-error-read-aloud-on-demand',
+    loadComponent: () => import('./features/speak/form-error-read-aloud-on-demand.component').then((m) => m.SpeakFormErrorReadAloudOnDemand),
+    data: { lib: 'common', category: 'interactive', demo: "Speak", section: "Form Error — Read-aloud on Demand" },
+  },
+  {
+    path: 'speak/headless-read-aloud',
+    loadComponent: () => import('./features/speak/headless-read-aloud.component').then((m) => m.SpeakHeadlessReadAloud),
+    data: { lib: 'common', category: 'interactive', demo: "Speak", section: "CngxSpeak — Headless Read-aloud" },
+  },
+  {
     path: 'stacked-bar/async-state-machine',
     loadComponent: () => import('./features/stacked-bar/async-state-machine.component').then((m) => m.StackedBarAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Stacked Bar", section: "Async state machine" },
@@ -311,6 +536,11 @@ export const routes: Routes = [
     path: 'sticky-header/sticky-header-with-shadow',
     loadComponent: () => import('./features/sticky-header/sticky-header-with-shadow.component').then((m) => m.StickyHeaderStickyHeaderWithShadow),
     data: { lib: 'common', category: 'layout', demo: "Sticky Header", section: "Sticky Header with Shadow" },
+  },
+  {
+    path: 'swipe-dismiss/directional-swipe',
+    loadComponent: () => import('./features/swipe-dismiss/directional-swipe.component').then((m) => m.SwipeDismissDirectionalSwipe),
+    data: { lib: 'common', category: 'interactive', demo: "SwipeDismiss", section: "CngxSwipeDismiss — Directional Swipe" },
   },
   {
     path: 'truncate/short-text-no-toggle',
