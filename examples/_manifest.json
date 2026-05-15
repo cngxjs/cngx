@@ -73,6 +73,22 @@
     "forms/mask-demo",
     "forms/numeric-demo",
     "forms/otp-demo",
-    "forms/utilities-demo"
+    "forms/utilities-demo",
+    "ui/mat-paginator-demo",
+    "ui/skeleton-demo",
+    "ui/speak-button-demo",
+    "ui/feedback/loading-indicator-demo",
+    "ui/feedback/loading-overlay-demo",
+    "ui/feedback/progress-demo",
+    "ui/mat-stepper/mat-stepper-router-sync-demo",
+    "ui/stepper/stepper-custom-labels-demo",
+    "ui/stepper/stepper-hierarchical-demo",
+    "ui/stepper/stepper-horizontal-demo",
+    "ui/stepper/stepper-linear-demo",
+    "ui/stepper/stepper-router-sync-demo",
+    "ui/stepper/stepper-vertical-demo",
+    "ui/tabs/tab-group-demo",
+    "ui/tabs/tab-group-vertical-demo",
+    "ui/tabs/tab-overflow-demo"
   ]
 }

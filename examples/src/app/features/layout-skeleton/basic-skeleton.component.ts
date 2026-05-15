@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxSkeleton } from '@cngx/common/layout';
 
 @Component({
-  selector: 'app-skeleton-basic-skeleton',
+  selector: 'app-layout-skeleton-basic-skeleton',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxSkeleton],
   template: `
@@ -38,7 +38,7 @@ import { CngxSkeleton } from '@cngx/common/layout';
     </details>
   `,
 })
-export class SkeletonBasicSkeleton {
+export class LayoutSkeletonBasicSkeleton {
   protected readonly _exTitle: string = 'Skeleton Loading';
   protected readonly _exDescription: string = 'Skeleton placeholder directives for loading states. Use CngxSkeleton for individual elements or CngxSkeletonContainer with CngxSkeletonPlaceholder for grouped placeholder templates.';
   protected readonly _exSectionTitle: string = 'Basic Skeleton';

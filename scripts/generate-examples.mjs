@@ -496,6 +496,14 @@ async function main() {
 
   const importMap = await buildPublicApiImportMap();
 
+  // First pass: detect demoSlug collisions across manifest entries so we can
+  // disambiguate (e.g. common/layout/skeleton-demo vs ui/skeleton-demo).
+  const slugCounts = new Map();
+  for (const rel of manifest.approved) {
+    const leaf = rel.split('/').pop().replace(/-demo$/, '');
+    slugCounts.set(leaf, (slugCounts.get(leaf) ?? 0) + 1);
+  }
+
   const approvedSlugs = new Set();
   const routes = [];
 
@@ -515,13 +523,19 @@ async function main() {
     const storyPath = join(demoDir, primary);
     const story = await loadStory(storyPath);
 
-    const demoSlug = folderLeaf.replace(/-demo$/, '');
+    const rawSlug = folderLeaf.replace(/-demo$/, '');
+    const parts = demoFolder.split('/');
+    // If the same slug is used by multiple manifest entries, prefix with the
+    // immediate parent dir to disambiguate (e.g. layout-skeleton / ui-skeleton).
+    const demoSlug =
+      slugCounts.get(rawSlug) > 1
+        ? `${parts.length >= 2 ? parts[parts.length - 2] : parts[0]}-${rawSlug}`
+        : rawSlug;
     approvedSlugs.add(demoSlug);
     const featureDir = join(FEATURES_DIR, demoSlug);
     await rm(featureDir, { recursive: true, force: true });
     await mkdir(featureDir, { recursive: true });
 
-    const parts = demoFolder.split('/');
     const lib = parts[0];
     const category = parts.length === 3 ? parts[1] : (story.navCategory ?? '');
 

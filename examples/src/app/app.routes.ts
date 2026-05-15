@@ -338,6 +338,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Keyboard Shortcut", section: "Self-Scoped Shortcut" },
   },
   {
+    path: 'layout-skeleton/basic-skeleton',
+    loadComponent: () => import('./features/layout-skeleton/basic-skeleton.component').then((m) => m.LayoutSkeletonBasicSkeleton),
+    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Basic Skeleton" },
+  },
+  {
+    path: 'layout-skeleton/skeleton-container',
+    loadComponent: () => import('./features/layout-skeleton/skeleton-container.component').then((m) => m.LayoutSkeletonSkeletonContainer),
+    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Skeleton Container" },
+  },
+  {
     path: 'listbox-search/command-palette',
     loadComponent: () => import('./features/listbox-search/command-palette.component').then((m) => m.ListboxSearchCommandPalette),
     data: { lib: 'common', category: 'interactive', demo: "Listbox Search", section: "Command palette" },
@@ -368,6 +378,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "LiveRegion", section: "CngxLiveRegion — Polite vs Assertive" },
   },
   {
+    path: 'loading-indicator/bar-variant',
+    loadComponent: () => import('./features/loading-indicator/bar-variant.component').then((m) => m.LoadingIndicatorBarVariant),
+    data: { lib: 'ui', category: 'feedback', demo: "Loading Indicator", section: "Bar Variant" },
+  },
+  {
+    path: 'loading-indicator/spinner-variant',
+    loadComponent: () => import('./features/loading-indicator/spinner-variant.component').then((m) => m.LoadingIndicatorSpinnerVariant),
+    data: { lib: 'ui', category: 'feedback', demo: "Loading Indicator", section: "Spinner Variant" },
+  },
+  {
+    path: 'loading-overlay/overlay-with-form',
+    loadComponent: () => import('./features/loading-overlay/overlay-with-form.component').then((m) => m.LoadingOverlayOverlayWithForm),
+    data: { lib: 'ui', category: 'feedback', demo: "Loading Overlay", section: "Overlay with Form" },
+  },
+  {
     path: 'long-press/custom-threshold',
     loadComponent: () => import('./features/long-press/custom-threshold.component').then((m) => m.LongPressCustomThreshold),
     data: { lib: 'common', category: 'interactive', demo: "Long Press", section: "Custom Threshold" },
@@ -391,6 +416,21 @@ export const routes: Routes = [
     path: 'mask/locale-presets',
     loadComponent: () => import('./features/mask/locale-presets.component').then((m) => m.MaskLocalePresets),
     data: { lib: 'forms', category: 'input', demo: "Input Mask", section: "Locale Presets" },
+  },
+  {
+    path: 'mat-paginator/headless-custom-pagination-controls',
+    loadComponent: () => import('./features/mat-paginator/headless-custom-pagination-controls.component').then((m) => m.MatPaginatorHeadlessCustomPaginationControls),
+    data: { lib: 'ui', category: '', demo: "MatPaginator", section: "Headless — Custom Pagination Controls" },
+  },
+  {
+    path: 'mat-paginator/material-paginator',
+    loadComponent: () => import('./features/mat-paginator/material-paginator.component').then((m) => m.MatPaginatorMaterialPaginator),
+    data: { lib: 'ui', category: '', demo: "MatPaginator", section: "CngxMatPaginator — Material Paginator" },
+  },
+  {
+    path: 'mat-stepper-router-sync/deep-linking-against-material',
+    loadComponent: () => import('./features/mat-stepper-router-sync/deep-linking-against-material.component').then((m) => m.MatStepperRouterSyncDeepLinkingAgainstMaterial),
+    data: { lib: 'ui', category: 'mat-stepper', demo: "Mat-Stepper — router sync", section: "Deep-linking against Material" },
   },
   {
     path: 'media-query/viewport-breakpoints',
@@ -528,6 +568,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Pressable", section: "Tappable Card" },
   },
   {
+    path: 'progress/circular-variant',
+    loadComponent: () => import('./features/progress/circular-variant.component').then((m) => m.ProgressCircularVariant),
+    data: { lib: 'ui', category: 'feedback', demo: "Progress", section: "Circular Variant" },
+  },
+  {
+    path: 'progress/linear-determinate',
+    loadComponent: () => import('./features/progress/linear-determinate.component').then((m) => m.ProgressLinearDeterminate),
+    data: { lib: 'ui', category: 'feedback', demo: "Progress", section: "Linear — Determinate" },
+  },
+  {
+    path: 'progress/linear-indeterminate',
+    loadComponent: () => import('./features/progress/linear-indeterminate.component').then((m) => m.ProgressLinearIndeterminate),
+    data: { lib: 'ui', category: 'feedback', demo: "Progress", section: "Linear — Indeterminate" },
+  },
+  {
     path: 'reduced-motion/animation-toggle',
     loadComponent: () => import('./features/reduced-motion/animation-toggle.component').then((m) => m.ReducedMotionAnimationToggle),
     data: { lib: 'common', category: 'a11y', demo: "ReducedMotion", section: "CngxReducedMotion — Animation Toggle" },
@@ -583,16 +638,6 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Scroll Spy", section: "Scroll-Based Navigation" },
   },
   {
-    path: 'skeleton/basic-skeleton',
-    loadComponent: () => import('./features/skeleton/basic-skeleton.component').then((m) => m.SkeletonBasicSkeleton),
-    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Basic Skeleton" },
-  },
-  {
-    path: 'skeleton/skeleton-container',
-    loadComponent: () => import('./features/skeleton/skeleton-container.component').then((m) => m.SkeletonSkeletonContainer),
-    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Skeleton Container" },
-  },
-  {
     path: 'sparkline/async-state-machine',
     loadComponent: () => import('./features/sparkline/async-state-machine.component').then((m) => m.SparklineAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "Async state machine" },
@@ -606,6 +651,21 @@ export const routes: Routes = [
     path: 'sparkline/with-area-fill',
     loadComponent: () => import('./features/sparkline/with-area-fill.component').then((m) => m.SparklineWithAreaFill),
     data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "With area fill" },
+  },
+  {
+    path: 'speak-button/material-integration-theme-scss-mat-icon-button',
+    loadComponent: () => import('./features/speak-button/material-integration-theme-scss-mat-icon-button.component').then((m) => m.SpeakButtonMaterialIntegrationThemeScssMatIconButton),
+    data: { lib: 'ui', category: '', demo: "SpeakButton", section: "Material Integration — Theme SCSS + mat-icon-button" },
+  },
+  {
+    path: 'speak-button/styled-speaker-icon',
+    loadComponent: () => import('./features/speak-button/styled-speaker-icon.component').then((m) => m.SpeakButtonStyledSpeakerIcon),
+    data: { lib: 'ui', category: '', demo: "SpeakButton", section: "CngxSpeakButton — Styled Speaker Icon" },
+  },
+  {
+    path: 'speak-button/theming-css-custom-properties',
+    loadComponent: () => import('./features/speak-button/theming-css-custom-properties.component').then((m) => m.SpeakButtonThemingCssCustomProperties),
+    data: { lib: 'ui', category: '', demo: "SpeakButton", section: "Theming — CSS Custom Properties" },
   },
   {
     path: 'speak/form-error-read-aloud-on-demand',
@@ -628,6 +688,36 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Stacked Bar", section: "Proportional share strips" },
   },
   {
+    path: 'stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot',
+    loadComponent: () => import('./features/stepper-custom-labels/mixing-code-label-code-input-with-code-cngxsteplabel-code-slot.component').then((m) => m.StepperCustomLabelsMixingCodeLabelCodeInputWithCodeCngxsteplabelCodeSlot),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — custom labels", section: "Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot" },
+  },
+  {
+    path: 'stepper-hierarchical/group-nested-steps-trailing-root-step',
+    loadComponent: () => import('./features/stepper-hierarchical/group-nested-steps-trailing-root-step.component').then((m) => m.StepperHierarchicalGroupNestedStepsTrailingRootStep),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — hierarchical sub-steps", section: "Group + nested steps + trailing root step" },
+  },
+  {
+    path: 'stepper-horizontal/three-step-wizard',
+    loadComponent: () => import('./features/stepper-horizontal/three-step-wizard.component').then((m) => m.StepperHorizontalThreeStepWizard),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — horizontal", section: "Three-step wizard" },
+  },
+  {
+    path: 'stepper-linear/linear-gating-with-completion-checkboxes',
+    loadComponent: () => import('./features/stepper-linear/linear-gating-with-completion-checkboxes.component').then((m) => m.StepperLinearLinearGatingWithCompletionCheckboxes),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — linear mode", section: "Linear gating with completion checkboxes" },
+  },
+  {
+    path: 'stepper-router-sync/deep-linking-with-fragment-queryparam-modes',
+    loadComponent: () => import('./features/stepper-router-sync/deep-linking-with-fragment-queryparam-modes.component').then((m) => m.StepperRouterSyncDeepLinkingWithFragmentQueryparamModes),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — router sync", section: "Deep-linking with fragment + queryParam modes" },
+  },
+  {
+    path: 'stepper-vertical/vertical-sidebar-layout',
+    loadComponent: () => import('./features/stepper-vertical/vertical-sidebar-layout.component').then((m) => m.StepperVerticalVerticalSidebarLayout),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — vertical", section: "Vertical sidebar layout" },
+  },
+  {
     path: 'sticky-header/sticky-header-with-shadow',
     loadComponent: () => import('./features/sticky-header/sticky-header-with-shadow.component').then((m) => m.StickyHeaderStickyHeaderWithShadow),
     data: { lib: 'common', category: 'layout', demo: "Sticky Header", section: "Sticky Header with Shadow" },
@@ -636,6 +726,21 @@ export const routes: Routes = [
     path: 'swipe-dismiss/directional-swipe',
     loadComponent: () => import('./features/swipe-dismiss/directional-swipe.component').then((m) => m.SwipeDismissDirectionalSwipe),
     data: { lib: 'common', category: 'interactive', demo: "SwipeDismiss", section: "CngxSwipeDismiss — Directional Swipe" },
+  },
+  {
+    path: 'tab-group-vertical/vertical-sidebar-tabs',
+    loadComponent: () => import('./features/tab-group-vertical/vertical-sidebar-tabs.component').then((m) => m.TabGroupVerticalVerticalSidebarTabs),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — vertical", section: "Vertical sidebar tabs" },
+  },
+  {
+    path: 'tab-group/three-tab-navigation',
+    loadComponent: () => import('./features/tab-group/three-tab-navigation.component').then((m) => m.TabGroupThreeTabNavigation),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — horizontal", section: "Three-tab navigation" },
+  },
+  {
+    path: 'tab-overflow/8-tabs-in-a-narrow-container',
+    loadComponent: () => import('./features/tab-overflow/8-tabs-in-a-narrow-container.component').then((m) => m.TabOverflow8TabsInANarrowContainer),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — overflow dropdown", section: "8 tabs in a narrow container" },
   },
   {
     path: 'trend/composed-with-metric-in-a-card',
@@ -656,6 +761,16 @@ export const routes: Routes = [
     path: 'truncate/truncated-text-with-toggle',
     loadComponent: () => import('./features/truncate/truncated-text-with-toggle.component').then((m) => m.TruncateTruncatedTextWithToggle),
     data: { lib: 'common', category: 'layout', demo: "Truncate", section: "Truncated Text with Toggle" },
+  },
+  {
+    path: 'ui-skeleton/card-skeleton',
+    loadComponent: () => import('./features/ui-skeleton/card-skeleton.component').then((m) => m.UiSkeletonCardSkeleton),
+    data: { lib: 'ui', category: '', demo: "SkeletonContainer", section: "Card Skeleton" },
+  },
+  {
+    path: 'ui-skeleton/template-context',
+    loadComponent: () => import('./features/ui-skeleton/template-context.component').then((m) => m.UiSkeletonTemplateContext),
+    data: { lib: 'ui', category: '', demo: "SkeletonContainer", section: "Template Context" },
   },
   {
     path: 'utilities/copy-to-clipboard',
