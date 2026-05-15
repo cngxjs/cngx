@@ -70,9 +70,9 @@ export type ActionButtonVariant = 'primary' | 'secondary' | 'ghost';
  *   Save
  * </cngx-action-button>
  * ```
- * @example-url http://localhost:4200/async-button/random-outcome
- * @example-url http://localhost:4200/async-button/string-labels
- * @example-url http://localhost:4200/async-button/template-slots
+ * <example-url>http://localhost:4200/async-button/random-outcome</example-url>
+ * <example-url>http://localhost:4200/async-button/string-labels</example-url>
+ * <example-url>http://localhost:4200/async-button/template-slots</example-url>
  */
 @Component({
   selector: 'cngx-action-button',

@@ -57,12 +57,12 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   (valueChange)="toggleAll($event)"
  * >Select all</cngx-checkbox>
  * ```
- * @example-url http://localhost:4200/checkbox-group/basic-select-all-master-projected-leaves
- * @example-url http://localhost:4200/checkbox-group/disabled-cascade
- * @example-url http://localhost:4200/checkbox/basic-two-way-binding
- * @example-url http://localhost:4200/checkbox/custom-check-dash-glyphs
- * @example-url http://localhost:4200/checkbox/disabled
- * @example-url http://localhost:4200/checkbox/tri-state-select-all-pattern
+ * <example-url>http://localhost:4200/checkbox-group/basic-select-all-master-projected-leaves</example-url>
+ * <example-url>http://localhost:4200/checkbox-group/disabled-cascade</example-url>
+ * <example-url>http://localhost:4200/checkbox/basic-two-way-binding</example-url>
+ * <example-url>http://localhost:4200/checkbox/custom-check-dash-glyphs</example-url>
+ * <example-url>http://localhost:4200/checkbox/disabled</example-url>
+ * <example-url>http://localhost:4200/checkbox/tri-state-select-all-pattern</example-url>
  */
 @Component({
   selector: 'cngx-checkbox, [cngxCheckbox]',

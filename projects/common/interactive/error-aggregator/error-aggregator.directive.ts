@@ -39,12 +39,12 @@ import {
  *   {{ agg.announcement() }}
  * </span>
  * ```
- * @example-url http://localhost:4200/error-aggregator/cngx-card-host-no-scope-errors-visible-immediately
- * @example-url http://localhost:4200/error-aggregator/cngx-popover-panel-host
- * @example-url http://localhost:4200/error-aggregator/material-mat-tab-label-with-error-count-badge
- * @example-url http://localhost:4200/error-aggregator/native-form-scope-reveal-on-submit
- * @example-url http://localhost:4200/stepper-error-aggregation/per-step-error-badges
- * @example-url http://localhost:4200/tab-error-aggregation/per-tab-error-badges
+ * <example-url>http://localhost:4200/error-aggregator/cngx-card-host-no-scope-errors-visible-immediately</example-url>
+ * <example-url>http://localhost:4200/error-aggregator/cngx-popover-panel-host</example-url>
+ * <example-url>http://localhost:4200/error-aggregator/material-mat-tab-label-with-error-count-badge</example-url>
+ * <example-url>http://localhost:4200/error-aggregator/native-form-scope-reveal-on-submit</example-url>
+ * <example-url>http://localhost:4200/stepper-error-aggregation/per-step-error-badges</example-url>
+ * <example-url>http://localhost:4200/tab-error-aggregation/per-tab-error-badges</example-url>
  */
 @Directive({
   selector: '[cngxErrorAggregator]',

@@ -96,7 +96,7 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   }
  * </cngx-multi-chip-group>
  * ```
- * @example-url http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count
+ * <example-url>http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count</example-url>
  */
 @Component({
   selector: 'cngx-multi-chip-group, [cngxMultiChipGroup]',

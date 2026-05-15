@@ -60,9 +60,9 @@ import { CngxPopover } from './popover.directive';
  *   <ng-template cngxPopoverError let-err>Failed: {{ err }}</ng-template>
  * </cngx-popover-panel>
  * ```
- * @example-url http://localhost:4200/popover-panel/content-states
- * @example-url http://localhost:4200/popover-panel/variants
- * @example-url http://localhost:4200/popover-panel/with-footer-actions
+ * <example-url>http://localhost:4200/popover-panel/content-states</example-url>
+ * <example-url>http://localhost:4200/popover-panel/variants</example-url>
+ * <example-url>http://localhost:4200/popover-panel/with-footer-actions</example-url>
  */
 @Component({
   selector: 'cngx-popover-panel',

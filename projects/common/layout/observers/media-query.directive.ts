@@ -24,7 +24,7 @@ import { Directive, effect, inject, input, signal } from '@angular/core';
  *   @if (dark.matches()) { <span>Dark mode active</span> }
  * </div>
  * ```
- * @example-url http://localhost:4200/media-query/viewport-breakpoints
+ * <example-url>http://localhost:4200/media-query/viewport-breakpoints</example-url>
  */
 @Directive({
   selector: '[cngxMediaQuery]',

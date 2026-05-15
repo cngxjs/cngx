@@ -13,10 +13,10 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   </ng-template>
  * </div>
  * ```
- * @example-url http://localhost:4200/tab-error-aggregation/per-tab-error-badges
- * @example-url http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs
- * @example-url http://localhost:4200/tab-group/three-tab-navigation
- * @example-url http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container
+ * <example-url>http://localhost:4200/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs</example-url>
+ * <example-url>http://localhost:4200/tab-group/three-tab-navigation</example-url>
+ * <example-url>http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabContent]',

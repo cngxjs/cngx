@@ -40,8 +40,8 @@ import { computed, DestroyRef, Directive, inject, input, signal, type Signal } f
  *   }
  * </div>
  * ```
- * @example-url http://localhost:4200/layout-skeleton/basic-skeleton
- * @example-url http://localhost:4200/layout-skeleton/skeleton-container
+ * <example-url>http://localhost:4200/layout-skeleton/basic-skeleton</example-url>
+ * <example-url>http://localhost:4200/layout-skeleton/skeleton-container</example-url>
  */
 @Directive({
   selector: '[cngxSkeleton]',

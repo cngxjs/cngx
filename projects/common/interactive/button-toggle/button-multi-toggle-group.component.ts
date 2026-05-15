@@ -64,8 +64,8 @@ import {
  *   <button cngxButtonToggle value="archived">Archived</button>
  * </cngx-button-multi-toggle-group>
  * ```
- * @example-url http://localhost:4200/button-multi-toggle-group/basic-multi-filter-toolbar
- * @example-url http://localhost:4200/button-multi-toggle-group/disabled-group-cascade-vs-per-toggle
+ * <example-url>http://localhost:4200/button-multi-toggle-group/basic-multi-filter-toolbar</example-url>
+ * <example-url>http://localhost:4200/button-multi-toggle-group/disabled-group-cascade-vs-per-toggle</example-url>
  */
 @Component({
   selector: 'cngx-button-multi-toggle-group, [cngxButtonMultiToggleGroup]',

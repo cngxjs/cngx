@@ -46,8 +46,8 @@ export type AsyncAction = () => Promise<unknown> | Observable<unknown>;
  * ```html
  * <a role="button" [cngxAsyncClick]="navigate" #btn="cngxAsyncClick">Go</a>
  * ```
- * @example-url http://localhost:4200/retry/optimistic-instant-like-toggle
- * @example-url http://localhost:4200/retry/withretry-cngxasyncclick
+ * <example-url>http://localhost:4200/retry/optimistic-instant-like-toggle</example-url>
+ * <example-url>http://localhost:4200/retry/withretry-cngxasyncclick</example-url>
  */
 @Directive({
   selector: '[cngxAsyncClick]',

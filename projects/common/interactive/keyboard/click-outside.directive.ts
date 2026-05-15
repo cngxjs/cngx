@@ -25,8 +25,8 @@ import { fromEvent, switchMap } from 'rxjs';
  * ```html
  * <div cngxClickOutside [eventType]="'click'" (clickOutside)="dismiss()">…</div>
  * ```
- * @example-url http://localhost:4200/click-outside/dropdown
- * @example-url http://localhost:4200/click-outside/enabled-toggle
+ * <example-url>http://localhost:4200/click-outside/dropdown</example-url>
+ * <example-url>http://localhost:4200/click-outside/enabled-toggle</example-url>
  */
 @Directive({
   selector: '[cngxClickOutside]',

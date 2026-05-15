@@ -25,8 +25,8 @@ interface PopoverController {
  * Up / Home / End / Enter target the submenu's items via its own
  * `CngxActiveDescendant`. ArrowLeft / Escape pop the stack and close the
  * top submenu.
- * @example-url http://localhost:4200/menu-submenu/two-level-submenu
- * @example-url http://localhost:4200/menu-trigger/dropdown-menu
+ * <example-url>http://localhost:4200/menu-submenu/two-level-submenu</example-url>
+ * <example-url>http://localhost:4200/menu-trigger/dropdown-menu</example-url>
  */
 @Directive({
   selector: '[cngxMenuTrigger]',

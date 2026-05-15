@@ -23,10 +23,10 @@ import { CNGX_TAB_GROUP_HOST } from './tab-group-host.token';
  * input signals by reference, so input changes propagate without
  * re-registration. `labelTemplate` / `contentTemplate` are projected
  * by the organism — the atom carries no rendering logic.
- * @example-url http://localhost:4200/tab-error-aggregation/per-tab-error-badges
- * @example-url http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs
- * @example-url http://localhost:4200/tab-group/three-tab-navigation
- * @example-url http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container
+ * <example-url>http://localhost:4200/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs</example-url>
+ * <example-url>http://localhost:4200/tab-group/three-tab-navigation</example-url>
+ * <example-url>http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container</example-url>
  */
 @Directive({
   selector: '[cngxTab]',

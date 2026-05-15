@@ -17,8 +17,8 @@ const EMPTY_FILTERS: readonly FilterNode[] = Object.freeze([]) as readonly Filte
  * Every object/array signal carries an explicit `equal` fn per
  * `reference_signal_architecture` §1; the empty-filters fallback uses a
  * shared frozen array so null reads do not allocate.
- * @example-url http://localhost:4200/filter-builder/basic-two-way-binding-json-inspection
- * @example-url http://localhost:4200/filter-builder/seeded-tree-and-or-composition
+ * <example-url>http://localhost:4200/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>http://localhost:4200/filter-builder/seeded-tree-and-or-composition</example-url>
  */
 @Directive({
   selector: '[cngxFilterGroup]',

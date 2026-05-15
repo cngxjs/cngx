@@ -31,8 +31,8 @@ import {
  *   </button>
  * }
  * ```
- * @example-url http://localhost:4200/truncate/short-text-no-toggle
- * @example-url http://localhost:4200/truncate/truncated-text-with-toggle
+ * <example-url>http://localhost:4200/truncate/short-text-no-toggle</example-url>
+ * <example-url>http://localhost:4200/truncate/truncated-text-with-toggle</example-url>
  */
 @Directive({
   selector: '[cngxTruncate]',

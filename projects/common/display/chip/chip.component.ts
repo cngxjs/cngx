@@ -32,11 +32,11 @@ import { nextUid } from '@cngx/core/utils';
  * - Commit/async behaviour — remove simply fires an event; the parent
  *   decides whether to write state directly or route through a commit
  *   flow. This keeps the chip usable from any level of the stack.
- * @example-url http://localhost:4200/chip-group/basic-pick-exactly-one-size
- * @example-url http://localhost:4200/chip-interaction/basic-toggle-on-click-space-or-enter
- * @example-url http://localhost:4200/chip-interaction/disabled-state
- * @example-url http://localhost:4200/chip-interaction/removable-with-removerequest-on-backspace-delete
- * @example-url http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count
+ * <example-url>http://localhost:4200/chip-group/basic-pick-exactly-one-size</example-url>
+ * <example-url>http://localhost:4200/chip-interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>http://localhost:4200/chip-interaction/disabled-state</example-url>
+ * <example-url>http://localhost:4200/chip-interaction/removable-with-removerequest-on-backspace-delete</example-url>
+ * <example-url>http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count</example-url>
  */
 @Component({
   selector: 'cngx-chip',

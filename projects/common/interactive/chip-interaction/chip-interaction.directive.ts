@@ -93,9 +93,9 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   cngxDescribedBy="chip-locked-reason"
  * >{{ tag }}</cngx-chip>
  * ```
- * @example-url http://localhost:4200/chip-interaction/basic-toggle-on-click-space-or-enter
- * @example-url http://localhost:4200/chip-interaction/disabled-state
- * @example-url http://localhost:4200/chip-interaction/removable-with-removerequest-on-backspace-delete
+ * <example-url>http://localhost:4200/chip-interaction/basic-toggle-on-click-space-or-enter</example-url>
+ * <example-url>http://localhost:4200/chip-interaction/disabled-state</example-url>
+ * <example-url>http://localhost:4200/chip-interaction/removable-with-removerequest-on-backspace-delete</example-url>
  */
 @Directive({
   selector: '[cngxChipInteraction]',

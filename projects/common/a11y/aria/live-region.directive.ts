@@ -28,8 +28,8 @@ import { Directive, input } from '@angular/core';
  *   {{ error() }}
  * </div>
  * ```
- * @example-url http://localhost:4200/live-region/form-validation-assertive-error-announcements
- * @example-url http://localhost:4200/live-region/polite-vs-assertive
+ * <example-url>http://localhost:4200/live-region/form-validation-assertive-error-announcements</example-url>
+ * <example-url>http://localhost:4200/live-region/polite-vs-assertive</example-url>
  */
 @Directive({
   selector: '[cngxLiveRegion]',

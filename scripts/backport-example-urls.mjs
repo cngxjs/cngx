@@ -89,16 +89,21 @@ function injectExampleUrls(src, className, urls) {
   if (jsdocStart === -1) return null;
 
   const blockBody = src.slice(jsdocStart + 3, jsdocEnd);
-  // Strip existing @example-url lines (a leading `* @example-url ...` per line).
-  const cleaned = blockBody.replace(/^\s*\*\s*@example-url\s+\S*[ \t]*$\n?/gm, '');
+  // Strip existing example-url lines — both the new compodocx HTML form
+  // (`* <example-url>...</example-url>`) and the legacy `@example-url` form
+  // emitted by earlier runs of this script.
+  const cleaned = blockBody
+    .replace(/^\s*\*\s*<example-url>[^<]*<\/example-url>[ \t]*$\n?/gm, '')
+    .replace(/^\s*\*\s*@example-url\s+\S*[ \t]*$\n?/gm, '');
 
   // Determine the indent used for inner JSDoc lines.
   const indentMatch = /^([ \t]*)\* /m.exec(cleaned);
   const innerIndent = indentMatch ? indentMatch[1] : ' ';
 
-  // Build the URL lines.
+  // Build the URL lines using compodocx's <example-url> HTML tag — surfaces
+  // on the Example tab of component/directive pages.
   const urlLines = urls
-    .map((u) => `${innerIndent}* @example-url ${u}`)
+    .map((u) => `${innerIndent}* <example-url>${u}</example-url>`)
     .join('\n');
 
   // Trim trailing whitespace/newlines from cleaned body so we can append cleanly.
@@ -145,7 +150,7 @@ function injectFreshJsdoc(src, atIndex, urls) {
   const indent = /^([ \t]*)/.exec(insertLine)?.[1] ?? '';
   const block = [
     `${indent}/**`,
-    ...urls.map((u) => `${indent} * @example-url ${u}`),
+    ...urls.map((u) => `${indent} * <example-url>${u}</example-url>`),
     `${indent} */`,
     '',
   ].join('\n');

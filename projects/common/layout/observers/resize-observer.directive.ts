@@ -34,7 +34,7 @@ import {
  * readonly ro = viewChild(CngxResizeObserver);
  * readonly columns = computed(() => (this.ro()?.width() ?? 0) > 600 ? 3 : 1);
  * ```
- * @example-url http://localhost:4200/resize-observer/live-size
+ * <example-url>http://localhost:4200/resize-observer/live-size</example-url>
  */
 @Directive({
   selector: '[cngxResizeObserver]',

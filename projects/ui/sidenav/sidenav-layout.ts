@@ -36,9 +36,9 @@ import { CngxSidenav } from './sidenav';
  *   </cngx-sidenav>
  * </cngx-sidenav-layout>
  * ```
- * @example-url http://localhost:4200/sidenav/dual-sidebar-master-detail
- * @example-url http://localhost:4200/sidenav/full-navigation-sidebar
- * @example-url http://localhost:4200/sidenav/material-theming-light-vs-dark
+ * <example-url>http://localhost:4200/sidenav/dual-sidebar-master-detail</example-url>
+ * <example-url>http://localhost:4200/sidenav/full-navigation-sidebar</example-url>
+ * <example-url>http://localhost:4200/sidenav/material-theming-light-vs-dark</example-url>
  */
 @Component({
   selector: 'cngx-sidenav-layout',

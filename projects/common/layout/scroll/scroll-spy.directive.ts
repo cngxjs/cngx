@@ -21,7 +21,7 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
- * @example-url http://localhost:4200/scroll-spy/scroll-based-navigation
+ * <example-url>http://localhost:4200/scroll-spy/scroll-based-navigation</example-url>
  */
 @Directive({
   selector: '[cngxScrollSpy]',

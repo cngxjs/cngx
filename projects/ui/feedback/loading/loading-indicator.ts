@@ -37,8 +37,8 @@ export type LoadingIndicatorVariant = 'spinner' | 'bar';
  * ```html
  * <cngx-loading-indicator [loading]="isLoading()" label="Fetching data" />
  * ```
- * @example-url http://localhost:4200/loading-indicator/bar-variant
- * @example-url http://localhost:4200/loading-indicator/spinner-variant
+ * <example-url>http://localhost:4200/loading-indicator/bar-variant</example-url>
+ * <example-url>http://localhost:4200/loading-indicator/spinner-variant</example-url>
  */
 @Component({
   selector: 'cngx-loading-indicator',

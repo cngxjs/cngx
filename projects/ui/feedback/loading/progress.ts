@@ -33,9 +33,9 @@ const CIRCLE_DASH_ARRAY = `${CIRCUMFERENCE}, ${CIRCUMFERENCE}`;
  * ```html
  * <cngx-progress [progress]="percent()" label="Processing" />
  * ```
- * @example-url http://localhost:4200/progress/circular-variant
- * @example-url http://localhost:4200/progress/linear-determinate
- * @example-url http://localhost:4200/progress/linear-indeterminate
+ * <example-url>http://localhost:4200/progress/circular-variant</example-url>
+ * <example-url>http://localhost:4200/progress/linear-determinate</example-url>
+ * <example-url>http://localhost:4200/progress/linear-indeterminate</example-url>
  */
 @Component({
   selector: 'cngx-progress',

@@ -21,10 +21,10 @@ import { type CngxPaginate } from '@cngx/common/data';
  * </div>
  * <cngx-mat-paginator [cngxPaginateRef]="pg" />
  * ```
- * @example-url http://localhost:4200/mat-paginator/headless-custom-pagination-controls
- * @example-url http://localhost:4200/mat-paginator/material-paginator
- * @example-url http://localhost:4200/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator
- * @example-url http://localhost:4200/paginate-list/uncontrolled-mode-zero-class-boilerplate
+ * <example-url>http://localhost:4200/mat-paginator/headless-custom-pagination-controls</example-url>
+ * <example-url>http://localhost:4200/mat-paginator/material-paginator</example-url>
+ * <example-url>http://localhost:4200/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator</example-url>
+ * <example-url>http://localhost:4200/paginate-list/uncontrolled-mode-zero-class-boilerplate</example-url>
  */
 @Component({
   selector: 'cngx-mat-paginator',

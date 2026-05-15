@@ -68,7 +68,7 @@ import {
  *   <cngx-chip cngxChipInGroup [value]="'lg'">Large</cngx-chip>
  * </cngx-chip-group>
  * ```
- * @example-url http://localhost:4200/chip-group/basic-pick-exactly-one-size
+ * <example-url>http://localhost:4200/chip-group/basic-pick-exactly-one-size</example-url>
  */
 @Component({
   selector: 'cngx-chip-group, [cngxChipGroup]',

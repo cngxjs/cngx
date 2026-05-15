@@ -78,9 +78,9 @@ export class CngxExpandableToggle {
  *   </ng-template>
  * </cngx-expandable-text>
  * ```
- * @example-url http://localhost:4200/expandable-text/auto-toggle
- * @example-url http://localhost:4200/expandable-text/custom-labels
- * @example-url http://localhost:4200/expandable-text/custom-toggle-template
+ * <example-url>http://localhost:4200/expandable-text/auto-toggle</example-url>
+ * <example-url>http://localhost:4200/expandable-text/custom-labels</example-url>
+ * <example-url>http://localhost:4200/expandable-text/custom-toggle-template</example-url>
  */
 @Component({
   selector: 'cngx-expandable-text',

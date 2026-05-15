@@ -54,10 +54,10 @@ import {
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
- * @example-url http://localhost:4200/tab-error-aggregation/per-tab-error-badges
- * @example-url http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs
- * @example-url http://localhost:4200/tab-group/three-tab-navigation
- * @example-url http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container
+ * <example-url>http://localhost:4200/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>http://localhost:4200/tab-group-vertical/vertical-sidebar-tabs</example-url>
+ * <example-url>http://localhost:4200/tab-group/three-tab-navigation</example-url>
+ * <example-url>http://localhost:4200/tab-overflow/8-tabs-in-a-narrow-container</example-url>
  */
 @Component({
   selector: 'cngx-tab-group',

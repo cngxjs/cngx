@@ -35,8 +35,8 @@ import {
  * ```html
  * <input cngxAutofocus [autofocusDelay]="200" />
  * ```
- * @example-url http://localhost:4200/autofocus/conditional-focus
- * @example-url http://localhost:4200/autofocus/focus-on-insert
+ * <example-url>http://localhost:4200/autofocus/conditional-focus</example-url>
+ * <example-url>http://localhost:4200/autofocus/focus-on-insert</example-url>
  */
 @Directive({
   selector: '[cngxAutofocus]',
