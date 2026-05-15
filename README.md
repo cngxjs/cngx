@@ -16,14 +16,14 @@ Built on Angular 21, Signal-native, no NgModules. Each library publishes as ng-p
 
 CNGX is a strict five-level hierarchy. Lower levels know nothing about higher levels; imports flow upward only.
 
-| Package              | Level | What it hosts                                                                                                                                                                     |
-| -------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@cngx/utils`        | 0     | Framework-agnostic TypeScript. Array, tree, and version primitives. No Angular runtime dependency.                                                                                |
-| `@cngx/core`         | 1     | Angular-aware primitives that do not render. DI tokens, async state machine, selection controller, transition tracker.                                                            |
-| `@cngx/common`       | 2     | Atoms and molecules. Single-responsibility directives — a11y, interactive, popover, layout, dialog, card, display, chart, tabs, stepper, data. Never imports `@angular/material`. |
-| `@cngx/forms`        | 3     | Forms organisms — the select family (eight specialised dropdowns), field bridges, validators, typed control inputs.                                                               |
-| `@cngx/data-display` | 3     | Data-display organisms — CDK treetable and its Material twin.                                                                                                                     |
-| `@cngx/ui`           | 4     | Organisms that require Material — sidenav, overlay, feedback shell (toasts, banners, alerts), action button, skeleton, layout, material wrappers.                                 |
+| Package | Level | What it hosts |
+|-|-|-|
+| `@cngx/utils` | 0 | Framework-agnostic TypeScript. Array, tree, and version primitives. No Angular runtime dependency. |
+| `@cngx/core` | 1 | Angular-aware primitives that do not render. DI tokens, async state machine, selection controller, transition tracker. |
+| `@cngx/common` | 2 | Atoms and molecules. Single-responsibility directives — a11y, interactive, popover, layout, dialog, card, display, chart, tabs, stepper, data. Never imports `@angular/material`. |
+| `@cngx/forms` | 3 | Forms organisms. The select family (eight specialised dropdowns), field bridges, validators, typed control inputs. |
+| `@cngx/data-display` | 3 | Data-display organisms. CDK treetable and its Material twin. |
+| `@cngx/ui` | 4 | Organisms that require Material. Sidenav, overlay, feedback shell (toasts, banners, alerts), action button, skeleton, layout, material wrappers. |
 
 Each package ships several secondary entries — import surgically:
 
@@ -38,7 +38,7 @@ Full entry list and per-library READMEs under `projects/`.
 ## Documentation
 
 - **API and concepts** — [https://cngxjs.github.io/cngx/](https://cngxjs.github.io/cngx/) (compodocx-generated, includes the Core Concepts sidebar).
-- **Live examples** — [https://cngxjs.github.io/cngx/examples/](https://cngxjs.github.io/cngx/examples/) — naked iframe-target routes that compodocx embeds on each component's Examples tab.
+- **Live examples** — [https://cngxjs.github.io/cngx/examples/](https://cngxjs.github.io/cngx/examples/). Naked iframe-target routes compodocx embeds on each component's Examples tab.
 
 Run locally:
 
