@@ -27,7 +27,7 @@ import {
   CNGX_FILTER_BUILDER_HOST,
   type CngxFilterBuilderHost,
 } from './filter-builder-host.token';
-import { EMPTY_ROOT, ensureFilterTreeIds } from './filter-builder.helpers';
+import { EMPTY_ROOT, ensureFilterTreeIds, toFilterPredicate } from './filter-builder.helpers';
 import {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   type CngxFilterBuilderState,
@@ -133,6 +133,18 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    */
   readonly errorState: Signal<boolean> = computed(
     () => this.touched() && countIncompleteExpressions(this.tree()) > 0,
+  );
+
+  /**
+   * Item-level predicate derived from the current `tree()` and `fields()`.
+   * Pillar 1 — derive, do not push: consumers read this signal directly
+   * (e.g. `filter.setPredicate(presenter.predicate())` inside an `effect`,
+   * or as a dependency of any `computed` reading the filtered list). No
+   * `equal:` is required — function identity is sufficient downstream
+   * because every consumer treats the predicate as an opaque callable.
+   */
+  readonly predicate: Signal<((item: TValue) => boolean) | null> = computed(() =>
+    toFilterPredicate<TValue>(this.tree(), this.fields()),
   );
 
   constructor() {

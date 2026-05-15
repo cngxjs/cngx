@@ -5,14 +5,15 @@ export const STORY: DemoSpec = {
   navLabel: 'Filter Builder Bridge',
   navCategory: 'filter-builder',
   description:
-    'Wires <cngx-filter-builder> to CngxFilter via toFilterPredicate. ' +
+    'Wires <cngx-filter-builder> to CngxFilter via the presenter\'s predicate signal. ' +
     'Every change to the builder tree updates the filtered table below.',
   apiComponents: ['CngxFilterBuilder', 'CngxFilter'],
   overview:
-    '<p><code>toFilterPredicate(tree, fields)</code> turns the builder\'s <code>FilterGroup</code> ' +
-    'into an item-level predicate. An <code>effect</code> reads the current tree (signal) and pushes ' +
-    'the resulting predicate into <code>CngxFilter.setPredicate</code>.</p>' +
-    '<p>The <code>untracked()</code> wrap on the <code>setPredicate</code> call is required: ' +
+    '<p>The presenter exposes <code>predicate: Signal&lt;((item: T) =&gt; boolean) | null&gt;</code> as a pure ' +
+    'derivation of <code>tree()</code> and <code>fields()</code>. Consumers read it directly — no manual ' +
+    'call to <code>toFilterPredicate()</code>, no per-mutation bridge wiring.</p>' +
+    '<p>An <code>effect</code> reads <code>presenter.predicate()</code> and pushes the function into ' +
+    '<code>CngxFilter.setPredicate</code>. The <code>untracked()</code> wrap on the call is required: ' +
     '<code>setPredicate</code> reads <code>CngxFilter</code>\'s internal predicates signal before writing it, ' +
     'so without <code>untracked()</code> the effect subscribes to that read and loops on every write.</p>' +
     '<p>The filtered list is a plain <code>computed</code> that reads the source items and the ' +
@@ -20,7 +21,7 @@ export const STORY: DemoSpec = {
   moduleImports: [
     "import { CngxFilter } from '@cngx/common/data';",
     "import { effect, untracked, viewChild, computed } from '@angular/core';",
-    "import { CngxFilterBuilder, createEmptyFilterRoot, toFilterPredicate, type FilterGroup } from '@cngx/forms/filter-builder';",
+    "import { CngxFilterBuilder, CngxFilterBuilderPresenter, createEmptyFilterRoot, type FilterGroup } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';",
   ],
   setup: `
@@ -28,6 +29,9 @@ export const STORY: DemoSpec = {
   protected readonly people = FILTER_BUILDER_PEOPLE;
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
   protected readonly filterRef = viewChild.required(CngxFilter<FilterBuilderPerson>);
+  protected readonly presenterRef = viewChild.required(CngxFilterBuilder, {
+    read: CngxFilterBuilderPresenter,
+  });
 
   protected readonly filtered = computed<readonly FilterBuilderPerson[]>(() => {
     const filter = this.filterRef();
@@ -38,9 +42,8 @@ export const STORY: DemoSpec = {
   constructor() {
     effect(() => {
       const filter = this.filterRef();
-      const tree = this.tree();
-      const fields = this.fields;
-      untracked(() => filter.setPredicate(toFilterPredicate(tree, fields)));
+      const fn = this.presenterRef().predicate();
+      untracked(() => filter.setPredicate(fn as ((item: FilterBuilderPerson) => boolean) | null));
     });
   }
   `,
