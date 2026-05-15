@@ -7,15 +7,15 @@
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  --cngx-ex-bg: var(--cngx-ex-surface);
-  --cngx-ex-text: var(--cngx-ex-text);
-  --cngx-ex-muted: var(--cngx-ex-muted);
+  --cngx-ex-bg: #ffffff;
+  --cngx-ex-text: #1f2937;
+  --cngx-ex-muted: #6b7280;
   --cngx-ex-faint: #9ca3af;
-  --cngx-ex-border: var(--cngx-ex-border);
-  --cngx-ex-surface: var(--cngx-ex-surface);
-  --cngx-ex-surface-alt: var(--cngx-ex-surface-alt);
+  --cngx-ex-border: #e5e7eb;
+  --cngx-ex-surface: #ffffff;
+  --cngx-ex-surface-alt: #f9fafb;
   --cngx-ex-highlight-bg: rgba(37, 99, 235, 0.12);
-  --cngx-ex-focus: var(--cngx-ex-focus);
+  --cngx-ex-focus: #2563eb;
   color: var(--cngx-ex-text);
 }
 // compodocx coordinates theme via a `.dark` class on <html> (and a
