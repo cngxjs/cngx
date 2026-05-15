@@ -3,112 +3,99 @@ import {
   Component,
   computed,
   effect,
+  inject,
   signal,
+  untracked,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { CngxActiveDescendant } from '@cngx/common/a11y';
+import {
+  CngxHierarchicalNav,
+  createTreeAdItems,
+  createTreeController,
+} from '@cngx/common/interactive';
+import type { CngxTreeNode } from '@cngx/utils';
 import { ROUTES_META, type RouteMeta } from '../_routes-meta';
 
 const STORAGE_KEY = 'cngx-examples-tree-open';
 
-function loadOpenSet(): Set<string> {
+function loadOpenIds(): readonly string[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null as unknown as Set<string>;
+    if (!raw) return null;
     const arr = JSON.parse(raw) as unknown;
-    return Array.isArray(arr) ? new Set(arr.filter((x): x is string => typeof x === 'string')) : (null as unknown as Set<string>);
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : null;
   } catch {
-    return null as unknown as Set<string>;
+    return null;
   }
 }
 
-function saveOpenSet(set: ReadonlySet<string>): void {
+function saveOpenIds(ids: ReadonlySet<string>): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {
     /* quota / private mode — ignore */
   }
 }
 
-/**
- * Generic path-driven tree node. Internal nodes are folders (have children);
- * leaf nodes carry a `route` reference. Every level uses the same `name` =
- * filesystem-style slug, so `_uncategorised` buckets disappear automatically
- * and flatDemo collapses (card/card → card) fall out of the path layout.
- */
-interface TreeNode {
-  /** Slug segment for this level — matches the filesystem name. */
-  name: string;
-  /** Accumulated key for localStorage persistence. */
-  key: string;
-  children: TreeNode[];
-  /** Leaf only: the originating route. */
-  route?: RouteMeta;
-  /** Folder only: total leaf count under this subtree. */
-  leafCount: number;
-  /** Distance from the root, starting at 0 for the lib level. */
-  depth: number;
+interface NodeValue {
+  /** Stable id — full slash-joined path from root. */
+  readonly key: string;
+  /** Filesystem-style segment for this level. */
+  readonly name: string;
+  /** True at depth 0 (lib level — rendered as `@cngx/<lib>/`). */
+  readonly isLib: boolean;
+  /** Present only on leaves; carries the navigation target. */
+  readonly route?: RouteMeta;
 }
 
-function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
-  const root = new Map<string, TreeNode>();
+interface TreeBuilder {
+  children: Map<string, TreeBuilder>;
+  value: NodeValue;
+}
 
-  function getOrCreate(map: Map<string, TreeNode>, name: string, key: string, depth: number): TreeNode {
-    let node = map.get(name);
-    if (!node) {
-      node = { name, key, children: [], leafCount: 0, depth };
-      map.set(name, node);
-    }
-    return node;
-  }
-
+/** Build a CngxTreeNode tree from the flat route list. */
+function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<NodeValue>[] {
+  const roots = new Map<string, TreeBuilder>();
   for (const r of routes) {
     const segments = r.path.split('/');
-    let parentMap = root;
-    let parentKey = '';
+    let parent = roots;
+    let cumKey = '';
     for (let i = 0; i < segments.length; i++) {
       const name = segments[i];
-      const key = parentKey === '' ? name : parentKey + '/' + name;
-      const isLeaf = i === segments.length - 1;
-      const childMap = i === 0 ? parentMap : (parentMap as unknown as Map<string, TreeNode>);
-      const node = getOrCreate(childMap, name, key, i);
-      if (isLeaf) {
-        node.route = r;
-      } else if (!(node as unknown as { _map?: Map<string, TreeNode> })._map) {
-        // Stash a working child map on the node so we can find/insert children
-        // efficiently during construction. Stripped before return.
-        Object.assign(node, { _map: new Map<string, TreeNode>() });
+      const key = cumKey === '' ? name : cumKey + '/' + name;
+      let node = parent.get(name);
+      if (!node) {
+        node = {
+          children: new Map(),
+          value: { key, name, isLib: i === 0 },
+        };
+        parent.set(name, node);
       }
-      const map = (node as unknown as { _map?: Map<string, TreeNode> })._map;
-      parentMap = (map ?? parentMap) as Map<string, TreeNode>;
-      parentKey = key;
+      cumKey = key;
+      if (i === segments.length - 1) {
+        node.value = { ...node.value, route: r };
+      }
+      parent = node.children;
     }
   }
-
-  // Drain the working maps into ordered `children` arrays + compute leafCount.
-  function finalize(node: TreeNode): number {
-    const map = (node as unknown as { _map?: Map<string, TreeNode> })._map;
-    if (map) {
-      node.children = [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
-      delete (node as unknown as { _map?: Map<string, TreeNode> })._map;
-    }
-    if (node.route) {
-      node.leafCount = 1;
-    } else {
-      node.leafCount = node.children.reduce((n, c) => n + finalize(c), 0);
-    }
-    return node.leafCount;
+  function toTree(map: Map<string, TreeBuilder>): readonly CngxTreeNode<NodeValue>[] {
+    return [...map.values()]
+      .sort((a, b) => a.value.name.localeCompare(b.value.name))
+      .map((b) => ({
+        value: b.value,
+        label: b.value.name,
+        children: b.children.size > 0 ? toTree(b.children) : undefined,
+      }));
   }
-
-  const tops = [...root.values()].sort((a, b) => a.name.localeCompare(b.name));
-  for (const t of tops) finalize(t);
-  return tops;
+  return toTree(roots);
 }
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, CngxActiveDescendant, CngxHierarchicalNav],
   template: `
     <h1>Index of /cngx-examples</h1>
 
@@ -140,42 +127,66 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
 
     <hr />
 
-    @if (tree().length === 0) {
+    @if (visibleNodes().length === 0) {
       <div class="row"><span class="ico">[ ]</span><span class="name empty">No matches.</span></div>
-    }
-
-    @for (top of tree(); track top.key) {
-      <ng-container *ngTemplateOutlet="node; context: { $implicit: top }" />
-    }
-
-    <ng-template #node let-n>
-      @if (n.route) {
-        <div class="row leaf" [style.padding-left.px]="56 + n.depth * 18">
-          <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
-          <span class="name">
-            <a [routerLink]="['/', ...n.route.path.split('/')]">{{ n.name }}</a>
-          </span>
-          <span class="size">—</span>
-        </div>
-      } @else {
-        <details
-          [attr.open]="isOpen(n.key) ? '' : null"
-          (toggle)="onToggle(n.key, $event)"
-        >
-          <summary class="row folder" [class.lvl-0]="n.depth === 0">
-            <span class="ico">[DIR]</span>
-            <span class="name" [style.padding-left.px]="n.depth * 18">{{ n.depth === 0 ? '&#64;cngx/' + n.name + '/' : n.name + '/' }}</span>
-            <span class="size">{{ n.leafCount }}</span>
-          </summary>
-          @for (child of n.children; track child.key) {
-            <ng-container *ngTemplateOutlet="node; context: { $implicit: child }" />
+    } @else {
+      <div
+        #tree
+        class="tree"
+        role="tree"
+        aria-label="cngx examples"
+        tabindex="0"
+        cngxActiveDescendant
+        [items]="adItems()"
+        [autoHighlightFirst]="true"
+        [cngxHierarchicalNav]="controller"
+        (activated)="handleActivated($event)"
+      >
+        @for (n of visibleNodes(); track n.id) {
+          @if (n.value.route) {
+            <a
+              role="treeitem"
+              [id]="n.id"
+              [attr.aria-level]="n.depth + 1"
+              [attr.aria-setsize]="n.setsize"
+              [attr.aria-posinset]="n.posinset"
+              [routerLink]="['/', ...n.value.route.path.split('/')]"
+              class="row leaf"
+              [style.padding-left.px]="56 + n.depth * 18"
+            >
+              <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
+              <span class="name">{{ n.value.name }}</span>
+              <span class="size">—</span>
+            </a>
+          } @else {
+            <div
+              role="treeitem"
+              [id]="n.id"
+              [attr.aria-level]="n.depth + 1"
+              [attr.aria-setsize]="n.setsize"
+              [attr.aria-posinset]="n.posinset"
+              [attr.aria-expanded]="controller.isExpanded(n.id)()"
+              (click)="controller.toggle(n.id)"
+              class="row folder"
+              [class.lvl-0]="n.depth === 0"
+            >
+              <span
+                class="ico"
+                [attr.data-state]="controller.isExpanded(n.id)() ? 'open' : 'closed'"
+              ></span>
+              <span class="name" [style.padding-left.px]="n.depth * 18">{{
+                n.depth === 0 ? '&#64;cngx/' + n.value.name + '/' : n.value.name + '/'
+              }}</span>
+              <span class="size">{{ leafCountFor(n.id) }}</span>
+            </div>
           }
-        </details>
-      }
-    </ng-template>
+        }
+      </div>
+    }
 
     <hr />
     <address>cngx/examples · {{ totalRoutes }} routes</address>
+    <footer>Built with ❤️ and architectural precision</footer>
   `,
   styles: [
     `
@@ -201,7 +212,9 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         margin-bottom: 6px;
         font-size: 0.875rem;
       }
-      .filter-row label { color: #000; }
+      .filter-row label {
+        color: #000;
+      }
       .filter-row input {
         flex: 1;
         max-width: 420px;
@@ -217,7 +230,10 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         outline: 1px dotted #000;
         outline-offset: 1px;
       }
-      .filter-row .meta { color: #555; font-size: 0.8125rem; }
+      .filter-row .meta {
+        color: #555;
+        font-size: 0.8125rem;
+      }
       .filter-row .toggle-all {
         padding: 2px 10px;
         font: inherit;
@@ -228,13 +244,27 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         border-radius: 0;
         cursor: pointer;
       }
-      .filter-row .toggle-all:hover { background: #e8e8e8; }
-      .filter-row .toggle-all:active { background: #ddd; }
-      .filter-row .toggle-all:focus-visible { outline: 1px dotted #000; outline-offset: 1px; }
+      .filter-row .toggle-all:hover {
+        background: #e8e8e8;
+      }
+      .filter-row .toggle-all:active {
+        background: #ddd;
+      }
+      .filter-row .toggle-all:focus-visible {
+        outline: 1px dotted #000;
+        outline-offset: 1px;
+      }
       hr {
         border: none;
         border-top: 1px solid #888;
         margin: 6px 0;
+      }
+      .tree {
+        outline: none;
+      }
+      .tree:focus-visible {
+        outline: 1px dotted #000;
+        outline-offset: 2px;
       }
       .row {
         display: grid;
@@ -243,6 +273,8 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         align-items: baseline;
         padding: 1px 4px;
         line-height: 1.5;
+        text-decoration: none;
+        color: inherit;
       }
       .row.head {
         font-weight: 700;
@@ -253,6 +285,16 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         color: #555;
         font-size: 0.8125rem;
       }
+      .row.folder .ico::before {
+        content: '[+] ';
+        font-family: 'Courier New', monospace;
+      }
+      .row.folder .ico[data-state='open']::before {
+        content: '[-] ';
+      }
+      .row.folder.lvl-0 .name {
+        font-weight: 700;
+      }
       .row .size {
         text-align: right;
         color: #555;
@@ -262,36 +304,36 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
         color: #000;
         font-size: 0.875rem;
       }
-      .row .name.empty { color: #888; font-style: italic; }
-      .row.folder.lvl-0 .name { font-weight: 700; }
-      details > summary {
-        list-style: none;
+      .row .name.empty {
+        color: #888;
+        font-style: italic;
+      }
+      .row.folder {
         cursor: pointer;
       }
-      details > summary::-webkit-details-marker { display: none; }
-      details > summary:hover { background: #f4f4f4; }
-      details > summary .ico::before {
-        content: '[+] ';
-        font-weight: normal;
-        color: #555;
-        font-family: 'Courier New', monospace;
-        font-size: 0.8125rem;
+      .row.folder:hover {
+        background: #f4f4f4;
       }
-      details[open] > summary .ico::before { content: '[-] '; }
-      details > summary .ico {
-        position: relative;
-      }
-      /* Pre-marker eats space; hide the original [DIR] text after the toggle. */
-      details > summary .ico { font-size: 0; }
-      details > summary .ico::after {
-        content: '';
-      }
-      a {
+      a.row.leaf .name {
         color: #0000ee;
         text-decoration: underline;
       }
-      a:visited { color: #551a8b; }
-      a:hover { color: #cc0000; background: #ffffcc; }
+      a.row.leaf:visited .name {
+        color: #551a8b;
+      }
+      a.row.leaf:hover .name {
+        color: #cc0000;
+      }
+      a.row.leaf:hover {
+        background: #ffffcc;
+      }
+      /* Active-descendant highlight — applied by CngxActiveDescendant. */
+      [aria-activedescendant] [role='treeitem'].cngx-option--highlighted,
+      [role='treeitem'][aria-current='true'] {
+        background: rgba(37, 99, 235, 0.12);
+        outline: 1px dotted #2563eb;
+        outline-offset: -1px;
+      }
       address {
         font-style: normal;
         font-size: 0.75rem;
@@ -302,72 +344,115 @@ function buildTree(routes: readonly RouteMeta[]): TreeNode[] {
   ],
 })
 export class HomeComponent {
+  private readonly router = inject(Router);
   protected readonly totalRoutes = ROUTES_META.length;
   protected readonly term = signal('');
 
-  protected readonly filtered = computed<readonly RouteMeta[]>(() => {
+  private readonly filtered = computed<readonly RouteMeta[]>(() => {
     const t = this.term().trim().toLowerCase();
     if (!t) return ROUTES_META;
     return ROUTES_META.filter((r) => {
-      const haystack = `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
+      const haystack =
+        `${r.lib} ${r.category} ${r.demo} ${r.section} ${r.apiComponents.join(' ')}`.toLowerCase();
       return haystack.includes(t);
     });
   });
 
-  protected readonly tree = computed(() => buildTree(this.filtered()));
   protected readonly routesMatched = computed(() => this.filtered().length);
-  protected readonly autoOpen = computed(() => this.term().trim().length > 0);
+  private readonly treeNodes = computed(() => buildCngxTree(this.filtered()));
 
-  /** Every collapsible node key in the *unfiltered* tree. Used by toggle-all. */
-  private readonly allKeys = computed<readonly string[]>(() => {
-    const keys: string[] = [];
-    const walk = (n: TreeNode) => {
-      if (!n.route) {
-        keys.push(n.key);
-        for (const c of n.children) walk(c);
+  protected readonly controller = createTreeController<NodeValue>({
+    nodes: this.treeNodes,
+    nodeIdFn: (v) => v.key,
+    labelFn: (v) => v.name,
+    initiallyExpanded: loadOpenIds() ?? 'none',
+  });
+  protected readonly adItems = createTreeAdItems(this.controller);
+  protected readonly visibleNodes = this.controller.visibleNodes;
+
+  /** Cached leaf counts per folder id — derived from the unfiltered tree. */
+  private readonly fullLeafCounts = computed<ReadonlyMap<string, number>>(() => {
+    const map = new Map<string, number>();
+    const fullTree = buildCngxTree(ROUTES_META);
+    function walk(nodes: readonly CngxTreeNode<NodeValue>[]): number {
+      let n = 0;
+      for (const node of nodes) {
+        if (node.children && node.children.length > 0) {
+          const sub = walk(node.children);
+          map.set(node.value.key, sub);
+          n += sub;
+        } else {
+          n += 1;
+        }
       }
-    };
-    for (const t of buildTree(ROUTES_META)) walk(t);
-    return keys;
+      return n;
+    }
+    walk(fullTree);
+    return map;
   });
 
-  private readonly persistedOpen = signal<Set<string>>(
-    loadOpenSet() ?? new Set(buildTree(ROUTES_META).map((t) => t.key)),
-  );
+  protected leafCountFor(id: string): number {
+    return this.fullLeafCounts().get(id) ?? 0;
+  }
 
   protected readonly allOpen = computed(() => {
-    const open = this.persistedOpen();
-    return this.allKeys().every((k) => open.has(k));
+    const expanded = this.controller.expandedIds();
+    // "All open" = every folder in the FULL (unfiltered) tree is expanded.
+    for (const id of this.fullLeafCounts().keys()) {
+      if (!expanded.has(id)) return false;
+    }
+    return this.fullLeafCounts().size > 0;
   });
 
+  private filterSnapshot: ReadonlySet<string> | null = null;
+
   constructor() {
-    effect(() => saveOpenSet(this.persistedOpen()));
-  }
-
-  protected isOpen(key: string): boolean {
-    return this.autoOpen() || this.persistedOpen().has(key);
-  }
-
-  protected onToggle(key: string, event: Event): void {
-    if (this.autoOpen()) return;
-    const open = (event.target as HTMLDetailsElement).open;
-    this.persistedOpen.update((set) => {
-      const next = new Set(set);
-      if (open) next.add(key);
-      else next.delete(key);
-      return next;
+    // Persist user-driven expansion to localStorage, but ignore writes while
+    // a filter is active so the snapshot survives the auto-expand churn.
+    effect(() => {
+      const ids = this.controller.expandedIds();
+      const filtering = this.term().trim().length > 0;
+      if (!filtering) untracked(() => saveOpenIds(ids));
     });
-  }
 
-  protected toggleAll(): void {
-    if (this.allOpen()) {
-      this.persistedOpen.set(new Set());
-    } else {
-      this.persistedOpen.set(new Set(this.allKeys()));
-    }
+    // Filter mode: snapshot the current expanded set, then expand everything
+    // so matches stay visible. Restore the snapshot when the filter clears.
+    effect(() => {
+      const filtering = this.term().trim().length > 0;
+      untracked(() => {
+        if (filtering && this.filterSnapshot === null) {
+          this.filterSnapshot = new Set(this.controller.expandedIds());
+          this.controller.expandAll();
+        } else if (!filtering && this.filterSnapshot !== null) {
+          this.controller.collapseAll();
+          for (const id of this.filterSnapshot) this.controller.expand(id);
+          this.filterSnapshot = null;
+        }
+      });
+    });
   }
 
   protected setTerm(value: string): void {
     this.term.set(value);
+  }
+
+  /**
+   * CngxActiveDescendant `activated` (Enter / Space on a treeitem):
+   * - Leaf  → router-navigate to the section
+   * - Folder → toggle expand
+   */
+  protected handleActivated(value: unknown): void {
+    const v = value as NodeValue | null | undefined;
+    if (!v) return;
+    if (v.route) {
+      this.router.navigateByUrl('/' + v.route.path);
+    } else {
+      this.controller.toggle(v.key);
+    }
+  }
+
+  protected toggleAll(): void {
+    if (this.allOpen()) this.controller.collapseAll();
+    else this.controller.expandAll();
   }
 }
