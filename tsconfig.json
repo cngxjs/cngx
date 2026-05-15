@@ -4,19 +4,53 @@
   "files": [],
   "compilerOptions": {},
   "references": [
-    { "path": "./projects/utils/tsconfig.lib.json" },
-    { "path": "./projects/utils/tsconfig.spec.json" },
-    { "path": "./projects/core/tsconfig.lib.json" },
-    { "path": "./projects/core/tsconfig.spec.json" },
-    { "path": "./projects/forms/tsconfig.lib.json" },
-    { "path": "./projects/forms/tsconfig.spec.json" },
-    { "path": "./projects/ui/tsconfig.lib.json" },
-    { "path": "./projects/ui/tsconfig.spec.json" },
-    { "path": "./projects/common/tsconfig.lib.json" },
-    { "path": "./projects/common/tsconfig.spec.json" },
-    { "path": "./projects/data-display/tsconfig.lib.json" },
-    { "path": "./projects/data-display/tsconfig.spec.json" },
-    { "path": "./dev-app/tsconfig.app.json" },
-    { "path": "./dev-app/tsconfig.spec.json" }
+    {
+      "path": "./projects/utils/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/utils/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/core/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/core/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/forms/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/forms/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/ui/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/ui/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/common/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/common/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/data-display/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/data-display/tsconfig.spec.json"
+    },
+    {
+      "path": "./dev-app/tsconfig.app.json"
+    },
+    {
+      "path": "./dev-app/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/examples/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/examples/tsconfig.spec.json"
+    }
   ]
 }

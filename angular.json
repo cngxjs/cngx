@@ -58,10 +58,7 @@
                 "output": "/assets"
               }
             ],
-            "styles": [
-              "dev-app/src/styles.scss",
-              "projects/ui/mat-tabs/styles/mat-tabs.css"
-            ],
+            "styles": ["dev-app/src/styles.scss", "projects/ui/mat-tabs/styles/mat-tabs.css"],
             "polyfills": ["zone.js"]
           },
           "configurations": {
@@ -374,6 +371,72 @@
               "devServerTarget": "data-display:serve:production"
             }
           }
+        }
+      }
+    },
+    "examples": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/examples",
+      "sourceRoot": "projects/examples/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/examples/src/main.ts",
+            "tsConfig": "projects/examples/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/examples/public"
+              }
+            ],
+            "styles": ["projects/examples/src/styles.scss"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "examples:build:production"
+            },
+            "development": {
+              "buildTarget": "examples:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
         }
       }
     }
