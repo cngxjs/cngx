@@ -65,6 +65,24 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   return true;
 }
 
+function equalFieldMap(
+  a: ReadonlyMap<string, FilterFieldDef>,
+  b: ReadonlyMap<string, FilterFieldDef>,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const [key, value] of a) {
+    if (b.get(key) !== value) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Standalone filter row — column-header surface for `@cngx/forms/filter-builder`.
  * Owns a single `FilterExpression | null` via `[(value)]` and renders the
@@ -159,7 +177,7 @@ export class CngxFilterRow {
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
     () => new Map(this.fields().map((field) => [field.key, field])),
-    { equal: (a, b) => a === b },
+    { equal: equalFieldMap },
   );
 
   protected readonly fieldOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
