@@ -90,10 +90,10 @@ function equalFieldMap(
  * with no presenter or host-token wiring.
  *
  * Use for ad-hoc top-of-table or side-panel filters where a full
- * `<cngx-filter-builder>` tree is overkill. **Not** the right primitive
- * for column-header filters with a fixed field per column — that is a
- * separate artifact (different "remove" semantics, no field picker,
- * predicate writes directly into `CngxFilter`); accepted-debt §16.
+ * `<cngx-filter-builder>` tree is overkill. Not the right primitive
+ * for column-header filters with a fixed field per column — that UX
+ * (clear-value semantics, no field picker, predicate writes directly
+ * into `CngxFilter`) needs a dedicated artifact.
  *
  * Empty `[(value)]` with >1 field renders just the field-picker; the
  * expression seeds when the user picks. Exactly one field auto-seeds

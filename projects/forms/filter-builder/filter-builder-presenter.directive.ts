@@ -242,8 +242,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   /**
    * Focus the first incomplete expression's first focusable descendant;
    * falls back to the host element when no expression is incomplete. The
-   * row↔presenter correlation runs through `data-cngx-filter-path` on each
-   * rendered row — accepted-debt §15 for the deferred Level-2 abstraction.
+   * row↔presenter correlation runs through the `data-cngx-filter-path`
+   * attribute each rendered row carries.
    */
   focus(options?: FocusOptions): void {
     const path = findFirstIncompletePath(this.tree());

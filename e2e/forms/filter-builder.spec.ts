@@ -228,7 +228,7 @@ test.describe('CngxFilterBuilder — reset journey', () => {
 
 // Form-field round-trip browser-level coverage: the opt-in
 // `cngxFilterBuilderFormFieldControl` directive's bridge wiring is verified by
-// `projects/forms/filter-builder/src/filter-builder-form-field.spec.ts` against
+// `projects/forms/filter-builder/filter-builder-form-field.spec.ts` against
 // a stub `CngxFormFieldPresenter`. A dedicated `<cngx-form-field>`-wrapped demo
 // route is not yet shipped in `dev-app/`; once one lands, add a test here that
 // asserts touched + invalid surface visually and `presenter.focus()` lands on
