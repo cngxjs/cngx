@@ -314,7 +314,8 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       .row.folder {
         cursor: pointer;
       }
-      .row.folder:hover {
+      .row.folder:hover,
+      .row.folder.is-active {
         background: #f4f4f4;
       }
       a.row.leaf .name {
@@ -324,18 +325,13 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       a.row.leaf:visited .name {
         color: #551a8b;
       }
-      a.row.leaf:hover .name {
+      a.row.leaf:hover .name,
+      a.row.leaf.is-active .name {
         color: #cc0000;
       }
-      a.row.leaf:hover {
+      a.row.leaf:hover,
+      a.row.leaf.is-active {
         background: #ffffcc;
-      }
-      /* Active-descendant highlight — applied by CngxActiveDescendant. */
-      [aria-activedescendant] [role='treeitem'].cngx-option--highlighted,
-      [role='treeitem'][aria-current='true'] {
-        background: rgba(37, 99, 235, 0.12);
-        outline: 1px dotted #2563eb;
-        outline-offset: -1px;
       }
       address {
         font-style: normal;
