@@ -139,14 +139,19 @@ function buildImports(story, section, importMap) {
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
 
-  // Build the set of identifiers the section actually references — used to
-  // drop unused imports and avoid TS noUnusedLocals errors.
-  const referenced = new Set([...(section.imports ?? []), ...(story.hostDirectives ?? [])]);
-  // Heuristic: any TypeScript identifier (Cap-or-underscore start) appearing
-  // in setup blocks is a reference. Templates are scanned for the same.
+  // Build the haystack: every place a symbol might be referenced in the
+  // generated component (TS setup + template HTML).
   const scanText = [story.setup ?? '', section.setup ?? '', section.template ?? ''].join('\n');
-  for (const m of scanText.matchAll(/\b([A-Z_][A-Za-z0-9_]*)\b/g)) {
-    referenced.add(m[1]);
+  const explicitRefs = new Set([
+    ...(section.imports ?? []),
+    ...(story.hostDirectives ?? []),
+  ]);
+
+  /** Check whether `id` appears as a standalone identifier in scanText. */
+  function isReferenced(id) {
+    if (explicitRefs.has(id)) return true;
+    const re = new RegExp(`\\b${id.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`);
+    return re.test(scanText);
   }
 
   /** Keep only referenced symbols on an import line; return null if none kept. */
@@ -160,7 +165,7 @@ function buildImports(story, section, importMap) {
       .filter(Boolean)
       .filter((spec) => {
         const id = spec.replace(/^type\s+/, '').split(/\s+as\s+/)[0].trim();
-        return referenced.has(id);
+        return isReferenced(id);
       });
     if (kept.length === 0) return null;
     return `${head} ${kept.join(', ')} ${tail.trim()}`;
@@ -197,6 +202,21 @@ function tsQuote(s) {
   return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'") + "'";
 }
 
+/**
+ * Escape bare custom-element tags (`<cngx-chart>`, `<my-foo>`) so Angular's
+ * innerHTML sanitizer doesn't strip them silently. Known formatting tags
+ * (`<code>`, `<strong>`, `<em>`, `<p>`, `<br>`) pass through unchanged.
+ */
+const SAFE_HTML_TAGS = new Set([
+  'a', 'b', 'br', 'code', 'em', 'i', 'kbd', 'mark', 'p', 'pre',
+  'span', 'strong', 'sup', 'sub', 'u', 'ul', 'ol', 'li',
+]);
+function escapeCustomElementTags(html) {
+  return String(html).replace(/<\/?([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>/g, (match, tag) => {
+    return SAFE_HTML_TAGS.has(tag.toLowerCase()) ? match : match.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  });
+}
+
 function emitComponentSource(meta, story, section, importMap) {
   const { lines } = buildImports(story, section, importMap);
   const setup = [story.setup ?? '', section.setup ?? '']
@@ -219,9 +239,9 @@ function emitComponentSource(meta, story, section, importMap) {
   // bound to class properties so the template parser doesn't choke.
   const introFields = [
     `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
-    `  protected readonly _exDescription: string = ${tsQuote(story.description ?? '')};`,
+    `  protected readonly _exDescription: string = ${tsQuote(escapeCustomElementTags(story.description ?? ''))};`,
     `  protected readonly _exSectionTitle: string = ${tsQuote(section.title ?? '')};`,
-    `  protected readonly _exSubtitle: string = ${tsQuote(section.subtitle ?? '')};`,
+    `  protected readonly _exSubtitle: string = ${tsQuote(escapeCustomElementTags(section.subtitle ?? ''))};`,
   ].join('\n');
 
   const intro = [

@@ -22,6 +22,13 @@
     "common/layout/scroll-spy-demo",
     "common/layout/skeleton-demo",
     "common/layout/sticky-header-demo",
-    "common/layout/truncate-demo"
+    "common/layout/truncate-demo",
+    "common/chart/bullet-demo",
+    "common/chart/deviation-bar-demo",
+    "common/chart/donut-demo",
+    "common/chart/mini-area-demo",
+    "common/chart/mini-bar-demo",
+    "common/chart/sparkline-demo",
+    "common/chart/stacked-bar-demo"
   ]
 }

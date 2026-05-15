@@ -38,6 +38,36 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Backdrop", section: "CngxBackdrop — Overlay with inert" },
   },
   {
+    path: 'bullet/async-state-machine',
+    loadComponent: () => import('./features/bullet/async-state-machine.component').then((m) => m.BulletAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Bullet", section: "Async state machine" },
+  },
+  {
+    path: 'bullet/performance-vs-target',
+    loadComponent: () => import('./features/bullet/performance-vs-target.component').then((m) => m.BulletPerformanceVsTarget),
+    data: { lib: 'common', category: 'chart', demo: "Bullet", section: "Performance vs target" },
+  },
+  {
+    path: 'deviation-bar/async-state-machine',
+    loadComponent: () => import('./features/deviation-bar/async-state-machine.component').then((m) => m.DeviationBarAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Async state machine" },
+  },
+  {
+    path: 'deviation-bar/variance-readings',
+    loadComponent: () => import('./features/deviation-bar/variance-readings.component').then((m) => m.DeviationBarVarianceReadings),
+    data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Variance readings" },
+  },
+  {
+    path: 'donut/async-state-machine',
+    loadComponent: () => import('./features/donut/async-state-machine.component').then((m) => m.DonutAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Donut", section: "Async state machine" },
+  },
+  {
+    path: 'donut/score-gauges',
+    loadComponent: () => import('./features/donut/score-gauges.component').then((m) => m.DonutScoreGauges),
+    data: { lib: 'common', category: 'chart', demo: "Donut", section: "Score gauges" },
+  },
+  {
     path: 'expandable-text/auto-toggle',
     loadComponent: () => import('./features/expandable-text/auto-toggle.component').then((m) => m.ExpandableTextAutoToggle),
     data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Auto-Toggle" },
@@ -118,6 +148,26 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "MediaQuery", section: "CngxMediaQuery — Viewport Breakpoints" },
   },
   {
+    path: 'mini-area/async-state-machine',
+    loadComponent: () => import('./features/mini-area/async-state-machine.component').then((m) => m.MiniAreaAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Mini Area", section: "Async state machine" },
+  },
+  {
+    path: 'mini-area/inline-area-trends',
+    loadComponent: () => import('./features/mini-area/inline-area-trends.component').then((m) => m.MiniAreaInlineAreaTrends),
+    data: { lib: 'common', category: 'chart', demo: "Mini Area", section: "Inline area trends" },
+  },
+  {
+    path: 'mini-bar/async-state-machine',
+    loadComponent: () => import('./features/mini-bar/async-state-machine.component').then((m) => m.MiniBarAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Mini Bar", section: "Async state machine" },
+  },
+  {
+    path: 'mini-bar/basic-readings',
+    loadComponent: () => import('./features/mini-bar/basic-readings.component').then((m) => m.MiniBarBasicReadings),
+    data: { lib: 'common', category: 'chart', demo: "Mini Bar", section: "Basic readings" },
+  },
+  {
     path: 'reduced-motion/animation-toggle',
     loadComponent: () => import('./features/reduced-motion/animation-toggle.component').then((m) => m.ReducedMotionAnimationToggle),
     data: { lib: 'common', category: 'a11y', demo: "ReducedMotion", section: "CngxReducedMotion — Animation Toggle" },
@@ -161,6 +211,31 @@ export const routes: Routes = [
     path: 'skeleton/skeleton-container',
     loadComponent: () => import('./features/skeleton/skeleton-container.component').then((m) => m.SkeletonSkeletonContainer),
     data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Skeleton Container" },
+  },
+  {
+    path: 'sparkline/async-state-machine',
+    loadComponent: () => import('./features/sparkline/async-state-machine.component').then((m) => m.SparklineAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "Async state machine" },
+  },
+  {
+    path: 'sparkline/basic-sparklines',
+    loadComponent: () => import('./features/sparkline/basic-sparklines.component').then((m) => m.SparklineBasicSparklines),
+    data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "Basic sparklines" },
+  },
+  {
+    path: 'sparkline/with-area-fill',
+    loadComponent: () => import('./features/sparkline/with-area-fill.component').then((m) => m.SparklineWithAreaFill),
+    data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "With area fill" },
+  },
+  {
+    path: 'stacked-bar/async-state-machine',
+    loadComponent: () => import('./features/stacked-bar/async-state-machine.component').then((m) => m.StackedBarAsyncStateMachine),
+    data: { lib: 'common', category: 'chart', demo: "Stacked Bar", section: "Async state machine" },
+  },
+  {
+    path: 'stacked-bar/proportional-share-strips',
+    loadComponent: () => import('./features/stacked-bar/proportional-share-strips.component').then((m) => m.StackedBarProportionalShareStrips),
+    data: { lib: 'common', category: 'chart', demo: "Stacked Bar", section: "Proportional share strips" },
   },
   {
     path: 'sticky-header/sticky-header-with-shadow',
