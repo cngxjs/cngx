@@ -40,9 +40,9 @@ import { CngxFormFieldPresenter } from '@cngx/forms/field';
  *   </ng-template>
  * </cngx-char-count>
  * ```
- * <example-url>http://localhost:4200/input/character-counter</example-url>
- * <example-url>http://localhost:4200/input/password-visibility-toggle</example-url>
- * <example-url>http://localhost:4200/input/smart-autocomplete-and-spellcheck</example-url>
+ * <example-url>http://localhost:4200/forms/input/character-counter</example-url>
+ * <example-url>http://localhost:4200/forms/input/password-visibility-toggle</example-url>
+ * <example-url>http://localhost:4200/forms/input/smart-autocomplete-and-spellcheck</example-url>
  */
 @Component({
   selector: 'cngx-char-count',

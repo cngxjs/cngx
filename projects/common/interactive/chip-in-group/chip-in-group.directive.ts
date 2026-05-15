@@ -69,11 +69,11 @@ import {
  *   }
  * </cngx-multi-chip-group>
  * ```
- * <example-url>http://localhost:4200/chip-group/basic-pick-exactly-one-size</example-url>
- * <example-url>http://localhost:4200/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
- * <example-url>http://localhost:4200/multi-chip-group/multi-select-chips-with-selection-count</example-url>
+ * <example-url>http://localhost:4200/common/interactive/chip-group/basic-pick-exactly-one-size</example-url>
+ * <example-url>http://localhost:4200/common/interactive/multi-chip-group/multi-select-chips-with-selection-count</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Directive({
   selector: '[cngxChipInGroup]',

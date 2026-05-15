@@ -30,8 +30,8 @@ interface SegmentRendering {
  * a stacked bar communicates a multi-segment ratio, not a single
  * bounded reading; the SR description enumerates segments via the
  * auto-generated `aria-label` (or the `[ariaLabel]` override).
- * <example-url>http://localhost:4200/stacked-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/stacked-bar/proportional-share-strips</example-url>
+ * <example-url>http://localhost:4200/common/chart/stacked-bar/async-state-machine</example-url>
+ * <example-url>http://localhost:4200/common/chart/stacked-bar/proportional-share-strips</example-url>
  */
 @Component({
   selector: 'cngx-stacked-bar',

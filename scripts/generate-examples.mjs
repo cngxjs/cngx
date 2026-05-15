@@ -174,7 +174,7 @@ function importedSymbols(importLine) {
  * Build the file-level imports for a generated section component.
  * Returns the import block string + the set of identifiers available.
  */
-function buildImports(story, section, importMap) {
+function buildImports(story, section, importMap, featureDepth = 2) {
   // Strip TS comments before auto-detecting Angular core symbols, otherwise
   // a comment like `// viewChild on the ng-template` triggers a viewChild
   // import that the actual code never uses (TS6133).
@@ -251,14 +251,15 @@ function buildImports(story, section, importMap) {
   }
 
   /** Rewrite dev-app-relative paths to the examples app's layout. */
+  const upPrefix = '../'.repeat(featureDepth);
   function rewritePaths(line) {
     if (!line) return line;
     // forms-only `../_fixtures/<file>` — keep the underscore-prefixed dir.
     if (/'(?:\.\.\/)+_fixtures\//.test(line)) {
-      return line.replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, "'../../_fixtures/$1'");
+      return line.replace(/'(?:\.\.\/)+_fixtures\/([^']+)'/, `'${upPrefix}_fixtures/$1'`);
     }
-    // generic `../...fixtures[/...]` → '../../fixtures' (depth-agnostic).
-    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, "'../../fixtures'");
+    // generic `../...fixtures[/...]` → '<depth>fixtures' (depth-aware).
+    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, `'${upPrefix}fixtures'`);
   }
 
   const filteredModuleImports = (story.moduleImports ?? [])
@@ -399,7 +400,7 @@ function escapeCustomElementTags(html) {
 }
 
 function emitComponentSource(meta, story, section, importMap) {
-  const { lines } = buildImports(story, section, importMap);
+  const { lines } = buildImports(story, section, importMap, meta.featureDepth);
   const setup = [story.setup ?? '', section.setup ?? '']
     .map((b) => (b ?? '').trim())
     .filter(Boolean)
@@ -504,7 +505,7 @@ function emitRoutesSource(routes) {
   const entries = sorted.map((r) => [
     `  {`,
     `    path: '${r.path}',`,
-    `    loadComponent: () => import('./features/${r.demoSlug}/${r.sectionSlug}.component').then((m) => m.${r.className}),`,
+    `    loadComponent: () => import('${r.importPath}').then((m) => m.${r.className}),`,
     `    data: { lib: '${r.lib}', category: '${r.category}', demo: ${JSON.stringify(r.demoTitle)}, section: ${JSON.stringify(r.sectionTitle)} },`,
     `  },`,
   ].join('\n')).join('\n');
@@ -553,22 +554,14 @@ ${entries}
 `;
 }
 
-async function listFolders(dir) {
-  try {
-    return (await readdir(dir, { withFileTypes: true })).filter((e) => e.isDirectory());
-  } catch {
-    return [];
-  }
-}
-
-async function pruneFeaturesDir(approvedSet) {
-  const dirs = await listFolders(FEATURES_DIR);
-  for (const d of dirs) {
-    if (!approvedSet.has(d.name)) {
-      await rm(join(FEATURES_DIR, d.name), { recursive: true, force: true });
-      console.log(`Removed stale: features/${d.name}/`);
-    }
-  }
+/**
+ * Wipe and recreate the features/ root before generation. The new path
+ * layout (features/<lib>/<sub>/<demo>/) makes per-demo pruning more error
+ * prone than just starting fresh each run.
+ */
+async function resetFeaturesDir() {
+  await rm(FEATURES_DIR, { recursive: true, force: true });
+  await mkdir(FEATURES_DIR, { recursive: true });
 }
 
 async function main() {
@@ -578,19 +571,10 @@ async function main() {
     throw new Error('manifest.approved must be an array of demo folder paths relative to dev-app/src/app/demos/');
   }
 
-  await mkdir(FEATURES_DIR, { recursive: true });
+  await resetFeaturesDir();
 
   const importMap = await buildPublicApiImportMap();
 
-  // First pass: detect demoSlug collisions across manifest entries so we can
-  // disambiguate (e.g. common/layout/skeleton-demo vs ui/skeleton-demo).
-  const slugCounts = new Map();
-  for (const rel of manifest.approved) {
-    const leaf = rel.split('/').pop().replace(/-demo$/, '');
-    slugCounts.set(leaf, (slugCounts.get(leaf) ?? 0) + 1);
-  }
-
-  const approvedSlugs = new Set();
   const routes = [];
 
   for (const rel of manifest.approved) {
@@ -609,14 +593,16 @@ async function main() {
     const storyPath = join(demoDir, primary);
     const story = await loadStory(storyPath);
 
-    const rawSlug = folderLeaf.replace(/-demo$/, '');
+    const demoSlug = folderLeaf.replace(/-demo$/, '');
     const parts = demoFolder.split('/');
-    // If the same slug is used by multiple manifest entries, prefix with the
-    // immediate parent dir to disambiguate (e.g. layout-skeleton / ui-skeleton).
-    const demoSlug =
-      slugCounts.get(rawSlug) > 1
-        ? `${parts.length >= 2 ? parts[parts.length - 2] : parts[0]}-${rawSlug}`
-        : rawSlug;
+    // Feature dir mirrors the dev-app demo path:
+    //   common/a11y/active-descendant-demo → features/common/a11y/active-descendant/
+    //   forms/select-demo                  → features/forms/select/
+    //   data-display/treetable-demo        → features/data-display/treetable/
+    const pathSegments = [...parts.slice(0, -1), demoSlug];
+    const demoPath = pathSegments.join('/');
+    const featureDir = join(FEATURES_DIR, ...pathSegments);
+    const featureImportPath = './features/' + demoPath;
 
     // Copy any co-located helper files referenced by `from './<file>'` in
     // moduleImports — e.g. toast-demo imports './sample-toast-body'.
@@ -625,9 +611,6 @@ async function main() {
       const m = line.match(/from\s+['"](\.\/[^'"]+)['"]/);
       if (m) helperFiles.add(m[1]);
     }
-    approvedSlugs.add(demoSlug);
-    const featureDir = join(FEATURES_DIR, demoSlug);
-    await rm(featureDir, { recursive: true, force: true });
     await mkdir(featureDir, { recursive: true });
 
     for (const rel of helperFiles) {
@@ -649,7 +632,10 @@ async function main() {
     }
 
     const lib = parts[0];
-    const category = parts.length === 3 ? parts[1] : (story.navCategory ?? '');
+    // Category = the second path segment when present (a11y, interactive,
+    // feedback, mat-stepper, …) — story.navCategory is intentionally ignored
+    // because it groups unrelated forms demos under buckets like 'field'.
+    const category = parts.length === 3 ? parts[1] : '';
 
     const sections = story.sections ?? [];
     for (let i = 0; i < sections.length; i++) {
@@ -669,6 +655,10 @@ async function main() {
           demoSlug,
           sectionSlug,
           className,
+          // +1 to account for the `features/` dir itself; the section file
+          // lives at `features/<...pathSegments>/<section>.ts`, so it needs
+          // pathSegments.length + 1 `..` hops to reach examples/src/app/.
+          featureDepth: pathSegments.length + 1,
         },
         story,
         section,
@@ -677,7 +667,8 @@ async function main() {
       await writeFile(join(featureDir, `${sectionSlug}.component.ts`), code);
 
       routes.push({
-        path: `${demoSlug}/${sectionSlug}`,
+        path: `${demoPath}/${sectionSlug}`,
+        importPath: featureImportPath + '/' + sectionSlug + '.component',
         demoSlug,
         sectionSlug,
         className,
@@ -691,10 +682,9 @@ async function main() {
     console.log(`Generated ${sections.length} components for ${demoFolder}`);
   }
 
-  await pruneFeaturesDir(approvedSlugs);
   await writeFile(join(EXAMPLES_APP, 'app.routes.ts'), emitRoutesSource(routes));
   await writeFile(join(EXAMPLES_APP, '_routes-meta.ts'), emitRoutesMetaSource(routes));
-  console.log(`\nWrote ${routes.length} routes across ${approvedSlugs.size} demos.`);
+  console.log(`\nWrote ${routes.length} routes across ${manifest.approved.length} demos.`);
 }
 
 await main().catch((err) => {

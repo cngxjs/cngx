@@ -27,16 +27,16 @@ import { CNGX_OPTION_STATUS_HOST, type CngxOptionStatus } from './option-status-
  * Selection state (`isSelected`) is driven externally by the enclosing listbox.
  * In V1 of the stack, `CngxListbox` reads `value()` via the AD item list and
  * exposes its own selection through `CngxOption.isSelected()`.
- * <example-url>http://localhost:4200/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/listbox-forms/signal-forms-single-select</example-url>
- * <example-url>http://localhost:4200/listbox-search/command-palette</example-url>
- * <example-url>http://localhost:4200/listbox-trigger/select-dropdown</example-url>
- * <example-url>http://localhost:4200/listbox/multi-select</example-url>
- * <example-url>http://localhost:4200/listbox/single-select</example-url>
- * <example-url>http://localhost:4200/option/flat-options-with-ad</example-url>
- * <example-url>http://localhost:4200/option/grouped-options</example-url>
+ * <example-url>http://localhost:4200/common/interactive/listbox-search/command-palette</example-url>
+ * <example-url>http://localhost:4200/common/interactive/listbox-trigger/select-dropdown</example-url>
+ * <example-url>http://localhost:4200/common/interactive/listbox/multi-select</example-url>
+ * <example-url>http://localhost:4200/common/interactive/listbox/single-select</example-url>
+ * <example-url>http://localhost:4200/common/interactive/option/flat-options-with-ad</example-url>
+ * <example-url>http://localhost:4200/common/interactive/option/grouped-options</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-single-select</example-url>
  */
 @Directive({
   selector: '[cngxOption]',

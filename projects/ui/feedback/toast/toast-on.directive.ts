@@ -42,12 +42,12 @@ import { CngxToaster } from './toast.service';
  *   ...
  * </form>
  * ```
- * <example-url>http://localhost:4200/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
- * <example-url>http://localhost:4200/toast/custom-component-body</example-url>
- * <example-url>http://localhost:4200/toast/declarative-cngx-toast</example-url>
- * <example-url>http://localhost:4200/toast/programmatic-cngxtoaster</example-url>
- * <example-url>http://localhost:4200/toast/state-bridge-cngxtoaston</example-url>
- * <example-url>http://localhost:4200/toast/title-description</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/toast/custom-component-body</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/toast/declarative-cngx-toast</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/toast/programmatic-cngxtoaster</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/toast/state-bridge-cngxtoaston</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/toast/title-description</example-url>
+ * <example-url>http://localhost:4200/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxToastOn]',

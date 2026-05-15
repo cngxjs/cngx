@@ -48,9 +48,9 @@ export interface AlertState {
  * via `viewProviders`, scoping alerts to that stack's subtree.
  *
  * For root-level injection, use `provideFeedback(withAlerts())`.
- * <example-url>http://localhost:4200/alert-stack/basic-stack</example-url>
- * <example-url>http://localhost:4200/alert-stack/dialog-use-case</example-url>
- * <example-url>http://localhost:4200/alert-stack/overflow-collapse</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/basic-stack</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/dialog-use-case</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/overflow-collapse</example-url>
  */
 @Injectable()
 export class CngxAlerter {

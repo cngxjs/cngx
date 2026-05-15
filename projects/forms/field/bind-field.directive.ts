@@ -44,10 +44,10 @@ import type { CngxFormFieldControl } from './models';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
- * <example-url>http://localhost:4200/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-single-select</example-url>
  */
 @Directive({
   selector: '[cngxBindField]',

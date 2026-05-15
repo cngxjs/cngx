@@ -48,11 +48,11 @@ import {
  *   <button (click)="tts.speak(liveCounter().toString())">Read current value</button>
  * </div>
  * ```
- * <example-url>http://localhost:4200/speak-button/material-integration-theme-scss-mat-icon-button</example-url>
- * <example-url>http://localhost:4200/speak-button/styled-speaker-icon</example-url>
- * <example-url>http://localhost:4200/speak-button/theming-css-custom-properties</example-url>
- * <example-url>http://localhost:4200/speak/form-error-read-aloud-on-demand</example-url>
- * <example-url>http://localhost:4200/speak/headless-read-aloud</example-url>
+ * <example-url>http://localhost:4200/common/interactive/speak/form-error-read-aloud-on-demand</example-url>
+ * <example-url>http://localhost:4200/common/interactive/speak/headless-read-aloud</example-url>
+ * <example-url>http://localhost:4200/ui/speak-button/material-integration-theme-scss-mat-icon-button</example-url>
+ * <example-url>http://localhost:4200/ui/speak-button/styled-speaker-icon</example-url>
+ * <example-url>http://localhost:4200/ui/speak-button/theming-css-custom-properties</example-url>
  */
 @Directive({
   selector: '[cngxSpeak]',

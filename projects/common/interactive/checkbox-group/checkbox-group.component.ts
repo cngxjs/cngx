@@ -82,11 +82,11 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  *   >{{ opt }}</cngx-checkbox>
  * </cngx-checkbox-group>
  * ```
- * <example-url>http://localhost:4200/checkbox-group/basic-select-all-master-projected-leaves</example-url>
- * <example-url>http://localhost:4200/checkbox-group/disabled-cascade</example-url>
- * <example-url>http://localhost:4200/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>http://localhost:4200/common/interactive/checkbox-group/basic-select-all-master-projected-leaves</example-url>
+ * <example-url>http://localhost:4200/common/interactive/checkbox-group/disabled-cascade</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: 'cngx-checkbox-group, [cngxCheckboxGroup]',

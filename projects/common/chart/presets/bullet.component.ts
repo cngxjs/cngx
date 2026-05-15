@@ -32,8 +32,8 @@ interface RangeRendering {
  * stacked layers: background `[ranges]` (qualitative bands), an
  * `[actual]` filled bar, and a `[target]` vertical marker. Pure DOM,
  * no SVG. Host carries `role="meter"`.
- * <example-url>http://localhost:4200/bullet/async-state-machine</example-url>
- * <example-url>http://localhost:4200/bullet/performance-vs-target</example-url>
+ * <example-url>http://localhost:4200/common/chart/bullet/async-state-machine</example-url>
+ * <example-url>http://localhost:4200/common/chart/bullet/performance-vs-target</example-url>
  */
 @Component({
   selector: 'cngx-bullet',

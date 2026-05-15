@@ -40,9 +40,9 @@ import { CngxAlerter, type AlertState } from './alerter.service';
  *   errors.forEach(e => this.alerter.show({ message: e, severity: 'error' }));
  * }
  * ```
- * <example-url>http://localhost:4200/alert-stack/basic-stack</example-url>
- * <example-url>http://localhost:4200/alert-stack/dialog-use-case</example-url>
- * <example-url>http://localhost:4200/alert-stack/overflow-collapse</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/basic-stack</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/dialog-use-case</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert-stack/overflow-collapse</example-url>
  */
 @Component({
   selector: 'cngx-alert-stack',

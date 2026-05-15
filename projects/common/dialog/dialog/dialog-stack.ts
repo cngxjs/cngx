@@ -7,16 +7,16 @@ import { computed, Injectable, signal, type Provider } from '@angular/core';
  * When multiple modal dialogs are stacked, only the topmost shows
  * its `::backdrop`. Each `CngxDialog` reads `isTopmost` from this service
  * to control `--cngx-dialog-backdrop-opacity`.
- * <example-url>http://localhost:4200/dialog/alert-dialog</example-url>
- * <example-url>http://localhost:4200/dialog/bottom-sheet</example-url>
- * <example-url>http://localhost:4200/dialog/cngxdialogopener-programmatic</example-url>
- * <example-url>http://localhost:4200/dialog/draggable-dialog</example-url>
- * <example-url>http://localhost:4200/dialog/fully-declarative</example-url>
- * <example-url>http://localhost:4200/dialog/grid-snap-live-vs-release</example-url>
- * <example-url>http://localhost:4200/dialog/nested-dialogs-cngxdialogstack</example-url>
- * <example-url>http://localhost:4200/dialog/non-modal-panel</example-url>
- * <example-url>http://localhost:4200/dialog/programmatic-control</example-url>
- * <example-url>http://localhost:4200/dialog/template-directives</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/alert-dialog</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/bottom-sheet</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/cngxdialogopener-programmatic</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/draggable-dialog</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/fully-declarative</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/grid-snap-live-vs-release</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/nested-dialogs-cngxdialogstack</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/non-modal-panel</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/programmatic-control</example-url>
+ * <example-url>http://localhost:4200/common/dialog/dialog/template-directives</example-url>
  */
 @Injectable({ providedIn: 'root' })
 export class CngxDialogStack {

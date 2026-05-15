@@ -25,9 +25,9 @@ import { injectPresetState } from './preset-state';
  * The host carries `role="img"` and a reactive `aria-label` derived
  * from the chart's auto-Summary; consumers can override via
  * `[ariaLabel]`.
- * <example-url>http://localhost:4200/sparkline/async-state-machine</example-url>
- * <example-url>http://localhost:4200/sparkline/basic-sparklines</example-url>
- * <example-url>http://localhost:4200/sparkline/with-area-fill</example-url>
+ * <example-url>http://localhost:4200/common/chart/sparkline/async-state-machine</example-url>
+ * <example-url>http://localhost:4200/common/chart/sparkline/basic-sparklines</example-url>
+ * <example-url>http://localhost:4200/common/chart/sparkline/with-area-fill</example-url>
  */
 @Component({
   selector: 'cngx-sparkline',

@@ -77,13 +77,13 @@ interface TickRendering {
  * Host carries `aria-hidden="true"` — axis text is decoration; the
  * semantic data view lives on the parent chart's auto-Summary and
  * Data Table.
- * <example-url>http://localhost:4200/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/primitives/time-series-with-threshold-zones</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/combo-bars-moving-average-line</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/line-area-threshold-band</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/responsive-fills-parent-width</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/scatter-with-performance-zones</example-url>
+ * <example-url>http://localhost:4200/common/chart/primitives/time-series-with-threshold-zones</example-url>
  */
 @Component({
   selector: '[cngxAxis]',

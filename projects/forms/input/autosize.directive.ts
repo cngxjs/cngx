@@ -20,8 +20,8 @@ import {
  * <textarea cngxAutosize [minRows]="2" [maxRows]="10" #auto="cngxAutosize"></textarea>
  * <span>Height: {{ auto.height() }}px</span>
  * ```
- * <example-url>http://localhost:4200/autosize/basic-autosize</example-url>
- * <example-url>http://localhost:4200/autosize/min-max-rows</example-url>
+ * <example-url>http://localhost:4200/forms/autosize/basic-autosize</example-url>
+ * <example-url>http://localhost:4200/forms/autosize/min-max-rows</example-url>
  */
 @Directive({
   selector: 'textarea[cngxAutosize]',

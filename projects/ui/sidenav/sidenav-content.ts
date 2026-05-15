@@ -15,9 +15,9 @@ import { CngxSidenavLayout } from './sidenav-layout';
  *   </cngx-sidenav-content>
  * </cngx-sidenav-layout>
  * ```
- * <example-url>http://localhost:4200/sidenav/dual-sidebar-master-detail</example-url>
- * <example-url>http://localhost:4200/sidenav/full-navigation-sidebar</example-url>
- * <example-url>http://localhost:4200/sidenav/material-theming-light-vs-dark</example-url>
+ * <example-url>http://localhost:4200/ui/sidenav/dual-sidebar-master-detail</example-url>
+ * <example-url>http://localhost:4200/ui/sidenav/full-navigation-sidebar</example-url>
+ * <example-url>http://localhost:4200/ui/sidenav/material-theming-light-vs-dark</example-url>
  */
 @Component({
   selector: 'cngx-sidenav-content',

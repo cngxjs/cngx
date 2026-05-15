@@ -17,10 +17,10 @@ import { type CngxPopover } from './popover.directive';
  * <button [cngxPopoverTrigger]="pop" (click)="pop.toggle()">Menu</button>
  * <div cngxPopover #pop="cngxPopover" placement="bottom-start">…</div>
  * ```
- * <example-url>http://localhost:4200/popover/click-popover</example-url>
- * <example-url>http://localhost:4200/popover/controlled-open</example-url>
- * <example-url>http://localhost:4200/popover/escape-mode</example-url>
- * <example-url>http://localhost:4200/popover/placement-variants</example-url>
+ * <example-url>http://localhost:4200/common/popover/popover/click-popover</example-url>
+ * <example-url>http://localhost:4200/common/popover/popover/controlled-open</example-url>
+ * <example-url>http://localhost:4200/common/popover/popover/escape-mode</example-url>
+ * <example-url>http://localhost:4200/common/popover/popover/placement-variants</example-url>
  */
 @Directive({
   selector: '[cngxPopoverTrigger]',

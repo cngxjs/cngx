@@ -12,8 +12,8 @@ import { Directive, signal } from '@angular/core';
  *   @if (fv.focusVisible()) { Focus ring visible }
  * </button>
  * ```
- * <example-url>http://localhost:4200/focus-visible/form-fields-custom-focus-ring</example-url>
- * <example-url>http://localhost:4200/focus-visible/keyboard-vs-pointer</example-url>
+ * <example-url>http://localhost:4200/common/a11y/focus-visible/form-fields-custom-focus-ring</example-url>
+ * <example-url>http://localhost:4200/common/a11y/focus-visible/keyboard-vs-pointer</example-url>
  */
 @Directive({
   selector: '[cngxFocusVisible]',

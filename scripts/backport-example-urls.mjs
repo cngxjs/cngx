@@ -61,26 +61,54 @@ async function loadRoutes() {
  * given file content. Strips any existing @example-url lines first.
  * Returns null if the class declaration cannot be found.
  */
+/**
+ * Count unescaped backticks before `pos` to determine whether `pos` falls
+ * inside an open template literal. Returns true if so — used to skip class
+ * matches that are decoys inside `template: \`…\`` strings.
+ */
+function isInsideTemplateLiteral(src, pos) {
+  let count = 0;
+  for (let i = 0; i < pos; i++) {
+    if (src[i] === '\\') { i++; continue; }
+    if (src[i] === '`') count++;
+  }
+  return count % 2 === 1;
+}
+
+/** Locate the topmost top-level Angular decorator before `classPos`. */
+function findTopDecoratorPos(src, classPos) {
+  const decoratorRe = /\n[ \t]*@(Component|Directive|Injectable|Pipe|NgModule)\b/g;
+  let topDecoratorPos = -1;
+  let m;
+  while ((m = decoratorRe.exec(src)) !== null) {
+    if (m.index >= classPos) break;
+    if (isInsideTemplateLiteral(src, m.index + 1)) continue;
+    topDecoratorPos = m.index + 1; // skip leading \n
+  }
+  return topDecoratorPos;
+}
+
 function injectExampleUrls(src, className, urls) {
   const classRe = new RegExp(`\\bexport\\s+(?:abstract\\s+)?class\\s+${className}\\b`);
   const classMatch = classRe.exec(src);
   if (!classMatch) return null;
+  if (isInsideTemplateLiteral(src, classMatch.index)) return null;
 
-  // Walk back from the class declaration through any decorator(s) to the
-  // preceding `*/`. If we hit non-decorator, non-whitespace code first, the
-  // class has no JSDoc — create one.
-  const before = src.slice(0, classMatch.index);
-  const jsdocEnd = before.lastIndexOf('*/');
-  if (jsdocEnd === -1) {
+  // Anchor the JSDoc search to the topmost top-level decorator (not to
+  // `export class`), because multi-class files with template literals
+  // between decorator and class confuse a naive backwards scan.
+  const topDecorator = findTopDecoratorPos(src, classMatch.index);
+  const anchor = topDecorator !== -1 ? topDecorator : classMatch.index;
+
+  // Walk back from anchor over whitespace to find the immediately preceding
+  // `*/`. Skip if it's inside any template literal.
+  const before = src.slice(0, anchor);
+  const trimmed = before.replace(/\s+$/, '');
+  if (!trimmed.endsWith('*/')) {
     return injectFreshJsdoc(src, classMatch.index, urls);
   }
-
-  // The JSDoc belongs to this class iff the gap between `*/` and the class
-  // declaration is either empty (JSDoc sits directly above export class) or
-  // begins with a `@Decorator` chain. Anything else (e.g. another statement)
-  // means the `*/` belongs to a different block — fall through to fresh JSDoc.
-  const gap = src.slice(jsdocEnd + 2, classMatch.index).trim();
-  if (gap !== '' && !gap.startsWith('@')) {
+  const jsdocEnd = trimmed.length - 2; // position of `*` in `*/`
+  if (isInsideTemplateLiteral(src, jsdocEnd)) {
     return injectFreshJsdoc(src, classMatch.index, urls);
   }
 
@@ -107,14 +135,14 @@ function injectExampleUrls(src, className, urls) {
     .join('\n');
 
   // Trim trailing whitespace/newlines from cleaned body so we can append cleanly.
-  const trimmed = cleaned.replace(/\s+$/, '');
+  const cleanedTrimmed = cleaned.replace(/\s+$/, '');
   // The closing `*/` line typically has its own indent; capture it.
   const closeIndent = (() => {
     const m = /\n([ \t]*)$/.exec(src.slice(0, jsdocEnd));
     return m ? m[1] : '';
   })();
 
-  const rebuiltBody = `${trimmed}\n${urlLines}\n${closeIndent}`;
+  const rebuiltBody = `${cleanedTrimmed}\n${urlLines}\n${closeIndent}`;
 
   return src.slice(0, jsdocStart + 3) + rebuiltBody + src.slice(jsdocEnd);
 }

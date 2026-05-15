@@ -16,6 +16,15 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
  *   <cngx-option [value]="'b'">B</cngx-option>
  * </div>
  * ```
+ * <example-url>http://localhost:4200/forms/select-shell/async-commit-pending-error-inline-glyphs</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/basic-flat-declarative-options</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/empty-state-loading-flag</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/grouped-divider-projected-hierarchy</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/inside-cngx-form-field-reactive-forms</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/rich-content-option-plain-text-trigger</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/search-declarative-cngx-select-search</example-url>
+ * <example-url>http://localhost:4200/forms/select-shell/showcase-every-feature-combined</example-url>
  */
 @Component({
   selector: 'cngx-select-divider',

@@ -27,9 +27,9 @@ import { CngxBanner, type BannerState } from './banner.service';
  * <cngx-banner-outlet />
  * <router-outlet />
  * ```
- * <example-url>http://localhost:4200/banner/async-action</example-url>
- * <example-url>http://localhost:4200/banner/dedup-update</example-url>
- * <example-url>http://localhost:4200/banner/system-banners</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/banner/async-action</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/banner/dedup-update</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/banner/system-banners</example-url>
  */
 @Component({
   selector: 'cngx-banner-outlet',

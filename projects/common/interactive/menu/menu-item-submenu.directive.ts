@@ -55,7 +55,7 @@ interface PopoverController {
  * The submenu's `<div cngxPopover>` MUST set `[exclusive]="false"` so that
  * opening it does not light-dismiss the parent popover. This is the only
  * extra wiring the consumer needs beyond the two inputs.
- * <example-url>http://localhost:4200/menu-submenu/two-level-submenu</example-url>
+ * <example-url>http://localhost:4200/common/interactive/menu-submenu/two-level-submenu</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemSubmenu]',

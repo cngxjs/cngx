@@ -32,10 +32,10 @@ import { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
  * refreshing) is the consumer's concern — wrap with
  * `<cngx-async-container [state]>`. The live-region announcer is bound
  * here so AT updates stay outside the body's recursive render path.
- * <example-url>http://localhost:4200/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
- * <example-url>http://localhost:4200/filter-builder-json/builder-json</example-url>
- * <example-url>http://localhost:4200/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>http://localhost:4200/filter-builder/seeded-tree-and-or-composition</example-url>
+ * <example-url>http://localhost:4200/forms/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
+ * <example-url>http://localhost:4200/forms/filter-builder-json/builder-json</example-url>
+ * <example-url>http://localhost:4200/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>http://localhost:4200/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
 @Component({
   selector: 'cngx-filter-builder',
