@@ -17,12 +17,14 @@
     [attr.aria-label]="ariaLabel()"
     [class.cngx-filter-expression-incomplete]="isIncomplete()"
   >
-    <cngx-select
-      class="cngx-filter-builder__field-select"
-      [options]="fieldOptions()"
-      [value]="expression.field"
-      (valueChange)="handleFieldChange($event)"
-    ></cngx-select>
+    @if (fields().length > 1) {
+      <cngx-select
+        class="cngx-filter-builder__field-select"
+        [options]="fieldOptions()"
+        [value]="expression.field"
+        (valueChange)="handleFieldChange($event)"
+      ></cngx-select>
+    }
 
     <cngx-select
       class="cngx-filter-builder__operator-select"
