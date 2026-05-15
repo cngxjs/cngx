@@ -191,7 +191,8 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
     `
       :host {
         display: block;
-        width: 100%;
+        max-width: 980px;
+        margin: 0 auto;
         padding: 14px 16px 32px;
         font-family: Verdana, Geneva, Arial, sans-serif;
         font-size: 14px;
