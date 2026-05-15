@@ -4,36 +4,55 @@ import { App } from './app/app';
 
 // Dark-mode coordination.
 //
-// All CSS keys off `html.dark` (compodocx's class-based convention). The
-// trigger depends on where we're running:
+// Compodocx persists its dark-mode toggle to
+// `localStorage['compodocx_darkmode-state']` ('true'/'false') and applies
+// `<html class="dark">` on read. Because the examples app and compodocx
+// share the same origin (cngxjs.github.io/cngx/{,examples}), both
+// documents see the same localStorage, and `storage` events fire in
+// the iframe whenever the parent doc mutates the key.
 //
-// - Inside the compodocx iframe (window.parent !== window): the parent doc
-//   owns the theme. It either toggles our `<html class="dark">` directly
-//   (same-origin) or posts `{ type: 'cdx-iframe-theme', dark: boolean }`
-//   for the cross-origin case. We listen for the postMessage but
-//   intentionally do NOT respect `prefers-color-scheme` — that would
-//   desync the iframe whenever the user manually flipped the parent doc
-//   while the OS disagreed.
-//
-// - Standalone (top window): no parent to coordinate with, so we fall
-//   back to the OS preference and react to live changes.
-const isStandalone = window.parent === window;
+// Read the persisted state on boot, fall back to prefers-color-scheme
+// when compodocx has never been toggled, and re-apply on:
+// - `storage` event (user toggled compodocx in parent or another tab)
+// - `prefers-color-scheme` change (only while no persisted state exists)
+const COMPODOCX_DARK_KEY = 'compodocx_darkmode-state';
+const COMPODOC_DARK_KEY = 'compodoc_darkmode-state';
 
 function applyDark(dark: boolean): void {
   document.documentElement.classList.toggle('dark', dark);
   document.body?.classList.toggle('dark', dark);
 }
 
-if (isStandalone) {
-  const mql = window.matchMedia('(prefers-color-scheme: dark)');
-  applyDark(mql.matches);
-  mql.addEventListener('change', (e) => applyDark(e.matches));
+function readPersistedDark(): boolean | null {
+  try {
+    const v =
+      localStorage.getItem(COMPODOCX_DARK_KEY) ??
+      localStorage.getItem(COMPODOC_DARK_KEY);
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+  } catch {
+    // localStorage may be unavailable in restrictive contexts; treat as no preference.
+  }
+  return null;
 }
 
-window.addEventListener('message', (event: MessageEvent) => {
-  const data = event.data as { type?: string; dark?: boolean } | null;
-  if (data?.type !== 'cdx-iframe-theme') return;
-  applyDark(!!data.dark);
+function resolveDark(): boolean {
+  const persisted = readPersistedDark();
+  if (persisted !== null) return persisted;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+applyDark(resolveDark());
+
+window.addEventListener('storage', (event) => {
+  if (event.key !== COMPODOCX_DARK_KEY && event.key !== COMPODOC_DARK_KEY) return;
+  applyDark(resolveDark());
+});
+
+const mql = window.matchMedia('(prefers-color-scheme: dark)');
+mql.addEventListener('change', () => {
+  // Only follow the OS when compodocx has not pinned an explicit preference.
+  if (readPersistedDark() === null) applyDark(mql.matches);
 });
 
 bootstrapApplication(App, appConfig).catch((err) => console.error(err));
