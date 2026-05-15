@@ -19,32 +19,56 @@ export const STORY: DemoSpec = {
     '<p>The filtered list is a plain <code>computed</code> that reads the source items and the ' +
     '<code>filter.predicate()</code> signal.</p>',
   moduleImports: [
-    "import { CngxFilter } from '@cngx/common/data';",
+    "import { CngxFilter, createManualState } from '@cngx/common/data';",
+    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';",
     "import { effect, untracked, viewChild, computed } from '@angular/core';",
     "import { CngxFilterBuilder, CngxFilterBuilderPresenter, createEmptyFilterRoot, type FilterGroup } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';",
   ],
   setup: `
   protected readonly fields = FILTER_BUILDER_FIELDS;
-  protected readonly people = FILTER_BUILDER_PEOPLE;
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
-  protected readonly filterRef = viewChild.required(CngxFilter<FilterBuilderPerson>);
+  protected readonly dataState = createManualState<readonly FilterBuilderPerson[]>();
+  protected readonly filterRef = viewChild(CngxFilter<FilterBuilderPerson>);
   protected readonly presenterRef = viewChild.required(CngxFilterBuilder, {
     read: CngxFilterBuilderPresenter,
   });
 
   protected readonly filtered = computed<readonly FilterBuilderPerson[]>(() => {
-    const filter = this.filterRef();
-    const fn = filter.predicate();
-    return fn ? this.people.filter(fn) : this.people;
+    const items = this.dataState.data() ?? [];
+    const fn = this.filterRef()?.predicate() ?? null;
+    return fn ? items.filter(fn) : items;
   });
 
   constructor() {
+    this.dataState.setSuccess(FILTER_BUILDER_PEOPLE);
     effect(() => {
       const filter = this.filterRef();
+      if (!filter) {
+        return;
+      }
       const fn = this.presenterRef().predicate();
       untracked(() => filter.setPredicate(fn as ((item: FilterBuilderPerson) => boolean) | null));
     });
+  }
+
+  protected loadData(): void {
+    this.dataState.set('loading');
+    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+  }
+
+  protected refreshData(): void {
+    this.dataState.set('refreshing');
+    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+  }
+
+  protected failData(): void {
+    this.dataState.set('loading');
+    setTimeout(() => this.dataState.setError(new Error('Roster fetch failed')), 400);
+  }
+
+  protected emptyData(): void {
+    this.dataState.setSuccess([]);
   }
   `,
   sections: [
@@ -55,43 +79,99 @@ export const STORY: DemoSpec = {
         'Active filter count is read from <code>CngxFilter.activeCount()</code>.',
       template: `
   <div class="demo-form">
-    <div [cngxFilter]="null"></div>
     <cngx-filter-builder [fields]="fields" [(value)]="tree" />
 
-    <div class="status-row">
-      <span class="status-badge">Active filters: {{ filterRef().activeCount() }}</span>
-      <span class="status-badge">Showing: {{ filtered().length }} / {{ people.length }}</span>
+    <div class="demo-actions">
+      <button type="button" (click)="refreshData()">Refresh</button>
+      <button type="button" (click)="loadData()">Reload</button>
+      <button type="button" (click)="failData()">Fail</button>
+      <button type="button" (click)="emptyData()">Empty</button>
     </div>
 
-    <table class="demo-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Age</th>
-          <th>Active</th>
-          <th>Role</th>
-          <th>Birthday</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of filtered(); track p.name) {
-          <tr>
-            <td>{{ p.name }}</td>
-            <td>{{ p.age }}</td>
-            <td>{{ p.active ? 'yes' : 'no' }}</td>
-            <td>{{ p.role }}</td>
-            <td>{{ p.birthday }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="status-row">
+      <span class="status-badge">Active filters: {{ filterRef()?.activeCount() ?? 0 }}</span>
+      <span class="status-badge">Showing: {{ filtered().length }} / {{ (dataState.data() ?? []).length }}</span>
+    </div>
+
+    <cngx-async-container [state]="dataState" ariaLabel="Roster">
+      <ng-template cngxAsyncSkeleton>
+        <div class="demo-skeleton">
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+        </div>
+      </ng-template>
+
+      <ng-template cngxAsyncEmpty>
+        <p class="demo-empty">No people in the roster.</p>
+      </ng-template>
+
+      <ng-template cngxAsyncContent>
+        <table class="demo-table" [cngxFilter]="null">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Active</th>
+              <th>Role</th>
+              <th>Birthday</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filtered(); track p.name) {
+              <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.age }}</td>
+                <td>{{ p.active ? 'yes' : 'no' }}</td>
+                <td>{{ p.role }}</td>
+                <td>{{ p.birthday }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5">No rows match the current filters.</td></tr>
+            }
+          </tbody>
+        </table>
+      </ng-template>
+
+      <ng-template cngxAsyncError let-err>
+        <div role="alert" class="demo-error">
+          <strong>Roster load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
+        </div>
+      </ng-template>
+    </cngx-async-container>
   </div>
       `,
-      imports: ['CngxFilterBuilder', 'CngxFilter'],
+      imports: [
+        'CngxFilterBuilder',
+        'CngxFilter',
+        'CngxAsyncContainer',
+        'CngxAsyncSkeletonTpl',
+        'CngxAsyncContentTpl',
+        'CngxAsyncEmptyTpl',
+        'CngxAsyncErrorTpl',
+      ],
       css: `
+.demo-actions { display: flex; gap: 8px; margin: 12px 0; }
+.demo-actions button { padding: 4px 10px; cursor: pointer; }
 .demo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.875rem; }
 .demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; }
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
+.demo-skeleton { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.demo-skeleton-row {
+  height: 24px;
+  background: var(--cngx-skeleton-bg, #e0e0e0);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: 12px 0; }
+.demo-error {
+  color: var(--cngx-error, #b00020);
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: rgba(176, 0, 32, 0.05);
+}
       `,
     },
   ],
