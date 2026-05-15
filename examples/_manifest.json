@@ -1,0 +1,15 @@
+{
+  "$schema": "./_manifest.schema.json",
+  "$description": "Approved demos for the examples app. Each entry is a folder path relative to dev-app/src/app/demos/. Run `node scripts/generate-examples.mjs` to regenerate.",
+  "approved": [
+    "common/a11y/active-descendant-demo",
+    "common/a11y/aria-expanded-demo",
+    "common/a11y/autofocus-demo",
+    "common/a11y/focus-restore-demo",
+    "common/a11y/focus-trap-demo",
+    "common/a11y/focus-visible-demo",
+    "common/a11y/live-region-demo",
+    "common/a11y/reduced-motion-demo",
+    "common/a11y/roving-tabindex-demo"
+  ]
+}
