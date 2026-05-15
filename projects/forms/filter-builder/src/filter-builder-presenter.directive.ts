@@ -142,10 +142,30 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
    * or as a dependency of any `computed` reading the filtered list). No
    * `equal:` is required — function identity is sufficient downstream
    * because every consumer treats the predicate as an opaque callable.
+   *
+   * Returns `null` when the tree carries no expressions (root-level clear),
+   * so `CngxFilter.setPredicate(presenter.predicate())` cascades to
+   * `activeCount = 0` instead of latching a vacuous-true predicate that
+   * still counts as an active filter.
+   *
+   * Defensive read of `fields()`: a `viewChild`-driven effect can resolve
+   * the presenter and read `predicate()` before the host-directive `fields`
+   * input setter has propagated, in which case `input.required` throws
+   * NG0950. Returning `null` until the binding lands matches the
+   * "no filter" semantics consumers already handle.
    */
-  readonly predicate: Signal<((item: TValue) => boolean) | null> = computed(() =>
-    toFilterPredicate<TValue>(this.tree(), this.fields()),
-  );
+  readonly predicate: Signal<((item: TValue) => boolean) | null> = computed(() => {
+    if (this.isEmpty()) {
+      return null;
+    }
+    let fields: readonly FilterFieldDef<TValue>[];
+    try {
+      fields = this.fields();
+    } catch {
+      return null;
+    }
+    return toFilterPredicate<TValue>(this.tree(), fields);
+  });
 
   constructor() {
     // Normalise consumer-supplied trees so every node carries a stable id.
