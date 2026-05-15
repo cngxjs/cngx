@@ -38,6 +38,7 @@ export class SparklineWithAreaFill {
   protected readonly _exSubtitle: string = 'Combine line + area for a filled trend.';
   protected readonly _exTs: string = `import { CngxSparkline } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
+
 protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
 protected readonly state = createManualState<readonly number[]>();
 
@@ -57,10 +58,10 @@ protected showError(): void {
   this.state.setError(new Error('Network unreachable'));
 }`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:24px;flex-wrap:wrap">
-    <cngx-sparkline [data]="[5, 12, 8, 18, 14, 22, 19]" [showArea]="true" [width]="120" [height]="32" />
-    <cngx-sparkline [data]="[20, 18, 22, 16, 14, 18, 21]" [showArea]="true" [width]="120" [height]="32"
-      style="--cngx-sparkline-color: var(--success, #1f9d55)" />
-  </div>`;
+  <cngx-sparkline [data]="[5, 12, 8, 18, 14, 22, 19]" [showArea]="true" [width]="120" [height]="32" />
+  <cngx-sparkline [data]="[20, 18, 22, 16, 14, 18, 21]" [showArea]="true" [width]="120" [height]="32"
+    style="--cngx-sparkline-color: var(--success, #1f9d55)" />
+</div>`;
   protected readonly stateDemoData: readonly number[] = [12, 18, 14, 22, 19, 28, 24];
   protected readonly state = createManualState<readonly number[]>();
 

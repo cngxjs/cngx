@@ -47,24 +47,25 @@ export class FocusRestorePanelWithAutomaticRestore {
   protected readonly _exSectionTitle: string = 'Panel with Automatic Restore';
   protected readonly _exSubtitle: string = 'Click "Open Panel" — focus moves into the panel. Close it — focus returns to the button that opened it.';
   protected readonly _exTs: string = `import { CngxFocusRestore } from '@cngx/common/a11y';
+
 protected readonly panelOpen = signal(false);
-  protected readonly detailsOpen = signal(false);`;
+protected readonly detailsOpen = signal(false);`;
   protected readonly _exHtml: string = `<button (click)="panelOpen.set(true)" class="chip">Open Panel</button>
 
-  @if (panelOpen()) {
-    <div cngxFocusRestore
-         style="margin-top:12px;padding:16px;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
-      <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
-      <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
-    </div>
-  }
+@if (panelOpen()) {
+  <div cngxFocusRestore
+       style="margin-top:12px;padding:16px;border:1px solid var(--cngx-border,#ddd);border-radius:8px">
+    <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
+    <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
+  </div>
+}
 
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Panel open</span>
-      <span class="event-value">{{ panelOpen() }}</span>
-    </div>
-  </div>`;
+<div class="event-grid" style="margin-top:12px">
+  <div class="event-row">
+    <span class="event-label">Panel open</span>
+    <span class="event-value">{{ panelOpen() }}</span>
+  </div>
+</div>`;
   protected readonly panelOpen = signal(false);
     protected readonly detailsOpen = signal(false);
 }

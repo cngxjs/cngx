@@ -36,7 +36,7 @@ export class BadgeInlineAndHidden {
   protected readonly _exSubtitle: string = 'Inline renders after the host content. Hidden tears the badge out of the DOM — useful for toggle states.';
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <span [cngxBadge]="'NEW'" position="inline" color="warning">Feature</span>
-    <button type="button" class="chip" [cngxBadge]="3" [hidden]="true">Hidden</button>
-  </div>`;
+  <span [cngxBadge]="'NEW'" position="inline" color="warning">Feature</span>
+  <button type="button" class="chip" [cngxBadge]="3" [hidden]="true">Hidden</button>
+</div>`;
 }

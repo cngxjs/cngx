@@ -39,10 +39,10 @@ export class AvatarCascadeImageInitialsFallback {
   protected readonly _exSubtitle: string = 'Image takes priority. If it errors (try the second one), initials render. The third falls back to projected content.';
   protected readonly _exTs: string = `import { CngxAvatar } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <cngx-avatar src="https://i.pravatar.cc/80?u=jane" alt="Jane" initials="JD"></cngx-avatar>
-    <cngx-avatar src="https://example.com/broken.jpg" initials="JD"></cngx-avatar>
-    <cngx-avatar>
-      <span aria-hidden="true" style="font-size:1.25em">?</span>
-    </cngx-avatar>
-  </div>`;
+  <cngx-avatar src="https://i.pravatar.cc/80?u=jane" alt="Jane" initials="JD"></cngx-avatar>
+  <cngx-avatar src="https://example.com/broken.jpg" initials="JD"></cngx-avatar>
+  <cngx-avatar>
+    <span aria-hidden="true" style="font-size:1.25em">?</span>
+  </cngx-avatar>
+</div>`;
 }

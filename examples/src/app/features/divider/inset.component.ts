@@ -35,6 +35,6 @@ export class DividerInset {
   protected readonly _exSubtitle: string = 'The <code>inset</code> modifier adds margin on the inline axis — useful inside lists.';
   protected readonly _exTs: string = `import { CngxDivider } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="section">Item A</div>
-  <cngx-divider [inset]="true"></cngx-divider>
-  <div class="section">Item B</div>`;
+<cngx-divider [inset]="true"></cngx-divider>
+<div class="section">Item B</div>`;
 }

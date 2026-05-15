@@ -53,30 +53,31 @@ export class BackdropOverlayWithInert {
   protected readonly _exSectionTitle: string = 'CngxBackdrop — Overlay with inert';
   protected readonly _exSubtitle: string = 'When visible, <code>[cngxBackdrop]</code> adds <code>inert</code> to all sibling elements — they become unfocusable and non-interactive. Click the backdrop to dismiss.';
   protected readonly _exTs: string = `import { CngxBackdrop } from '@cngx/common';
+
 protected readonly showBackdrop = signal(false);
-  protected readonly clickCount = signal(0);`;
+protected readonly clickCount = signal(0);`;
   protected readonly _exHtml: string = `<div class="button-row">
-    <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
+  <button class="sort-btn" (click)="showBackdrop.set(true)">Show backdrop</button>
+</div>
+
+<div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
+  <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
+       class="drawer-backdrop"></div>
+
+  <div style="padding: 1rem;">
+    <p>This content becomes <code>inert</code> when the backdrop is visible.</p>
+    <button class="sort-btn" (click)="clickCount.update(n => n + 1)">
+      Try clicking me (won't work when inert)
+    </button>
   </div>
+</div>
 
-  <div style="position: relative; min-height: 200px; border: 1px solid var(--border-color, #e0e0e0); border-radius: 6px; overflow: hidden; margin-top: 0.75rem;">
-    <div [cngxBackdrop]="showBackdrop()" (backdropClick)="showBackdrop.set(false); clickCount.update(n => n + 1)"
-         class="drawer-backdrop"></div>
-
-    <div style="padding: 1rem;">
-      <p>This content becomes <code>inert</code> when the backdrop is visible.</p>
-      <button class="sort-btn" (click)="clickCount.update(n => n + 1)">
-        Try clicking me (won't work when inert)
-      </button>
-    </div>
-  </div>
-
-  <div class="status-row" style="margin-top: 0.75rem;">
-    <span class="status-badge" [class.active]="showBackdrop()">
-      {{ showBackdrop() ? 'visible' : 'hidden' }}
-    </span>
-    <span class="status-badge">clicks: {{ clickCount() }}</span>
-  </div>`;
+<div class="status-row" style="margin-top: 0.75rem;">
+  <span class="status-badge" [class.active]="showBackdrop()">
+    {{ showBackdrop() ? 'visible' : 'hidden' }}
+  </span>
+  <span class="status-badge">clicks: {{ clickCount() }}</span>
+</div>`;
   protected readonly showBackdrop = signal(false);
     protected readonly clickCount = signal(0);
 }

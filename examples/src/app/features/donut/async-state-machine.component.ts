@@ -43,6 +43,7 @@ export class DonutAsyncStateMachine {
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState — the donut routes through skeleton / empty / error / content branches automatically.';
   protected readonly _exTs: string = `import { CngxDonut } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
+
 protected readonly state = createManualState<number>();
 
 protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }
@@ -50,15 +51,15 @@ protected showSuccess(): void { this.state.setSuccess(72); }
 protected showEmpty(): void { this.state.reset(); this.state.setSuccess(0); }
 protected showError(): void { this.state.reset(); this.state.setError(new Error('Score unavailable')); }`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
-    <button class="chip" (click)="showSuccess()">success</button>
-    <button class="chip" (click)="showEmpty()">empty</button>
-    <button class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
-    <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
-  </div>`;
+  <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+  <button class="chip" (click)="showSuccess()">success</button>
+  <button class="chip" (click)="showEmpty()">empty</button>
+  <button class="chip" (click)="showError()">error</button>
+</div>
+<div style="display:flex;align-items:center;gap:24px">
+  <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+  <cngx-donut [value]="72" [max]="100" [size]="80" [thickness]="10" [label]="'72%'" [state]="state" aria-label="Demo score" />
+</div>`;
   protected readonly state = createManualState<number>();
 
   protected showSkeleton(): void { this.state.reset(); this.state.set('loading'); }

@@ -46,23 +46,24 @@ export class RovingTabindexHorizontalToolbar {
   protected readonly _exSectionTitle: string = 'Horizontal Toolbar';
   protected readonly _exSubtitle: string = 'Arrow Left/Right moves focus. Home/End jumps to first/last. Tab leaves the toolbar entirely.';
   protected readonly _exTs: string = `import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
+
 protected readonly activeToolbar = signal(0);
-  protected readonly activeVertical = signal(0);`;
+protected readonly activeVertical = signal(0);`;
   protected readonly _exHtml: string = `<div cngxRovingTabindex orientation="horizontal" [(activeIndex)]="activeToolbar"
-       role="toolbar" aria-label="Text formatting"
-       style="display:flex;gap:4px">
-    <button cngxRovingItem class="chip">Bold</button>
-    <button cngxRovingItem class="chip">Italic</button>
-    <button cngxRovingItem class="chip">Underline</button>
-    <button cngxRovingItem [cngxRovingItemDisabled]="true" class="chip" style="opacity:0.4">Strikethrough</button>
-    <button cngxRovingItem class="chip">Code</button>
+     role="toolbar" aria-label="Text formatting"
+     style="display:flex;gap:4px">
+  <button cngxRovingItem class="chip">Bold</button>
+  <button cngxRovingItem class="chip">Italic</button>
+  <button cngxRovingItem class="chip">Underline</button>
+  <button cngxRovingItem [cngxRovingItemDisabled]="true" class="chip" style="opacity:0.4">Strikethrough</button>
+  <button cngxRovingItem class="chip">Code</button>
+</div>
+<div class="event-grid" style="margin-top:12px">
+  <div class="event-row">
+    <span class="event-label">Active index</span>
+    <span class="event-value">{{ activeToolbar() }}</span>
   </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Active index</span>
-      <span class="event-value">{{ activeToolbar() }}</span>
-    </div>
-  </div>`;
+</div>`;
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
 }

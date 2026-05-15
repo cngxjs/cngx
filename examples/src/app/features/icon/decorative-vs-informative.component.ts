@@ -36,7 +36,7 @@ export class IconDecorativeVsInformative {
   protected readonly _exSubtitle: string = 'The top icon is decorative (hidden from AT). The bottom icon has <code>label</code>, so it is announced.';
   protected readonly _exTs: string = `import { CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div style="display:flex;flex-direction:column;gap:8px">
-    <span>Status: <cngx-icon>✓</cngx-icon> Saved</span>
-    <span>Status: <cngx-icon label="Saved">✓</cngx-icon> <span aria-hidden="true">Saved</span></span>
-  </div>`;
+  <span>Status: <cngx-icon>✓</cngx-icon> Saved</span>
+  <span>Status: <cngx-icon label="Saved">✓</cngx-icon> <span aria-hidden="true">Saved</span></span>
+</div>`;
 }

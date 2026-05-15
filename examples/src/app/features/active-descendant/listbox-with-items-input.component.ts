@@ -67,54 +67,55 @@ export class ActiveDescendantListboxWithItemsInput {
   protected readonly _exSectionTitle: string = 'Listbox with items input';
   protected readonly _exSubtitle: string = 'Focus stays on the container. Arrow keys, Home/End, Enter/Space and typeahead all navigate via <code>aria-activedescendant</code>. Disabled items are skipped.';
   protected readonly _exTs: string = `import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a11y';
+
 protected readonly fruits = signal<ActiveDescendantItem[]>([
-    { id: 'fruit-apple', value: 'apple', label: 'Apple' },
-    { id: 'fruit-banana', value: 'banana', label: 'Banana' },
-    { id: 'fruit-cherry', value: 'cherry', label: 'Cherry' },
-    { id: 'fruit-date', value: 'date', label: 'Date', disabled: true },
-    { id: 'fruit-elder', value: 'elder', label: 'Elderberry' },
-    { id: 'fruit-fig', value: 'fig', label: 'Fig' },
-  ]);
-  protected readonly typeaheadFruits = computed(() =>
-    this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
-  );
-  protected readonly lastActivated = signal<string | null>(null);`;
+  { id: 'fruit-apple', value: 'apple', label: 'Apple' },
+  { id: 'fruit-banana', value: 'banana', label: 'Banana' },
+  { id: 'fruit-cherry', value: 'cherry', label: 'Cherry' },
+  { id: 'fruit-date', value: 'date', label: 'Date', disabled: true },
+  { id: 'fruit-elder', value: 'elder', label: 'Elderberry' },
+  { id: 'fruit-fig', value: 'fig', label: 'Fig' },
+]);
+protected readonly typeaheadFruits = computed(() =>
+  this.fruits().map((f): ActiveDescendantItem => ({ ...f, id: f.id + '-ta' })),
+);
+protected readonly lastActivated = signal<string | null>(null);`;
   protected readonly _exHtml: string = `<div class="cngx-ad-listbox"
-       style="max-width:260px"
-       cngxActiveDescendant
-       role="listbox"
-       aria-label="Fruits"
-       tabindex="0"
-       [items]="fruits()"
-       [autoHighlightFirst]="true"
-       (activated)="lastActivated.set($any($event))"
-       #ad="cngxActiveDescendant">
-    @for (fruit of fruits(); track fruit.id) {
-      <div role="option"
-           [id]="fruit.id"
-           [attr.aria-selected]="ad.activeId() === fruit.id"
-           [attr.aria-disabled]="fruit.disabled || null"
-           [class.cngx-option--highlighted]="ad.activeId() === fruit.id"
-           [class.cngx-option--disabled]="fruit.disabled"
-           class="cngx-ad-option">
-        {{ fruit.label }}
-      </div>
-    }
+     style="max-width:260px"
+     cngxActiveDescendant
+     role="listbox"
+     aria-label="Fruits"
+     tabindex="0"
+     [items]="fruits()"
+     [autoHighlightFirst]="true"
+     (activated)="lastActivated.set($any($event))"
+     #ad="cngxActiveDescendant">
+  @for (fruit of fruits(); track fruit.id) {
+    <div role="option"
+         [id]="fruit.id"
+         [attr.aria-selected]="ad.activeId() === fruit.id"
+         [attr.aria-disabled]="fruit.disabled || null"
+         [class.cngx-option--highlighted]="ad.activeId() === fruit.id"
+         [class.cngx-option--disabled]="fruit.disabled"
+         class="cngx-ad-option">
+      {{ fruit.label }}
+    </div>
+  }
+</div>
+<div class="event-grid" style="margin-top:12px">
+  <div class="event-row">
+    <span class="event-label">Active id</span>
+    <span class="event-value">{{ ad.activeId() ?? '—' }}</span>
   </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">Active id</span>
-      <span class="event-value">{{ ad.activeId() ?? '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Active value</span>
-      <span class="event-value">{{ ad.activeValue() ?? '—' }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Last activated</span>
-      <span class="event-value">{{ lastActivated() ?? '—' }}</span>
-    </div>
-  </div>`;
+  <div class="event-row">
+    <span class="event-label">Active value</span>
+    <span class="event-value">{{ ad.activeValue() ?? '—' }}</span>
+  </div>
+  <div class="event-row">
+    <span class="event-label">Last activated</span>
+    <span class="event-value">{{ lastActivated() ?? '—' }}</span>
+  </div>
+</div>`;
   protected readonly fruits = signal<ActiveDescendantItem[]>([
       { id: 'fruit-apple', value: 'apple', label: 'Apple' },
       { id: 'fruit-banana', value: 'banana', label: 'Banana' },

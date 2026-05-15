@@ -43,6 +43,7 @@ export class MiniAreaAsyncStateMachine {
   protected readonly _exSubtitle: string = 'Bind [state] to a CngxAsyncState — the area routes through skeleton / empty / error / content branches automatically.';
   protected readonly _exTs: string = `import { CngxMiniArea } from '@cngx/common/chart';
 import { createManualState } from '@cngx/common/data';
+
 protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
 protected readonly state = createManualState<readonly number[]>();
 
@@ -51,15 +52,15 @@ protected showSuccess(): void { this.state.setSuccess(this.stateDemoData); }
 protected showEmpty(): void { this.state.reset(); this.state.setSuccess([]); }
 protected showError(): void { this.state.reset(); this.state.setError(new Error('Network unreachable')); }`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-    <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
-    <button class="chip" (click)="showSuccess()">success</button>
-    <button class="chip" (click)="showEmpty()">empty</button>
-    <button class="chip" (click)="showError()">error</button>
-  </div>
-  <div style="display:flex;align-items:center;gap:24px">
-    <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
-    <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
-  </div>`;
+  <button class="chip" (click)="showSkeleton()">loading (skeleton)</button>
+  <button class="chip" (click)="showSuccess()">success</button>
+  <button class="chip" (click)="showEmpty()">empty</button>
+  <button class="chip" (click)="showError()">error</button>
+</div>
+<div style="display:flex;align-items:center;gap:24px">
+  <span style="font-size:0.75rem;color:var(--text-muted);min-width:80px">status: {{ state.status() }}</span>
+  <cngx-mini-area [data]="stateDemoData" [state]="state" [width]="160" [height]="40" />
+</div>`;
   protected readonly stateDemoData: readonly number[] = [10, 14, 18, 16, 22, 28, 32];
   protected readonly state = createManualState<readonly number[]>();
 

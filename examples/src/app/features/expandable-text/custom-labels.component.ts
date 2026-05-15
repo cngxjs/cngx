@@ -39,10 +39,10 @@ export class ExpandableTextCustomLabels {
   protected readonly _exSubtitle: string = 'German labels, 2-line limit.';
   protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
-    <cngx-expandable-text [lines]="2" moreLabel="Mehr anzeigen" lessLabel="Weniger">
-      CNGX ist die fehlende Kompositionsschicht zwischen Angular CDK und Angular Material.
-      Es macht beides deklarativ, Signal-first und kommunikativ, ohne sie zu ersetzen.
-      Jede Komponente ist dafuer verantwortlich, ihren Zustand vollstaendig zu kommunizieren.
-    </cngx-expandable-text>
-  </div>`;
+  <cngx-expandable-text [lines]="2" moreLabel="Mehr anzeigen" lessLabel="Weniger">
+    CNGX ist die fehlende Kompositionsschicht zwischen Angular CDK und Angular Material.
+    Es macht beides deklarativ, Signal-first und kommunikativ, ohne sie zu ersetzen.
+    Jede Komponente ist dafuer verantwortlich, ihren Zustand vollstaendig zu kommunizieren.
+  </cngx-expandable-text>
+</div>`;
 }

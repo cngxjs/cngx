@@ -38,9 +38,9 @@ export class AvatarShapesAndStatus {
   protected readonly _exSubtitle: string = 'Circle (default) or square. Optional presence status with <code>aria-label</code>.';
   protected readonly _exTs: string = `import { CngxAvatar } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <cngx-avatar initials="ON" status="online"></cngx-avatar>
-    <cngx-avatar initials="BS" status="busy"></cngx-avatar>
-    <cngx-avatar initials="AW" status="away"></cngx-avatar>
-    <cngx-avatar initials="OF" status="offline" shape="square"></cngx-avatar>
-  </div>`;
+  <cngx-avatar initials="ON" status="online"></cngx-avatar>
+  <cngx-avatar initials="BS" status="busy"></cngx-avatar>
+  <cngx-avatar initials="AW" status="away"></cngx-avatar>
+  <cngx-avatar initials="OF" status="offline" shape="square"></cngx-avatar>
+</div>`;
 }

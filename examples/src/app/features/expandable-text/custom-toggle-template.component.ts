@@ -53,22 +53,22 @@ export class ExpandableTextCustomToggleTemplate {
   protected readonly _exTs: string = `import { CngxExpandableText } from '@cngx/common/layout';
 import { CngxExpandableToggle } from '@cngx/common/layout';`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
-    <cngx-expandable-text [lines]="2">
-      The native autofocus HTML attribute only works on initial page load.
-      This directive handles dynamic content: dialogs, panels, stepper steps,
-      and any element that appears after the initial render. It focuses the host
-      element after the next render frame using afterNextRender.
-      <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
-        <button type="button" (click)="toggle()"
-                [attr.aria-expanded]="expanded"
-                style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;
-                       background:none;border:1px solid var(--cngx-border,#ddd);border-radius:4px;
-                       padding:4px 10px;cursor:pointer;font-size:0.8125rem;
-                       color:var(--interactive,#f5a623)">
-          {{ expanded ? 'Collapse' : 'Expand' }}
-          <span style="font-size:1rem">{{ expanded ? '▲' : '▼' }}</span>
-        </button>
-      </ng-template>
-    </cngx-expandable-text>
-  </div>`;
+  <cngx-expandable-text [lines]="2">
+    The native autofocus HTML attribute only works on initial page load.
+    This directive handles dynamic content: dialogs, panels, stepper steps,
+    and any element that appears after the initial render. It focuses the host
+    element after the next render frame using afterNextRender.
+    <ng-template cngxExpandableToggle let-expanded let-toggle="toggle">
+      <button type="button" (click)="toggle()"
+              [attr.aria-expanded]="expanded"
+              style="display:inline-flex;align-items:center;gap:4px;margin-top:4px;
+                     background:none;border:1px solid var(--cngx-border,#ddd);border-radius:4px;
+                     padding:4px 10px;cursor:pointer;font-size:0.8125rem;
+                     color:var(--interactive,#f5a623)">
+        {{ expanded ? 'Collapse' : 'Expand' }}
+        <span style="font-size:1rem">{{ expanded ? '▲' : '▼' }}</span>
+      </button>
+    </ng-template>
+  </cngx-expandable-text>
+</div>`;
 }

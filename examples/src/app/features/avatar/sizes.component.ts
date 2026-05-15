@@ -39,10 +39,10 @@ export class AvatarSizes {
   protected readonly _exSubtitle: string = 'Five presets controlled by <code>size</code>. Override <code>--cngx-avatar-size</code> for custom values.';
   protected readonly _exTs: string = `import { CngxAvatar } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <cngx-avatar size="xs" initials="A"></cngx-avatar>
-    <cngx-avatar size="sm" initials="AB"></cngx-avatar>
-    <cngx-avatar size="md" initials="AB"></cngx-avatar>
-    <cngx-avatar size="lg" initials="ABC"></cngx-avatar>
-    <cngx-avatar size="xl" initials="ABC"></cngx-avatar>
-  </div>`;
+  <cngx-avatar size="xs" initials="A"></cngx-avatar>
+  <cngx-avatar size="sm" initials="AB"></cngx-avatar>
+  <cngx-avatar size="md" initials="AB"></cngx-avatar>
+  <cngx-avatar size="lg" initials="ABC"></cngx-avatar>
+  <cngx-avatar size="xl" initials="ABC"></cngx-avatar>
+</div>`;
 }

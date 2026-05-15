@@ -49,26 +49,27 @@ export class TruncateShortTextNoToggle {
   protected readonly _exSectionTitle: string = 'Short Text — No Toggle';
   protected readonly _exSubtitle: string = 'When content fits within the line limit, <code>isClamped()</code> is <code>false</code> and no toggle appears.';
   protected readonly _exTs: string = `import { CngxTruncate } from '@cngx/common/layout';
+
 protected readonly expanded1 = signal(false);
-  protected readonly expanded2 = signal(false);`;
+protected readonly expanded2 = signal(false);`;
   protected readonly _exHtml: string = `<div style="max-width:400px">
-    <p [cngxTruncate]="3" [(expanded)]="expanded2" #trunc2="cngxTruncate"
-       style="margin:0;line-height:1.6;font-size:0.875rem">
-      This text is short enough to fit in 3 lines.
-    </p>
-    @if (trunc2.isClamped() || expanded2()) {
-      <button (click)="expanded2.set(!expanded2())"
-              style="margin-top:4px;background:none;border:none;color:var(--interactive,#f5a623);cursor:pointer;padding:0;font-size:0.8125rem">
-        {{ expanded2() ? 'Show less' : 'Show more' }}
-      </button>
-    }
+  <p [cngxTruncate]="3" [(expanded)]="expanded2" #trunc2="cngxTruncate"
+     style="margin:0;line-height:1.6;font-size:0.875rem">
+    This text is short enough to fit in 3 lines.
+  </p>
+  @if (trunc2.isClamped() || expanded2()) {
+    <button (click)="expanded2.set(!expanded2())"
+            style="margin-top:4px;background:none;border:none;color:var(--interactive,#f5a623);cursor:pointer;padding:0;font-size:0.8125rem">
+      {{ expanded2() ? 'Show less' : 'Show more' }}
+    </button>
+  }
+</div>
+<div class="event-grid" style="margin-top:12px">
+  <div class="event-row">
+    <span class="event-label">isClamped</span>
+    <span class="event-value">{{ trunc2.isClamped() }}</span>
   </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">isClamped</span>
-      <span class="event-value">{{ trunc2.isClamped() }}</span>
-    </div>
-  </div>`;
+</div>`;
   protected readonly expanded1 = signal(false);
     protected readonly expanded2 = signal(false);
 }

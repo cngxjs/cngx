@@ -41,18 +41,19 @@ export class AutofocusFocusOnInsert {
   protected readonly _exSectionTitle: string = 'Focus on Insert';
   protected readonly _exSubtitle: string = 'Toggle the search bar. The input is automatically focused when it appears.';
   protected readonly _exTs: string = `import { CngxAutofocus } from '@cngx/common/a11y';
-protected readonly showSearch = signal(false);
-  protected readonly conditionMet = signal(false);`;
-  protected readonly _exHtml: string = `<button (click)="showSearch.set(!showSearch())" class="chip">
-    {{ showSearch() ? 'Hide Search' : 'Show Search' }}
-  </button>
 
-  @if (showSearch()) {
-    <div style="margin-top:12px">
-      <input [cngxAutofocus]="true" placeholder="Search..."
-             style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
-    </div>
-  }`;
+protected readonly showSearch = signal(false);
+protected readonly conditionMet = signal(false);`;
+  protected readonly _exHtml: string = `<button (click)="showSearch.set(!showSearch())" class="chip">
+  {{ showSearch() ? 'Hide Search' : 'Show Search' }}
+</button>
+
+@if (showSearch()) {
+  <div style="margin-top:12px">
+    <input [cngxAutofocus]="true" placeholder="Search..."
+           style="padding:8px 12px;border:1px solid var(--cngx-border,#ddd);border-radius:6px;width:240px" />
+  </div>
+}`;
   protected readonly showSearch = signal(false);
     protected readonly conditionMet = signal(false);
 }

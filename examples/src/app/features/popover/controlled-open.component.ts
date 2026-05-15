@@ -51,26 +51,27 @@ export class PopoverControlledOpen {
   protected readonly _exSubtitle: string = 'Bind <code>[cngxPopoverOpen]</code> to drive the popover reactively — no <code>show()</code>/<code>hide()</code> calls needed.';
   protected readonly _exTs: string = `import { CngxPopover, CngxPopoverTrigger } from '@cngx/common/popover';
 import type { PopoverPlacement } from '@cngx/common/popover';
+
 protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
-  protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];`;
+protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];`;
   protected readonly _exHtml: string = `<div style="display:flex;gap:12px;align-items:center;padding-top:20px">
-    <label [cngxPopoverTrigger]="ctrl"
-           style="display:flex;align-items:center;gap:6px;font-size:0.875rem;cursor:pointer">
-      <input type="checkbox" #chk (change)="0" />
-      Show popover
-    </label>
-    <div cngxPopover #ctrl="cngxPopover" [cngxPopoverOpen]="chk.checked" placement="bottom"
-         [exclusive]="false"
-         style="padding:8px 12px;font-size:0.8125rem">
-      Controlled by checkbox
-    </div>
+  <label [cngxPopoverTrigger]="ctrl"
+         style="display:flex;align-items:center;gap:6px;font-size:0.875rem;cursor:pointer">
+    <input type="checkbox" #chk (change)="0" />
+    Show popover
+  </label>
+  <div cngxPopover #ctrl="cngxPopover" [cngxPopoverOpen]="chk.checked" placement="bottom"
+       [exclusive]="false"
+       style="padding:8px 12px;font-size:0.8125rem">
+    Controlled by checkbox
   </div>
-  <div class="event-grid" style="margin-top:12px">
-    <div class="event-row">
-      <span class="event-label">state</span>
-      <span class="event-value">{{ ctrl.state() }}</span>
-    </div>
-  </div>`;
+</div>
+<div class="event-grid" style="margin-top:12px">
+  <div class="event-row">
+    <span class="event-label">state</span>
+    <span class="event-value">{{ ctrl.state() }}</span>
+  </div>
+</div>`;
   protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
     protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];
 }

@@ -39,10 +39,10 @@ export class IconSizes {
   protected readonly _exSubtitle: string = 'Five size presets driven by CSS custom properties. Default font size is 1.25em; override via <code>--cngx-icon-size</code>.';
   protected readonly _exTs: string = `import { CngxIcon } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="icon-row">
-    <cngx-icon size="xs">★</cngx-icon>
-    <cngx-icon size="sm">★</cngx-icon>
-    <cngx-icon size="md">★</cngx-icon>
-    <cngx-icon size="lg">★</cngx-icon>
-    <cngx-icon size="xl">★</cngx-icon>
-  </div>`;
+  <cngx-icon size="xs">★</cngx-icon>
+  <cngx-icon size="sm">★</cngx-icon>
+  <cngx-icon size="md">★</cngx-icon>
+  <cngx-icon size="lg">★</cngx-icon>
+  <cngx-icon size="xl">★</cngx-icon>
+</div>`;
 }

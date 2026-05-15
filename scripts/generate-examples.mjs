@@ -211,6 +211,24 @@ function backtickEscape(s) {
 }
 
 /**
+ * Strip the common leading whitespace shared by every non-empty line.
+ * Story `setup` and `template` blocks live inside indented backtick literals
+ * and arrive with an extra level of indentation that breaks the source view.
+ */
+function dedent(s) {
+  const text = String(s).replace(/^\n+|\s+$/g, '');
+  const lines = text.split('\n');
+  const indents = lines
+    .filter((l) => l.trim().length > 0)
+    .map((l) => /^( *)/.exec(l)[1].length);
+  if (indents.length === 0) return text;
+  const min = Math.min(...indents);
+  if (min === 0) return text;
+  const pad = ' '.repeat(min);
+  return lines.map((l) => (l.startsWith(pad) ? l.slice(min) : l)).join('\n');
+}
+
+/**
  * Escape bare custom-element tags (`<cngx-chart>`, `<my-foo>`) so Angular's
  * innerHTML sanitizer doesn't strip them silently. Known formatting tags
  * (`<code>`, `<strong>`, `<em>`, `<p>`, `<br>`) pass through unchanged.
@@ -258,8 +276,15 @@ function emitComponentSource(meta, story, section, importMap) {
     .filter((l) => !l.includes("from '@angular/core'"))
     .join('\n')
     .trim();
-  const sourceTs = [sourceImports, '', setup].filter(Boolean).join('\n').trim();
-  const sourceHtml = section.template.trim();
+  // Dedent the raw setup blocks (NOT the .trim()-ed `setup` variable used
+  // for the class body) so the first line still carries its full leading
+  // indent and the dedent algorithm can see the true common prefix.
+  const rawSetupBlocks = [story.setup ?? '', section.setup ?? '']
+    .filter((b) => b && b.trim().length > 0)
+    .join('\n\n');
+  const dedentedSetup = dedent(rawSetupBlocks);
+  const sourceTs = [sourceImports, dedentedSetup].filter(Boolean).join('\n\n').trim();
+  const sourceHtml = dedent(section.template);
   const sourceFields = [
     `  protected readonly _exTs: string = \`${backtickEscape(sourceTs)}\`;`,
     `  protected readonly _exHtml: string = \`${backtickEscape(sourceHtml)}\`;`,

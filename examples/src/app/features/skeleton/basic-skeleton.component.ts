@@ -44,24 +44,25 @@ export class SkeletonBasicSkeleton {
   protected readonly _exSectionTitle: string = 'Basic Skeleton';
   protected readonly _exSubtitle: string = 'Apply <code>[cngxSkeleton]</code> to any element. When the bound value is <code>true</code>, the element shows a shimmer animation.';
   protected readonly _exTs: string = `import { CngxSkeleton } from '@cngx/common/layout';
+
 protected readonly loading = signal(true);
 
-  protected toggleLoading(): void {
-    this.loading.update(v => !v);
-  }`;
+protected toggleLoading(): void {
+  this.loading.update(v => !v);
+}`;
   protected readonly _exHtml: string = `<div class="button-row">
-    <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
-      {{ loading() ? 'Loading...' : 'Loaded' }}
-    </button>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin-top:16px">
-    <div [cngxSkeleton]="loading()"
-      style="height:20px;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
-    <div [cngxSkeleton]="loading()"
-      style="height:20px;width:75%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
-    <div [cngxSkeleton]="loading()"
-      style="height:20px;width:50%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
-  </div>`;
+  <button class="chip" [class.chip--active]="loading()" (click)="toggleLoading()">
+    {{ loading() ? 'Loading...' : 'Loaded' }}
+  </button>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;max-width:400px;margin-top:16px">
+  <div [cngxSkeleton]="loading()"
+    style="height:20px;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+  <div [cngxSkeleton]="loading()"
+    style="height:20px;width:75%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+  <div [cngxSkeleton]="loading()"
+    style="height:20px;width:50%;border-radius:4px;background:var(--cngx-surface-alt,#e0e0e0)"></div>
+</div>`;
   protected readonly loading = signal(true);
 
     protected toggleLoading(): void {

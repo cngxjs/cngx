@@ -38,9 +38,9 @@ export class BadgeColorsAndDotMode {
   protected readonly _exSubtitle: string = 'Boolean <code>true</code> flips to dot mode (no text).';
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <button type="button" class="chip" [cngxBadge]="1" color="error">Errors</button>
-    <button type="button" class="chip" [cngxBadge]="5" color="warning">Warnings</button>
-    <button type="button" class="chip" [cngxBadge]="2" color="neutral">Drafts</button>
-    <button type="button" class="chip" [cngxBadge]="true" color="error" aria-label="new notifications">Live</button>
-  </div>`;
+  <button type="button" class="chip" [cngxBadge]="1" color="error">Errors</button>
+  <button type="button" class="chip" [cngxBadge]="5" color="warning">Warnings</button>
+  <button type="button" class="chip" [cngxBadge]="2" color="neutral">Drafts</button>
+  <button type="button" class="chip" [cngxBadge]="true" color="error" aria-label="new notifications">Live</button>
+</div>`;
 }

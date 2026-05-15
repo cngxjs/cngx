@@ -37,8 +37,8 @@ export class BadgeCountsWithOverflow {
   protected readonly _exSubtitle: string = 'Values over <code>max</code> render as <code>{max}+</code>.';
   protected readonly _exTs: string = `import { CngxBadge } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="row">
-    <button type="button" class="chip" [cngxBadge]="3">Inbox</button>
-    <button type="button" class="chip" [cngxBadge]="12">Tasks</button>
-    <button type="button" class="chip" [cngxBadge]="250" [max]="99">Notifications</button>
-  </div>`;
+  <button type="button" class="chip" [cngxBadge]="3">Inbox</button>
+  <button type="button" class="chip" [cngxBadge]="12">Tasks</button>
+  <button type="button" class="chip" [cngxBadge]="250" [max]="99">Notifications</button>
+</div>`;
 }

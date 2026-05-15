@@ -43,20 +43,21 @@ export class FocusRestoreInlineDetails {
   protected readonly _exSectionTitle: string = 'Inline Details';
   protected readonly _exSubtitle: string = 'A collapsible detail section. When collapsed, focus returns to the toggle button.';
   protected readonly _exTs: string = `import { CngxFocusRestore } from '@cngx/common/a11y';
-protected readonly panelOpen = signal(false);
-  protected readonly detailsOpen = signal(false);`;
-  protected readonly _exHtml: string = `<button (click)="detailsOpen.set(!detailsOpen())" class="chip"
-          [attr.aria-expanded]="detailsOpen()">
-    {{ detailsOpen() ? 'Hide Details' : 'Show Details' }}
-  </button>
 
-  @if (detailsOpen()) {
-    <div cngxFocusRestore
-         style="margin-top:8px;padding:12px;background:var(--cngx-surface-alt,#f9f9f9);border-radius:6px">
-      <p style="margin:0">Extra details that appear dynamically. Tab through these fields, then close.</p>
-      <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-border,#ddd);border-radius:4px" />
-    </div>
-  }`;
+protected readonly panelOpen = signal(false);
+protected readonly detailsOpen = signal(false);`;
+  protected readonly _exHtml: string = `<button (click)="detailsOpen.set(!detailsOpen())" class="chip"
+        [attr.aria-expanded]="detailsOpen()">
+  {{ detailsOpen() ? 'Hide Details' : 'Show Details' }}
+</button>
+
+@if (detailsOpen()) {
+  <div cngxFocusRestore
+       style="margin-top:8px;padding:12px;background:var(--cngx-surface-alt,#f9f9f9);border-radius:6px">
+    <p style="margin:0">Extra details that appear dynamically. Tab through these fields, then close.</p>
+    <input placeholder="Name" style="margin-top:8px;padding:6px 10px;border:1px solid var(--cngx-border,#ddd);border-radius:4px" />
+  </div>
+}`;
   protected readonly panelOpen = signal(false);
     protected readonly detailsOpen = signal(false);
 }

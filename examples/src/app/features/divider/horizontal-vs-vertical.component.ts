@@ -40,11 +40,11 @@ export class DividerHorizontalVsVertical {
   protected readonly _exSubtitle: string = 'Default orientation is horizontal. Use vertical in flex rows to split inline content.';
   protected readonly _exTs: string = `import { CngxDivider } from '@cngx/common/display';`;
   protected readonly _exHtml: string = `<div class="section">First row</div>
-  <cngx-divider></cngx-divider>
-  <div class="section">Second row</div>
-  <div class="inline-row">
-    <span>left</span>
-    <cngx-divider orientation="vertical"></cngx-divider>
-    <span>right</span>
-  </div>`;
+<cngx-divider></cngx-divider>
+<div class="section">Second row</div>
+<div class="inline-row">
+  <span>left</span>
+  <cngx-divider orientation="vertical"></cngx-divider>
+  <span>right</span>
+</div>`;
 }
