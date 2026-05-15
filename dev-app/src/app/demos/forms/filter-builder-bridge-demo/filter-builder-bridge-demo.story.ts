@@ -5,23 +5,27 @@ export const STORY: DemoSpec = {
   navLabel: 'Filter Builder Bridge',
   navCategory: 'filter-builder',
   description:
-    'Wires <cngx-filter-builder> to CngxFilter via the presenter\'s predicate signal. ' +
-    'Every change to the builder tree updates the filtered table below.',
-  apiComponents: ['CngxFilterBuilder', 'CngxFilter'],
+    'Wires <cngx-filter-builder> to CngxFilter and a CngxAsyncContainer-driven roster fetch. ' +
+    'Every filter mutation re-fetches: skeleton on first load, refresh-bar on subsequent ' +
+    'predicate changes — same UX as a real server-side filter.',
+  apiComponents: ['CngxFilterBuilder', 'CngxFilter', 'CngxAsyncContainer'],
   overview:
     '<p>The presenter exposes <code>predicate: Signal&lt;((item: T) =&gt; boolean) | null&gt;</code> as a pure ' +
-    'derivation of <code>tree()</code> and <code>fields()</code>. Consumers read it directly — no manual ' +
-    'call to <code>toFilterPredicate()</code>, no per-mutation bridge wiring.</p>' +
-    '<p>An <code>effect</code> reads <code>presenter.predicate()</code> and pushes the function into ' +
-    '<code>CngxFilter.setPredicate</code>. The <code>untracked()</code> wrap on the call is required: ' +
-    '<code>setPredicate</code> reads <code>CngxFilter</code>\'s internal predicates signal before writing it, ' +
-    'so without <code>untracked()</code> the effect subscribes to that read and loops on every write.</p>' +
-    '<p>The filtered list is a plain <code>computed</code> that reads the source items and the ' +
-    '<code>filter.predicate()</code> signal.</p>',
+    'derivation of <code>tree()</code> and <code>fields()</code>. An <code>effect</code> reads it, pushes ' +
+    'it into <code>CngxFilter.setPredicate</code> for the active-count badge, and triggers a ' +
+    'simulated fetch against <code>dataState</code>: <code>refreshing</code> on subsequent loads, ' +
+    '<code>loading</code> on the very first.</p>' +
+    '<p>The table renders <em>only</em> from <code>dataState.data()</code> inside ' +
+    '<code>cngxAsyncContent</code>. The skeleton / empty / error templates own the other ' +
+    'branches. Result: every filter change drives the same UX as a refresh — visible ' +
+    'feedback, deduped by a request token so superseded fetches drop their result.</p>' +
+    '<p>The <code>untracked()</code> wraps in the effect prevent the dataState transitions ' +
+    'from feeding back into the effect (the effect would otherwise subscribe to ' +
+    '<code>dataState.data()</code> via the in-effect read and loop).</p>',
   moduleImports: [
     "import { CngxFilter, createManualState } from '@cngx/common/data';",
     "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';",
-    "import { effect, untracked, viewChild, computed } from '@angular/core';",
+    "import { effect, untracked, viewChild } from '@angular/core';",
     "import { CngxFilterBuilder, CngxFilterBuilderPresenter, createEmptyFilterRoot, type FilterGroup } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';",
   ],
@@ -34,41 +38,58 @@ export const STORY: DemoSpec = {
     read: CngxFilterBuilderPresenter,
   });
 
-  protected readonly filtered = computed<readonly FilterBuilderPerson[]>(() => {
-    const items = this.dataState.data() ?? [];
-    const fn = this.filterRef()?.predicate() ?? null;
-    return fn ? items.filter(fn) : items;
-  });
+  private fetchToken = 0;
+  private failNext = false;
+  private lastPredicate: ((item: FilterBuilderPerson) => boolean) | null | undefined = undefined;
 
   constructor() {
-    this.dataState.setSuccess(FILTER_BUILDER_PEOPLE);
     effect(() => {
+      const fn = this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null;
+      // Track filterRef in the dependency graph: the table re-mounts on every
+      // fetch (skeleton → success), so the directive instance churns and we
+      // need to re-bind setPredicate on each new mount for the activeCount
+      // badge to track. Dedupe via lastPredicate so re-mounts do not trigger
+      // a recursive fetch loop.
       const filter = this.filterRef();
-      if (!filter) {
-        return;
-      }
-      const fn = this.presenterRef().predicate();
-      untracked(() => filter.setPredicate(fn as ((item: FilterBuilderPerson) => boolean) | null));
+      untracked(() => {
+        filter?.setPredicate(fn);
+        if (fn !== this.lastPredicate) {
+          this.lastPredicate = fn;
+          this.fetchPeople(fn);
+        }
+      });
     });
   }
 
-  protected loadData(): void {
+  private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
+    const myToken = ++this.fetchToken;
+    // reset() drops the prior success, so isFirstLoad flips back to true and
+    // resolveAsyncView() returns 'skeleton' for the loading status. Every
+    // filter mutation gets the same first-load UX as the initial fetch —
+    // visible skeleton, not a thin refresh bar over stale rows.
+    this.dataState.reset();
     this.dataState.set('loading');
-    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+    setTimeout(() => {
+      if (myToken !== this.fetchToken) {
+        return;
+      }
+      if (this.failNext) {
+        this.failNext = false;
+        this.dataState.setError(new Error('Roster fetch failed'));
+        return;
+      }
+      const items = predicate ? FILTER_BUILDER_PEOPLE.filter(predicate) : FILTER_BUILDER_PEOPLE;
+      this.dataState.setSuccess(items);
+    }, 500);
   }
 
-  protected refreshData(): void {
-    this.dataState.set('refreshing');
-    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+  protected refetch(): void {
+    this.fetchPeople(this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null);
   }
 
-  protected failData(): void {
-    this.dataState.set('loading');
-    setTimeout(() => this.dataState.setError(new Error('Roster fetch failed')), 400);
-  }
-
-  protected emptyData(): void {
-    this.dataState.setSuccess([]);
+  protected failNextFetch(): void {
+    this.failNext = true;
+    this.refetch();
   }
   `,
   sections: [
@@ -82,15 +103,14 @@ export const STORY: DemoSpec = {
     <cngx-filter-builder [fields]="fields" [(value)]="tree" />
 
     <div class="demo-actions">
-      <button type="button" (click)="refreshData()">Refresh</button>
-      <button type="button" (click)="loadData()">Reload</button>
-      <button type="button" (click)="failData()">Fail</button>
-      <button type="button" (click)="emptyData()">Empty</button>
+      <button type="button" (click)="refetch()">Refetch</button>
+      <button type="button" (click)="failNextFetch()">Fail next</button>
     </div>
 
     <div class="status-row">
       <span class="status-badge">Active filters: {{ filterRef()?.activeCount() ?? 0 }}</span>
-      <span class="status-badge">Showing: {{ filtered().length }} / {{ (dataState.data() ?? []).length }}</span>
+      <span class="status-badge">Status: {{ dataState.status() }}</span>
+      <span class="status-badge">Showing: {{ (dataState.data() ?? []).length }}</span>
     </div>
 
     <cngx-async-container [state]="dataState" ariaLabel="Roster">
@@ -104,10 +124,10 @@ export const STORY: DemoSpec = {
       </ng-template>
 
       <ng-template cngxAsyncEmpty>
-        <p class="demo-empty">No people in the roster.</p>
+        <p class="demo-empty">No rows match the current filters.</p>
       </ng-template>
 
-      <ng-template cngxAsyncContent>
+      <ng-template cngxAsyncContent let-rows>
         <table class="demo-table" [cngxFilter]="null">
           <thead>
             <tr>
@@ -119,7 +139,7 @@ export const STORY: DemoSpec = {
             </tr>
           </thead>
           <tbody>
-            @for (p of filtered(); track p.name) {
+            @for (p of rows; track p.name) {
               <tr>
                 <td>{{ p.name }}</td>
                 <td>{{ p.age }}</td>
@@ -127,8 +147,6 @@ export const STORY: DemoSpec = {
                 <td>{{ p.role }}</td>
                 <td>{{ p.birthday }}</td>
               </tr>
-            } @empty {
-              <tr><td colspan="5">No rows match the current filters.</td></tr>
             }
           </tbody>
         </table>

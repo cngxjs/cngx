@@ -5,21 +5,20 @@ export const STORY: DemoSpec = {
   navLabel: 'Filter Row',
   navCategory: 'filter-builder',
   description:
-    '<cngx-filter-row> wired into a table-column header. A single filter row outside the ' +
-    'recursive builder; the row owns its FilterExpression via [(value)] and the page applies it ' +
-    'as a predicate to the rows below.',
-  apiComponents: ['CngxFilterRow'],
+    'Per-column <cngx-filter-row> headers wired into a CngxAsyncContainer-driven roster fetch. ' +
+    'Every column-filter mutation re-fetches: skeleton on first load, refresh-bar on subsequent ' +
+    'predicate changes — same UX as a server-side table filter.',
+  apiComponents: ['CngxFilterRow', 'CngxAsyncContainer'],
   overview:
     '<p><code>CngxFilterRow</code> is the dedicated single-row surface for column-header / ' +
-    'quick-filter contexts. Pass <code>[fields]</code> + <code>[(value)]</code> and the row ' +
-    'reads/writes the bound <code>FilterExpression | null</code> directly — no wrapping ' +
-    'presenter, no <code>CNGX_FILTER_BUILDER_HOST</code> needed.</p>' +
-    '<p>This pattern lifts a single row into a table-column header, a side panel, or any ' +
-    'context where a full builder tree is overkill. The bound expression flows through ' +
-    '<code>toFilterPredicate(group, fields)</code> the same way; we wrap it in a synthetic ' +
-    'one-expression group for evaluation.</p>',
+    'quick-filter contexts. Each row owns one <code>FilterExpression | null</code> via ' +
+    '<code>[(value)]</code>; an <code>effect</code> reads both row signals, derives a single ' +
+    '<code>FilterGroup</code>, and triggers a simulated fetch on every mutation.</p>' +
+    '<p>The roster lives in <code>dataState.data()</code> and renders <em>only</em> from inside ' +
+    '<code>cngxAsyncContent</code>. The skeleton, empty, and error templates own the other ' +
+    'branches. A request token dedupes superseded fetches when the user types fast.</p>',
   moduleImports: [
-    "import { computed } from '@angular/core';",
+    "import { computed, effect, untracked } from '@angular/core';",
     "import { createManualState } from '@cngx/common/data';",
     "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl } from '@cngx/ui/feedback';",
     "import { CngxFilterRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';",
@@ -33,42 +32,57 @@ export const STORY: DemoSpec = {
   protected readonly roleFilter = signal<FilterExpression | null>(null);
   protected readonly dataState = createManualState<readonly FilterBuilderPerson[]>();
 
-  protected readonly filtered = computed<readonly FilterBuilderPerson[]>(() => {
-    const items = this.dataState.data() ?? [];
+  protected readonly predicate = computed<((item: FilterBuilderPerson) => boolean) | null>(() => {
     const filters: FilterExpression[] = [];
     const n = this.nameFilter();
     const r = this.roleFilter();
     if (n) filters.push(n);
     if (r) filters.push(r);
     if (filters.length === 0) {
-      return items;
+      return null;
     }
-    const tree = createFilterGroup('and', filters);
-    const predicate = toFilterPredicate(tree, this.fields);
-    return predicate ? items.filter(predicate) : items;
+    return toFilterPredicate(createFilterGroup('and', filters), this.fields);
   });
 
+  private fetchToken = 0;
+  private failNext = false;
+
   constructor() {
-    this.dataState.setSuccess(FILTER_BUILDER_PEOPLE);
+    effect(() => {
+      const fn = this.predicate();
+      untracked(() => this.fetchPeople(fn));
+    });
   }
 
-  protected loadData(): void {
+  private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
+    const myToken = ++this.fetchToken;
+    // reset() drops the prior success, so isFirstLoad flips back to true and
+    // resolveAsyncView() returns 'skeleton' for the loading status. Every
+    // column-filter mutation gets the same first-load UX as the initial
+    // fetch — visible skeleton, not a thin refresh bar over stale rows.
+    this.dataState.reset();
     this.dataState.set('loading');
-    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+    setTimeout(() => {
+      if (myToken !== this.fetchToken) {
+        return;
+      }
+      if (this.failNext) {
+        this.failNext = false;
+        this.dataState.setError(new Error('Roster fetch failed'));
+        return;
+      }
+      const items = predicate ? FILTER_BUILDER_PEOPLE.filter(predicate) : FILTER_BUILDER_PEOPLE;
+      this.dataState.setSuccess(items);
+    }, 500);
   }
 
-  protected refreshData(): void {
-    this.dataState.set('refreshing');
-    setTimeout(() => this.dataState.setSuccess(FILTER_BUILDER_PEOPLE), 500);
+  protected refetch(): void {
+    this.fetchPeople(this.predicate());
   }
 
-  protected failData(): void {
-    this.dataState.set('loading');
-    setTimeout(() => this.dataState.setError(new Error('Roster fetch failed')), 400);
-  }
-
-  protected emptyData(): void {
-    this.dataState.setSuccess([]);
+  protected failNextFetch(): void {
+    this.failNext = true;
+    this.refetch();
   }
   `,
   sections: [
@@ -79,10 +93,19 @@ export const STORY: DemoSpec = {
         'pinned to a single field. Edit the operator / value and the table below filters in real time.',
       template: `
   <div class="demo-actions">
-    <button type="button" (click)="refreshData()">Refresh</button>
-    <button type="button" (click)="loadData()">Reload</button>
-    <button type="button" (click)="failData()">Fail</button>
-    <button type="button" (click)="emptyData()">Empty</button>
+    <button type="button" (click)="refetch()">Refetch</button>
+    <button type="button" (click)="failNextFetch()">Fail next</button>
+  </div>
+
+  <div class="demo-col-headers">
+    <div class="demo-col-header">
+      <span>Name</span>
+      <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
+    </div>
+    <div class="demo-col-header">
+      <span>Role</span>
+      <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
+    </div>
   </div>
 
   <cngx-async-container [state]="dataState" ariaLabel="Roster">
@@ -96,39 +119,27 @@ export const STORY: DemoSpec = {
     </ng-template>
 
     <ng-template cngxAsyncEmpty>
-      <p class="demo-empty">No people in the roster.</p>
+      <p class="demo-empty">No rows match the current filters.</p>
     </ng-template>
 
-    <ng-template cngxAsyncContent>
+    <ng-template cngxAsyncContent let-rows>
       <table class="demo-table">
         <thead>
           <tr>
-            <th>
-              <div class="demo-col-header">
-                <span>Name</span>
-                <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
-              </div>
-            </th>
-            <th>
-              <div class="demo-col-header">
-                <span>Role</span>
-                <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
-              </div>
-            </th>
+            <th>Name</th>
+            <th>Role</th>
             <th>Age</th>
             <th>Active</th>
           </tr>
         </thead>
         <tbody>
-          @for (p of filtered(); track p.name) {
+          @for (p of rows; track p.name) {
             <tr>
               <td>{{ p.name }}</td>
               <td>{{ p.role }}</td>
               <td>{{ p.age }}</td>
               <td>{{ p.active ? 'yes' : 'no' }}</td>
             </tr>
-          } @empty {
-            <tr><td colspan="4">No rows match the current filters.</td></tr>
           }
         </tbody>
       </table>
@@ -142,8 +153,8 @@ export const STORY: DemoSpec = {
   </cngx-async-container>
 
   <div class="status-row">
-    <span class="status-badge">Name filter: {{ nameFilter() | json }}</span>
-    <span class="status-badge">Role filter: {{ roleFilter() | json }}</span>
+    <span class="status-badge">Status: {{ dataState.status() }}</span>
+    <span class="status-badge">Showing: {{ (dataState.data() ?? []).length }}</span>
   </div>
       `,
       imports: [
@@ -158,10 +169,19 @@ export const STORY: DemoSpec = {
       css: `
 .demo-actions { display: flex; gap: 8px; margin: 12px 0; }
 .demo-actions button { padding: 4px 10px; cursor: pointer; }
-.demo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.875rem; }
+.demo-col-headers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 8px 12px;
+  background: var(--cngx-surface-variant, #f5f5f5);
+  border: 1px solid var(--cngx-border, #ddd);
+  border-bottom: none;
+}
+.demo-col-header { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+.demo-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; vertical-align: top; }
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
-.demo-col-header { display: flex; flex-direction: column; gap: 4px; }
 .demo-skeleton { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
 .demo-skeleton-row {
   height: 24px;

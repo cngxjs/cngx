@@ -132,8 +132,8 @@ test.describe('CngxFilterBuilder bridge — predicate-signal integration', () =>
     await expression.locator('input[type="text"]').fill('Engineer');
 
     await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeLessThan(initialCount);
     const filteredCount = await tableRows.count();
-    expect(filteredCount).toBeLessThan(initialCount);
     expect(filteredCount).toBeGreaterThan(0);
 
     for (let i = 0; i < filteredCount; i++) {
@@ -163,8 +163,7 @@ test.describe('CngxFilterBuilder bridge — predicate-signal integration', () =>
     await expression.getByRole('button', { name: 'Remove filter' }).click();
     await expect(builder.locator('.cngx-filter-builder__expression')).toHaveCount(0);
     await expect(section.locator('.status-badge', { hasText: 'Active filters: 0' })).toBeVisible();
-    const finalCount = await tableRows.count();
-    expect(finalCount).toBe(initialCount);
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBe(initialCount);
   });
 
   test('reuse: build → clear → build again, predicate signal toggles each cycle', async ({ page }) => {
@@ -189,13 +188,12 @@ test.describe('CngxFilterBuilder bridge — predicate-signal integration', () =>
 
     await buildRoleEquals('Engineer');
     await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
-    const firstFiltered = await tableRows.count();
-    expect(firstFiltered).toBeLessThan(initialCount);
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeLessThan(initialCount);
 
     await builder.locator('.cngx-filter-builder__expression').first()
       .getByRole('button', { name: 'Remove filter' }).click();
     await expect(builder.locator('.cngx-filter-builder__expression')).toHaveCount(0);
-    expect(await tableRows.count()).toBe(initialCount);
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBe(initialCount);
 
     await buildRoleEquals('Designer');
     await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
