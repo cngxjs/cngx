@@ -1,7 +1,7 @@
 # CNGX
 
 [![Docs](https://img.shields.io/badge/docs-reference-blue)](https://cngxjs.github.io/cngx/)
-[![Demo](https://img.shields.io/badge/demo-showcase-orange)](https://cngxjs.github.io/cngx/demo/)
+[![Examples](https://img.shields.io/badge/examples-iframe%20demos-orange)](https://cngxjs.github.io/cngx/examples/)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 The composition layer between Angular CDK and Angular Material — declarative, Signal-first, communicative by construction.
@@ -38,13 +38,13 @@ Full entry list and per-library READMEs under `projects/`.
 ## Documentation
 
 - **API and concepts** — [https://cngxjs.github.io/cngx/](https://cngxjs.github.io/cngx/) (compodocx-generated, includes the Core Concepts sidebar).
-- **Live demos** — [https://cngxjs.github.io/cngx/demo/](https://cngxjs.github.io/cngx/demo/).
+- **Live examples** — [https://cngxjs.github.io/cngx/examples/](https://cngxjs.github.io/cngx/examples/) — naked iframe-target routes that compodocx embeds on each component's Examples tab.
 
 Run locally:
 
 ```bash
-npm start            # dev-app on http://localhost:4200
-npm run docs:serve   # API reference on http://localhost:8080
+npm run start:examples   # examples app on http://localhost:4200
+npm run docs:serve       # API reference on http://localhost:8080
 ```
 
 ## Installation
