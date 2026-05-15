@@ -59,8 +59,31 @@ async function* walkFiles(dir, predicate) {
   }
 }
 
+/** Well-known Angular symbols → their module path. */
+const KNOWN_ANGULAR_IMPORTS = new Map([
+  ['AsyncPipe', '@angular/common'],
+  ['DatePipe', '@angular/common'],
+  ['DecimalPipe', '@angular/common'],
+  ['JsonPipe', '@angular/common'],
+  ['KeyValuePipe', '@angular/common'],
+  ['LowerCasePipe', '@angular/common'],
+  ['NgClass', '@angular/common'],
+  ['NgStyle', '@angular/common'],
+  ['NgTemplateOutlet', '@angular/common'],
+  ['PercentPipe', '@angular/common'],
+  ['SlicePipe', '@angular/common'],
+  ['TitleCasePipe', '@angular/common'],
+  ['UpperCasePipe', '@angular/common'],
+  ['CurrencyPipe', '@angular/common'],
+  ['FormsModule', '@angular/forms'],
+  ['ReactiveFormsModule', '@angular/forms'],
+  ['RouterLink', '@angular/router'],
+  ['RouterLinkActive', '@angular/router'],
+  ['RouterOutlet', '@angular/router'],
+]);
+
 async function buildPublicApiImportMap() {
-  const map = new Map();
+  const map = new Map(KNOWN_ANGULAR_IMPORTS);
   const apis = [];
   for await (const f of walkFiles(join(ROOT, 'projects'), (p) => p.endsWith('/public-api.ts'))) {
     apis.push(relative(ROOT, f));

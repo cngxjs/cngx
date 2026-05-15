@@ -33,6 +33,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "Autofocus", section: "Focus on Insert" },
   },
   {
+    path: 'autosize/basic-autosize',
+    loadComponent: () => import('./features/autosize/basic-autosize.component').then((m) => m.AutosizeBasicAutosize),
+    data: { lib: 'forms', category: 'input', demo: "Autosize Textarea", section: "Basic Autosize" },
+  },
+  {
+    path: 'autosize/min-max-rows',
+    loadComponent: () => import('./features/autosize/min-max-rows.component').then((m) => m.AutosizeMinMaxRows),
+    data: { lib: 'forms', category: 'input', demo: "Autosize Textarea", section: "Min / Max Rows" },
+  },
+  {
     path: 'avatar/cascade-image-initials-fallback',
     loadComponent: () => import('./features/avatar/cascade-image-initials-fallback.component').then((m) => m.AvatarCascadeImageInitialsFallback),
     data: { lib: 'common', category: 'display', demo: "Avatar", section: "Cascade: image, initials, fallback" },
@@ -233,6 +243,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Custom Toggle Template" },
   },
   {
+    path: 'file-drop/image-upload',
+    loadComponent: () => import('./features/file-drop/image-upload.component').then((m) => m.FileDropImageUpload),
+    data: { lib: 'forms', category: 'input', demo: "File Drop", section: "Image Upload" },
+  },
+  {
+    path: 'filter-builder-json/builder-json',
+    loadComponent: () => import('./features/filter-builder-json/builder-json.component').then((m) => m.FilterBuilderJsonBuilderJson),
+    data: { lib: 'forms', category: 'filter-builder', demo: "Filter Builder — JSON form component", section: "Builder ↔ JSON" },
+  },
+  {
     path: 'filter-chips/custom-chip-decoration-via-cngxfilterchip',
     loadComponent: () => import('./features/filter-chips/custom-chip-decoration-via-cngxfilterchip.component').then((m) => m.FilterChipsCustomChipDecorationViaCngxfilterchip),
     data: { lib: 'common', category: 'data', demo: "Filter chips", section: "Custom chip decoration via *cngxFilterChip" },
@@ -241,6 +261,11 @@ export const routes: Routes = [
     path: 'filter-chips/multi-role-filter-wired-to-a-list',
     loadComponent: () => import('./features/filter-chips/multi-role-filter-wired-to-a-list.component').then((m) => m.FilterChipsMultiRoleFilterWiredToAList),
     data: { lib: 'common', category: 'data', demo: "Filter chips", section: "Multi-role filter wired to a list" },
+  },
+  {
+    path: 'filter-row-standalone/single-row-with-value',
+    loadComponent: () => import('./features/filter-row-standalone/single-row-with-value.component').then((m) => m.FilterRowStandaloneSingleRowWithValue),
+    data: { lib: 'forms', category: 'filter-builder', demo: "Filter Row — minimal", section: "Single row with [(value)]" },
   },
   {
     path: 'focus-restore/inline-details',
@@ -353,6 +378,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Long Press", section: "Long Press with Visual Feedback" },
   },
   {
+    path: 'mask/custom-pattern',
+    loadComponent: () => import('./features/mask/custom-pattern.component').then((m) => m.MaskCustomPattern),
+    data: { lib: 'forms', category: 'input', demo: "Input Mask", section: "Custom Pattern" },
+  },
+  {
+    path: 'mask/custom-tokens-and-transform',
+    loadComponent: () => import('./features/mask/custom-tokens-and-transform.component').then((m) => m.MaskCustomTokensAndTransform),
+    data: { lib: 'forms', category: 'input', demo: "Input Mask", section: "Custom Tokens and Transform" },
+  },
+  {
+    path: 'mask/locale-presets',
+    loadComponent: () => import('./features/mask/locale-presets.component').then((m) => m.MaskLocalePresets),
+    data: { lib: 'forms', category: 'input', demo: "Input Mask", section: "Locale Presets" },
+  },
+  {
     path: 'media-query/viewport-breakpoints',
     loadComponent: () => import('./features/media-query/viewport-breakpoints.component').then((m) => m.MediaQueryViewportBreakpoints),
     data: { lib: 'common', category: 'layout', demo: "MediaQuery", section: "CngxMediaQuery — Viewport Breakpoints" },
@@ -408,6 +448,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Multi chip group (multi-select)", section: "Multi-select chips with selection count" },
   },
   {
+    path: 'numeric/basic-numeric-input',
+    loadComponent: () => import('./features/numeric/basic-numeric-input.component').then((m) => m.NumericBasicNumericInput),
+    data: { lib: 'forms', category: 'input', demo: "Numeric Input", section: "Basic Numeric Input" },
+  },
+  {
+    path: 'numeric/locale-formatting',
+    loadComponent: () => import('./features/numeric/locale-formatting.component').then((m) => m.NumericLocaleFormatting),
+    data: { lib: 'forms', category: 'input', demo: "Numeric Input", section: "Locale Formatting" },
+  },
+  {
+    path: 'numeric/min-max-step-decimals',
+    loadComponent: () => import('./features/numeric/min-max-step-decimals.component').then((m) => m.NumericMinMaxStepDecimals),
+    data: { lib: 'forms', category: 'input', demo: "Numeric Input", section: "Min / Max / Step / Decimals" },
+  },
+  {
     path: 'option/flat-options-with-ad',
     loadComponent: () => import('./features/option/flat-options-with-ad.component').then((m) => m.OptionFlatOptionsWithAd),
     data: { lib: 'common', category: 'interactive', demo: "Option", section: "Flat options with AD" },
@@ -416,6 +471,16 @@ export const routes: Routes = [
     path: 'option/grouped-options',
     loadComponent: () => import('./features/option/grouped-options.component').then((m) => m.OptionGroupedOptions),
     data: { lib: 'common', category: 'interactive', demo: "Option", section: "Grouped options" },
+  },
+  {
+    path: 'otp/4-digit-pin',
+    loadComponent: () => import('./features/otp/4-digit-pin.component').then((m) => m.Otp4DigitPin),
+    data: { lib: 'forms', category: 'input', demo: "OTP Input", section: "4-Digit PIN" },
+  },
+  {
+    path: 'otp/6-digit-otp',
+    loadComponent: () => import('./features/otp/6-digit-otp.component').then((m) => m.Otp6DigitOtp),
+    data: { lib: 'forms', category: 'input', demo: "OTP Input", section: "6-Digit OTP" },
   },
   {
     path: 'paginate-list/paginated-list-cngxpaginate-cngxmatpaginator',
@@ -591,6 +656,21 @@ export const routes: Routes = [
     path: 'truncate/truncated-text-with-toggle',
     loadComponent: () => import('./features/truncate/truncated-text-with-toggle.component').then((m) => m.TruncateTruncatedTextWithToggle),
     data: { lib: 'common', category: 'layout', demo: "Truncate", section: "Truncated Text with Toggle" },
+  },
+  {
+    path: 'utilities/copy-to-clipboard',
+    loadComponent: () => import('./features/utilities/copy-to-clipboard.component').then((m) => m.UtilitiesCopyToClipboard),
+    data: { lib: 'forms', category: 'input', demo: "Input Utilities", section: "Copy to Clipboard" },
+  },
+  {
+    path: 'utilities/input-clear',
+    loadComponent: () => import('./features/utilities/input-clear.component').then((m) => m.UtilitiesInputClear),
+    data: { lib: 'forms', category: 'input', demo: "Input Utilities", section: "Input Clear" },
+  },
+  {
+    path: 'utilities/input-format',
+    loadComponent: () => import('./features/utilities/input-format.component').then((m) => m.UtilitiesInputFormat),
+    data: { lib: 'forms', category: 'input', demo: "Input Utilities", section: "Input Format" },
   },
   {
     path: '',

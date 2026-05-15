@@ -65,6 +65,14 @@
     "common/data/filter-chips-demo",
     "common/data/metric-demo",
     "common/data/paginate-list-demo",
-    "common/data/trend-demo"
+    "common/data/trend-demo",
+    "forms/autosize-demo",
+    "forms/file-drop-demo",
+    "forms/filter-builder-json-demo",
+    "forms/filter-row-standalone-demo",
+    "forms/mask-demo",
+    "forms/numeric-demo",
+    "forms/otp-demo",
+    "forms/utilities-demo"
   ]
 }
