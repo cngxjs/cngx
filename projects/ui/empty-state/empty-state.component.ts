@@ -25,11 +25,11 @@ import { type CngxAsyncState, nextUid } from '@cngx/core/utils';
  *   <button cngxEmptyStateAction (click)="resetSearch()">Reset</button>
  * </cngx-empty-state>
  * ```
- * <example-url>http://localhost:4200/ui/empty-state/default-no-icon-projected</example-url>
- * <example-url>http://localhost:4200/ui/empty-state/inside-a-card-grid</example-url>
- * <example-url>http://localhost:4200/ui/empty-state/inside-a-list</example-url>
- * <example-url>http://localhost:4200/ui/empty-state/inside-a-table</example-url>
- * <example-url>http://localhost:4200/ui/empty-state/with-custom-icon-actions</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/default-no-icon-projected</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-card-grid</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-list</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/inside-a-table</example-url>
+ * <example-url>http://localhost:4200/#/ui/empty-state/with-custom-icon-actions</example-url>
  */
 @Component({
   selector: 'cngx-empty-state',

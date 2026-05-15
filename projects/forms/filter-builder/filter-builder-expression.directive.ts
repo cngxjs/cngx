@@ -23,8 +23,8 @@ const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[
  * `reference_signal_architecture` §1; empty-operator and missing-node
  * fallbacks resolve to shared frozen singletons so no-op reads never
  * allocate.
- * <example-url>http://localhost:4200/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
- * <example-url>http://localhost:4200/forms/filter-builder/seeded-tree-and-or-composition</example-url>
+ * <example-url>http://localhost:4200/#/forms/filter-builder/basic-two-way-binding-json-inspection</example-url>
+ * <example-url>http://localhost:4200/#/forms/filter-builder/seeded-tree-and-or-composition</example-url>
  */
 @Directive({
   selector: '[cngxFilterExpression]',

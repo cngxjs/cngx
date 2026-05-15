@@ -14,8 +14,8 @@ import { injectPresetState } from './preset-state';
  * `role="meter"` per the WAI-ARIA pattern for single-value bounded
  * indicators; `aria-valuenow` / `aria-valuemin` / `aria-valuemax`
  * tell AT the exact reading without a separate Summary.
- * <example-url>http://localhost:4200/common/chart/mini-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/common/chart/mini-bar/basic-readings</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/mini-bar/async-state-machine</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/mini-bar/basic-readings</example-url>
  */
 @Component({
   selector: 'cngx-mini-bar',

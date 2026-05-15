@@ -18,8 +18,8 @@ import {
  *   <input [cngxOtpSlot]="i" />
  * }
  * ```
- * <example-url>http://localhost:4200/forms/input/otp/4-digit-pin</example-url>
- * <example-url>http://localhost:4200/forms/input/otp/6-digit-otp</example-url>
+ * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
+ * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */
 @Directive({
   selector: 'input[cngxOtpSlot]',
@@ -117,8 +117,8 @@ export class CngxOtpSlot {
  *   }
  * </div>
  * ```
- * <example-url>http://localhost:4200/forms/input/otp/4-digit-pin</example-url>
- * <example-url>http://localhost:4200/forms/input/otp/6-digit-otp</example-url>
+ * <example-url>http://localhost:4200/#/forms/input/otp/4-digit-pin</example-url>
+ * <example-url>http://localhost:4200/#/forms/input/otp/6-digit-otp</example-url>
  */
 @Directive({
   selector: '[cngxOtpInput]',

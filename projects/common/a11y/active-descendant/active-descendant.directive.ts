@@ -47,8 +47,8 @@ import { CNGX_AD_ITEM, type ActiveDescendantItem, type CngxAdItemHandle } from '
  * Mirrors the model used by `cdk-listbox` and `mat-select` but exposes it as a
  * standalone primitive — not coupled to any visual shell, signal-reactive end
  * to end, and unified across listbox/menu/combobox stacks.
- * <example-url>http://localhost:4200/common/a11y/active-descendant/listbox-with-items-input</example-url>
- * <example-url>http://localhost:4200/common/a11y/active-descendant/typeahead</example-url>
+ * <example-url>http://localhost:4200/#/common/a11y/active-descendant/listbox-with-items-input</example-url>
+ * <example-url>http://localhost:4200/#/common/a11y/active-descendant/typeahead</example-url>
  */
 @Directive({
   selector: '[cngxActiveDescendant]',

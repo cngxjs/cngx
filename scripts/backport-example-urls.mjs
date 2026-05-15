@@ -200,7 +200,9 @@ async function main() {
   // Group URLs by API symbol.
   const urlsBySymbol = new Map();
   for (const r of routes) {
-    const url = `${BASE_URL}/${r.path}`;
+    // Hash-routed URLs (#/path) — the examples app uses withHashLocation()
+    // so it works on GitHub Pages without a 404 SPA fallback.
+    const url = `${BASE_URL}/#/${r.path}`;
     for (const sym of r.apiComponents ?? []) {
       if (!urlsBySymbol.has(sym)) urlsBySymbol.set(sym, new Set());
       urlsBySymbol.get(sym).add(url);

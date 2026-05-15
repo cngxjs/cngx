@@ -29,13 +29,13 @@ import {
  * geometry actually changes. The `createPathBuilder` cache provides
  * the **compute guard** — same `(data, xScale, yScale)` triple by
  * reference skips the per-datapoint projection work.
- * <example-url>http://localhost:4200/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/combo-bars-moving-average-line</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/line-area-threshold-band</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/responsive-fills-parent-width</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/scatter-with-performance-zones</example-url>
- * <example-url>http://localhost:4200/common/chart/primitives/time-series-with-threshold-zones</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/async-state-machine-on-the-primitive</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/combo-bars-moving-average-line</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/line-area-threshold-band</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/multi-series-line-axis-labels-legend</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/responsive-fills-parent-width</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/scatter-with-performance-zones</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/primitives/time-series-with-threshold-zones</example-url>
  */
 @Component({
   selector: '[cngxLine]',

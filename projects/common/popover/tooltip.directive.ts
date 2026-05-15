@@ -41,12 +41,12 @@ const FOCUS_DEBOUNCE_MS = 50;
  *   Save
  * </button>
  * ```
- * <example-url>http://localhost:4200/common/popover/tooltip/basic-tooltip</example-url>
- * <example-url>http://localhost:4200/common/popover/tooltip/custom-delay</example-url>
- * <example-url>http://localhost:4200/common/popover/tooltip/disabled-state</example-url>
- * <example-url>http://localhost:4200/common/popover/tooltip/keyboard-navigation</example-url>
- * <example-url>http://localhost:4200/common/popover/tooltip/placement</example-url>
- * <example-url>http://localhost:4200/common/popover/tooltip/programmatic-control</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/basic-tooltip</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/custom-delay</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/disabled-state</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/keyboard-navigation</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/placement</example-url>
+ * <example-url>http://localhost:4200/#/common/popover/tooltip/programmatic-control</example-url>
  */
 @Directive({
   selector: '[cngxTooltip]',
