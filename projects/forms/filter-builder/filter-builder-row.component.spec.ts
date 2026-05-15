@@ -194,8 +194,36 @@ describe('CngxFilterRow', () => {
     expect(seeded).not.toBeNull();
     expect(seeded?.field).toBe('role');
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression--empty'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('.cngx-filter-builder__field-select'))).toBeNull();
     const selects = fixture.debugElement.queryAll(By.directive(CngxSelect));
-    expect(selects.length).toBeGreaterThan(0);
+    expect(selects).toHaveLength(1);
+  });
+
+  it('hides the field-select when fields has exactly one entry and a value is bound', () => {
+    const oneField: readonly FilterFieldDef[] = [
+      { key: 'role', label: 'Role', editorType: 'string' },
+    ];
+
+    @Component({
+      standalone: true,
+      template: `
+        <cngx-filter-row [fields]="fields" [(value)]="expression"></cngx-filter-row>
+      `,
+      imports: [CngxFilterRow],
+    })
+    class BoundSingleFieldHost {
+      readonly fields = oneField;
+      readonly expression = signal<FilterExpression | null>(
+        createFilterExpression('role', 'eq', 'Engineer'),
+      );
+    }
+
+    const fixture = TestBed.createComponent(BoundSingleFieldHost);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(fixture.debugElement.query(By.css('.cngx-filter-builder__field-select'))).toBeNull();
+    const selects = fixture.debugElement.queryAll(By.directive(CngxSelect));
+    expect(selects).toHaveLength(1);
   });
 
   it('does not re-seed after Remove writes null in single-field mode', async () => {

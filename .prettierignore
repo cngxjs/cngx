@@ -3,3 +3,6 @@
 /coverage
 
 .angular
+
+# Markdown table padding fights the project's minimum-separator rule
+*.md

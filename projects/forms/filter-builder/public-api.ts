@@ -1,5 +1,4 @@
-// @cngx/forms/filter-builder public surface — populated phase-by-phase per
-// .internal/architektur/plans/filter-builder-plan.md.
+// @cngx/forms/filter-builder public surface.
 
 export {
   DEFAULT_OPERATORS,
@@ -9,7 +8,7 @@ export {
   type FilterLogic,
   type FilterNode,
   type FilterEditorType,
-} from './src/filter-builder.types';
+} from './filter-builder.types';
 export {
   CNGX_FILTER_BUILDER_STATE_FACTORY,
   createFilterBuilderState,
@@ -19,12 +18,12 @@ export {
   type FilterMutationEvent,
   type FilterMutationContext,
   type FilterMutationKind,
-} from './src/filter-builder-state';
-export { CngxFilterBuilderPresenter } from './src/filter-builder-presenter.directive';
-export { CngxFilterGroup } from './src/filter-builder-group.directive';
-export { CngxFilterExpression } from './src/filter-builder-expression.directive';
-export { CngxFilterExpressionRow } from './src/filter-builder-expression-row.component';
-export { CngxFilterRow } from './src/filter-builder-row.component';
+} from './filter-builder-state';
+export { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+export { CngxFilterGroup } from './filter-builder-group.directive';
+export { CngxFilterExpression } from './filter-builder-expression.directive';
+export { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
+export { CngxFilterRow } from './filter-builder-row.component';
 export {
   CNGX_FILTER_BUILDER_CONFIG,
   injectFilterBuilderConfig,
@@ -45,14 +44,14 @@ export {
   type CngxFilterBuilderTemplates,
   type CngxFilterEditor,
   type CngxFilterNativeEditor,
-} from './src/filter-builder.config';
-export { CNGX_FILTER_EDITORS, injectFilterEditors } from './src/filter-builder.tokens';
-export type { CngxFilterEditorComponent } from './src/filter-builder-editor.contract';
+} from './filter-builder.config';
+export { CNGX_FILTER_EDITORS, injectFilterEditors } from './filter-builder.tokens';
+export type { CngxFilterEditorComponent } from './filter-builder-editor.contract';
 export {
   CngxFilterBuilderValueEditor,
   type CngxFilterBuilderValueEditorContext,
-} from './src/filter-builder-value-editor.slot';
-export { CngxFilterBuilderFormFieldControl } from './src/filter-builder-form-field-control.directive';
+} from './filter-builder-value-editor.slot';
+export { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 export {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
@@ -70,7 +69,7 @@ export {
   type CngxFilterBuilderLogicToggleContext,
   type CngxFilterBuilderNegationToggleContext,
   type CngxFilterBuilderRemoveButtonContext,
-} from './src/filter-builder-slots';
+} from './filter-builder-slots';
 export {
   CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY,
   createFilterBuilderTemplateRegistry,
@@ -78,7 +77,7 @@ export {
   type CngxFilterBuilderTemplateRegistry,
   type CngxFilterBuilderTemplateRegistryFactory,
   type CngxFilterBuilderTemplateRegistryQueries,
-} from './src/filter-builder-template-registry';
+} from './filter-builder-template-registry';
 export {
   CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY,
   createFilterBuilderAnnouncer,
@@ -86,9 +85,9 @@ export {
   type CngxFilterBuilderAnnouncer,
   type CngxFilterBuilderAnnouncerFactory,
   type CngxFilterBuilderAnnouncerSources,
-} from './src/filter-builder-announcer';
-export { CngxFilterBuilder } from './src/filter-builder.component';
-export { CNGX_FILTER_BUILDER_BODY_HOST } from './src/filter-builder-body.host';
+} from './filter-builder-announcer';
+export { CngxFilterBuilder } from './filter-builder.component';
+export { CNGX_FILTER_BUILDER_BODY_HOST } from './filter-builder-body.host';
 export {
   createEmptyFilterRoot,
   createFilterExpression,
@@ -96,7 +95,7 @@ export {
   evaluateExpression,
   toFilterPredicate,
   type CreateFilterGroupOptions,
-} from './src/filter-builder.helpers';
+} from './filter-builder.helpers';
 // CngxFilterBuilderHost interface and CNGX_FILTER_BUILDER_HOST token are both
 // @internal — they describe the contract between the presenter and the recursive
 // context atoms. Consumers reach the host through the presenter directive, never

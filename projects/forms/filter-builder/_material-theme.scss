@@ -1,16 +1,12 @@
 @use '@angular/material' as mat;
 
-// Optional Material theme integration for <cngx-filter-builder>.
-// The component itself has zero direct Material references — every visual
-// value is routed through a `--cngx-filter-builder-*` custom property with a
-// neutral fallback. This mixin maps Material design tokens to those
-// properties so consumers using `@angular/material` get a themed builder
-// without forking the component.
+// Material theme integration for <cngx-filter-builder>. The component has
+// no direct Material refs — every visual value goes through a
+// `--cngx-filter-builder-*` custom property; this mixin maps Material tokens
+// to those properties for consumers using @angular/material.
 //
-// Include in your global theme stylesheet:
-//
+// Usage:
 //   @use '@cngx/forms/filter-builder/material-theme' as filter-builder;
-//
 //   html {
 //     @include mat.all-component-themes($theme);
 //     @include filter-builder.theme($theme);
@@ -18,7 +14,6 @@
 
 @mixin color($theme) {
   @if mat.get-theme-version($theme) == 1 {
-    // M3
     --cngx-filter-builder-border-color: var(--mat-sys-outline-variant);
     --cngx-filter-builder-skeleton-bg: var(--mat-sys-surface-variant);
     --cngx-filter-builder-empty-fg: var(--mat-sys-on-surface-variant);
@@ -27,8 +22,8 @@
     --cngx-filter-builder-action-bg: var(--mat-sys-surface);
     --cngx-filter-builder-action-hover-bg: var(--mat-sys-surface-container);
     --cngx-filter-builder-action-border: var(--mat-sys-outline-variant);
+    --cngx-filter-builder-incomplete-outline: 1px dashed var(--mat-sys-tertiary);
   } @else {
-    // M2
     --cngx-filter-builder-border-color: rgba(0, 0, 0, 0.12);
     --cngx-filter-builder-skeleton-bg: #{mat.get-theme-color($theme, background, app-bar)};
     --cngx-filter-builder-empty-fg: #{rgba(mat.get-theme-color($theme, foreground, text), 0.54)};
@@ -37,6 +32,7 @@
     --cngx-filter-builder-action-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-filter-builder-action-hover-bg: rgba(0, 0, 0, 0.04);
     --cngx-filter-builder-action-border: rgba(0, 0, 0, 0.12);
+    --cngx-filter-builder-incomplete-outline: 1px dashed #{mat.get-theme-color($theme, accent)};
   }
 }
 

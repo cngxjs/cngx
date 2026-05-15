@@ -11,7 +11,6 @@
     "disableSourceCode": true,
     "disableTemplateTab": true,
     "disableStyleTab": true,
-    "hideGenerator": true,
     "disablePrivate": true,
     "disableInternal": true,
     "disableRoutesGraph": true,

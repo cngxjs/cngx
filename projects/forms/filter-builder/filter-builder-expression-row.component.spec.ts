@@ -356,6 +356,34 @@ describe('CngxFilterExpressionRow — embedded mode', () => {
     expect(row.operators()).toBe(row.operators());
   });
 
+  it('applies the cngx-filter-expression-incomplete host class when the row is incomplete', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-incomplete',
+      field: '',
+      operator: '',
+      value: undefined,
+    };
+    const { fixture } = setup(expression);
+    const row = fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))
+      .nativeElement as HTMLElement;
+    expect(row.classList.contains('cngx-filter-expression-incomplete')).toBe(true);
+  });
+
+  it('drops the cngx-filter-expression-incomplete class when the row is complete', () => {
+    const expression: FilterExpression = {
+      type: 'expression',
+      id: 'e-complete',
+      field: 'name',
+      operator: 'eq',
+      value: 'foo',
+    };
+    const { fixture } = setup(expression);
+    const row = fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))
+      .nativeElement as HTMLElement;
+    expect(row.classList.contains('cngx-filter-expression-incomplete')).toBe(false);
+  });
+
   it('renders nothing when path resolves to a non-expression node', () => {
     const tree: FilterGroup = {
       type: 'group',

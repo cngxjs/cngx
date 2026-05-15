@@ -287,7 +287,7 @@ describe('CngxFilterBuilderPresenter', () => {
     const builderEl = fixture.nativeElement as HTMLElement;
     const incompleteRow = builderEl.querySelector('[data-cngx-filter-path="1"]');
     expect(incompleteRow).not.toBeNull();
-    const focusable = incompleteRow!.querySelector<HTMLElement>(':is(input, [tabindex])');
+    const focusable = incompleteRow!.querySelector<HTMLElement>(':is(input, button, [tabindex])');
     expect(focusable).not.toBeNull();
 
     const builderDebugEl = fixture.debugElement.query(
@@ -297,6 +297,53 @@ describe('CngxFilterBuilderPresenter', () => {
 
     presenterInstance.focus();
     expect(document.activeElement).toBe(focusable);
+
+    document.body.removeChild(fixture.nativeElement as HTMLElement);
+  });
+
+  it('focus() lands on cngx-select / button on incomplete rows where no <input> is rendered', () => {
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [value]="value()" />`,
+      imports: [CngxFilterBuilder],
+    })
+    class BuilderHost {
+      readonly fields = signal<readonly FilterFieldDef[]>([
+        FIELD_NAME,
+        { key: 'active', label: 'Active', editorType: 'boolean' },
+      ]);
+      // Boolean editor renders <cngx-toggle>, not <input>. With value=undefined
+      // the row is incomplete and the only focusable descendants are the two
+      // <cngx-select> triggers, the toggle, and the remove <button>. Old
+      // selector :is(input, [tabindex]) matched none of these and degraded
+      // to host focus.
+      readonly value = signal<FilterGroup>({
+        type: 'group',
+        id: 'root',
+        logic: 'and',
+        negated: false,
+        filters: [
+          { type: 'expression', id: 'e1', field: 'active', operator: 'eq', value: undefined },
+        ],
+      });
+    }
+    const fixture = TestBed.createComponent(BuilderHost);
+    document.body.appendChild(fixture.nativeElement as HTMLElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const builderEl = fixture.nativeElement as HTMLElement;
+    const incompleteRow = builderEl.querySelector('[data-cngx-filter-path="0"]');
+    expect(incompleteRow).not.toBeNull();
+    expect(incompleteRow!.querySelector('input')).toBeNull();
+
+    const builderDebugEl = fixture.debugElement.query(
+      (de) => de.nativeElement === builderEl.querySelector('cngx-filter-builder'),
+    );
+    const presenterInstance = builderDebugEl.injector.get(CngxFilterBuilderPresenter);
+
+    presenterInstance.focus();
+    expect(document.activeElement).not.toBe(builderEl.querySelector('cngx-filter-builder'));
+    expect(incompleteRow!.contains(document.activeElement)).toBe(true);
 
     document.body.removeChild(fixture.nativeElement as HTMLElement);
   });

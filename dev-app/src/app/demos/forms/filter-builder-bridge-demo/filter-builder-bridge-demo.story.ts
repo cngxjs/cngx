@@ -5,43 +5,87 @@ export const STORY: DemoSpec = {
   navLabel: 'Filter Builder Bridge',
   navCategory: 'filter-builder',
   description:
-    'Wires <cngx-filter-builder> to CngxFilter via toFilterPredicate. ' +
-    'Every change to the builder tree updates the filtered table below.',
-  apiComponents: ['CngxFilterBuilder', 'CngxFilter'],
+    'Wires <cngx-filter-builder> to CngxFilter and a CngxAsyncContainer-driven roster fetch. ' +
+    'Every filter mutation re-fetches: skeleton on first load, refresh-bar on subsequent ' +
+    'predicate changes — same UX as a real server-side filter.',
+  apiComponents: ['CngxFilterBuilder', 'CngxFilter', 'CngxAsyncContainer'],
   overview:
-    '<p><code>toFilterPredicate(tree, fields)</code> turns the builder\'s <code>FilterGroup</code> ' +
-    'into an item-level predicate. An <code>effect</code> reads the current tree (signal) and pushes ' +
-    'the resulting predicate into <code>CngxFilter.setPredicate</code>.</p>' +
-    '<p>The <code>untracked()</code> wrap on the <code>setPredicate</code> call is required: ' +
-    '<code>setPredicate</code> reads <code>CngxFilter</code>\'s internal predicates signal before writing it, ' +
-    'so without <code>untracked()</code> the effect subscribes to that read and loops on every write.</p>' +
-    '<p>The filtered list is a plain <code>computed</code> that reads the source items and the ' +
-    '<code>filter.predicate()</code> signal.</p>',
+    '<p>The presenter exposes <code>predicate: Signal&lt;((item: T) =&gt; boolean) | null&gt;</code> as a pure ' +
+    'derivation of <code>tree()</code> and <code>fields()</code>. An <code>effect</code> reads it, pushes ' +
+    'it into <code>CngxFilter.setPredicate</code> for the active-count badge, and triggers a ' +
+    'simulated fetch against <code>dataState</code>: <code>refreshing</code> on subsequent loads, ' +
+    '<code>loading</code> on the very first.</p>' +
+    '<p>The table renders <em>only</em> from <code>dataState.data()</code> inside ' +
+    '<code>cngxAsyncContent</code>. The skeleton / empty / error templates own the other ' +
+    'branches. Result: every filter change drives the same UX as a refresh — visible ' +
+    'feedback, deduped by a request token so superseded fetches drop their result.</p>' +
+    '<p>The <code>untracked()</code> wraps in the effect prevent the dataState transitions ' +
+    'from feeding back into the effect (the effect would otherwise subscribe to ' +
+    '<code>dataState.data()</code> via the in-effect read and loop).</p>',
   moduleImports: [
-    "import { CngxFilter } from '@cngx/common/data';",
-    "import { effect, untracked, viewChild, computed } from '@angular/core';",
-    "import { CngxFilterBuilder, createEmptyFilterRoot, toFilterPredicate, type FilterGroup } from '@cngx/forms/filter-builder';",
+    "import { CngxFilter, createManualState } from '@cngx/common/data';",
+    "import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';",
+    "import { effect, untracked, viewChild } from '@angular/core';",
+    "import { CngxFilterBuilder, CngxFilterBuilderPresenter, createEmptyFilterRoot, type FilterGroup } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';",
   ],
   setup: `
   protected readonly fields = FILTER_BUILDER_FIELDS;
-  protected readonly people = FILTER_BUILDER_PEOPLE;
   protected readonly tree = signal<FilterGroup>(createEmptyFilterRoot());
-  protected readonly filterRef = viewChild.required(CngxFilter<FilterBuilderPerson>);
-
-  protected readonly filtered = computed<readonly FilterBuilderPerson[]>(() => {
-    const filter = this.filterRef();
-    const fn = filter.predicate();
-    return fn ? this.people.filter(fn) : this.people;
+  protected readonly dataState = createManualState<readonly FilterBuilderPerson[]>();
+  protected readonly filterRef = viewChild(CngxFilter<FilterBuilderPerson>);
+  protected readonly presenterRef = viewChild.required(CngxFilterBuilder, {
+    read: CngxFilterBuilderPresenter,
   });
+
+  private fetchToken = 0;
+  private failNext = false;
+  private lastPredicate: ((item: FilterBuilderPerson) => boolean) | null | undefined = undefined;
 
   constructor() {
     effect(() => {
+      const fn = this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null;
+      // filterRef tracked: the table re-mounts on every fetch and the new
+      // CngxFilter instance needs setPredicate re-bound. lastPredicate dedupe
+      // blocks the re-mount → fetch → re-mount loop.
       const filter = this.filterRef();
-      const tree = this.tree();
-      const fields = this.fields;
-      untracked(() => filter.setPredicate(toFilterPredicate(tree, fields)));
+      untracked(() => {
+        filter?.setPredicate(fn);
+        if (fn !== this.lastPredicate) {
+          this.lastPredicate = fn;
+          this.fetchPeople(fn);
+        }
+      });
     });
+  }
+
+  private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
+    const myToken = ++this.fetchToken;
+    // reset() flips isFirstLoad back to true so resolveAsyncView returns
+    // 'skeleton', not the thin refresh-bar. Same UX every fetch.
+    this.dataState.reset();
+    this.dataState.set('loading');
+    setTimeout(() => {
+      if (myToken !== this.fetchToken) {
+        return;
+      }
+      if (this.failNext) {
+        this.failNext = false;
+        this.dataState.setError(new Error('Roster fetch failed'));
+        return;
+      }
+      const items = predicate ? FILTER_BUILDER_PEOPLE.filter(predicate) : FILTER_BUILDER_PEOPLE;
+      this.dataState.setSuccess(items);
+    }, 500);
+  }
+
+  protected refetch(): void {
+    this.fetchPeople(this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null);
+  }
+
+  protected failNextFetch(): void {
+    this.failNext = true;
+    this.refetch();
   }
   `,
   sections: [
@@ -52,43 +96,110 @@ export const STORY: DemoSpec = {
         'Active filter count is read from <code>CngxFilter.activeCount()</code>.',
       template: `
   <div class="demo-form">
-    <div [cngxFilter]="null"></div>
     <cngx-filter-builder [fields]="fields" [(value)]="tree" />
 
-    <div class="status-row">
-      <span class="status-badge">Active filters: {{ filterRef().activeCount() }}</span>
-      <span class="status-badge">Showing: {{ filtered().length }} / {{ people.length }}</span>
+    <div class="demo-actions">
+      <button type="button" (click)="refetch()">Refetch</button>
+      <button type="button" (click)="failNextFetch()">Fail next</button>
     </div>
 
-    <table class="demo-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Age</th>
-          <th>Active</th>
-          <th>Role</th>
-          <th>Birthday</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of filtered(); track p.name) {
-          <tr>
-            <td>{{ p.name }}</td>
-            <td>{{ p.age }}</td>
-            <td>{{ p.active ? 'yes' : 'no' }}</td>
-            <td>{{ p.role }}</td>
-            <td>{{ p.birthday }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="status-row">
+      <span class="status-badge">Active filters: {{ filterRef()?.activeCount() ?? 0 }}</span>
+      <span class="status-badge">Status: {{ dataState.status() }}</span>
+      <span class="status-badge">Showing: {{ (dataState.data() ?? []).length }}</span>
+    </div>
+
+    <cngx-async-container [state]="dataState" ariaLabel="Roster">
+      <ng-template cngxAsyncSkeleton>
+        <div class="demo-skeleton">
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+          <div class="demo-skeleton-row"></div>
+        </div>
+      </ng-template>
+
+      <ng-template cngxAsyncEmpty>
+        <p class="demo-empty">No rows match the current filters.</p>
+      </ng-template>
+
+      <ng-template cngxAsyncContent let-rows>
+        <table class="demo-table" [cngxFilter]="null">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Active</th>
+              <th>Role</th>
+              <th>Birthday</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of rows; track p.name) {
+              <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.age }}</td>
+                <td>{{ p.active ? 'yes' : 'no' }}</td>
+                <td>{{ p.role }}</td>
+                <td>{{ p.birthday }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </ng-template>
+
+      <ng-template cngxAsyncError let-err>
+        <div role="alert" class="demo-error">
+          <strong>Roster load failed:</strong> {{ (err)?.message ?? 'unknown error' }}
+        </div>
+      </ng-template>
+    </cngx-async-container>
   </div>
       `,
-      imports: ['CngxFilterBuilder', 'CngxFilter'],
+      imports: [
+        'CngxFilterBuilder',
+        'CngxFilter',
+        'CngxAsyncContainer',
+        'CngxAsyncSkeletonTpl',
+        'CngxAsyncContentTpl',
+        'CngxAsyncEmptyTpl',
+        'CngxAsyncErrorTpl',
+      ],
       css: `
-.demo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.875rem; }
-.demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; }
+.demo-actions { display: flex; gap: var(--cngx-demo-actions-gap, 8px); margin: var(--cngx-demo-actions-m, 12px 0); }
+.demo-actions button { padding: var(--cngx-demo-button-pad, 4px 10px); cursor: pointer; }
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--cngx-demo-table-mt, 12px);
+  font-size: var(--cngx-demo-table-fs, 0.875rem);
+}
+.demo-table th, .demo-table td {
+  padding: var(--cngx-demo-cell-pad, 6px 10px);
+  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-border, #ddd));
+  text-align: left;
+}
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
+.demo-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-demo-skeleton-gap, 8px);
+  padding: var(--cngx-demo-skeleton-pad, 8px 0);
+}
+.demo-skeleton-row {
+  height: var(--cngx-demo-skeleton-row-h, 24px);
+  background: var(--cngx-skeleton-bg, #e0e0e0);
+  border-radius: var(--cngx-demo-skeleton-radius, 4px);
+  opacity: var(--cngx-demo-skeleton-opacity, 0.6);
+}
+.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: var(--cngx-demo-empty-pad, 12px 0); }
+.demo-error {
+  color: var(--cngx-error, #b00020);
+  padding: var(--cngx-demo-error-pad, 8px 12px);
+  border: var(--cngx-demo-error-border, 1px solid currentColor);
+  border-radius: var(--cngx-demo-error-radius, 4px);
+  background: var(--cngx-demo-error-bg, rgba(176, 0, 32, 0.05));
+}
       `,
     },
   ],

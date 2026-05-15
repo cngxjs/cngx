@@ -507,9 +507,19 @@ export const routes: Routes = [
           import('./demos/forms/filter-builder-demo/filter-builder-demo.component').then((m) => m.FilterBuilderDemoComponent),
       },
       {
+        path: 'filter-builder-async-state',
+        loadComponent: () =>
+          import('./demos/forms/filter-builder-async-state-demo/filter-builder-async-state-demo.component').then((m) => m.FilterBuilderAsyncStateDemoComponent),
+      },
+      {
         path: 'filter-builder-bridge',
         loadComponent: () =>
           import('./demos/forms/filter-builder-bridge-demo/filter-builder-bridge-demo.component').then((m) => m.FilterBuilderBridgeDemoComponent),
+      },
+      {
+        path: 'filter-builder-form-field',
+        loadComponent: () =>
+          import('./demos/forms/filter-builder-form-field-demo/filter-builder-form-field-demo.component').then((m) => m.FilterBuilderFormFieldDemoComponent),
       },
       {
         path: 'filter-builder-json',

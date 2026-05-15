@@ -8,7 +8,7 @@ import {
   type FilterGroup,
   type FilterLogic,
   type FilterNode,
-} from '../public-api';
+} from './public-api';
 
 describe('@cngx/forms/filter-builder — public-api re-exports', () => {
   it('re-exports DEFAULT_OPERATORS from the package entry', () => {
