@@ -33,9 +33,39 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "Autofocus", section: "Focus on Insert" },
   },
   {
+    path: 'avatar/cascade-image-initials-fallback',
+    loadComponent: () => import('./features/avatar/cascade-image-initials-fallback.component').then((m) => m.AvatarCascadeImageInitialsFallback),
+    data: { lib: 'common', category: 'display', demo: "Avatar", section: "Cascade: image, initials, fallback" },
+  },
+  {
+    path: 'avatar/shapes-and-status',
+    loadComponent: () => import('./features/avatar/shapes-and-status.component').then((m) => m.AvatarShapesAndStatus),
+    data: { lib: 'common', category: 'display', demo: "Avatar", section: "Shapes and status" },
+  },
+  {
+    path: 'avatar/sizes',
+    loadComponent: () => import('./features/avatar/sizes.component').then((m) => m.AvatarSizes),
+    data: { lib: 'common', category: 'display', demo: "Avatar", section: "Sizes" },
+  },
+  {
     path: 'backdrop/overlay-with-inert',
     loadComponent: () => import('./features/backdrop/overlay-with-inert.component').then((m) => m.BackdropOverlayWithInert),
     data: { lib: 'common', category: 'layout', demo: "Backdrop", section: "CngxBackdrop — Overlay with inert" },
+  },
+  {
+    path: 'badge/colors-and-dot-mode',
+    loadComponent: () => import('./features/badge/colors-and-dot-mode.component').then((m) => m.BadgeColorsAndDotMode),
+    data: { lib: 'common', category: 'display', demo: "Badge", section: "Colors and dot mode" },
+  },
+  {
+    path: 'badge/counts-with-overflow',
+    loadComponent: () => import('./features/badge/counts-with-overflow.component').then((m) => m.BadgeCountsWithOverflow),
+    data: { lib: 'common', category: 'display', demo: "Badge", section: "Counts with overflow" },
+  },
+  {
+    path: 'badge/inline-and-hidden',
+    loadComponent: () => import('./features/badge/inline-and-hidden.component').then((m) => m.BadgeInlineAndHidden),
+    data: { lib: 'common', category: 'display', demo: "Badge", section: "Inline and hidden" },
   },
   {
     path: 'bullet/async-state-machine',
@@ -56,6 +86,16 @@ export const routes: Routes = [
     path: 'deviation-bar/variance-readings',
     loadComponent: () => import('./features/deviation-bar/variance-readings.component').then((m) => m.DeviationBarVarianceReadings),
     data: { lib: 'common', category: 'chart', demo: "Deviation Bar", section: "Variance readings" },
+  },
+  {
+    path: 'divider/horizontal-vs-vertical',
+    loadComponent: () => import('./features/divider/horizontal-vs-vertical.component').then((m) => m.DividerHorizontalVsVertical),
+    data: { lib: 'common', category: 'display', demo: "Divider", section: "Horizontal vs vertical" },
+  },
+  {
+    path: 'divider/inset',
+    loadComponent: () => import('./features/divider/inset.component').then((m) => m.DividerInset),
+    data: { lib: 'common', category: 'display', demo: "Divider", section: "Inset" },
   },
   {
     path: 'donut/async-state-machine',
@@ -123,6 +163,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Highlight", section: "Multiple Paragraphs" },
   },
   {
+    path: 'icon/decorative-vs-informative',
+    loadComponent: () => import('./features/icon/decorative-vs-informative.component').then((m) => m.IconDecorativeVsInformative),
+    data: { lib: 'common', category: 'display', demo: "Icon", section: "Decorative vs informative" },
+  },
+  {
+    path: 'icon/sizes',
+    loadComponent: () => import('./features/icon/sizes.component').then((m) => m.IconSizes),
+    data: { lib: 'common', category: 'display', demo: "Icon", section: "Sizes" },
+  },
+  {
     path: 'infinite-scroll/scrollable-list',
     loadComponent: () => import('./features/infinite-scroll/scrollable-list.component').then((m) => m.InfiniteScrollScrollableList),
     data: { lib: 'common', category: 'layout', demo: "Infinite Scroll", section: "Scrollable List" },
@@ -166,6 +216,26 @@ export const routes: Routes = [
     path: 'mini-bar/basic-readings',
     loadComponent: () => import('./features/mini-bar/basic-readings.component').then((m) => m.MiniBarBasicReadings),
     data: { lib: 'common', category: 'chart', demo: "Mini Bar", section: "Basic readings" },
+  },
+  {
+    path: 'popover/click-popover',
+    loadComponent: () => import('./features/popover/click-popover.component').then((m) => m.PopoverClickPopover),
+    data: { lib: 'common', category: 'popover', demo: "Popover", section: "Click Popover" },
+  },
+  {
+    path: 'popover/controlled-open',
+    loadComponent: () => import('./features/popover/controlled-open.component').then((m) => m.PopoverControlledOpen),
+    data: { lib: 'common', category: 'popover', demo: "Popover", section: "Controlled Open" },
+  },
+  {
+    path: 'popover/escape-mode',
+    loadComponent: () => import('./features/popover/escape-mode.component').then((m) => m.PopoverEscapeMode),
+    data: { lib: 'common', category: 'popover', demo: "Popover", section: "Escape & Mode" },
+  },
+  {
+    path: 'popover/placement-variants',
+    loadComponent: () => import('./features/popover/placement-variants.component').then((m) => m.PopoverPlacementVariants),
+    data: { lib: 'common', category: 'popover', demo: "Popover", section: "Placement Variants" },
   },
   {
     path: 'reduced-motion/animation-toggle',

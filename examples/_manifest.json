@@ -29,6 +29,11 @@
     "common/chart/mini-area-demo",
     "common/chart/mini-bar-demo",
     "common/chart/sparkline-demo",
-    "common/chart/stacked-bar-demo"
+    "common/chart/stacked-bar-demo",
+    "common/display/avatar-demo",
+    "common/display/badge-demo",
+    "common/display/divider-demo",
+    "common/display/icon-demo",
+    "common/popover/popover-demo"
   ]
 }
