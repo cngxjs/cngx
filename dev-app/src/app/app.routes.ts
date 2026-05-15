@@ -517,6 +517,11 @@ export const routes: Routes = [
           import('./demos/forms/filter-builder-bridge-demo/filter-builder-bridge-demo.component').then((m) => m.FilterBuilderBridgeDemoComponent),
       },
       {
+        path: 'filter-builder-form-field',
+        loadComponent: () =>
+          import('./demos/forms/filter-builder-form-field-demo/filter-builder-form-field-demo.component').then((m) => m.FilterBuilderFormFieldDemoComponent),
+      },
+      {
         path: 'filter-builder-json',
         loadComponent: () =>
           import('./demos/forms/filter-builder-json-demo/filter-builder-json-demo.component').then((m) => m.FilterBuilderJsonDemoComponent),
