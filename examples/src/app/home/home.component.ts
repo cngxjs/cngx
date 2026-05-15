@@ -253,22 +253,20 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         box-sizing: border-box;
         color-scheme: light dark;
       }
-      @media (prefers-color-scheme: dark) {
-        :host {
-          --col-bg: #111;
-          --col-text: #e6e6e6;
-          --col-muted: #aaa;
-          --col-faint: #777;
-          --col-border: #555;
-          --col-hover: #1f1f1f;
-          --col-active: #2a2a2a;
-          --col-pressed: #333;
-          --col-link: #79c0ff;
-          --col-link-visited: #c39df0;
-          --col-link-hover: #ff7b72;
-          --col-link-hover-bg: #2d1f1f;
-          --col-focus: #fff;
-        }
+      :host-context(html.dark) {
+        --col-bg: #111;
+        --col-text: #e6e6e6;
+        --col-muted: #aaa;
+        --col-faint: #777;
+        --col-border: #555;
+        --col-hover: #1f1f1f;
+        --col-active: #2a2a2a;
+        --col-pressed: #333;
+        --col-link: #79c0ff;
+        --col-link-visited: #c39df0;
+        --col-link-hover: #ff7b72;
+        --col-link-hover-bg: #2d1f1f;
+        --col-focus: #fff;
       }
       h1 {
         margin: 0 0 12px;
