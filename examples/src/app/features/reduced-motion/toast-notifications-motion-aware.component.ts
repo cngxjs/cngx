@@ -9,6 +9,12 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxReducedMotion],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div cngxReducedMotion #rm2="cngxReducedMotion">
         <button class="sort-btn" (click)="addNotification()">
           Add notification
@@ -68,6 +74,10 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   `,
 })
 export class ReducedMotionToastNotificationsMotionAware {
+  protected readonly _exTitle: string = 'ReducedMotion';
+  protected readonly _exDescription: string = 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.';
+  protected readonly _exSectionTitle: string = 'Toast Notifications — Motion-aware';
+  protected readonly _exSubtitle: string = 'Notifications that slide in with animation, or appear instantly when <code>prefersReducedMotion()</code> is <code>true</code>. This demonstrates using the signal in TypeScript logic, not just CSS.';
   protected notifications = signal<{ id: number; text: string }[]>([]);
     private _nextId = 0;
 

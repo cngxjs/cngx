@@ -9,6 +9,12 @@ import { CngxAutofocus } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxAutofocus],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <button (click)="conditionMet.set(!conditionMet())" class="chip">
         {{ conditionMet() ? 'Deactivate' : 'Activate Field' }}
       </button>
@@ -25,6 +31,10 @@ import { CngxAutofocus } from '@cngx/common/a11y';
   `,
 })
 export class AutofocusConditionalFocus {
+  protected readonly _exTitle: string = 'Autofocus';
+  protected readonly _exDescription: string = 'Reactive autofocus for dynamically inserted elements. Works where native autofocus fails (dialogs, panels, conditional views).';
+  protected readonly _exSectionTitle: string = 'Conditional Focus';
+  protected readonly _exSubtitle: string = 'The input is always rendered, but focus is applied only when the condition becomes <code>true</code>.';
   protected readonly showSearch = signal(false);
     protected readonly conditionMet = signal(false);
 }

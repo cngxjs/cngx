@@ -9,6 +9,12 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxReducedMotion],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div
         cngxReducedMotion
         #rm="cngxReducedMotion"
@@ -85,6 +91,10 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
   `,
 })
 export class ReducedMotionCngxreducedmotionAnimationToggle {
+  protected readonly _exTitle: string = 'ReducedMotion';
+  protected readonly _exDescription: string = 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.';
+  protected readonly _exSectionTitle: string = 'CngxReducedMotion — Animation Toggle';
+  protected readonly _exSubtitle: string = '<code>[cngxReducedMotion]</code> reflects <code>prefers-reduced-motion: reduce</code> as a signal. Use it in TypeScript to conditionally skip animations, transitions, or auto-playing media — not just CSS. The <code>cngx-reduced-motion</code> class on the host element enables CSS-only overrides too.';
   protected notifications = signal<{ id: number; text: string }[]>([]);
     private _nextId = 0;
 

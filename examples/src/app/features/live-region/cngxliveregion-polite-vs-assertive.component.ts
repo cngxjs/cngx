@@ -9,6 +9,12 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxLiveRegion],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div class="button-row">
         <button class="sort-btn" (click)="politeness.set('polite')">
           <span class="chip" [class.chip--active]="politeness() === 'polite'">polite</span>
@@ -63,6 +69,10 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
   `,
 })
 export class LiveRegionCngxliveregionPoliteVsAssertive {
+  protected readonly _exTitle: string = 'LiveRegion';
+  protected readonly _exDescription: string = 'Configures the host element as an ARIA live region for screen reader announcements.';
+  protected readonly _exSectionTitle: string = 'CngxLiveRegion — Polite vs Assertive';
+  protected readonly _exSubtitle: string = '<code>[cngxLiveRegion]</code> manages <code>aria-live</code>, <code>aria-atomic</code>, and <code>role</code> on the host element. Screen readers announce content changes — <code>polite</code> queues after the current utterance, <code>assertive</code> interrupts.';
   protected message = signal('');
     protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
     protected counter = signal(0);

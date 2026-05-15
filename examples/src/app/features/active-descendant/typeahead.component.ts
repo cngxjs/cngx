@@ -9,6 +9,12 @@ import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a1
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxActiveDescendant],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div class="cngx-ad-listbox"
            style="max-width:260px"
            cngxActiveDescendant
@@ -43,6 +49,10 @@ import { CngxActiveDescendant, type ActiveDescendantItem } from '@cngx/common/a1
   `,
 })
 export class ActiveDescendantTypeahead {
+  protected readonly _exTitle: string = 'Active Descendant';
+  protected readonly _exDescription: string = 'WAI-ARIA active-descendant keyboard model for listbox, menu, and combobox widgets. Keeps focus on the host while highlighting the logical current item.';
+  protected readonly _exSectionTitle: string = 'Typeahead';
+  protected readonly _exSubtitle: string = 'Press letters to jump to the first matching label. Chained within the debounce window (default 300&nbsp;ms).';
   protected readonly fruits = signal<ActiveDescendantItem[]>([
       { id: 'fruit-apple', value: 'apple', label: 'Apple' },
       { id: 'fruit-banana', value: 'banana', label: 'Banana' },

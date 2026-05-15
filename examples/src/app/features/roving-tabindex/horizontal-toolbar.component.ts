@@ -9,6 +9,12 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxRovingTabindex, CngxRovingItem],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div cngxRovingTabindex orientation="horizontal" [(activeIndex)]="activeToolbar"
            role="toolbar" aria-label="Text formatting"
            style="display:flex;gap:4px">
@@ -27,6 +33,10 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
   `,
 })
 export class RovingTabindexHorizontalToolbar {
+  protected readonly _exTitle: string = 'Roving Tabindex';
+  protected readonly _exDescription: string = 'WAI-ARIA roving tabindex pattern for composite widgets. Arrow keys move focus within the group; Tab leaves it.';
+  protected readonly _exSectionTitle: string = 'Horizontal Toolbar';
+  protected readonly _exSubtitle: string = 'Arrow Left/Right moves focus. Home/End jumps to first/last. Tab leaves the toolbar entirely.';
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
 }

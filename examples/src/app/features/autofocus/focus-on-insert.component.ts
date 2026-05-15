@@ -9,6 +9,12 @@ import { CngxAutofocus } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxAutofocus],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <button (click)="showSearch.set(!showSearch())" class="chip">
         {{ showSearch() ? 'Hide Search' : 'Show Search' }}
       </button>
@@ -22,6 +28,10 @@ import { CngxAutofocus } from '@cngx/common/a11y';
   `,
 })
 export class AutofocusFocusOnInsert {
+  protected readonly _exTitle: string = 'Autofocus';
+  protected readonly _exDescription: string = 'Reactive autofocus for dynamically inserted elements. Works where native autofocus fails (dialogs, panels, conditional views).';
+  protected readonly _exSectionTitle: string = 'Focus on Insert';
+  protected readonly _exSubtitle: string = 'Toggle the search bar. The input is automatically focused when it appears.';
   protected readonly showSearch = signal(false);
     protected readonly conditionMet = signal(false);
 }

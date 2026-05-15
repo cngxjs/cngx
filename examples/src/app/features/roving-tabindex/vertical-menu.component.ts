@@ -9,6 +9,12 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxRovingTabindex, CngxRovingItem],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <ul cngxRovingTabindex orientation="vertical" [(activeIndex)]="activeVertical"
           role="menu" aria-label="Actions"
           style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:2px;max-width:200px">
@@ -26,6 +32,10 @@ import { CngxRovingTabindex, CngxRovingItem } from '@cngx/common/a11y';
   `,
 })
 export class RovingTabindexVerticalMenu {
+  protected readonly _exTitle: string = 'Roving Tabindex';
+  protected readonly _exDescription: string = 'WAI-ARIA roving tabindex pattern for composite widgets. Arrow keys move focus within the group; Tab leaves it.';
+  protected readonly _exSectionTitle: string = 'Vertical Menu';
+  protected readonly _exSubtitle: string = 'Arrow Up/Down navigates. Disabled items are skipped automatically.';
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
 }

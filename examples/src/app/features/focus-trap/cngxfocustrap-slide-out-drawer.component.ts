@@ -9,6 +9,12 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusTrap],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div class="button-row">
         <button class="sort-btn" (click)="drawerSide.set('left'); drawerOpen.set(true)">Open left drawer</button>
         <button class="sort-btn" (click)="drawerSide.set('right'); drawerOpen.set(true)">Open right drawer</button>
@@ -91,6 +97,10 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
   `,
 })
 export class FocusTrapCngxfocustrapSlideOutDrawer {
+  protected readonly _exTitle: string = 'FocusTrap';
+  protected readonly _exDescription: string = 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.';
+  protected readonly _exSectionTitle: string = 'CngxFocusTrap — Slide-out Drawer';
+  protected readonly _exSubtitle: string = 'A drawer that slides in from either side. Focus is trapped inside while open. Demonstrates <code>[cngxFocusTrap]</code> on a non-modal overlay — useful for filters, settings, or navigation panels.';
   protected modalOpen = signal(false);
     protected autoFocus = signal(true);
     protected drawerOpen = signal(false);

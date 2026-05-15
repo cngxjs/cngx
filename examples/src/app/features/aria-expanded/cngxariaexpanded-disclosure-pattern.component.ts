@@ -9,6 +9,12 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxAriaExpanded],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div>
         <button
           [cngxAriaExpanded]="open()"
@@ -52,6 +58,10 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
   `,
 })
 export class AriaExpandedCngxariaexpandedDisclosurePattern {
+  protected readonly _exTitle: string = 'AriaExpanded';
+  protected readonly _exDescription: string = 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).';
+  protected readonly _exSectionTitle: string = 'CngxAriaExpanded — Disclosure Pattern';
+  protected readonly _exSubtitle: string = '<code>[cngxAriaExpanded]</code> sets <code>aria-expanded</code> on the host element. Combine with <code>[controls]</code> to add <code>aria-controls</code>, linking the trigger to its controlled panel by ID.';
   protected open = signal(false);
     protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });
 

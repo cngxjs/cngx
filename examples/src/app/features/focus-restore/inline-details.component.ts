@@ -9,6 +9,12 @@ import { CngxFocusRestore } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusRestore],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <button (click)="detailsOpen.set(!detailsOpen())" class="chip"
               [attr.aria-expanded]="detailsOpen()">
         {{ detailsOpen() ? 'Hide Details' : 'Show Details' }}
@@ -24,6 +30,10 @@ import { CngxFocusRestore } from '@cngx/common/a11y';
   `,
 })
 export class FocusRestoreInlineDetails {
+  protected readonly _exTitle: string = 'Focus Restore';
+  protected readonly _exDescription: string = 'Captures the previously focused element and restores focus when the host is destroyed. Prevents focus loss to body.';
+  protected readonly _exSectionTitle: string = 'Inline Details';
+  protected readonly _exSubtitle: string = 'A collapsible detail section. When collapsed, focus returns to the toggle button.';
   protected readonly panelOpen = signal(false);
     protected readonly detailsOpen = signal(false);
 }

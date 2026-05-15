@@ -9,6 +9,12 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxAriaExpanded],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div style="display: flex; flex-direction: column; gap: 1px; border: 1px solid var(--cngx-border, #ddd); border-radius: 6px; overflow: hidden;">
         @for (item of [
           { key: 'specs', label: 'Specifications', content: 'Display: 6.1" OLED, 120Hz — Processor: A17 Pro — Storage: 256GB — Battery: 4,422 mAh' },
@@ -62,6 +68,10 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
   `,
 })
 export class AriaExpandedAccordionMultiplePanels {
+  protected readonly _exTitle: string = 'AriaExpanded';
+  protected readonly _exDescription: string = 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).';
+  protected readonly _exSectionTitle: string = 'Accordion — Multiple Panels';
+  protected readonly _exSubtitle: string = 'Multiple <code>[cngxAriaExpanded]</code> triggers with independent state — a typical product-page accordion. Each button controls its own panel.';
   protected open = signal(false);
     protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });
 

@@ -9,6 +9,12 @@ import { CngxFocusVisible } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusVisible],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div style="display: flex; flex-direction: column; gap: 12px; max-width: 320px;">
         <div>
           <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 4px;">Name</label>
@@ -81,6 +87,10 @@ import { CngxFocusVisible } from '@cngx/common/a11y';
   `,
 })
 export class FocusVisibleFormFieldsCustomFocusRing {
+  protected readonly _exTitle: string = 'FocusVisible';
+  protected readonly _exDescription: string = 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.';
+  protected readonly _exSectionTitle: string = 'Form Fields — Custom Focus Ring';
+  protected readonly _exSubtitle: string = 'Apply <code>[cngxFocusVisible]</code> to form elements to show a focus ring only for keyboard users. Mouse-clicking an input focuses it but does not trigger the ring — reducing visual noise for pointer users.';
   protected name = signal('');
     protected email = signal('');
 }

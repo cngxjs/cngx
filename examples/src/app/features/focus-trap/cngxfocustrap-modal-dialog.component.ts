@@ -9,6 +9,12 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusTrap],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div class="button-row">
         <button class="sort-btn" (click)="modalOpen.set(true)">Open modal</button>
         <label style="display: flex; align-items: center; gap: 6px; font-size: 0.875rem;">
@@ -68,6 +74,10 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
   `,
 })
 export class FocusTrapCngxfocustrapModalDialog {
+  protected readonly _exTitle: string = 'FocusTrap';
+  protected readonly _exDescription: string = 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.';
+  protected readonly _exSectionTitle: string = 'CngxFocusTrap — Modal Dialog';
+  protected readonly _exSubtitle: string = '<code>[cngxFocusTrap]</code> wraps the CDK <code>FocusTrap</code>. When <code>[enabled]="true"</code>, Tab and Shift+Tab cycle only within the host. <code>[autoFocus]="true"</code> (default) moves focus to the first tabbable element automatically.';
   protected modalOpen = signal(false);
     protected autoFocus = signal(true);
     protected drawerOpen = signal(false);

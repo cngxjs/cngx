@@ -9,6 +9,12 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxLiveRegion],
   template: `
+    <header class="cngx-ex-intro">
+      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
+      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }
+      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }
+      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }
+    </header>
     <div style="display: flex; flex-direction: column; gap: 6px; max-width: 360px;">
         <label style="font-size: 0.875rem; font-weight: 500;">Email address</label>
         <input
@@ -38,6 +44,10 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
   `,
 })
 export class LiveRegionFormValidationAssertiveErrorAnnouncements {
+  protected readonly _exTitle: string = 'LiveRegion';
+  protected readonly _exDescription: string = 'Configures the host element as an ARIA live region for screen reader announcements.';
+  protected readonly _exSectionTitle: string = 'Form Validation — Assertive Error Announcements';
+  protected readonly _exSubtitle: string = '<code>[cngxLiveRegion]</code> with <code>assertive</code> politeness on a validation error message. Screen readers interrupt to announce the error immediately when the message content changes.';
   protected message = signal('');
     protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');
     protected counter = signal(0);

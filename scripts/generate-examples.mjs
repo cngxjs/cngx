@@ -151,6 +151,11 @@ function buildImports(story, section, importMap) {
   return { lines: [coreLine, ...moduleImports, ...extraLines] };
 }
 
+/** Escape a string for use as a TypeScript single-quoted literal. */
+function tsQuote(s) {
+  return "'" + String(s).replaceAll('\\', '\\\\').replaceAll("'", "\\'") + "'";
+}
+
 function emitComponentSource(meta, story, section, importMap) {
   const { lines } = buildImports(story, section, importMap);
   const setup = [story.setup ?? '', section.setup ?? '']
@@ -168,6 +173,25 @@ function emitComponentSource(meta, story, section, importMap) {
     .map((l) => (l.trim() ? '  ' + l : ''))
     .join('\n');
 
+  // Intro header: story title + description, then per-section title + subtitle.
+  // description/overview/subtitle may contain HTML — render via [innerHTML]
+  // bound to class properties so the template parser doesn't choke.
+  const introFields = [
+    `  protected readonly _exTitle: string = ${tsQuote(story.title ?? '')};`,
+    `  protected readonly _exDescription: string = ${tsQuote(story.description ?? '')};`,
+    `  protected readonly _exSectionTitle: string = ${tsQuote(section.title ?? '')};`,
+    `  protected readonly _exSubtitle: string = ${tsQuote(section.subtitle ?? '')};`,
+  ].join('\n');
+
+  const intro = [
+    `    <header class="cngx-ex-intro">`,
+    `      @if (_exTitle) { <h1>{{ _exTitle }}</h1> }`,
+    `      @if (_exDescription) { <p [innerHTML]="_exDescription"></p> }`,
+    `      @if (_exSectionTitle && _exSectionTitle !== _exTitle) { <h2>{{ _exSectionTitle }}</h2> }`,
+    `      @if (_exSubtitle) { <p class="cngx-ex-hint" [innerHTML]="_exSubtitle"></p> }`,
+    `    </header>`,
+  ].join('\n');
+
   const template = section.template.trim();
 
   return `${GEN_HEADER}
@@ -179,10 +203,13 @@ ${lines.join('\n')}
   selector: 'app-${meta.demoSlug}-${meta.sectionSlug}',
   changeDetection: ChangeDetectionStrategy.OnPush,${decoratorImports}
   template: \`
+${intro}
 ${indent(template, 4)}
   \`,
 })
-export class ${meta.className} {${setupBody ? '\n' + setupBody + '\n' : ''}}
+export class ${meta.className} {
+${introFields}${setupBody ? '\n' + setupBody : ''}
+}
 `;
 }
 
