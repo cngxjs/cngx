@@ -29,6 +29,46 @@
     --cngx-ex-surface-alt: #1f1f1f;
     --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
     --cngx-ex-focus: #79c0ff;
+
+    // Override the cngx-component-level vars story templates reference via
+    // inline `var(--cngx-foo, #lightfallback)` chains. The fallback only
+    // fires when the var is unset; by defining them here we beat the
+    // fallback and the components adapt to dark mode without touching the
+    // story templates.
+    --cngx-surface-default: #1a1a1a;
+    --cngx-surface-alt: #1f1f1f;
+    --cngx-surface: #1a1a1a;
+    --cngx-surface-border: #555555;
+    --cngx-card-bg: #1a1a1a;
+    --cngx-background: #111111;
+    --cngx-text-primary: #e6e6e6;
+    --cngx-text-secondary: #cccccc;
+    --cngx-text-muted: #aaaaaa;
+    --cngx-border: #555555;
+    --cngx-border-color: #555555;
+    --cngx-divider-color: #555555;
+    --cngx-focus-ring: #79c0ff;
+    --cngx-interactive: #79c0ff;
+    --cngx-interactive-text: #111111;
+    --cngx-interactive-subtle-bg: #2a2a3a;
+    --cngx-interactive-subtle-text: #79c0ff;
+    --cngx-accent: #f5a623;
+    --cngx-success-bg: #1c2e22;
+    --cngx-success-border: #2d5a3d;
+    --cngx-success-text: #7fd99a;
+    --cngx-error-bg: #2e1c1c;
+    --cngx-error-border: #5a2d2d;
+    --cngx-error-text: #ff7b72;
+    --cngx-warning-bg: #2e2a1c;
+    --cngx-warning-border: #5a4a2d;
+    --cngx-warning-text: #ffd97b;
+    --cngx-info-bg: #1c242e;
+    --cngx-info-border: #2d465a;
+    --cngx-info-text: #7bb5ff;
+    --cngx-code-bg: #1f1f1f;
+    --cngx-code-text: #ff7b72;
+    --cngx-pg-bar-bg: #1f1f1f;
+    --cngx-pg-seg-bg: #2a2a2a;
   }
 }
 
