@@ -27,6 +27,7 @@
     --cngx-filter-builder-action-bg: var(--mat-sys-surface);
     --cngx-filter-builder-action-hover-bg: var(--mat-sys-surface-container);
     --cngx-filter-builder-action-border: var(--mat-sys-outline-variant);
+    --cngx-filter-builder-incomplete-outline: 1px dashed var(--mat-sys-tertiary);
   } @else {
     // M2
     --cngx-filter-builder-border-color: rgba(0, 0, 0, 0.12);
@@ -37,6 +38,7 @@
     --cngx-filter-builder-action-bg: #{mat.get-theme-color($theme, background, card)};
     --cngx-filter-builder-action-hover-bg: rgba(0, 0, 0, 0.04);
     --cngx-filter-builder-action-border: rgba(0, 0, 0, 0.12);
+    --cngx-filter-builder-incomplete-outline: 1px dashed #{mat.get-theme-color($theme, accent)};
   }
 }
 
