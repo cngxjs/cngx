@@ -1,26 +1,26 @@
 import type { DemoSpec } from '../../../dev-tools/demo-spec';
 
 export const STORY: DemoSpec = {
-  title: 'Filter Expression Row — standalone',
-  navLabel: 'Filter Expression Row',
+  title: 'Filter Row — standalone',
+  navLabel: 'Filter Row',
   navCategory: 'filter-builder',
   description:
-    '<cngx-filter-expression-row> in standalone mode: a single filter row outside the builder, ' +
-    'wired into a table-column header. The row owns its FilterExpression via [(value)] and the ' +
-    'page applies it as a predicate to the rows below.',
-  apiComponents: ['CngxFilterExpressionRow'],
+    '<cngx-filter-row> wired into a table-column header. A single filter row outside the ' +
+    'recursive builder; the row owns its FilterExpression via [(value)] and the page applies it ' +
+    'as a predicate to the rows below.',
+  apiComponents: ['CngxFilterRow'],
   overview:
-    '<p>The same component that powers each expression inside <code>&lt;cngx-filter-builder&gt;</code> ' +
-    'runs standalone when no <code>CNGX_FILTER_BUILDER_HOST</code> token is provided. Pass ' +
-    '<code>[fields]</code> + <code>[(value)]</code> and the row reads/writes the bound ' +
-    '<code>FilterExpression | null</code> directly — no wrapping presenter needed.</p>' +
+    '<p><code>CngxFilterRow</code> is the dedicated single-row surface for column-header / ' +
+    'quick-filter contexts. Pass <code>[fields]</code> + <code>[(value)]</code> and the row ' +
+    'reads/writes the bound <code>FilterExpression | null</code> directly — no wrapping ' +
+    'presenter, no <code>CNGX_FILTER_BUILDER_HOST</code> needed.</p>' +
     '<p>This pattern lifts a single row into a table-column header, a side panel, or any ' +
     'context where a full builder tree is overkill. The bound expression flows through ' +
     '<code>toFilterPredicate(group, fields)</code> the same way; we wrap it in a synthetic ' +
     'one-expression group for evaluation.</p>',
   moduleImports: [
     "import { computed } from '@angular/core';",
-    "import { CngxFilterExpressionRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';",
+    "import { CngxFilterRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';",
     "import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';",
   ],
   setup: `
@@ -49,7 +49,7 @@ export const STORY: DemoSpec = {
     {
       title: 'Per-column filter rows + filtered table',
       subtitle:
-        'The Name and Role columns each ship a standalone <code>&lt;cngx-filter-expression-row&gt;</code> ' +
+        'The Name and Role columns each ship a standalone <code>&lt;cngx-filter-row&gt;</code> ' +
         'pinned to a single field. Edit the operator / value and the table below filters in real time.',
       template: `
   <table class="demo-table">
@@ -58,13 +58,13 @@ export const STORY: DemoSpec = {
         <th>
           <div class="demo-col-header">
             <span>Name</span>
-            <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+            <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
           </div>
         </th>
         <th>
           <div class="demo-col-header">
             <span>Role</span>
-            <cngx-filter-expression-row [fields]="[roleField]" [(value)]="roleFilter" />
+            <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
           </div>
         </th>
         <th>Age</th>
@@ -90,7 +90,7 @@ export const STORY: DemoSpec = {
     <span class="status-badge">Role filter: {{ roleFilter() | json }}</span>
   </div>
       `,
-      imports: ['CngxFilterExpressionRow', 'JsonPipe'],
+      imports: ['CngxFilterRow', 'JsonPipe'],
       css: `
 .demo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.875rem; }
 .demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; vertical-align: top; }
@@ -103,10 +103,10 @@ export const STORY: DemoSpec = {
       subtitle:
         'Seeded filter expression flows in via signal; clearing it through the row remove button writes <code>null</code>.',
       template: `
-  <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+  <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
   <pre class="code-block">{{ nameFilter() | json }}</pre>
       `,
-      imports: ['CngxFilterExpressionRow', 'JsonPipe'],
+      imports: ['CngxFilterRow', 'JsonPipe'],
     },
   ],
 };

@@ -121,7 +121,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Filter Builder Bridge', path: 'forms/filter-builder-bridge' },
       { label: 'Filter Builder', path: 'forms/filter-builder' },
       { label: 'Filter Builder JSON', path: 'forms/filter-builder-json' },
-      { label: 'Filter Expression Row', path: 'forms/filter-expression-row' },
+      { label: 'Filter Row', path: 'forms/filter-expression-row' },
       { label: 'Filter Row (minimal)', path: 'forms/filter-row-standalone' },
       { label: 'Form Primitives', path: 'forms/form-primitives' },
       { label: 'Input', path: 'forms/input' },
