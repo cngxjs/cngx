@@ -137,6 +137,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         aria-label="cngx examples"
         tabindex="0"
         cngxActiveDescendant
+        #ad="cngxActiveDescendant"
         [items]="adItems()"
         [autoHighlightFirst]="true"
         [cngxHierarchicalNav]="controller"
@@ -152,6 +153,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
               [attr.aria-posinset]="n.posinset"
               [routerLink]="['/', ...n.value.route.path.split('/')]"
               class="row leaf"
+              [class.is-active]="ad.activeId() === n.id"
             >
               <span class="ico">[&nbsp;&nbsp;&nbsp;]</span>
               <span class="name" [style.padding-left.px]="n.depth * 18">{{ n.value.name }}</span>
@@ -168,6 +170,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
               (click)="controller.toggle(n.id)"
               class="row folder"
               [class.lvl-0]="n.depth === 0"
+              [class.is-active]="ad.activeId() === n.id"
             >
               <span
                 class="ico"
