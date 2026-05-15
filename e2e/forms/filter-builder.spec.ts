@@ -110,14 +110,14 @@ test.describe('CngxFilterBuilder demo — golden path', () => {
   });
 });
 
-test.describe('CngxFilterBuilder bridge — toFilterPredicate integration', () => {
-  test('builder updates flow into CngxFilter and shrink the table', async ({ page }) => {
+test.describe('CngxFilterBuilder bridge — predicate-signal integration', () => {
+  test('build: builder updates flow through presenter.predicate() and shrink the table', async ({ page }) => {
     await page.goto(BRIDGE_ROUTE);
     const section = card(page, 'Builder + filtered table');
 
     const tableRows = section.locator('table.demo-table tbody tr');
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
     const initialCount = await tableRows.count();
-    expect(initialCount).toBeGreaterThan(0);
 
     const builder = section.locator('cngx-filter-builder').first();
     await builder.getByRole('button', { name: 'Add filter' }).first().click();
@@ -140,4 +140,102 @@ test.describe('CngxFilterBuilder bridge — toFilterPredicate integration', () =
       await expect(tableRows.nth(i)).toContainText('Engineer');
     }
   });
+
+  test('clear: removing the root expression returns the table to the unfiltered length', async ({ page }) => {
+    await page.goto(BRIDGE_ROUTE);
+    const section = card(page, 'Builder + filtered table');
+    const tableRows = section.locator('table.demo-table tbody tr');
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
+    const initialCount = await tableRows.count();
+
+    const builder = section.locator('cngx-filter-builder').first();
+    await builder.getByRole('button', { name: 'Add filter' }).first().click();
+    const expression = builder.locator('.cngx-filter-builder__expression').first();
+    const fieldTrigger = expression.locator('cngx-select.cngx-filter-builder__field-select [role="combobox"]');
+    await fieldTrigger.click();
+    await page.getByRole('option', { name: 'Role' }).click();
+    const operatorTrigger = expression.locator('cngx-select.cngx-filter-builder__operator-select [role="combobox"]');
+    await operatorTrigger.click();
+    await page.getByRole('option', { name: 'Equals', exact: true }).click();
+    await expression.locator('input[type="text"]').fill('Engineer');
+    await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
+
+    await expression.getByRole('button', { name: 'Remove filter' }).click();
+    await expect(builder.locator('.cngx-filter-builder__expression')).toHaveCount(0);
+    await expect(section.locator('.status-badge', { hasText: 'Active filters: 0' })).toBeVisible();
+    const finalCount = await tableRows.count();
+    expect(finalCount).toBe(initialCount);
+  });
+
+  test('reuse: build → clear → build again, predicate signal toggles each cycle', async ({ page }) => {
+    await page.goto(BRIDGE_ROUTE);
+    const section = card(page, 'Builder + filtered table');
+    const tableRows = section.locator('table.demo-table tbody tr');
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeGreaterThan(0);
+    const initialCount = await tableRows.count();
+    const builder = section.locator('cngx-filter-builder').first();
+
+    async function buildRoleEquals(value: string): Promise<void> {
+      await builder.getByRole('button', { name: 'Add filter' }).first().click();
+      const row = builder.locator('.cngx-filter-builder__expression').first();
+      const fieldTrigger = row.locator('cngx-select.cngx-filter-builder__field-select [role="combobox"]');
+      await fieldTrigger.click();
+      await page.getByRole('option', { name: 'Role' }).click();
+      const operatorTrigger = row.locator('cngx-select.cngx-filter-builder__operator-select [role="combobox"]');
+      await operatorTrigger.click();
+      await page.getByRole('option', { name: 'Equals', exact: true }).click();
+      await row.locator('input[type="text"]').fill(value);
+    }
+
+    await buildRoleEquals('Engineer');
+    await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
+    const firstFiltered = await tableRows.count();
+    expect(firstFiltered).toBeLessThan(initialCount);
+
+    await builder.locator('.cngx-filter-builder__expression').first()
+      .getByRole('button', { name: 'Remove filter' }).click();
+    await expect(builder.locator('.cngx-filter-builder__expression')).toHaveCount(0);
+    expect(await tableRows.count()).toBe(initialCount);
+
+    await buildRoleEquals('Designer');
+    await expect(section.locator('.status-badge', { hasText: 'Active filters: 1' })).toBeVisible();
+    await expect.poll(() => tableRows.count(), { timeout: 5000 }).toBeLessThan(initialCount);
+    const secondFiltered = await tableRows.count();
+    for (let i = 0; i < secondFiltered; i++) {
+      await expect(tableRows.nth(i)).toContainText('Designer');
+    }
+  });
+});
+
+test.describe('CngxFilterBuilder — reset journey', () => {
+  test('reset (value.set(EMPTY_ROOT) from the harness) restores the empty-state branch', async ({ page }) => {
+    await page.goto(ROUTE);
+    const section = card(page, 'Basic — two-way binding');
+    const builder = section.locator('cngx-filter-builder').first();
+    await builder.getByRole('button', { name: 'Add filter' }).first().click();
+    const expression = builder.locator('.cngx-filter-builder__expression').first();
+    const fieldTrigger = expression.locator('cngx-select.cngx-filter-builder__field-select [role="combobox"]');
+    await fieldTrigger.click();
+    await page.getByRole('option', { name: 'Age' }).click();
+    await expression.locator('input[type="number"]').fill('25');
+    const jsonPanel = section.locator('pre.code-block').first();
+    await expect(jsonPanel).toContainText('"value": 25');
+
+    await section.getByRole('button', { name: 'Reset to empty' }).click();
+    await expect(builder.locator('.cngx-filter-builder__expression')).toHaveCount(0);
+    await expect(jsonPanel).toContainText('"id": "cngx-filter-root-empty"');
+    await expect(builder.getByRole('button', { name: 'Add filter' })).toBeVisible();
+  });
+});
+
+// Form-field round-trip browser-level coverage: the opt-in
+// `cngxFilterBuilderFormFieldControl` directive's bridge wiring is verified by
+// `projects/forms/filter-builder/src/filter-builder-form-field.spec.ts` against
+// a stub `CngxFormFieldPresenter`. A dedicated `<cngx-form-field>`-wrapped demo
+// route is not yet shipped in `dev-app/`; once one lands, add a test here that
+// asserts touched + invalid surface visually and `presenter.focus()` lands on
+// the first incomplete expression.
+test.fixme('form-field round-trip: focus delegation lands on the first incomplete expression', async () => {
+  // Pending — see comment above. Awaits a `<cngx-form-field>`-wrapped
+  // filter-builder demo in dev-app to drive at the browser level.
 });
