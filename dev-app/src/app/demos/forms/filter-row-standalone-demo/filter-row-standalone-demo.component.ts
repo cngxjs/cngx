@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { JsonPipe } from '@angular/common';
-import { CngxFilterExpressionRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';
+import { CngxFilterRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';
 
 @Component({
   selector: 'app-filter-row-standalone-demo',
@@ -14,21 +14,21 @@ import { CngxFilterExpressionRow, type FilterExpression, type FilterFieldDef } f
   imports: [
     ExampleCardComponent,
     DocShellComponent,
-    CngxFilterExpressionRow,
+    CngxFilterRow,
     JsonPipe,
   ],
   template: `
-    <app-doc-shell title="Filter Expression Row — minimal"
-      description="One standalone <cngx-filter-expression-row> with [(value)]. No table, no builder wrapper. Shows the raw two-way binding contract so consumers can copy-paste the pattern."
+    <app-doc-shell title="Filter Row — minimal"
+      description="One standalone <cngx-filter-row> with [(value)]. No table, no builder wrapper. Shows the raw two-way binding contract so consumers can copy-paste the pattern."
       overview="<p>The minimal standalone shape: pass a field list and a writable signal. The row reads / writes a <code>FilterExpression | null</code> directly. When the bound value is <code>null</code> the row renders a single field-picker as the empty state; picking a field seeds a fresh expression with the field default operator. The Remove button writes <code>null</code> back.</p><p>No <code>&lt;cngx-filter-builder&gt;</code> wrapper, no presenter, no tree — just one expression node in a single signal. Use this shape inside table column headers, side panels, or anywhere a full recursive builder is overkill.</p>"
-      [apiComponents]="['CngxFilterExpressionRow']">
+      [apiComponents]="['CngxFilterRow']">
       <app-example-card title="Single row with [(value)]"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
         [sourceTs]="_srcTs0"
         [sourceCss]="_srcCss0">
         
-  <cngx-filter-expression-row [fields]="fields" [(value)]="value" />
+  <cngx-filter-row [fields]="fields" [(value)]="value" />
 
   <div class="row-actions">
     <button type="button" (click)="reset()">Reset to null</button>
@@ -42,14 +42,14 @@ import { CngxFilterExpressionRow, type FilterExpression, type FilterFieldDef } f
 })
 export class FilterRowStandaloneDemoComponent {
   protected readonly _s0 = 'Edit field, operator, and value below. The bound signal updates on every change; clicking Remove writes <code>null</code>.';
-  protected readonly _srcHtml0 = `<cngx-filter-expression-row [fields]="fields" [(value)]="value" />
+  protected readonly _srcHtml0 = `<cngx-filter-row [fields]="fields" [(value)]="value" />
 
   <div class="row-actions">
     <button type="button" (click)="reset()">Reset to null</button>
   </div>
 
   <pre class="code-block">{{ value() | json }}</pre>`;
-  protected readonly _srcTs0 = `import { CngxFilterExpressionRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';
+  protected readonly _srcTs0 = `import { CngxFilterRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';
 
 
   protected readonly fields: readonly FilterFieldDef[] = [

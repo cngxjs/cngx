@@ -6,7 +6,7 @@ import { ExampleCardComponent } from '../../../shared/example-card.component';
 import { DocShellComponent } from '../../../shared/doc-shell.component';
 import { JsonPipe } from '@angular/common';
 import { computed } from '@angular/core';
-import { CngxFilterExpressionRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
+import { CngxFilterRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
 import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';
 
 @Component({
@@ -16,14 +16,14 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
   imports: [
     ExampleCardComponent,
     DocShellComponent,
-    CngxFilterExpressionRow,
+    CngxFilterRow,
     JsonPipe,
   ],
   template: `
-    <app-doc-shell title="Filter Expression Row — standalone"
-      description="<cngx-filter-expression-row> in standalone mode: a single filter row outside the builder, wired into a table-column header. The row owns its FilterExpression via [(value)] and the page applies it as a predicate to the rows below."
-      overview="<p>The same component that powers each expression inside <code>&lt;cngx-filter-builder&gt;</code> runs standalone when no <code>CNGX_FILTER_BUILDER_HOST</code> token is provided. Pass <code>[fields]</code> + <code>[(value)]</code> and the row reads/writes the bound <code>FilterExpression | null</code> directly — no wrapping presenter needed.</p><p>This pattern lifts a single row into a table-column header, a side panel, or any context where a full builder tree is overkill. The bound expression flows through <code>toFilterPredicate(group, fields)</code> the same way; we wrap it in a synthetic one-expression group for evaluation.</p>"
-      [apiComponents]="['CngxFilterExpressionRow']">
+    <app-doc-shell title="Filter Row — standalone"
+      description="<cngx-filter-row> wired into a table-column header. A single filter row outside the recursive builder; the row owns its FilterExpression via [(value)] and the page applies it as a predicate to the rows below."
+      overview="<p><code>CngxFilterRow</code> is the dedicated single-row surface for column-header / quick-filter contexts. Pass <code>[fields]</code> + <code>[(value)]</code> and the row reads/writes the bound <code>FilterExpression | null</code> directly — no wrapping presenter, no <code>CNGX_FILTER_BUILDER_HOST</code> needed.</p><p>This pattern lifts a single row into a table-column header, a side panel, or any context where a full builder tree is overkill. The bound expression flows through <code>toFilterPredicate(group, fields)</code> the same way; we wrap it in a synthetic one-expression group for evaluation.</p>"
+      [apiComponents]="['CngxFilterRow']">
       <app-example-card title="Per-column filter rows + filtered table"
         [subtitle]="_s0"
         [sourceHtml]="_srcHtml0"
@@ -36,13 +36,13 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
         <th>
           <div class="demo-col-header">
             <span>Name</span>
-            <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+            <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
           </div>
         </th>
         <th>
           <div class="demo-col-header">
             <span>Role</span>
-            <cngx-filter-expression-row [fields]="[roleField]" [(value)]="roleFilter" />
+            <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
           </div>
         </th>
         <th>Age</th>
@@ -74,7 +74,7 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
         [sourceHtml]="_srcHtml1"
         [sourceTs]="_srcTs1">
         
-  <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+  <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
   <pre class="code-block">{{ nameFilter() | json }}</pre>
       
       </app-example-card>
@@ -82,7 +82,7 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
   `,
 })
 export class FilterExpressionRowDemoComponent {
-  protected readonly _s0 = 'The Name and Role columns each ship a standalone <code>&lt;cngx-filter-expression-row&gt;</code> pinned to a single field. Edit the operator / value and the table below filters in real time.';
+  protected readonly _s0 = 'The Name and Role columns each ship a standalone <code>&lt;cngx-filter-row&gt;</code> pinned to a single field. Edit the operator / value and the table below filters in real time.';
   protected readonly _s1 = 'Seeded filter expression flows in via signal; clearing it through the row remove button writes <code>null</code>.';
   protected readonly _srcHtml0 = `<table class="demo-table">
     <thead>
@@ -90,13 +90,13 @@ export class FilterExpressionRowDemoComponent {
         <th>
           <div class="demo-col-header">
             <span>Name</span>
-            <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+            <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
           </div>
         </th>
         <th>
           <div class="demo-col-header">
             <span>Role</span>
-            <cngx-filter-expression-row [fields]="[roleField]" [(value)]="roleFilter" />
+            <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
           </div>
         </th>
         <th>Age</th>
@@ -122,7 +122,7 @@ export class FilterExpressionRowDemoComponent {
     <span class="status-badge">Role filter: {{ roleFilter() | json }}</span>
   </div>`;
   protected readonly _srcTs0 = `import { computed } from '@angular/core';
-import { CngxFilterExpressionRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
+import { CngxFilterRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
 import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';
 
 
@@ -150,10 +150,10 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
 .demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; vertical-align: top; }
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
 .demo-col-header { display: flex; flex-direction: column; gap: 4px; }`;
-  protected readonly _srcHtml1 = `<cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+  protected readonly _srcHtml1 = `<cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
   <pre class="code-block">{{ nameFilter() | json }}</pre>`;
   protected readonly _srcTs1 = `import { computed } from '@angular/core';
-import { CngxFilterExpressionRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
+import { CngxFilterRow, createFilterGroup, toFilterPredicate, type FilterExpression } from '@cngx/forms/filter-builder';
 import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson } from '../../../fixtures';
 
 

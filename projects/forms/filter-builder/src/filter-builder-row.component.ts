@@ -1,10 +1,12 @@
 import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  inject,
   input,
+  model,
+  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxToggle } from '@cngx/common/interactive';
@@ -17,14 +19,13 @@ import {
   isNativeEditor,
   type CngxFilterEditor,
 } from './filter-builder.config';
-import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
+import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type {
   FilterExpression,
   FilterFieldDef,
-  FilterNode,
 } from './filter-builder.types';
 
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
@@ -64,42 +65,60 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   return true;
 }
 
+function equalFieldMap(
+  a: ReadonlyMap<string, FilterFieldDef>,
+  b: ReadonlyMap<string, FilterFieldDef>,
+): boolean {
+  if (a === b) {
+    return true;
+  }
+  if (a.size !== b.size) {
+    return false;
+  }
+  for (const [key, value] of a) {
+    if (b.get(key) !== value) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
- * Embedded expression-row sub-component. Mounted by the builder body for
- * every expression node in the recursive tree; resolves its value from
- * `CNGX_FILTER_BUILDER_HOST` via `[path]`.
+ * Standalone filter row — column-header surface for `@cngx/forms/filter-builder`.
+ * Owns a single `FilterExpression | null` via `[(value)]` and renders the
+ * field-picker / operator-picker / value-editor / remove-button stack
+ * without any presenter or host-token wiring.
  *
- * Pillar 3 (Komposition statt Konfiguration): one component, one
- * responsibility — render the recursive renderer's expression row. The
- * column-header / quick-filter surface lives in `CngxFilterRow`.
+ * Typical use: a table-column header that filters one column. For an empty
+ * `[(value)]` with more than one field, the row renders just the field-picker
+ * (the bound expression seeds once the user picks a field). For an empty
+ * `[(value)]` with exactly one field, the row auto-seeds the expression so
+ * the operator + value editors render directly — a one-option field picker
+ * is dead UX when the field is implicit from the consumer's context.
+ *
+ * Embedded recursive usage lives in `CngxFilterExpressionRow`; this component
+ * does not interoperate with `CNGX_FILTER_BUILDER_HOST`.
  */
 @Component({
-  selector: 'cngx-filter-expression-row',
+  selector: 'cngx-filter-row',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgComponentOutlet, NgTemplateOutlet, CngxInput, CngxSelect, CngxToggle],
-  templateUrl: './filter-builder-expression-row.component.html',
-  styleUrl: './filter-builder-expression-row.component.css',
+  templateUrl: './filter-builder-row.component.html',
+  styleUrl: './filter-builder-row.component.css',
   encapsulation: ViewEncapsulation.None,
 })
-export class CngxFilterExpressionRow {
-  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
+export class CngxFilterRow {
   protected readonly config = injectFilterBuilderConfig();
   protected readonly editors = injectFilterEditors();
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
 
-  readonly path = input.required<readonly number[]>();
+  readonly value = model<FilterExpression | null>(null);
 
-  /**
-   * Slot registry passed down from the parent `CngxFilterBuilder`. When the
-   * registry's `removeButton` resolves to a `TemplateRef`, the row renders
-   * the consumer-supplied button; otherwise it falls back to the default
-   * `<button>` element.
-   */
+  readonly fields = input.required<readonly FilterFieldDef[]>();
+
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
-
-  protected readonly pathAttr = computed(() => this.path().join('.'));
 
   protected readonly removeButtonTemplate = computed(
     () => this.templates()?.removeButton() ?? this.config.templates.removeButton ?? null,
@@ -128,22 +147,40 @@ export class CngxFilterExpressionRow {
     };
   }
 
-  protected readonly node = computed<FilterExpression | null>(
-    () => {
-      const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
-      return resolved?.type === 'expression' ? resolved : null;
-    },
-    { equal: (a, b) => a === b },
+  protected readonly showEmptyFieldPicker = computed(
+    () => this.value() === null && this.fields().length > 1,
   );
 
-  protected readonly fields = computed<readonly FilterFieldDef[]>(
-    () => this.host.fields(),
+  constructor() {
+    // Single-field auto-seed on first render. `afterNextRender` is single-shot
+    // and outside the reactive graph, so it does not violate Pillar 1's
+    // "no signal writes inside `effect`" rule. The previous reactive auto-seed
+    // also re-seeded after a Remove click, which fought the user — that
+    // behaviour is dropped intentionally.
+    afterNextRender(() => {
+      if (untracked(() => this.value()) !== null) {
+        return;
+      }
+      const fs = untracked(() => this.fields());
+      if (fs.length !== 1) {
+        return;
+      }
+      const only = fs[0];
+      if (!only) {
+        return;
+      }
+      this.value.set(createFilterExpression(only.key, this.defaultOperatorFor(only.key)));
+    });
+  }
+
+  protected readonly node = computed<FilterExpression | null>(
+    () => this.value(),
     { equal: (a, b) => a === b },
   );
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
-    () => this.host.fieldMap(),
-    { equal: (a, b) => a === b },
+    () => new Map(this.fields().map((field) => [field.key, field])),
+    { equal: equalFieldMap },
   );
 
   protected readonly fieldOptions = computed<readonly { readonly value: string; readonly label: string }[]>(
@@ -228,15 +265,16 @@ export class CngxFilterExpressionRow {
       ? carriedOperator
       : this.defaultOperatorFor(next);
 
-    this.host.setField(this.path(), next);
-    if (!operatorIsStillValid) {
-      // Carry-over operator is invalid for the new field's editor type
-      // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
-      // operator list). Reset to the new field's default and clear the
-      // value so the editor branch swaps to the matching native input.
-      this.host.setOperator(this.path(), defaultOperator);
-      this.host.setValue(this.path(), undefined);
+    if (!current) {
+      this.value.set(createFilterExpression(next, defaultOperator));
+      return;
     }
+    this.value.set({
+      ...current,
+      field: next,
+      operator: defaultOperator,
+      value: operatorIsStillValid ? current.value : undefined,
+    });
   }
 
   private defaultOperatorFor(fieldKey: string): string {
@@ -252,7 +290,11 @@ export class CngxFilterExpressionRow {
     if (next === undefined) {
       return;
     }
-    this.host.setOperator(this.path(), next);
+    const current = this.value();
+    if (!current) {
+      return;
+    }
+    this.value.set({ ...current, operator: next });
   }
 
   protected handleStringValueInput(event: Event): void {
@@ -269,10 +311,6 @@ export class CngxFilterExpressionRow {
   protected handleDateValueInput(event: Event): void {
     const target = event.target as HTMLInputElement;
     const raw = target.value;
-    // Native <input type="date"> fires `change` reliably on calendar-pick
-    // and `input` reliably on direct keyboard editing; binding both covers
-    // the cross-browser delta. The handler is idempotent — writeValue
-    // short-circuits when the value is unchanged at the host level.
     this.writeValue(raw === '' ? null : raw);
   }
 
@@ -281,16 +319,20 @@ export class CngxFilterExpressionRow {
   }
 
   private writeValue(next: unknown): void {
-    this.host.setValue(this.path(), next);
+    const current = this.value();
+    if (!current) {
+      return;
+    }
+    this.value.set({ ...current, value: next });
   }
 
   protected handleRemove(): void {
-    this.host.removeNode(this.path());
+    this.value.set(null);
   }
 
   protected removeButtonContext(): { path: readonly number[]; label: string; remove: () => void } {
     return {
-      path: this.path(),
+      path: [],
       label: this.config.i18n.removeFilter,
       remove: () => this.handleRemove(),
     };

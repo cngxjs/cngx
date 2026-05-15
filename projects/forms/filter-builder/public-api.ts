@@ -24,6 +24,7 @@ export { CngxFilterBuilderPresenter } from './src/filter-builder-presenter.direc
 export { CngxFilterGroup } from './src/filter-builder-group.directive';
 export { CngxFilterExpression } from './src/filter-builder-expression.directive';
 export { CngxFilterExpressionRow } from './src/filter-builder-expression-row.component';
+export { CngxFilterRow } from './src/filter-builder-row.component';
 export {
   CNGX_FILTER_BUILDER_CONFIG,
   injectFilterBuilderConfig,
