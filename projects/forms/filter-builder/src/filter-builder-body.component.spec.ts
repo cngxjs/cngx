@@ -51,8 +51,6 @@ function buildMockHost(initial: FilterGroup): CngxFilterBuilderHost {
 }
 
 const EMPTY_REGISTRY: CngxFilterBuilderTemplateRegistry = {
-  loading: signal(null),
-  error: signal(null),
   empty: signal(null),
   expressionTemplate: signal(null),
   groupTemplate: signal(null),

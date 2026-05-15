@@ -21,14 +21,6 @@ import type {
  * state change via `*ngTemplateOutlet`-with-context.
  */
 
-export interface CngxFilterBuilderLoadingContext {
-  readonly skeletonCount: number;
-}
-
-export interface CngxFilterBuilderErrorContext {
-  readonly error: unknown;
-}
-
 export interface CngxFilterBuilderEmptyContext {
   readonly addFilter: () => void;
   readonly addGroup: () => void;
@@ -83,38 +75,6 @@ export interface CngxFilterBuilderNegationToggleContext {
   readonly negated: boolean;
   readonly toggle: () => void;
   readonly label: string;
-}
-
-@Directive({
-  selector: 'ng-template[cngxFilterBuilderLoading]',
-  exportAs: 'cngxFilterBuilderLoading',
-  standalone: true,
-})
-export class CngxFilterBuilderLoading {
-  readonly templateRef = inject<TemplateRef<CngxFilterBuilderLoadingContext>>(TemplateRef);
-
-  static ngTemplateContextGuard(
-    _dir: CngxFilterBuilderLoading,
-    _ctx: unknown,
-  ): _ctx is CngxFilterBuilderLoadingContext {
-    return true;
-  }
-}
-
-@Directive({
-  selector: 'ng-template[cngxFilterBuilderError]',
-  exportAs: 'cngxFilterBuilderError',
-  standalone: true,
-})
-export class CngxFilterBuilderError {
-  readonly templateRef = inject<TemplateRef<CngxFilterBuilderErrorContext>>(TemplateRef);
-
-  static ngTemplateContextGuard(
-    _dir: CngxFilterBuilderError,
-    _ctx: unknown,
-  ): _ctx is CngxFilterBuilderErrorContext {
-    return true;
-  }
 }
 
 @Directive({
@@ -247,8 +207,6 @@ export class CngxFilterBuilderNegationToggle {
 
 /** Lookup-style template registry — used by `CngxFilterBuilderConfig.templates`. */
 export interface CngxFilterBuilderTemplates {
-  readonly loading?: TemplateRef<CngxFilterBuilderLoadingContext> | null;
-  readonly error?: TemplateRef<CngxFilterBuilderErrorContext> | null;
   readonly empty?: TemplateRef<CngxFilterBuilderEmptyContext> | null;
   readonly expressionTemplate?: TemplateRef<CngxFilterBuilderExpressionTemplateContext> | null;
   readonly groupTemplate?: TemplateRef<CngxFilterBuilderGroupTemplateContext> | null;

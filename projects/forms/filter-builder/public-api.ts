@@ -56,20 +56,16 @@ export {
   CngxFilterBuilderAddFilterButton,
   CngxFilterBuilderAddGroupButton,
   CngxFilterBuilderEmpty,
-  CngxFilterBuilderError,
   CngxFilterBuilderExpressionTemplate,
   CngxFilterBuilderGroupTemplate,
-  CngxFilterBuilderLoading,
   CngxFilterBuilderLogicToggle,
   CngxFilterBuilderNegationToggle,
   CngxFilterBuilderRemoveButton,
   type CngxFilterBuilderAddFilterButtonContext,
   type CngxFilterBuilderAddGroupButtonContext,
   type CngxFilterBuilderEmptyContext,
-  type CngxFilterBuilderErrorContext,
   type CngxFilterBuilderExpressionTemplateContext,
   type CngxFilterBuilderGroupTemplateContext,
-  type CngxFilterBuilderLoadingContext,
   type CngxFilterBuilderLogicToggleContext,
   type CngxFilterBuilderNegationToggleContext,
   type CngxFilterBuilderRemoveButtonContext,
@@ -91,6 +87,7 @@ export {
   type CngxFilterBuilderAnnouncerSources,
 } from './src/filter-builder-announcer';
 export { CngxFilterBuilder } from './src/filter-builder.component';
+export { CNGX_FILTER_BUILDER_BODY_HOST } from './src/filter-builder-body.host';
 export {
   createEmptyFilterRoot,
   createFilterExpression,

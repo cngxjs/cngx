@@ -8,14 +8,10 @@ import {
   type CngxFilterBuilderAddGroupButtonContext,
   type CngxFilterBuilderEmpty,
   type CngxFilterBuilderEmptyContext,
-  type CngxFilterBuilderError,
-  type CngxFilterBuilderErrorContext,
   type CngxFilterBuilderExpressionTemplate,
   type CngxFilterBuilderExpressionTemplateContext,
   type CngxFilterBuilderGroupTemplate,
   type CngxFilterBuilderGroupTemplateContext,
-  type CngxFilterBuilderLoading,
-  type CngxFilterBuilderLoadingContext,
   type CngxFilterBuilderLogicToggle,
   type CngxFilterBuilderLogicToggleContext,
   type CngxFilterBuilderNegationToggle,
@@ -38,8 +34,6 @@ interface TemplateRefHolder<Ctx> {
  * Each entry is the signal returned by `contentChild(CngxFilterBuilder<Slot>)`.
  */
 export interface CngxFilterBuilderTemplateRegistryQueries {
-  readonly loading: Signal<CngxFilterBuilderLoading | undefined>;
-  readonly error: Signal<CngxFilterBuilderError | undefined>;
   readonly empty: Signal<CngxFilterBuilderEmpty | undefined>;
   readonly expressionTemplate: Signal<CngxFilterBuilderExpressionTemplate | undefined>;
   readonly groupTemplate: Signal<CngxFilterBuilderGroupTemplate | undefined>;
@@ -56,8 +50,6 @@ export interface CngxFilterBuilderTemplateRegistryQueries {
  * `instance contentChild → CONFIG.templates.<key> → null`.
  */
 export interface CngxFilterBuilderTemplateRegistry {
-  readonly loading: Signal<TemplateRef<CngxFilterBuilderLoadingContext> | null>;
-  readonly error: Signal<TemplateRef<CngxFilterBuilderErrorContext> | null>;
   readonly empty: Signal<TemplateRef<CngxFilterBuilderEmptyContext> | null>;
   readonly expressionTemplate: Signal<TemplateRef<CngxFilterBuilderExpressionTemplateContext> | null>;
   readonly groupTemplate: Signal<TemplateRef<CngxFilterBuilderGroupTemplateContext> | null>;
@@ -107,8 +99,6 @@ export function createFilterBuilderTemplateRegistry(
 ): CngxFilterBuilderTemplateRegistry {
   const config = injectFilterBuilderConfig();
   return {
-    loading: resolveTemplate(queries.loading, 'loading', config),
-    error: resolveTemplate(queries.error, 'error', config),
     empty: resolveTemplate(queries.empty, 'empty', config),
     expressionTemplate: resolveTemplate(queries.expressionTemplate, 'expressionTemplate', config),
     groupTemplate: resolveTemplate(queries.groupTemplate, 'groupTemplate', config),

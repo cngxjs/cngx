@@ -58,24 +58,24 @@ export class ControlledFilter {
 }
 ```
 
-## Async fields via `[cngxFilterBuilderState]`
+## State-driven UI
 
-The presenter implements `CngxStateful` — bind an `AsyncState` from
-`@cngx/common/data` to drive the loading / error / empty / content
-branches:
+`<cngx-filter-builder>` no longer renders loading / error branches in
+the shell. Wrap with `<cngx-async-container [state]>` for state-driven
+UI; one container drives every transition (loading skeleton, error
+fallback, refreshing overlay, success body):
 
 ```typescript
 import { injectAsyncState } from '@cngx/common/data';
+import { CngxAsyncContainer } from '@cngx/ui/feedback';
 
 @Component({
   template: `
-    <cngx-filter-builder
-      [fields]="fields()"
-      [(value)]="tree"
-      [cngxFilterBuilderState]="fieldsState"
-    />
+    <cngx-async-container [state]="fieldsState">
+      <cngx-filter-builder [fields]="fields()" [(value)]="tree" />
+    </cngx-async-container>
   `,
-  imports: [CngxFilterBuilder],
+  imports: [CngxFilterBuilder, CngxAsyncContainer],
 })
 export class AsyncFilter {
   readonly fieldsState = injectAsyncState(() => this.http.get<FilterFieldDef[]>('/api/fields'));
@@ -84,10 +84,14 @@ export class AsyncFilter {
 }
 ```
 
-The component renders the loading branch (`skeletonCount` rows by
-default — see config) while the request is in flight, the error branch
-on failure, and the content branch on success. The
-`aria-busy="true"` attribute is set on the host during loading.
+`CngxAsyncContainer` handles every `AsyncStatus` (`idle` / `loading` /
+`pending` / `refreshing` / `success` / `error`) with consistent skeleton
+/ overlay / error semantics and reactive ARIA, so the builder stays a
+pure decorative tree renderer. Producers: `injectAsyncState`,
+`fromHttpResource`, `createManualState`, `buildAsyncStateView`. The
+same wrap idiom covers refreshing (e.g. while re-fetching the field
+catalogue) and error recovery without re-implementing the state machine
+inside the builder.
 
 ## Custom editors
 
@@ -197,7 +201,6 @@ desired arity to express XOR over more children.
 | -------------------------------- | ---------------------------------------------------------------------- |
 | `withNegation(boolean)`          | Show the per-group "Negate" toggle (default: `false`).                 |
 | `withLogicOptions(readonly[])`   | Constrain logic toggle options (default: `['and', 'or']`).             |
-| `withSkeletonCount(number)`      | Number of skeleton rows in the loading branch (default: `3`).          |
 | `withMaxNestingDepth(number)`    | Cap nested-group depth (`Infinity` by default).                        |
 | `withDefaultOperators(...)`      | Override per-`editorType` default operator list.                       |
 | `withFilterBuilderI18n(partial)` | Override labels, operator names, announcement formatters.              |
@@ -213,8 +216,6 @@ typed context interface:
 
 | Directive                              | Context type                                          |
 | -------------------------------------- | ----------------------------------------------------- |
-| `cngxFilterBuilderLoading`             | `{ skeletonCount }`                                   |
-| `cngxFilterBuilderError`               | `{ error }`                                           |
 | `cngxFilterBuilderEmpty`               | `{ addFilter, addGroup }`                             |
 | `cngxFilterBuilderAddFilterButton`     | `{ add, label, disabled }`                            |
 | `cngxFilterBuilderAddGroupButton`      | `{ add, label, disabled }`                            |
@@ -223,6 +224,7 @@ typed context interface:
 | `cngxFilterBuilderNegationToggle`      | `{ negated, toggle, label }`                          |
 | `cngxFilterBuilderGroupTemplate`       | `{ group, logic, isRoot, setLogic, toggleNegated, addFilter, addGroup, remove }` |
 | `cngxFilterBuilderExpressionTemplate`  | `{ expression, fieldDef, availableOperators, value, setField, setOperator, setValue, remove }` |
+| `cngxFilterBuilderValueEditor`         | `{ value, fieldDef, setValue, expression }`           |
 
 Three-stage cascade: `contentChild` directive → `CNGX_FILTER_BUILDER_CONFIG.templates.<key>` → null (renders the default).
 
@@ -230,14 +232,15 @@ Three-stage cascade: `contentChild` directive → `CNGX_FILTER_BUILDER_CONFIG.te
 
 | Element                                       | Role / Attributes                                                     |
 | --------------------------------------------- | --------------------------------------------------------------------- |
-| `<cngx-filter-builder>` (host)                | `[attr.aria-busy]="loading"`, `[attr.aria-disabled]="disabled"`       |
+| `<cngx-filter-builder>` (host)                | `[attr.aria-disabled]="disabled"`                                     |
 | `.cngx-filter-builder__group` (every group)   | `role="group"`, `aria-label="Group: <logic> (<n> filters)"`           |
 | `.cngx-filter-builder__expression` (each)     | `role="group"`, `aria-label="Filter: <field-label> <operator>"`       |
-| `.cngx-filter-builder__error` (default)       | `role="alert"`                                                        |
-| `.cngx-filter-builder__loading` (default)     | `role="status"`, `aria-label="<i18n.loading>"`                        |
-| Skeleton rows (default loading branch)        | `aria-hidden="true"` (decorative)                                     |
 | Decorative glyphs in default buttons          | `aria-hidden="true"` (decorative)                                     |
 | Live region (always in DOM)                   | `aria-live="polite"`; mutation announcements via `CngxFilterBuilderAnnouncer` |
+
+Loading / refreshing / error ARIA (`aria-busy`, `role="alert"`,
+skeleton placeholders) lives on the consumer's `<cngx-async-container>`
+wrap — see [State-driven UI](#state-driven-ui).
 
 Dev-mode guards (`isDevMode()`) warn when `fields()` is empty or when
 `value()` references unknown field keys — see
@@ -261,11 +264,7 @@ All values are routed through `var(--cngx-*, fallback)`. Material variants defau
 | `--cngx-filter-builder-rail` | `2px solid var(--mat-sys-outline-variant, #ddd)` |
 | `--cngx-filter-builder-empty-padding` | `0.75rem` |
 | `--cngx-filter-builder-empty-fg` | `var(--mat-sys-on-surface-variant, #666)` |
-| `--cngx-filter-builder-error-padding` | `0.75rem` |
-| `--cngx-filter-builder-error-fg` | `var(--mat-sys-error, #b3261e)` |
-| `--cngx-filter-builder-skeleton-row-height` | `2rem` |
-| `--cngx-filter-builder-skeleton-bg` | `var(--mat-sys-surface-variant, #eee)` |
-| `--cngx-filter-builder-skeleton-opacity` | `0.5` |
+| `--cngx-filter-builder-error-fg` | `var(--mat-sys-error, #b3261e)` (remove-action fallback) |
 
 Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`, set to the group's path length. Consumers can read it from CSS (e.g. `[style*="--cngx-filter-builder-depth: 2"]`) to drive depth-aware decoration without re-implementing the path math.
 

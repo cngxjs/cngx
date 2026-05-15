@@ -89,7 +89,7 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(directive.tree()).toEqual(next);
   });
 
-  it('resolves CNGX_FILTER_BUILDER_HOST / CNGX_STATEFUL to the same instance; does NOT default-provide CNGX_FORM_FIELD_CONTROL', () => {
+  it('resolves CNGX_FILTER_BUILDER_HOST to the presenter instance; does NOT default-provide CNGX_STATEFUL or CNGX_FORM_FIELD_CONTROL', () => {
     const hostToken = TestBed.inject(CNGX_FILTER_BUILDER_HOST, undefined, { optional: true });
     expect(hostToken).toBeNull();
 
@@ -99,7 +99,7 @@ describe('CngxFilterBuilderPresenter', () => {
     const inner = fixture.debugElement.children[0].injector;
 
     expect(inner.get(CNGX_FILTER_BUILDER_HOST)).toBe(inner.get(CngxFilterBuilderPresenter));
-    expect(inner.get(CNGX_STATEFUL)).toBe(inner.get(CngxFilterBuilderPresenter));
+    expect(inner.get(CNGX_STATEFUL, undefined, { optional: true })).toBeNull();
     expect(inner.get(CNGX_FORM_FIELD_CONTROL, undefined, { optional: true })).toBeNull();
   });
 
@@ -113,11 +113,10 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(inner.get(CNGX_FORM_FIELD_CONTROL)).toBe(inner.get(CngxFilterBuilderPresenter));
   });
 
-  it('coerces empty-string `cngxFilterBuilderState` to undefined', () => {
+  it('does not implement CngxStateful — no `state` property leaks onto the presenter', () => {
     const { directive } = setup();
-    expect(directive.stateInput()).toBeUndefined();
-    expect(directive.state).toBeDefined();
-    expect(directive.state.status()).toBe('idle');
+    expect(directive).not.toHaveProperty('state');
+    expect(directive).not.toHaveProperty('stateInput');
   });
 
   it('exposes Signal<string> id', () => {

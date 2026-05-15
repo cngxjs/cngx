@@ -5,8 +5,8 @@ import { describe, expect, it } from 'vitest';
 import type {
   CngxFilterBuilderEmpty,
   CngxFilterBuilderEmptyContext,
-  CngxFilterBuilderLoading,
-  CngxFilterBuilderLoadingContext,
+  CngxFilterBuilderRemoveButton,
+  CngxFilterBuilderRemoveButtonContext,
 } from './filter-builder-slots';
 import {
   CNGX_FILTER_BUILDER_TEMPLATE_REGISTRY_FACTORY,
@@ -20,8 +20,6 @@ import {
 
 function emptyQueries(): CngxFilterBuilderTemplateRegistryQueries {
   return {
-    loading: signal(undefined),
-    error: signal(undefined),
     empty: signal(undefined),
     expressionTemplate: signal(undefined),
     groupTemplate: signal(undefined),
@@ -42,18 +40,18 @@ describe('createFilterBuilderTemplateRegistry — 3-stage cascade', () => {
   it('returns the directive templateRef when contentChild signal resolves', () => {
     TestBed.configureTestingModule({});
     const injector = TestBed.inject(Injector);
-    const directiveTpl = fakeTemplate<CngxFilterBuilderLoadingContext>();
+    const directiveTpl = fakeTemplate<CngxFilterBuilderRemoveButtonContext>();
     const directive = {
       templateRef: directiveTpl,
-    } as unknown as CngxFilterBuilderLoading;
+    } as unknown as CngxFilterBuilderRemoveButton;
 
     runInInjectionContext(injector, () => {
       const queries: CngxFilterBuilderTemplateRegistryQueries = {
         ...emptyQueries(),
-        loading: signal(directive),
+        removeButton: signal(directive),
       };
       const registry = createFilterBuilderTemplateRegistry(queries);
-      expect(registry.loading()).toBe(directiveTpl);
+      expect(registry.removeButton()).toBe(directiveTpl);
     });
   });
 
@@ -76,8 +74,6 @@ describe('createFilterBuilderTemplateRegistry — 3-stage cascade', () => {
 
     runInInjectionContext(injector, () => {
       const registry = createFilterBuilderTemplateRegistry(emptyQueries());
-      expect(registry.loading()).toBeNull();
-      expect(registry.error()).toBeNull();
       expect(registry.empty()).toBeNull();
       expect(registry.expressionTemplate()).toBeNull();
       expect(registry.groupTemplate()).toBeNull();
