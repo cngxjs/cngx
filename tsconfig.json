@@ -47,10 +47,10 @@
       "path": "./dev-app/tsconfig.spec.json"
     },
     {
-      "path": "./projects/examples/tsconfig.app.json"
+      "path": "./examples/tsconfig.app.json"
     },
     {
-      "path": "./projects/examples/tsconfig.spec.json"
+      "path": "./examples/tsconfig.spec.json"
     }
   ]
 }

@@ -381,23 +381,23 @@
           "style": "scss"
         }
       },
-      "root": "projects/examples",
-      "sourceRoot": "projects/examples/src",
+      "root": "examples",
+      "sourceRoot": "examples/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "projects/examples/src/main.ts",
-            "tsConfig": "projects/examples/tsconfig.app.json",
+            "browser": "examples/src/main.ts",
+            "tsConfig": "examples/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/examples/public"
+                "input": "examples/public"
               }
             ],
-            "styles": ["projects/examples/src/styles.scss"]
+            "styles": ["examples/src/styles.scss"]
           },
           "configurations": {
             "production": {
