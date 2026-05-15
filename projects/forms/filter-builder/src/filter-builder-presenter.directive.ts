@@ -12,7 +12,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { nextUid } from '@cngx/core/utils';
-import { type CngxFormFieldControl } from '@cngx/forms/field';
+import { CngxFormFieldPresenter, type CngxFormFieldControl } from '@cngx/forms/field';
 
 import type {
   FilterExpression,
@@ -90,17 +90,46 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
 
   readonly id: Signal<string> = signal(nextUid('cngx-filter-builder-')).asReadonly();
   readonly empty: Signal<boolean> = this.core.isEmpty;
-  // @todo(phase-6) wire to the underlying field's disabled state via CngxFormFieldPresenter
-  readonly disabled: Signal<boolean> = signal(false).asReadonly();
-  // @todo(phase-6) drive from focusin/focusout host bindings or the first incomplete expression's focus state
-  readonly focused: Signal<boolean> = signal(false).asReadonly();
+
+  /**
+   * Ambient form-field presenter the builder sits inside, if any. Looked up
+   * once at construction; reads on `disabled`/`touched` flow through
+   * `computed()` so the presenter stays a pure derivation graph.
+   */
+  private readonly formField = inject(CngxFormFieldPresenter, {
+    optional: true,
+    skipSelf: true,
+  });
+
+  readonly disabled: Signal<boolean> = computed(
+    () => this.formField?.disabled() ?? false,
+  );
+
+  /**
+   * Toggled by `CngxFilterBuilderFormFieldControl` host `(focusin)` /
+   * `(focusout)` bindings. The form-field-control directive owns the
+   * write surface; the presenter exposes it as a read-only `Signal`.
+   */
+  private readonly focusedState = signal(false);
+  readonly focused: Signal<boolean> = this.focusedState.asReadonly();
+  setFocused(next: boolean): void {
+    this.focusedState.set(next);
+  }
+
+  private readonly touched: Signal<boolean> = computed(
+    () => this.formField?.touched() ?? false,
+  );
+
   /**
    * `true` when at least one expression in the tree has an empty value
-   * (`null`, `undefined`, or empty string). Pure intrinsic-validity
-   * derivation; `touched` coupling deferred per accepted-debt §12.
+   * AND the field has been touched. The `touched()` gate keeps an empty
+   * initial tree from surfacing as invalid before the consumer interacts.
+   * When no form-field presenter is present (standalone use without the
+   * `CngxFilterBuilderFormFieldControl` directive), `touched` is `false`
+   * so `errorState` stays `false`.
    */
-  readonly errorState: Signal<boolean> = computed(() =>
-    countIncompleteExpressions(this.tree()) > 0,
+  readonly errorState: Signal<boolean> = computed(
+    () => this.touched() && countIncompleteExpressions(this.tree()) > 0,
   );
 
   constructor() {

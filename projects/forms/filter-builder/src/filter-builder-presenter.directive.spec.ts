@@ -1,13 +1,29 @@
 import { ApplicationRef, Component, signal, viewChild, type Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { CNGX_STATEFUL } from '@cngx/core/utils';
-import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
+import { CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
+
+interface FormFieldStub {
+  disabled: ReturnType<typeof signal<boolean>>;
+  touched: ReturnType<typeof signal<boolean>>;
+}
+
+function provideFormFieldStub(overrides: Partial<{ disabled: boolean; touched: boolean }> = {}): FormFieldStub {
+  const stub: FormFieldStub = {
+    disabled: signal<boolean>(overrides.disabled ?? false),
+    touched: signal<boolean>(overrides.touched ?? false),
+  };
+  TestBed.configureTestingModule({
+    providers: [{ provide: CngxFormFieldPresenter, useValue: stub }],
+  });
+  return stub;
+}
 
 const FIELD_NAME: FilterFieldDef = { key: 'name', label: 'Name', editorType: 'string' };
 const FIELD_AGE: FilterFieldDef = { key: 'age', label: 'Age', editorType: 'number' };
@@ -146,7 +162,18 @@ describe('CngxFilterBuilderPresenter', () => {
     expect(errorState.set).toBeUndefined();
   });
 
-  it('errorState reflects incomplete-expression count derived from tree()', () => {
+  it('errorState stays false without an ambient CngxFormFieldPresenter (no touched gate)', () => {
+    const { fixture, directive } = setup();
+    expect(directive.errorState()).toBe(false);
+
+    directive.addExpression([], { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: '' });
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.errorState()).toBe(false);
+  });
+
+  it('errorState reflects incomplete-expression count derived from tree() when touched', () => {
+    const stub = provideFormFieldStub({ touched: true });
     const { fixture, directive } = setup();
     expect(directive.errorState()).toBe(false);
 
@@ -170,6 +197,22 @@ describe('CngxFilterBuilderPresenter', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(directive.errorState()).toBe(true);
+
+    stub.touched.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.errorState()).toBe(false);
+  });
+
+  it('disabled reflects the ambient CngxFormFieldPresenter disabled signal', () => {
+    const stub = provideFormFieldStub({ disabled: true });
+    const { fixture, directive } = setup();
+    expect(directive.disabled()).toBe(true);
+
+    stub.disabled.set(false);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+    expect(directive.disabled()).toBe(false);
   });
 });
 
