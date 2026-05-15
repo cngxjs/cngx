@@ -118,6 +118,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Autosize', path: 'forms/autosize' },
       { label: 'Form Field', path: 'forms/field' },
       { label: 'File Drop', path: 'forms/file-drop' },
+      { label: 'Filter Builder Async State', path: 'forms/filter-builder-async-state' },
       { label: 'Filter Builder Bridge', path: 'forms/filter-builder-bridge' },
       { label: 'Filter Builder', path: 'forms/filter-builder' },
       { label: 'Filter Builder JSON', path: 'forms/filter-builder-json' },
