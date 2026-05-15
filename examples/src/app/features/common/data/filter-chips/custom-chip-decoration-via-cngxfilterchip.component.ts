@@ -7,7 +7,7 @@ import { CngxFilter, CngxFilterChips, CngxFilterChip } from '@cngx/common/data';
 @Component({
   selector: 'app-filter-chips-custom-chip-decoration-via-cngxfilterchip',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxFilter, CngxFilterChips, CngxFilterChip],
+  imports: [CngxFilter, CngxFilterChips],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

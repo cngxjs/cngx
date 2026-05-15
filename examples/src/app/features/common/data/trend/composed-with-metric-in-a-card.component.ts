@@ -9,7 +9,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 @Component({
   selector: 'app-trend-composed-with-metric-in-a-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxTrend, CngxMetric, CngxCard, CngxCardHeader, CngxCardBody],
+  imports: [CngxTrend, CngxMetric, CngxCard, CngxCardBody],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

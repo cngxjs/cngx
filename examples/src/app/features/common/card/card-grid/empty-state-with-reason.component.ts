@@ -7,7 +7,7 @@ import { CngxCard, CngxCardGrid, CngxCardGridEmpty } from '@cngx/common/card';
 @Component({
   selector: 'app-card-grid-empty-state-with-reason',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardGrid, CngxCardGridEmpty],
+  imports: [CngxCardGrid, CngxCardGridEmpty],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

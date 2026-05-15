@@ -7,7 +7,7 @@ import { CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody
 @Component({
   selector: 'app-card-card-with-image',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia],
+  imports: [CngxCard, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxCardMedia],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

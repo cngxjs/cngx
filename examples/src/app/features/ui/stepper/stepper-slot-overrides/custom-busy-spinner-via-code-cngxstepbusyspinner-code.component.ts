@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-slot-overrides-custom-busy-spinner-via-code-cngxstepbusyspinner-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepBusySpinner, CngxStepContent],
+  imports: [CngxStepper, CngxStep, CngxStepBusySpinner],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

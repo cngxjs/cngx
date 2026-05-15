@@ -9,7 +9,7 @@ import { CngxEmptyState } from '@cngx/ui/empty-state';
 @Component({
   selector: 'app-primitives-async-state-machine-on-the-primitive',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxChartEmpty, CngxChartError, CngxEmptyState],
+  imports: [CngxChart, CngxAxis, CngxLine, CngxArea, CngxThreshold, CngxBand, CngxEmptyState],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

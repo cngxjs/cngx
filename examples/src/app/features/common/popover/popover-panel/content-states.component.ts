@@ -7,7 +7,7 @@ import { CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBod
 @Component({
   selector: 'app-popover-panel-content-states',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody, CngxPopoverLoading, CngxPopoverError],
+  imports: [CngxPopoverPanel, CngxPopoverTrigger, CngxPopoverHeader, CngxPopoverBody],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

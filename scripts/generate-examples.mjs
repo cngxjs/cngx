@@ -139,6 +139,57 @@ async function buildPublicApiImportMap() {
 }
 
 /**
+ * Walk every TS file under projects/ and parse `selector: '...'` from each
+ * @Component / @Directive decorator preceding an `export class <Name>`.
+ * Used to filter @Component.imports — section.imports may list a class
+ * whose selector the section template doesn't actually use, and we can't
+ * derive the selector from the class name alone (CngxSkeletonContainer
+ * has selector 'cngx-skeleton', not 'cngx-skeleton-container').
+ *
+ * Returns Map<className, readonly string[]> — selectors are split on
+ * commas so compound `'cngx-foo, [cngxFoo]'` becomes two entries.
+ */
+async function buildSelectorMap() {
+  const map = new Map();
+  for await (const file of walkFiles(join(ROOT, 'projects'), (p) =>
+    p.endsWith('.ts') && !p.endsWith('.spec.ts') && !p.endsWith('public-api.ts'),
+  )) {
+    let src;
+    try {
+      src = await readFile(file, 'utf8');
+    } catch {
+      continue;
+    }
+    // For each `export class <Name>` declaration, scan backward in the file
+    // for the nearest `selector: '...'` definition. Backward scan handles
+    // arbitrarily long template bodies between the decorator selector field
+    // and the class declaration.
+    for (const classMatch of src.matchAll(/\bexport\s+(?:abstract\s+)?class\s+([A-Z]\w*)/g)) {
+      const className = classMatch[1];
+      const before = src.slice(0, classMatch.index);
+      // Collect both selector(s) and exportAs values — templates may reach
+      // for either (`<cngx-foo>`, `[cngxFoo]`, `#x="cngxFoo"`).
+      const selectorMatches = [...before.matchAll(/selector:\s*['"]([^'"]+)['"]/g)];
+      const exportAsMatches = [...before.matchAll(/exportAs:\s*['"]([^'"]+)['"]/g)];
+      if (selectorMatches.length === 0 && exportAsMatches.length === 0) continue;
+      const selectors = [];
+      if (selectorMatches.length > 0) {
+        const last = selectorMatches[selectorMatches.length - 1];
+        selectors.push(...last[1].split(',').map((s) => s.trim()).filter(Boolean));
+      }
+      if (exportAsMatches.length > 0) {
+        const last = exportAsMatches[exportAsMatches.length - 1];
+        // exportAs can also be comma-separated.
+        selectors.push(...last[1].split(',').map((s) => s.trim()).filter(Boolean));
+      }
+      const existing = map.get(className) ?? [];
+      map.set(className, [...new Set([...existing, ...selectors])]);
+    }
+  }
+  return map;
+}
+
+/**
  * Parse a story file by stripping the `import type` line and eval'ing the
  * object literal. Stories must use JSON-serialisable literals only.
  */
@@ -406,11 +457,32 @@ function emitComponentSource(meta, story, section, importMap) {
     .filter(Boolean)
     .join('\n\n');
 
-  // Component-decorator imports — pass section.imports through verbatim.
-  // Selector→class mapping isn't reliable enough to filter safely
-  // (e.g. CngxSkeletonContainer drives the <cngx-skeleton> element), so
-  // any NG8113 'unused import' warnings are accepted as cosmetic noise.
-  const tplImports = section.imports ?? [];
+  // Component-decorator imports — drop UNUSED `Cngx*` entries. Non-cngx
+  // imports (FormsModule, ReactiveFormsModule, MatXyzModule, *Pipe, etc.)
+  // pass through verbatim because their selectors / pipe names don't map
+  // 1:1 to class names and Angular's module-level matching makes a
+  // selector-based heuristic unreliable for them.
+  const tpl = section.template ?? '';
+  const tplImports = (section.imports ?? []).filter((cls) => {
+    if (!cls.startsWith('Cngx')) return true; // keep Angular / Material / pipes / modules
+    if (new RegExp(`\\b${cls}\\b`).test(tpl)) return true;
+    const selectors = meta.selectorMap?.get(cls) ?? [];
+    if (selectors.length === 0) return true; // unknown selector — keep to be safe
+    for (const sel of selectors) {
+      const elementMatch = sel.match(/^[a-z][a-z0-9-]*$/);
+      if (elementMatch) {
+        if (new RegExp(`<${sel}(?![a-z0-9-])`).test(tpl)) return true;
+        continue;
+      }
+      const attrMatch = sel.match(/^\[([\w-]+)(?:[*~|^$]?=[^\]]*)?\]$/);
+      if (attrMatch) {
+        if (new RegExp(`\\b${attrMatch[1]}\\b`).test(tpl)) return true;
+        continue;
+      }
+      if (tpl.includes(sel)) return true;
+    }
+    return false;
+  });
   const decoratorImports = tplImports.length > 0 ? `\n  imports: [${tplImports.join(', ')}],` : '';
 
   // Indent setup body two spaces (it's class-body code)
@@ -580,6 +652,7 @@ async function main() {
   await resetFeaturesDir();
 
   const importMap = await buildPublicApiImportMap();
+  const selectorMap = await buildSelectorMap();
 
   const routes = [];
 
@@ -695,6 +768,7 @@ async function main() {
           // lives at `features/<...pathSegments>/<section>.ts`, so it needs
           // pathSegments.length + 1 `..` hops to reach examples/src/app/.
           featureDepth: pathSegments.length + 1,
+          selectorMap,
         },
         story,
         section,

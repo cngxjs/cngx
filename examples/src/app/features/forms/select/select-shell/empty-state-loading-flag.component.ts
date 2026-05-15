@@ -10,7 +10,7 @@ import { delay, of, throwError } from 'rxjs';
 @Component({
   selector: 'app-select-shell-empty-state-loading-flag',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSelectShell, CngxSelectOption, CngxSelectEmpty, CngxSelectPlaceholder],
+  imports: [CngxSelectShell, CngxSelectEmpty, CngxSelectPlaceholder],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

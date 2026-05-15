@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @Component({
   selector: 'app-async-button-template-slots',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxActionButton, CngxPending, CngxSucceeded, CngxFailed, MatProgressSpinnerModule],
+  imports: [CngxActionButton, MatProgressSpinnerModule],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

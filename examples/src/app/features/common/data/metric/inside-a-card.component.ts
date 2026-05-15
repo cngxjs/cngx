@@ -8,7 +8,7 @@ import { CngxCard, CngxCardHeader, CngxCardBody } from '@cngx/common/card';
 @Component({
   selector: 'app-metric-inside-a-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxMetric, CngxCard, CngxCardHeader, CngxCardBody],
+  imports: [CngxMetric, CngxCard, CngxCardBody],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

@@ -8,7 +8,7 @@ import { CngxExpandableText, CngxExpandableToggle } from '@cngx/common/layout';
 @Component({
   selector: 'app-card-card-with-expandable-text',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxExpandableText, CngxExpandableToggle],
+  imports: [CngxCard, CngxCardTitle, CngxCardBody, CngxExpandableText],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

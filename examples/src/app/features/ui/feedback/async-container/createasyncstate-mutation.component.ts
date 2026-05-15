@@ -7,7 +7,6 @@ import { CngxAsync, createManualState, createAsyncState, injectAsyncState } from
 @Component({
   selector: 'app-async-container-createasyncstate-mutation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxAsync],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

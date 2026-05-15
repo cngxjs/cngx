@@ -7,7 +7,6 @@ import {
   signal,
   untracked,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { CngxActiveDescendant } from '@cngx/common/a11y';
 import {
@@ -97,7 +96,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, RouterLink, CngxActiveDescendant, CngxHierarchicalNav],
+  imports: [RouterLink, CngxActiveDescendant, CngxHierarchicalNav],
   template: `
     <h1>Index of /cngx-examples</h1>
 

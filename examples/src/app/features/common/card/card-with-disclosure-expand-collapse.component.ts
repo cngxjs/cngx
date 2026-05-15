@@ -8,7 +8,7 @@ import { CngxDisclosure } from '@cngx/common/interactive';
 @Component({
   selector: 'app-card-card-with-disclosure-expand-collapse',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardHeader, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxDisclosure],
+  imports: [CngxCard, CngxCardTitle, CngxCardSubtitle, CngxCardBody, CngxDisclosure],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

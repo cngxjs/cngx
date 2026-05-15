@@ -8,7 +8,7 @@ import { CngxCardBadge } from '@cngx/common/card';
 @Component({
   selector: 'app-card-card-with-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxCard, CngxCardHeader, CngxCardTitle, CngxCardBody, CngxCardBadge],
+  imports: [CngxCard, CngxCardTitle, CngxCardBody, CngxCardBadge],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

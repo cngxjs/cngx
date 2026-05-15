@@ -13,7 +13,7 @@ import { createManualState, type ManualAsyncState } from '@cngx/common/data';
 @Component({
   selector: 'app-select-commit-action-async-write',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSelect, CngxSelectError],
+  imports: [CngxSelect],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

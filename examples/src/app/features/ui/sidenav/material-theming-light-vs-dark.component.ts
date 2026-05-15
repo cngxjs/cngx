@@ -8,7 +8,7 @@ import { CngxNavLink, CngxNavLabel } from '@cngx/common';
 @Component({
   selector: 'app-sidenav-material-theming-light-vs-dark',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter, CngxNavLink, CngxNavLabel],
+  imports: [CngxSidenavLayout, CngxSidenav, CngxSidenavContent, CngxSidenavHeader, CngxSidenavFooter, CngxNavLink],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

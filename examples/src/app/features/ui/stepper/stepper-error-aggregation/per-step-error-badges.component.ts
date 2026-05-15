@@ -9,7 +9,7 @@ import { CngxErrorAggregator, CngxErrorSource } from '@cngx/common/interactive';
 @Component({
   selector: 'app-stepper-error-aggregation-per-step-error-badges',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepContent, CngxErrorAggregator, CngxErrorSource],
+  imports: [CngxStepper, CngxStep, CngxErrorAggregator, CngxErrorSource],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

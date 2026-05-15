@@ -11,7 +11,7 @@ import { JsonPipe } from '@angular/common';
 @Component({
   selector: 'app-filter-builder-async-state-loading-error-content-branches-via-cngx-async-container',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxFilterBuilder, CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncEmptyTpl, CngxAsyncErrorTpl, JsonPipe],
+  imports: [CngxFilterBuilder, CngxAsyncContainer, JsonPipe],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

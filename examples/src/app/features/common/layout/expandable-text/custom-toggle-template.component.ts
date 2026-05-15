@@ -8,7 +8,7 @@ import { CngxExpandableToggle } from '@cngx/common/layout';
 @Component({
   selector: 'app-expandable-text-custom-toggle-template',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxExpandableText, CngxExpandableToggle],
+  imports: [CngxExpandableText],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

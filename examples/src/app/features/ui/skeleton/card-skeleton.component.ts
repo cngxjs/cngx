@@ -7,7 +7,7 @@ import { CngxSkeletonContainer, CngxSkeletonPlaceholder } from '@cngx/ui';
 @Component({
   selector: 'app-skeleton-card-skeleton',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxSkeletonContainer, CngxSkeletonPlaceholder],
+  imports: [CngxSkeletonContainer],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

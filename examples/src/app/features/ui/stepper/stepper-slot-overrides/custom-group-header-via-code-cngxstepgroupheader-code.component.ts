@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-slot-overrides-custom-group-header-via-code-cngxstepgroupheader-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepGroup, CngxStepContent, CngxStepGroupHeader],
+  imports: [CngxStepper, CngxStep, CngxStepGroup, CngxStepGroupHeader],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

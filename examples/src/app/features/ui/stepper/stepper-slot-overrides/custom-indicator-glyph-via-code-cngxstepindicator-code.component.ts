@@ -8,7 +8,7 @@ import { CngxStepper } from '@cngx/ui/stepper';
 @Component({
   selector: 'app-stepper-slot-overrides-custom-indicator-glyph-via-code-cngxstepindicator-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxStepper, CngxStep, CngxStepContent, CngxStepIndicator],
+  imports: [CngxStepper, CngxStep, CngxStepIndicator],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }

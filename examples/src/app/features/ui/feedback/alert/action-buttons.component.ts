@@ -8,7 +8,7 @@ import { createManualState } from '@cngx/common/data';
 @Component({
   selector: 'app-alert-action-buttons',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CngxAlert, CngxAlertAction],
+  imports: [CngxAlert],
   template: `
     <header class="cngx-ex-intro">
       @if (_exTitle) { <h1>{{ _exTitle }}</h1> }
