@@ -61,6 +61,10 @@
     "common/interactive/retry-demo",
     "common/interactive/ripple-demo",
     "common/interactive/speak-demo",
-    "common/interactive/swipe-dismiss-demo"
+    "common/interactive/swipe-dismiss-demo",
+    "common/data/filter-chips-demo",
+    "common/data/metric-demo",
+    "common/data/paginate-list-demo",
+    "common/data/trend-demo"
   ]
 }

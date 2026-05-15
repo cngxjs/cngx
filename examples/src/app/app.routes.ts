@@ -233,6 +233,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Custom Toggle Template" },
   },
   {
+    path: 'filter-chips/custom-chip-decoration-via-cngxfilterchip',
+    loadComponent: () => import('./features/filter-chips/custom-chip-decoration-via-cngxfilterchip.component').then((m) => m.FilterChipsCustomChipDecorationViaCngxfilterchip),
+    data: { lib: 'common', category: 'data', demo: "Filter chips", section: "Custom chip decoration via *cngxFilterChip" },
+  },
+  {
+    path: 'filter-chips/multi-role-filter-wired-to-a-list',
+    loadComponent: () => import('./features/filter-chips/multi-role-filter-wired-to-a-list.component').then((m) => m.FilterChipsMultiRoleFilterWiredToAList),
+    data: { lib: 'common', category: 'data', demo: "Filter chips", section: "Multi-role filter wired to a list" },
+  },
+  {
     path: 'focus-restore/inline-details',
     loadComponent: () => import('./features/focus-restore/inline-details.component').then((m) => m.FocusRestoreInlineDetails),
     data: { lib: 'common', category: 'a11y', demo: "Focus Restore", section: "Inline Details" },
@@ -363,6 +373,16 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Menu Trigger", section: "Dropdown menu" },
   },
   {
+    path: 'metric/inside-a-card',
+    loadComponent: () => import('./features/metric/inside-a-card.component').then((m) => m.MetricInsideACard),
+    data: { lib: 'common', category: 'data', demo: "Metric", section: "Inside a Card" },
+  },
+  {
+    path: 'metric/standalone-metrics',
+    loadComponent: () => import('./features/metric/standalone-metrics.component').then((m) => m.MetricStandaloneMetrics),
+    data: { lib: 'common', category: 'data', demo: "Metric", section: "Standalone Metrics" },
+  },
+  {
     path: 'mini-area/async-state-machine',
     loadComponent: () => import('./features/mini-area/async-state-machine.component').then((m) => m.MiniAreaAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Mini Area", section: "Async state machine" },
@@ -396,6 +416,16 @@ export const routes: Routes = [
     path: 'option/grouped-options',
     loadComponent: () => import('./features/option/grouped-options.component').then((m) => m.OptionGroupedOptions),
     data: { lib: 'common', category: 'interactive', demo: "Option", section: "Grouped options" },
+  },
+  {
+    path: 'paginate-list/paginated-list-cngxpaginate-cngxmatpaginator',
+    loadComponent: () => import('./features/paginate-list/paginated-list-cngxpaginate-cngxmatpaginator.component').then((m) => m.PaginateListPaginatedListCngxpaginateCngxmatpaginator),
+    data: { lib: 'common', category: 'data', demo: "Paginate — List", section: "Paginated List — CngxPaginate + CngxMatPaginator" },
+  },
+  {
+    path: 'paginate-list/uncontrolled-mode-zero-class-boilerplate',
+    loadComponent: () => import('./features/paginate-list/uncontrolled-mode-zero-class-boilerplate.component').then((m) => m.PaginateListUncontrolledModeZeroClassBoilerplate),
+    data: { lib: 'common', category: 'data', demo: "Paginate — List", section: "Uncontrolled Mode — Zero Class Boilerplate" },
   },
   {
     path: 'popover/click-popover',
@@ -541,6 +571,16 @@ export const routes: Routes = [
     path: 'swipe-dismiss/directional-swipe',
     loadComponent: () => import('./features/swipe-dismiss/directional-swipe.component').then((m) => m.SwipeDismissDirectionalSwipe),
     data: { lib: 'common', category: 'interactive', demo: "SwipeDismiss", section: "CngxSwipeDismiss — Directional Swipe" },
+  },
+  {
+    path: 'trend/composed-with-metric-in-a-card',
+    loadComponent: () => import('./features/trend/composed-with-metric-in-a-card.component').then((m) => m.TrendComposedWithMetricInACard),
+    data: { lib: 'common', category: 'data', demo: "Trend", section: "Composed with Metric in a Card" },
+  },
+  {
+    path: 'trend/trend-directions',
+    loadComponent: () => import('./features/trend/trend-directions.component').then((m) => m.TrendTrendDirections),
+    data: { lib: 'common', category: 'data', demo: "Trend", section: "Trend Directions" },
   },
   {
     path: 'truncate/short-text-no-toggle',

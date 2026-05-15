@@ -171,9 +171,17 @@ function buildImports(story, section, importMap) {
     return `${head} ${kept.join(', ')} ${tail.trim()}`;
   }
 
+  /** Rewrite dev-app-relative paths to the examples app's layout. */
+  function rewritePaths(line) {
+    if (!line) return line;
+    // Any relative `../...fixtures[/...]` → '../../fixtures' (depth-agnostic).
+    return line.replace(/'(?:\.\.\/)+([^']*fixtures(?:[^']*)?)'/, "'../../fixtures'");
+  }
+
   const filteredModuleImports = (story.moduleImports ?? [])
     .map(filterImportLine)
-    .filter((l) => l !== null);
+    .filter((l) => l !== null)
+    .map(rewritePaths);
 
   // Collect identifiers already covered by the filtered moduleImports.
   const coveredIds = new Set();
