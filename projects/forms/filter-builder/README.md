@@ -270,14 +270,14 @@ Each nested group also exposes a depth host style, `--cngx-filter-builder-depth`
 
 ## Standalone filter rows
 
-`CngxFilterExpressionRow` is the same component the builder mounts internally — exported as a public surface so a single filter row can live outside the recursive tree. Typical use cases: a table-column header that filters one column, a side-panel quick filter, or any place where a full builder tree is overkill.
+`CngxFilterRow` is a dedicated single-row surface for column-header / quick-filter contexts. Owns a `FilterExpression | null` via `[(value)]` directly — no presenter, no host token. Typical use cases: a table-column header that filters one column, a side-panel quick filter, or any place where a full builder tree is overkill.
 
-Pass `[fields]` (a one-element array for the column it filters) and a writable `[(value)]` binding. The row owns its `FilterExpression | null` directly — no presenter, no host token. The Remove button writes `null`; subsequent edits are no-ops until the consumer seeds a fresh expression.
+Pass `[fields]` (a one-element array for the column it filters) and a writable `[(value)]` binding. With more than one field and an empty value the row renders only the field-picker; with a single field it auto-seeds the expression so the operator + value editors render directly. The Remove button writes `null`; subsequent edits are no-ops until the consumer seeds a fresh expression.
 
 ```typescript
 import { Component, computed, signal } from '@angular/core';
 import {
-  CngxFilterExpressionRow,
+  CngxFilterRow,
   createFilterGroup,
   toFilterPredicate,
   type FilterExpression,
@@ -295,7 +295,7 @@ const PEOPLE = [/* ... */];
         <tr>
           <th>
             Name
-            <cngx-filter-expression-row [fields]="[nameField]" [(value)]="nameFilter" />
+            <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
           </th>
         </tr>
       </thead>
@@ -306,7 +306,7 @@ const PEOPLE = [/* ... */];
       </tbody>
     </table>
   `,
-  imports: [CngxFilterExpressionRow],
+  imports: [CngxFilterRow],
 })
 export class PeopleTable {
   readonly nameField = NAME_FIELD;
@@ -323,4 +323,4 @@ export class PeopleTable {
 
 A live demo wiring two standalone rows into a filtered table lives at `/#/forms/filter-expression-row`.
 
-The row picks **embedded** mode automatically when mounted inside `<cngx-filter-builder>` (the host token is provided by the presenter); switching to standalone mode is silent — drop the row outside the builder and the optional-host code path takes over.
+**Migration note.** Earlier releases let `CngxFilterExpressionRow` double as a standalone column-header surface (the row injected the host token as optional and switched modes silently). That dual-mode path is removed: `CngxFilterExpressionRow` is the recursive renderer's embedded row only, and column-header consumers move to `CngxFilterRow`. The public input shape (`[fields]` + `[(value)]`) is identical, so most migrations are a tag and import rename.
