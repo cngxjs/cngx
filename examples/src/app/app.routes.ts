@@ -98,6 +98,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Button toggle group (multi)", section: "Disabled — group cascade vs per-toggle" },
   },
   {
+    path: 'card-grid/basic-grid',
+    loadComponent: () => import('./features/card-grid/basic-grid.component').then((m) => m.CardGridBasicGrid),
+    data: { lib: 'common', category: 'card', demo: "Card Grid", section: "Basic Grid" },
+  },
+  {
+    path: 'card-grid/density-variants',
+    loadComponent: () => import('./features/card-grid/density-variants.component').then((m) => m.CardGridDensityVariants),
+    data: { lib: 'common', category: 'card', demo: "Card Grid", section: "Density Variants" },
+  },
+  {
+    path: 'card-grid/empty-state-with-reason',
+    loadComponent: () => import('./features/card-grid/empty-state-with-reason.component').then((m) => m.CardGridEmptyStateWithReason),
+    data: { lib: 'common', category: 'card', demo: "Card Grid", section: "Empty State with Reason" },
+  },
+  {
     path: 'checkbox-group/basic-select-all-master-projected-leaves',
     loadComponent: () => import('./features/checkbox-group/basic-select-all-master-projected-leaves.component').then((m) => m.CheckboxGroupBasicSelectAllMasterProjectedLeaves),
     data: { lib: 'common', category: 'interactive', demo: "Checkbox group", section: "Basic — select-all master + projected leaves" },

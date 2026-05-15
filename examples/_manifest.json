@@ -11,6 +11,7 @@
     "common/a11y/live-region-demo",
     "common/a11y/reduced-motion-demo",
     "common/a11y/roving-tabindex-demo",
+    "common/card/card-grid-demo",
     "common/layout/backdrop-demo",
     "common/layout/expandable-text-demo",
     "common/layout/highlight-demo",
