@@ -49,12 +49,6 @@ jobs:
       - name: Build Docs
         run: npm run docs
 
-      - name: Build Dev App
-        run: |
-          npx ng build dev-app --configuration production --base-href /cngx/demo/ --deploy-url /cngx/demo/ --output-path docs/demo
-          mv docs/demo/browser/* docs/demo/
-          rm -rf docs/demo/browser
-
       - name: Build Examples App
         run: |
           npx ng build examples --configuration production --base-href /cngx/examples/ --deploy-url /cngx/examples/ --output-path docs/examples

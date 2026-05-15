@@ -40,9 +40,6 @@ jobs:
       - name: Generate compodoc JSON
         run: npm run docs:json
 
-      - name: Generate demo components
-        run: npm run demo:generate
-
       - name: Generate examples components
         run: npm run examples:generate
 
@@ -51,9 +48,6 @@ jobs:
 
       - name: Run tests
         run: npm run test
-
-      - name: Build dev app
-        run: npm run build:dev-app
 
       - name: Build examples app
         run: npm run build:examples
