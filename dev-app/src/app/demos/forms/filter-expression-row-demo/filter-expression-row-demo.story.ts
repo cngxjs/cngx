@@ -5,18 +5,23 @@ export const STORY: DemoSpec = {
   navLabel: 'Filter Row',
   navCategory: 'filter-builder',
   description:
-    'Per-column <cngx-filter-row> headers wired into a CngxAsyncContainer-driven roster fetch. ' +
-    'Every column-filter mutation re-fetches: skeleton on first load, refresh-bar on subsequent ' +
-    'predicate changes — same UX as a server-side table filter.',
+    'One <cngx-filter-row> on top of a CngxAsyncContainer-wrapped roster. The user picks ' +
+    'a field, an operator, and a value; every mutation re-fetches with the same skeleton ' +
+    'UX as the initial load.',
   apiComponents: ['CngxFilterRow', 'CngxAsyncContainer'],
   overview:
-    '<p><code>CngxFilterRow</code> is the dedicated single-row surface for column-header / ' +
-    'quick-filter contexts. Each row owns one <code>FilterExpression | null</code> via ' +
-    '<code>[(value)]</code>; an <code>effect</code> reads both row signals, derives a single ' +
-    '<code>FilterGroup</code>, and triggers a simulated fetch on every mutation.</p>' +
-    '<p>The roster lives in <code>dataState.data()</code> and renders <em>only</em> from inside ' +
-    '<code>cngxAsyncContent</code>. The skeleton, empty, and error templates own the other ' +
-    'branches. A request token dedupes superseded fetches when the user types fast.</p>',
+    '<p><code>CngxFilterRow</code> is the dedicated single-row surface for ad-hoc ' +
+    'filter contexts: a side panel, a top-of-table quick filter, or any place where a ' +
+    'full <code>&lt;cngx-filter-builder&gt;</code> tree is overkill but the user still ' +
+    'needs to pick the field. One row owns one <code>FilterExpression | null</code>.</p>' +
+    '<p>The roster lives in <code>dataState.data()</code> and renders <em>only</em> from ' +
+    'inside <code>cngxAsyncContent</code>. The skeleton, empty, and error templates own ' +
+    'the other branches. A request token dedupes superseded fetches when the user types ' +
+    'fast.</p>' +
+    '<p><strong>Note:</strong> per-column header filters with one fixed field per column ' +
+    'are a different UX (clear vs. remove semantics, no field picker, predicate writes ' +
+    'directly into a parent <code>CngxFilter</code> aggregator). That is a separate ' +
+    'artifact tracked for the table sprint — do not lift this row into a column header.</p>',
   moduleImports: [
     "import { computed, effect, untracked } from '@angular/core';",
     "import { createManualState } from '@cngx/common/data';",
@@ -27,21 +32,15 @@ export const STORY: DemoSpec = {
   setup: `
   protected readonly fields = FILTER_BUILDER_FIELDS;
   protected readonly nameField = FILTER_BUILDER_FIELDS.find((f) => f.key === 'name')!;
-  protected readonly roleField = FILTER_BUILDER_FIELDS.find((f) => f.key === 'role')!;
-  protected readonly nameFilter = signal<FilterExpression | null>(null);
-  protected readonly roleFilter = signal<FilterExpression | null>(null);
+  protected readonly filter = signal<FilterExpression | null>(null);
   protected readonly dataState = createManualState<readonly FilterBuilderPerson[]>();
 
   protected readonly predicate = computed<((item: FilterBuilderPerson) => boolean) | null>(() => {
-    const filters: FilterExpression[] = [];
-    const n = this.nameFilter();
-    const r = this.roleFilter();
-    if (n) filters.push(n);
-    if (r) filters.push(r);
-    if (filters.length === 0) {
+    const f = this.filter();
+    if (!f) {
       return null;
     }
-    return toFilterPredicate(createFilterGroup('and', filters), this.fields);
+    return toFilterPredicate(createFilterGroup('and', [f]), this.fields);
   });
 
   private fetchToken = 0;
@@ -58,8 +57,8 @@ export const STORY: DemoSpec = {
     const myToken = ++this.fetchToken;
     // reset() drops the prior success, so isFirstLoad flips back to true and
     // resolveAsyncView() returns 'skeleton' for the loading status. Every
-    // column-filter mutation gets the same first-load UX as the initial
-    // fetch — visible skeleton, not a thin refresh bar over stale rows.
+    // filter mutation gets the same first-load UX as the initial fetch —
+    // visible skeleton, not a thin refresh bar over stale rows.
     this.dataState.reset();
     this.dataState.set('loading');
     setTimeout(() => {
@@ -87,25 +86,19 @@ export const STORY: DemoSpec = {
   `,
   sections: [
     {
-      title: 'Per-column filter rows + filtered table',
+      title: 'Ad-hoc filter on top of an async-wrapped roster',
       subtitle:
-        'The Name and Role columns each ship a standalone <code>&lt;cngx-filter-row&gt;</code> ' +
-        'pinned to a single field. Edit the operator / value and the table below filters in real time.',
+        'Pick a field, operator, and value in the row above the table. The roster ' +
+        're-fetches on every mutation; the table renders only inside ' +
+        '<code>cngxAsyncContent</code>.',
       template: `
   <div class="demo-actions">
     <button type="button" (click)="refetch()">Refetch</button>
     <button type="button" (click)="failNextFetch()">Fail next</button>
   </div>
 
-  <div class="demo-col-headers">
-    <div class="demo-col-header">
-      <span>Name</span>
-      <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
-    </div>
-    <div class="demo-col-header">
-      <span>Role</span>
-      <cngx-filter-row [fields]="[roleField]" [(value)]="roleFilter" />
-    </div>
+  <div class="demo-filter-bar">
+    <cngx-filter-row [fields]="fields" [(value)]="filter" />
   </div>
 
   <cngx-async-container [state]="dataState" ariaLabel="Roster">
@@ -119,7 +112,7 @@ export const STORY: DemoSpec = {
     </ng-template>
 
     <ng-template cngxAsyncEmpty>
-      <p class="demo-empty">No rows match the current filters.</p>
+      <p class="demo-empty">No rows match the current filter.</p>
     </ng-template>
 
     <ng-template cngxAsyncContent let-rows>
@@ -159,7 +152,6 @@ export const STORY: DemoSpec = {
       `,
       imports: [
         'CngxFilterRow',
-        'JsonPipe',
         'CngxAsyncContainer',
         'CngxAsyncSkeletonTpl',
         'CngxAsyncContentTpl',
@@ -169,16 +161,12 @@ export const STORY: DemoSpec = {
       css: `
 .demo-actions { display: flex; gap: 8px; margin: 12px 0; }
 .demo-actions button { padding: 4px 10px; cursor: pointer; }
-.demo-col-headers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+.demo-filter-bar {
   padding: 8px 12px;
   background: var(--cngx-surface-variant, #f5f5f5);
   border: 1px solid var(--cngx-border, #ddd);
   border-bottom: none;
 }
-.demo-col-header { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
 .demo-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; vertical-align: top; }
 .demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
@@ -200,12 +188,13 @@ export const STORY: DemoSpec = {
       `,
     },
     {
-      title: 'Pre-seeded filter',
+      title: 'Raw [(value)] contract',
       subtitle:
-        'Seeded filter expression flows in via signal; clearing it through the row remove button writes <code>null</code>.',
+        'The same row, no async wrap. Shows the bare two-way binding: the row reads / writes ' +
+        '<code>FilterExpression | null</code> directly. Remove writes <code>null</code> back.',
       template: `
-  <cngx-filter-row [fields]="[nameField]" [(value)]="nameFilter" />
-  <pre class="code-block">{{ nameFilter() | json }}</pre>
+  <cngx-filter-row [fields]="[nameField]" [(value)]="filter" />
+  <pre class="code-block">{{ filter() | json }}</pre>
       `,
       imports: ['CngxFilterRow', 'JsonPipe'],
     },
