@@ -10,6 +10,18 @@
     "common/a11y/focus-visible-demo",
     "common/a11y/live-region-demo",
     "common/a11y/reduced-motion-demo",
-    "common/a11y/roving-tabindex-demo"
+    "common/a11y/roving-tabindex-demo",
+    "common/layout/backdrop-demo",
+    "common/layout/expandable-text-demo",
+    "common/layout/highlight-demo",
+    "common/layout/infinite-scroll-demo",
+    "common/layout/intersection-observer-demo",
+    "common/layout/media-query-demo",
+    "common/layout/resize-observer-demo",
+    "common/layout/scroll-lock-demo",
+    "common/layout/scroll-spy-demo",
+    "common/layout/skeleton-demo",
+    "common/layout/sticky-header-demo",
+    "common/layout/truncate-demo"
   ]
 }

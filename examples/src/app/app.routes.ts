@@ -33,6 +33,26 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "Autofocus", section: "Focus on Insert" },
   },
   {
+    path: 'backdrop/cngxbackdrop-overlay-with-inert',
+    loadComponent: () => import('./features/backdrop/cngxbackdrop-overlay-with-inert.component').then((m) => m.BackdropCngxbackdropOverlayWithInert),
+    data: { lib: 'common', category: 'layout', demo: "Backdrop", section: "CngxBackdrop — Overlay with inert" },
+  },
+  {
+    path: 'expandable-text/auto-toggle',
+    loadComponent: () => import('./features/expandable-text/auto-toggle.component').then((m) => m.ExpandableTextAutoToggle),
+    data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Auto-Toggle" },
+  },
+  {
+    path: 'expandable-text/custom-labels',
+    loadComponent: () => import('./features/expandable-text/custom-labels.component').then((m) => m.ExpandableTextCustomLabels),
+    data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Custom Labels" },
+  },
+  {
+    path: 'expandable-text/custom-toggle-template',
+    loadComponent: () => import('./features/expandable-text/custom-toggle-template.component').then((m) => m.ExpandableTextCustomToggleTemplate),
+    data: { lib: 'common', category: 'layout', demo: "Expandable Text", section: "Custom Toggle Template" },
+  },
+  {
     path: 'focus-restore/inline-details',
     loadComponent: () => import('./features/focus-restore/inline-details.component').then((m) => m.FocusRestoreInlineDetails),
     data: { lib: 'common', category: 'a11y', demo: "Focus Restore", section: "Inline Details" },
@@ -63,6 +83,26 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "FocusVisible", section: "Form Fields — Custom Focus Ring" },
   },
   {
+    path: 'highlight/live-search-highlighting',
+    loadComponent: () => import('./features/highlight/live-search-highlighting.component').then((m) => m.HighlightLiveSearchHighlighting),
+    data: { lib: 'common', category: 'layout', demo: "Highlight", section: "Live Search Highlighting" },
+  },
+  {
+    path: 'highlight/multiple-paragraphs',
+    loadComponent: () => import('./features/highlight/multiple-paragraphs.component').then((m) => m.HighlightMultipleParagraphs),
+    data: { lib: 'common', category: 'layout', demo: "Highlight", section: "Multiple Paragraphs" },
+  },
+  {
+    path: 'infinite-scroll/scrollable-list',
+    loadComponent: () => import('./features/infinite-scroll/scrollable-list.component').then((m) => m.InfiniteScrollScrollableList),
+    data: { lib: 'common', category: 'layout', demo: "Infinite Scroll", section: "Scrollable List" },
+  },
+  {
+    path: 'intersection-observer/cngxintersectionobserver-scroll-sentinel',
+    loadComponent: () => import('./features/intersection-observer/cngxintersectionobserver-scroll-sentinel.component').then((m) => m.IntersectionObserverCngxintersectionobserverScrollSentinel),
+    data: { lib: 'common', category: 'layout', demo: "IntersectionObserver", section: "CngxIntersectionObserver — Scroll Sentinel" },
+  },
+  {
     path: 'live-region/cngxliveregion-polite-vs-assertive',
     loadComponent: () => import('./features/live-region/cngxliveregion-polite-vs-assertive.component').then((m) => m.LiveRegionCngxliveregionPoliteVsAssertive),
     data: { lib: 'common', category: 'a11y', demo: "LiveRegion", section: "CngxLiveRegion — Polite vs Assertive" },
@@ -71,6 +111,11 @@ export const routes: Routes = [
     path: 'live-region/form-validation-assertive-error-announcements',
     loadComponent: () => import('./features/live-region/form-validation-assertive-error-announcements.component').then((m) => m.LiveRegionFormValidationAssertiveErrorAnnouncements),
     data: { lib: 'common', category: 'a11y', demo: "LiveRegion", section: "Form Validation — Assertive Error Announcements" },
+  },
+  {
+    path: 'media-query/cngxmediaquery-viewport-breakpoints',
+    loadComponent: () => import('./features/media-query/cngxmediaquery-viewport-breakpoints.component').then((m) => m.MediaQueryCngxmediaqueryViewportBreakpoints),
+    data: { lib: 'common', category: 'layout', demo: "MediaQuery", section: "CngxMediaQuery — Viewport Breakpoints" },
   },
   {
     path: 'reduced-motion/cngxreducedmotion-animation-toggle',
@@ -83,6 +128,11 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "ReducedMotion", section: "Toast Notifications — Motion-aware" },
   },
   {
+    path: 'resize-observer/cngxresizeobserver-live-size',
+    loadComponent: () => import('./features/resize-observer/cngxresizeobserver-live-size.component').then((m) => m.ResizeObserverCngxresizeobserverLiveSize),
+    data: { lib: 'common', category: 'layout', demo: "ResizeObserver", section: "CngxResizeObserver — Live Size" },
+  },
+  {
     path: 'roving-tabindex/horizontal-toolbar',
     loadComponent: () => import('./features/roving-tabindex/horizontal-toolbar.component').then((m) => m.RovingTabindexHorizontalToolbar),
     data: { lib: 'common', category: 'a11y', demo: "Roving Tabindex", section: "Horizontal Toolbar" },
@@ -91,6 +141,41 @@ export const routes: Routes = [
     path: 'roving-tabindex/vertical-menu',
     loadComponent: () => import('./features/roving-tabindex/vertical-menu.component').then((m) => m.RovingTabindexVerticalMenu),
     data: { lib: 'common', category: 'a11y', demo: "Roving Tabindex", section: "Vertical Menu" },
+  },
+  {
+    path: 'scroll-lock/cngxscrolllock-toggle',
+    loadComponent: () => import('./features/scroll-lock/cngxscrolllock-toggle.component').then((m) => m.ScrollLockCngxscrolllockToggle),
+    data: { lib: 'common', category: 'layout', demo: "ScrollLock", section: "CngxScrollLock — Toggle" },
+  },
+  {
+    path: 'scroll-spy/scroll-based-navigation',
+    loadComponent: () => import('./features/scroll-spy/scroll-based-navigation.component').then((m) => m.ScrollSpyScrollBasedNavigation),
+    data: { lib: 'common', category: 'layout', demo: "Scroll Spy", section: "Scroll-Based Navigation" },
+  },
+  {
+    path: 'skeleton/basic-skeleton',
+    loadComponent: () => import('./features/skeleton/basic-skeleton.component').then((m) => m.SkeletonBasicSkeleton),
+    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Basic Skeleton" },
+  },
+  {
+    path: 'skeleton/skeleton-container',
+    loadComponent: () => import('./features/skeleton/skeleton-container.component').then((m) => m.SkeletonSkeletonContainer),
+    data: { lib: 'common', category: 'layout', demo: "Skeleton Loading", section: "Skeleton Container" },
+  },
+  {
+    path: 'sticky-header/sticky-header-with-shadow',
+    loadComponent: () => import('./features/sticky-header/sticky-header-with-shadow.component').then((m) => m.StickyHeaderStickyHeaderWithShadow),
+    data: { lib: 'common', category: 'layout', demo: "Sticky Header", section: "Sticky Header with Shadow" },
+  },
+  {
+    path: 'truncate/short-text-no-toggle',
+    loadComponent: () => import('./features/truncate/short-text-no-toggle.component').then((m) => m.TruncateShortTextNoToggle),
+    data: { lib: 'common', category: 'layout', demo: "Truncate", section: "Short Text — No Toggle" },
+  },
+  {
+    path: 'truncate/truncated-text-with-toggle',
+    loadComponent: () => import('./features/truncate/truncated-text-with-toggle.component').then((m) => m.TruncateTruncatedTextWithToggle),
+    data: { lib: 'common', category: 'layout', demo: "Truncate", section: "Truncated Text with Toggle" },
   },
   {
     path: '',

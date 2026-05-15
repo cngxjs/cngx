@@ -127,15 +127,45 @@ function buildImports(story, section, importMap) {
   ];
 
   const coreLine = `import { ${coreSymbols.join(', ')} } from '@angular/core';`;
-  const moduleImports = story.moduleImports ?? [];
 
-  // Collect identifiers already covered by moduleImports.
+  // Build the set of identifiers the section actually references — used to
+  // drop unused imports and avoid TS noUnusedLocals errors.
+  const referenced = new Set([...(section.imports ?? []), ...(story.hostDirectives ?? [])]);
+  // Heuristic: any TypeScript identifier (Cap-or-underscore start) appearing
+  // in setup blocks is a reference. Templates are scanned for the same.
+  const scanText = [story.setup ?? '', section.setup ?? '', section.template ?? ''].join('\n');
+  for (const m of scanText.matchAll(/\b([A-Z_][A-Za-z0-9_]*)\b/g)) {
+    referenced.add(m[1]);
+  }
+
+  /** Keep only referenced symbols on an import line; return null if none kept. */
+  function filterImportLine(line) {
+    const match = line.match(/^(\s*import\s*(?:type\s+)?\{)([^}]+)(\}\s*from\s*['"][^'"]+['"];?\s*)$/);
+    if (!match) return line; // non-named-import line — pass through
+    const [, head, body, tail] = match;
+    const kept = body
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((spec) => {
+        const id = spec.replace(/^type\s+/, '').split(/\s+as\s+/)[0].trim();
+        return referenced.has(id);
+      });
+    if (kept.length === 0) return null;
+    return `${head} ${kept.join(', ')} ${tail.trim()}`;
+  }
+
+  const filteredModuleImports = (story.moduleImports ?? [])
+    .map(filterImportLine)
+    .filter((l) => l !== null);
+
+  // Collect identifiers already covered by the filtered moduleImports.
   const coveredIds = new Set();
-  for (const line of moduleImports) {
+  for (const line of filteredModuleImports) {
     for (const id of importedSymbols(line)) coveredIds.add(id);
   }
 
-  // Resolve any section.imports identifiers not yet covered via the public-api map.
+  // Resolve any referenced identifiers still missing via the public-api map.
   const extraByPkg = new Map();
   for (const id of section.imports ?? []) {
     if (coveredIds.has(id)) continue;
@@ -148,7 +178,7 @@ function buildImports(story, section, importMap) {
     ([pkg, ids]) => `import { ${[...ids].sort().join(', ')} } from '${pkg}';`,
   );
 
-  return { lines: [coreLine, ...moduleImports, ...extraLines] };
+  return { lines: [coreLine, ...filteredModuleImports, ...extraLines] };
 }
 
 /** Escape a string for use as a TypeScript single-quoted literal. */
