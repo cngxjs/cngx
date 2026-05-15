@@ -133,11 +133,11 @@ export interface CngxReorderableMultiSelectChange<T = unknown> {
  * Reorder commits bypass `ArrayCommitHandler.beginToggle` (its
  * `sameArrayContents` guard would skip same-membership reorders) and
  * drive the commit controller directly.
- * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>http://localhost:4200/#/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  */
 @Component({
   selector: 'cngx-reorderable-multi-select',

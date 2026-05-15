@@ -54,14 +54,14 @@ import {
  *
  * @playground Form error aggregation ./examples/form-errors/form-errors.component.ts
  * @see {@link CngxMatTabs} for the Material `<mat-tab-group>` variant with `[cngxMatTabError]`.
- * <example-url>http://localhost:4200/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-group/three-tab-navigation</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
- * <example-url>http://localhost:4200/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-error-aggregation/per-tab-error-badges</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-group/three-tab-navigation</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-busy-spinner-via-code-cngxtabbusyspinner-code</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/custom-error-badge-via-code-cngxtaberrorbadge-code</example-url>
+ * <example-url>http://localhost:4200/#/ui/tabs/tab-slot-overrides/rejection-decoration-via-code-cngxtabrejectionicon-code</example-url>
  */
 @Component({
   selector: 'cngx-tab-group',

@@ -33,9 +33,9 @@ export type NavBadgeVariant = 'count' | 'dot' | 'status';
  * ```html
  * <a cngxNavLink>Updates <span cngxNavBadge variant="dot" [value]="1"></span></a>
  * ```
- * <example-url>http://localhost:4200/common/interactive/nav/nav-badge-counts-and-dots</example-url>
- * <example-url>http://localhost:4200/common/interactive/nav/nav-group-accordion-sections</example-url>
- * <example-url>http://localhost:4200/common/interactive/nav/nav-links-active-state-depth</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/nav/nav-badge-counts-and-dots</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/nav/nav-group-accordion-sections</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/nav/nav-links-active-state-depth</example-url>
  */
 @Directive({
   selector: '[cngxNavBadge]',

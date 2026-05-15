@@ -23,9 +23,9 @@ export interface SortEntry {
  *
  * Consumer connects this to a table or list via a `computed()` — nothing is
  * injected automatically.
- * <example-url>http://localhost:4200/common/data/smart-data-source/auto-wired</example-url>
- * <example-url>http://localhost:4200/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
- * <example-url>http://localhost:4200/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
+ * <example-url>http://localhost:4200/#/common/data/smart-data-source/auto-wired</example-url>
+ * <example-url>http://localhost:4200/#/common/data/smart-data-source/how-it-works-hostdirectives-inject</example-url>
+ * <example-url>http://localhost:4200/#/common/data/smart-data-source/smartdatasource-cngxpaginate-hostdirective</example-url>
  */
 @Directive({
   selector: '[cngxSort]',

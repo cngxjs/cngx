@@ -16,8 +16,8 @@ import { injectPresetState } from './preset-state';
  *
  * Use cases: budget variance ("$+45k over"), score deltas ("−12%
  * vs target"), KPI swing visualisations.
- * <example-url>http://localhost:4200/common/chart/deviation-bar/async-state-machine</example-url>
- * <example-url>http://localhost:4200/common/chart/deviation-bar/variance-readings</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/deviation-bar/async-state-machine</example-url>
+ * <example-url>http://localhost:4200/#/common/chart/deviation-bar/variance-readings</example-url>
  */
 @Component({
   selector: 'cngx-deviation-bar',

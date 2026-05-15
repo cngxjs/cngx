@@ -21,7 +21,7 @@ const defaultLabelMatch: ListboxMatchFn = (option, term) => {
  * tracking, and clear semantics. Adds a `matchFn` input that listboxes read
  * to filter their options. A listbox that has a `CngxListboxSearch` injected
  * ancestor reads `term` and `matchFn` from it reactively.
- * <example-url>http://localhost:4200/common/interactive/listbox-search/command-palette</example-url>
+ * <example-url>http://localhost:4200/#/common/interactive/listbox-search/command-palette</example-url>
  */
 @Directive({
   selector: 'input[cngxListboxSearch]',
