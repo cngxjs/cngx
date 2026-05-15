@@ -5,7 +5,10 @@
 // JSDoc block before re-emitting the current set, so manifest changes flow
 // through without manual cleanup.
 //
-// Usage: node scripts/backport-example-urls.mjs [--base=http://localhost:4200]
+// Usage:
+//   node scripts/backport-example-urls.mjs                                  # uses EXAMPLES_BASE_URL or http://localhost:4200
+//   node scripts/backport-example-urls.mjs --base=https://example.com/ex    # explicit override
+//   EXAMPLES_BASE_URL=https://cngxjs.github.io/cngx/examples node …         # env-driven (CI / prod build)
 
 import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { join, relative, dirname, resolve } from 'node:path';
@@ -17,7 +20,12 @@ const ROUTES_META_PATH = join(ROOT, 'examples', 'src', 'app', '_routes-meta.ts')
 const PROJECTS_DIR = join(ROOT, 'projects');
 
 const args = new Map(process.argv.slice(2).map((a) => a.split('=', 2)).map(([k, v]) => [k, v ?? '']));
-const BASE_URL = args.get('--base') || 'http://localhost:4200';
+// Resolve the base URL embedded into <example-url> tags.
+// Precedence: --base=… CLI flag > EXAMPLES_BASE_URL env var > localhost default.
+// Use the env var in CI (production docs build) so prod docs point at the
+// hosted examples app instead of a dev port that won't resolve.
+const BASE_URL =
+  args.get('--base') || process.env.EXAMPLES_BASE_URL || 'http://localhost:4200';
 
 async function* walkFiles(dir, predicate) {
   for (const e of await readdir(dir, { withFileTypes: true })) {

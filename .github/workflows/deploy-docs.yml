@@ -20,6 +20,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
+    env:
+      # Public URL where the examples app will be served from after this
+      # deploy. Consumed by scripts/backport-example-urls.mjs so the
+      # <example-url> tags rendered into the compodocx Examples tab point at
+      # the live production iframes (not localhost:4200).
+      EXAMPLES_BASE_URL: https://cngxjs.github.io/cngx/examples
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,6 +41,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Regenerate examples + backport <example-url> tags (prod URLs)
+        run: |
+          node scripts/generate-examples.mjs
+          node scripts/backport-example-urls.mjs
+
       - name: Build Docs
         run: npm run docs
 
@@ -41,6 +54,12 @@ jobs:
           npx ng build dev-app --configuration production --base-href /cngx/demo/ --deploy-url /cngx/demo/ --output-path docs/demo
           mv docs/demo/browser/* docs/demo/
           rm -rf docs/demo/browser
+
+      - name: Build Examples App
+        run: |
+          npx ng build examples --configuration production --base-href /cngx/examples/ --deploy-url /cngx/examples/ --output-path docs/examples
+          mv docs/examples/browser/* docs/examples/
+          rm -rf docs/examples/browser
 
       - name: Disable Jekyll
         run: touch docs/.nojekyll

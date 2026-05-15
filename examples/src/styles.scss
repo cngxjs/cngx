@@ -3,24 +3,47 @@
 // No per-component styles allowed — keep selectors structural + ARIA-driven only.
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #1f2937;
+  --cngx-ex-bg: #ffffff;
+  --cngx-ex-text: #1f2937;
+  --cngx-ex-muted: #6b7280;
+  --cngx-ex-faint: #9ca3af;
+  --cngx-ex-border: #d1d5db;
+  --cngx-ex-surface: #ffffff;
+  --cngx-ex-surface-alt: #f9fafb;
+  --cngx-ex-highlight-bg: rgba(37, 99, 235, 0.12);
+  --cngx-ex-focus: #2563eb;
+  color: var(--cngx-ex-text);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cngx-ex-bg: #111111;
+    --cngx-ex-text: #e6e6e6;
+    --cngx-ex-muted: #aaaaaa;
+    --cngx-ex-faint: #777777;
+    --cngx-ex-border: #555555;
+    --cngx-ex-surface: #1a1a1a;
+    --cngx-ex-surface-alt: #1f1f1f;
+    --cngx-ex-highlight-bg: rgba(121, 192, 255, 0.18);
+    --cngx-ex-focus: #79c0ff;
+  }
 }
 
 body {
   margin: 0;
   padding: 16px;
-  background: #ffffff;
+  background: var(--cngx-ex-bg);
+  color: var(--cngx-ex-text);
 }
 
 // Intro header rendered by the generator (story description + section subtitle)
 .cngx-ex-intro {
   margin: 0 0 16px;
   padding: 0 0 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--cngx-ex-border);
 }
 .cngx-ex-intro h1 {
   margin: 0 0 4px;
@@ -31,23 +54,23 @@ body {
   margin: 0 0 4px;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--cngx-ex-text);
 }
 .cngx-ex-intro p {
   margin: 4px 0;
-  color: #4b5563;
+  color: var(--cngx-ex-muted);
   font-size: 0.875rem;
 }
 .cngx-ex-intro code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.9em;
   padding: 1px 5px;
-  background: #f3f4f6;
+  background: var(--cngx-ex-surface-alt);
   border-radius: 3px;
 }
 .cngx-ex-intro .cngx-ex-hint {
   font-style: italic;
-  color: #6b7280;
+  color: var(--cngx-ex-muted);
 }
 
 // Source-code disclosure blocks — collapsed by default so the demo body

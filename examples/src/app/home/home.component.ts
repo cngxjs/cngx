@@ -188,20 +188,65 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
 
     <hr />
     <address>cngx/examples · {{ totalRoutes }} routes</address>
-    <footer>Built with ❤️ and architectural precision</footer>
+    <footer class="site-footer">
+      <a class="site-footer__link" href="https://github.com/cngxjs/cngx" target="_blank" rel="noopener noreferrer">
+        <svg class="site-footer__ico" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2 .37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        github.com/cngxjs/cngx
+      </a>
+      <span class="site-footer__sep">·</span>
+      <a class="site-footer__link" href="https://cngxjs.github.io/cngx/" target="_blank" rel="noopener noreferrer">
+        Documentation
+      </a>
+      <span class="site-footer__sep">·</span>
+      <code class="site-footer__motto">Built with ❤️ and architectural precision</code>
+    </footer>
   `,
   styles: [
     `
       :host {
+        --col-bg: #fff;
+        --col-text: #000;
+        --col-muted: #555;
+        --col-faint: #888;
+        --col-border: #888;
+        --col-hover: #f4f4f4;
+        --col-active: #e8e8e8;
+        --col-pressed: #ddd;
+        --col-link: #0000ee;
+        --col-link-visited: #551a8b;
+        --col-link-hover: #cc0000;
+        --col-link-hover-bg: #ffffcc;
+        --col-focus: #000;
+
         display: block;
         max-width: 980px;
         margin: 0 auto;
         padding: 14px 16px 32px;
         font-family: Verdana, Geneva, Arial, sans-serif;
         font-size: 14px;
-        color: #000;
-        background: #fff;
+        color: var(--col-text);
+        background: var(--col-bg);
         box-sizing: border-box;
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --col-bg: #111;
+          --col-text: #e6e6e6;
+          --col-muted: #aaa;
+          --col-faint: #777;
+          --col-border: #555;
+          --col-hover: #1f1f1f;
+          --col-active: #2a2a2a;
+          --col-pressed: #333;
+          --col-link: #79c0ff;
+          --col-link-visited: #c39df0;
+          --col-link-hover: #ff7b72;
+          --col-link-hover-bg: #2d1f1f;
+          --col-focus: #fff;
+        }
       }
       h1 {
         margin: 0 0 12px;
@@ -216,7 +261,7 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         font-size: 0.875rem;
       }
       .filter-row label {
-        color: #000;
+        color: var(--col-text);
       }
       .filter-row input {
         flex: 1;
@@ -224,49 +269,49 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
         padding: 2px 6px;
         font: inherit;
         font-size: 0.875rem;
-        border: 1px solid #888;
-        background: #fff;
-        color: #000;
+        border: 1px solid var(--col-border);
+        background: var(--col-bg);
+        color: var(--col-text);
         border-radius: 0;
       }
       .filter-row input:focus-visible {
-        outline: 1px dotted #000;
+        outline: 1px dotted var(--col-focus);
         outline-offset: 1px;
       }
       .filter-row .meta {
-        color: #555;
+        color: var(--col-muted);
         font-size: 0.8125rem;
       }
       .filter-row .toggle-all {
         padding: 2px 10px;
         font: inherit;
         font-size: 0.8125rem;
-        color: #000;
-        background: #f4f4f4;
-        border: 1px solid #888;
+        color: var(--col-text);
+        background: var(--col-hover);
+        border: 1px solid var(--col-border);
         border-radius: 0;
         cursor: pointer;
       }
       .filter-row .toggle-all:hover {
-        background: #e8e8e8;
+        background: var(--col-active);
       }
       .filter-row .toggle-all:active {
-        background: #ddd;
+        background: var(--col-pressed);
       }
       .filter-row .toggle-all:focus-visible {
-        outline: 1px dotted #000;
+        outline: 1px dotted var(--col-focus);
         outline-offset: 1px;
       }
       hr {
         border: none;
-        border-top: 1px solid #888;
+        border-top: 1px solid var(--col-border);
         margin: 6px 0;
       }
       .tree {
         outline: none;
       }
       .tree:focus-visible {
-        outline: 1px dotted #000;
+        outline: 1px dotted var(--col-focus);
         outline-offset: 2px;
       }
       .row {
@@ -281,11 +326,11 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       }
       .row.head {
         font-weight: 700;
-        color: #000;
+        color: var(--col-text);
       }
       .row .ico {
         font-family: 'Courier New', Courier, monospace;
-        color: #555;
+        color: var(--col-muted);
         font-size: 0.8125rem;
       }
       .row.folder .ico::before {
@@ -300,15 +345,15 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       }
       .row .size {
         text-align: right;
-        color: #555;
+        color: var(--col-muted);
         font-size: 0.8125rem;
       }
       .row .name {
-        color: #000;
+        color: var(--col-text);
         font-size: 0.875rem;
       }
       .row .name.empty {
-        color: #888;
+        color: var(--col-faint);
         font-style: italic;
       }
       .row.folder {
@@ -316,28 +361,52 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       }
       .row.folder:hover,
       .row.folder.is-active {
-        background: #f4f4f4;
+        background: var(--col-hover);
       }
       a.row.leaf .name {
-        color: #0000ee;
+        color: var(--col-link);
         text-decoration: underline;
       }
       a.row.leaf:visited .name {
-        color: #551a8b;
+        color: var(--col-link-visited);
       }
       a.row.leaf:hover .name,
       a.row.leaf.is-active .name {
-        color: #cc0000;
+        color: var(--col-link-hover);
       }
       a.row.leaf:hover,
       a.row.leaf.is-active {
-        background: #ffffcc;
+        background: var(--col-link-hover-bg);
       }
       address {
         font-style: normal;
         font-size: 0.75rem;
-        color: #555;
+        color: var(--col-muted);
         margin-top: 8px;
+      }
+      .site-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 0.8125rem;
+        color: var(--col-muted);
+      }
+      .site-footer__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--col-link);
+        text-decoration: underline;
+      }
+      .site-footer__link:visited { color: var(--col-link-visited); }
+      .site-footer__link:hover { color: var(--col-link-hover); background: var(--col-link-hover-bg); }
+      .site-footer__ico { flex-shrink: 0; }
+      .site-footer__sep { color: var(--col-faint); }
+      .site-footer__motto {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.75rem;
+        color: var(--col-muted);
       }
     `,
   ],
