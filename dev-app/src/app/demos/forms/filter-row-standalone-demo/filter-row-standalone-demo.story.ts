@@ -14,8 +14,9 @@ export const STORY: DemoSpec = {
     'row renders a single field-picker as the empty state; picking a field seeds a fresh expression ' +
     'with the field default operator. The Remove button writes <code>null</code> back.</p>' +
     '<p>No <code>&lt;cngx-filter-builder&gt;</code> wrapper, no presenter, no tree — just one expression node ' +
-    'in a single signal. Use this shape inside table column headers, side panels, or anywhere a full ' +
-    'recursive builder is overkill.</p>',
+    'in a single signal. Use this shape for ad-hoc filters in side panels or anywhere a full recursive ' +
+    'builder is overkill. <strong>Not</strong> intended for column-header filters with a fixed field per ' +
+    'column — that pattern needs a dedicated artifact (separate sprint).</p>',
   moduleImports: [
     "import { CngxFilterRow, type FilterExpression, type FilterFieldDef } from '@cngx/forms/filter-builder';",
   ],

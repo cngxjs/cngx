@@ -4,9 +4,11 @@ import { CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/field';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
 
 /**
- * Opt-in attribute directive that exposes `CngxFilterBuilderPresenter`
- * as the `CngxFormFieldControl` for the current element. Apply alongside
- * `<cngx-filter-builder>` when wrapping inside `<cngx-form-field>`:
+ * Opt-in directive that exposes `CngxFilterBuilderPresenter` as the
+ * `CngxFormFieldControl` of the current element and owns the
+ * `(focusin)` / `(focusout)` host bindings that drive the presenter's
+ * `focused` signal. Apply on `<cngx-filter-builder>` when wrapped in
+ * `<cngx-form-field>`:
  *
  * ```html
  * <cngx-form-field>
@@ -18,10 +20,8 @@ import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive
  * </cngx-form-field>
  * ```
  *
- * Owns the `(focusin)` / `(focusout)` host bindings that drive the
- * presenter's `focused` signal. Keeping the listeners on the opt-in
- * directive (rather than the presenter itself) means consumers without
- * the form-field bridge pay no event-listener cost.
+ * Listeners stay on this directive (not on the presenter) so consumers
+ * without the form-field bridge pay no event-listener cost.
  */
 @Directive({
   selector: '[cngxFilterBuilderFormFieldControl]',

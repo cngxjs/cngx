@@ -84,20 +84,22 @@ function equalFieldMap(
 }
 
 /**
- * Standalone filter row — column-header surface for `@cngx/forms/filter-builder`.
- * Owns a single `FilterExpression | null` via `[(value)]` and renders the
+ * Standalone single-row filter surface. Owns one
+ * `FilterExpression | null` via `[(value)]` and renders the
  * field-picker / operator-picker / value-editor / remove-button stack
- * without any presenter or host-token wiring.
+ * with no presenter or host-token wiring.
  *
- * Typical use: a table-column header that filters one column. For an empty
- * `[(value)]` with more than one field, the row renders just the field-picker
- * (the bound expression seeds once the user picks a field). For an empty
- * `[(value)]` with exactly one field, the row auto-seeds the expression so
- * the operator + value editors render directly — a one-option field picker
- * is dead UX when the field is implicit from the consumer's context.
+ * Use for ad-hoc top-of-table or side-panel filters where a full
+ * `<cngx-filter-builder>` tree is overkill. **Not** the right primitive
+ * for column-header filters with a fixed field per column — that is a
+ * separate artifact (different "remove" semantics, no field picker,
+ * predicate writes directly into `CngxFilter`); accepted-debt §16.
  *
- * Embedded recursive usage lives in `CngxFilterExpressionRow`; this component
- * does not interoperate with `CNGX_FILTER_BUILDER_HOST`.
+ * Empty `[(value)]` with >1 field renders just the field-picker; the
+ * expression seeds when the user picks. Exactly one field auto-seeds
+ * on first render and skips the picker. Embedded recursive usage lives
+ * in `CngxFilterExpressionRow` and does not interop with
+ * `CNGX_FILTER_BUILDER_HOST`.
  */
 @Component({
   selector: 'cngx-filter-row',
@@ -152,11 +154,9 @@ export class CngxFilterRow {
   );
 
   constructor() {
-    // Single-field auto-seed on first render. `afterNextRender` is single-shot
-    // and outside the reactive graph, so it does not violate Pillar 1's
-    // "no signal writes inside `effect`" rule. The previous reactive auto-seed
-    // also re-seeded after a Remove click, which fought the user — that
-    // behaviour is dropped intentionally.
+    // afterNextRender (not effect) — single-shot, outside the reactive graph,
+    // so Pillar 1's "no signal writes in effect" rule stays clean. A reactive
+    // re-seed would also fight the user after a Remove click.
     afterNextRender(() => {
       if (untracked(() => this.value()) !== null) {
         return;

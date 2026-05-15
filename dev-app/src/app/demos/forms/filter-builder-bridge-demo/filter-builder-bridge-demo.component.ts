@@ -185,11 +185,9 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
   constructor() {
     effect(() => {
       const fn = this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null;
-      // Track filterRef in the dependency graph: the table re-mounts on every
-      // fetch (skeleton → success), so the directive instance churns and we
-      // need to re-bind setPredicate on each new mount for the activeCount
-      // badge to track. Dedupe via lastPredicate so re-mounts do not trigger
-      // a recursive fetch loop.
+      // filterRef tracked: the table re-mounts on every fetch and the new
+      // CngxFilter instance needs setPredicate re-bound. lastPredicate dedupe
+      // blocks the re-mount → fetch → re-mount loop.
       const filter = this.filterRef();
       untracked(() => {
         filter?.setPredicate(fn);
@@ -203,10 +201,8 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
 
   private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
     const myToken = ++this.fetchToken;
-    // reset() drops the prior success, so isFirstLoad flips back to true and
-    // resolveAsyncView() returns 'skeleton' for the loading status. Every
-    // filter mutation gets the same first-load UX as the initial fetch —
-    // visible skeleton, not a thin refresh bar over stale rows.
+    // reset() flips isFirstLoad back to true so resolveAsyncView returns
+    // 'skeleton', not the thin refresh-bar. Same UX every fetch.
     this.dataState.reset();
     this.dataState.set('loading');
     setTimeout(() => {
@@ -267,11 +263,9 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
   constructor() {
     effect(() => {
       const fn = this.presenterRef().predicate() as ((item: FilterBuilderPerson) => boolean) | null;
-      // Track filterRef in the dependency graph: the table re-mounts on every
-      // fetch (skeleton → success), so the directive instance churns and we
-      // need to re-bind setPredicate on each new mount for the activeCount
-      // badge to track. Dedupe via lastPredicate so re-mounts do not trigger
-      // a recursive fetch loop.
+      // filterRef tracked: the table re-mounts on every fetch and the new
+      // CngxFilter instance needs setPredicate re-bound. lastPredicate dedupe
+      // blocks the re-mount → fetch → re-mount loop.
       const filter = this.filterRef();
       untracked(() => {
         filter?.setPredicate(fn);
@@ -285,10 +279,8 @@ import { FILTER_BUILDER_FIELDS, FILTER_BUILDER_PEOPLE, type FilterBuilderPerson 
 
   private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
     const myToken = ++this.fetchToken;
-    // reset() drops the prior success, so isFirstLoad flips back to true and
-    // resolveAsyncView() returns 'skeleton' for the loading status. Every
-    // filter mutation gets the same first-load UX as the initial fetch —
-    // visible skeleton, not a thin refresh bar over stale rows.
+    // reset() flips isFirstLoad back to true so resolveAsyncView returns
+    // 'skeleton', not the thin refresh-bar. Same UX every fetch.
     this.dataState.reset();
     this.dataState.set('loading');
     setTimeout(() => {

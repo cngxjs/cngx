@@ -55,10 +55,8 @@ export const STORY: DemoSpec = {
 
   private fetchPeople(predicate: ((item: FilterBuilderPerson) => boolean) | null): void {
     const myToken = ++this.fetchToken;
-    // reset() drops the prior success, so isFirstLoad flips back to true and
-    // resolveAsyncView() returns 'skeleton' for the loading status. Every
-    // filter mutation gets the same first-load UX as the initial fetch —
-    // visible skeleton, not a thin refresh bar over stale rows.
+    // reset() flips isFirstLoad back to true so resolveAsyncView returns
+    // 'skeleton', not the thin refresh-bar. Same UX every fetch.
     this.dataState.reset();
     this.dataState.set('loading');
     setTimeout(() => {

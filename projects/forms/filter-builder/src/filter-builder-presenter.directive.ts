@@ -35,15 +35,14 @@ import {
 import { injectFilterBuilderAnnouncerFactory } from './filter-builder-announcer';
 
 /**
- * Thin presenter directive. Instantiates `createFilterBuilderState` against
- * its own `model<FilterGroup>` so two-way `[(value)]` binding writes through
- * mutators. Provides `CNGX_FILTER_BUILDER_HOST` via `useExisting` so the
- * recursive context atoms bind against one source of truth.
- *
- * The `CngxFormFieldControl` surface ships minimal scalars here
- * (id/empty/disabled/focused/errorState); Phase 6 wires error derivation,
- * focus delegation, and reactive-required against the field's
- * validator graph.
+ * Brain of `<cngx-filter-builder>`. Hosts the state factory bound to a
+ * `model<FilterGroup>` for `[(value)]` two-way binding, and provides
+ * `CNGX_FILTER_BUILDER_HOST` via `useExisting` so the recursive context
+ * atoms read one source of truth. Implements `CngxFormFieldControl`
+ * (id / empty / disabled / focused / errorState / focus); the
+ * disabled / focused / errorState scalars derive from the ambient
+ * `CngxFormFieldPresenter` when the opt-in
+ * `CngxFilterBuilderFormFieldControl` directive is applied.
  */
 @Directive({
   selector: '[cngxFilterBuilderPresenter]',
@@ -75,11 +74,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly isEmpty = this.core.isEmpty;
 
   /**
-   * Live-region announcement text. Built via the swappable
-   * `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` token — consumers override
-   * the factory for locale, telemetry, or test doubles without touching
-   * the presenter. Default formatter resolves `fieldKey` through `fieldMap`
-   * to surface human-readable labels.
+   * Live-region announcement text. Built via
+   * `CNGX_FILTER_BUILDER_ANNOUNCER_FACTORY` — swap for locale, telemetry,
+   * or test doubles. Default formatter resolves `fieldKey` through
+   * `fieldMap` for human-readable labels.
    */
   private readonly announcerFactory = injectFilterBuilderAnnouncerFactory();
   private readonly announcer = this.announcerFactory<TValue>({
@@ -93,9 +91,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   readonly empty: Signal<boolean> = this.core.isEmpty;
 
   /**
-   * Ambient form-field presenter the builder sits inside, if any. Looked up
-   * once at construction; reads on `disabled`/`touched` flow through
-   * `computed()` so the presenter stays a pure derivation graph.
+   * Ambient form-field presenter, if any. `disabled` / `touched` reads run
+   * through `computed()` so the derivation graph stays pure.
    */
   private readonly formField = inject(CngxFormFieldPresenter, {
     optional: true,
@@ -109,9 +106,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   );
 
   /**
-   * Toggled by `CngxFilterBuilderFormFieldControl` host `(focusin)` /
-   * `(focusout)` bindings. The form-field-control directive owns the
-   * write surface; the presenter exposes it as a read-only `Signal`.
+   * Driven by the opt-in `CngxFilterBuilderFormFieldControl` directive
+   * via `setFocused`. Read-only `Signal` here.
    */
   private readonly focusedState = signal(false);
   readonly focused: Signal<boolean> = this.focusedState.asReadonly();
@@ -124,35 +120,28 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   );
 
   /**
-   * `true` when at least one expression in the tree has an empty value
-   * AND the field has been touched. The `touched()` gate keeps an empty
-   * initial tree from surfacing as invalid before the consumer interacts.
-   * When no form-field presenter is present (standalone use without the
-   * `CngxFilterBuilderFormFieldControl` directive), `touched` is `false`
-   * so `errorState` stays `false`.
+   * `touched && incompleteCount > 0`. The touched gate keeps the initial
+   * empty tree from surfacing as invalid before any user interaction.
+   * Without an ambient form-field presenter, `touched` is `false`, so
+   * standalone use never flips `errorState`.
    */
   readonly errorState: Signal<boolean> = computed(
     () => this.touched() && countIncompleteExpressions(this.tree()) > 0,
   );
 
   /**
-   * Item-level predicate derived from the current `tree()` and `fields()`.
-   * Pillar 1 — derive, do not push: consumers read this signal directly
-   * (e.g. `filter.setPredicate(presenter.predicate())` inside an `effect`,
-   * or as a dependency of any `computed` reading the filtered list). No
-   * `equal:` is required — function identity is sufficient downstream
-   * because every consumer treats the predicate as an opaque callable.
+   * Item-level predicate derived from `tree()` + `fields()`. Pillar 1 —
+   * consumers read directly. No `equal:` needed, function identity is
+   * sufficient.
    *
-   * Returns `null` when the tree carries no expressions (root-level clear),
-   * so `CngxFilter.setPredicate(presenter.predicate())` cascades to
-   * `activeCount = 0` instead of latching a vacuous-true predicate that
-   * still counts as an active filter.
+   * Returns `null` when the tree is empty (root clear), so a downstream
+   * `CngxFilter.setPredicate(presenter.predicate())` drops to
+   * `activeCount = 0` instead of latching a vacuous-true predicate.
    *
-   * Defensive read of `fields()`: a `viewChild`-driven effect can resolve
-   * the presenter and read `predicate()` before the host-directive `fields`
-   * input setter has propagated, in which case `input.required` throws
-   * NG0950. Returning `null` until the binding lands matches the
-   * "no filter" semantics consumers already handle.
+   * `fields()` read is try/catch — a `viewChild`-driven effect can hit
+   * `predicate()` before the host-directive input setter propagates, and
+   * `input.required` throws NG0950. Returning `null` until the binding
+   * lands matches the "no filter" semantics.
    */
   readonly predicate: Signal<((item: TValue) => boolean) | null> = computed(() => {
     if (this.isEmpty()) {
@@ -168,10 +157,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   });
 
   constructor() {
-    // Normalise consumer-supplied trees so every node carries a stable id.
-    // `ensureFilterTreeIds` short-circuits to the same reference when the
-    // tree is already normalised, so the write-back only fires once per
-    // foreign value and the effect re-runs without writing.
+    // Cycle guard — ensureFilterTreeIds is identity-preserving, so the
+    // write-back only fires for foreign values and the effect re-runs no-op.
     effect(() => {
       const current = this.value();
       const normalised = ensureFilterTreeIds(current);
@@ -239,11 +226,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   }
 
   /**
-   * Move DOM focus to the first incomplete expression's first focusable
-   * descendant. Falls back to the host element when the tree has no
-   * incomplete expression. The row↔presenter correlation runs through the
-   * `data-cngx-filter-path` attribute on each rendered expression row —
-   * see accepted-debt §15 for the deferred Level-2 abstraction.
+   * Focus the first incomplete expression's first focusable descendant;
+   * falls back to the host element when no expression is incomplete. The
+   * row↔presenter correlation runs through `data-cngx-filter-path` on each
+   * rendered row — accepted-debt §15 for the deferred Level-2 abstraction.
    */
   focus(options?: FocusOptions): void {
     const path = findFirstIncompletePath(this.tree());
