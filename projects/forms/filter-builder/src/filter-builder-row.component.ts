@@ -103,12 +103,12 @@ export class CngxFilterRow {
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
   protected readonly removeButtonTemplate = computed(
-    () => this.templates()?.removeButton() ?? null,
+    () => this.templates()?.removeButton() ?? this.config.templates.removeButton ?? null,
     { equal: (a, b) => a === b },
   );
 
   protected readonly valueEditorTemplate = computed(
-    () => this.templates()?.valueEditor() ?? null,
+    () => this.templates()?.valueEditor() ?? this.config.templates.valueEditor ?? null,
     { equal: (a, b) => a === b },
   );
 
