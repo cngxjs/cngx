@@ -13,6 +13,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'a11y', demo: "Active Descendant", section: "Typeahead" },
   },
   {
+    path: 'alert-stack/basic-stack',
+    loadComponent: () => import('./features/alert-stack/basic-stack.component').then((m) => m.AlertStackBasicStack),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert Stack", section: "Basic Stack" },
+  },
+  {
+    path: 'alert-stack/dialog-use-case',
+    loadComponent: () => import('./features/alert-stack/dialog-use-case.component').then((m) => m.AlertStackDialogUseCase),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert Stack", section: "Dialog Use Case" },
+  },
+  {
+    path: 'alert-stack/overflow-collapse',
+    loadComponent: () => import('./features/alert-stack/overflow-collapse.component').then((m) => m.AlertStackOverflowCollapse),
+    data: { lib: 'ui', category: 'feedback', demo: "Alert Stack", section: "Overflow Collapse" },
+  },
+  {
     path: 'aria-expanded/accordion-multiple-panels',
     loadComponent: () => import('./features/aria-expanded/accordion-multiple-panels.component').then((m) => m.AriaExpandedAccordionMultiplePanels),
     data: { lib: 'common', category: 'a11y', demo: "AriaExpanded", section: "Accordion — Multiple Panels" },
@@ -21,6 +36,21 @@ export const routes: Routes = [
     path: 'aria-expanded/disclosure-pattern',
     loadComponent: () => import('./features/aria-expanded/disclosure-pattern.component').then((m) => m.AriaExpandedDisclosurePattern),
     data: { lib: 'common', category: 'a11y', demo: "AriaExpanded", section: "CngxAriaExpanded — Disclosure Pattern" },
+  },
+  {
+    path: 'async-button/random-outcome',
+    loadComponent: () => import('./features/async-button/random-outcome.component').then((m) => m.AsyncButtonRandomOutcome),
+    data: { lib: 'ui', category: '', demo: "ActionButton", section: "Random Outcome" },
+  },
+  {
+    path: 'async-button/string-labels',
+    loadComponent: () => import('./features/async-button/string-labels.component').then((m) => m.AsyncButtonStringLabels),
+    data: { lib: 'ui', category: '', demo: "ActionButton", section: "String Labels" },
+  },
+  {
+    path: 'async-button/template-slots',
+    loadComponent: () => import('./features/async-button/template-slots.component').then((m) => m.AsyncButtonTemplateSlots),
+    data: { lib: 'ui', category: '', demo: "ActionButton", section: "Template Slots" },
   },
   {
     path: 'autofocus/conditional-focus',
@@ -98,6 +128,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "Button toggle group (multi)", section: "Disabled — group cascade vs per-toggle" },
   },
   {
+    path: 'button-toggle-group/basic-view-switcher',
+    loadComponent: () => import('./features/button-toggle-group/basic-view-switcher.component').then((m) => m.ButtonToggleGroupBasicViewSwitcher),
+    data: { lib: 'common', category: 'interactive', demo: "Button toggle group (single)", section: "Basic — view switcher" },
+  },
+  {
+    path: 'button-toggle-group/disabled-group-cascade-vs-per-toggle',
+    loadComponent: () => import('./features/button-toggle-group/disabled-group-cascade-vs-per-toggle.component').then((m) => m.ButtonToggleGroupDisabledGroupCascadeVsPerToggle),
+    data: { lib: 'common', category: 'interactive', demo: "Button toggle group (single)", section: "Disabled — group cascade vs per-toggle" },
+  },
+  {
+    path: 'button-toggle-group/vertical-orientation',
+    loadComponent: () => import('./features/button-toggle-group/vertical-orientation.component').then((m) => m.ButtonToggleGroupVerticalOrientation),
+    data: { lib: 'common', category: 'interactive', demo: "Button toggle group (single)", section: "Vertical orientation" },
+  },
+  {
     path: 'card-grid/basic-grid',
     loadComponent: () => import('./features/card-grid/basic-grid.component').then((m) => m.CardGridBasicGrid),
     data: { lib: 'common', category: 'card', demo: "Card Grid", section: "Basic Grid" },
@@ -121,6 +166,26 @@ export const routes: Routes = [
     path: 'checkbox-group/disabled-cascade',
     loadComponent: () => import('./features/checkbox-group/disabled-cascade.component').then((m) => m.CheckboxGroupDisabledCascade),
     data: { lib: 'common', category: 'interactive', demo: "Checkbox group", section: "Disabled cascade" },
+  },
+  {
+    path: 'checkbox/basic-two-way-binding',
+    loadComponent: () => import('./features/checkbox/basic-two-way-binding.component').then((m) => m.CheckboxBasicTwoWayBinding),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox", section: "Basic — two-way binding" },
+  },
+  {
+    path: 'checkbox/custom-check-dash-glyphs',
+    loadComponent: () => import('./features/checkbox/custom-check-dash-glyphs.component').then((m) => m.CheckboxCustomCheckDashGlyphs),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox", section: "Custom check + dash glyphs" },
+  },
+  {
+    path: 'checkbox/disabled',
+    loadComponent: () => import('./features/checkbox/disabled.component').then((m) => m.CheckboxDisabled),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox", section: "Disabled" },
+  },
+  {
+    path: 'checkbox/tri-state-select-all-pattern',
+    loadComponent: () => import('./features/checkbox/tri-state-select-all-pattern.component').then((m) => m.CheckboxTriStateSelectAllPattern),
+    data: { lib: 'common', category: 'interactive', demo: "Checkbox", section: "Tri-state — Select-all pattern" },
   },
   {
     path: 'chip-group/basic-pick-exactly-one-size',
@@ -233,6 +298,51 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'chart', demo: "Donut", section: "Score gauges" },
   },
   {
+    path: 'empty-state/default-no-icon-projected',
+    loadComponent: () => import('./features/empty-state/default-no-icon-projected.component').then((m) => m.EmptyStateDefaultNoIconProjected),
+    data: { lib: 'ui', category: 'ui', demo: "Empty State", section: "Default (no icon projected)" },
+  },
+  {
+    path: 'empty-state/inside-a-card-grid',
+    loadComponent: () => import('./features/empty-state/inside-a-card-grid.component').then((m) => m.EmptyStateInsideACardGrid),
+    data: { lib: 'ui', category: 'ui', demo: "Empty State", section: "Inside a Card Grid" },
+  },
+  {
+    path: 'empty-state/inside-a-list',
+    loadComponent: () => import('./features/empty-state/inside-a-list.component').then((m) => m.EmptyStateInsideAList),
+    data: { lib: 'ui', category: 'ui', demo: "Empty State", section: "Inside a List" },
+  },
+  {
+    path: 'empty-state/inside-a-table',
+    loadComponent: () => import('./features/empty-state/inside-a-table.component').then((m) => m.EmptyStateInsideATable),
+    data: { lib: 'ui', category: 'ui', demo: "Empty State", section: "Inside a Table" },
+  },
+  {
+    path: 'empty-state/with-custom-icon-actions',
+    loadComponent: () => import('./features/empty-state/with-custom-icon-actions.component').then((m) => m.EmptyStateWithCustomIconActions),
+    data: { lib: 'ui', category: 'ui', demo: "Empty State", section: "With custom icon + actions" },
+  },
+  {
+    path: 'error-aggregator/cngx-card-host-no-scope-errors-visible-immediately',
+    loadComponent: () => import('./features/error-aggregator/cngx-card-host-no-scope-errors-visible-immediately.component').then((m) => m.ErrorAggregatorCngxCardHostNoScopeErrorsVisibleImmediately),
+    data: { lib: 'common', category: 'interactive', demo: "Error Aggregator", section: "cngx-card host (no scope — errors visible immediately)" },
+  },
+  {
+    path: 'error-aggregator/cngx-popover-panel-host',
+    loadComponent: () => import('./features/error-aggregator/cngx-popover-panel-host.component').then((m) => m.ErrorAggregatorCngxPopoverPanelHost),
+    data: { lib: 'common', category: 'interactive', demo: "Error Aggregator", section: "cngx-popover-panel host" },
+  },
+  {
+    path: 'error-aggregator/material-mat-tab-label-with-error-count-badge',
+    loadComponent: () => import('./features/error-aggregator/material-mat-tab-label-with-error-count-badge.component').then((m) => m.ErrorAggregatorMaterialMatTabLabelWithErrorCountBadge),
+    data: { lib: 'common', category: 'interactive', demo: "Error Aggregator", section: "Material mat-tab label with error-count badge" },
+  },
+  {
+    path: 'error-aggregator/native-form-scope-reveal-on-submit',
+    loadComponent: () => import('./features/error-aggregator/native-form-scope-reveal-on-submit.component').then((m) => m.ErrorAggregatorNativeFormScopeRevealOnSubmit),
+    data: { lib: 'common', category: 'interactive', demo: "Error Aggregator", section: "Native form + scope reveal-on-submit" },
+  },
+  {
     path: 'error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage',
     loadComponent: () => import('./features/error-state/basic-boolean-flag-flips-aria-invalid-aria-errormessage.component').then((m) => m.ErrorStateBasicBooleanFlagFlipsAriaInvalidAriaErrormessage),
     data: { lib: 'common', category: 'interactive', demo: "Error State", section: "Basic — boolean flag flips aria-invalid + aria-errormessage" },
@@ -263,9 +373,24 @@ export const routes: Routes = [
     data: { lib: 'forms', category: 'input', demo: "File Drop", section: "Image Upload" },
   },
   {
+    path: 'filter-builder-async-state/loading-error-content-branches-via-cngx-async-container',
+    loadComponent: () => import('./features/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container.component').then((m) => m.FilterBuilderAsyncStateLoadingErrorContentBranchesViaCngxAsyncContainer),
+    data: { lib: 'forms', category: 'filter-builder', demo: "Filter Builder — async-container wrap", section: "Loading + error + content branches via <cngx-async-container>" },
+  },
+  {
     path: 'filter-builder-json/builder-json',
     loadComponent: () => import('./features/filter-builder-json/builder-json.component').then((m) => m.FilterBuilderJsonBuilderJson),
     data: { lib: 'forms', category: 'filter-builder', demo: "Filter Builder — JSON form component", section: "Builder ↔ JSON" },
+  },
+  {
+    path: 'filter-builder/basic-two-way-binding-json-inspection',
+    loadComponent: () => import('./features/filter-builder/basic-two-way-binding-json-inspection.component').then((m) => m.FilterBuilderBasicTwoWayBindingJsonInspection),
+    data: { lib: 'forms', category: 'filter-builder', demo: "Filter Builder", section: "Basic — two-way binding + JSON inspection" },
+  },
+  {
+    path: 'filter-builder/seeded-tree-and-or-composition',
+    loadComponent: () => import('./features/filter-builder/seeded-tree-and-or-composition.component').then((m) => m.FilterBuilderSeededTreeAndOrComposition),
+    data: { lib: 'forms', category: 'filter-builder', demo: "Filter Builder", section: "Seeded tree — and+or composition" },
   },
   {
     path: 'filter-chips/custom-chip-decoration-via-cngxfilterchip',
@@ -336,6 +461,21 @@ export const routes: Routes = [
     path: 'infinite-scroll/scrollable-list',
     loadComponent: () => import('./features/infinite-scroll/scrollable-list.component').then((m) => m.InfiniteScrollScrollableList),
     data: { lib: 'common', category: 'layout', demo: "Infinite Scroll", section: "Scrollable List" },
+  },
+  {
+    path: 'input/character-counter',
+    loadComponent: () => import('./features/input/character-counter.component').then((m) => m.InputCharacterCounter),
+    data: { lib: 'forms', category: 'input', demo: "Input Directives", section: "Character Counter" },
+  },
+  {
+    path: 'input/password-visibility-toggle',
+    loadComponent: () => import('./features/input/password-visibility-toggle.component').then((m) => m.InputPasswordVisibilityToggle),
+    data: { lib: 'forms', category: 'input', demo: "Input Directives", section: "Password Visibility Toggle" },
+  },
+  {
+    path: 'input/smart-autocomplete-and-spellcheck',
+    loadComponent: () => import('./features/input/smart-autocomplete-and-spellcheck.component').then((m) => m.InputSmartAutocompleteAndSpellcheck),
+    data: { lib: 'forms', category: 'input', demo: "Input Directives", section: "Smart Autocomplete and Spellcheck" },
   },
   {
     path: 'intersection-observer/scroll-sentinel',
@@ -443,9 +583,24 @@ export const routes: Routes = [
     data: { lib: 'ui', category: '', demo: "MatPaginator", section: "CngxMatPaginator — Material Paginator" },
   },
   {
+    path: 'mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper',
+    loadComponent: () => import('./features/mat-stepper-instrumentation/vanilla-mat-stepper-upgraded-by-adding-cngxmatstepper.component').then((m) => m.MatStepperInstrumentationVanillaMatStepperUpgradedByAddingCngxmatstepper),
+    data: { lib: 'ui', category: 'mat-stepper', demo: "Mat-stepper — instrumentation directive", section: "Vanilla <mat-stepper> upgraded by adding cngxMatStepper" },
+  },
+  {
     path: 'mat-stepper-router-sync/deep-linking-against-material',
     loadComponent: () => import('./features/mat-stepper-router-sync/deep-linking-against-material.component').then((m) => m.MatStepperRouterSyncDeepLinkingAgainstMaterial),
     data: { lib: 'ui', category: 'mat-stepper', demo: "Mat-Stepper — router sync", section: "Deep-linking against Material" },
+  },
+  {
+    path: 'material/mat-select-via-cngxbindfield-reactive-forms',
+    loadComponent: () => import('./features/material/mat-select-via-cngxbindfield-reactive-forms.component').then((m) => m.MaterialMatSelectViaCngxbindfieldReactiveForms),
+    data: { lib: 'forms', category: 'field', demo: "Material Integration", section: "mat-select via CngxBindField + Reactive Forms" },
+  },
+  {
+    path: 'material/matinput-via-cngxbindfield',
+    loadComponent: () => import('./features/material/matinput-via-cngxbindfield.component').then((m) => m.MaterialMatinputViaCngxbindfield),
+    data: { lib: 'forms', category: 'field', demo: "Material Integration", section: "matInput via CngxBindField" },
   },
   {
     path: 'media-query/viewport-breakpoints',
@@ -466,6 +621,11 @@ export const routes: Routes = [
     path: 'menu-trigger/dropdown-menu',
     loadComponent: () => import('./features/menu-trigger/dropdown-menu.component').then((m) => m.MenuTriggerDropdownMenu),
     data: { lib: 'common', category: 'interactive', demo: "Menu Trigger", section: "Dropdown menu" },
+  },
+  {
+    path: 'menu/action-menu-with-separator',
+    loadComponent: () => import('./features/menu/action-menu-with-separator.component').then((m) => m.MenuActionMenuWithSeparator),
+    data: { lib: 'common', category: 'interactive', demo: "Menu", section: "Action menu with separator" },
   },
   {
     path: 'metric/inside-a-card',
@@ -501,6 +661,21 @@ export const routes: Routes = [
     path: 'multi-chip-group/multi-select-chips-with-selection-count',
     loadComponent: () => import('./features/multi-chip-group/multi-select-chips-with-selection-count.component').then((m) => m.MultiChipGroupMultiSelectChipsWithSelectionCount),
     data: { lib: 'common', category: 'interactive', demo: "Multi chip group (multi-select)", section: "Multi-select chips with selection count" },
+  },
+  {
+    path: 'nav/nav-badge-counts-and-dots',
+    loadComponent: () => import('./features/nav/nav-badge-counts-and-dots.component').then((m) => m.NavNavBadgeCountsAndDots),
+    data: { lib: 'common', category: 'interactive', demo: "Nav", section: "Nav Badge — Counts and Dots" },
+  },
+  {
+    path: 'nav/nav-group-accordion-sections',
+    loadComponent: () => import('./features/nav/nav-group-accordion-sections.component').then((m) => m.NavNavGroupAccordionSections),
+    data: { lib: 'common', category: 'interactive', demo: "Nav", section: "Nav Group — Accordion Sections" },
+  },
+  {
+    path: 'nav/nav-links-active-state-depth',
+    loadComponent: () => import('./features/nav/nav-links-active-state-depth.component').then((m) => m.NavNavLinksActiveStateDepth),
+    data: { lib: 'common', category: 'interactive', demo: "Nav", section: "Nav Links — Active State + Depth" },
   },
   {
     path: 'numeric/basic-numeric-input',
@@ -546,6 +721,21 @@ export const routes: Routes = [
     path: 'paginate-list/uncontrolled-mode-zero-class-boilerplate',
     loadComponent: () => import('./features/paginate-list/uncontrolled-mode-zero-class-boilerplate.component').then((m) => m.PaginateListUncontrolledModeZeroClassBoilerplate),
     data: { lib: 'common', category: 'data', demo: "Paginate — List", section: "Uncontrolled Mode — Zero Class Boilerplate" },
+  },
+  {
+    path: 'popover-panel/content-states',
+    loadComponent: () => import('./features/popover-panel/content-states.component').then((m) => m.PopoverPanelContentStates),
+    data: { lib: 'common', category: 'popover', demo: "Popover Panel", section: "Content States" },
+  },
+  {
+    path: 'popover-panel/variants',
+    loadComponent: () => import('./features/popover-panel/variants.component').then((m) => m.PopoverPanelVariants),
+    data: { lib: 'common', category: 'popover', demo: "Popover Panel", section: "Variants" },
+  },
+  {
+    path: 'popover-panel/with-footer-actions',
+    loadComponent: () => import('./features/popover-panel/with-footer-actions.component').then((m) => m.PopoverPanelWithFooterActions),
+    data: { lib: 'common', category: 'popover', demo: "Popover Panel", section: "With Footer Actions" },
   },
   {
     path: 'popover/click-popover',
@@ -596,6 +786,51 @@ export const routes: Routes = [
     path: 'progress/linear-indeterminate',
     loadComponent: () => import('./features/progress/linear-indeterminate.component').then((m) => m.ProgressLinearIndeterminate),
     data: { lib: 'ui', category: 'feedback', demo: "Progress", section: "Linear — Indeterminate" },
+  },
+  {
+    path: 'radio-indicator/custom-dotglyph',
+    loadComponent: () => import('./features/radio-indicator/custom-dotglyph.component').then((m) => m.RadioIndicatorCustomDotglyph),
+    data: { lib: 'common', category: 'display', demo: "Radio indicator", section: "Custom dotGlyph" },
+  },
+  {
+    path: 'radio-indicator/default-unchecked-vs-checked',
+    loadComponent: () => import('./features/radio-indicator/default-unchecked-vs-checked.component').then((m) => m.RadioIndicatorDefaultUncheckedVsChecked),
+    data: { lib: 'common', category: 'display', demo: "Radio indicator", section: "Default — unchecked vs checked" },
+  },
+  {
+    path: 'radio-indicator/disabled',
+    loadComponent: () => import('./features/radio-indicator/disabled.component').then((m) => m.RadioIndicatorDisabled),
+    data: { lib: 'common', category: 'display', demo: "Radio indicator", section: "Disabled" },
+  },
+  {
+    path: 'radio-indicator/sizes',
+    loadComponent: () => import('./features/radio-indicator/sizes.component').then((m) => m.RadioIndicatorSizes),
+    data: { lib: 'common', category: 'display', demo: "Radio indicator", section: "Sizes" },
+  },
+  {
+    path: 'radio-indicator/theming-via-css-custom-properties',
+    loadComponent: () => import('./features/radio-indicator/theming-via-css-custom-properties.component').then((m) => m.RadioIndicatorThemingViaCssCustomProperties),
+    data: { lib: 'common', category: 'display', demo: "Radio indicator", section: "Theming via CSS custom properties" },
+  },
+  {
+    path: 'radio/basic-vertical-group',
+    loadComponent: () => import('./features/radio/basic-vertical-group.component').then((m) => m.RadioBasicVerticalGroup),
+    data: { lib: 'common', category: 'interactive', demo: "Radio group", section: "Basic — vertical group" },
+  },
+  {
+    path: 'radio/custom-dot-glyph',
+    loadComponent: () => import('./features/radio/custom-dot-glyph.component').then((m) => m.RadioCustomDotGlyph),
+    data: { lib: 'common', category: 'interactive', demo: "Radio group", section: "Custom dot glyph" },
+  },
+  {
+    path: 'radio/disabled-group-cascades-per-radio-overrides',
+    loadComponent: () => import('./features/radio/disabled-group-cascades-per-radio-overrides.component').then((m) => m.RadioDisabledGroupCascadesPerRadioOverrides),
+    data: { lib: 'common', category: 'interactive', demo: "Radio group", section: "Disabled — group cascades, per-radio overrides" },
+  },
+  {
+    path: 'radio/orientation-horizontal',
+    loadComponent: () => import('./features/radio/orientation-horizontal.component').then((m) => m.RadioOrientationHorizontal),
+    data: { lib: 'common', category: 'interactive', demo: "Radio group", section: "Orientation — horizontal" },
   },
   {
     path: 'reduced-motion/animation-toggle',
@@ -653,6 +888,21 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'layout', demo: "Scroll Spy", section: "Scroll-Based Navigation" },
   },
   {
+    path: 'sidenav/dual-sidebar-master-detail',
+    loadComponent: () => import('./features/sidenav/dual-sidebar-master-detail.component').then((m) => m.SidenavDualSidebarMasterDetail),
+    data: { lib: 'ui', category: '', demo: "Sidenav", section: "Dual Sidebar -- Master/Detail" },
+  },
+  {
+    path: 'sidenav/full-navigation-sidebar',
+    loadComponent: () => import('./features/sidenav/full-navigation-sidebar.component').then((m) => m.SidenavFullNavigationSidebar),
+    data: { lib: 'ui', category: '', demo: "Sidenav", section: "Full Navigation Sidebar" },
+  },
+  {
+    path: 'sidenav/material-theming-light-vs-dark',
+    loadComponent: () => import('./features/sidenav/material-theming-light-vs-dark.component').then((m) => m.SidenavMaterialThemingLightVsDark),
+    data: { lib: 'ui', category: '', demo: "Sidenav", section: "Material Theming -- Light vs Dark" },
+  },
+  {
     path: 'sparkline/async-state-machine',
     loadComponent: () => import('./features/sparkline/async-state-machine.component').then((m) => m.SparklineAsyncStateMachine),
     data: { lib: 'common', category: 'chart', demo: "Sparkline", section: "Async state machine" },
@@ -708,6 +958,11 @@ export const routes: Routes = [
     data: { lib: 'ui', category: 'stepper', demo: "Stepper — custom labels", section: "Mixing <code>[label]</code> Input with <code>cngxStepLabel</code> slot" },
   },
   {
+    path: 'stepper-error-aggregation/per-step-error-badges',
+    loadComponent: () => import('./features/stepper-error-aggregation/per-step-error-badges.component').then((m) => m.StepperErrorAggregationPerStepErrorBadges),
+    data: { lib: 'ui', category: 'stepper', demo: "Stepper — error aggregation", section: "Per-step error badges" },
+  },
+  {
     path: 'stepper-hierarchical/group-nested-steps-trailing-root-step',
     loadComponent: () => import('./features/stepper-hierarchical/group-nested-steps-trailing-root-step.component').then((m) => m.StepperHierarchicalGroupNestedStepsTrailingRootStep),
     data: { lib: 'ui', category: 'stepper', demo: "Stepper — hierarchical sub-steps", section: "Group + nested steps + trailing root step" },
@@ -743,6 +998,11 @@ export const routes: Routes = [
     data: { lib: 'common', category: 'interactive', demo: "SwipeDismiss", section: "CngxSwipeDismiss — Directional Swipe" },
   },
   {
+    path: 'tab-error-aggregation/per-tab-error-badges',
+    loadComponent: () => import('./features/tab-error-aggregation/per-tab-error-badges.component').then((m) => m.TabErrorAggregationPerTabErrorBadges),
+    data: { lib: 'ui', category: 'tabs', demo: "Tabs — error aggregation", section: "Per-tab error badges" },
+  },
+  {
     path: 'tab-group-vertical/vertical-sidebar-tabs',
     loadComponent: () => import('./features/tab-group-vertical/vertical-sidebar-tabs.component').then((m) => m.TabGroupVerticalVerticalSidebarTabs),
     data: { lib: 'ui', category: 'tabs', demo: "Tabs — vertical", section: "Vertical sidebar tabs" },
@@ -756,6 +1016,56 @@ export const routes: Routes = [
     path: 'tab-overflow/8-tabs-in-a-narrow-container',
     loadComponent: () => import('./features/tab-overflow/8-tabs-in-a-narrow-container.component').then((m) => m.TabOverflow8TabsInANarrowContainer),
     data: { lib: 'ui', category: 'tabs', demo: "Tabs — overflow dropdown", section: "8 tabs in a narrow container" },
+  },
+  {
+    path: 'toggle/basic-two-way-binding',
+    loadComponent: () => import('./features/toggle/basic-two-way-binding.component').then((m) => m.ToggleBasicTwoWayBinding),
+    data: { lib: 'common', category: 'interactive', demo: "Toggle", section: "Basic — two-way binding" },
+  },
+  {
+    path: 'toggle/custom-thumb-glyph',
+    loadComponent: () => import('./features/toggle/custom-thumb-glyph.component').then((m) => m.ToggleCustomThumbGlyph),
+    data: { lib: 'common', category: 'interactive', demo: "Toggle", section: "Custom thumb glyph" },
+  },
+  {
+    path: 'toggle/disabled-with-reason',
+    loadComponent: () => import('./features/toggle/disabled-with-reason.component').then((m) => m.ToggleDisabledWithReason),
+    data: { lib: 'common', category: 'interactive', demo: "Toggle", section: "Disabled with reason" },
+  },
+  {
+    path: 'toggle/label-position',
+    loadComponent: () => import('./features/toggle/label-position.component').then((m) => m.ToggleLabelPosition),
+    data: { lib: 'common', category: 'interactive', demo: "Toggle", section: "Label position" },
+  },
+  {
+    path: 'tooltip/basic-tooltip',
+    loadComponent: () => import('./features/tooltip/basic-tooltip.component').then((m) => m.TooltipBasicTooltip),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Basic Tooltip" },
+  },
+  {
+    path: 'tooltip/custom-delay',
+    loadComponent: () => import('./features/tooltip/custom-delay.component').then((m) => m.TooltipCustomDelay),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Custom Delay" },
+  },
+  {
+    path: 'tooltip/disabled-state',
+    loadComponent: () => import('./features/tooltip/disabled-state.component').then((m) => m.TooltipDisabledState),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Disabled State" },
+  },
+  {
+    path: 'tooltip/keyboard-navigation',
+    loadComponent: () => import('./features/tooltip/keyboard-navigation.component').then((m) => m.TooltipKeyboardNavigation),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Keyboard Navigation" },
+  },
+  {
+    path: 'tooltip/placement',
+    loadComponent: () => import('./features/tooltip/placement.component').then((m) => m.TooltipPlacement),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Placement" },
+  },
+  {
+    path: 'tooltip/programmatic-control',
+    loadComponent: () => import('./features/tooltip/programmatic-control.component').then((m) => m.TooltipProgrammaticControl),
+    data: { lib: 'common', category: 'popover', demo: "Tooltip", section: "Programmatic Control" },
   },
   {
     path: 'trend/composed-with-metric-in-a-card',

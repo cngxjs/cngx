@@ -143,7 +143,7 @@ function buildImports(story, section, importMap) {
   const usesInject = /\binject\s*\(/.test(setup);
   const usesAfterRender = /\bafterNextRender\s*\(/.test(setup);
   const usesEffect = /\beffect\s*\(/.test(setup);
-  const usesViewChild = /\bviewChild\s*[<(]/.test(setup);
+  const usesViewChild = /\bviewChild\b/.test(setup);
   const usesElementRef = /\bElementRef\b/.test(setup);
   const usesDestroyRef = /\bDestroyRef\b/.test(setup);
 
@@ -202,6 +202,8 @@ function buildImports(story, section, importMap) {
   }
 
   const filteredModuleImports = (story.moduleImports ?? [])
+    // Skip @angular/core lines — coreLine already emits the detected symbols.
+    .filter((l) => !/from\s*['"]@angular\/core['"]/.test(l))
     .map(filterImportLine)
     .filter((l) => l !== null)
     .map(rewritePaths);

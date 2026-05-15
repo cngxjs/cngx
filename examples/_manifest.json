@@ -90,6 +90,27 @@
     "ui/stepper/stepper-vertical-demo",
     "ui/tabs/tab-group-demo",
     "ui/tabs/tab-group-vertical-demo",
-    "ui/tabs/tab-overflow-demo"
+    "ui/tabs/tab-overflow-demo",
+    "common/display/radio-indicator-demo",
+    "common/interactive/button-toggle-group-demo",
+    "common/interactive/checkbox-demo",
+    "common/interactive/error-aggregator-demo",
+    "common/interactive/menu-demo",
+    "common/interactive/nav-demo",
+    "common/interactive/radio-demo",
+    "common/interactive/toggle-demo",
+    "common/popover/popover-panel-demo",
+    "common/popover/tooltip-demo",
+    "forms/filter-builder-async-state-demo",
+    "forms/filter-builder-demo",
+    "forms/input-demo",
+    "forms/material-demo",
+    "ui/async-button-demo",
+    "ui/empty-state-demo",
+    "ui/feedback/alert-stack-demo",
+    "ui/mat-stepper/mat-stepper-instrumentation-demo",
+    "ui/sidenav-demo",
+    "ui/stepper/stepper-error-aggregation-demo",
+    "ui/tabs/tab-error-aggregation-demo"
   ]
 }
