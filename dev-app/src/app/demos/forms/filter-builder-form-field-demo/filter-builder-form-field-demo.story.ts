@@ -30,7 +30,19 @@ export const STORY: DemoSpec = {
     '<p><code>presenter.focus()</code> walks the tree for the first incomplete ' +
     'expression and lands on its first focusable descendant — input, button, ' +
     'or select trigger — via the <code>data-cngx-filter-path</code> DOM ' +
-    'correlation.</p>',
+    'correlation.</p>' +
+    '<p><strong>Known dev-mode error.</strong> Adding or editing a filter inside ' +
+    'the wrapped builder logs a <code>TypeError: logic.toUpperCase is not a ' +
+    'function</code>. The cause is a cross-lib interaction between ' +
+    '<code>CngxSelect</code>\'s auto field-sync and <code>cngx-form-field</code> ' +
+    '— every inner select picks up the form-field\'s <code>FilterGroup</code> ' +
+    'value and writes it back as <code>setField</code> / <code>setOperator</code> ' +
+    'arguments. The bridge contract (disabled / focused / errorState / focus()) ' +
+    'is correct; the corruption is on the value side. Fix lives in ' +
+    '<code>@cngx/forms/select</code>\'s <code>createFieldSync</code> and is ' +
+    'tracked at <a href="https://github.com/cngxjs/cngx/issues/98">cngxjs/cngx#98</a>. ' +
+    'Use this demo as a reference for the wiring shape, not as a working ' +
+    'interactive UI.</p>',
   moduleImports: [
     "import { DestroyRef, effect, untracked, viewChild } from '@angular/core';",
     "import { form, schema } from '@angular/forms/signals';",

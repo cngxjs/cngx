@@ -226,14 +226,36 @@ test.describe('CngxFilterBuilder — reset journey', () => {
   });
 });
 
-// Form-field round-trip browser-level coverage: the opt-in
-// `cngxFilterBuilderFormFieldControl` directive's bridge wiring is verified by
-// `projects/forms/filter-builder/filter-builder-form-field.spec.ts` against
-// a stub `CngxFormFieldPresenter`. A dedicated `<cngx-form-field>`-wrapped demo
-// route is not yet shipped in `dev-app/`; once one lands, add a test here that
-// asserts touched + invalid surface visually and `presenter.focus()` lands on
-// the first incomplete expression.
-test.fixme('form-field round-trip: focus delegation lands on the first incomplete expression', async () => {
-  // Pending — see comment above. Awaits a `<cngx-form-field>`-wrapped
-  // filter-builder demo in dev-app to drive at the browser level.
+test.describe('CngxFilterBuilder — form-field bridge browser flow', () => {
+  const FORM_FIELD_ROUTE = '/#/forms/filter-builder-form-field';
+
+  // Interactive flows (Add Filter → mark touched → focus first incomplete)
+  // currently corrupt the tree via the CngxSelect+form-field auto-sync
+  // interaction (`logic.toUpperCase is not a function` in dev mode); the bug
+  // lives in @cngx/forms/select and is tracked separately. The two tests
+  // below only exercise the static-bridge contract (disabled toggle in RF,
+  // initial badge state in Signal Forms), which does not trigger the bug.
+  test('Signal Forms — static bridge surface mounts and exposes the contract', async ({ page }) => {
+    await page.goto(FORM_FIELD_ROUTE);
+    const section = card(page, 'Signal Forms');
+    const badges = section.locator('.status-badge');
+
+    await expect(badges.filter({ hasText: 'touched: false' })).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'errorState: false' })).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'focused: false' })).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'disabled: false' })).toHaveCount(1);
+  });
+
+  test('Reactive Forms — toggle disabled propagates to presenter.disabled', async ({ page }) => {
+    await page.goto(FORM_FIELD_ROUTE);
+    const section = card(page, 'Reactive Forms');
+    const badges = section.locator('.status-badge');
+
+    await expect(badges.filter({ hasText: 'control.disabled: false' })).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'presenter.disabled: false' })).toHaveCount(1);
+
+    await section.getByRole('button', { name: 'Toggle disabled' }).click();
+    await expect(badges.filter({ hasText: 'control.disabled: true' })).toHaveCount(1);
+    await expect(badges.filter({ hasText: 'presenter.disabled: true' })).toHaveCount(1);
+  });
 });
