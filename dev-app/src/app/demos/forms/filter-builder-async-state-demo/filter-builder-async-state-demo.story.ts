@@ -105,20 +105,22 @@ export const STORY: DemoSpec = {
         'JsonPipe',
       ],
       css: `
-.demo-actions { display: flex; gap: 8px; margin-bottom: 12px; }
-.demo-actions button { padding: 4px 10px; cursor: pointer; }
-.demo-skeleton { display: flex; flex-direction: column; gap: 8px; }
+.demo-actions { display: flex; gap: var(--cngx-demo-actions-gap, 8px); margin-bottom: var(--cngx-demo-actions-mb, 12px); }
+.demo-actions button { padding: var(--cngx-demo-button-pad, 4px 10px); cursor: pointer; }
+.demo-skeleton { display: flex; flex-direction: column; gap: var(--cngx-demo-skeleton-gap, 8px); }
 .demo-skeleton-row {
-  height: 28px; background: var(--cngx-skeleton-bg, #e0e0e0);
-  border-radius: 4px; opacity: 0.6;
+  height: var(--cngx-demo-skeleton-row-h, 28px);
+  background: var(--cngx-skeleton-bg, #e0e0e0);
+  border-radius: var(--cngx-demo-skeleton-radius, 4px);
+  opacity: var(--cngx-demo-skeleton-opacity, 0.6);
 }
-.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: 12px 0; }
+.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: var(--cngx-demo-empty-pad, 12px 0); }
 .demo-error {
   color: var(--cngx-error, #b00020);
-  padding: 8px 12px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background: rgba(176, 0, 32, 0.05);
+  padding: var(--cngx-demo-error-pad, 8px 12px);
+  border: var(--cngx-demo-error-border, 1px solid currentColor);
+  border-radius: var(--cngx-demo-error-radius, 4px);
+  background: var(--cngx-demo-error-bg, rgba(176, 0, 32, 0.05));
 }
       `,
     },

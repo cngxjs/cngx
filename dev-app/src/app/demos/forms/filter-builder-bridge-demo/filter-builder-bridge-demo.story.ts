@@ -166,25 +166,39 @@ export const STORY: DemoSpec = {
         'CngxAsyncErrorTpl',
       ],
       css: `
-.demo-actions { display: flex; gap: 8px; margin: 12px 0; }
-.demo-actions button { padding: 4px 10px; cursor: pointer; }
-.demo-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.875rem; }
-.demo-table th, .demo-table td { padding: 6px 10px; border-bottom: 1px solid var(--cngx-border, #ddd); text-align: left; }
-.demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
-.demo-skeleton { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
-.demo-skeleton-row {
-  height: 24px;
-  background: var(--cngx-skeleton-bg, #e0e0e0);
-  border-radius: 4px;
-  opacity: 0.6;
+.demo-actions { display: flex; gap: var(--cngx-demo-actions-gap, 8px); margin: var(--cngx-demo-actions-m, 12px 0); }
+.demo-actions button { padding: var(--cngx-demo-button-pad, 4px 10px); cursor: pointer; }
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--cngx-demo-table-mt, 12px);
+  font-size: var(--cngx-demo-table-fs, 0.875rem);
 }
-.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: 12px 0; }
+.demo-table th, .demo-table td {
+  padding: var(--cngx-demo-cell-pad, 6px 10px);
+  border-bottom: var(--cngx-demo-row-border, 1px solid var(--cngx-border, #ddd));
+  text-align: left;
+}
+.demo-table th { background: var(--cngx-surface-variant, #f5f5f5); font-weight: 600; }
+.demo-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cngx-demo-skeleton-gap, 8px);
+  padding: var(--cngx-demo-skeleton-pad, 8px 0);
+}
+.demo-skeleton-row {
+  height: var(--cngx-demo-skeleton-row-h, 24px);
+  background: var(--cngx-skeleton-bg, #e0e0e0);
+  border-radius: var(--cngx-demo-skeleton-radius, 4px);
+  opacity: var(--cngx-demo-skeleton-opacity, 0.6);
+}
+.demo-empty { color: var(--cngx-fg-muted, #666); font-style: italic; padding: var(--cngx-demo-empty-pad, 12px 0); }
 .demo-error {
   color: var(--cngx-error, #b00020);
-  padding: 8px 12px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background: rgba(176, 0, 32, 0.05);
+  padding: var(--cngx-demo-error-pad, 8px 12px);
+  border: var(--cngx-demo-error-border, 1px solid currentColor);
+  border-radius: var(--cngx-demo-error-radius, 4px);
+  background: var(--cngx-demo-error-bg, rgba(176, 0, 32, 0.05));
 }
       `,
     },
