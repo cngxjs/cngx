@@ -1,9 +1,9 @@
 import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   input,
   model,
   untracked,
@@ -152,11 +152,16 @@ export class CngxFilterRow {
   );
 
   constructor() {
-    effect(() => {
-      if (this.value() !== null) {
+    // Single-field auto-seed on first render. `afterNextRender` is single-shot
+    // and outside the reactive graph, so it does not violate Pillar 1's
+    // "no signal writes inside `effect`" rule. The previous reactive auto-seed
+    // also re-seeded after a Remove click, which fought the user — that
+    // behaviour is dropped intentionally.
+    afterNextRender(() => {
+      if (untracked(() => this.value()) !== null) {
         return;
       }
-      const fs = this.fields();
+      const fs = untracked(() => this.fields());
       if (fs.length !== 1) {
         return;
       }
@@ -164,9 +169,7 @@ export class CngxFilterRow {
       if (!only) {
         return;
       }
-      untracked(() => {
-        this.value.set(createFilterExpression(only.key, this.defaultOperatorFor(only.key)));
-      });
+      this.value.set(createFilterExpression(only.key, this.defaultOperatorFor(only.key)));
     });
   }
 

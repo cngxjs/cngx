@@ -1,4 +1,4 @@
-import { Component, signal, viewChild } from '@angular/core';
+import { ApplicationRef, Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { CngxSelect } from '@cngx/forms/select';
@@ -167,7 +167,7 @@ describe('CngxFilterRow', () => {
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression'))).toBeNull();
   });
 
-  it('auto-seeds when fields has exactly one entry and [(value)] is null', () => {
+  it('auto-seeds when fields has exactly one entry and [(value)] is null', async () => {
     const oneField: readonly FilterFieldDef[] = [
       { key: 'role', label: 'Role', editorType: 'string' },
     ];
@@ -185,6 +185,8 @@ describe('CngxFilterRow', () => {
     }
 
     const fixture = TestBed.createComponent(SingleFieldHost);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
     fixture.detectChanges();
     TestBed.flushEffects();
 
@@ -196,7 +198,7 @@ describe('CngxFilterRow', () => {
     expect(selects.length).toBeGreaterThan(0);
   });
 
-  it('re-seeds the same field when Remove writes null in single-field mode', () => {
+  it('does not re-seed after Remove writes null in single-field mode', async () => {
     const oneField: readonly FilterFieldDef[] = [
       { key: 'role', label: 'Role', editorType: 'string' },
     ];
@@ -215,16 +217,17 @@ describe('CngxFilterRow', () => {
 
     const fixture = TestBed.createComponent(SingleFieldHost);
     fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    fixture.detectChanges();
     TestBed.flushEffects();
-    const firstSeed = fixture.componentInstance.expression();
-    expect(firstSeed?.field).toBe('role');
+    expect(fixture.componentInstance.expression()?.field).toBe('role');
 
     fixture.componentInstance.expression.set(null);
     fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    fixture.detectChanges();
     TestBed.flushEffects();
 
-    const reseeded = fixture.componentInstance.expression();
-    expect(reseeded).not.toBeNull();
-    expect(reseeded?.field).toBe('role');
+    expect(fixture.componentInstance.expression()).toBeNull();
   });
 });
