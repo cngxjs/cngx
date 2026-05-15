@@ -211,6 +211,50 @@ function backtickEscape(s) {
 }
 
 /**
+ * Strip `<div class="event-grid">…</div>` debug-instrumentation blocks from
+ * a template string. The live rendered demo keeps them (so consumers can see
+ * directive state), but the displayed source should focus on directive usage,
+ * not state-readout boilerplate. Walks balanced <div>/</div> tags so nested
+ * event-row divs inside event-grid are removed together.
+ */
+function stripEventGrid(html) {
+  const opener = /<div\b[^>]*\bclass=["'][^"']*\bevent-grid\b[^"']*["'][^>]*>/g;
+  let result = html;
+  while (true) {
+    opener.lastIndex = 0;
+    const m = opener.exec(result);
+    if (!m) break;
+    const start = m.index;
+    let depth = 0;
+    let i = start;
+    let end = -1;
+    while (i < result.length) {
+      const lt = result.indexOf('<', i);
+      if (lt === -1) break;
+      const rest = result.slice(lt);
+      if (/^<div\b/.test(rest)) {
+        depth++;
+        i = lt + 4;
+      } else if (/^<\/div>/.test(rest)) {
+        depth--;
+        if (depth === 0) {
+          end = lt + 6;
+          break;
+        }
+        i = lt + 6;
+      } else {
+        i = lt + 1;
+      }
+    }
+    if (end === -1) break;
+    const before = result.slice(0, start).replace(/[ \t]*\n?[ \t]*$/, '\n');
+    const after = result.slice(end).replace(/^[ \t]*\n?/, '');
+    result = before + after;
+  }
+  return result;
+}
+
+/**
  * Strip the common leading whitespace shared by every non-empty line.
  * Story `setup` and `template` blocks live inside indented backtick literals
  * and arrive with an extra level of indentation that breaks the source view.
@@ -284,7 +328,7 @@ function emitComponentSource(meta, story, section, importMap) {
     .join('\n\n');
   const dedentedSetup = dedent(rawSetupBlocks);
   const sourceTs = [sourceImports, dedentedSetup].filter(Boolean).join('\n\n').trim();
-  const sourceHtml = dedent(section.template);
+  const sourceHtml = dedent(stripEventGrid(section.template));
   const sourceFields = [
     `  protected readonly _exTs: string = \`${backtickEscape(sourceTs)}\`;`,
     `  protected readonly _exHtml: string = \`${backtickEscape(sourceHtml)}\`;`,

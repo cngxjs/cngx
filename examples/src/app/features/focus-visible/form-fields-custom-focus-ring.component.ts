@@ -156,21 +156,6 @@ protected email = signal('');`;
   >
     Submit
   </button>
-</div>
-
-<div class="event-grid" style="margin-top: 12px">
-  <div class="event-row">
-    <span class="event-label">Name field</span>
-    <span class="event-value">{{ fvName.focusVisible() ? 'keyboard focus' : 'no keyboard focus' }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">Email field</span>
-    <span class="event-value">{{ fvEmail.focusVisible() ? 'keyboard focus' : 'no keyboard focus' }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">Submit button</span>
-    <span class="event-value">{{ fvSubmit.focusVisible() ? 'keyboard focus' : 'no keyboard focus' }}</span>
-  </div>
 </div>`;
   protected name = signal('');
     protected email = signal('');

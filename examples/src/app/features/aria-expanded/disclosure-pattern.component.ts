@@ -107,16 +107,6 @@ protected togglePanel(key: string): void {
     to the controlled region via <code>aria-controls</code>.
   </div>
 
-  <div class="event-grid" style="margin-top: 12px">
-    <div class="event-row">
-      <span class="event-label">aria-expanded</span>
-      <span class="event-value">{{ open() }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">aria-controls</span>
-      <span class="event-value">details-panel</span>
-    </div>
-  </div>
 </div>`;
   protected open = signal(false);
     protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });

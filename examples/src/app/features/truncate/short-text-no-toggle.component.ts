@@ -63,12 +63,6 @@ protected readonly expanded2 = signal(false);`;
       {{ expanded2() ? 'Show less' : 'Show more' }}
     </button>
   }
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">isClamped</span>
-    <span class="event-value">{{ trunc2.isClamped() }}</span>
-  </div>
 </div>`;
   protected readonly expanded1 = signal(false);
     protected readonly expanded2 = signal(false);

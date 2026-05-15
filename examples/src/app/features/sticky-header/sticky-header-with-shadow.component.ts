@@ -66,11 +66,5 @@ export class StickyHeaderStickyHeaderWithShadow {
       Item {{ i }}
     </div>
   }
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">isSticky</span>
-    <span class="event-value">{{ sh.isSticky() }}</span>
-  </div>
 </div>`;
 }

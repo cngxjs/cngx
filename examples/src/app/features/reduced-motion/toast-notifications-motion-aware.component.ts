@@ -155,16 +155,6 @@ protected removeNotification(id: number): void {
     }
   </div>
 
-  <div class="event-grid" style="margin-top: 12px">
-    <div class="event-row">
-      <span class="event-label">Active notifications</span>
-      <span class="event-value">{{ notifications().length }}</span>
-    </div>
-    <div class="event-row">
-      <span class="event-label">Animation</span>
-      <span class="event-value">{{ rm2.prefersReducedMotion() ? 'instant (no motion)' : 'slide-in 0.3s' }}</span>
-    </div>
-  </div>
 </div>`;
   protected notifications = signal<{ id: number; text: string }[]>([]);
     private _nextId = 0;

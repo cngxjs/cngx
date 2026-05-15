@@ -128,15 +128,6 @@ protected togglePanel(key: string): void {
       </div>
     }
   }
-</div>
-
-<div class="event-grid" style="margin-top: 12px">
-  @for (key of ['specs', 'reviews', 'shipping']; track key) {
-    <div class="event-row">
-      <span class="event-label">{{ key }}</span>
-      <span class="event-value">{{ panels()[key] ? 'expanded' : 'collapsed' }}</span>
-    </div>
-  }
 </div>`;
   protected open = signal(false);
     protected panels = signal<Record<string, boolean>>({ specs: false, reviews: false, shipping: false });

@@ -93,12 +93,6 @@ protected scrollTo(event: Event, id: string): void {
       </section>
     }
   </div>
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">Active section</span>
-    <span class="event-value">{{ spy.activeId() ?? 'none' }}</span>
-  </div>
 </div>`;
   protected readonly sectionIds = ['spy-intro', 'spy-features', 'spy-pricing', 'spy-faq'];
 

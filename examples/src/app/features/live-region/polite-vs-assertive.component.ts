@@ -137,21 +137,6 @@ protected announce(): void {
   [style.color]="flashActive() ? '#000' : 'inherit'"
 >
   {{ message() || 'Waiting for announcement…' }}
-</div>
-
-<div class="event-grid" style="margin-top: 10px">
-  <div class="event-row">
-    <span class="event-label">aria-live</span>
-    <span class="event-value">{{ politeness() }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">role</span>
-    <span class="event-value">{{ politeness() === 'assertive' ? 'alert' : 'status' }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">aria-atomic</span>
-    <span class="event-value">true</span>
-  </div>
 </div>`;
   protected message = signal('');
     protected politeness = signal<'polite' | 'assertive' | 'off'>('polite');

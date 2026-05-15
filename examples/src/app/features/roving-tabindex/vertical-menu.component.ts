@@ -55,13 +55,7 @@ protected readonly activeVertical = signal(0);`;
   <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Copy</li>
   <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Paste</li>
   <li cngxRovingItem role="menuitem" class="chip" style="cursor:pointer">Select All</li>
-</ul>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">Active index</span>
-    <span class="event-value">{{ activeVertical() }}</span>
-  </div>
-</div>`;
+</ul>`;
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
 }

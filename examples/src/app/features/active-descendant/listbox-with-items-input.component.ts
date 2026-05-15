@@ -101,20 +101,6 @@ protected readonly lastActivated = signal<string | null>(null);`;
       {{ fruit.label }}
     </div>
   }
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">Active id</span>
-    <span class="event-value">{{ ad.activeId() ?? '—' }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">Active value</span>
-    <span class="event-value">{{ ad.activeValue() ?? '—' }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">Last activated</span>
-    <span class="event-value">{{ lastActivated() ?? '—' }}</span>
-  </div>
 </div>`;
   protected readonly fruits = signal<ActiveDescendantItem[]>([
       { id: 'fruit-apple', value: 'apple', label: 'Apple' },

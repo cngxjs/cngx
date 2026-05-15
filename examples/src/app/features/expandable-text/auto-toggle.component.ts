@@ -56,11 +56,5 @@ export class ExpandableTextAutoToggle {
     subscription leaks, stale closures, and timing issues. The computed() function
     creates derived signals that update automatically when their dependencies change.
   </cngx-expandable-text>
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">expanded</span>
-    <span class="event-value">{{ exp.expanded() }}</span>
-  </div>
 </div>`;
 }

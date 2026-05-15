@@ -85,16 +85,6 @@ protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', '
       }
     </menu>
   </div>
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">state</span>
-    <span class="event-value">{{ pop.state() }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">isVisible</span>
-    <span class="event-value">{{ pop.isVisible() }}</span>
-  </div>
 </div>`;
   protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
     protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];

@@ -65,12 +65,6 @@ protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', '
        style="padding:8px 12px;font-size:0.8125rem">
     Controlled by checkbox
   </div>
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">state</span>
-    <span class="event-value">{{ ctrl.state() }}</span>
-  </div>
 </div>`;
   protected readonly menuItems = signal(['Edit', 'Duplicate', 'Archive', 'Delete']);
     protected readonly placements: PopoverPlacement[] = ['bottom', 'bottom-start', 'bottom-end', 'top', 'left', 'right'];

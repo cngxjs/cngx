@@ -108,17 +108,6 @@ protected email = signal('');`;
       <span class="chip chip--active" style="margin-left: 4px; font-size: 0.7rem;">kbd</span>
     }
   </button>
-</div>
-
-<div class="event-grid" style="margin-top: 12px">
-  <div class="event-row">
-    <span class="event-label">Button A focusVisible</span>
-    <span class="event-value">{{ fv1.focusVisible() }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">Button B focusVisible</span>
-    <span class="event-value">{{ fv2.focusVisible() }}</span>
-  </div>
 </div>`;
   protected name = signal('');
     protected email = signal('');

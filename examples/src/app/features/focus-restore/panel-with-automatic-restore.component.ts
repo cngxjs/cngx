@@ -58,14 +58,7 @@ protected readonly detailsOpen = signal(false);`;
     <p style="margin:0 0 12px">Panel content. Focus will restore on close.</p>
     <button (click)="panelOpen.set(false)" class="chip">Close Panel</button>
   </div>
-}
-
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">Panel open</span>
-    <span class="event-value">{{ panelOpen() }}</span>
-  </div>
-</div>`;
+}`;
   protected readonly panelOpen = signal(false);
     protected readonly detailsOpen = signal(false);
 }

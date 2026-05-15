@@ -105,20 +105,5 @@ import { CngxResizeObserver } from '@cngx/common/layout';`;
   } @else {
     Waiting for first measurement…
   }
-</div>
-
-<div class="event-grid" style="margin-top: 12px">
-  <div class="event-row">
-    <span class="event-label">isReady</span>
-    <span class="event-value">{{ ro.isReady() }}</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">width</span>
-    <span class="event-value">{{ ro.width() | number:'1.2-2' }} px</span>
-  </div>
-  <div class="event-row">
-    <span class="event-label">height</span>
-    <span class="event-value">{{ ro.height() | number:'1.2-2' }} px</span>
-  </div>
 </div>`;
 }

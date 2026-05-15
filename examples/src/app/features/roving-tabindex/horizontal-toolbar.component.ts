@@ -57,12 +57,6 @@ protected readonly activeVertical = signal(0);`;
   <button cngxRovingItem class="chip">Underline</button>
   <button cngxRovingItem [cngxRovingItemDisabled]="true" class="chip" style="opacity:0.4">Strikethrough</button>
   <button cngxRovingItem class="chip">Code</button>
-</div>
-<div class="event-grid" style="margin-top:12px">
-  <div class="event-row">
-    <span class="event-label">Active index</span>
-    <span class="event-value">{{ activeToolbar() }}</span>
-  </div>
 </div>`;
   protected readonly activeToolbar = signal(0);
     protected readonly activeVertical = signal(0);
