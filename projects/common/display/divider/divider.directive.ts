@@ -8,6 +8,8 @@ import { Directive, input } from '@angular/core';
  * CSS custom properties (`--cngx-divider-color`, `--cngx-divider-thickness`,
  * `--cngx-divider-inset`). Consumers apply their own styles through
  * `.cngx-divider` or override the variables.
+ * <example-url>http://localhost:4200/common/display/divider/horizontal-vs-vertical</example-url>
+ * <example-url>http://localhost:4200/common/display/divider/inset</example-url>
  */
 @Directive({
   selector: 'cngx-divider, [cngxDivider]',

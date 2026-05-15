@@ -30,6 +30,8 @@ import { Directive, input } from '@angular/core';
  *   }
  * }
  * ```
+ * <example-url>http://localhost:4200/common/a11y/aria-expanded/accordion-multiple-panels</example-url>
+ * <example-url>http://localhost:4200/common/a11y/aria-expanded/disclosure-pattern</example-url>
  */
 @Directive({
   selector: '[cngxAriaExpanded]',

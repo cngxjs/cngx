@@ -60,6 +60,12 @@ export interface CngxAsyncContext<T> {
  *   <li>Error: {{ err }}</li>
  * </ng-template>
  * ```
+ * <example-url>http://localhost:4200/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/async-container/cngxasync-one-line</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/async-container/composition-overlay-container-toast</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/async-container/createasyncstate-mutation</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/async-container/injectasyncstate-reactive-query</example-url>
  */
 @Directive({
   selector: '[cngxAsync]',

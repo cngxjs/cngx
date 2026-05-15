@@ -139,6 +139,11 @@ export interface CngxActionSelectChange<T = unknown> {
  * Dismiss-guard: Escape and click-outside are intercepted while
  * `actionDirty()` is `true` (consumer flips it via `setDirty(true)`);
  * Escape fires `cancel()` to reset.
+ * <example-url>http://localhost:4200/forms/select/action-select/async-error-rollback-observation</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/basic-sync-quick-create</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/custom-action-template-split-actions</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/pre-seeded-created-output-log</example-url>
  */
 @Component({
   selector: 'cngx-action-select',
@@ -499,7 +504,7 @@ export class CngxActionSelect<T = unknown> implements CngxFormFieldControl {
       return null;
     }
     const matcher = this.effectiveMatchFn();
-    return (all) => filterSelectOptions(all, term, matcher);
+    return (all) => filterSelectOptions<T>(all, term, matcher);
   });
 
   /** @internal */

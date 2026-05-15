@@ -12,6 +12,12 @@ import type { CngxDrawer } from './drawer.directive';
  *   Page content
  * </main>
  * ```
+ * <example-url>http://localhost:4200/common/layout/drawer/basic-scroll-lock-backdrop</example-url>
+ * <example-url>http://localhost:4200/common/layout/drawer/controlled-mode</example-url>
+ * <example-url>http://localhost:4200/common/layout/drawer/direction-all-four-sides</example-url>
+ * <example-url>http://localhost:4200/common/layout/drawer/events-openedchange-closed</example-url>
+ * <example-url>http://localhost:4200/common/layout/drawer/mode-over-push-side</example-url>
+ * <example-url>http://localhost:4200/common/layout/drawer/pattern-consumer-wiring</example-url>
  */
 @Directive({
   selector: '[cngxDrawerContent]',

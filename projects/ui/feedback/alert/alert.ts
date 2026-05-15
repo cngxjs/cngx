@@ -87,7 +87,14 @@ function createPausableTimer(): PausableTimer {
 }
 
 
-/** Content slot directive for custom alert icons. */
+/** Content slot directive for custom alert icons.
+ * <example-url>http://localhost:4200/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/closable</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/severities</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/state-driven-visibility</example-url>
+*/
 @Directive({ selector: '[cngxAlertIcon]', standalone: true })
 export class CngxAlertIcon {
   readonly templateRef = inject(TemplateRef, { optional: true });
@@ -105,6 +112,12 @@ export class CngxAlertIcon {
  *   <button cngxAlertAction (click)="retry()">Retry</button>
  * </cngx-alert>
  * ```
+ * <example-url>http://localhost:4200/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/closable</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/severities</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/state-driven-visibility</example-url>
  */
 @Directive({
   selector: 'button[cngxAlertAction], a[cngxAlertAction]',
@@ -124,6 +137,12 @@ export class CngxAlertAction {}
  * - **Boolean-driven** (`[when]`): visible when true, hidden when false
  *
  * `[state]` takes precedence over `[when]`.
+ * <example-url>http://localhost:4200/ui/feedback/alert/action-buttons</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/auto-collapse</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/boolean-trigger-when</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/closable</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/severities</example-url>
+ * <example-url>http://localhost:4200/ui/feedback/alert/state-driven-visibility</example-url>
  */
 @Component({
   selector: 'cngx-alert',

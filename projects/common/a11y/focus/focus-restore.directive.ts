@@ -28,6 +28,8 @@ import { DestroyRef, Directive, ElementRef, inject, input, signal } from '@angul
  * </div>
  * <button #fallbackBtn>Fallback target</button>
  * ```
+ * <example-url>http://localhost:4200/common/a11y/focus-restore/inline-details</example-url>
+ * <example-url>http://localhost:4200/common/a11y/focus-restore/panel-with-automatic-restore</example-url>
  */
 @Directive({
   selector: '[cngxFocusRestore]',

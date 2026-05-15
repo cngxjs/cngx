@@ -52,6 +52,7 @@ export type CngxTabsCommitAction = (
  * **Layer:** `@cngx/common/tabs` (Level 2). Directive-only —
  * organisms compose via `hostDirectives`, consumers attach
  * `[cngxTabGroup]` directly.
+ * <example-url>http://localhost:4200/ui/tabs/tab-commit-action/optimistic-pessimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxTabGroup]',

@@ -46,6 +46,7 @@ import {
  *   pointer-events: auto;
  * }
  * ```
+ * <example-url>http://localhost:4200/common/layout/backdrop/overlay-with-inert</example-url>
  */
 @Directive({
   selector: '[cngxBackdrop]',

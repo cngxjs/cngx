@@ -49,6 +49,7 @@ export type CngxStepperCommitAction = (
  *
  * Sheriff: common Level 2. Pure directive — zero template, zero CSS.
  * Level-4 organisms compose this via `hostDirectives`.
+ * <example-url>http://localhost:4200/ui/stepper/stepper-commit-action/pessimistic-optimistic-commits-with-bridge-directives</example-url>
  */
 @Directive({
   selector: '[cngxStepper]',

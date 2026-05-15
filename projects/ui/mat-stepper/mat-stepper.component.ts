@@ -54,6 +54,7 @@ import type { MaterialPrivateSurfaces } from '@cngx/ui/mat-tabs';
  * hint on the rendered label.
  *
  * @playground Bridge instrumentation ./examples/bridge/bridge-example.component.ts
+ * <example-url>http://localhost:4200/mat-stepper-router-sync/deep-linking-against-material</example-url>
  */
 @Component({
   selector: 'cngx-mat-stepper',

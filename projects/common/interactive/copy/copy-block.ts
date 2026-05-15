@@ -22,6 +22,8 @@ import { CngxCopyText } from './copy-text.directive';
  *   {{ apiKey() }}
  * </cngx-copy-block>
  * ```
+ * <example-url>http://localhost:4200/common/interactive/copy-block/api-key</example-url>
+ * <example-url>http://localhost:4200/common/interactive/copy-block/code-snippet</example-url>
  */
 @Component({
   selector: 'cngx-copy-block',

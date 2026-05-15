@@ -24,6 +24,8 @@ import {
  *   <button cngxRovingItem>Three</button>
  * </div>
  * ```
+ * <example-url>http://localhost:4200/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
+ * <example-url>http://localhost:4200/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
 @Directive({
   selector: '[cngxRovingItem]',
@@ -89,6 +91,8 @@ export class CngxRovingItem {
  *   }
  * </div>
  * ```
+ * <example-url>http://localhost:4200/common/a11y/roving-tabindex/horizontal-toolbar</example-url>
+ * <example-url>http://localhost:4200/common/a11y/roving-tabindex/vertical-menu</example-url>
  */
 @Directive({
   selector: '[cngxRovingTabindex]',

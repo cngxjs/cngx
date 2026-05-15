@@ -33,6 +33,8 @@ const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
  *   Press Escape to close
  * </div>
  * ```
+ * <example-url>http://localhost:4200/common/interactive/keyboard-shortcut/global-shortcut</example-url>
+ * <example-url>http://localhost:4200/common/interactive/keyboard-shortcut/self-scoped-shortcut</example-url>
  */
 @Directive({
   selector: '[cngxKeyboardShortcut]',

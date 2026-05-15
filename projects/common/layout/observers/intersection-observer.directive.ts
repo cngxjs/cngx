@@ -43,6 +43,7 @@ import {
  *   Observed within a scrollable parent
  * </div>
  * ```
+ * <example-url>http://localhost:4200/common/layout/intersection-observer/scroll-sentinel</example-url>
  */
 @Directive({
   selector: '[cngxIntersectionObserver]',

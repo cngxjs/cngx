@@ -21,6 +21,7 @@ import { afterNextRender, Directive, effect, inject, input, output, signal } fro
  * <section id="features">…</section>
  * <section id="pricing">…</section>
  * ```
+ * <example-url>http://localhost:4200/common/layout/scroll-spy/scroll-based-navigation</example-url>
  */
 @Directive({
   selector: '[cngxScrollSpy]',
@@ -90,7 +91,7 @@ export class CngxScrollSpy {
       .filter((el): el is HTMLElement => el !== null);
 
     if (elements.length === 0) {
-      return;
+      return undefined;
     }
 
     const resolvedRoot = rootSelector ? this.doc.querySelector(rootSelector) : null;

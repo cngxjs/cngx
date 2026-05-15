@@ -29,6 +29,7 @@ export type SwipeDirection = 'left' | 'right' | 'up' | 'down';
  *   …
  * </div>
  * ```
+ * <example-url>http://localhost:4200/common/interactive/swipe-dismiss/directional-swipe</example-url>
  */
 @Directive({
   selector: '[cngxSwipeDismiss]',

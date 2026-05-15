@@ -143,6 +143,11 @@ export interface CngxActionMultiSelectChange<T = unknown> {
  *
  * Dismiss-guard: Escape and click-outside intercepted while
  * `actionDirty()` is `true`; Escape fires `cancel()`.
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/async-error-rollback-observation</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/dirty-guard-in-panel-mini-form</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/pre-seeded-change-event-log</example-url>
  */
 @Component({
   selector: 'cngx-action-multi-select',
@@ -569,7 +574,7 @@ export class CngxActionMultiSelect<T = unknown> implements CngxFormFieldControl 
       return null;
     }
     const matcher = this.effectiveMatchFn();
-    return (all) => filterSelectOptions(all, term, matcher);
+    return (all) => filterSelectOptions<T>(all, term, matcher);
   });
 
   /** @internal */

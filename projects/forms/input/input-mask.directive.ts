@@ -380,6 +380,9 @@ export type MaskTokenMap = Record<string, MaskTokenDef>;
  * <!-- Credit card with auto-format switching -->
  * <input cngxInputMask="creditcard" />
  * ```
+ * <example-url>http://localhost:4200/forms/input/mask/custom-pattern</example-url>
+ * <example-url>http://localhost:4200/forms/input/mask/custom-tokens-and-transform</example-url>
+ * <example-url>http://localhost:4200/forms/input/mask/locale-presets</example-url>
  */
 @Directive({
   selector: 'input[cngxInputMask]',

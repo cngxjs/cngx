@@ -95,6 +95,7 @@ function mapBoolEqual(
  * self-trims.
  *
  * @playground Overflow showcase ./examples/overflow-showcase/overflow-showcase.component.ts
+ * <example-url>http://localhost:4200/ui/tabs/tab-overflow/8-tabs-in-a-narrow-container</example-url>
  */
 @Component({
   selector: 'cngx-tab-overflow',

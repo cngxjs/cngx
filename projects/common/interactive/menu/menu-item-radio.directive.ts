@@ -17,6 +17,7 @@ import { CNGX_MENU_RADIO_GROUP } from './menu-radio-controller';
  * Radio-style menu item (`role="menuitemradio"`). Mutual exclusion is scoped
  * to the enclosing `CngxMenuGroup` — only one radio per group is checked at
  * a time.
+ * <example-url>http://localhost:4200/common/interactive/menu-checkable/text-formatting-menu</example-url>
  */
 @Directive({
   selector: '[cngxMenuItemRadio]',

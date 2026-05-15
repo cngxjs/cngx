@@ -14,6 +14,10 @@ import { CNGX_MENU_SUBMENU_ITEM, type CngxMenuSubmenuLike } from './menu-submenu
  * Uses `CngxActiveDescendant` as a `hostDirective` so items rendered with
  * `CngxMenuItem` (or its sub-roles) are tracked automatically. No selection
  * state — menus fire actions through the `itemActivated` output.
+ * <example-url>http://localhost:4200/common/interactive/context-menu/right-click-target-zone</example-url>
+ * <example-url>http://localhost:4200/common/interactive/menu-submenu/two-level-submenu</example-url>
+ * <example-url>http://localhost:4200/common/interactive/menu-trigger/dropdown-menu</example-url>
+ * <example-url>http://localhost:4200/common/interactive/menu/action-menu-with-separator</example-url>
  */
 @Directive({
   selector: '[cngxMenu]',

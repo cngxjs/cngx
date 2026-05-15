@@ -11,6 +11,8 @@ import { Directive, inject, TemplateRef } from '@angular/core';
  *   <ng-template cngxTabContent>...</ng-template>
  * </div>
  * ```
+ * <example-url>http://localhost:4200/ui/tabs/tab-group-vertical/vertical-sidebar-tabs</example-url>
+ * <example-url>http://localhost:4200/ui/tabs/tab-group/three-tab-navigation</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxTabLabel]',

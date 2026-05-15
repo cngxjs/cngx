@@ -64,6 +64,13 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * <ng-template #icon><span aria-hidden="true">★</span></ng-template>
  * <cngx-toggle [(value)]="featured" [thumbGlyph]="icon">Featured</cngx-toggle>
  * ```
+ * <example-url>http://localhost:4200/common/interactive/toggle/basic-two-way-binding</example-url>
+ * <example-url>http://localhost:4200/common/interactive/toggle/custom-thumb-glyph</example-url>
+ * <example-url>http://localhost:4200/common/interactive/toggle/disabled-with-reason</example-url>
+ * <example-url>http://localhost:4200/common/interactive/toggle/label-position</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Component({
   selector: '[cngxToggle], cngx-toggle',
