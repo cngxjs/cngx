@@ -194,8 +194,8 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       <a
         class="site-footer__link"
         href="https://github.com/cngxjs/cngx"
-        target="_blank"
         rel="noopener noreferrer"
+        (click)="$event.stopPropagation()"
       >
         <svg
           class="site-footer__ico"
@@ -216,8 +216,8 @@ function buildCngxTree(routes: readonly RouteMeta[]): readonly CngxTreeNode<Node
       <a
         class="site-footer__link"
         href="https://cngxjs.github.io/cngx/"
-        target="_blank"
         rel="noopener noreferrer"
+        (click)="$event.stopPropagation()"
       >
         Documentation
       </a>
