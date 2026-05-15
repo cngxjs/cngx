@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { CngxSelect } from '@cngx/forms/select';
 import { describe, expect, it } from 'vitest';
 
-import { CngxFilterExpressionRow } from './filter-builder-expression-row.component';
+import { CngxFilterRow } from './filter-builder-row.component';
 import { createFilterExpression } from './filter-builder.helpers';
 import type { FilterExpression, FilterFieldDef } from './filter-builder.types';
 
@@ -16,22 +16,22 @@ const FIELDS: readonly FilterFieldDef[] = [
 @Component({
   standalone: true,
   template: `
-    <cngx-filter-expression-row
+    <cngx-filter-row
       [fields]="fields"
       [(value)]="expression"
-    ></cngx-filter-expression-row>
+    ></cngx-filter-row>
   `,
-  imports: [CngxFilterExpressionRow],
+  imports: [CngxFilterRow],
 })
 class StandaloneHost {
   readonly fields = FIELDS;
   readonly expression = signal<FilterExpression | null>(
     createFilterExpression('name', 'eq', 'foo'),
   );
-  readonly row = viewChild.required(CngxFilterExpressionRow);
+  readonly row = viewChild.required(CngxFilterRow);
 }
 
-describe('CngxFilterExpressionRow — standalone mode', () => {
+describe('CngxFilterRow', () => {
   it('mounts without a CNGX_FILTER_BUILDER_HOST provider', () => {
     const fixture = TestBed.createComponent(StandaloneHost);
     fixture.detectChanges();
@@ -100,9 +100,9 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     @Component({
       standalone: true,
       template: `
-        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+        <cngx-filter-row [fields]="fields" [(value)]="expression"></cngx-filter-row>
       `,
-      imports: [CngxFilterExpressionRow],
+      imports: [CngxFilterRow],
     })
     class NullHost {
       readonly fields = FIELDS;
@@ -123,9 +123,9 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     @Component({
       standalone: true,
       template: `
-        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+        <cngx-filter-row [fields]="fields" [(value)]="expression"></cngx-filter-row>
       `,
-      imports: [CngxFilterExpressionRow],
+      imports: [CngxFilterRow],
     })
     class NullHost {
       readonly fields = FIELDS;
@@ -153,9 +153,9 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     @Component({
       standalone: true,
       template: `
-        <cngx-filter-expression-row [fields]="[]" [(value)]="expression"></cngx-filter-expression-row>
+        <cngx-filter-row [fields]="[]" [(value)]="expression"></cngx-filter-row>
       `,
-      imports: [CngxFilterExpressionRow],
+      imports: [CngxFilterRow],
     })
     class NoFieldsHost {
       readonly expression = signal<FilterExpression | null>(null);
@@ -175,9 +175,9 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     @Component({
       standalone: true,
       template: `
-        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+        <cngx-filter-row [fields]="fields" [(value)]="expression"></cngx-filter-row>
       `,
-      imports: [CngxFilterExpressionRow],
+      imports: [CngxFilterRow],
     })
     class SingleFieldHost {
       readonly fields = oneField;
@@ -192,9 +192,6 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     expect(seeded).not.toBeNull();
     expect(seeded?.field).toBe('role');
     expect(fixture.debugElement.query(By.css('.cngx-filter-builder__expression--empty'))).toBeNull();
-    // Two selects: operator + ... no wait, single-field mode has NO field picker.
-    // The seeded full row renders field-select + operator-select. We accept both
-    // selects as long as the user-visible field picker has only the one option.
     const selects = fixture.debugElement.queryAll(By.directive(CngxSelect));
     expect(selects.length).toBeGreaterThan(0);
   });
@@ -207,9 +204,9 @@ describe('CngxFilterExpressionRow — standalone mode', () => {
     @Component({
       standalone: true,
       template: `
-        <cngx-filter-expression-row [fields]="fields" [(value)]="expression"></cngx-filter-expression-row>
+        <cngx-filter-row [fields]="fields" [(value)]="expression"></cngx-filter-row>
       `,
-      imports: [CngxFilterExpressionRow],
+      imports: [CngxFilterRow],
     })
     class SingleFieldHost {
       readonly fields = oneField;

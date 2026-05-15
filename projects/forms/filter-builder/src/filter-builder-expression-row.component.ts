@@ -3,11 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
-  model,
-  untracked,
   ViewEncapsulation,
 } from '@angular/core';
 import { CngxToggle } from '@cngx/common/interactive';
@@ -23,7 +20,6 @@ import {
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import type { CngxFilterBuilderTemplateRegistry } from './filter-builder-template-registry';
 import type { CngxFilterBuilderValueEditorContext } from './filter-builder-value-editor.slot';
-import { createFilterExpression } from './filter-builder.helpers';
 import { injectFilterEditors } from './filter-builder.tokens';
 import type {
   FilterExpression,
@@ -32,7 +28,6 @@ import type {
 } from './filter-builder.types';
 
 const EMPTY_OPERATORS: readonly string[] = Object.freeze([]) as readonly string[];
-const EMPTY_PATH: readonly number[] = Object.freeze([]) as readonly number[];
 
 function equalOptionList<T>(
   a: readonly { value: T; label: string }[],
@@ -70,20 +65,13 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
 }
 
 /**
- * Expression-row sub-component. Dual-mode: **embedded** (inside the
- * builder, reads through {@link CNGX_FILTER_BUILDER_HOST}) and **standalone**
- * (mounted outside the builder, owns its own value via `[(value)]`).
+ * Embedded expression-row sub-component. Mounted by the builder body for
+ * every expression node in the recursive tree; resolves its value from
+ * `CNGX_FILTER_BUILDER_HOST` via `[path]`.
  *
- * Embedded mode is the default; the builder body mounts the row inside
- * each `<cngx-filter-builder>` for the expression branch and resolves
- * the node by `[path]`. Standalone mode kicks in when no host token is
- * provided — typical use: a single filter row inside a table-column header.
- * Standalone mode requires `[fields]` and a writable `[(value)]` binding.
- *
- * Pillar 3 (Komposition statt Konfiguration): one Component, two
- * compositional contexts. `reference_atomic_decompose` rule 4
- * (DI Abstraction): the host contract is the single seam between the two
- * modes; the templates and editor wiring stay identical.
+ * Pillar 3 (Komposition statt Konfiguration): one component, one
+ * responsibility — render the recursive renderer's expression row. The
+ * column-header / quick-filter surface lives in `CngxFilterRow`.
  */
 @Component({
   selector: 'cngx-filter-expression-row',
@@ -95,40 +83,19 @@ function equalStringList(a: readonly string[], b: readonly string[]): boolean {
   encapsulation: ViewEncapsulation.None,
 })
 export class CngxFilterExpressionRow {
-  private readonly host = inject(CNGX_FILTER_BUILDER_HOST, { optional: true });
+  private readonly host = inject(CNGX_FILTER_BUILDER_HOST);
   protected readonly config = injectFilterBuilderConfig();
   protected readonly editors = injectFilterEditors();
   protected readonly glyphs = CNGX_FILTER_BUILDER_GLYPHS;
   protected readonly isNativeEditor = isNativeEditor;
 
-  /**
-   * Path of the expression within the host tree. Required in embedded mode,
-   * unused in standalone mode (defaults to the empty path so the directive
-   * binding on the wrapper still resolves to a non-null reference).
-   */
-  readonly path = input<readonly number[]>(EMPTY_PATH);
+  readonly path = input.required<readonly number[]>();
 
   /**
-   * Standalone-mode value. Two-way bindable via `[(value)]`. Ignored when
-   * the host token is provided — embedded mode reads from
-   * `host.getNodeAtPath(path)` instead.
-   */
-  readonly value = model<FilterExpression | null>(null);
-
-  /**
-   * Standalone-mode fields list. Ignored when the host token is provided —
-   * embedded mode reads from `host.fields()`. Per `reference_forms_architecture`
-   * the input is alias-less since the standalone surface is a deliberate
-   * pure-form composition.
-   */
-  readonly fieldsInput = input<readonly FilterFieldDef[]>([], { alias: 'fields' });
-
-  /**
-   * Slot registry passed down from the parent `CngxFilterBuilder` in
-   * embedded mode. When the registry's `removeButton` resolves to a
-   * `TemplateRef`, the row renders the consumer-supplied button; otherwise
-   * it falls back to the default `<button>` element. Standalone-mode
-   * consumers leave this unset.
+   * Slot registry passed down from the parent `CngxFilterBuilder`. When the
+   * registry's `removeButton` resolves to a `TemplateRef`, the row renders
+   * the consumer-supplied button; otherwise it falls back to the default
+   * `<button>` element.
    */
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
@@ -159,73 +126,21 @@ export class CngxFilterExpressionRow {
     };
   }
 
-  /** `true` when no `CNGX_FILTER_BUILDER_HOST` is provided — standalone mode. */
-  protected readonly standalone = computed(() => this.host === null);
-
-  /**
-   * Empty-state branch for standalone mode: when `[(value)]` is null and
-   * MORE THAN ONE field is available, render only the field picker so
-   * consumers can start a filter without having to seed an expression
-   * themselves. Single-field standalone mode skips this entirely — the
-   * row auto-seeds the only field via the constructor effect below
-   * because a one-option field-picker is dead UX (the field is implicit
-   * from the consumer's column-header / single-purpose row context).
-   */
-  protected readonly showEmptyFieldPicker = computed(
-    () => this.standalone() && this.value() === null && this.fields().length > 1,
-  );
-
-  constructor() {
-    // Auto-seed single-field standalone rows. The consumer mounted a row
-    // pinned to one field (table-column header pattern); a field-picker
-    // would be redundant. As soon as `value` is null AND fields has exactly
-    // one entry, materialise a fresh expression so the operator + value
-    // editors render directly. `untracked` shields the write from feeding
-    // back into the effect's dependency graph.
-    effect(() => {
-      if (this.host) {
-        return;
-      }
-      if (this.value() !== null) {
-        return;
-      }
-      const fs = this.fieldsInput();
-      if (fs.length !== 1) {
-        return;
-      }
-      const only = fs[0];
-      if (!only) {
-        return;
-      }
-      untracked(() => {
-        this.value.set(createFilterExpression(only.key, this.defaultOperatorFor(only.key)));
-      });
-    });
-  }
-
   protected readonly node = computed<FilterExpression | null>(
     () => {
-      if (this.host) {
-        const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
-        return resolved?.type === 'expression' ? resolved : null;
-      }
-      return this.value();
+      const resolved: FilterNode | null = this.host.getNodeAtPath(this.path());
+      return resolved?.type === 'expression' ? resolved : null;
     },
     { equal: (a, b) => a === b },
   );
 
   protected readonly fields = computed<readonly FilterFieldDef[]>(
-    () => (this.host ? this.host.fields() : this.fieldsInput()),
+    () => this.host.fields(),
     { equal: (a, b) => a === b },
   );
 
   private readonly fieldMap = computed<ReadonlyMap<string, FilterFieldDef>>(
-    () => {
-      if (this.host) {
-        return this.host.fieldMap();
-      }
-      return new Map(this.fieldsInput().map((field) => [field.key, field]));
-    },
+    () => this.host.fieldMap(),
     { equal: (a, b) => a === b },
   );
 
@@ -311,31 +226,15 @@ export class CngxFilterExpressionRow {
       ? carriedOperator
       : this.defaultOperatorFor(next);
 
-    if (this.host) {
-      this.host.setField(this.path(), next);
-      if (!operatorIsStillValid) {
-        // The carry-over operator is invalid for the new field's editor type
-        // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
-        // operator list). Reset to the new field's default and clear the
-        // value so the editor branch swaps to the matching native input.
-        this.host.setOperator(this.path(), defaultOperator);
-        this.host.setValue(this.path(), undefined);
-      }
-      return;
+    this.host.setField(this.path(), next);
+    if (!operatorIsStillValid) {
+      // Carry-over operator is invalid for the new field's editor type
+      // (e.g. switching `Birthday` → `Role` leaves `lt` orphaned in a string
+      // operator list). Reset to the new field's default and clear the
+      // value so the editor branch swaps to the matching native input.
+      this.host.setOperator(this.path(), defaultOperator);
+      this.host.setValue(this.path(), undefined);
     }
-    if (!current) {
-      // Standalone empty-state: seed a fresh expression with the chosen field
-      // plus the field's default operator. Subsequent edits flow through the
-      // normal mutator paths.
-      this.value.set(createFilterExpression(next, defaultOperator));
-      return;
-    }
-    this.value.set({
-      ...current,
-      field: next,
-      operator: defaultOperator,
-      value: operatorIsStillValid ? current.value : undefined,
-    });
   }
 
   private defaultOperatorFor(fieldKey: string): string {
@@ -351,15 +250,7 @@ export class CngxFilterExpressionRow {
     if (next === undefined) {
       return;
     }
-    if (this.host) {
-      this.host.setOperator(this.path(), next);
-      return;
-    }
-    const current = this.value();
-    if (!current) {
-      return;
-    }
-    this.value.set({ ...current, operator: next });
+    this.host.setOperator(this.path(), next);
   }
 
   protected handleStringValueInput(event: Event): void {
@@ -388,23 +279,11 @@ export class CngxFilterExpressionRow {
   }
 
   private writeValue(next: unknown): void {
-    if (this.host) {
-      this.host.setValue(this.path(), next);
-      return;
-    }
-    const current = this.value();
-    if (!current) {
-      return;
-    }
-    this.value.set({ ...current, value: next });
+    this.host.setValue(this.path(), next);
   }
 
   protected handleRemove(): void {
-    if (this.host) {
-      this.host.removeNode(this.path());
-      return;
-    }
-    this.value.set(null);
+    this.host.removeNode(this.path());
   }
 
   protected removeButtonContext(): { path: readonly number[]; label: string; remove: () => void } {

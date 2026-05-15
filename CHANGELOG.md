@@ -3,6 +3,7 @@
 ### BREAKING CHANGES
 
 * **forms/filter-builder:** removed `[cngxFilterBuilderState]` input and in-shell loading/error branches; wrap with `<cngx-async-container [state]>` for state-driven UI.
+* **forms/filter-builder:** `CngxFilterExpressionRow` standalone mode removed; use `CngxFilterRow` for the column-header surface. The public input shape (`[fields]` + `[(value)]`) is identical, so most migrations are a tag and import rename.
 
 # 0.0.0 (2026-03-17)
 
