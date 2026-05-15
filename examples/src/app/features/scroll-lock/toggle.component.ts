@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxScrollLock } from '@cngx/common';
 
 @Component({
-  selector: 'app-scroll-lock-cngxscrolllock-toggle',
+  selector: 'app-scroll-lock-toggle',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxScrollLock],
   template: `
@@ -43,7 +43,7 @@ import { CngxScrollLock } from '@cngx/common';
       </div>
   `,
 })
-export class ScrollLockCngxscrolllockToggle {
+export class ScrollLockToggle {
   protected readonly _exTitle: string = 'ScrollLock';
   protected readonly _exDescription: string = 'Prevents body scrolling when active. Essential for modals, drawers, and overlays.';
   protected readonly _exSectionTitle: string = 'CngxScrollLock — Toggle';

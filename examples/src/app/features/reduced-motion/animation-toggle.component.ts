@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxReducedMotion } from '@cngx/common/a11y';
 
 @Component({
-  selector: 'app-reduced-motion-cngxreducedmotion-animation-toggle',
+  selector: 'app-reduced-motion-animation-toggle',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxReducedMotion],
   template: `
@@ -90,7 +90,7 @@ import { CngxReducedMotion } from '@cngx/common/a11y';
       </style>
   `,
 })
-export class ReducedMotionCngxreducedmotionAnimationToggle {
+export class ReducedMotionAnimationToggle {
   protected readonly _exTitle: string = 'ReducedMotion';
   protected readonly _exDescription: string = 'Reads the prefers-reduced-motion media query and adds the cngx-reduced-motion CSS class when the user prefers reduced motion.';
   protected readonly _exSectionTitle: string = 'CngxReducedMotion — Animation Toggle';

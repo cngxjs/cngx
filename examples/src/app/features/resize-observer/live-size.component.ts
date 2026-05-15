@@ -6,7 +6,7 @@ import { DecimalPipe } from '@angular/common';
 import { CngxResizeObserver } from '@cngx/common/layout';
 
 @Component({
-  selector: 'app-resize-observer-cngxresizeobserver-live-size',
+  selector: 'app-resize-observer-live-size',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxResizeObserver, DecimalPipe],
   template: `
@@ -62,7 +62,7 @@ import { CngxResizeObserver } from '@cngx/common/layout';
       </div>
   `,
 })
-export class ResizeObserverCngxresizeobserverLiveSize {
+export class ResizeObserverLiveSize {
   protected readonly _exTitle: string = 'ResizeObserver';
   protected readonly _exDescription: string = 'Tracks the size of the host element via the ResizeObserver API and exposes width, height, and contentRect as signals.';
   protected readonly _exSectionTitle: string = 'CngxResizeObserver — Live Size';

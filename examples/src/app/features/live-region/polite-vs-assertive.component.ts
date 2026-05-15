@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { CngxLiveRegion } from '@cngx/common/a11y';
 
 @Component({
-  selector: 'app-live-region-cngxliveregion-polite-vs-assertive',
+  selector: 'app-live-region-polite-vs-assertive',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxLiveRegion],
   template: `
@@ -68,7 +68,7 @@ import { CngxLiveRegion } from '@cngx/common/a11y';
       </div>
   `,
 })
-export class LiveRegionCngxliveregionPoliteVsAssertive {
+export class LiveRegionPoliteVsAssertive {
   protected readonly _exTitle: string = 'LiveRegion';
   protected readonly _exDescription: string = 'Configures the host element as an ARIA live region for screen reader announcements.';
   protected readonly _exSectionTitle: string = 'CngxLiveRegion — Polite vs Assertive';

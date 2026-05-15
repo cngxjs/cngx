@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxAriaExpanded } from '@cngx/common/a11y';
 
 @Component({
-  selector: 'app-aria-expanded-cngxariaexpanded-disclosure-pattern',
+  selector: 'app-aria-expanded-disclosure-pattern',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxAriaExpanded],
   template: `
@@ -57,7 +57,7 @@ import { CngxAriaExpanded } from '@cngx/common/a11y';
       </div>
   `,
 })
-export class AriaExpandedCngxariaexpandedDisclosurePattern {
+export class AriaExpandedDisclosurePattern {
   protected readonly _exTitle: string = 'AriaExpanded';
   protected readonly _exDescription: string = 'Manages aria-expanded and aria-controls attributes for disclosure patterns (accordions, dropdowns, details panels).';
   protected readonly _exSectionTitle: string = 'CngxAriaExpanded — Disclosure Pattern';

@@ -36,6 +36,17 @@ function slugify(s) {
 }
 
 /**
+ * Drop a leading "CngxFoo — " prefix from a section title. Stories often
+ * lead with the directive class name; the demo folder already conveys it,
+ * so the slug only needs the descriptive remainder.
+ *   "CngxFocusTrap — Modal Dialog" → "Modal Dialog"
+ *   "Listbox with items input"     → "Listbox with items input"  (unchanged)
+ */
+function cleanSectionTitle(title) {
+  return title.replace(/^Cngx[A-Z][A-Za-z0-9]*\s*[—–‒‐\-]+\s*/, '');
+}
+
+/**
  * Walk projects/**\/public-api.ts and build { className → '@cngx/<pkg>' } map
  * by parsing `export { … } from './…'` lines. Used to resolve section.imports
  * classes when the story is missing a moduleImports entry.
@@ -363,7 +374,11 @@ async function main() {
     const sections = story.sections ?? [];
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
-      const sectionSlug = slugify(section.title);
+      const cleanedTitle = cleanSectionTitle(section.title);
+      let sectionSlug = slugify(cleanedTitle);
+      // If cleaning produced an empty slug (e.g. title was only the prefix),
+      // fall back to a numbered slug to keep routes unique.
+      if (!sectionSlug) sectionSlug = `section-${i + 1}`;
       const className = kebabToPascal(demoSlug) + kebabToPascal(sectionSlug);
 
       const code = emitComponentSource(

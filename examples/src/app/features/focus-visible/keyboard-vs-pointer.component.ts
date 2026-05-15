@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxFocusVisible } from '@cngx/common/a11y';
 
 @Component({
-  selector: 'app-focus-visible-cngxfocusvisible-keyboard-vs-pointer',
+  selector: 'app-focus-visible-keyboard-vs-pointer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusVisible],
   template: `
@@ -60,7 +60,7 @@ import { CngxFocusVisible } from '@cngx/common/a11y';
       </div>
   `,
 })
-export class FocusVisibleCngxfocusvisibleKeyboardVsPointer {
+export class FocusVisibleKeyboardVsPointer {
   protected readonly _exTitle: string = 'FocusVisible';
   protected readonly _exDescription: string = 'Tracks keyboard-initiated focus to distinguish it from pointer focus. Adds the cngx-focus-visible CSS class only when focus was triggered by keyboard.';
   protected readonly _exSectionTitle: string = 'CngxFocusVisible — Keyboard vs Pointer';

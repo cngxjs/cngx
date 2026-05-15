@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxFocusTrap } from '@cngx/common/a11y';
 
 @Component({
-  selector: 'app-focus-trap-cngxfocustrap-slide-out-drawer',
+  selector: 'app-focus-trap-slide-out-drawer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxFocusTrap],
   template: `
@@ -96,7 +96,7 @@ import { CngxFocusTrap } from '@cngx/common/a11y';
       </div>
   `,
 })
-export class FocusTrapCngxfocustrapSlideOutDrawer {
+export class FocusTrapSlideOutDrawer {
   protected readonly _exTitle: string = 'FocusTrap';
   protected readonly _exDescription: string = 'Traps keyboard focus within the host element using the Angular CDK FocusTrap. Useful for modals, drawers, and other overlay components.';
   protected readonly _exSectionTitle: string = 'CngxFocusTrap — Slide-out Drawer';

@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { CngxBackdrop } from '@cngx/common';
 
 @Component({
-  selector: 'app-backdrop-cngxbackdrop-overlay-with-inert',
+  selector: 'app-backdrop-overlay-with-inert',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxBackdrop],
   template: `
@@ -39,7 +39,7 @@ import { CngxBackdrop } from '@cngx/common';
       </div>
   `,
 })
-export class BackdropCngxbackdropOverlayWithInert {
+export class BackdropOverlayWithInert {
   protected readonly _exTitle: string = 'Backdrop';
   protected readonly _exDescription: string = 'Overlay behavior with visibility toggle, click-to-close, and automatic inert toggling on sibling elements for a11y.';
   protected readonly _exSectionTitle: string = 'CngxBackdrop — Overlay with inert';

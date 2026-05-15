@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CngxMediaQuery } from '@cngx/common';
 
 @Component({
-  selector: 'app-media-query-cngxmediaquery-viewport-breakpoints',
+  selector: 'app-media-query-viewport-breakpoints',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxMediaQuery],
   template: `
@@ -43,7 +43,7 @@ import { CngxMediaQuery } from '@cngx/common';
       </div>
   `,
 })
-export class MediaQueryCngxmediaqueryViewportBreakpoints {
+export class MediaQueryViewportBreakpoints {
   protected readonly _exTitle: string = 'MediaQuery';
   protected readonly _exDescription: string = 'Reactive media query directive for viewport breakpoints and user preferences. Exposes a matches signal that updates live — use when CSS alone cannot drive component logic.';
   protected readonly _exSectionTitle: string = 'CngxMediaQuery — Viewport Breakpoints';

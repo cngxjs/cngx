@@ -6,7 +6,7 @@ import { DecimalPipe } from '@angular/common';
 import { CngxIntersectionObserver } from '@cngx/common/layout';
 
 @Component({
-  selector: 'app-intersection-observer-cngxintersectionobserver-scroll-sentinel',
+  selector: 'app-intersection-observer-scroll-sentinel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CngxIntersectionObserver, DecimalPipe],
   template: `
@@ -67,7 +67,7 @@ import { CngxIntersectionObserver } from '@cngx/common/layout';
       </div>
   `,
 })
-export class IntersectionObserverCngxintersectionobserverScrollSentinel {
+export class IntersectionObserverScrollSentinel {
   protected readonly _exTitle: string = 'IntersectionObserver';
   protected readonly _exDescription: string = 'Tracks whether the host element is visible in the viewport. Exposes isIntersecting, intersectionRatio, and entered/left events as signals.';
   protected readonly _exSectionTitle: string = 'CngxIntersectionObserver — Scroll Sentinel';
