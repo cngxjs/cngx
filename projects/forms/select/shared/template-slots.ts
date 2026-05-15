@@ -707,11 +707,11 @@ export class CngxSelectCommitError<T = unknown> {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectChip]',
@@ -756,11 +756,11 @@ export class CngxMultiSelectChipHandle {
  *   </ng-template>
  * </cngx-multi-select>
  * ```
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/optional-drag-handle-glyph</example-url>
- * <example-url>http://localhost:4200/forms/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/basic-drag-chips-via-mouse-touch</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/commit-action-optimistic-pessimistic-with-supersede</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/keyboard-reorder-ctrl-arrow-home-end</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/optional-drag-handle-glyph</example-url>
+ * <example-url>http://localhost:4200/forms/select/reorderable-multi-select/pre-seeded-values-reorder-log</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxMultiSelectTriggerLabel]',
@@ -1010,16 +1010,16 @@ export class CngxSelectInputSuffix {
  *   </ng-template>
  * </cngx-action-select>
  * ```
- * <example-url>http://localhost:4200/forms/action-multi-select/async-error-rollback-observation</example-url>
- * <example-url>http://localhost:4200/forms/action-multi-select/basic-create-appends-panel-stays-open</example-url>
- * <example-url>http://localhost:4200/forms/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
- * <example-url>http://localhost:4200/forms/action-multi-select/dirty-guard-in-panel-mini-form</example-url>
- * <example-url>http://localhost:4200/forms/action-multi-select/pre-seeded-change-event-log</example-url>
- * <example-url>http://localhost:4200/forms/action-select/async-error-rollback-observation</example-url>
- * <example-url>http://localhost:4200/forms/action-select/basic-sync-quick-create</example-url>
- * <example-url>http://localhost:4200/forms/action-select/custom-action-template-split-actions</example-url>
- * <example-url>http://localhost:4200/forms/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
- * <example-url>http://localhost:4200/forms/action-select/pre-seeded-created-output-log</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/async-error-rollback-observation</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/basic-create-appends-panel-stays-open</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/closeoncreate-true-confirm-to-create-ux</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/dirty-guard-in-panel-mini-form</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-multi-select/pre-seeded-change-event-log</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/async-error-rollback-observation</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/basic-sync-quick-create</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/custom-action-template-split-actions</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/dirty-guard-escape-cancel-click-outside-blocked</example-url>
+ * <example-url>http://localhost:4200/forms/select/action-select/pre-seeded-created-output-log</example-url>
  */
 @Directive({
   selector: 'ng-template[cngxSelectAction]',

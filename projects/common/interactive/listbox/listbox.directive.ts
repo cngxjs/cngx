@@ -45,10 +45,10 @@ import { CngxOption } from './option.directive';
  * <example-url>http://localhost:4200/common/interactive/listbox-trigger/select-dropdown</example-url>
  * <example-url>http://localhost:4200/common/interactive/listbox/multi-select</example-url>
  * <example-url>http://localhost:4200/common/interactive/listbox/single-select</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/signal-forms-single-select</example-url>
  */
 @Directive({
   selector: '[cngxListbox]',

@@ -20,13 +20,13 @@ import { CngxFormFieldPresenter } from './form-field-presenter';
  *   <cngx-field-errors />
  * </cngx-form-field>
  * ```
- * <example-url>http://localhost:4200/forms/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/forms/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/forms/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-multi-select-min-2</example-url>
- * <example-url>http://localhost:4200/forms/listbox-forms/signal-forms-single-select</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/material-mat-select-via-cngxbindfield</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/reactive-forms-adapted-via-adaptformcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/signal-forms-multi-select-min-2</example-url>
+ * <example-url>http://localhost:4200/forms/field/listbox-forms/signal-forms-single-select</example-url>
  */
 @Component({
   selector: 'cngx-form-field',

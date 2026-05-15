@@ -83,7 +83,7 @@ export class CngxAsyncErrorTpl {
  * ```
  *
  * @playground Data flow ./examples/data-flow/data-flow-example.component.ts
- * <example-url>http://localhost:4200/forms/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
+ * <example-url>http://localhost:4200/forms/filter-builder/filter-builder-async-state/loading-error-content-branches-via-cngx-async-container</example-url>
  * <example-url>http://localhost:4200/ui/feedback/async-container/cngx-async-container-full-control-toast</example-url>
  * <example-url>http://localhost:4200/ui/feedback/async-container/cngxasync-one-line</example-url>
  * <example-url>http://localhost:4200/ui/feedback/async-container/cngxasync-with-custom-templates</example-url>

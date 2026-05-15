@@ -18,16 +18,16 @@ import { DIALOG_REF } from './dialog-ref';
  *   <button [cngxDialogClose]="true">Confirm</button>
  * </dialog>
  * ```
- * <example-url>http://localhost:4200/common/dialog/dialog/alert-dialog</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/bottom-sheet</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/cngxdialogopener-programmatic</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/draggable-dialog</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/fully-declarative</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/grid-snap-live-vs-release</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/nested-dialogs-cngxdialogstack</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/non-modal-panel</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/programmatic-control</example-url>
- * <example-url>http://localhost:4200/common/dialog/dialog/template-directives</example-url>
+ * <example-url>http://localhost:4200/common/dialog/alert-dialog</example-url>
+ * <example-url>http://localhost:4200/common/dialog/bottom-sheet</example-url>
+ * <example-url>http://localhost:4200/common/dialog/cngxdialogopener-programmatic</example-url>
+ * <example-url>http://localhost:4200/common/dialog/draggable-dialog</example-url>
+ * <example-url>http://localhost:4200/common/dialog/fully-declarative</example-url>
+ * <example-url>http://localhost:4200/common/dialog/grid-snap-live-vs-release</example-url>
+ * <example-url>http://localhost:4200/common/dialog/nested-dialogs-cngxdialogstack</example-url>
+ * <example-url>http://localhost:4200/common/dialog/non-modal-panel</example-url>
+ * <example-url>http://localhost:4200/common/dialog/programmatic-control</example-url>
+ * <example-url>http://localhost:4200/common/dialog/template-directives</example-url>
  */
 @Directive({
   selector: '[cngxDialogClose]',

@@ -24,15 +24,6 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
  *   </cngx-optgroup>
  * </div>
  * ```
- * <example-url>http://localhost:4200/forms/select-shell/async-commit-pending-error-inline-glyphs</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/basic-flat-declarative-options</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/empty-state-loading-flag</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/grouped-divider-projected-hierarchy</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/inside-cngx-form-field-reactive-forms</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/rich-content-option-plain-text-trigger</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/search-declarative-cngx-select-search</example-url>
- * <example-url>http://localhost:4200/forms/select-shell/showcase-every-feature-combined</example-url>
  * <example-url>http://localhost:4200/forms/select/assemble-it-yourself-atoms-element-components</example-url>
  * <example-url>http://localhost:4200/forms/select/async-state-consumer</example-url>
  * <example-url>http://localhost:4200/forms/select/autofocus-on-mount</example-url>
@@ -59,6 +50,15 @@ import { CngxOptionGroup } from '@cngx/common/interactive';
  * <example-url>http://localhost:4200/forms/select/reactive-forms-adaptformcontrol</example-url>
  * <example-url>http://localhost:4200/forms/select/refreshing-variants</example-url>
  * <example-url>http://localhost:4200/forms/select/rich-option-rendering</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/async-commit-pending-error-inline-glyphs</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/basic-flat-declarative-options</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/custom-glyphs-clearglyph-caretglyph</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/empty-state-loading-flag</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/grouped-divider-projected-hierarchy</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/inside-cngx-form-field-reactive-forms</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/rich-content-option-plain-text-trigger</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/search-declarative-cngx-select-search</example-url>
+ * <example-url>http://localhost:4200/forms/select/select-shell/showcase-every-feature-combined</example-url>
  * <example-url>http://localhost:4200/forms/select/selection-indicator-variant-radio</example-url>
  * <example-url>http://localhost:4200/forms/select/signal-forms-required</example-url>
  * <example-url>http://localhost:4200/forms/select/slot-override-cngxcomboboxchip</example-url>

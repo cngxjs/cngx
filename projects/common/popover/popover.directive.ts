@@ -86,10 +86,10 @@ function warnMissingPopoverApi(el: HTMLElement): void {
  * </div>
  * ```
  * <example-url>http://localhost:4200/common/interactive/listbox-trigger/select-dropdown</example-url>
- * <example-url>http://localhost:4200/common/popover/popover/click-popover</example-url>
- * <example-url>http://localhost:4200/common/popover/popover/controlled-open</example-url>
- * <example-url>http://localhost:4200/common/popover/popover/escape-mode</example-url>
- * <example-url>http://localhost:4200/common/popover/popover/placement-variants</example-url>
+ * <example-url>http://localhost:4200/common/popover/click-popover</example-url>
+ * <example-url>http://localhost:4200/common/popover/controlled-open</example-url>
+ * <example-url>http://localhost:4200/common/popover/escape-mode</example-url>
+ * <example-url>http://localhost:4200/common/popover/placement-variants</example-url>
  */
 @Directive({
   selector: '[cngxPopover]',

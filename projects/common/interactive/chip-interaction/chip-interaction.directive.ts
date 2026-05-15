@@ -96,9 +96,9 @@ import { CNGX_ERROR_AGGREGATOR } from '../error-aggregator/error-aggregator.toke
  * <example-url>http://localhost:4200/common/interactive/chip-interaction/basic-toggle-on-click-space-or-enter</example-url>
  * <example-url>http://localhost:4200/common/interactive/chip-interaction/disabled-state</example-url>
  * <example-url>http://localhost:4200/common/interactive/chip-interaction/removable-with-removerequest-on-backspace-delete</example-url>
- * <example-url>http://localhost:4200/forms/form-primitives/coming-in-a-follow-up</example-url>
- * <example-url>http://localhost:4200/forms/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
- * <example-url>http://localhost:4200/forms/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/coming-in-a-follow-up</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/reactive-forms-same-atom-just-bind-formcontrol</example-url>
+ * <example-url>http://localhost:4200/forms/field/form-primitives/signal-forms-drop-the-atom-into-cngx-form-field</example-url>
  */
 @Directive({
   selector: '[cngxChipInteraction]',

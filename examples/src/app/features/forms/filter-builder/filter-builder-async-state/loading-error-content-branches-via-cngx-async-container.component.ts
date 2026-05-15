@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';
-import { FILTER_BUILDER_FIELDS } from '../../../fixtures';
+import { FILTER_BUILDER_FIELDS } from '../../../../fixtures';
 import { JsonPipe } from '@angular/common';
 
 @Component({
@@ -71,7 +71,7 @@ export class FilterBuilderAsyncStateLoadingErrorContentBranchesViaCngxAsyncConta
   protected readonly _exTs: string = `import { CngxAsyncContainer, CngxAsyncSkeletonTpl, CngxAsyncContentTpl, CngxAsyncErrorTpl, CngxAsyncEmptyTpl } from '@cngx/ui/feedback';
 import { createManualState } from '@cngx/common/data';
 import { CngxFilterBuilder, createEmptyFilterRoot, type FilterFieldDef, type FilterGroup } from '@cngx/forms/filter-builder';
-import { FILTER_BUILDER_FIELDS } from '../../../fixtures';
+import { FILTER_BUILDER_FIELDS } from '../../../../fixtures';
 import { JsonPipe } from '@angular/common';
 
 protected readonly state = createManualState<readonly FilterFieldDef[]>();

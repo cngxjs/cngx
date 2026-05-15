@@ -601,18 +601,45 @@ async function main() {
 
     const demoSlug = folderLeaf.replace(/-demo$/, '');
     const parts = demoFolder.split('/');
+    const lib = parts[0];
+
+    // Derive the lib sub-entry (category) for demos whose dev-app path is
+    // flat: scan moduleImports + apiComponents for `@cngx/<lib>/<sub>` and
+    // pick the dominant sub-entry. For paths that already have a category
+    // segment (common/a11y/*, ui/feedback/*), keep it.
+    const derivedCategory = parts.length === 3
+      ? parts[1]
+      : (() => {
+          const counts = new Map();
+          for (const line of story.moduleImports ?? []) {
+            const m = line.match(new RegExp(`from\\s+['"]@cngx/${lib}/([\\w-]+)['"]`));
+            if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+          }
+          for (const sym of story.apiComponents ?? []) {
+            const pkg = importMap.get(sym);
+            if (!pkg) continue;
+            const m = pkg.match(new RegExp(`^@cngx/${lib}/([\\w-]+)$`));
+            if (m) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+          }
+          if (counts.size === 0) return '';
+          return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+        })();
+
     // Collapse a redundant `category/category-demo` nesting (common/card/card-demo,
-    // common/popover/popover-demo) so sections live directly under the category.
-    // Detection: a 3-segment path whose category segment matches the demo slug.
-    const isFlatDemo = parts.length === 3 && parts[1] === demoSlug;
-    // Feature dir mirrors the dev-app demo path:
+    // forms/select-demo with derived category=select, …).
+    const isFlatDemo = derivedCategory !== '' && derivedCategory === demoSlug;
+    // Feature dir mirrors the cngx library structure:
     //   common/a11y/active-descendant-demo → features/common/a11y/active-descendant/
     //   common/card/card-demo              → features/common/card/        (flat)
-    //   forms/select-demo                  → features/forms/select/
+    //   forms/action-select-demo           → features/forms/select/action-select/
+    //   forms/select-demo                  → features/forms/select/       (flat)
+    //   forms/autosize-demo                → features/forms/input/autosize/
     //   data-display/treetable-demo        → features/data-display/treetable/
     const pathSegments = isFlatDemo
-      ? [parts[0], parts[1]]
-      : [...parts.slice(0, -1), demoSlug];
+      ? [lib, derivedCategory]
+      : derivedCategory !== ''
+        ? [lib, derivedCategory, demoSlug]
+        : [lib, demoSlug];
     const demoPath = pathSegments.join('/');
     const featureDir = join(FEATURES_DIR, ...pathSegments);
     const featureImportPath = './features/' + demoPath;
@@ -644,11 +671,7 @@ async function main() {
       }
     }
 
-    const lib = parts[0];
-    // Category = the second path segment when present (a11y, interactive,
-    // feedback, mat-stepper, …) — story.navCategory is intentionally ignored
-    // because it groups unrelated forms demos under buckets like 'field'.
-    const category = parts.length === 3 ? parts[1] : '';
+    const category = derivedCategory;
 
     const sections = story.sections ?? [];
     for (let i = 0; i < sections.length; i++) {
