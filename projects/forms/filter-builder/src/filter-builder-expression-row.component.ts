@@ -99,6 +99,8 @@ export class CngxFilterExpressionRow {
    */
   readonly templates = input<CngxFilterBuilderTemplateRegistry | null>(null);
 
+  protected readonly pathAttr = computed(() => this.path().join('.'));
+
   protected readonly removeButtonTemplate = computed(
     () => this.templates()?.removeButton() ?? null,
     { equal: (a, b) => a === b },

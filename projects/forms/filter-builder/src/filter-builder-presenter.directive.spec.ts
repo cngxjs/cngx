@@ -5,6 +5,7 @@ import { CngxFormFieldPresenter, CNGX_FORM_FIELD_CONTROL } from '@cngx/forms/fie
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FilterFieldDef, FilterGroup } from './filter-builder.types';
+import { CngxFilterBuilder } from './filter-builder.component';
 import { CNGX_FILTER_BUILDER_HOST } from './filter-builder-host.token';
 import { CngxFilterBuilderFormFieldControl } from './filter-builder-form-field-control.directive';
 import { CngxFilterBuilderPresenter } from './filter-builder-presenter.directive';
@@ -258,6 +259,46 @@ describe('CngxFilterBuilderPresenter', () => {
     fixture.detectChanges();
     TestBed.flushEffects();
     expect(directive.disabled()).toBe(false);
+  });
+
+  it('focus() lands on the first incomplete expression rendered by the builder body', () => {
+    @Component({
+      template: `<cngx-filter-builder [fields]="fields()" [value]="value()" />`,
+      imports: [CngxFilterBuilder],
+    })
+    class BuilderHost {
+      readonly fields = signal<readonly FilterFieldDef[]>([FIELD_NAME, FIELD_AGE]);
+      readonly value = signal<FilterGroup>({
+        type: 'group',
+        id: 'root',
+        logic: 'and',
+        negated: false,
+        filters: [
+          { type: 'expression', id: 'e1', field: 'name', operator: 'eq', value: 'foo' },
+          { type: 'expression', id: 'e2', field: 'age', operator: 'gt', value: '' },
+        ],
+      });
+    }
+    const fixture = TestBed.createComponent(BuilderHost);
+    document.body.appendChild(fixture.nativeElement as HTMLElement);
+    fixture.detectChanges();
+    TestBed.flushEffects();
+
+    const builderEl = fixture.nativeElement as HTMLElement;
+    const incompleteRow = builderEl.querySelector('[data-cngx-filter-path="1"]');
+    expect(incompleteRow).not.toBeNull();
+    const focusable = incompleteRow!.querySelector<HTMLElement>(':is(input, [tabindex])');
+    expect(focusable).not.toBeNull();
+
+    const builderDebugEl = fixture.debugElement.query(
+      (de) => de.nativeElement === builderEl.querySelector('cngx-filter-builder'),
+    );
+    const presenterInstance = builderDebugEl.injector.get(CngxFilterBuilderPresenter);
+
+    presenterInstance.focus();
+    expect(document.activeElement).toBe(focusable);
+
+    document.body.removeChild(fixture.nativeElement as HTMLElement);
   });
 });
 

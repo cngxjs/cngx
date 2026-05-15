@@ -3,6 +3,7 @@ import {
   computed,
   Directive,
   effect,
+  ElementRef,
   inject,
   input,
   isDevMode,
@@ -100,6 +101,8 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
     optional: true,
     skipSelf: true,
   });
+
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly disabled: Signal<boolean> = computed(
     () => this.formField?.disabled() ?? false,
@@ -202,6 +205,46 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
   getFieldDef(fieldKey: string): FilterFieldDef<TValue> | undefined {
     return this.core.getFieldDef(fieldKey);
   }
+
+  /**
+   * Move DOM focus to the first incomplete expression's first focusable
+   * descendant. Falls back to the host element when the tree has no
+   * incomplete expression. The row↔presenter correlation runs through the
+   * `data-cngx-filter-path` attribute on each rendered expression row —
+   * see accepted-debt §15 for the deferred Level-2 abstraction.
+   */
+  focus(options?: FocusOptions): void {
+    const path = findFirstIncompletePath(this.tree());
+    const host = this.elementRef.nativeElement;
+    if (!path) {
+      host.focus(options);
+      return;
+    }
+    const selector = `[data-cngx-filter-path="${path.join('.')}"] :is(input, [tabindex])`;
+    const target = host.querySelector<HTMLElement>(selector);
+    (target ?? host).focus(options);
+  }
+}
+
+function findFirstIncompletePath(
+  group: FilterGroup,
+  path: readonly number[] = [],
+): readonly number[] | null {
+  for (let i = 0; i < group.filters.length; i++) {
+    const child = group.filters[i];
+    const childPath = [...path, i];
+    if (child.type === 'expression') {
+      if (isExpressionIncomplete(child)) {
+        return childPath;
+      }
+    } else {
+      const inner = findFirstIncompletePath(child, childPath);
+      if (inner) {
+        return inner;
+      }
+    }
+  }
+  return null;
 }
 
 function isExpressionIncomplete(expression: FilterExpression): boolean {
