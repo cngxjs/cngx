@@ -252,7 +252,10 @@ export class CngxFilterBuilderPresenter<TValue = unknown>
       host.focus(options);
       return;
     }
-    const selector = `[data-cngx-filter-path="${path.join('.')}"] :is(input, [tabindex])`;
+    // Include <button> so the call lands on the remove control / cngx-select
+    // trigger button instead of degrading to the host when no <input> sits
+    // on the incomplete row (boolean editor, empty field).
+    const selector = `[data-cngx-filter-path="${path.join('.')}"] :is(input, button, [tabindex])`;
     const target = host.querySelector<HTMLElement>(selector);
     (target ?? host).focus(options);
   }
